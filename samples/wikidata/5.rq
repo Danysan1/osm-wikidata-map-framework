@@ -1,0 +1,13 @@
+# php sample.php wikidata 5
+# https://www.wikidata.org/wiki/Wikidata:OpenStreetMap
+
+#French départements with Name, Wikidata ID, OSM relation ID, and ISO 3166-2 code
+SELECT ?name (?item as ?wikidata) ?osm ?code WHERE {
+	?item wdt:P31 wd:Q6465; # French départements
+		wdt:P300 ?code.   # with ISO 3166-2 code
+	OPTIONAL { ?item wdt:P402 ?osm. } # OSM relation if available
+	SERVICE wikibase:label {
+		bd:serviceParam wikibase:language "fr".
+		?item rdfs:label ?name.
+	}
+}

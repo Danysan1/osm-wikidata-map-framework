@@ -1,0 +1,9 @@
+# php sample.php sophox 20
+SELECT * WHERE {
+	{
+		?mediaOutlet osmt:office "newspaper".
+	} UNION {
+		?mediaOutlet osmt:studio "radio".
+	}
+}
+limit 10

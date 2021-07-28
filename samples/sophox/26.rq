@@ -1,0 +1,18 @@
+# php sample.php sophox 26
+
+select ?name ?etymology_wikidata (GROUP_CONCAT(?osm;SEPARATOR=",") AS ?osm_ids)
+where {
+	?osm osmm:type 'w'.
+	?osm osmt:name ?name.
+	?osm (osmt:name:etymology:wikidata) ?etymology_wikidata.
+
+	SERVICE wikibase:around { 
+		?osm osmm:loc ?coordinates.
+		
+		bd:serviceParam wikibase:center "Point(11.69211 44.36452)"^^geo:wktLiteral.
+		bd:serviceParam wikibase:radius "5". # kilometers
+		bd:serviceParam wikibase:distance ?distance.
+	}
+}
+group by ?name ?etymology_wikidata
+limit 10

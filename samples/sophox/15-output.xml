@@ -1,0 +1,93 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='osm'/>
+		<variable name='place'/>
+		<variable name='name'/>
+		<variable name='coordinates'/>
+		<variable name='distance'/>
+		<variable name='wd'/>
+	</head>
+	<results>
+		<result>
+			<binding name='osm'>
+				<uri>https://www.openstreetmap.org/relation/42981</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.624022 44.296864)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.231</literal>
+			</binding>
+			<binding name='wd'>
+				<uri>http://www.wikidata.org/entity/Q94644</uri>
+			</binding>
+			<binding name='place'>
+				<literal>village</literal>
+			</binding>
+			<binding name='name'>
+				<literal>Casalfiumanese</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='osm'>
+				<uri>https://www.openstreetmap.org/relation/43084</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.634497099 44.3730194)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>4.704</literal>
+			</binding>
+			<binding name='wd'>
+				<uri>http://www.wikidata.org/entity/Q94856</uri>
+			</binding>
+			<binding name='place'>
+				<literal>village</literal>
+			</binding>
+			<binding name='name'>
+				<literal>Dozza</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='osm'>
+				<uri>https://www.openstreetmap.org/way/30970253</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.71186 44.3534672)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.946</literal>
+			</binding>
+			<binding name='wd'>
+				<uri>http://www.wikidata.org/entity/Q35992935</uri>
+			</binding>
+			<binding name='place'>
+				<literal>square</literal>
+			</binding>
+			<binding name='name'>
+				<literal>Piazza della Conciliazione</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='osm'>
+				<uri>https://www.openstreetmap.org/relation/43153</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.689893133 44.433618033)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>7.744</literal>
+			</binding>
+			<binding name='wd'>
+				<uri>http://www.wikidata.org/entity/Q94754</uri>
+			</binding>
+			<binding name='place'>
+				<literal>village</literal>
+			</binding>
+			<binding name='name'>
+				<literal>Castel Guelfo di Bologna</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

@@ -1,0 +1,58 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='mediaOutlet'/>
+	</head>
+	<results>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/739368330</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/800936800</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/974525376</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/974556671</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/1309389832</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/1363093493</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/1690132005</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/1711235853</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/1909452485</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='mediaOutlet'>
+				<uri>https://www.openstreetmap.org/node/1964528043</uri>
+			</binding>
+		</result>
+	</results>
+</sparql>

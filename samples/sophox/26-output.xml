@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='name'/>
+		<variable name='etymology_wikidata'/>
+		<variable name='osm_ids'/>
+	</head>
+	<results>
+		<result>
+			<binding name='name'>
+				<literal>Via Cavour</literal>
+			</binding>
+			<binding name='etymology_wikidata'>
+				<uri>http://www.wikidata.org/entity/Q166092</uri>
+			</binding>
+			<binding name='osm_ids'>
+				<literal>https://www.openstreetmap.org/way/526752181,https://www.openstreetmap.org/way/526765153,https://www.openstreetmap.org/way/605703904,https://www.openstreetmap.org/way/605703907</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal>Via Massimo Villa</literal>
+			</binding>
+			<binding name='etymology_wikidata'>
+				<uri>http://www.wikidata.org/entity/Q60148988</uri>
+			</binding>
+			<binding name='osm_ids'>
+				<literal>https://www.openstreetmap.org/way/257814002,https://www.openstreetmap.org/way/257814005,https://www.openstreetmap.org/way/715886989</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal>Via Luigi Tinti</literal>
+			</binding>
+			<binding name='etymology_wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3840201</uri>
+			</binding>
+			<binding name='osm_ids'>
+				<literal>https://www.openstreetmap.org/way/257814576,https://www.openstreetmap.org/way/257814577</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

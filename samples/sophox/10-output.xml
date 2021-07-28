@@ -1,0 +1,978 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='pitch'/>
+		<variable name='coordinates'/>
+		<variable name='distance'/>
+	</head>
+	<results>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/229310712</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7308487 44.2785316)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.985</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/229310716</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7323143 44.2787495)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.998</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/318747902</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6517076 44.3580744)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>3.294</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/508595236</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6423863 44.2937039)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.767</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532500599</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6526482 44.3181238)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>5.997</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532892159</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6530123 44.3175693)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>6.034</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/228591519</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5771865 44.3994237)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.961</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/881700494</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5820295 44.400814)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.673</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/881700495</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5822857 44.4007458)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.651</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/524877880</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6761799 44.3449477)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.476</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147401</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5868622 44.3899108)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.862</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147402</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5877367 44.3895878)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.784</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147403</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5870099 44.3896007)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.84</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147404</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5872711 44.3894559)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.815</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147405</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5873202 44.3899125)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.827</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147406</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5874934 44.3897971)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.81</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/314147407</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.587148 44.3902426)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.852</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/875298592</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.586217 44.391647)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.975</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/875298593</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.5864746 44.3919646)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.967</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/228573657</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.670597 44.3721094)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.947</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/224475381</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6795346 44.3407762)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.774</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/224475892</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6797518 44.3400683)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.842</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/527267456</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6810666 44.3405642)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.754</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/527267457</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6838876 44.3396972)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.783</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/527267458</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6815883 44.3403685)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.762</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532735417</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7098807 44.3421602)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.801</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532735418</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7101076 44.3420817)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.818</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/525162166</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6937017 44.3487531)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.698</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/524750515</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6913985 44.3524446)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.286</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/589398596</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6920687 44.3519912)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.335</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532735416</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7096587 44.3426162)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.748</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532505774</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7092304 44.3488201)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.158</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532683948</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6980347 44.3530399)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.3</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532683949</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.698509 44.3529269)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.326</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532683950</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.698418 44.3528414)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.332</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532893681</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7056963 44.3521975)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.689</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532893895</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7061584 44.3526354)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.676</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/531020549</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7093226 44.3578113)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.517</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/562740148</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7163994 44.347977)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.615</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/562741128</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7170379 44.3467846)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.744</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/524611810</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.712375 44.3428545)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.841</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/524611812</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7126152 44.3428334)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.854</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532508040</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7216619 44.3372237)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>3.782</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532508041</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7219626 44.3379029)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>3.738</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532671658</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.712291 44.3438719)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.744</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/542152661</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7222534 44.3380603)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>3.739</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/530747566</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7265903 44.3531127)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.982</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532730262</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7228051 44.3537953)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.676</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/634225821</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.725709 44.3531439)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.916</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532507022</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7137223 44.3562506)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>1.908</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378328584</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7909696 44.3141071)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.609</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378328585</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7923082 44.3149728)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.641</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378329438</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7906483 44.315265)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.514</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378329440</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.791956 44.3157162)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.571</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378329441</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7912781 44.3161349)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.501</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378329442</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7909561 44.3151591)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.541</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378329446</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7911435 44.3150734)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.558</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378329448</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7910267 44.3162026)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.48</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378330790</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7934653 44.3182144)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.519</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378330791</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7928889 44.3183585)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.472</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/378330792</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7942673 44.3175107)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>9.615</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/542149459</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7716301 44.3453365)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>6.639</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/542149964</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7687777 44.3468963)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>6.37</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/554307248</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7705804 44.3455494)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>6.552</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532737636</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6921272 44.3653574)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>0.152</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/793901221</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6925648 44.3644393)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>0.053</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/518503640</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6882418 44.3674588)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>0.503</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/524932615</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6940366 44.3640208)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>0.137</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/525337832</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6940664 44.3669307)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>0.355</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/525337833</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6938391 44.3666409)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>0.318</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/525335954</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7216671 44.3636377)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.334</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/528227483</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7218199 44.3631723)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.348</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/525335381</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7221972 44.3635971)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.376</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/525335953</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7215329 44.3640493)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.323</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/532473648</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.724878 44.3641961)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.589</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/530987239</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7286874 44.3639297)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.892</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/530987240</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7275555 44.3645141)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>2.802</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/233310452</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6834966 44.3952542)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>3.546</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533899418</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7009186 44.3944247)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>3.452</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/542298347</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7758692 44.3634718)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>6.642</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841371</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7996238 44.3782179)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.675</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841372</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7998092 44.3781172)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.687</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841373</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7993494 44.3787201)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.664</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841374</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.799607 44.3789762)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.689</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841375</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.7999493 44.3790019)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.716</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841378</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.8000547 44.3778097)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.7</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/533841379</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.799179 44.3786831)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>8.65</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='pitch'>
+				<uri>https://www.openstreetmap.org/way/228881807</uri>
+			</binding>
+			<binding name='coordinates'>
+				<literal datatype='http://www.opengis.net/ont/geosparql#wktLiteral'>Point(11.6762651 44.4312033)</literal>
+			</binding>
+			<binding name='distance'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#double'>7.581</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

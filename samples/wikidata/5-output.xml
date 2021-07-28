@@ -1,0 +1,1355 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='name'/>
+		<variable name='wikidata'/>
+		<variable name='osm'/>
+		<variable name='code'/>
+	</head>
+	<results>
+		<result>
+			<binding name='code'>
+				<literal>FR-44</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7432</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Loire-Atlantique</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3068</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-01</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7387</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Ain</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3083</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-02</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7411</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Aisne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3093</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-88</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7384</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Vosges</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3105</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-03</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>1450201</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Allier</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3113</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-39</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7460</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Jura</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3120</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-05</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7436</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Hautes-Alpes</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3125</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-04</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7380</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Alpes-de-Haute-Provence</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3131</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-06</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7385</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Alpes-Maritimes</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3139</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-07</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7430</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Ardèche</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3148</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-08</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7395</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Ardennes</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3164</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-09</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7439</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Ariège</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3184</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-10</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7441</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Aube</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3194</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-11</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7446</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Aude</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3207</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-12</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7451</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Aveyron</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3216</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-13</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7393</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Bouches-du-Rhône</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3240</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-14</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7453</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Calvados</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3249</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-15</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7381</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Cantal</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3259</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-16</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7428</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Charente</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3266</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-17</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7431</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Charente-Maritime</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3278</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-18</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7456</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Cher</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3286</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-19</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7464</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Corrèze</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3326</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-2B</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>76931</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Corse</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3334</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-2A</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>76932</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Corse-du-Sud</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3336</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-21</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7424</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Côte-d'Or</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3342</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-22</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7398</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Côtes-d'Armor</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3349</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-23</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7459</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Creuse</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3353</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-24</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7375</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Dordogne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3357</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-25</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7462</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Doubs</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3361</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-26</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7434</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Drôme</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3364</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-91</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7401</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Essonne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3368</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-27</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7435</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Eure</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3372</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-28</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7374</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Eure-et-Loir</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3377</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-29</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>102430</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Finistère</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3389</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-30</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7461</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Gard</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12515</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-32</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7422</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Gers</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12517</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-33</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7405</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Gironde</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12526</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-31</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7413</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Garonne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12538</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-92</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7449</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Hauts-de-Seine</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12543</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-34</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7429</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Hérault</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12545</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-35</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7465</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Ille-et-Vilaine</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12549</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-36</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7417</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Indre</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12553</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-37</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7408</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Indre-et-Loire</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12556</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-38</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7437</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Isère</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12559</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-40</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7376</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Landes</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12563</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-41</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7399</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Loir-et-Cher</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12564</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-42</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7420</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Loire</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12569</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-43</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7452</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Loire</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12572</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-45</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7440</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Loiret</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12574</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-46</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7454</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Lot</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12576</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-47</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>1284995</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Lot-et-Garonne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12578</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-48</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7421</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Lozère</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12580</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-49</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7409</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Maine-et-Loire</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12584</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-50</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7404</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Manche</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12589</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-51</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7379</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Marne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12594</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-52</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7396</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Marne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12607</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-53</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7438</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Mayenne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12620</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-54</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>51856</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Meurthe-et-Moselle</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12626</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-55</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7382</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Meuse</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12631</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-56</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7447</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Morbihan</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12642</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-57</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>51854</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Moselle</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12652</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-58</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7448</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Nièvre</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12657</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-59</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7400</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Nord</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12661</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-60</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7427</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Oise</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12675</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-61</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7419</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Orne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12679</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-62</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7394</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Pas-de-Calais</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12689</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-63</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7406</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Puy-de-Dôme</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12694</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-65</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7467</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Hautes-Pyrénées</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12700</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-64</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7450</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Pyrénées-Atlantiques</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12703</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-66</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7466</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Pyrénées-Orientales</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12709</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-67</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7415</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Bas-Rhin</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12717</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-68</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7403</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haut-Rhin</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12722</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-70</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7423</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Saône</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12730</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-71</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7397</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Saône-et-Loire</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12736</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-72</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7443</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Sarthe</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12740</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-73</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7425</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Savoie</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12745</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-74</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7407</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Savoie</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12751</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-77</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7383</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Seine-et-Marne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12753</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-76</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7426</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Seine-Maritime</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12758</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-93</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7389</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Seine-Saint-Denis</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12761</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-79</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7455</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Deux-Sèvres</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12765</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-80</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7463</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Somme</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12770</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-81</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7442</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Tarn</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12772</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-82</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7388</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Tarn-et-Garonne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12779</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-90</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7410</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Territoire de Belfort</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12782</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-95</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7433</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Val-d'Oise</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12784</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-94</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7458</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Val-de-Marne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12788</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-83</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7390</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Var</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12789</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-84</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7445</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Vaucluse</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12792</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-85</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7402</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Vendée</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12798</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-86</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7377</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Vienne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12804</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-87</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7418</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Haute-Vienne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12808</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-89</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7392</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Yonne</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12816</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-78</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7457</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Yvelines</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q12820</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-69</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>7378</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Rhône</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q46130</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='code'>
+				<literal>FR-69</literal>
+			</binding>
+			<binding name='osm'>
+				<literal>4850451</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='fr'>Rhône</literal>
+			</binding>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q46130</uri>
+			</binding>
+		</result>
+	</results>
+</sparql>

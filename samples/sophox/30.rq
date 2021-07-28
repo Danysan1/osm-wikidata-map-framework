@@ -1,0 +1,28 @@
+# php sample.php sophox 30
+# https://wiki.openstreetmap.org/wiki/SPARQL_examples#Whig_memorials_and_namesakes
+
+#defaultView:Map
+SELECT DISTINCT ?osm ?osmLabel ?coordinates WHERE {
+  # Prevent optimizer from querying for everything tagged with wikidata=* before querying the service.
+  hint:Query hint:optimizer "None" .
+  
+  # Query Wikidata for
+  SERVICE <https://query.wikidata.org/sparql> {
+    # Cities and towns
+    VALUES ?cities { wd:Q515 wd:Q3957 }
+    ?wd wdt:P31/wdt:P279* ?cities;
+        # That lie within parts of the San Jose–San Francisco–Oakland combined statistical area
+        wdt:P131*/wdt:P361+ wd:Q7413927.
+  }
+  
+  # Query OpenStreetMap for these places
+  ?osm osmt:wikidata ?wd;
+       # And their coordinates
+       osmm:loc ?coordinates.
+  
+  # Get the place’s name
+  OPTIONAL {
+    ?osm osmt:name ?osmLabel
+  }
+}
+limit 10

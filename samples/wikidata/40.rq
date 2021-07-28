@@ -1,0 +1,35 @@
+SELECT ?name
+	?etymology_wikidata
+	?osm_ids
+	?etymology_name
+	(GROUP_CONCAT(?occupation; SEPARATOR = "|") AS ?occupation_ids)
+	(GROUP_CONCAT(?occupation_name; SEPARATOR = "|") AS ?occupation_names)
+WHERE {
+	SERVICE <https://sophox.org/sparql> {
+		select ?name ?etymology_wikidata (GROUP_CONCAT(?osm;SEPARATOR=",") AS ?osm_ids)
+		where {
+			?osm osmm:type 'w'.
+			?osm osmt:name ?name.
+			?osm (osmt:name:etymology:wikidata) ?etymology_wikidata.
+
+			SERVICE wikibase:around { 
+				?osm osmm:loc ?coordinates.
+				
+				bd:serviceParam wikibase:center "Point(11.69211 44.36452)"^^geo:wktLiteral.
+				bd:serviceParam wikibase:radius "5". # kilometers
+				bd:serviceParam wikibase:distance ?distance.
+			}
+		}
+		group by ?name ?etymology_wikidata
+		limit 10
+	}
+
+	?etymology_wikidata rdfs:label ?etymology_name.
+	FILTER(lang(?etymology_name)="it").
+	OPTIONAL {
+		?etymology_wikidata wdt:P106 ?occupation.
+		?occupation rdfs:label ?occupation_name.
+		FILTER(lang(?occupation_name)="it").
+	}
+}
+GROUP BY ?name ?etymology_wikidata ?osm_ids ?etymology_name
