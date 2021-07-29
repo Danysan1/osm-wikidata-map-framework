@@ -12,25 +12,56 @@ if(empty($argv[2]) || !is_numeric($argv[2])) {
 $inputNumber = (int)$argv[2];
 
 if(strtolower($inputString)=="sophox") {
-    // https://sophox.org/
-    $baseURL = 'https://sophox.org/sparql';
+    /*
+    https://wiki.openstreetmap.org/wiki/Sophox
+    https://sophox.org/
+    */
+    $baseURL = 'https://sophox.org/sparql?query=';
+    $folder = "sophox";
+    $inputExtension = "rq";
+    $outputExtension = "xml";
 } elseif (strtolower($inputString)=="wikidata") {
-    // https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#SPARQL_endpoint
-    $baseURL = 'https://query.wikidata.org/sparql';
+    /*
+    https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#SPARQL_endpoint
+    */
+    $baseURL = 'https://query.wikidata.org/sparql?query=';
+    $folder = "wikidata";
+    $inputExtension = "rq";
+    $outputExtension = "xml";
+} elseif (strtolower($inputString)=="overpassql") {
+    /* 
+    https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+    https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
+    https://wiki.openstreetmap.org/wiki/Overpass_turbo/Extended_Overpass_Turbo_Queries
+    */
+    $baseURL = 'https://overpass-api.de/api/interpreter?data=';
+    $folder = "overpassql";
+    $inputExtension = "overpass";
+    $outputExtension = "json";
+} elseif (strtolower($inputString)=="overpassxml") {
+    /*
+    https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+    https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
+    */
+    $baseURL = 'https://overpass-api.de/api/interpreter?data=';
+    $folder = "overpassxml";
+    $inputExtension = "xml";
+    $outputExtension = "json";
 } else {
     echo "Please provide a VALID string as the first argument.\n";
     exit(3);
 }
 
-$fileName = "samples/$inputString/$inputNumber.rq";
+$fileName = "samples/$folder/$inputNumber.$inputExtension";
 if(!file_exists($fileName)) {
     echo "File $fileName does not exist.\n";
     exit(4);
 }
 $query = file_get_contents($fileName);
-$queryString = http_build_query(["query"=>$query]);
 
-$url = "$baseURL?$queryString";
+//$queryString = http_build_query(["query"=>$query]);
+//$url = "$baseURL?$queryString";
+$url = $baseURL.urlencode($query);
 echo "Querying $url\n";
 
 $curl = curl_init($url);
@@ -56,7 +87,7 @@ if($responseBody === false) {
 
     if($httpCode == 200) {
         echo "Call successful.\n";
-        $outFileName = "samples/$inputString/$inputNumber-output.xml";
+        $outFileName = "samples/$folder/$inputNumber-output.$outputExtension";
         file_put_contents($outFileName, $responseBody);
         echo "Output written to $outFileName\n";
         $ret = 0;
@@ -66,6 +97,8 @@ if($responseBody === false) {
         $ret = 6;
     }
 
+    $timeTaken = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
+    echo "Time taken: $timeTaken s\n";
 }
 
 curl_close($curl);

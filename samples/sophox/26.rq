@@ -2,9 +2,9 @@
 
 select ?name ?etymology_wikidata (GROUP_CONCAT(?osm;SEPARATOR=",") AS ?osm_ids)
 where {
-	?osm osmm:type 'w'.
-	?osm osmt:name ?name.
-	?osm (osmt:name:etymology:wikidata) ?etymology_wikidata.
+	?osm osmm:type 'w';
+		osmt:name ?name;
+		(osmt:name:etymology:wikidata) ?etymology_wikidata.
 
 	SERVICE wikibase:around { 
 		?osm osmm:loc ?coordinates.
