@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  web:
+    build:
+      context: .
+      target: dev
+    image: dsantini/openetymologymap:dev
+    ports:
+      - "80:80"
+    volumes:
+      - ./web:/var/www/html
+      - ./open-etymology-map.ini:/etc/open-etymology-map.ini
