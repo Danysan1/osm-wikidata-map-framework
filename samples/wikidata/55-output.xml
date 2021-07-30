@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='etymology_wikidata'/>
+		<variable name='etymology_name'/>
+		<variable name='gender'/>
+		<variable name='wikipedia'/>
+		<variable name='wikipedia_name'/>
+		<variable name='occupation_ids'/>
+		<variable name='occupation_names'/>
+		<variable name='pictures'/>
+		<variable name='birth_date'/>
+		<variable name='death_date'/>
+		<variable name='birth_place_name'/>
+		<variable name='death_place_name'/>
+	</head>
+	<results>
+		<result>
+			<binding name='etymology_wikidata'>
+				<uri>http://www.wikidata.org/entity/Q60148988</uri>
+			</binding>
+			<binding name='etymology_name'>
+				<literal xml:lang='it'>Massimo Villa</literal>
+			</binding>
+			<binding name='gender'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='occupation_ids'>
+				<literal>http://www.wikidata.org/entity/Q212948</literal>
+			</binding>
+			<binding name='occupation_names'>
+				<literal>partigiano</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1897-04-13T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1945-04-14T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place_name'>
+				<literal xml:lang='it'>Imola</literal>
+			</binding>
+			<binding name='death_place_name'>
+				<literal xml:lang='it'>Castel Guelfo di Bologna</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='etymology_wikidata'>
+				<uri>http://www.wikidata.org/entity/Q166092</uri>
+			</binding>
+			<binding name='etymology_name'>
+				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
+			</binding>
+			<binding name='gender'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='occupation_ids'>
+				<literal>http://www.wikidata.org/entity/Q82955	http://www.wikidata.org/entity/Q43845	http://www.wikidata.org/entity/Q193391</literal>
+			</binding>
+			<binding name='occupation_names'>
+				<literal>politico, personalità del mondo degli affari, diplomatico</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1810-08-10T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1861-06-06T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place_name'>
+				<literal xml:lang='it'>Torino</literal>
+			</binding>
+			<binding name='death_place_name'>
+				<literal xml:lang='it'>Torino</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour</uri>
+			</binding>
+			<binding name='wikipedia_name'>
+				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='etymology_wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3840201</uri>
+			</binding>
+			<binding name='etymology_name'>
+				<literal xml:lang='it'>Luigi Tinti</literal>
+			</binding>
+			<binding name='gender'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='occupation_ids'>
+				<literal>http://www.wikidata.org/entity/Q212948</literal>
+			</binding>
+			<binding name='occupation_names'>
+				<literal>partigiano</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1920-06-21T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1954-10-01T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place_name'>
+				<literal xml:lang='it'>Imola</literal>
+			</binding>
+			<binding name='death_place_name'>
+				<literal xml:lang='it'>Imola</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Luigi_Tinti</uri>
+			</binding>
+			<binding name='wikipedia_name'>
+				<literal xml:lang='it'>Luigi Tinti</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>
