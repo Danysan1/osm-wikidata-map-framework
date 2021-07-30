@@ -1,32 +1,5 @@
 <?php
-
-class Configuration {
-	private $config;
-
-	/**
-	 * @param string $iniFilePath
-	 */
-	public function __construct($iniFilePath = "/etc/open-etymology-map.ini") {
-		$this->config = @parse_ini_file($iniFilePath);
-		if(empty($this->config)) {
-			http_response_code(500);
-			die(json_encode(["error" => "Configuration file not found"]));
-		}
-		//echo json_encode($this->config);
-	}
-
-	/**
-	 * @param string key
-	 * @return mixed
-	 */
-	public function get($key) {
-		if(!isset($this->config[$key])) {
-			http_response_code(500);
-			die(json_encode(["error" => "Configuration not found: $key"]));
-		}
-		return $this->config[$key];
-	}
-}
+require_once("./Configuration.php");
 
 function preparaHTML(Configuration $conf) {
 	header( "Content-Type: text/html; charset=utf-8" );
@@ -81,37 +54,3 @@ function getFilteredParamOrDefault($paramName, $filter=FILTER_DEFAULT, $defaultV
 	return $paramValue;
 }
 
-/**
- * @param float $minLat
- * @param float $minLon
- * @param float $maxLat
- * @param float $maxLon
- * @return string
- */
-function overpassQuery($minLat, $minLon, $maxLat, $maxLon) {
-	return "[out:json][timeout:25];
-	(
-		node['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
-		way['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
-		relation['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
-	);
-	out body;
-	>;
-	out skel qt;";
-}
-
-/**
- * @param string $endpoint
- * @param string $query
- * @return string
- */
-function getOverpassResult($endpoint, $query) {
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $endpoint);
-	curl_setopt($ch, CURLOPT_POST, 1);
-	curl_setopt($ch, CURLOPT_POSTFIELDS, $query);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	$result = curl_exec($ch);
-	curl_close($ch);
-	return $result;
-}

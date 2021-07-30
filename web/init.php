@@ -1,4 +1,5 @@
 <?php
+require_once("./Configuration.php");
 require_once("./funcs.php");
 header( "Content-Type: application/javascript; charset=utf-8" );
 
@@ -14,7 +15,7 @@ Sentry.init({
   dsn: "<?=$conf->get("sentry-js-dsn");?>",
   environment: "<?=$conf->get("sentry-js-env");?>",
   integrations: [new Sentry.Integrations.BrowserTracing()],
-  tracesSampleRate: 1.0,
+  tracesSampleRate: <?=$conf->get("sentry-js-rate");?>,
 });
 
 var minLat = <?=$minLat;?>,

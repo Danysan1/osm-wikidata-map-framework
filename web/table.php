@@ -1,5 +1,5 @@
 <?php
-
+require_once("./Configuration.php");
 require_once("./funcs.php");
 $conf = new Configuration();
 preparaHTML($conf);

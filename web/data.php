@@ -1,4 +1,7 @@
 <?php
+require_once("./Configuration.php");
+require_once("./OverpassQuery.php");
+require_once("./QueryResult.php");
 require_once("./funcs.php");
 header( "Content-Type: application/json; charset=utf-8" );
 $conf = new Configuration();
@@ -8,16 +11,16 @@ $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
 $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
 $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
 
-$overpassQuery = overpassQuery($minLat, $minLon, $maxLat, $maxLon);
+$overpassQuery = OverpassQuery::FromBoundingBox($minLat, $minLon, $maxLat, $maxLon);
 $endpoint = $conf->get('overpass-endpoint');
-$result = getOverpassResult($endpoint, $overpassQuery);
-//echo $result;
+$result = $overpassQuery->send($endpoint);
+if($result->success()) {
+    echo json_encode($result->parseJSONBody()["elements"]);
+} else {
+    http_response_code(500);
+    die("Error getting result")
+}
 
-$result = json_decode($result);
-$result = $result->elements;
-echo json_encode($result);
-
-$geoJSON = [];
 
 
 

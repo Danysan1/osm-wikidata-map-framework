@@ -8,10 +8,8 @@
 >
     <projectFiles>
         <file name="sample.php" />
+        <directory name="web" />
         <file name="vendor/autoload.php" />
-        <file name="web/data.php" />
-        <file name="web/funcs.php" />
-        <file name="web/index.php" />
         <file name="vendor/composer/autoload_classmap.php" />
         <file name="vendor/composer/autoload_files.php" />
         <file name="vendor/composer/autoload_namespaces.php" />
