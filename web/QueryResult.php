@@ -29,9 +29,12 @@ class QueryResult {
     }
 
     /**
-     * @return string|null
+     * @return string
      */
     public function getBody() {
+        if($this->body == null) {
+            throw new Exception('No body available');
+        }
         return $this->body;
     }
 
@@ -62,7 +65,10 @@ class QueryResult {
      */
     public function isXML() {
         $contentType = (string)$this->curlInfo['content_type'];
-        return strpos($contentType, 'application/xml') !== false;
+        return
+            strpos($contentType, 'application/xml') !== false ||
+            strpos($contentType, 'text/xml') !== false ||
+            strpos($contentType, 'application/sparql-results+xml') !== false;
     }
 
     /**
@@ -84,5 +90,25 @@ class QueryResult {
                 $out = null;
         }
         return $out;
+    }
+
+    /**
+     * @return array|null
+     * @psalm-suppress MixedReturnStatement
+     */
+    public function parseXMLBodyToObject() {
+        return json_decode(json_encode($this->parseXMLBody()), true);
+    }
+
+    /**
+     * @param string $message
+     * @return void
+     */
+    public function errorLogResponse($message) {
+        error_log(
+            ($message ? $message.PHP_EOL : "")
+            .json_encode($this->curlInfo).PHP_EOL
+            .$this->getBody()
+        );
     }
 }

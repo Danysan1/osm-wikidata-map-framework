@@ -24,9 +24,9 @@ function prepareHTML(Configuration $conf) {
 	header(
 		"Content-Security-Policy: ".
 			"default-src 'self'; ".
-			"img-src 'self' https://kendo.cdn.telerik.com; ".
+			"img-src 'self' https://kendo.cdn.telerik.com https://commons.wikimedia.org https://upload.wikimedia.org; ".
 			"font-src 'self' 'unsafe-eval' https://fonts.gstatic.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
-			"style-src 'self' 'unsafe-eval' https://fonts.googleapis.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
+			"style-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
 			"script-src 'self' 'unsafe-eval' https://browser.sentry-cdn.com https://kendo.cdn.telerik.com https://cdnjs.cloudflare.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".

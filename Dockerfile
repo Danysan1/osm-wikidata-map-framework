@@ -20,6 +20,7 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) zip
 RUN php composer.phar install
 
+# https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
 	apt-get install -y libzip-dev zip && \
@@ -28,8 +29,9 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) zip
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
-COPY ./web /var/www/html
-COPY ./open-etymology-map.template.ini /etc/open-etymology-map.ini
+USER www-data
+COPY --chown=www-data:www-data ./web /var/www/html
+COPY --chown=www-data:www-data ./open-etymology-map.ini /etc/open-etymology-map.ini
 
 # docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
 # docker build --target "dev" --tag open-etymology-map:dev .

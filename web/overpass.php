@@ -16,9 +16,11 @@ $endpoint = (string)$conf->get('overpass-endpoint');
 $result = $overpassQuery->send($endpoint);
 if(!$result->success()) {
     http_response_code(500);
+    $result->errorLogResponse("overpass");
     die('{"error":"Error getting result (overpass server error)"}');
 } elseif (!$result->hasData() || !$result->isJSON()) {
     http_response_code(500);
+    $result->errorLogResponse("overpass");
     die('{"error":"Error getting result (bad response)"}');
 } else {
     echo json_encode((array)$result->parseJSONBody()["elements"]);

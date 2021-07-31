@@ -33,21 +33,39 @@ $maxLon = (float)getFilteredParamOrDefault( "maxLon", FILTER_VALIDATE_FLOAT, $co
     <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-    <form>
-        <fieldset>
-            <legend>Bounding Box</legend>
-            <label for="minLat">Min Latitude</label>
-            <input type="float" id="minLat" name="minLat" value="<?=$minLat;?>" />
-            <label for="maxLat">Max Latitude</label>
-            <input type="float" id="maxLat" name="maxLat" value="<?=$maxLat;?>" />
-            <label for="minLon">Min Longitude</label>
-            <input type="float" id="minLon" name="minLon" value="<?=$minLon;?>" />
-            <label for="maxLon">Max Longitude</label>
-            <input type="float" id="maxLon" name="maxLon" value="<?=$maxLon;?>" />
-            <input type="button" id="searchBBox" value="Search">
-        </fieldset>
-    </form>
-    <div id="element_grid" class="spaced"></div>
+    <div id="tabstrip" class="spaced">
+        <ul>
+            <li class="k-state-active">Overpass</li>
+            <li>Wikidata</li>
+        </ul>
+        <div id="overpass_tab">
+            <form>
+                <fieldset>
+                    <legend>Bounding Box</legend>
+                    <label for="minLat">Min Latitude:</label>
+                    <input type="float" id="minLat" name="minLat" value="<?=$minLat;?>" class="k-textbox" />
+                    <label for="maxLat">Max Latitude:</label>
+                    <input type="float" id="maxLat" name="maxLat" value="<?=$maxLat;?>" class="k-textbox" />
+                    <label for="minLon">Min Longitude:</label>
+                    <input type="float" id="minLon" name="minLon" value="<?=$minLon;?>" class="k-textbox" />
+                    <label for="maxLon">Max Longitude:</label>
+                    <input type="float" id="maxLon" name="maxLon" value="<?=$maxLon;?>" class="k-textbox" />
+                    <input type="button" id="searchBBox" value="Search" class="k-button" >
+                </fieldset>
+            </form>
+            <div id="overpass_grid" class="spaced"></div>
+        </div>
+        <div id="wikidata_tab">
+            <form>
+                <fieldset>
+                    <legend>Wikidata ID List</legend>
+                    <select name="wdIDs" id="wdIDs"></select>
+                    <input type="button" id="searchWdIDs" value="Search">
+                </fieldset>
+            </form>
+            <div id="wikidata_grid" class="spaced"></div>
+        </div>
+    </div>
     <script async defer src="./table.js"></script>
 </body>
 </html>

@@ -1,3 +1,8 @@
 .spaced {
     margin: 1em 1em 0 1em;
 }
+
+#wikidata_grid img {
+    max-width: 15em;
+    max-height: 15em;
+}
