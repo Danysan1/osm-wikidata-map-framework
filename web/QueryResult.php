@@ -79,25 +79,35 @@ class QueryResult {
     }
 
     /**
-     * @return SimpleXMLElement|null
+     * @return SimpleXMLElement
      */
     public function parseXMLBody() {
-        if(empty($this->body)) {
-            $out = null;
-        } else {
-            $out = simplexml_load_string($this->body);
-            if(!$out)
-                $out = null;
+        if(empty($this->body) || !$this->isXML()) {
+            throw new Exception('No XML body available');
         }
+
+        $out = simplexml_load_string($this->body);
+        if(!$out) {
+            throw new Exception('Could not parse XML body');
+        }
+
         return $out;
     }
 
     /**
-     * @return array|null
+     * @return array
      * @psalm-suppress MixedReturnStatement
      */
     public function parseXMLBodyToObject() {
-        return json_decode(json_encode($this->parseXMLBody()), true);
+        $obj = json_decode(json_encode($this->parseXMLBody()), true);
+
+        if ($obj===NULL || $obj===FALSE) {
+            throw new Exception('Could not convert XML body');
+        } else {
+            assert(is_array($obj));
+        }
+
+        return $obj;
     }
 
     /**

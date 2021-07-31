@@ -7,11 +7,18 @@ require_once(__DIR__."/Configuration.php");
  * @return void
  */
 function preparePage(Configuration $conf) {
+	ini_set("error_log", (string)$conf->get("log-file-path"));
 	\Sentry\init([
 		'dsn' => (string)$conf->get('sentry-php-dsn'),
 		'traces_sample_rate' => (float)$conf->get('sentry-php-rate'),
 	]);
-	ini_set("error_log", (string)$conf->get("log-file-path"));
+	set_exception_handler(function(Throwable $t) {
+		error_log(
+			$t->getMessage().PHP_EOL.
+			$t->getTraceAsString()
+		);
+		\Sentry\captureException($t);
+	});
 }
 
 /**

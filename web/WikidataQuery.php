@@ -105,7 +105,7 @@ class WikidataQuery {
 
     /**
      * @param string $endpoint
-     * @return QueryResult
+     * @return WikidataResult
      */
     public function send($endpoint) {
         $ch = curl_init();
@@ -125,6 +125,6 @@ class WikidataQuery {
             $result = null;
         else
             assert(is_string($result));
-        return new QueryResult($result, $curlInfo);
+        return new WikidataResult($result, $curlInfo);
     }
 }
