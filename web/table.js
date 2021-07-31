@@ -186,8 +186,9 @@ function addToMultiSelect(widgetId, newValue) {
     let widget = $("#" + widgetId).getKendoMultiSelect(),
         dataSource = widget.dataSource;
 
+    //dataSource.add( newValue );
     dataSource.add({value:newValue, text:newValue});
-    dataSource.sync();
+    //dataSource.sync();
     const currentValues = widget.value(),
         newValues = currentValues.concat([newValue]);
     console.info("addToMultiSelect", {widgetId, newValue, widget, dataSource, currentValues, newValues});
@@ -217,5 +218,10 @@ $("#tabstrip").kendoTabStrip();
 $("#searchBBox").click(initOverpassGrid);
 $("#searchWdIDs").click(initWikidataGrid);
 
-//initOverpassGrid();
-//initWikidataGrid();
+if ($("#bboxAutoStart").val()) {
+    initOverpassGrid();
+    $("#tabstrip").data("kendoTabStrip").select(0);
+} else if ($("#wdIDsAutoStart").val()) {
+    initWikidataGrid();
+    $("#tabstrip").data("kendoTabStrip").select(1);
+}
