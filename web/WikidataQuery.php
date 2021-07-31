@@ -1,5 +1,5 @@
 <?php
-require_once("./QueryResult.php");
+require_once("./WikidataResult.php");
 
 class WikidataQuery {
     /**

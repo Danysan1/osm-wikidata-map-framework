@@ -1,7 +1,7 @@
 <?php
 require_once("./Configuration.php");
 require_once("./WikidataQuery.php");
-require_once("./QueryResult.php");
+require_once("./WikidataResult.php");
 require_once("./funcs.php");
 $conf = new Configuration();
 prepareJSON($conf);
@@ -33,7 +33,8 @@ if(!$result->success()) {
     die('{"error":"Error getting result (bad response)"}');
 } else {
     //echo json_encode((array)($result->parseXMLBody()->results->result));
-    echo json_encode($result->parseXMLBodyToObject()["results"]["result"]);
+    //echo json_encode($result->parseXMLBodyToObject()["results"]["result"]);
+    echo json_encode($result->toMatrix());
 }
 
 

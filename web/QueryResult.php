@@ -90,6 +90,7 @@ class QueryResult {
         if(!$out) {
             throw new Exception('Could not parse XML body');
         }
+        //error_log($out->saveXML());
 
         return $out;
     }

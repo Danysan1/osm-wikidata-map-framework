@@ -18,6 +18,9 @@ function preparePage(Configuration $conf) {
 			$t->getTraceAsString()
 		);
 		\Sentry\captureException($t);
+		http_response_code(500);
+		//die('{"success":false, "error":"An internal error occurred"}');
+		die(json_encode(["success" => false, "error"=>$t->getMessage()]));
 	});
 }
 

@@ -25,22 +25,25 @@ function initOverpassGrid() {
             resizable: true,
             columns: [{
                 title: "OSM ID",
+                width: "8em",
                 field: "id"
             }, {
                 title: "OSM Type",
+                width: "8em",
                 field: "type"
             }, {
                 title: "Name",
                 template: element => element["tags"]["name"]
             }, {
                 title: "Etymology on Wikidata",
+                width: "25em",
                 template: function(element) {
                     const wikidataIDs = element["tags"]["name:etymology:wikidata"].split(";");
                     if(wikidataIDs.every(id => id.match(/Q[0-9]+/))) {
                         return wikidataIDs.map(function(id) {
-                            return id
-                                + ' <a class="k-button" href="https://www.wikidata.org/wiki/'+id+'"><span class="k-icon k-i-hyperlink-open"></span> wikidata.org</a>'
-                                + ' <a class="k-button analyse" data-id="'+id+'"><span class="k-icon k-i-zoom"></span> Wikidata tab</a>';
+                            return '<a class="k-button" href="https://www.wikidata.org/wiki/'+id+'"><span class="k-icon k-i-hyperlink-open"></span> wikidata.org</a>'
+                                + ' <a class="k-button analyse" data-id="'+id+'"><span class="k-icon k-i-zoom"></span> Wikidata tab</a>'
+                                + id;
                         }).join('<br />');
                     } else {
                         return 'Wikidata ID badly formatted';
@@ -115,41 +118,24 @@ function initWikidataGrid(wikidataIDs) {
             columns: [{
                 title: "Wikidata",
                 width: "10em",
-                template: function(element) {
-                    const url = element.binding.find(b => b["@attributes"]["name"] == "etymology_wikidata")["uri"];
-                    return '<a href="'+url+'">'+url.replace("http://www.wikidata.org/entity/", "")+'</a>';
-                } 
+                field: "wikidata",
+                template: it => '<a href="'+it.wikidata+'" target="_blank">'+it.wikidata.replace("http://www.wikidata.org/entity/","")+'</a>'
             }, {
                 title: "Name",
                 width: "20em",
-                template: element => element.binding.find(b => b["@attributes"]["name"] == "etymology_name")["literal"]
+                field: "name"
             }, {
                 title: "Wikipedia",
-                template: function(element) {
-                    const wikipediaObject = element.binding.find(b => b["@attributes"]["name"] == "wikipedia"),
-                        url = wikipediaObject ? wikipediaObject["uri"] : "";
-                    return '<a href="'+url+'">'+url.replace(/^http[s]?:\/\/[a-z]+\.wikipedia\.org\/wiki\//i, "")+'</a>';
-                } 
+                field: "wikipedia",
+                template: it => !(it.wikipedia) ? "" : ('<a href="'+it.wikipedia+'" target="_blank">'+it.wikipedia.replace(/^http[s]?:\/\/[a-z]+\.wikipedia\.org\/wiki\//i,"")+'</a>')
             }, {
                 title: "Occupations",
-                template: function(element) {
-                    const occupations = element.binding.find(b => b["@attributes"]["name"] == "occupation_names")["literal"];
-                    console.info("occupations template", occupations);
-                    return (occupations && typeof occupations == "string") ? occupations : "";
-                }
+                field: "occupations"
             }, {
                 title: "Pictures",
                 width: "15em",
-                template: function(element){
-                    const picturesBlock = element.binding.find(b => b["@attributes"]["name"] == "pictures"),
-                        urls = picturesBlock["literal"];
-                    console.info("pictures template", {picturesBlock, urls});
-                    if(urls && typeof urls == "string") {
-                        return urls.split("\t").map(url => '<a href="'+url+'" target="_blank"><img src="'+url+'"></img></a>').join("")
-                    } else {
-                        return "";
-                    }
-                }
+                field: "pictures",
+                template: it => !(it.pictures) ? "" : (it.pictures.map(url => '<a href="'+url+'" target="_blank"><img src="'+url+'"></img></a>').join(""))
             }],
         }).data("kendoGrid");
     }

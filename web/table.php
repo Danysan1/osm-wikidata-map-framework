@@ -8,7 +8,7 @@ $minLat = (float)getFilteredParamOrDefault( "minLat", FILTER_VALIDATE_FLOAT, $co
 $minLon = (float)getFilteredParamOrDefault( "minLon", FILTER_VALIDATE_FLOAT, $conf->get("default-bbox-min-lon") );
 $maxLat = (float)getFilteredParamOrDefault( "maxLat", FILTER_VALIDATE_FLOAT, $conf->get("default-bbox-max-lat") );
 $maxLon = (float)getFilteredParamOrDefault( "maxLon", FILTER_VALIDATE_FLOAT, $conf->get("default-bbox-max-lon") );
-$bboxIsPresent = $minLat && $minLon && $maxLat && $maxLon;
+$bboxIsPresent = isset($_GET["minLat"]) && isset($_GET["minLon"]) && isset($_GET["maxLat"]) && isset($_GET["maxLon"]);
 
 //$wdIDs = (array)getFilteredParamOrDefault( "wdIDs", FILTER_REQUIRE_ARRAY, [] );
 $wdIDs = !empty($_GET["wdIDs"]) ? (array)$_GET["wdIDs"] : [];
@@ -61,7 +61,7 @@ $wsIDsArePresent = count($wdIDs) > 0;
                     <label for="maxLon">Max Longitude:</label>
                     <input type="float" id="maxLon" name="maxLon" value="<?=$maxLon;?>" class="k-textbox" />
                     <input type="button" id="searchBBox" value="Search" class="k-button" >
-                    <input type="hidden" name="autoStart" id="bboxAutoStart" value="<?= $bboxIsPresent ? 1 : 0; ?>" >
+                    <input type="hidden" name="autoStart" id="bboxAutoStart" value="<?=$bboxIsPresent ? 1 : "";?>" >
                 </fieldset>
             </form>
             <div id="overpass_grid" class="spaced"></div>
@@ -76,7 +76,7 @@ $wsIDsArePresent = count($wdIDs) > 0;
                         ?>
                     </select>
                     <input type="button" id="searchWdIDs" value="Search">
-                    <input type="hidden" name="wdIDAutoStart" id="wdIDAutoStart" value="<?= $wsIDsArePresent ? 1 : 0; ?>" >
+                    <input type="hidden" name="wdIDAutoStart" id="wdIDsAutoStart" value="<?=$wsIDsArePresent ? 1 : "";?>" >
                 </fieldset>
             </form>
             <div id="wikidata_grid" class="spaced"></div>

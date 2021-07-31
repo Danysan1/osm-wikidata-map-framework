@@ -9,20 +9,35 @@ class WikidataResult extends QueryResult {
         $in = $this->parseXMLBody();
         $out = [];
         
-        $elements = $in->xpath("/sparql/results/result");
+        //https://stackoverflow.com/questions/42405495/simplexml-xpath-has-empty-element
+        $in->registerXPathNamespace("wd", "http://www.w3.org/2005/sparql-results#");
+        $elements = $in->xpath("/wd:sparql/wd:results/wd:result");
         foreach ($elements as $element) {
-            $out[] = [
-                "wikidataURL"=>$element->xpath("/binding[@name='etymology_wikidata']/uri/text()")[0],
-                "name"=>$element->xpath("/binding[@name='etymology_name']/literal/text()")[0],
-                "gender"=>$element->xpath("/binding[@name='gender']/uri/text()")[0],
-                "wikipediaURL"=>$element->xpath("/binding[@name='wikipedia']/uri/text()")[0],
-                "occupations"=>$element->xpath("/binding[@name='occupation_names']/literal/text()")[0],
-                "pictures"=>$element->xpath("/binding[@name='pictures']/literal/text()")[0],
-                "birthDate"=>$element->xpath("/binding[@name='birth_date']/literal/text()")[0],
-                "deathDate"=>$element->xpath("/binding[@name='death_date']/literal/text()")[0],
-                "birthPlace"=>$element->xpath("/binding[@name='birth_place_name']/literal/text()")[0],
-                "deathPlace"=>$element->xpath("/binding[@name='death_place_name']/literal/text()")[0]
+            $element->registerXPathNamespace("wd", "http://www.w3.org/2005/sparql-results#");
+            //error_log($element->saveXML());
+            $outRow = [
+                "wikidata"=>$element->xpath("./wd:binding[@name='etymology_wikidata']/wd:uri/text()"),
+                "name"=>$element->xpath("./wd:binding[@name='etymology_name']/wd:literal/text()"),
+                "gender"=>$element->xpath("./wd:binding[@name='gender']/wd:uri/text()"),
+                "wikipedia"=>$element->xpath("./wd:binding[@name='wikipedia']/wd:uri/text()"),
+                "occupations"=>$element->xpath("./wd:binding[@name='occupation_names']/wd:literal/text()"),
+                "pictures"=>$element->xpath("./wd:binding[@name='pictures']/wd:literal/text()"),
+                "birth_date"=>$element->xpath("./wd:binding[@name='birth_date']/wd:literal/text()"),
+                "death_date"=>$element->xpath("./wd:binding[@name='death_date']/wd:literal/text()"),
+                "birth_place"=>$element->xpath("./wd:binding[@name='birth_place_name']/wd:literal/text()"),
+                "death_place"=>$element->xpath("./wd:binding[@name='death_place_name']/wd:literal/text()")
             ];
+            foreach ($outRow as $key=>$value) {
+                if(empty($value)) {
+                    $outRow[$key] = null;
+                } else {
+                    $outRow[$key] = $value[0]->__toString();
+                    if($key=="pictures")
+                        $outRow[$key] = explode("\t", $outRow[$key]);
+                }
+            }
+            //print_r($outRow);
+            $out[] = $outRow;
         }
 
         return $out;
