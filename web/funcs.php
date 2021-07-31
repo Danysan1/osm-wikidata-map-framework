@@ -34,13 +34,15 @@ function prepareHTML(Configuration $conf) {
 	header(
 		"Content-Security-Policy: ".
 			"default-src 'self'; ".
-			"img-src 'self' https://kendo.cdn.telerik.com https://commons.wikimedia.org https://upload.wikimedia.org; ".
+			"worker-src blob: ; ".
+			"child-src blob: ; ".
+			"img-src 'self' data: blob: https://kendo.cdn.telerik.com https://commons.wikimedia.org https://upload.wikimedia.org; ".
 			"font-src 'self' 'unsafe-eval' https://fonts.gstatic.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
-			"style-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
-			"script-src 'self' 'unsafe-eval' https://browser.sentry-cdn.com https://kendo.cdn.telerik.com https://cdnjs.cloudflare.com; ".
+			"style-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com https://kendo.cdn.telerik.com https://api.mapbox.com; ".
+			"script-src 'self' 'unsafe-eval' https://browser.sentry-cdn.com https://kendo.cdn.telerik.com https://cdnjs.cloudflare.com https://api.mapbox.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".
-			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")."; ".
+			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")." https://api.mapbox.com https://events.mapbox.com; ".
 			"report-uri ".(string)$conf->get("sentry-js-uri")."; ".
 			"upgrade-insecure-requests;"
 	);

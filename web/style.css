@@ -6,3 +6,15 @@
     max-width: 15em;
     max-height: 15em;
 }
+
+div#map {
+    position: absolute;
+    /*margin: 10em auto;*/
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    /*width: 99.5%;*/
+    /*width: 1500px;*/
+    /*height: 750px;*/
+}

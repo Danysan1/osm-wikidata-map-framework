@@ -13,3 +13,8 @@ Sentry.init({
   integrations: [new Sentry.Integrations.BrowserTracing()],
   tracesSampleRate: <?=(float)$conf->get("sentry-js-rate");?>,
 });
+
+var mapbox_gl_token = '<?=(string)$conf->get("mapbox-gl-token");?>',
+    default_center_lat = <?=(float)$conf->get("default-center-lat");?>,
+    default_center_lon = <?=(float)$conf->get("default-center-lon");?>,
+    default_zoom = <?=(float)$conf->get("default-zoom");?>;
