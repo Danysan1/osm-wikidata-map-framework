@@ -64,7 +64,7 @@ function initGrid() {
         filter: { field:"type", operator:"neq", value:"node" },
         transport: {
             read: {
-                url: "./data.php",
+                url: "./overpass.php",
                 data: {
                     minLat: $("#minLat").val(),
                     minLon: $("#minLon").val(),

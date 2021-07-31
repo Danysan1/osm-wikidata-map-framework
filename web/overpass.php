@@ -14,11 +14,14 @@ $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
 $overpassQuery = OverpassQuery::FromBoundingBox($minLat, $minLon, $maxLat, $maxLon);
 $endpoint = (string)$conf->get('overpass-endpoint');
 $result = $overpassQuery->send($endpoint);
-if($result->success()) {
-    echo json_encode($result->parseJSONBody()["elements"]);
-} else {
+if(!$result->success()) {
     http_response_code(500);
-    die("Error getting result");
+    die('{"error":"Error getting result (overpass server error)"}');
+} elseif (!$result->hasData() || !$result->isJSON()) {
+    http_response_code(500);
+    die('{"error":"Error getting result (bad response)"}');
+} else {
+    echo json_encode((array)$result->parseJSONBody()["elements"]);
 }
 
 

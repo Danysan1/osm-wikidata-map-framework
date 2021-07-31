@@ -45,6 +45,13 @@ class QueryResult {
     /**
      * @return boolean
      */
+    public function hasData() {
+        return !empty($this->getBody());
+    }
+
+    /**
+     * @return boolean
+     */
     public function isJSON() {
         $contentType = (string)$this->curlInfo['content_type'];
         return strpos($contentType, 'application/json') !== false;
