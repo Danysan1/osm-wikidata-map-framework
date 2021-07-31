@@ -37,22 +37,10 @@ function initOverpassGrid() {
                 template: function(element) {
                     const wikidataIDs = element["tags"]["name:etymology:wikidata"].split(";");
                     if(wikidataIDs.every(id => id.match(/Q[0-9]+/))) {
-                        /*const list = $('<ul class="wdList"></ul>');
-                        wikidataIDs.forEach(function(id) {
-                            const url = 'https://www.wikidata.org/wiki/'+id,
-                                toWikidata = $('<a><span class="k-icon k-i-hyperlink-open"></span></a>').text(id).attr("href", url),
-                                toTable = $('<a><span class="k-icon k-i-zoom"></span></a>').text("Analyse").click(function(){
-                                    addToMultiSelect("wdIDs", newValue);
-                                    $("#tabstrip").data("kendoTabStrip").select(1);
-                                });
-                            list.append(toWikidata);
-                            list.append(toTable);
-                        });*/
-                        return wikidataIDs.map(function(id) { 
-                            /*return '<a href="https://www.wikidata.org/wiki/'+id+'"><span class="k-icon k-i-hyperlink-open"></span>'+id+'</a>'
-                                + ' (<a href="?tab=wikidata&wdIDs[]='+id+'"><span class="k-icon k-i-zoom"></span>Analyse</a>)';*/
-                            return '<a href="https://www.wikidata.org/wiki/'+id+'"><span class="k-icon k-i-hyperlink-open"></span>'+id+'</a>'
-                                + ' (<a class="k-button analyse" data-id="'+id+'"><span class="k-icon k-i-zoom"></span>Analyse</a>)';
+                        return wikidataIDs.map(function(id) {
+                            return id
+                                + ' <a class="k-button" href="https://www.wikidata.org/wiki/'+id+'"><span class="k-icon k-i-hyperlink-open"></span> wikidata.org</a>'
+                                + ' <a class="k-button analyse" data-id="'+id+'"><span class="k-icon k-i-zoom"></span> Wikidata tab</a>';
                         }).join('<br />');
                     } else {
                         return 'Wikidata ID badly formatted';
