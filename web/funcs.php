@@ -1,8 +1,25 @@
 <?php
-require_once("./Configuration.php");
+require_once(__DIR__."/../vendor/autoload.php");
+require_once(__DIR__."/Configuration.php");
 
-function preparaHTML(Configuration $conf) {
-	ini_set("error_log", $conf->get("log-file-path"));
+/**
+ * @param Configuration $conf
+ * @return void
+ */
+function preparePage(Configuration $conf) {
+	\Sentry\init([
+		'dsn' => (string)$conf->get('sentry-php-dsn'),
+		'traces_sample_rate' => (float)$conf->get('sentry-php-rate'),
+	]);
+	ini_set("error_log", (string)$conf->get("log-file-path"));
+}
+
+/**
+ * @param Configuration $conf
+ * @return void
+ */
+function prepareHTML(Configuration $conf) {
+	preparePage($conf);
 	header( "Content-Type: text/html; charset=utf-8" );
 	header(
 		"Content-Security-Policy: ".
@@ -13,10 +30,19 @@ function preparaHTML(Configuration $conf) {
 			"script-src 'self' 'unsafe-eval' https://browser.sentry-cdn.com https://kendo.cdn.telerik.com https://cdnjs.cloudflare.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".
-			"connect-src 'self' ".$conf->get("sentry-js-domain")."; ".
-			"report-uri ".$conf->get("sentry-js-uri")."; ".
+			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")."; ".
+			"report-uri ".(string)$conf->get("sentry-js-uri")."; ".
 			"upgrade-insecure-requests;"
 	);
+}
+
+/**
+ * @param Configuration $conf
+ * @return void
+ */
+function prepareJSON(Configuration $conf) {
+	preparePage($conf);
+	header( "Content-Type: application/json; charset=utf-8" );
 }
 
 /**
@@ -27,6 +53,7 @@ function preparaHTML(Configuration $conf) {
  * @see https://www.php.net/manual/en/filter.filters.sanitize.php
  * @see https://www.php.net/manual/en/filter.constants.php
  * @return mixed
+ * @psalm-suppress MixedAssignment
  */
 function getFilteredParamOrError($paramName, $filter = FILTER_DEFAULT) {
 	$paramValue = filter_input(INPUT_GET, $paramName, $filter);
@@ -46,6 +73,7 @@ function getFilteredParamOrError($paramName, $filter = FILTER_DEFAULT) {
  * @see https://www.php.net/manual/en/filter.filters.sanitize.php
  * @see https://www.php.net/manual/en/filter.constants.php
  * @return mixed
+ * @psalm-suppress MixedAssignment
  */
 function getFilteredParamOrDefault($paramName, $filter=FILTER_DEFAULT, $defaultValue=NULL) {
 	$paramValue = filter_input(INPUT_GET, $paramName, $filter);

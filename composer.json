@@ -1,5 +1,8 @@
 {
     "require-dev": {
         "vimeo/psalm": "^4.8"
+    },
+    "require": {
+        "sentry/sdk": "^3.1"
     }
 }

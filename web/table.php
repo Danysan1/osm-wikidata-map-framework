@@ -2,7 +2,7 @@
 require_once("./Configuration.php");
 require_once("./funcs.php");
 $conf = new Configuration();
-preparaHTML($conf);
+prepareHTML($conf);
 
 $minLat = (float)getFilteredParamOrDefault( "minLat", FILTER_VALIDATE_FLOAT, $conf->get("default-bbox-min-lat") );
 $minLon = (float)getFilteredParamOrDefault( "minLon", FILTER_VALIDATE_FLOAT, $conf->get("default-bbox-min-lon") );

@@ -3,8 +3,8 @@ require_once("./Configuration.php");
 require_once("./OverpassQuery.php");
 require_once("./QueryResult.php");
 require_once("./funcs.php");
-header( "Content-Type: application/json; charset=utf-8" );
 $conf = new Configuration();
+prepareJSON($conf);
 
 $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
 $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
