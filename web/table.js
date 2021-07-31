@@ -19,6 +19,8 @@ function initGrid() {
     let element_grid = $("#element_grid").data("kendoGrid");
     if (!element_grid) {
         element_grid = $("#element_grid").kendoGrid({
+            sortable: true,
+            filterable: true,
             columns: [{
                 title: "OSM ID",
                 field: "id"
@@ -26,10 +28,15 @@ function initGrid() {
                 title: "OSM Type",
                 field: "type"
             }, {
+                title: "Name",
+                template: element => element["tags"]["name"]
+            }, {
                 title: "Etymology on Wikidata",
                 template: function(element) {
-                    wikidataID = element["tags"]["name:etymology:wikidata"];
-                    return '<a href="https://www.wikidata.org/wiki/'+wikidataID+'">'+wikidataID+'</a>';
+                    wikidataIDs = element["tags"]["name:etymology:wikidata"].split(";");
+                    return wikidataIDs
+                        .map( id => '<a href="https://www.wikidata.org/wiki/'+id+'">'+id+'</a>' )
+                        .join(", ");
                 }
             }],
             detailTemplate: '<div class="element_nodes"></div>',
