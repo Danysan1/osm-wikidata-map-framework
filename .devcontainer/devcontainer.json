@@ -23,10 +23,10 @@
 	"settings": {},
 
 	// Add the IDs of extensions you want installed when the container is created.
-	"extensions": []
+	"extensions": ["bmewburn.vscode-intelephense-client", "getpsalm.psalm-vscode-plugin"],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
-	// "forwardPorts": [],
+	"forwardPorts": [80]
 
 	// Uncomment the next line if you want start specific services in your Docker Compose config.
 	// "runServices": [],

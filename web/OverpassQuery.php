@@ -90,8 +90,12 @@ class OverpassQuery {
         curl_setopt($ch, CURLOPT_POSTFIELDS, $this->query);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
         $result = curl_exec($ch);
-        $curlInfo = curl_getinfo($ch);
+        $curlInfo = (array)curl_getinfo($ch);
         curl_close($ch);
+        if(!$result)
+            $result = null;
+        else
+            assert(is_string($result));
         return new QueryResult($result, $curlInfo);
     }
 }

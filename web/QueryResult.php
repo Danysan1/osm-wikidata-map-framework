@@ -2,17 +2,17 @@
 
 class QueryResult {
     /**
-     * @var int
+     * @var array
      */
     private $curlInfo;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $body;
 
     /**
-     * @param string $body
+     * @param string|null $body
      * @param array $curlInfo
      * @see https://www.php.net/manual/en/function.curl-getinfo.php
      */
@@ -25,11 +25,11 @@ class QueryResult {
      * @return int
      */
     public function getHttpCode() {
-        return $this->curlInfo['http_code'];
+        return (int)$this->curlInfo['http_code'];
     }
 
     /**
-     * @return string
+     * @return string|null
      */
     public function getBody() {
         return $this->body;
@@ -46,29 +46,36 @@ class QueryResult {
      * @return boolean
      */
     public function isJSON() {
-        $contentType = $this->curlInfo['content_type'];
-        return strpos($this->contentType, 'application/json') !== false;
+        $contentType = (string)$this->curlInfo['content_type'];
+        return strpos($contentType, 'application/json') !== false;
     }
 
     /**
      * @return boolean
      */
     public function isXML() {
-        $contentType = $this->curlInfo['content_type'];
-        return strpos($this->contentType, 'application/xml') !== false;
+        $contentType = (string)$this->curlInfo['content_type'];
+        return strpos($contentType, 'application/xml') !== false;
     }
 
     /**
-     * @return array
+     * @return array|null
      */
     public function parseJSONBody() {
-        return json_decode($this->body, true);
+        return empty($this->body) ? null : (array)json_decode($this->body, true);
     }
 
     /**
-     * @return SimpleXMLElement
+     * @return SimpleXMLElement|null
      */
     public function parseXMLBody() {
-        return simplexml_load_string($this->body);
+        if(empty($this->body)) {
+            $out = null;
+        } else {
+            $out = simplexml_load_string($this->body);
+            if(!$out)
+                $out = null;
+        }
+        return $out;
     }
 }

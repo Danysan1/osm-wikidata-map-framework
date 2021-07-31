@@ -2,6 +2,7 @@
 require_once("./Configuration.php");
 
 function preparaHTML(Configuration $conf) {
+	ini_set("error_log", $conf->get("log-file-path"));
 	header( "Content-Type: text/html; charset=utf-8" );
 	header(
 		"Content-Security-Policy: ".

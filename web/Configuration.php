@@ -1,6 +1,9 @@
 <?php
 
 class Configuration {
+	/**
+	 * @var array<mixed>
+	 */
 	private $config;
 
 	/**
@@ -16,7 +19,7 @@ class Configuration {
 	}
 
 	/**
-	 * @param string key
+	 * @param string $key
 	 * @return mixed
 	 */
 	public function get($key) {

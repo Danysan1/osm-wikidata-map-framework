@@ -26,7 +26,7 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) zip
-RUN php composer.phar install --no-dev --optimize-autoloader && \
+RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
 COPY ./web /var/www/html
 COPY ./open-etymology-map.template.ini /etc/open-etymology-map.ini
