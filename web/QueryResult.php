@@ -41,7 +41,7 @@ class QueryResult {
     /**
      * @return boolean
      */
-    public function success() {
+    public function isSuccessful() {
         return $this->getHttpCode() == 200;
     }
 
@@ -75,15 +75,25 @@ class QueryResult {
      * @return array|null
      */
     public function parseJSONBody() {
-        return empty($this->body) ? null : (array)json_decode($this->body, true);
+        if(empty($this->body)) {
+            throw new Exception("QueryResult::parseJSONBody: No response available, can't parse");
+        }
+        if(!$this->isJSON()) {
+            throw new Exception("QueryResult::parseJSONBody: Not a valid JSON response, can't parse");
+        }
+
+        return (array)json_decode($this->body, true);
     }
 
     /**
      * @return SimpleXMLElement
      */
     public function parseXMLBody() {
-        if(empty($this->body) || !$this->isXML()) {
-            throw new Exception('No XML body available');
+        if(empty($this->body)) {
+            throw new Exception("QueryResult::parseXMLBody: No response available, can't parse");
+        }
+        if(!$this->isXML()) {
+            throw new Exception("QueryResult::parseXMLBody: Not a valid JSON response, can't parse");
         }
 
         $out = simplexml_load_string($this->body);

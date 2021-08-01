@@ -52,18 +52,10 @@ function initOverpassGrid() {
             dataBound: function(e){
                 const buttonsToAnalyse = $("#overpass_grid a.analyse");
                 //console.info("overpass_grid dataBound", {e,buttonsToAnalyse});
-                buttonsToAnalyse.each(takeUserToWikidataGrid);
+                buttonsToAnalyse.each(takeUserToWikidataTabAndAddID);
             },
-            detailTemplate: '<div class="element_nodes"></div>',
-            detailInit: function(e) {
-                const nodes = e.data.nodes.map(id => e.sender.dataSource.data().find(node => node.id === id));
-                //console.info("detailInit", nodes);
-                e.detailCell.find(".element_nodes").kendoGrid({
-                    dataSource: {
-                        data: nodes
-                    }
-                });
-            }
+            detailTemplate: '<div class="element_map"></div><div class="element_nodes"></div>',
+            detailInit: overpassDetailInit,
         });
     }
 }
@@ -141,13 +133,23 @@ function searchOverpassFromCenter () {
     $("#tabstrip").data("kendoTabStrip").select(0);
 }
 
-function takeUserToWikidataGrid (index, button){
+function takeUserToWikidataTabAndAddID (index, button){
     const id = $(button).data("id");
-    //console.info("takeUserToWikidataGrid", {id,index,button});
+    //console.info("takeUserToWikidataTabAndAddID", {id,index,button});
     $(button).unbind("click");
     $(button).click(function(){
         addToMultiSelect("wdIDs", id);
         $("#tabstrip").data("kendoTabStrip").select(1);
+    });
+}
+
+function overpassDetailInit (e) {
+    const nodes = e.data.nodes.map(id => e.sender.dataSource.data().find(node => node.id === id));
+    //console.info("detailInit", nodes);
+    e.detailCell.find(".element_nodes").kendoGrid({
+        dataSource: {
+            data: nodes
+        }
     });
 }
 

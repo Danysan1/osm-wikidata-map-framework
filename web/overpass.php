@@ -1,12 +1,12 @@
 <?php
 require_once("./Configuration.php");
 require_once("./OverpassQuery.php");
-require_once("./QueryResult.php");
+require_once("./OverpassResult.php");
 require_once("./funcs.php");
 $conf = new Configuration();
 prepareJSON($conf);
 
-$from = (string)getFilteredParamOrError( "from", FILTER_DEFAULT);
+$from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
 if ($from == "bbox") {
     $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
@@ -23,10 +23,11 @@ if ($from == "bbox") {
     die('{"error":"You must specify either the BBox or center and radius"}');
 }
 
+$format = (string)getFilteredParamOrDefault( "format", FILTER_SANITIZE_STRING, null );
 
 $endpoint = (string)$conf->get('overpass-endpoint');
 $result = $overpassQuery->send($endpoint);
-if(!$result->success()) {
+if(!$result->isSuccessful()) {
     http_response_code(500);
     $result->errorLogResponse("overpass");
     die('{"error":"Error getting result (overpass server error)"}');
@@ -34,6 +35,8 @@ if(!$result->success()) {
     http_response_code(500);
     $result->errorLogResponse("overpass");
     die('{"error":"Error getting result (bad response)"}');
+} elseif ($format == "geojson") {
+    echo $result->toGeoJSON();
 } else {
     echo json_encode((array)$result->parseJSONBody()["elements"]);
 }

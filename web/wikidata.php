@@ -23,7 +23,7 @@ $lang = (string)getFilteredParamOrDefault( "lang", FILTER_SANITIZE_STRING, $conf
 $wikidataQuery = WikidataQuery::FromIDList($wikidataIDs, $lang);
 $endpoint = (string)$conf->get('wikidata-endpoint');
 $result = $wikidataQuery->send($endpoint);
-if(!$result->success()) {
+if(!$result->isSuccessful()) {
     http_response_code(500);
     $result->errorLogResponse("Wikidata");
     die('{"error":"Error getting result (wikidata server error)"}');

@@ -1,5 +1,5 @@
 <?php
-require_once("./QueryResult.php");
+require_once("./OverpassResult.php");
 
 class OverpassQuery {
     /**
@@ -81,7 +81,7 @@ class OverpassQuery {
 
     /**
      * @param string $endpoint
-     * @return QueryResult
+     * @return OverpassResult
      */
     public function send($endpoint) {
         $ch = curl_init();
@@ -96,6 +96,6 @@ class OverpassQuery {
             $result = null;
         else
             assert(is_string($result));
-        return new QueryResult($result, $curlInfo);
+        return new OverpassResult($result, $curlInfo);
     }
 }
