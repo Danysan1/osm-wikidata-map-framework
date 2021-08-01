@@ -16,16 +16,17 @@ class WikidataResult extends QueryResult {
             $element->registerXPathNamespace("wd", "http://www.w3.org/2005/sparql-results#");
             //error_log($element->saveXML());
             $outRow = [
-                "wikidata"=>$element->xpath("./wd:binding[@name='etymology_wikidata']/wd:uri/text()"),
-                "name"=>$element->xpath("./wd:binding[@name='etymology_name']/wd:literal/text()"),
-                "gender"=>$element->xpath("./wd:binding[@name='gender']/wd:uri/text()"),
+                "wikidata"=>$element->xpath("./wd:binding[@name='wikidata']/wd:uri/text()"),
+                "name"=>$element->xpath("./wd:binding[@name='name']/wd:literal/text()"),
+                "description"=>$element->xpath("./wd:binding[@name='description']/wd:literal/text()"),
+                "gender"=>$element->xpath("./wd:binding[@name='gender']/wd:literal/text()"),
                 "wikipedia"=>$element->xpath("./wd:binding[@name='wikipedia']/wd:uri/text()"),
-                "occupations"=>$element->xpath("./wd:binding[@name='occupation_names']/wd:literal/text()"),
+                "occupations"=>$element->xpath("./wd:binding[@name='occupations']/wd:literal/text()"),
                 "pictures"=>$element->xpath("./wd:binding[@name='pictures']/wd:literal/text()"),
                 "birth_date"=>$element->xpath("./wd:binding[@name='birth_date']/wd:literal/text()"),
                 "death_date"=>$element->xpath("./wd:binding[@name='death_date']/wd:literal/text()"),
-                "birth_place"=>$element->xpath("./wd:binding[@name='birth_place_name']/wd:literal/text()"),
-                "death_place"=>$element->xpath("./wd:binding[@name='death_place_name']/wd:literal/text()")
+                "birth_place"=>$element->xpath("./wd:binding[@name='birth_place']/wd:literal/text()"),
+                "death_place"=>$element->xpath("./wd:binding[@name='death_place']/wd:literal/text()")
             ];
             foreach ($outRow as $key=>$value) {
                 if(empty($value)) {

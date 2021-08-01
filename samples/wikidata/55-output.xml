@@ -1,36 +1,71 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <sparql xmlns='http://www.w3.org/2005/sparql-results#'>
 	<head>
-		<variable name='etymology_wikidata'/>
-		<variable name='etymology_name'/>
+		<variable name='wikidata'/>
+		<variable name='name'/>
+		<variable name='description'/>
 		<variable name='gender'/>
 		<variable name='wikipedia'/>
-		<variable name='occupation_ids'/>
-		<variable name='occupation_names'/>
+		<variable name='occupations'/>
 		<variable name='pictures'/>
 		<variable name='birth_date'/>
 		<variable name='death_date'/>
-		<variable name='birth_place_name'/>
-		<variable name='death_place_name'/>
+		<variable name='birth_place'/>
+		<variable name='death_place'/>
 	</head>
 	<results>
 		<result>
-			<binding name='etymology_wikidata'>
-				<uri>http://www.wikidata.org/entity/Q3840201</uri>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q1345358</uri>
 			</binding>
-			<binding name='etymology_name'>
-				<literal xml:lang='it'>Luigi Tinti</literal>
+			<binding name='name'>
+				<literal xml:lang='it'>Giovanni Amendola</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>politico e giornalista italiano</literal>
 			</binding>
 			<binding name='gender'>
-				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Giovanni_Amendola</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal>politico, giornalista, filosofo</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Giovanni%20Amendola%201923.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1882-04-15T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1926-04-07T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Napoli</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Cannes</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3840201</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Luigi Tinti</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>partigiano italiano</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
 			</binding>
 			<binding name='wikipedia'>
 				<uri>https://it.wikipedia.org/wiki/Luigi_Tinti</uri>
 			</binding>
-			<binding name='occupation_ids'>
-				<literal>http://www.wikidata.org/entity/Q212948</literal>
-			</binding>
-			<binding name='occupation_names'>
+			<binding name='occupations'>
 				<literal>partigiano</literal>
 			</binding>
 			<binding name='pictures'>
@@ -42,31 +77,31 @@
 			<binding name='death_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1954-10-01T00:00:00Z</literal>
 			</binding>
-			<binding name='birth_place_name'>
+			<binding name='birth_place'>
 				<literal xml:lang='it'>Imola</literal>
 			</binding>
-			<binding name='death_place_name'>
+			<binding name='death_place'>
 				<literal xml:lang='it'>Imola</literal>
 			</binding>
 		</result>
 		<result>
-			<binding name='etymology_wikidata'>
+			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q1067</uri>
 			</binding>
-			<binding name='etymology_name'>
+			<binding name='name'>
 				<literal xml:lang='it'>Dante Alighieri</literal>
 			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>poeta, scrittore e politico italiano, considerato il padre della lingua italiana (1265-1321)</literal>
+			</binding>
 			<binding name='gender'>
-				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+				<literal xml:lang='it'>maschio</literal>
 			</binding>
 			<binding name='wikipedia'>
 				<uri>https://it.wikipedia.org/wiki/Dante_Alighieri</uri>
 			</binding>
-			<binding name='occupation_ids'>
-				<literal>http://www.wikidata.org/entity/Q15994177	http://www.wikidata.org/entity/Q4964182	http://www.wikidata.org/entity/Q822146	http://www.wikidata.org/entity/Q12144794	http://www.wikidata.org/entity/Q482980	http://www.wikidata.org/entity/Q82955	http://www.wikidata.org/entity/Q58968	http://www.wikidata.org/entity/Q49757	http://www.wikidata.org/entity/Q36180</literal>
-			</binding>
-			<binding name='occupation_names'>
-				<literal>teorico politico, filosofo, autore di testi, prosatore, autore, politico, intellettuale, poeta, scrittore</literal>
+			<binding name='occupations'>
+				<literal>scrittore, poeta, intellettuale, politico, autore, autore di testi, filosofo, prosatore, teorico politico</literal>
 			</binding>
 			<binding name='pictures'>
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20de%20Dante.jpg</literal>
@@ -77,66 +112,31 @@
 			<binding name='death_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1321-09-22T00:00:00Z</literal>
 			</binding>
-			<binding name='birth_place_name'>
+			<binding name='birth_place'>
 				<literal xml:lang='it'>Firenze</literal>
 			</binding>
-			<binding name='death_place_name'>
+			<binding name='death_place'>
 				<literal xml:lang='it'>Ravenna</literal>
 			</binding>
 		</result>
 		<result>
-			<binding name='etymology_wikidata'>
-				<uri>http://www.wikidata.org/entity/Q36488</uri>
-			</binding>
-			<binding name='etymology_name'>
-				<literal xml:lang='it'>Guglielmo Marconi</literal>
-			</binding>
-			<binding name='gender'>
-				<uri>http://www.wikidata.org/entity/Q6581097</uri>
-			</binding>
-			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Guglielmo_Marconi</uri>
-			</binding>
-			<binding name='occupation_ids'>
-				<literal>http://www.wikidata.org/entity/Q205375	http://www.wikidata.org/entity/Q169470	http://www.wikidata.org/entity/Q82955	http://www.wikidata.org/entity/Q81096	http://www.wikidata.org/entity/Q43845	http://www.wikidata.org/entity/Q901</literal>
-			</binding>
-			<binding name='occupation_names'>
-				<literal>inventore, fisico, politico, ingegnere, personalità del mondo degli affari, scienziato</literal>
-			</binding>
-			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Guglielmo%20Marconi%20%281874-1937%29%2C%20Engineer%20and%20Physicist%20%282551824648%29.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Guglielmo%20Marconi.jpg</literal>
-			</binding>
-			<binding name='birth_date'>
-				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1874-04-25T00:00:00Z</literal>
-			</binding>
-			<binding name='death_date'>
-				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1937-07-20T00:00:00Z</literal>
-			</binding>
-			<binding name='birth_place_name'>
-				<literal xml:lang='it'>Bologna</literal>
-			</binding>
-			<binding name='death_place_name'>
-				<literal xml:lang='it'>Roma</literal>
-			</binding>
-		</result>
-		<result>
-			<binding name='etymology_wikidata'>
+			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q166092</uri>
 			</binding>
-			<binding name='etymology_name'>
+			<binding name='name'>
 				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
 			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>politico, patriota e imprenditore italiano</literal>
+			</binding>
 			<binding name='gender'>
-				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+				<literal xml:lang='it'>maschio</literal>
 			</binding>
 			<binding name='wikipedia'>
 				<uri>https://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour</uri>
 			</binding>
-			<binding name='occupation_ids'>
-				<literal>http://www.wikidata.org/entity/Q193391	http://www.wikidata.org/entity/Q82955	http://www.wikidata.org/entity/Q43845</literal>
-			</binding>
-			<binding name='occupation_names'>
-				<literal>diplomatico, politico, personalità del mondo degli affari</literal>
+			<binding name='occupations'>
+				<literal>personalità del mondo degli affari, politico, diplomatico</literal>
 			</binding>
 			<binding name='pictures'>
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
@@ -147,27 +147,62 @@
 			<binding name='death_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1861-06-06T00:00:00Z</literal>
 			</binding>
-			<binding name='birth_place_name'>
+			<binding name='birth_place'>
 				<literal xml:lang='it'>Torino</literal>
 			</binding>
-			<binding name='death_place_name'>
+			<binding name='death_place'>
 				<literal xml:lang='it'>Torino</literal>
 			</binding>
 		</result>
 		<result>
-			<binding name='etymology_wikidata'>
-				<uri>http://www.wikidata.org/entity/Q60148988</uri>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q36488</uri>
 			</binding>
-			<binding name='etymology_name'>
-				<literal xml:lang='it'>Massimo Villa</literal>
+			<binding name='name'>
+				<literal xml:lang='it'>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>fisico e inventore italiano</literal>
 			</binding>
 			<binding name='gender'>
-				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+				<literal xml:lang='it'>maschio</literal>
 			</binding>
-			<binding name='occupation_ids'>
-				<literal>http://www.wikidata.org/entity/Q212948</literal>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Guglielmo_Marconi</uri>
 			</binding>
-			<binding name='occupation_names'>
+			<binding name='occupations'>
+				<literal>scienziato, personalità del mondo degli affari, ingegnere, politico, fisico, inventore</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Guglielmo%20Marconi.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Guglielmo%20Marconi%20%281874-1937%29%2C%20Engineer%20and%20Physicist%20%282551824648%29.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1874-04-25T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1937-07-20T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Bologna</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Roma</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q60148988</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Massimo Villa</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>Antifascista</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='occupations'>
 				<literal>partigiano</literal>
 			</binding>
 			<binding name='pictures'>
@@ -179,28 +214,28 @@
 			<binding name='death_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1945-04-14T00:00:00Z</literal>
 			</binding>
-			<binding name='birth_place_name'>
+			<binding name='birth_place'>
 				<literal xml:lang='it'>Imola</literal>
 			</binding>
-			<binding name='death_place_name'>
+			<binding name='death_place'>
 				<literal xml:lang='it'>Castel Guelfo di Bologna</literal>
 			</binding>
 		</result>
 		<result>
-			<binding name='etymology_wikidata'>
+			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q88159726</uri>
 			</binding>
-			<binding name='etymology_name'>
+			<binding name='name'>
 				<literal xml:lang='it'>Alessandro dalla Nave</literal>
 			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>pittore italiano (1732 - 1821 o 1826)</literal>
+			</binding>
 			<binding name='gender'>
-				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+				<literal xml:lang='it'>maschio</literal>
 			</binding>
-			<binding name='occupation_ids'>
-				<literal>http://www.wikidata.org/entity/Q22811707	http://www.wikidata.org/entity/Q1028181</literal>
-			</binding>
-			<binding name='occupation_names'>
-				<literal>decoratore, pittore</literal>
+			<binding name='occupations'>
+				<literal>pittore, decoratore</literal>
 			</binding>
 			<binding name='pictures'>
 				<literal></literal>
@@ -211,10 +246,10 @@
 			<binding name='death_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1826-01-01T00:00:00Z</literal>
 			</binding>
-			<binding name='birth_place_name'>
+			<binding name='birth_place'>
 				<literal xml:lang='it'>Budrio</literal>
 			</binding>
-			<binding name='death_place_name'>
+			<binding name='death_place'>
 				<literal xml:lang='it'>Imola</literal>
 			</binding>
 		</result>

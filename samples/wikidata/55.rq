@@ -1,71 +1,78 @@
 # php sample.php wikidata 55
 
-SELECT ?etymology_wikidata
-    (SAMPLE(?etymology_name) AS ?etymology_name)
-    (SAMPLE(?gender) AS ?gender)
+SELECT ?wikidata
+    (SAMPLE(?name) AS ?name)
+    (SAMPLE(?description) AS ?description)
+    (SAMPLE(?gender_name) AS ?gender)
     (SAMPLE(?wikipedia) AS ?wikipedia)
     # (SAMPLE(?wikipedia_name) AS ?wikipedia_name)
-    (GROUP_CONCAT(DISTINCT ?occupation;SEPARATOR='\t') AS ?occupation_ids)
-    (GROUP_CONCAT(DISTINCT ?occupation_name;SEPARATOR=', ') AS ?occupation_names)
+    (GROUP_CONCAT(DISTINCT ?occupation_name;SEPARATOR=', ') AS ?occupations)
     (GROUP_CONCAT(DISTINCT ?picture;SEPARATOR='\t') AS ?pictures)
     # (GROUP_CONCAT(DISTINCT ?position;SEPARATOR='\t') AS ?position_ids)
     # (GROUP_CONCAT(DISTINCT ?position_name;SEPARATOR='\t') AS ?position_names)
     (SAMPLE(?birth_date) AS ?birth_date)
     (SAMPLE(?death_date) AS ?death_date)
-    (SAMPLE(?birth_place_name) AS ?birth_place_name)
-    (SAMPLE(?death_place_name) AS ?death_place_name)
+    (SAMPLE(?birth_place_name) AS ?birth_place)
+    (SAMPLE(?death_place_name) AS ?death_place)
 WHERE {
-    VALUES ?etymology_wikidata { wd:Q166092 wd:Q60148988 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q88159726 }
+    VALUES ?wikidata { wd:Q166092 wd:Q60148988 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q88159726 wd:Q1345358 wd:Q1345358 }
 
-    ?etymology_wikidata rdfs:label ?etymology_name.
-    FILTER(lang(?etymology_name)='it').
+    ?wikidata rdfs:label ?name.
+    FILTER(lang(?name)='it').
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P106 ?occupation.
+        ?wikidata schema:description ?description.
+        FILTER(lang(?description)='it').
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P106 ?occupation.
         ?occupation rdfs:label ?occupation_name.
         FILTER(lang(?occupation_name)='it').
     }
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P18 ?picture.
+        ?wikidata wdt:P18 ?picture.
     }
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P21 ?gender.
+        ?wikidata wdt:P21 ?gender.
+        ?gender rdfs:label ?gender_name.
+        FILTER(lang(?gender_name)='it').
     }
 
     # OPTIONAL {
-    #     ?etymology_wikidata wdt:P39 ?position.
+    #     ?wikidata wdt:P39 ?position.
     #     ?position rdfs:label ?position_name.
     #     FILTER(lang(?position_name)='it').
     # }
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P569 ?birth_date.
+        ?wikidata wdt:P569 ?birth_date.
     }
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P570 ?death_date.
+        ?wikidata wdt:P570 ?death_date.
     }
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P19 ?birth_place.
+        ?wikidata wdt:P19 ?birth_place.
         ?birth_place rdfs:label ?birth_place_name.
         FILTER(lang(?birth_place_name)='it').
     }
 
     OPTIONAL {
-        ?etymology_wikidata wdt:P20 ?death_place.
+        ?wikidata wdt:P20 ?death_place.
         ?death_place rdfs:label ?death_place_name.
         FILTER(lang(?death_place_name)='it').
     }
 
     OPTIONAL {
-        ?wikipedia schema:about ?etymology_wikidata;
+        ?wikipedia schema:about ?wikidata;
             schema:inLanguage ?wikipedia_lang;
             # schema:name ?wikipedia_name;
             schema:isPartOf [ wikibase:wikiGroup 'wikipedia' ].
         FILTER(?wikipedia_lang = 'it').
     }
 }
-GROUP BY ?etymology_wikidata
+GROUP BY ?wikidata

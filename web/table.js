@@ -125,6 +125,12 @@ function initWikidataGrid(wikidataIDs) {
                 width: "20em",
                 field: "name"
             }, {
+                title: "Description",
+                field: "description"
+            }, {
+                title: "Gender",
+                field: "gender"
+            }, {
                 title: "Wikipedia",
                 field: "wikipedia",
                 template: it => !(it.wikipedia) ? "" : ('<a href="'+it.wikipedia+'" target="_blank">'+it.wikipedia.replace(/^http[s]?:\/\/[a-z]+\.wikipedia\.org\/wiki\//i,"")+'</a>')
