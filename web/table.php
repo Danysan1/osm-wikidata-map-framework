@@ -10,6 +10,11 @@ $maxLat = (float)getFilteredParamOrDefault( "maxLat", FILTER_VALIDATE_FLOAT, $co
 $maxLon = (float)getFilteredParamOrDefault( "maxLon", FILTER_VALIDATE_FLOAT, $conf->get("default-bbox-max-lon") );
 $bboxIsPresent = isset($_GET["minLat"]) && isset($_GET["minLon"]) && isset($_GET["maxLat"]) && isset($_GET["maxLon"]);
 
+$centerLat = (float)getFilteredParamOrDefault( "centerLat", FILTER_VALIDATE_FLOAT, $conf->get("default-center-lat") );
+$centerLon = (float)getFilteredParamOrDefault( "centerLon", FILTER_VALIDATE_FLOAT, $conf->get("default-center-lon") );
+$radius = (float)getFilteredParamOrDefault( "radius", FILTER_VALIDATE_FLOAT, $conf->get("default-radius") );
+$centerIsPresent = isset($_GET["centerLat"]) && isset($_GET["centerLon"]) && isset($_GET["radius"]);
+
 //$wdIDs = (array)getFilteredParamOrDefault( "wdIDs", FILTER_REQUIRE_ARRAY, [] );
 $wdIDs = !empty($_GET["wdIDs"]) ? (array)$_GET["wdIDs"] : [];
 foreach($wdIDs as $i => $id) {
@@ -63,6 +68,17 @@ $wsIDsArePresent = count($wdIDs) > 0;
                     <input type="button" id="searchBBox" value="Search" class="k-button" >
                     <input type="hidden" name="autoStart" id="bboxAutoStart" value="<?=$bboxIsPresent ? 1 : "";?>" >
                 </fieldset>
+                <fieldset>
+                    <legend>Center and radius</legend>
+                    <label for="centerLat">Center Latitude:</label>
+                    <input type="float" id="centerLat" name="centerLat" value="<?=$centerLat;?>" class="k-textbox" />
+                    <label for="centerLon">Center Longitude:</label>
+                    <input type="float" id="centerLon" name="centerLon" value="<?=$centerLon;?>" class="k-textbox" />
+                    <label for="radius">Radius:</label>
+                    <input type="float" id="radius" name="radius" value="<?=$radius;?>" class="k-textbox" />
+                    <input type="button" id="searchCenter" value="Search" class="k-button" >
+                    <input type="hidden" name="autoStart" id="centerAutoStart" value="<?=$centerIsPresent ? 1 : "";?>" >
+                </fieldset>
             </form>
             <div id="overpass_grid" class="spaced"></div>
         </div>
@@ -75,7 +91,7 @@ $wsIDsArePresent = count($wdIDs) > 0;
                         foreach($wdIDs as $id) { echo "<option selected>$id</option>"; }
                         ?>
                     </select>
-                    <input type="button" id="searchWdIDs" value="Search">
+                    <input type="button" id="searchWdIDs" value="Search" class="k-button">
                     <input type="hidden" name="wdIDAutoStart" id="wdIDsAutoStart" value="<?=$wsIDsArePresent ? 1 : "";?>" >
                 </fieldset>
             </form>

@@ -6,12 +6,25 @@ require_once("./funcs.php");
 $conf = new Configuration();
 prepareJSON($conf);
 
-$minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
-$minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
-$maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
-$maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
+$minLat = (float)getFilteredParamOrDefault( "minLat", FILTER_VALIDATE_FLOAT, null );
+$minLon = (float)getFilteredParamOrDefault( "minLon", FILTER_VALIDATE_FLOAT, null );
+$maxLat = (float)getFilteredParamOrDefault( "maxLat", FILTER_VALIDATE_FLOAT, null );
+$maxLon = (float)getFilteredParamOrDefault( "maxLon", FILTER_VALIDATE_FLOAT, null );
 
-$overpassQuery = OverpassQuery::FromBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+$centerLat = (float)getFilteredParamOrDefault( "centerLat", FILTER_VALIDATE_FLOAT, null );
+$centerLon = (float)getFilteredParamOrDefault( "centerLon", FILTER_VALIDATE_FLOAT, null );
+$radius = (float)getFilteredParamOrDefault( "radius", FILTER_VALIDATE_FLOAT, null );
+
+if ($minLat!=null && $minLon!=null && $maxLat!=null && $maxLon!=null) {
+    $overpassQuery = OverpassQuery::FromBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+} elseif ($centerLat!=null && $centerLon!=null && $radius!=null) {
+    $overpassQuery = OverpassQuery::AroundPoint($centerLat, $centerLon, $radius);
+} else {
+    http_response_code(400);
+    die('{"error":"You must specify either the BBox or center and radius"}');
+}
+
+
 $endpoint = (string)$conf->get('overpass-endpoint');
 $result = $overpassQuery->send($endpoint);
 if(!$result->success()) {

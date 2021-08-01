@@ -17,9 +17,8 @@ $(document).ajaxError(function(event, jqXHR, ajaxSettings, thrownError) {
 });
 
 function initOverpassGrid() {
-    let overpass_grid = $("#overpass_grid").data("kendoGrid");
-    if (!overpass_grid) {
-        overpass_grid = $("#overpass_grid").kendoGrid({
+    if ( ! $("#overpass_grid").data("kendoGrid")) {
+        $("#overpass_grid").kendoGrid({
             sortable: true,
             filterable: true,
             resizable: true,
@@ -65,18 +64,23 @@ function initOverpassGrid() {
                     }
                 });
             }
-        }).data("kendoGrid");
+        });
     }
+}
 
-    overpass_grid.setDataSource({
-        requestStart: function(e) {
+function searchOverpassFromBBox () {
+    //console.info("searchOverpassFromBBox");
+    initOverpassGrid();
+    
+    $("#overpass_grid").data("kendoGrid").setDataSource({
+        /*requestStart: function(e) {
             console.info("requestStart", e);
             kendo.ui.progress($(document.body), true);
         },
         requestEnd: function(e) {
             console.info("requestEnd", e);
             kendo.ui.progress($(document.body), false);
-        },
+        },*/
         serverFiltering: false,
         filter: { field:"type", operator:"neq", value:"node" },
         transport: {
@@ -96,6 +100,43 @@ function initOverpassGrid() {
             }
         }
     });
+
+    $("#tabstrip").data("kendoTabStrip").select(0);
+}
+
+function searchOverpassFromCenter () {
+    //console.info("searchOverpassFromCenter");
+    initOverpassGrid();
+    
+    $("#overpass_grid").data("kendoGrid").setDataSource({
+        /*requestStart: function(e) {
+            console.info("requestStart", e);
+            kendo.ui.progress($(document.body), true);
+        },
+        requestEnd: function(e) {
+            console.info("requestEnd", e);
+            kendo.ui.progress($(document.body), false);
+        },*/
+        serverFiltering: false,
+        filter: { field:"type", operator:"neq", value:"node" },
+        transport: {
+            read: {
+                url: "./overpass.php",
+                data: {
+                    centerLat: $("#centerLat").val(),
+                    centerLon: $("#centerLon").val(),
+                    radius: $("#radius").val()
+                }
+            }
+        },
+        schema: {
+            model: {
+                id: "id",
+            }
+        }
+    });
+
+    $("#tabstrip").data("kendoTabStrip").select(0);
 }
 
 function takeUserToWikidataGrid (index, button){
@@ -108,10 +149,9 @@ function takeUserToWikidataGrid (index, button){
     });
 }
 
-function initWikidataGrid(wikidataIDs) {
-    let wikidata_grid = $("#wikidata_grid").data("kendoGrid");
-    if (!wikidata_grid) {
-        wikidata_grid = $("#wikidata_grid").kendoGrid({
+function initWikidataGrid() {
+    if ( ! $("#wikidata_grid").data("kendoGrid")) {
+        $("#wikidata_grid").kendoGrid({
             sortable: true,
             filterable: true,
             resizable: true,
@@ -129,6 +169,7 @@ function initWikidataGrid(wikidataIDs) {
                 field: "description"
             }, {
                 title: "Gender",
+                width: "6em",
                 field: "gender"
             }, {
                 title: "Wikipedia",
@@ -143,18 +184,23 @@ function initWikidataGrid(wikidataIDs) {
                 field: "pictures",
                 template: it => !(it.pictures) ? "" : (it.pictures.map(url => '<a href="'+url+'" target="_blank"><img src="'+url+'"></img></a>').join(""))
             }],
-        }).data("kendoGrid");
+        });
     }
+}
 
-    wikidata_grid.setDataSource({
-        requestStart: function(e) {
+function searchWikidataFromIDs () {
+    //console.info("searchWikidataFromIDs");
+    initWikidataGrid();
+
+    $("#wikidata_grid").data("kendoGrid").setDataSource({
+        /*requestStart: function(e) {
             console.info("requestStart", e);
             kendo.ui.progress($(document.body), true);
         },
         requestEnd: function(e) {
             console.info("requestEnd", e);
             kendo.ui.progress($(document.body), false);
-        },
+        },*/
         serverFiltering: false,
         filter: { field:"type", operator:"neq", value:"node" },
         transport: {
@@ -169,6 +215,8 @@ function initWikidataGrid(wikidataIDs) {
             }
         }
     });
+
+    $("#tabstrip").data("kendoTabStrip").select(1);
 }
 
 /**
@@ -207,13 +255,14 @@ $("#wdIDs").kendoMultiSelect({
 
 $("#tabstrip").kendoTabStrip();
 
-$("#searchBBox").click(initOverpassGrid);
-$("#searchWdIDs").click(initWikidataGrid);
+$("#searchBBox").click(searchOverpassFromBBox);
+$("#searchCenter").click(searchOverpassFromCenter);
+$("#searchWdIDs").click(searchWikidataFromIDs);
 
 if ($("#bboxAutoStart").val()) {
-    initOverpassGrid();
-    $("#tabstrip").data("kendoTabStrip").select(0);
+    searchOverpassFromBBox();
+} else if ($("#centerAutoStart").val()) {
+    searchOverpassFromCenter();
 } else if ($("#wdIDsAutoStart").val()) {
-    initWikidataGrid();
-    $("#tabstrip").data("kendoTabStrip").select(1);
+    searchWikidataFromIDs();
 }
