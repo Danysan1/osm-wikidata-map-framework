@@ -1,7 +1,8 @@
 <?php
 require_once("./Configuration.php");
-require_once("./OverpassQuery.php");
-require_once("./OverpassResult.php");
+require_once("./CenterEtymologyOverpassQuery.php");
+require_once("./BBoxEtymologyOverpassQuery.php");
+require_once("./OverpassQueryResult.php");
 require_once("./funcs.php");
 $conf = new Configuration();
 prepareJSON($conf);
@@ -12,12 +13,12 @@ if ($from == "bbox") {
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
-    $overpassQuery = OverpassQuery::FromBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+    $overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon);
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError( "centerLat", FILTER_VALIDATE_FLOAT );
     $centerLon = (float)getFilteredParamOrError( "centerLon", FILTER_VALIDATE_FLOAT );
     $radius = (float)getFilteredParamOrError( "radius", FILTER_VALIDATE_FLOAT );
-    $overpassQuery = OverpassQuery::AroundPoint($centerLat, $centerLon, $radius);
+    $overpassQuery = new CenterEtymologyOverpassQuery($centerLat, $centerLon, $radius);
 } else {
     http_response_code(400);
     die('{"error":"You must specify either the BBox or center and radius"}');

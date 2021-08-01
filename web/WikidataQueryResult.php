@@ -1,7 +1,7 @@
 <?php
 require_once("./QueryResult.php");
 
-class WikidataResult extends QueryResult {
+class WikidataQueryResult extends QueryResult {
     /**
      * @return array
      */

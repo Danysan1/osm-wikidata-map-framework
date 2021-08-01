@@ -1,7 +1,7 @@
 <?php
 require_once("./QueryResult.php");
 
-class OverpassResult extends QueryResult {
+class OverpassQueryResult extends QueryResult {
     /**
      * @return array
      *

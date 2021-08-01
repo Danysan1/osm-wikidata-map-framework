@@ -1,7 +1,7 @@
 <?php
 require_once("./Configuration.php");
-require_once("./WikidataQuery.php");
-require_once("./WikidataResult.php");
+require_once("./EtymologyIDListWikidataQuery.php");
+require_once("./WikidataQueryResult.php");
 require_once("./funcs.php");
 $conf = new Configuration();
 prepareJSON($conf);
@@ -20,7 +20,7 @@ foreach($wikidataIDs as $wdID) {
 
 $lang = (string)getFilteredParamOrDefault( "lang", FILTER_SANITIZE_STRING, $conf->get("default-language") );
 
-$wikidataQuery = WikidataQuery::FromIDList($wikidataIDs, $lang);
+$wikidataQuery = new EtymologyIDListWikidataQuery($wikidataIDs, $lang);
 $endpoint = (string)$conf->get('wikidata-endpoint');
 $result = $wikidataQuery->send($endpoint);
 if(!$result->isSuccessful()) {

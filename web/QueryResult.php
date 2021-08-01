@@ -39,6 +39,14 @@ class QueryResult {
     }
 
     /**
+     * @return array
+     * @see https://www.php.net/manual/en/function.curl-getinfo.php
+     */
+    public function getCurlInfo() {
+        return $this->curlInfo;
+    }
+
+    /**
      * @return boolean
      */
     public function isSuccessful() {
