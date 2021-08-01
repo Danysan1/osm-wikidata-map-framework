@@ -87,6 +87,7 @@ function searchOverpassFromBBox () {
             read: {
                 url: "./overpass.php",
                 data: {
+                    from: "bbox",
                     minLat: $("#minLat").val(),
                     minLon: $("#minLon").val(),
                     maxLat: $("#maxLat").val(),
@@ -123,6 +124,7 @@ function searchOverpassFromCenter () {
             read: {
                 url: "./overpass.php",
                 data: {
+                    from: "center",
                     centerLat: $("#centerLat").val(),
                     centerLon: $("#centerLon").val(),
                     radius: $("#radius").val()
