@@ -22,6 +22,10 @@ function preparePage(Configuration $conf) {
 		//die('{"success":false, "error":"An internal error occurred"}');
 		die(json_encode(["success" => false, "error"=>$t->getMessage()]));
 	});
+	ini_set('session.cookie_httponly', 'true');
+	ini_set('session.cookie_secure', 'true');
+	ini_set('session.cookie_path', '/; samesite=Strict');
+	ini_set('session.use_strict_mode', 'true');
 }
 
 /**

@@ -9,11 +9,15 @@ class OverpassQueryResult extends QueryResult {
      */
     public function toGeoJSONData() {
         $data = $this->parseJSONBody();
+        if(!isset($data["elements"]) || !is_array($data["elements"])) {
+            throw new Exception("No elements found in Overpass response");
+        }
         $totalElements = count($data["elements"]);
+
         $geojson = ["type"=>"FeatureCollection", "features"=>[]];
 
         foreach ($data["elements"] as $row) {
-            if(!empty($row["tags"]["name:etymology:wikidata"])) {
+            if(!empty($row["tags"]) && !empty($row["tags"]["name:etymology:wikidata"])) {
                 $feature = [
                     "type"=>"Feature",
                     "geometry"=>[],
@@ -25,18 +29,23 @@ class OverpassQueryResult extends QueryResult {
                     $feature["geometry"]["type"] = "Point";
                     $feature["geometry"]["coordinates"] = [$row["lon"], $row["lat"]];
                 } elseif ($row["type"]=="way") {
+                    assert(!empty($row["nodes"]) && is_array($row["nodes"]));
                     $totalNodes = count($row["nodes"]);
-                    $firstNode = $row["nodes"][0];
-                    $lastNode = $row["nodes"][$totalNodes-1];
                     $coordinates = [];
+
                     foreach($row["nodes"] as $node) {
                         for($i=$totalElements-1; $i>=0; $i--) {
+                            assert(!empty($data["elements"][$i]) && is_array($data["elements"][$i]));
                             if($data["elements"][$i]["id"]==$node) {
                                 $coordinates[] = [$data["elements"][$i]["lon"], $data["elements"][$i]["lat"]];
                             }
                         }
                     }
-                    if ($firstNode == $lastNode) {
+
+                    $firstNode = $row["nodes"][0];
+                    $lastNode = $row["nodes"][$totalNodes-1];
+                    $isRoundabout = !empty($row["tags"]["junction"]) && $row["tags"]["junction"]=="roundabout";
+                    if ( $firstNode==$lastNode && !$isRoundabout ) {
                         $feature["geometry"]["type"] = "Polygon";
                         $feature["geometry"]["coordinates"][] = $coordinates;
                     } else {
@@ -55,10 +64,16 @@ class OverpassQueryResult extends QueryResult {
         return $geojson;
     }
 
+    /**
+     * @return string
+     */
     public function toGeoJSON() {
         return json_encode($this->toGeoJSONData());
     }
 
+    /**
+     * @return array
+     */
     public function getGroupedByEtymology() {
         $data = $this->parseJSONBody();
         $groupedData = [];
