@@ -4,10 +4,13 @@
     },
     "cSpell.words": [
         "CURLOPT",
+        "DAST",
         "RETURNTRANSFER",
+        "SAST",
         "VERIFYHOST",
         "VERIFYPEER",
         "bbox",
+        "gitlab",
         "rdfs",
         "sparql",
         "wikibase"
