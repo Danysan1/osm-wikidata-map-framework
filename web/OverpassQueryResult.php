@@ -46,7 +46,9 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                     $firstNode = $row["nodes"][0];
                     $lastNode = $row["nodes"][$totalNodes-1];
                     $isRoundabout = !empty($row["tags"]["junction"]) && $row["tags"]["junction"]=="roundabout";
-                    if ( $firstNode==$lastNode && !$isRoundabout ) {
+                    $isForcedNotArea = !empty($row["tags"]["area"]) && $row["tags"]["area"]=="no";
+                    $isArea = $firstNode==$lastNode && !$isRoundabout && !$isForcedNotArea;
+                    if ($isArea) {
                         $feature["geometry"]["type"] = "Polygon";
                         $feature["geometry"]["coordinates"][] = $coordinates;
                     } else {
