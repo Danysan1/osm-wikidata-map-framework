@@ -1,14 +1,15 @@
 <?php
-require_once("./QueryResult.php");
+require_once("./JSONRemoteQueryResult.php");
+require_once("./GeoJSONQueryResult.php");
 
-class OverpassQueryResult extends QueryResult {
+class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryResult {
     /**
      * @return array
      *
      * https://gis.stackexchange.com/questions/115733/converting-json-to-geojson-or-csv/115736#115736
      */
-    public function toGeoJSONData() {
-        $data = $this->parseJSONBody();
+    public function getGeoJSONData() {
+        $data = $this->getResult();
         if(!isset($data["elements"]) || !is_array($data["elements"])) {
             throw new Exception("No elements found in Overpass response");
         }
@@ -67,15 +68,15 @@ class OverpassQueryResult extends QueryResult {
     /**
      * @return string
      */
-    public function toGeoJSON() {
-        return json_encode($this->toGeoJSONData());
+    public function getGeoJSON() {
+        return json_encode($this->getGeoJSONData());
     }
 
     /**
      * @return array
      */
     public function getGroupedByEtymology() {
-        $data = $this->parseJSONBody();
+        $data = $this->getResult();
         $groupedData = [];
 
         foreach ($data["elements"] as $row) {

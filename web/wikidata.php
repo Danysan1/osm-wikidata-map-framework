@@ -25,16 +25,14 @@ $endpoint = (string)$conf->get('wikidata-endpoint');
 $result = $wikidataQuery->send($endpoint);
 if(!$result->isSuccessful()) {
     http_response_code(500);
-    $result->errorLogResponse("Wikidata");
+    error_log("Wikidata error: ".$result);
     die('{"error":"Error getting result (wikidata server error)"}');
-} elseif (!$result->hasData() || !$result->isXML()) {
+} elseif (!$result->hasResult()) {
     http_response_code(500);
-    $result->errorLogResponse("Wikidata");
+    error_log("Wikidata no result: ".$result);
     die('{"error":"Error getting result (bad response)"}');
 } else {
-    //echo json_encode((array)($result->parseXMLBody()->results->result));
-    //echo json_encode($result->parseXMLBodyToObject()["results"]["result"]);
-    echo json_encode($result->toMatrix());
+    echo json_encode($result->getMatrixData());
 }
 
 

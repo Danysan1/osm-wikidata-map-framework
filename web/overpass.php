@@ -1,7 +1,7 @@
 <?php
 require_once("./Configuration.php");
 require_once("./CenterEtymologyOverpassQuery.php");
-require_once("./BBoxEtymologyOverpassQuery.php");
+require_once("./CachedBBoxEtymologyOverpassQuery.php");
 require_once("./OverpassQueryResult.php");
 require_once("./funcs.php");
 $conf = new Configuration();
@@ -13,7 +13,8 @@ if ($from == "bbox") {
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
-    $overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon);
+    //$overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon);
+    $overpassQuery = new CachedBBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon, $conf);
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError( "centerLat", FILTER_VALIDATE_FLOAT );
     $centerLon = (float)getFilteredParamOrError( "centerLon", FILTER_VALIDATE_FLOAT );
@@ -30,16 +31,16 @@ $endpoint = (string)$conf->get('overpass-endpoint');
 $result = $overpassQuery->send($endpoint);
 if(!$result->isSuccessful()) {
     http_response_code(500);
-    $result->errorLogResponse("overpass");
+    error_log("Overpass error: ".$result);
     die('{"error":"Error getting result (overpass server error)"}');
-} elseif (!$result->hasData() || !$result->isJSON()) {
+} elseif (!$result->hasResult()) {
     http_response_code(500);
-    $result->errorLogResponse("overpass");
+    error_log("Overpass no result: ".$result);
     die('{"error":"Error getting result (bad response)"}');
 } elseif ($format == "geojson") {
-    echo $result->toGeoJSON();
+    echo $result->getGeoJSON();
 } else {
-    echo json_encode((array)$result->parseJSONBody()["elements"]);
+    echo json_encode((array)$result->getResult()["elements"]);
 }
 
 

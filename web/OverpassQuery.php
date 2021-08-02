@@ -1,11 +1,11 @@
 <?php
 require_once("./Query.php");
-require_once("./OverpassQueryResult.php");
+require_once("./GeoJSONQueryResult.php");
 
 class OverpassQuery extends Query {
     /**
      * @param string $endpoint
-     * @return OverpassQueryResult
+     * @return GeoJSONQueryResult
      */
     public function send($endpoint) {
         $ch = curl_init();

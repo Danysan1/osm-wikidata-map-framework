@@ -1,12 +1,12 @@
 <?php
-require_once("./QueryResult.php");
+require_once("./XMLRemoteQueryResult.php");
 
-class WikidataQueryResult extends QueryResult {
+class WikidataQueryResult extends XMLRemoteQueryResult {
     /**
      * @return array
      */
-    public function toMatrix() {
-        $in = $this->parseXMLBody();
+    public function getMatrixData() {
+        $in = $this->getSimpleXMLElement();
         $out = [];
         
         //https://stackoverflow.com/questions/42405495/simplexml-xpath-has-empty-element

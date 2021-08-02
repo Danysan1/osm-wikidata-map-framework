@@ -1,5 +1,15 @@
 {
     "files.watcherExclude": {
         "**/target": true
-    }
+    },
+    "cSpell.words": [
+        "CURLOPT",
+        "RETURNTRANSFER",
+        "VERIFYHOST",
+        "VERIFYPEER",
+        "bbox",
+        "rdfs",
+        "sparql",
+        "wikibase"
+    ]
 }
