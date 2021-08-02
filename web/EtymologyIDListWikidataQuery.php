@@ -17,6 +17,9 @@ class EtymologyIDListWikidataQuery extends WikidataQuery {
      * @param string $language
      */
     public function __construct($wikidataIDList, $language) {
+        $this->wikidataIDList = $wikidataIDList;
+        $this->language = $language;
+        
         $wikidataValues = implode(' ', array_map(function($id){return "wd:$id";}, $wikidataIDList));
 
         foreach($wikidataIDList as $wdID) {

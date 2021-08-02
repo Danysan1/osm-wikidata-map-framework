@@ -9,6 +9,9 @@ class GeoJSONLocalQueryResult extends LocalQueryResult implements GeoJSONQueryRe
      */
     public function __construct($success, $result)
     {
+        /**
+         * @psalm-suppress DocblockTypeContradiction
+         */
         if ($result !== null && (!is_array($result) || empty($result["type"]))) {
             throw new Exception("Invalid GeoJSON result");
         }

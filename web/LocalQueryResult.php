@@ -48,6 +48,6 @@ class LocalQueryResult implements QueryResult {
 
     public function __toString()
     {
-        return "LocalQueryResult: ".($this->success?"Success":"Failure").PHP_EOL.$this->result;
+        return "LocalQueryResult: ".($this->success?"Success":"Failure").PHP_EOL.json_encode($this->result);
     }
 }

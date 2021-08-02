@@ -11,6 +11,8 @@
         "VERIFYPEER",
         "bbox",
         "gitlab",
+        "mapbox",
+        "mapboxgl",
         "rdfs",
         "sparql",
         "wikibase"

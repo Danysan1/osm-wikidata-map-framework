@@ -4,7 +4,7 @@ require_once("./GeoJSONQueryResult.php");
 
 class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryResult {
     /**
-     * @return array
+     * @return array{type:string}
      *
      * https://gis.stackexchange.com/questions/115733/converting-json-to-geojson-or-csv/115736#115736
      */

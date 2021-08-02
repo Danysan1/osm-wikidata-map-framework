@@ -24,7 +24,7 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
             throw new Exception("XMLRemoteQueryResult::getSimpleXMLElement: Not a valid JSON response, can't parse");
         }
 
-        $out = simplexml_load_string($this->body);
+        $out = simplexml_load_string($this->getBody());
         if (!$out) {
             throw new Exception('Could not parse XML body');
         }
