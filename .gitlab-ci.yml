@@ -9,6 +9,7 @@ include:
 stages:
   - build
   - test
+  - dast
 
 docker-build:
   before_script:
