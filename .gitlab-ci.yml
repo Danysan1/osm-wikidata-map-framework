@@ -11,6 +11,5 @@ stages:
   - test
   - dast
 
-docker-build:
-  before_script:
-    - cat $OPEN_ETYMOLOGY_MAP_INI > open-etymology-map.ini
+before_script:
+  - cat $OPEN_ETYMOLOGY_MAP_INI > open-etymology-map.ini
