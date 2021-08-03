@@ -1,8 +1,8 @@
 <?php
-require_once("./Query.php");
+require_once("./BaseQuery.php");
 require_once("./GeoJSONQueryResult.php");
 
-class OverpassQuery extends Query {
+class OverpassQuery extends BaseQuery {
     /**
      * @param string $endpoint
      * @return GeoJSONQueryResult

@@ -1,8 +1,8 @@
 <?php
-require_once("./Query.php");
+require_once("./BaseQuery.php");
 require_once("./WikidataQueryResult.php");
 
-class WikidataQuery extends Query {
+class WikidataQuery extends BaseQuery {
     /**
      * @param string $endpoint
      * @return WikidataQueryResult
