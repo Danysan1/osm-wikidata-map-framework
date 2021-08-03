@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class Configuration {
 	/**
 	 * @var array<mixed>

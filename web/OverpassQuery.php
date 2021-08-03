@@ -2,6 +2,9 @@
 require_once("./BaseQuery.php");
 require_once("./GeoJSONQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class OverpassQuery extends BaseQuery {
     /**
      * @param string $endpoint

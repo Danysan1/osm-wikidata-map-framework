@@ -1,6 +1,9 @@
 <?php
 require_once("./RemoteQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 abstract class BaseRemoteQueryResult implements RemoteQueryResult
 {
     /**

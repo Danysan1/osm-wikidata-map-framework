@@ -2,6 +2,9 @@
 require_once("./BaseQuery.php");
 require_once("./WikidataQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class WikidataQuery extends BaseQuery {
     /**
      * @param string $endpoint

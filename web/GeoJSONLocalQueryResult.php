@@ -1,6 +1,9 @@
 <?php
 require_once("./LocalQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class GeoJSONLocalQueryResult extends LocalQueryResult implements GeoJSONQueryResult
 {
     /**

@@ -1,6 +1,9 @@
 <?php
 require_once("./QueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class LocalQueryResult implements QueryResult {
     /**
      * @var boolean

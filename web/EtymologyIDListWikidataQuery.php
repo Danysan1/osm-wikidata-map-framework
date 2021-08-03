@@ -1,6 +1,9 @@
 <?php
 require_once("./WikidataQuery.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class EtymologyIDListWikidataQuery extends WikidataQuery {
     /**
      * @var array<string>

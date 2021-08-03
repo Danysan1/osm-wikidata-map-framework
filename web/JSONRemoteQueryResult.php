@@ -1,6 +1,9 @@
 <?php
 require_once("./BaseRemoteQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class JSONRemoteQueryResult extends BaseRemoteQueryResult
 {
     /**

@@ -11,6 +11,9 @@ define("CACHE_COLUMN_MIN_LON", 3);
 define("CACHE_COLUMN_MAX_LON", 4);
 define("CACHE_COLUMN_RESULT", 5);
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class CachedBBoxEtymologyOverpassQuery extends BBoxEtymologyOverpassQuery
 {
     /**

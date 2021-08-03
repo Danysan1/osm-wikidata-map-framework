@@ -2,6 +2,9 @@
 require_once("./BaseRemoteQueryResult.php");
 require_once("./XMLQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResult
 {
     /**

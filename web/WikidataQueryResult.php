@@ -1,6 +1,9 @@
 <?php
 require_once("./XMLRemoteQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class WikidataQueryResult extends XMLRemoteQueryResult {
     /**
      * @return array

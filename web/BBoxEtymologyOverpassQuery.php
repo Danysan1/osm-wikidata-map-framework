@@ -1,6 +1,9 @@
 <?php
 require_once("./OverpassQuery.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class BBoxEtymologyOverpassQuery extends OverpassQuery {
     /**
      * @var float

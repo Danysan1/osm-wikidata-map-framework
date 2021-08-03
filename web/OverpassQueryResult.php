@@ -2,6 +2,9 @@
 require_once("./JSONRemoteQueryResult.php");
 require_once("./GeoJSONQueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryResult {
     /**
      * @return array{type:string}

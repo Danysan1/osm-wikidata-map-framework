@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 interface QueryResult {
     /**
      * @return boolean

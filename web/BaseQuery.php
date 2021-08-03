@@ -2,6 +2,9 @@
 require_once("./BaseQuery.php");
 require_once("./QueryResult.php");
 
+/**
+ * @author Daniele Santini <daniele@dsantini.it>
+ */
 abstract class BaseQuery implements Query {
     /**
      * @var string
