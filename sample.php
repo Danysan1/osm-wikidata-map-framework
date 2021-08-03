@@ -1,9 +1,9 @@
 <?php
-if(empty($argv[1]) || !is_string($argv[1])) {
+if(empty($argv[1])) {
     echo "Please provide a string as the first argument.\n";
     exit(1);
 }
-$inputString = (string)$argv[1];
+$inputString = $argv[1];
 
 if(empty($argv[2]) || !is_numeric($argv[2])) {
     echo "Please provide a number as the first argument.\n";
