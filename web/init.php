@@ -1,9 +1,9 @@
 <?php
-require_once("./Configuration.php");
+require_once("./IniFileConfiguration.php");
 require_once("./funcs.php");
 header( "Content-Type: application/javascript; charset=utf-8" );
 
-$conf = new Configuration();
+$conf = new IniFileConfiguration();
 
 ?>
 

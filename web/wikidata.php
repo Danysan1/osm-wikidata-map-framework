@@ -1,9 +1,9 @@
 <?php
-require_once("./Configuration.php");
+require_once("./IniFileConfiguration.php");
 require_once("./EtymologyIDListWikidataQuery.php");
 require_once("./WikidataQueryResult.php");
 require_once("./funcs.php");
-$conf = new Configuration();
+$conf = new IniFileConfiguration();
 prepareJSON($conf);
 
 if(!isset($_GET["wikidataIDs"]) || !is_array($_GET["wikidataIDs"])) {

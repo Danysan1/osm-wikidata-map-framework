@@ -1,7 +1,7 @@
 <?php
-require_once("./Configuration.php");
+require_once("./IniFileConfiguration.php");
 require_once("./funcs.php");
-$conf = new Configuration();
+$conf = new IniFileConfiguration();
 prepareHTML($conf);
 
 ?>

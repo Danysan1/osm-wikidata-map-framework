@@ -1,10 +1,10 @@
 <?php
-require_once("./Configuration.php");
+require_once("./IniFileConfiguration.php");
 require_once("./CenterEtymologyOverpassQuery.php");
 require_once("./CachedBBoxEtymologyOverpassQuery.php");
 require_once("./OverpassQueryResult.php");
 require_once("./funcs.php");
-$conf = new Configuration();
+$conf = new IniFileConfiguration();
 prepareJSON($conf);
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
