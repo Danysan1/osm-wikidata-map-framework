@@ -14,7 +14,7 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
     public function getGeoJSONData() {
         $data = $this->getResult();
         if(!isset($data["elements"]) || !is_array($data["elements"])) {
-            throw new Exception("No elements found in Overpass response");
+            throw new Exception("OverpassQueryResult::getGeoJSONData: No elements found in Overpass response");
         }
         $totalElements = count($data["elements"]);
 
@@ -30,40 +30,54 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                 ];
 
                 if($row["type"]=="node") {
-                    $feature["geometry"]["type"] = "Point";
-                    $feature["geometry"]["coordinates"] = [$row["lon"], $row["lat"]];
+                    // ======================================== NODES start ========================================
+                    if(empty($row["lon"]) || empty($row["lat"])) {
+                        error_log("OverpassQueryResult::getGeoJSONData: node ".$row["id"]." has no coordinates");
+                    } else {
+                        $feature["geometry"]["type"] = "Point";
+                        $feature["geometry"]["coordinates"] = [$row["lon"], $row["lat"]];
+                        $geojson["features"][] = $feature;
+                    }
+                    // ======================================== NODES end ========================================
                 } elseif ($row["type"]=="way") {
-                    assert(!empty($row["nodes"]) && is_array($row["nodes"]));
-                    $totalNodes = count($row["nodes"]);
-                    $coordinates = [];
+                    // ======================================== WAYS start ========================================
+                    if(empty($row["nodes"]) || !is_array($row["nodes"])) {
+                        error_log("OverpassQueryResult::getGeoJSONData: way ".$row["id"]." has no nodes");
+                    } else {
+                        $totalNodes = count($row["nodes"]);
+                        $coordinates = [];
 
-                    foreach($row["nodes"] as $node) {
-                        for($i=$totalElements-1; $i>=0; $i--) {
-                            assert(!empty($data["elements"][$i]) && is_array($data["elements"][$i]));
-                            if($data["elements"][$i]["id"]==$node) {
-                                $coordinates[] = [$data["elements"][$i]["lon"], $data["elements"][$i]["lat"]];
+                        foreach($row["nodes"] as $node) {
+                            for($i=$totalElements-1; $i>=0; $i--) {
+                                assert(!empty($data["elements"][$i]) && is_array($data["elements"][$i]));
+                                if($data["elements"][$i]["id"]==$node) {
+                                    $coordinates[] = [$data["elements"][$i]["lon"], $data["elements"][$i]["lat"]];
+                                }
                             }
                         }
-                    }
 
-                    $firstNode = $row["nodes"][0];
-                    $lastNode = $row["nodes"][$totalNodes-1];
-                    $isRoundabout = !empty($row["tags"]["junction"]) && $row["tags"]["junction"]=="roundabout";
-                    $isForcedNotArea = !empty($row["tags"]["area"]) && $row["tags"]["area"]=="no";
-                    $isArea = $firstNode==$lastNode && !$isRoundabout && !$isForcedNotArea;
-                    if ($isArea) {
-                        $feature["geometry"]["type"] = "Polygon";
-                        $feature["geometry"]["coordinates"][] = $coordinates;
-                    } else {
-                        $feature["geometry"]["type"] = "LineString";
-                        $feature["geometry"]["coordinates"] = $coordinates;
+                        $firstNode = $row["nodes"][0];
+                        $lastNode = $row["nodes"][$totalNodes-1];
+                        $isRoundabout = !empty($row["tags"]["junction"]) && $row["tags"]["junction"]=="roundabout";
+                        $isForcedNotArea = !empty($row["tags"]["area"]) && $row["tags"]["area"]=="no";
+                        $isArea = $firstNode==$lastNode && !$isRoundabout && !$isForcedNotArea;
+                        if ($isArea) {
+                            $feature["geometry"]["type"] = "Polygon";
+                            $feature["geometry"]["coordinates"][] = $coordinates;
+                        } else {
+                            $feature["geometry"]["type"] = "LineString";
+                            $feature["geometry"]["coordinates"] = $coordinates;
+                        }
+                        $geojson["features"][] = $feature;
                     }
+                    // ======================================== NODES end ========================================
                 } else {
+                    // ======================================== RELATIONS start ========================================
                     //! Relations not yet supported
+                    error_log("OverpassQueryResult::getGeoJSONData: ".$row["type"]." ".$row["id"]." skipped");
                     //$feature["geometry"]["type"] = "MultiPolygon";
+                    // ======================================== NODES end ========================================
                 }
-
-                $geojson["features"][] = $feature;
             }
         }
 
