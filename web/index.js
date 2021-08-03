@@ -94,11 +94,11 @@ function updateDataSource(e) {
 map.on('load', function (e) {
     updateDataSource(e)
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
-    //map.on('idle', updateDataSource); //! Chiamato in continuazione, evitare
+    //map.on('idle', updateDataSource); //! Called continuously, avoid
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
     map.on('moveend', updateDataSource);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
-    map.on('zoomend', updateDataSource);
+    //map.on('zoomend', updateDataSource); // moveend is sufficient
 
     // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
     // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
@@ -125,6 +125,8 @@ map.on('load', function (e) {
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
         map.on( 'mouseleave', layerID, () => map.getCanvas().style.cursor = '' );
     });
+
+    map.addControl(new mapboxgl.NavigationControl());
 
     /*rotateCamera(0); // Start the animation.
 

@@ -11,3 +11,4 @@ services:
       - ./web:/var/www/html
       - ./open-etymology-map.ini:/etc/open-etymology-map.ini
       - ./open-etymology-map.log:/var/log/open-etymology-map.log
+      - ./BBoxEtymologyOverpassQuery_cache.csv:/tmp/BBoxEtymologyOverpassQuery_cache.csv

@@ -1,10 +1,11 @@
 <?php
 require_once("./OverpassQuery.php");
+require_once("./BBoxGeoJSONQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxEtymologyOverpassQuery extends OverpassQuery {
+class BBoxEtymologyOverpassQuery extends OverpassQuery implements BBoxGeoJSONQuery {
     /**
      * @var float
      */

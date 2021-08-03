@@ -24,6 +24,14 @@ class IniFileConfiguration implements Configuration {
 
 	/**
 	 * @param string $key
+	 * @return boolean
+	 */
+	public function has($key) {
+		return isset($this->config[$key]);
+	}
+
+	/**
+	 * @param string $key
 	 * @return mixed
 	 */
 	public function get($key) {

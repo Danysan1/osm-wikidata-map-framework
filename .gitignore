@@ -1,7 +1,7 @@
 open-etymology-map.ini
 open-etymology-map.log
 *-cache.csv
-*-cache.json
+*_cache.csv
 
 # Created by https://www.toptal.com/developers/gitignore/api/metals,phpunit,composer,visualstudiocode,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=metals,phpunit,composer,visualstudiocode,node

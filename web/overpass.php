@@ -13,6 +13,13 @@ if ($from == "bbox") {
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
+
+    $maxArea = (float)$conf->get("bbox-max-area");
+    if((($maxLat-$minLat) * ($maxLon-$minLon)) > $maxArea) {
+        http_response_code(400);
+        die('{"error":"The requested area is too large. Please use a smaller area."};');
+    }
+    
     //$overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon);
     $overpassQuery = new CachedBBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon, $conf);
 } elseif ($from == "center") {
