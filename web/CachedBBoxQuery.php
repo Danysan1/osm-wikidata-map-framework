@@ -73,7 +73,8 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
         $cacheFileBasePath = (string)$this->config->get("cache-file-base-path");
         $cacheTimeoutHours = (int)$this->config->get("cache-timeout-hours");
         if (empty($cacheFileBasePath) || empty($cacheTimeoutHours)) {
-            return $this->baseQuery->send($endpoint);
+            /** @var GeoJSONQueryResult $result */
+            $result = $this->baseQuery->send($endpoint);
         } else {
             $cacheFilePath = $cacheFileBasePath.($this->baseQuery::class)."_cache.csv";
             $cacheFile = @fopen($cacheFilePath, "r");
@@ -109,7 +110,9 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                                 $rowMinLon<=$this->getMinLon()
                             ) {
                             // Row bbox contains entirely the query bbox, cache hit!
-                            $result = new GeoJSONLocalQueryResult(true, json_decode((string)$row[CACHE_COLUMN_RESULT], true));
+                            /** @var array $cachedResult */
+                            $cachedResult = json_decode((string)$row[CACHE_COLUMN_RESULT], true);
+                            $result = new GeoJSONLocalQueryResult(true, $cachedResult);
                             error_log("CachedBBoxEtymologyOverpassQuery::send: cache hit for ".$this->getMinLat()."/".$this->getMinLon()."/".$this->getMaxLat()."/".$this->getMaxLon());
                         }
                     }
