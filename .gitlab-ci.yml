@@ -11,7 +11,3 @@ stages:
   - build
   - test
   - dast
-
-before_script:
-#  - cat $OPEN_ETYMOLOGY_MAP_INI > open-etymology-map.ini
-  - cp open-etymology-map.template.ini open-etymology-map.ini
