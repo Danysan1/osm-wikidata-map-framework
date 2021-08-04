@@ -11,8 +11,7 @@ interface Query {
     public function getQuery();
 
     /**
-     * @param string $endpoint
      * @return QueryResult
      */
-    public function send($endpoint);
+    public function send();
 }

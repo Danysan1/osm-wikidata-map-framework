@@ -7,8 +7,7 @@ require_once("./GeoJSONQueryResult.php");
  */
 interface GeoJSONQuery extends Query {
     /**
-     * @param string $endpoint
      * @return GeoJSONQueryResult
      */
-    public function send($endpoint);
+    public function send();
 }

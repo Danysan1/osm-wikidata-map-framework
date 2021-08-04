@@ -14,8 +14,9 @@ class CenterEtymologyOverpassQuery extends OverpassQuery {
      * @param float $lat
      * @param float $lon
      * @param float $radius
+     * @param string $endpointURL
      */
-    public function __construct($lat,$lon,$radius) {
+    public function __construct($lat,$lon,$radius,$endpointURL) {
         parent::__construct(
             "[out:json][timeout:25];
             (
@@ -25,7 +26,8 @@ class CenterEtymologyOverpassQuery extends OverpassQuery {
             );
             out body;
             >;
-            out skel qt;"
+            out skel qt;",
+            $endpointURL
         );
         $this->lat = $lat;
         $this->lon = $lon;

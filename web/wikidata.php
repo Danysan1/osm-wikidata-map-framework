@@ -11,18 +11,12 @@ if(!isset($_GET["wikidataIDs"]) || !is_array($_GET["wikidataIDs"])) {
     die(json_encode(array("error" => "No wikidataIDs array given")));
 }
 $wikidataIDs = $_GET["wikidataIDs"];
-foreach($wikidataIDs as $wdID) {
-    if(!is_string($wdID) || !preg_match("/^Q[0-9]+$/", $wdID)) {
-        http_response_code(400);
-        die(json_encode(array("error" => "All Wikidata IDs must be valid strings")));
-    }
-}
 
 $lang = (string)getFilteredParamOrDefault( "lang", FILTER_SANITIZE_STRING, $conf->get("default-language") );
 
-$wikidataQuery = new EtymologyIDListWikidataQuery($wikidataIDs, $lang);
-$endpoint = (string)$conf->get('wikidata-endpoint');
-$result = $wikidataQuery->send($endpoint);
+$wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
+$wikidataQuery = new EtymologyIDListWikidataQuery($wikidataIDs, $lang, $wikidataEndpointURL);
+$result = $wikidataQuery->send();
 if(!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Wikidata error: ".$result);

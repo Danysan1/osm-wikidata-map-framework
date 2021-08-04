@@ -1,10 +1,10 @@
 <?php
-require_once("./WikidataQuery.php");
+require_once("./POSTWikidataQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataQuery extends WikidataQuery {
+class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
     /**
      * @var array<string>
      */
@@ -18,17 +18,17 @@ class EtymologyIDListWikidataQuery extends WikidataQuery {
     /**
      * @param array $wikidataIDList
      * @param string $language
+     * @param string $endpointURL
      */
-    public function __construct($wikidataIDList, $language) {
+    public function __construct($wikidataIDList, $language, $endpointURL) {
         $this->wikidataIDList = $wikidataIDList;
         $this->language = $language;
         
         $wikidataValues = implode(' ', array_map(function($id){return "wd:$id";}, $wikidataIDList));
 
-        foreach($wikidataIDList as $wdID) {
-            if(!is_string($wdID) || !preg_match("/^Q[0-9]+$/", $wdID)) {
-                http_response_code(400);
-                die(json_encode(array("error" => "All Wikidata IDs must be valid strings")));
+        foreach($wikidataIDList as $wikidataID) {
+            if(!is_string($wikidataID) || !preg_match("/^Q[0-9]+$/", $wikidataID)) {
+                throw new Exception("Invalid Wikidata ID: $wikidataID");
             }
         }
 
@@ -103,7 +103,8 @@ class EtymologyIDListWikidataQuery extends WikidataQuery {
                     FILTER(?wikipedia_lang = '$language').
                 }
             }
-            GROUP BY ?wikidata"
+            GROUP BY ?wikidata",
+            $endpointURL
         );
     }
     

@@ -5,16 +5,17 @@ require_once("./WikidataQueryResult.php");
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class WikidataQuery extends BaseQuery {
+class POSTWikidataQuery extends BaseQuery {
     /**
-     * @param string $endpoint
      * @return WikidataQueryResult
      */
-    public function send($endpoint) {
+    public function send() {
         $ch = curl_init();
-        $url = "$endpoint?".http_build_query(["query"=>$this->getQuery()]);
+        $url = $this->getEndpointURL();
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
+            CURLOPT_POST => true,
+            CURLOPT_POSTFIELDS => http_build_query(["query"=>$this->getQuery()]),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_USERAGENT => "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36",
             CURLOPT_SSL_VERIFYHOST => 0,
@@ -28,6 +29,10 @@ class WikidataQuery extends BaseQuery {
             $result = null;
         else
             assert(is_string($result));
-        return new WikidataQueryResult($result, $curlInfo);
+        $out = new WikidataQueryResult($result, $curlInfo);
+        /*if(!$out->isSuccessful()) {
+            error_log("Unsuccessful POSTWikidataQuery - ".$out)
+        }*/
+        return $out;
     }
 }

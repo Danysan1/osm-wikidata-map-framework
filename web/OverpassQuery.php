@@ -8,12 +8,11 @@ require_once("./GeoJSONQueryResult.php");
  */
 class OverpassQuery extends BaseQuery implements GeoJSONQuery {
     /**
-     * @param string $endpoint
      * @return GeoJSONQueryResult
      */
-    public function send($endpoint) {
+    public function send() {
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $endpoint);
+        curl_setopt($ch, CURLOPT_URL, $this->getEndpointURL());
         curl_setopt($ch, CURLOPT_POST, 1);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $this->getQuery());
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);

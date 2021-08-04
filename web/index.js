@@ -39,9 +39,10 @@ function updateDataSource(e) {
                 minLon: minLon,
                 maxLat: maxLat,
                 maxLon: maxLon,
+                language: "it",
                 format: "geojson"
             }).toString(),
-        overpass_url = './overpass.php?'+queryString;
+        overpass_url = './etymologyMap.php?'+queryString;
     console.info("updateDataSource", {e, minLat, minLon, maxLat, maxLon, overpass_url, overpass_source});
 
     if(overpass_source) {

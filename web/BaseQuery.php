@@ -7,15 +7,22 @@ require_once("./QueryResult.php");
  */
 abstract class BaseQuery implements Query {
     /**
-     * @var string
+     * @var string $query
      */
     private $query;
 
     /**
-     * @param string $query
+     * @var string $endpointURL
      */
-    public function __construct($query) {
+    private $endpointURL;
+
+    /**
+     * @param string $query
+     * @param string $endpointURL
+     */
+    public function __construct($query, $endpointURL) {
         $this->query = $query;
+        $this->endpointURL = $endpointURL;
     }
     
     /**
@@ -26,8 +33,14 @@ abstract class BaseQuery implements Query {
     }
 
     /**
-     * @param string $endpoint
+     * @return string
+     */
+    public function getEndpointURL() {
+        return $this->endpointURL;
+    }
+
+    /**
      * @return QueryResult
      */
-    public abstract function send($endpoint);
+    public abstract function send();
 }

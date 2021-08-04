@@ -15,10 +15,16 @@ class CachedBBoxEtymologyOverpassQuery extends CachedBBoxQuery
      * @param float $minLon
      * @param float $maxLat
      * @param float $maxLon
-     * @param Configuration $config
+     * @param string $overpassEndpointURL
+     * @param string $cacheFileBasePath
+     * @param int $cacheTimeoutHours
      */
-    public function __construct($minLat, $minLon, $maxLat, $maxLon, $config)
+    public function __construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL, $cacheFileBasePath, $cacheTimeoutHours)
     {
-        parent::__construct(new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon), $config);
+        parent::__construct(
+            new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL),
+            $cacheFileBasePath,
+            $cacheTimeoutHours
+        );
     }
 }

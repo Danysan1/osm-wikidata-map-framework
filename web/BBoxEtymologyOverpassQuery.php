@@ -16,8 +16,9 @@ class BBoxEtymologyOverpassQuery extends OverpassQuery implements BBoxGeoJSONQue
      * @param float $minLon
      * @param float $maxLat
      * @param float $maxLon
+     * @param string $endpointURL
      */
-    public function __construct($minLat,$minLon,$maxLat,$maxLon) {
+    public function __construct($minLat,$minLon,$maxLat,$maxLon,$endpointURL) {
         parent::__construct(
             "[out:json][timeout:25];
             (
@@ -27,7 +28,8 @@ class BBoxEtymologyOverpassQuery extends OverpassQuery implements BBoxGeoJSONQue
             );
             out body;
             >;
-            out skel qt;"
+            out skel qt;",
+            $endpointURL
         );
         $this->minLat = $minLat;
         $this->minLon = $minLon;
