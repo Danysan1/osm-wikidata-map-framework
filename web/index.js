@@ -111,7 +111,7 @@ map.on('load', function (e) {
         map.on('click', layerID, function(e) {
             const popup = new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
-                .setHTML(e.features[0].properties.name);
+                .setHTML(featureToHTML(e.features[0]));
             console.info("showEtymologyPopup", {e, popup});
             popup.addTo(map);
         });
@@ -166,3 +166,11 @@ map.on('load', function (e) {
         }
     });*/
 });
+
+function featureToHTML(feature) {
+    var html = '<h2>' + feature.properties.name + '</h2>';
+    if (feature.properties["name:etymology:wikidata"]) {
+        html += '<p>' + feature.properties["name:etymology:wikidata"] + '</p>';
+    }
+    return html;
+}
