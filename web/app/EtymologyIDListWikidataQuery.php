@@ -1,5 +1,5 @@
 <?php
-require_once("./POSTWikidataQuery.php");
+require_once(__DIR__."/POSTWikidataQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

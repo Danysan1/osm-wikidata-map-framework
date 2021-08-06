@@ -1,6 +1,6 @@
 <?php
-require_once("./BaseQuery.php");
-require_once("./WikidataQueryResult.php");
+require_once(__DIR__."/BaseQuery.php");
+require_once(__DIR__."/WikidataQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

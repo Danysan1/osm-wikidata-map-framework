@@ -1,6 +1,6 @@
 <?php
-require_once("./JSONRemoteQueryResult.php");
-require_once("./GeoJSONQueryResult.php");
+require_once(__DIR__."/JSONRemoteQueryResult.php");
+require_once(__DIR__."/GeoJSONQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

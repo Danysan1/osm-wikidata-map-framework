@@ -1,5 +1,5 @@
 <?php
-require_once("./Configuration.php");
+require_once(__DIR__."/Configuration.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

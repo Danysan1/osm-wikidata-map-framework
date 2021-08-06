@@ -1,6 +1,6 @@
 <?php
-require_once("./CachedBBoxQuery.php");
-require_once("./BBoxEtymologyOverpassWikidataQuery.php");
+require_once(__DIR__."/CachedBBoxQuery.php");
+require_once(__DIR__."/BBoxEtymologyOverpassWikidataQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

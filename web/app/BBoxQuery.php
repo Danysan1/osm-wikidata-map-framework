@@ -1,5 +1,5 @@
 <?php
-require_once("./Query.php");
+require_once(__DIR__."/Query.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

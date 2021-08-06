@@ -1,6 +1,6 @@
 <?php
-require_once("./GeoJSONQuery.php");
-require_once("./GeoJSONInputEtymologyWikidataQuery.php");
+require_once(__DIR__."/GeoJSONQuery.php");
+require_once(__DIR__."/GeoJSONInputEtymologyWikidataQuery.php");
 
 class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery {
     /** @var GeoJSONInputEtymologyWikidataQuery $wikidataQuery */

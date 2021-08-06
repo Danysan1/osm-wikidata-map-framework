@@ -1,7 +1,7 @@
 <?php
-require_once("./BBoxGeoJSONQuery.php");
-require_once("./BBoxEtymologyOverpassQuery.php");
-require_once("./GeoJSONEtymologyWikidataQuery.php");
+require_once(__DIR__."/BBoxGeoJSONQuery.php");
+require_once(__DIR__."/BBoxEtymologyOverpassQuery.php");
+require_once(__DIR__."/GeoJSONEtymologyWikidataQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

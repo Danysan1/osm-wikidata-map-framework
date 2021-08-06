@@ -1,6 +1,6 @@
 <?php
-require_once("./BaseRemoteQueryResult.php");
-require_once("./XMLQueryResult.php");
+require_once(__DIR__."/BaseRemoteQueryResult.php");
+require_once(__DIR__."/XMLQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

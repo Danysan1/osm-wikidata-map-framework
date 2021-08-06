@@ -1,8 +1,7 @@
 <?php
-require_once("./IniFileConfiguration.php");
-require_once("./CenterEtymologyOverpassQuery.php");
-require_once("./CachedBBoxEtymologyOverpassQuery.php");
-require_once("./OverpassQueryResult.php");
+require_once("./app/IniFileConfiguration.php");
+require_once("./app/CenterEtymologyOverpassQuery.php");
+require_once("./app/CachedBBoxEtymologyOverpassQuery.php");
 require_once("./funcs.php");
 $conf = new IniFileConfiguration();
 prepareJSON($conf);

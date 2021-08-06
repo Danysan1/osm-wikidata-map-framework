@@ -1,6 +1,6 @@
 <?php
-require_once("./Query.php");
-require_once("./QueryResult.php");
+require_once(__DIR__."/Query.php");
+require_once(__DIR__."/QueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

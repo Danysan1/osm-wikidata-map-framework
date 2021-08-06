@@ -1,9 +1,9 @@
 <?php
-require_once("./BBoxEtymologyOverpassQuery.php");
-require_once("./GeoJSONQueryResult.php");
-require_once("./GeoJSONLocalQueryResult.php");
-require_once("./Configuration.php");
-require_once("./CachedBBoxQuery.php");
+require_once(__DIR__."/BBoxEtymologyOverpassQuery.php");
+require_once(__DIR__."/GeoJSONQueryResult.php");
+require_once(__DIR__."/GeoJSONLocalQueryResult.php");
+require_once(__DIR__."/Configuration.php");
+require_once(__DIR__."/CachedBBoxQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

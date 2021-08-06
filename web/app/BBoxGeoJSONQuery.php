@@ -1,6 +1,6 @@
 <?php
-require_once("./BBoxQuery.php");
-require_once("./GeoJSONQuery.php");
+require_once(__DIR__."/BBoxQuery.php");
+require_once(__DIR__."/GeoJSONQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

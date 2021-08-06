@@ -1,5 +1,5 @@
 <?php
-require_once("./RemoteQueryResult.php");
+require_once(__DIR__."/RemoteQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

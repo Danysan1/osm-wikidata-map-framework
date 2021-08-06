@@ -1,5 +1,5 @@
 <?php
-require_once("./OverpassQuery.php");
+require_once(__DIR__."/OverpassQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

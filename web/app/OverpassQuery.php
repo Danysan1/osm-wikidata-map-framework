@@ -1,7 +1,7 @@
 <?php
-require_once("./BaseQuery.php");
-require_once("./GeoJSONQuery.php");
-require_once("./GeoJSONQueryResult.php");
+require_once(__DIR__."/BaseQuery.php");
+require_once(__DIR__."/GeoJSONQuery.php");
+require_once(__DIR__."/GeoJSONQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

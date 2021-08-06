@@ -1,5 +1,5 @@
 <?php
-require_once("./IniFileConfiguration.php");
+require_once("./app/IniFileConfiguration.php");
 require_once("./funcs.php");
 $conf = new IniFileConfiguration();
 prepareHTML($conf);

@@ -1,8 +1,8 @@
 <?php
-require_once("./BBoxGeoJSONQuery.php");
-require_once("./GeoJSONQueryResult.php");
-require_once("./GeoJSONLocalQueryResult.php");
-require_once("./Configuration.php");
+require_once(__DIR__."/BBoxGeoJSONQuery.php");
+require_once(__DIR__."/GeoJSONQueryResult.php");
+require_once(__DIR__."/GeoJSONLocalQueryResult.php");
+require_once(__DIR__."/Configuration.php");
 
 define("CACHE_COLUMN_TIMESTAMP", 0);
 define("CACHE_COLUMN_MIN_LAT", 1);

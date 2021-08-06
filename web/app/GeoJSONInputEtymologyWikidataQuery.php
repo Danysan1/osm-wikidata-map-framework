@@ -1,6 +1,6 @@
 <?php
-require_once("./GeoJSONQuery.php");
-require_once("./EtymologyIDListWikidataQuery.php");
+require_once(__DIR__."/GeoJSONQuery.php");
+require_once(__DIR__."/EtymologyIDListWikidataQuery.php");
 
 class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery {
     /**
