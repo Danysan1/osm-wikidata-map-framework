@@ -29,6 +29,16 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                     "properties"=>$row["tags"]
                 ];
 
+                $wikidataTag = $feature["properties"]["name:etymology:wikidata"];
+                $feature["properties"]["etymologies"] = [];
+                if (preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $wikidataTag)) {
+                    foreach(explode(";", $wikidataTag) as $etymologyID) {
+                        $feature["properties"]["etymologies"][] = ["id"=>$etymologyID];
+                    }
+                } else {
+                    error_log("Feature does not contain a valid list of wikidata tags");
+                }
+
                 if($row["type"]=="node") {
                     // ======================================== NODES start ========================================
                     if(empty($row["lon"]) || empty($row["lat"])) {
@@ -68,6 +78,7 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                             $feature["geometry"]["type"] = "LineString";
                             $feature["geometry"]["coordinates"] = $coordinates;
                         }
+
                         $geojson["features"][] = $feature;
                     }
                     // ======================================== NODES end ========================================

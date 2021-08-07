@@ -1,4 +1,3 @@
-
 mapboxgl.accessToken = mapbox_gl_token;
 const map = new mapboxgl.Map({
     container: 'map',
@@ -13,7 +12,7 @@ const map = new mapboxgl.Map({
 function rotateCamera(timestamp) {
     // clamp the rotation between 0 -360 degrees
     // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
-    map.rotateTo((timestamp / 100) % 360, {duration: 0});
+    map.rotateTo((timestamp / 100) % 360, { duration: 0 });
     // Request the next frame of the animation.
     requestAnimationFrame(rotateCamera);
 }
@@ -34,18 +33,18 @@ function updateDataSource(e) {
         maxLon = northEast.lng,
         overpass_source = map.getSource("overpass_source"),
         queryString = new URLSearchParams({
-                from: "bbox",
-                minLat: minLat,
-                minLon: minLon,
-                maxLat: maxLat,
-                maxLon: maxLon,
-                language: "it",
-                format: "geojson"
-            }).toString(),
-        overpass_url = './etymologyMap.php?'+queryString;
-    console.info("updateDataSource", {e, minLat, minLon, maxLat, maxLon, overpass_url, overpass_source});
+            from: "bbox",
+            minLat: minLat,
+            minLon: minLon,
+            maxLat: maxLat,
+            maxLon: maxLon,
+            language: "it",
+            format: "geojson"
+        }).toString(),
+        overpass_url = './etymologyMap.php?' + queryString;
+    console.info("updateDataSource", { e, minLat, minLon, maxLat, maxLon, overpass_url, overpass_source });
 
-    if(overpass_source) {
+    if (overpass_source) {
         overpass_source.setData(overpass_url);
     } else {
         map.addSource('overpass_source', {
@@ -53,7 +52,7 @@ function updateDataSource(e) {
             buffer: 512,
             data: overpass_url,
         });
-            
+
         map.addLayer({
             'id': 'overpass_layer_point',
             'source': 'overpass_source',
@@ -66,7 +65,7 @@ function updateDataSource(e) {
                 'circle-stroke-color': 'white'
             }
         });
-            
+
         map.addLayer({
             'id': 'overpass_layer_lineString',
             'source': 'overpass_source',
@@ -78,7 +77,7 @@ function updateDataSource(e) {
                 'line-width': 6
             }
         });
-            
+
         map.addLayer({
             'id': 'overpass_layer_polygon',
             'source': 'overpass_source',
@@ -92,11 +91,11 @@ function updateDataSource(e) {
     }
 };
 
-map.on('load', function (e) {
+map.on('load', function(e) {
     updateDataSource(e)
-    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
-    //map.on('idle', updateDataSource); //! Called continuously, avoid
-    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
+        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
+        //map.on('idle', updateDataSource); //! Called continuously, avoid
+        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
     map.on('moveend', updateDataSource);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
     //map.on('zoomend', updateDataSource); // moveend is sufficient
@@ -112,19 +111,19 @@ map.on('load', function (e) {
             const popup = new mapboxgl.Popup()
                 .setLngLat(e.lngLat)
                 .setHTML(featureToHTML(e.features[0]));
-            console.info("showEtymologyPopup", {e, popup});
+            console.info("showEtymologyPopup", { e, popup });
             popup.addTo(map);
         });
 
         // Change the cursor to a pointer when
         // the mouse is over the states layer.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseenter
-        map.on( 'mouseenter', layerID, () => map.getCanvas().style.cursor = 'pointer' );
+        map.on('mouseenter', layerID, () => map.getCanvas().style.cursor = 'pointer');
 
         // Change the cursor back to a pointer
         // when it leaves the states layer.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
-        map.on( 'mouseleave', layerID, () => map.getCanvas().style.cursor = '' );
+        map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
     });
 
     map.addControl(new mapboxgl.NavigationControl());
@@ -168,9 +167,12 @@ map.on('load', function (e) {
 });
 
 function featureToHTML(feature) {
-    var html = '<h2>' + feature.properties.name + '</h2>';
-    if (feature.properties["name:etymology:wikidata"]) {
-        html += '<p>' + feature.properties["name:etymology:wikidata"] + '</p>';
-    }
-    return html;
+    const detail_template_source = $("#detail_template").html();
+    /*console.info("featureToHTML", {
+        detail_template_source,
+        data: feature.properties,
+        etymologies: JSON.parse(feature.properties.etymologies)
+    });*/
+    const detail_template = kendo.template(detail_template_source);
+    return detail_template(feature.properties);
 }

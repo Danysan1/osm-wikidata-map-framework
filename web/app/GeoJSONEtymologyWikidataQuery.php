@@ -31,20 +31,22 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery {
             $matrixData = $wikidataResponse->getMatrixData();
 
             for ($i=0; $i<count($geoJSONData["features"]); $i++) {
-                $wikidataID = $geoJSONData["features"][$i]["properties"]["name:etymology:wikidata"];
-                foreach ($matrixData as $row) {
-                    if ($row["wikidata"] == "http://www.wikidata.org/entity/$wikidataID") {
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:birth_date"] = $row["birth_date"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:birth_place"] = $row["birth_place"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:death_date"] = $row["death_date"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:death_place"] = $row["death_place"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:name"] = $row["name"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:description"] = $row["description"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:gender"] = $row["gender"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:occupations"] = $row["occupations"];
-                        $geoJSONData["features"][$i]["properties"]["name:etymology:pictures"] = $row["pictures"];
-                        if(empty($geoJSONData["features"][$i]["properties"]["name:etymology:wikipedia"]) && !empty($row["wikipedia"])) {
-                            $geoJSONData["features"][$i]["properties"]["name:etymology:wikipedia"] = $row["wikipedia"];
+                for($j=0; $j<count($geoJSONData["features"][$i]["properties"]["etymologies"]); $j++) {
+                    $wikidataID = $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["id"];
+                    foreach ($matrixData as $row) {
+                        if ($row["wikidata"] == "http://www.wikidata.org/entity/$wikidataID") {
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["birth_date"] = $row["birth_date"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["birth_place"] = $row["birth_place"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["death_date"] = $row["death_date"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["death_place"] = $row["death_place"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["name"] = $row["name"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["description"] = $row["description"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["gender"] = $row["gender"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["occupations"] = $row["occupations"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["pictures"] = $row["pictures"];
+                            if(empty($geoJSONData["features"][$i]["properties"]["etymologies"][$j]["wikipedia"]) && !empty($row["wikipedia"])) {
+                                $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["wikipedia"] = $row["wikipedia"];
+                            }
                         }
                     }
                 }

@@ -2,6 +2,7 @@
 require_once(__DIR__."/BaseQuery.php");
 require_once(__DIR__."/GeoJSONQuery.php");
 require_once(__DIR__."/GeoJSONQueryResult.php");
+require_once(__DIR__."/OverpassQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>

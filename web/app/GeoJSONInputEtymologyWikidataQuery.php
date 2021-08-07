@@ -23,14 +23,9 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery {
 
         $etymologyIDs = [];
         foreach($geoJSONData["features"] as $feature) {
-            $wikidataTag = $feature["properties"]["name:etymology:wikidata"];
-            if (!preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $wikidataTag)) {
-                throw new Exception("Feature does not contain a valid list of wikidata tags");
+            foreach($feature["properties"]["etymologies"] as $etymology) {
+                $etymologyIDs[] = $etymology["id"];
             }
-            foreach(explode(";", $wikidataTag) as $etymologyID) {
-                $etymologyIDs[] = $etymologyID;
-            }
-
         }
 
         parent::__construct($etymologyIDs, $language, $endpointURL);
