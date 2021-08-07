@@ -26,10 +26,6 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
      * @param string $language
      */
     public function __construct($minLat,$minLon,$maxLat,$maxLon,$overpassEndpointURL,$wikidataEndpointURL,$language) {
-        if(!preg_match('/^[a-z]{2}$/', $language)) {
-            throw new Exception("Language must be two letters");
-        }
-
         //$this->overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL);
         parent::__construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL);
 

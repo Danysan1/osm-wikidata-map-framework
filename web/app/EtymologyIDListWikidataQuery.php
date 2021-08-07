@@ -33,8 +33,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
         }
 
         if(!preg_match("/^[a-z]{2}$/", $language)) {
-            http_response_code(400);
-            die(json_encode(array("error" => "Invalid language code")));
+            throw new Exception("Invalid language code, it must be two letters");
         }
 
         parent::__construct(

@@ -31,14 +31,15 @@ function updateDataSource(e) {
         northEast = bounds.getNorthEast(),
         maxLat = northEast.lat,
         maxLon = northEast.lng,
+        language = $("#culture").val(),
         overpass_source = map.getSource("overpass_source"),
         queryString = new URLSearchParams({
             from: "bbox",
-            minLat: minLat,
-            minLon: minLon,
-            maxLat: maxLat,
-            maxLon: maxLon,
-            language: "it",
+            minLat,
+            minLon,
+            maxLat,
+            maxLon,
+            language,
             format: "geojson"
         }).toString(),
         overpass_url = './etymologyMap.php?' + queryString;
@@ -108,10 +109,10 @@ map.on('load', function(e) {
         // HTML from the click event's properties.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
         map.on('click', layerID, function(e) {
-            const popup = new mapboxgl.Popup()
+            const popup = new mapboxgl.Popup({ maxWidth: "none" })
                 .setLngLat(e.lngLat)
                 .setHTML(featureToHTML(e.features[0]));
-            console.info("showEtymologyPopup", { e, popup });
+            //console.info("showEtymologyPopup", { e, popup });
             popup.addTo(map);
         });
 
@@ -165,6 +166,15 @@ map.on('load', function(e) {
         }
     });*/
 });
+
+
+$(document).ready(setCulture);
+
+function setCulture() {
+    const culture = $("#culture").val();
+    console.info("culture", culture);
+    kendo.culture(culture);
+}
 
 function featureToHTML(feature) {
     const detail_template_source = $("#detail_template").html();

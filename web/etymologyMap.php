@@ -11,6 +11,15 @@ $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 $cacheTimeoutHours = (int)$conf->get("cache-timeout-hours");
+
+// "en-US" => "en"
+$langMatches = [];
+if(!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty($langMatches[1])) {
+    throw new Exception("Invalid language code");
+}
+$safeLanguage = $langMatches[1];
+//error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
+
 if ($from == "bbox") {
     $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
@@ -31,7 +40,7 @@ if ($from == "bbox") {
         $maxLon,
         $overpassEndpointURL,
         $wikidataEndpointURL,
-        $language,
+        $safeLanguage,
         $cacheFileBasePath.$language."_",
         $cacheTimeoutHours
     );
