@@ -9,6 +9,20 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
      * @return array
      */
     public function getMatrixData() {
+        $xmlFields = [
+            "wikidata"=>"uri",
+            "wikipedia"=>"uri",
+            "name"=>"literal",
+            "description"=>"literal",
+            "gender"=>"literal",
+            "occupations"=>"literal",
+            "pictures"=>"literal",
+            "birth_date"=>"literal",
+            "death_date"=>"literal",
+            "birth_place"=>"literal",
+            "death_place"=>"literal",
+            "nobel_prize"=>"literal",
+        ];
         $in = $this->getSimpleXMLElement();
         $out = [];
         
@@ -18,20 +32,9 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
         foreach ($elements as $element) {
             $element->registerXPathNamespace("wd", "http://www.w3.org/2005/sparql-results#");
             //error_log($element->saveXML());
-            $outRow = [
-                "wikidata"=>$element->xpath("./wd:binding[@name='wikidata']/wd:uri/text()"),
-                "name"=>$element->xpath("./wd:binding[@name='name']/wd:literal/text()"),
-                "description"=>$element->xpath("./wd:binding[@name='description']/wd:literal/text()"),
-                "gender"=>$element->xpath("./wd:binding[@name='gender']/wd:literal/text()"),
-                "wikipedia"=>$element->xpath("./wd:binding[@name='wikipedia']/wd:uri/text()"),
-                "occupations"=>$element->xpath("./wd:binding[@name='occupations']/wd:literal/text()"),
-                "pictures"=>$element->xpath("./wd:binding[@name='pictures']/wd:literal/text()"),
-                "birth_date"=>$element->xpath("./wd:binding[@name='birth_date']/wd:literal/text()"),
-                "death_date"=>$element->xpath("./wd:binding[@name='death_date']/wd:literal/text()"),
-                "birth_place"=>$element->xpath("./wd:binding[@name='birth_place']/wd:literal/text()"),
-                "death_place"=>$element->xpath("./wd:binding[@name='death_place']/wd:literal/text()")
-            ];
-            foreach ($outRow as $key=>$value) {
+            $outRow = [];
+            foreach($xmlFields as $key=>$type) {
+                $value = $element->xpath("./wd:binding[@name='$key']/wd:$type/text()");
                 if(empty($value)) {
                     $outRow[$key] = null;
                 } else {

@@ -61,7 +61,7 @@ if(isset($lang[0])) {
                         # if (ety.description) { # <h3>#:ety.description#</h3> # } #
                     </div>
                     <div class="info column">
-                        <a href="http://www.wikidata.org/entity/#:ety.id#" class="k-button" target="_blank"><img src="img/wikidata.png" alt="Wikidata logo"> Wikidata</a>
+                        <a href="#:ety.wikidata#" class="k-button" target="_blank"><img src="img/wikidata.png" alt="Wikidata logo"> Wikidata</a>
                         # if (ety.wikipedia) { #
                         <a href="#:ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
                         # }
@@ -70,6 +70,7 @@ if(isset($lang[0])) {
                         # } #
                         # if(ety.gender) { # <p>#:ety.gender#</p> # } #
                         # if(ety.occupations) { # <p>#:ety.occupations#</p> # } #
+                        # if(ety.nobel_prize) { # <p>#:ety.nobel_prize#</p> # } #
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">

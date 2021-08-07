@@ -38,7 +38,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
 
         parent::__construct(
             "SELECT ?wikidata
-                (SAMPLE(?name) AS ?name)
+                (COALESCE(SAMPLE(?name),SAMPLE(?all_names)) AS ?name)
                 (SAMPLE(?description) AS ?description)
                 (SAMPLE(?gender_name) AS ?gender)
                 (SAMPLE(?wikipedia) AS ?wikipedia)
@@ -48,11 +48,16 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 (SAMPLE(?death_date) AS ?death_date)
                 (SAMPLE(?birth_place_name) AS ?birth_place)
                 (SAMPLE(?death_place_name) AS ?death_place)
+                (SAMPLE(?nobel_prize) AS ?nobel_prize)
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
-                ?wikidata rdfs:label ?name.
-                FILTER(lang(?name)='$language').
+                OPTIONAL {
+                    ?wikidata rdfs:label ?name.
+                    FILTER(lang(?name)='$language').
+                }
+
+                ?wikidata rdfs:label ?all_names.
 
                 OPTIONAL {
                     ?wikidata schema:description ?description.
@@ -111,6 +116,13 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                         schema:inLanguage ?wikipedia_lang;
                         schema:isPartOf [ wikibase:wikiGroup 'wikipedia' ].
                     FILTER(?wikipedia_lang = '$language').
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P166 ?prize. # awarded prize
+                    ?prize wdt:P361 wd:Q7191. # nobel prize
+                    ?prize rdfs:label ?nobel_prize.
+                    FILTER(lang(?nobel_prize)='it').
                 }
             }
             GROUP BY ?wikidata",
