@@ -75,7 +75,7 @@ function updateDataSource(e) {
             'paint': {
                 'line-color': '#0080ff',
                 'line-opacity': 0.5,
-                'line-width': 6
+                'line-width': 7
             }
         });
 
@@ -184,5 +184,5 @@ function featureToHTML(feature) {
         etymologies: JSON.parse(feature.properties.etymologies)
     });*/
     const detail_template = kendo.template(detail_template_source);
-    return detail_template(feature.properties);
+    return detail_template(feature);
 }

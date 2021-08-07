@@ -41,7 +41,7 @@ if ($from == "bbox") {
         $overpassEndpointURL,
         $wikidataEndpointURL,
         $safeLanguage,
-        $cacheFileBasePath.$language."_",
+        $cacheFileBasePath.$safeLanguage."_",
         $cacheTimeoutHours
     );
 } else {

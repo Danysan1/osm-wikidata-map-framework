@@ -40,7 +40,7 @@ function prepareHTML(Configuration $conf) {
 			"default-src 'self'; ".
 			"worker-src blob: ; ".
 			"child-src blob: ; ".
-			"img-src 'self' data: blob: https://kendo.cdn.telerik.com https://commons.wikimedia.org https://upload.wikimedia.org; ".
+			"img-src 'self' data: blob: https://kendo.cdn.telerik.com https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org; ".
 			"font-src 'self' 'unsafe-eval' https://fonts.gstatic.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
 			"style-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com https://kendo.cdn.telerik.com https://api.mapbox.com; ".
 			"script-src 'self' 'unsafe-eval' https://browser.sentry-cdn.com https://kendo.cdn.telerik.com https://cdnjs.cloudflare.com https://api.mapbox.com; ".

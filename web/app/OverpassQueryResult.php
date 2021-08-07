@@ -25,7 +25,7 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                 $feature = [
                     "type"=>"Feature",
                     "geometry"=>[],
-                    "id"=>$row["id"],
+                    "id"=>$row["type"]."/".$row["id"],
                     "properties"=>$row["tags"]
                 ];
 

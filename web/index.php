@@ -51,27 +51,30 @@ if(isset($lang[0])) {
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">
-            <h4>#=name#</h4>
+            <h4>#:properties.name#</h4>
+            <a href="https://www.openstreetmap.org/#:id#" class="k-button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <div class="etymologies">
-                # JSON.parse(etymologies).forEach(function (ety) { #
+                # JSON.parse(properties.etymologies).forEach(function (ety) { #
                 <div class="etymology column">
                     <div class="header column">
-                        <h2>#=ety.name#</h2>
-                        # if (ety.description) { #<h3>#=ety.description#</h3># } #
+                        <h2>#:ety.name#</h2>
+                        # if (ety.description) { # <h3>#:ety.description#</h3> # } #
                     </div>
                     <div class="info column">
-                        <a href="http://www.wikidata.org/entity/#=ety.id#" class="k-button" target="_blank"><img src="img/wikidata.png" alt="Wikidata logo"> Wikidata</a>
+                        <a href="http://www.wikidata.org/entity/#:ety.id#" class="k-button" target="_blank"><img src="img/wikidata.png" alt="Wikidata logo"> Wikidata</a>
                         # if (ety.wikipedia) { #
-                        <a href="#=ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
+                        <a href="#:ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
                         # }
                         if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #
-                        <p>#=ety.birth_date?kendo.toString(new Date(ety.birth_date),"d"):"?"# (#=ety.birth_place?ety.birth_place:"?"#) - #=ety.death_date?kendo.toString(new Date(ety.death_date),"d"):"?"# (#=ety.death_place?ety.death_place:"?"#)</p>
+                        <p>#:ety.birth_date?kendo.toString(new Date(ety.birth_date),"d"):"?"# (#:ety.birth_place?ety.birth_place:"?"#) - #:ety.death_date?kendo.toString(new Date(ety.death_date),"d"):"?"# (#:ety.death_place?ety.death_place:"?"#)</p>
                         # } #
+                        # if(ety.gender) { # <p>#:ety.gender#</p> # } #
+                        # if(ety.occupations) { # <p>#:ety.occupations#</p> # } #
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">
                     # ety.pictures.forEach(function (img) { #
-                        <a href="#=img#"><img src="#=img#" alt="Etymology picture" /></a>
+                        <a href="#=img#" target="_blank"><img src="#=img#" alt="Etymology picture" /></a>
                     # }); #
                     </div>
                     # } #
