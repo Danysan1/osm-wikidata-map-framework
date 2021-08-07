@@ -109,6 +109,7 @@ map.on('load', function(e) {
         // HTML from the click event's properties.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
         map.on('click', layerID, function(e) {
+            // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
             const popup = new mapboxgl.Popup({ maxWidth: "none" })
                 .setLngLat(e.lngLat)
                 .setHTML(featureToHTML(e.features[0]));
@@ -127,7 +128,33 @@ map.on('load', function(e) {
         map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
     });
 
-    map.addControl(new mapboxgl.NavigationControl());
+    // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
+    map.addControl(
+        new mapboxgl.NavigationControl({
+            visualizePitch: true
+        })
+    );
+
+    // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
+    // Add geolocate control to the map.
+    map.addControl(
+        new mapboxgl.GeolocateControl({
+            positionOptions: {
+                enableHighAccuracy: true
+            },
+            // When active the map will receive updates to the device's location as it changes.
+            trackUserLocation: false,
+            // Draw an arrow next to the location dot to indicate which direction the device is heading.
+            showUserHeading: true
+        })
+    );
+
+    // https://docs.mapbox.com/mapbox-gl-js/api/markers/#scalecontrol
+    const scale = new mapboxgl.ScaleControl({
+        maxWidth: 80,
+        unit: 'metric'
+    });
+    map.addControl(scale);
 
     /*rotateCamera(0); // Start the animation.
 
@@ -178,11 +205,11 @@ function setCulture() {
 
 function featureToHTML(feature) {
     const detail_template_source = $("#detail_template").html();
-    /*console.info("featureToHTML", {
+    console.info("featureToHTML", {
         detail_template_source,
-        data: feature.properties,
+        feature,
         etymologies: JSON.parse(feature.properties.etymologies)
-    });*/
+    });
     const detail_template = kendo.template(detail_template_source);
     return detail_template(feature);
 }

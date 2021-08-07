@@ -52,7 +52,7 @@ if(isset($lang[0])) {
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">
             <h4>#:properties.name#</h4>
-            <a href="https://www.openstreetmap.org/#:id#" class="k-button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
+            <a href="https://www.openstreetmap.org/#:properties["@id"]#" class="k-button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <div class="etymologies">
                 # JSON.parse(properties.etymologies).forEach(function (ety) { #
                 <div class="etymology column">

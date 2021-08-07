@@ -23,11 +23,11 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
         foreach ($data["elements"] as $row) {
             if(!empty($row["tags"]) && !empty($row["tags"]["name:etymology:wikidata"])) {
                 $feature = [
-                    "type"=>"Feature",
-                    "geometry"=>[],
-                    "id"=>$row["type"]."/".$row["id"],
-                    "properties"=>$row["tags"]
+                    "type" => "Feature",
+                    "geometry" => [],
+                    "properties" => $row["tags"]
                 ];
+                $feature["properties"]["@id"] = $row["type"]."/".$row["id"];
 
                 $wikidataTag = $feature["properties"]["name:etymology:wikidata"];
                 $feature["properties"]["etymologies"] = [];
