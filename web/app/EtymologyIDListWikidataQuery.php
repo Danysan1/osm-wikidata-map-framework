@@ -72,8 +72,24 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                         ?occupation wdt:P2521 ?occupation_name. # female form of occupation label
                     } UNION {
                         ?wikidata wdt:P21 ?gender.
+                        FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
+                        MINUS {
+                            ?occupation wdt:P2521 ?occupation_name.
+                            FILTER(lang(?occupation_name)='$language').
+                        }. # female form of occupation is NOT available in this language
+                        ?occupation rdfs:label ?occupation_name. # base occupation label
+                    } UNION {
+                        ?wikidata wdt:P21 ?gender.
                         FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
                         ?occupation wdt:P3321 ?occupation_name. # male form of occupation label
+                    } UNION {
+                        ?wikidata wdt:P21 ?gender.
+                        FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
+                        MINUS {
+                            ?occupation wdt:P3321 ?occupation_name.
+                            FILTER(lang(?occupation_name)='$language').
+                        }. # male form of occupation is NOT available in this language
+                        ?occupation rdfs:label ?occupation_name. # male form of occupation label
                     } UNION {
                         ?occupation rdfs:label ?occupation_name. # base occupation label
                         MINUS { ?wikidata wdt:P21 []. } . # no gender specified

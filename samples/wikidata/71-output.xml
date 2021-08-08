@@ -1,0 +1,255 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='wikidata'/>
+		<variable name='name'/>
+		<variable name='description'/>
+		<variable name='gender'/>
+		<variable name='wikipedia'/>
+		<variable name='occupations'/>
+		<variable name='pictures'/>
+		<variable name='birth_date'/>
+		<variable name='death_date'/>
+		<variable name='birth_place'/>
+		<variable name='death_place'/>
+		<variable name='nobel_prize'/>
+	</head>
+	<results>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q1345358</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Giovanni Amendola</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='en'>Italian journalist and politician (1882-1926)</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>male</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://en.wikipedia.org/wiki/Giovanni_Amendola</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Giovanni%20Amendola%201923.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1882-04-15T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1926-04-07T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='en'>Naples</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='en'>Cannes</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q166092</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Camillo Benso di Cavour</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='en'>first Prime Minister of the Kingdom of Italy (1810-1861)</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>male</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://en.wikipedia.org/wiki/Camillo_Benso,_Count_of_Cavour</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal>diplomat, businessman</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1810-08-10T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1861-06-06T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='en'>Turin</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='en'>Turin</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q185007</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Rita Levi-Montalcini</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='en'>Italian neurologist</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>female</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://en.wikipedia.org/wiki/Rita_Levi-Montalcini</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Rita%20Levi%20Montalcini.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1909-04-22T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2012-12-30T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='en'>Turin</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='en'>Rome</literal>
+			</binding>
+			<binding name='nobel_prize'>
+				<literal xml:lang='en'>Nobel Prize in Physiology or Medicine</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3840201</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Luigi Tinti</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>male</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1920-06-21T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1954-10-01T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='en'>Imola</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='en'>Imola</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q64707121</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Pier Grisologo Basetti</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='en'>Roman Catholic bishop</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>male</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>Catholic priest</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1790-12-02T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1857-06-16T00:00:00Z</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q1067</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Dante Alighieri</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='en'>Florentine poet, writer and philosopher (c. 1265–1321)</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>male</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://en.wikipedia.org/wiki/Dante_Alighieri</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20de%20Dante.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1265-01-01T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1321-09-22T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='en'>Florence</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='en'>Ravenna</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q36488</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='en'>Italian inventor and radio pioneer (1874-1937)</literal>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='en'>male</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://en.wikipedia.org/wiki/Guglielmo_Marconi</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal>businessman, engineer</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Guglielmo%20Marconi%20%281874-1937%29%2C%20Engineer%20and%20Physicist%20%282551824648%29.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Guglielmo%20Marconi.jpg</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1874-04-25T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1937-07-20T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='en'>Bologna</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='en'>Rome</literal>
+			</binding>
+			<binding name='nobel_prize'>
+				<literal xml:lang='en'>Nobel Prize in Physics</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>
