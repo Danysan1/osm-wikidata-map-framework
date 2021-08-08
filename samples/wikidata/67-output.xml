@@ -20,19 +20,19 @@
 				<uri>http://www.wikidata.org/entity/Q1345358</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Giovanni Amendola</literal>
+				<literal xml:lang='es'>Giovanni Amendola</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>politico e giornalista italiano</literal>
+				<literal xml:lang='es'>periodista y político italiano</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>maschio</literal>
+				<literal xml:lang='es'>masculino</literal>
 			</binding>
 			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Giovanni_Amendola</uri>
+				<uri>https://es.wikipedia.org/wiki/Giovanni_Amendola</uri>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo politico, politico</literal>
+				<literal></literal>
 			</binding>
 			<binding name='pictures'>
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Giovanni%20Amendola%201923.jpg</literal>
@@ -44,10 +44,10 @@
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1926-04-07T00:00:00Z</literal>
 			</binding>
 			<binding name='birth_place'>
-				<literal xml:lang='it'>Napoli</literal>
+				<literal xml:lang='es'>Nápoles</literal>
 			</binding>
 			<binding name='death_place'>
-				<literal xml:lang='it'>Cannes</literal>
+				<literal xml:lang='es'>Cannes</literal>
 			</binding>
 		</result>
 		<result>
@@ -55,19 +55,19 @@
 				<uri>http://www.wikidata.org/entity/Q166092</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
+				<literal xml:lang='es'>Camillo Benso</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>politico, patriota e imprenditore italiano</literal>
+				<literal xml:lang='es'>político italiano</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>maschio</literal>
+				<literal xml:lang='es'>masculino</literal>
 			</binding>
 			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour</uri>
+				<uri>https://es.wikipedia.org/wiki/Camillo_Benso,_conde_de_Cavour</uri>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo politico, politico</literal>
+				<literal></literal>
 			</binding>
 			<binding name='pictures'>
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
@@ -79,10 +79,10 @@
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1861-06-06T00:00:00Z</literal>
 			</binding>
 			<binding name='birth_place'>
-				<literal xml:lang='it'>Torino</literal>
+				<literal xml:lang='es'>Turín</literal>
 			</binding>
 			<binding name='death_place'>
-				<literal xml:lang='it'>Torino</literal>
+				<literal xml:lang='es'>Turín</literal>
 			</binding>
 		</result>
 		<result>
@@ -90,19 +90,19 @@
 				<uri>http://www.wikidata.org/entity/Q185007</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Rita Levi-Montalcini</literal>
+				<literal xml:lang='es'>Rita Levi-Montalcini</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>neurologa e accademica italiana</literal>
+				<literal xml:lang='es'>Neuróloga italiana</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>femmina</literal>
+				<literal xml:lang='es'>femenino</literal>
 			</binding>
 			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Rita_Levi-Montalcini</uri>
+				<uri>https://es.wikipedia.org/wiki/Rita_Levi-Montalcini</uri>
 			</binding>
 			<binding name='occupations'>
-				<literal>donna politica, politica, medica, scienziata, neuroscienziata, biochimica, neurologa</literal>
+				<literal>neuróloga, política, médica, científica, neurocientífica, bioquímica</literal>
 			</binding>
 			<binding name='pictures'>
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Rita%20Levi%20Montalcini.jpg</literal>
@@ -114,13 +114,13 @@
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2012-12-30T00:00:00Z</literal>
 			</binding>
 			<binding name='birth_place'>
-				<literal xml:lang='it'>Torino</literal>
+				<literal xml:lang='es'>Turín</literal>
 			</binding>
 			<binding name='death_place'>
-				<literal xml:lang='it'>Roma</literal>
+				<literal xml:lang='es'>Roma</literal>
 			</binding>
 			<binding name='nobel_prize'>
-				<literal xml:lang='it'>premio Nobel per la medicina</literal>
+				<literal xml:lang='es'>Premio Nobel en Fisiología o Medicina</literal>
 			</binding>
 		</result>
 		<result>
@@ -128,16 +128,13 @@
 				<uri>http://www.wikidata.org/entity/Q3840201</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Luigi Tinti</literal>
+				<literal xml:lang='es'>Luigi Tinti</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>partigiano italiano</literal>
+				<literal xml:lang='es'>partisano italiano</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>maschio</literal>
-			</binding>
-			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Luigi_Tinti</uri>
+				<literal xml:lang='es'>masculino</literal>
 			</binding>
 			<binding name='occupations'>
 				<literal></literal>
@@ -152,10 +149,10 @@
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1954-10-01T00:00:00Z</literal>
 			</binding>
 			<binding name='birth_place'>
-				<literal xml:lang='it'>Imola</literal>
+				<literal xml:lang='es'>Imola</literal>
 			</binding>
 			<binding name='death_place'>
-				<literal xml:lang='it'>Imola</literal>
+				<literal xml:lang='es'>Imola</literal>
 			</binding>
 		</result>
 		<result>
@@ -163,16 +160,16 @@
 				<uri>http://www.wikidata.org/entity/Q64707121</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Pier Grisologo Basetti</literal>
+				<literal xml:lang='ast'>Pier Grisologo Basetti</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>Vescovo Cattolico</literal>
+				<literal xml:lang='es'>obispo católico</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>maschio</literal>
+				<literal xml:lang='es'>masculino</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal></literal>
+				<literal>presbítero católico, sacerdote católico, presbítero</literal>
 			</binding>
 			<binding name='pictures'>
 				<literal></literal>
@@ -189,19 +186,19 @@
 				<uri>http://www.wikidata.org/entity/Q1067</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Dante Alighieri</literal>
+				<literal xml:lang='es'>Dante Alighieri</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>poeta, scrittore e politico italiano, considerato il padre della lingua italiana (1265-1321)</literal>
+				<literal xml:lang='es'>poeta italiano</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>maschio</literal>
+				<literal xml:lang='es'>masculino</literal>
 			</binding>
 			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Dante_Alighieri</uri>
+				<uri>https://es.wikipedia.org/wiki/Dante_Alighieri</uri>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo politico, politico, autore di testi</literal>
+				<literal>escritor</literal>
 			</binding>
 			<binding name='pictures'>
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20de%20Dante.jpg</literal>
@@ -213,10 +210,10 @@
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1321-09-22T00:00:00Z</literal>
 			</binding>
 			<binding name='birth_place'>
-				<literal xml:lang='it'>Firenze</literal>
+				<literal xml:lang='es'>Florencia</literal>
 			</binding>
 			<binding name='death_place'>
-				<literal xml:lang='it'>Ravenna</literal>
+				<literal xml:lang='es'>Rávena</literal>
 			</binding>
 		</result>
 		<result>
@@ -224,22 +221,22 @@
 				<uri>http://www.wikidata.org/entity/Q36488</uri>
 			</binding>
 			<binding name='name'>
-				<literal xml:lang='it'>Guglielmo Marconi</literal>
+				<literal xml:lang='es'>Guillermo Marconi</literal>
 			</binding>
 			<binding name='description'>
-				<literal xml:lang='it'>fisico e inventore italiano</literal>
+				<literal xml:lang='es'>Inventor de la radio y ganador del premio Nobel (1874-1937)</literal>
 			</binding>
 			<binding name='gender'>
-				<literal xml:lang='it'>maschio</literal>
+				<literal xml:lang='es'>masculino</literal>
 			</binding>
 			<binding name='wikipedia'>
-				<uri>https://it.wikipedia.org/wiki/Guglielmo_Marconi</uri>
+				<uri>https://es.wikipedia.org/wiki/Guillermo_Marconi</uri>
 			</binding>
 			<binding name='occupations'>
-				<literal>politico, uomo politico</literal>
+				<literal>ingeniero</literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Guglielmo%20Marconi.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Guglielmo%20Marconi%20%281874-1937%29%2C%20Engineer%20and%20Physicist%20%282551824648%29.jpg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Guglielmo%20Marconi%20%281874-1937%29%2C%20Engineer%20and%20Physicist%20%282551824648%29.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Guglielmo%20Marconi.jpg</literal>
 			</binding>
 			<binding name='birth_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1874-04-25T00:00:00Z</literal>
@@ -248,13 +245,13 @@
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1937-07-20T00:00:00Z</literal>
 			</binding>
 			<binding name='birth_place'>
-				<literal xml:lang='it'>Bologna</literal>
+				<literal xml:lang='es'>Bolonia</literal>
 			</binding>
 			<binding name='death_place'>
-				<literal xml:lang='it'>Roma</literal>
+				<literal xml:lang='es'>Roma</literal>
 			</binding>
 			<binding name='nobel_prize'>
-				<literal xml:lang='it'>premio Nobel per la fisica</literal>
+				<literal xml:lang='es'>Premio Nobel de Física</literal>
 			</binding>
 		</result>
 	</results>
