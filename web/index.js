@@ -5,7 +5,7 @@ var defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
     ];
 
 /**
- * 
+ * Let the user choose the map style.
  * 
  * Control implemented as ES6 class
  * https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
@@ -18,22 +18,33 @@ class BackgroundStyleControl {
         this._container = document.createElement('div');
         this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
 
+        const table = document.createElement('table');
+        this._container.appendChild(table);
+
+        const tr = document.createElement('tr');
+        table.appendChild(tr);
+
+        const td1 = document.createElement('td'),
+            td2 = document.createElement('td');
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'background-style-ctrl-button';
         ctrlBtn.title = 'Choose background style';
         // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
         ctrlBtn.onclick = this.btnClickHandler.bind(this);
-        this._container.appendChild(ctrlBtn);
+        td2.appendChild(ctrlBtn);
 
         const ctrlSpan = document.createElement('span')
         ctrlSpan.className = 'k-icon k-i-globe';
         ctrlBtn.appendChild(ctrlSpan);
 
         this._ctrlDropDown = document.createElement('select');
-        this._ctrlDropDown.style = 'display:hidden';
+        this._ctrlDropDown.className = 'hiddenDropDown';
         this._ctrlDropDown.title = 'Background style';
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
-        this._container.appendChild(this._ctrlDropDown);
+        td1.appendChild(this._ctrlDropDown);
 
         for (const [text, value] of backgroundStyles) {
             const option = document.createElement('option');
@@ -55,13 +66,13 @@ class BackgroundStyleControl {
 
     btnClickHandler(event) {
         console.info("BackgroundStyleControl button click", event);
-        this._ctrlDropDown.style = 'display:inline';
+        this._ctrlDropDown.className = 'visibleDropDown';
     }
 
     dropDownClickHandler(event) {
         console.info("BackgroundStyleControl dropDown click", event);
         this._map.setStyle(event.target.value);
-        this._ctrlDropDown.style = 'display:hidden';
+        this._ctrlDropDown.className = 'hiddenDropDown';
     }
 
 }
@@ -271,7 +282,7 @@ map.on('load', function(e) {
     });
     map.addControl(scale);
 
-    //map.addControl(new BackgroundStyleControl());
+    map.addControl(new BackgroundStyleControl());
 
     //map.addControl(new EtymologyColorControl());
 
