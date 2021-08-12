@@ -1,7 +1,109 @@
+var defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
+    backgroundStyles = [
+        ['Mapbox Streets', 'mapbox://styles/mapbox/streets-v11'],
+        ['Mapbox Light', 'mapbox://styles/mapbox/light-v10']
+    ];
+
+/**
+ * 
+ * 
+ * Control implemented as ES6 class
+ * https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ **/
+class BackgroundStyleControl {
+
+    onAdd(map) {
+        this._map = map;
+
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+
+        const ctrlBtn = document.createElement('button');
+        ctrlBtn.className = 'background-style-ctrl-button';
+        ctrlBtn.title = 'Choose background style';
+        // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
+        ctrlBtn.onclick = this.btnClickHandler.bind(this);
+        this._container.appendChild(ctrlBtn);
+
+        const ctrlSpan = document.createElement('span')
+        ctrlSpan.className = 'k-icon k-i-globe';
+        ctrlBtn.appendChild(ctrlSpan);
+
+        this._ctrlDropDown = document.createElement('select');
+        this._ctrlDropDown.style = 'display:hidden';
+        this._ctrlDropDown.title = 'Background style';
+        this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
+        this._container.appendChild(this._ctrlDropDown);
+
+        for (const [text, value] of backgroundStyles) {
+            const option = document.createElement('option');
+            option.innerText = text;
+            option.value = value;
+            if (value === defaultBackgroundStyle) {
+                option.selected = true;
+            }
+            this._ctrlDropDown.appendChild(option);
+        }
+
+        return this._container;
+    }
+
+    onRemove() {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
+    }
+
+    btnClickHandler(event) {
+        console.info("BackgroundStyleControl button click", event);
+        this._ctrlDropDown.style = 'display:inline';
+    }
+
+    dropDownClickHandler(event) {
+        console.info("BackgroundStyleControl dropDown click", event);
+        this._map.setStyle(event.target.value);
+        this._ctrlDropDown.style = 'display:hidden';
+    }
+
+}
+
+/**
+ * 
+ * 
+ * Control implemented as ES6 class
+ * https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ **/
+/*class EtymologyColorControl {
+    btnClickHandler(x) {
+        console.info("EtymologyColorControl click", x);
+    }
+
+    onAdd(map) {
+        this._map = map;
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+
+        //this._container.textContent = 'Hello, world';
+        const ctrlBtn = document.createElement('button'),
+            ctrlSpan = document.createElement('span');
+        ctrlBtn.className = 'etymology-color-ctrl-button';
+        ctrlSpan.className = 'k-icon k-i-palette';
+        ctrlBtn.onclick = this.btnClickHandler;
+        ctrlBtn.appendChild(ctrlSpan);
+        this._container.appendChild(ctrlBtn);
+
+        return this._container;
+    }
+
+    onRemove() {
+        this._container.parentNode.removeChild(this._container);
+        this._map = undefined;
+    }
+}*/
+
 mapboxgl.accessToken = mapbox_gl_token;
 const map = new mapboxgl.Map({
     container: 'map',
-    style: 'mapbox://styles/mapbox/streets-v11', // stylesheet location
+    style: defaultBackgroundStyle, // stylesheet location
     center: [default_center_lon, default_center_lat], // starting position [lon, lat]
     zoom: default_zoom, // starting zoom
     /*pitch: 45, // starting pitch
@@ -45,6 +147,7 @@ function updateDataSource(e) {
         overpass_url = './etymologyMap.php?' + queryString;
     console.info("updateDataSource", { e, minLat, minLon, maxLat, maxLon, overpass_url, overpass_source });
 
+    //kendo.ui.progress($("#map"), true);
     if (overpass_source) {
         overpass_source.setData(overpass_url);
     } else {
@@ -53,6 +156,18 @@ function updateDataSource(e) {
             buffer: 512,
             data: overpass_url,
         });
+
+        // Set an event listener that fires
+        // when one of the map's sources loads or changes.
+        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
+        // https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
+        /*map.on('sourcedata', function(e) {
+            if (e.sourceId == "overpass_source" && e.dataType == "source") {
+                //console.log('overpass_source sourcedata event', e.isSourceLoaded, e);
+                if (e.isSourceLoaded)
+                    kendo.ui.progress($("#map"), false);
+            }
+        });*/
 
         map.addLayer({
             'id': 'overpass_layer_point',
@@ -155,6 +270,10 @@ map.on('load', function(e) {
         unit: 'metric'
     });
     map.addControl(scale);
+
+    //map.addControl(new BackgroundStyleControl());
+
+    //map.addControl(new EtymologyColorControl());
 
     /*rotateCamera(0); // Start the animation.
 

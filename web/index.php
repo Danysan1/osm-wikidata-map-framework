@@ -5,12 +5,12 @@ $conf = new IniFileConfiguration();
 prepareHTML($conf);
 
 $lang = [];
-preg_match("/([a-z]{2}-[A-Z]{2})/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang);
+preg_match("/([a-z]{2}-[A-Z]{2})/", (string)$_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang);
 //error_log($_SERVER['HTTP_ACCEPT_LANGUAGE']." => ".json_encode($lang));
 if(isset($lang[0])) {
     $defaultCulture = $lang[0];
 } elseif($conf->has('default-language')) {
-    $defaultCulture = $conf->get('default-language');
+    $defaultCulture = (string)$conf->get('default-language');
 } else {
     $defaultCulture = "en-US";
 }
