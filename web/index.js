@@ -1,7 +1,9 @@
 var defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
     backgroundStyles = [
-        ['Mapbox Streets', 'mapbox://styles/mapbox/streets-v11'],
-        ['Mapbox Light', 'mapbox://styles/mapbox/light-v10']
+        ['Streets', 'mapbox://styles/mapbox/streets-v11'],
+        ['Light', 'mapbox://styles/mapbox/light-v10'],
+        ['Dark', 'mapbox://styles/mapbox/dark-v10'],
+        ['Satellite', 'mapbox://styles/mapbox/satellite-v9']
     ];
 
 /**
@@ -16,7 +18,7 @@ class BackgroundStyleControl {
         this._map = map;
 
         this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group background-style-ctrl';
 
         const table = document.createElement('table');
         this._container.appendChild(table);
@@ -73,6 +75,7 @@ class BackgroundStyleControl {
         console.info("BackgroundStyleControl dropDown click", event);
         this._map.setStyle(event.target.value);
         this._ctrlDropDown.className = 'hiddenDropDown';
+        //updateDataSource(event);
     }
 
 }
@@ -146,7 +149,7 @@ function updateDataSource(e) {
         maxLon = northEast.lng,
         language = $("#culture").val(),
         overpass_source = map.getSource("overpass_source"),
-        queryString = new URLSearchParams({
+        queryParams = {
             from: "bbox",
             minLat,
             minLon,
@@ -154,9 +157,10 @@ function updateDataSource(e) {
             maxLon,
             language,
             format: "geojson"
-        }).toString(),
+        },
+        queryString = new URLSearchParams(queryParams).toString(),
         overpass_url = './etymologyMap.php?' + queryString;
-    console.info("updateDataSource", { e, minLat, minLon, maxLat, maxLon, overpass_url, overpass_source });
+    console.info("updateDataSource", { e, queryParams, overpass_url, overpass_source });
 
     //kendo.ui.progress($("#map"), true);
     if (overpass_source) {
@@ -172,13 +176,18 @@ function updateDataSource(e) {
         // when one of the map's sources loads or changes.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
         // https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
-        /*map.on('sourcedata', function(e) {
-            if (e.sourceId == "overpass_source" && e.dataType == "source") {
-                //console.log('overpass_source sourcedata event', e.isSourceLoaded, e);
-                if (e.isSourceLoaded)
-                    kendo.ui.progress($("#map"), false);
+        map.on('sourcedata', function(e) {
+            const overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source";
+            console.info('sourcedata event', { overpassSourceEvent, e });
+
+            if (e.isSourceLoaded) {
+                if (overpassSourceEvent) {
+                    //kendo.ui.progress($("#map"), false);
+                } else {
+                    updateDataSource(e);
+                }
             }
-        });*/
+        });
 
         map.addLayer({
             'id': 'overpass_layer_point',

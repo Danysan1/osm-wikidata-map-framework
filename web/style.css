@@ -97,4 +97,14 @@ select.hiddenDropDown {
 
 select.visibleDropDown {
     display: block;
+    margin: 0 2px;
+}
+
+div.background-style-ctrl>table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+div.background-style-ctrl>table>tr>td {
+    padding: 0;
 }
