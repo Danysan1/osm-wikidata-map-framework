@@ -1,4 +1,4 @@
-var defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
+const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
     backgroundStyles = [
         ['Streets', 'mapbox://styles/mapbox/streets-v11'],
         ['Light', 'mapbox://styles/mapbox/light-v10'],
@@ -134,6 +134,27 @@ function rotateCamera(timestamp) {
 }
 
 /**
+ * Event listener that fires when one of the map's sources loads or changes.
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
+ */
+function mapSourceDataHandler(e) {
+    const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
+        overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
+        ready = e.isSourceLoaded;
+    //console.info('sourcedata event', { wikidataSourceEvent, ready, e });
+
+    if (ready) {
+        console.info('sourcedata ready event', { wikidataSourceEvent, e });
+        if (wikidataSourceEvent || overpassSourceEvent) {
+            //kendo.ui.progress($("#map"), false);
+        } else {
+            updateDataSource(e);
+        }
+    }
+}
+
+/**
  * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
  */
@@ -147,8 +168,9 @@ function updateDataSource(e) {
         northEast = bounds.getNorthEast(),
         maxLat = northEast.lat,
         maxLon = northEast.lng,
+        zoomLevel = map.getZoom(),
+        thresholdZoomLevel = parseInt($("#threshold-zoom-level").val()),
         language = $("#culture").val(),
-        overpass_source = map.getSource("overpass_source"),
         queryParams = {
             from: "bbox",
             minLat,
@@ -158,76 +180,78 @@ function updateDataSource(e) {
             language,
             format: "geojson"
         },
-        queryString = new URLSearchParams(queryParams).toString(),
-        overpass_url = './etymologyMap.php?' + queryString;
-    console.info("updateDataSource", { e, queryParams, overpass_url, overpass_source });
+        queryString = new URLSearchParams(queryParams).toString();
+    console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
+
 
     //kendo.ui.progress($("#map"), true);
-    if (overpass_source) {
-        overpass_source.setData(overpass_url);
-    } else {
-        map.addSource('overpass_source', {
-            type: 'geojson',
-            buffer: 512,
-            data: overpass_url,
-        });
+    if (zoomLevel >= thresholdZoomLevel) {
+        const wikidata_source = map.getSource("wikidata_source"),
+            wikidata_url = './etymologyMap.php?' + queryString;
+        console.info("Wikidata dataSource update", { wikidata_url, wikidata_source });
+        if (wikidata_source) {
+            wikidata_source.setData(wikidata_url);
+        } else {
+            map.addSource('wikidata_source', {
+                type: 'geojson',
+                buffer: 512,
+                data: wikidata_url,
+            });
 
-        // Set an event listener that fires
-        // when one of the map's sources loads or changes.
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
-        // https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
-        map.on('sourcedata', function(e) {
-            const overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source";
-            console.info('sourcedata event', { overpassSourceEvent, e });
+            map.on('sourcedata', mapSourceDataHandler);
 
-            if (e.isSourceLoaded) {
-                if (overpassSourceEvent) {
-                    //kendo.ui.progress($("#map"), false);
-                } else {
-                    updateDataSource(e);
+            map.addLayer({
+                'id': 'wikidata_layer_point',
+                'source': 'wikidata_source',
+                'type': 'circle',
+                "filter": ["==", ["geometry-type"], "Point"],
+                "minzoom": thresholdZoomLevel,
+                'paint': {
+                    'circle-radius': 8,
+                    'circle-stroke-width': 2,
+                    'circle-color': '#0080ff',
+                    'circle-stroke-color': 'white'
                 }
-            }
-        });
+            });
 
-        map.addLayer({
-            'id': 'overpass_layer_point',
-            'source': 'overpass_source',
-            'type': 'circle',
-            "filter": ["==", ["geometry-type"], "Point"],
-            'paint': {
-                'circle-radius': 8,
-                'circle-stroke-width': 2,
-                'circle-color': '#0080ff',
-                'circle-stroke-color': 'white'
-            }
-        });
+            map.addLayer({
+                'id': 'wikidata_layer_lineString',
+                'source': 'wikidata_source',
+                'type': 'line',
+                "filter": ["==", ["geometry-type"], "LineString"],
+                "minzoom": thresholdZoomLevel,
+                'paint': {
+                    'line-color': '#0080ff',
+                    'line-opacity': 0.5,
+                    'line-width': 7
+                }
+            });
 
-        map.addLayer({
-            'id': 'overpass_layer_lineString',
-            'source': 'overpass_source',
-            'type': 'line',
-            "filter": ["==", ["geometry-type"], "LineString"],
-            'paint': {
-                'line-color': '#0080ff',
-                'line-opacity': 0.5,
-                'line-width': 7
-            }
-        });
-
-        map.addLayer({
-            'id': 'overpass_layer_polygon',
-            'source': 'overpass_source',
-            'type': 'fill',
-            "filter": ["==", ["geometry-type"], "Polygon"],
-            'paint': {
-                'fill-color': '#0080ff', // blue color fill
-                'fill-opacity': 0.5
-            }
-        });
+            map.addLayer({
+                'id': 'wikidata_layer_polygon',
+                'source': 'wikidata_source',
+                'type': 'fill',
+                "filter": ["==", ["geometry-type"], "Polygon"],
+                "minzoom": thresholdZoomLevel,
+                'paint': {
+                    'fill-color': '#0080ff', // blue color fill
+                    'fill-opacity': 0.5
+                }
+            });
+        }
+    } else {
+        const overpass_source = map.getSource("overpass_source"),
+            overpass_url = './overpass.php?' + queryString;
+        console.info("Overpass dataSource update", { overpass_url, overpass_source });
+        if (overpass_source) {
+            // overpass_source.setData(overpass_url);
+        } else {
+            //
+        }
     }
 };
 
-map.on('load', function(e) {
+function mapLoadedHandler(e) {
     updateDataSource(e)
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
         //map.on('idle', updateDataSource); //! Called continuously, avoid
@@ -238,7 +262,7 @@ map.on('load', function(e) {
 
     // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
     // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-    ["overpass_layer_point", "overpass_layer_lineString", "overpass_layer_polygon"].forEach(function(layerID) {
+    ["wikidata_layer_point", "wikidata_layer_lineString", "wikidata_layer_polygon"].forEach(function(layerID) {
         // When a click event occurs on a feature in the states layer,
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
@@ -331,7 +355,8 @@ map.on('load', function(e) {
             'fill-extrusion-opacity': .6
         }
     });*/
-});
+}
+map.on('load', mapLoadedHandler);
 
 
 $(document).ready(setCulture);

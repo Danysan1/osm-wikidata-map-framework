@@ -15,6 +15,8 @@ if(isset($lang[0])) {
     $defaultCulture = "en-US";
 }
 
+$thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
+
 ?>
 
 <!DOCTYPE html>
@@ -48,6 +50,7 @@ if(isset($lang[0])) {
 <body>
     <div id='map'></div>
     <input type="hidden" id="culture" value=<?=$defaultCulture;?> >
+    <input type="hidden" id="threshold-zoom-level" value=<?=$thresholdZoomLevel;?> >
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">
