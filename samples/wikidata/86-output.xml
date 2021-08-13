@@ -1,0 +1,583 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='prize'/>
+		<variable name='prize_name'/>
+	</head>
+	<results>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1137753</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1326340</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1542169</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1836411</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q3113381</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q3451157</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q3789142</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q4542504</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q4542508</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q4992254</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593741</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593745</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593755</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593753</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593807</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593809</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593813</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593817</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593848</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593861</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593867</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593870</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593869</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593873</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593882</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593901</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593905</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q15652429</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q18153327</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q22235329</uri>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q775091</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Caméra d'or</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q3107449</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award al miglior album blues tradizionale</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q3113385</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award al miglior album di un musical teatrale</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1542180</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award al miglior album reggae</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q3774290</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award al miglior nuovo artista di musica classica</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q935843</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award alla carriera</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1123766</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award alla miglior canzone rap</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q5593820</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award alla miglior interpretazione strumentale</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q740968</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grammy Award alla miglior registrazione dance</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q844804</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Grand Prix Speciale della Giuria</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q209459</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Leone d'oro</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q277536</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar ai migliori costumi</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q393686</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar ai migliori effetti speciali</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q103916</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior attore</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q106291</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior attore non protagonista</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1324407</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior cortometraggio</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q917808</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior cortometraggio d'animazione</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1425151</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior cortometraggio documentario</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q111332</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior documentario</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q102427</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior film</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q106800</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior film d'animazione</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q105304</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior film in lingua straniera</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q281939</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior montaggio</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q488645</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior montaggio sonoro</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q103360</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior regista</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q504298</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior soggetto</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q830079</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior sonoro</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q487136</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar al miglior trucco</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q103618</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla miglior attrice</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q106301</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla miglior attrice non protagonista</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q112243</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla migliore canzone</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q488651</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla migliore colonna sonora</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q131520</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla migliore fotografia</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q107258</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla migliore sceneggiatura non originale</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q41417</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla migliore sceneggiatura originale</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q277751</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Oscar alla migliore scenografia</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q179808</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Palma d'oro</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1050687</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Palma d’Oro del Cortometraggio</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1060024</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Premio Marcello Mastroianni</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q28229080</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Premio Orizzonti per il miglior film</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1444982</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Premio Osella</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q164200</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Premio della giuria</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q840286</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Prix d'interprétation féminine</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q586140</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Prix d'interprétation masculine</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q510175</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Prix de la mise en scène</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q978420</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Prix du scénario</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q1071326</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>Un Certain Regard</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q47170</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>premio Nobel per l'economia</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q44585</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>premio Nobel per la chimica</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q38104</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>premio Nobel per la fisica</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q37922</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>premio Nobel per la letteratura</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q80061</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>premio Nobel per la medicina</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='prize'>
+				<uri>http://www.wikidata.org/entity/Q35637</uri>
+			</binding>
+			<binding name='prize_name'>
+				<literal xml:lang='it'>premio Nobel per la pace</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

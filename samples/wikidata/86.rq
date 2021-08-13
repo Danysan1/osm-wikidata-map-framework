@@ -1,0 +1,19 @@
+# php sample.php wikidata 86
+
+SELECT ?prize ?prize_name
+WHERE {
+    {
+        ?prize wdt:P361 ?prize_group.
+        FILTER(?prize_group IN (wd:Q7191,wd:Q19020,wd:Q41254)). # Nobel, Academy (Oscar), Grammy
+    } UNION {
+        ?prize wdt:P31 wd:Q28444913. # Palme d'Or (Cannes)
+    } UNION {
+        ?prize wdt:P1027 wd:Q49024. # Golden Lion (Venice)
+    }
+
+    OPTIONAL {
+        ?prize rdfs:label ?prize_name.
+        FILTER(lang(?prize_name)='it').
+    }
+}
+ORDER BY ?prize_name

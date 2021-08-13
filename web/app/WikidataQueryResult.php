@@ -21,7 +21,8 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
             "death_date"=>"literal",
             "birth_place"=>"literal",
             "death_place"=>"literal",
-            "nobel_prize"=>"literal",
+            "prizes"=>"literal",
+            "citizenship"=>"literal",
         ];
         $in = $this->getSimpleXMLElement();
         $out = [];

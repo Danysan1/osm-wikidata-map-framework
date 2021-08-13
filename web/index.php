@@ -69,8 +69,9 @@ if(isset($lang[0])) {
                         <p>#:ety.birth_date?kendo.toString(new Date(ety.birth_date),"d"):"?"# (#:ety.birth_place?ety.birth_place:"?"#) - #:ety.death_date?kendo.toString(new Date(ety.death_date),"d"):"?"# (#:ety.death_place?ety.death_place:"?"#)</p>
                         # } #
                         # if(ety.gender) { # <p>#:ety.gender#</p> # } #
+                        # if(ety.citizenship) { # <p>#:ety.citizenship#</p> # } #
                         # if(ety.occupations) { # <p>#:ety.occupations#</p> # } #
-                        # if(ety.nobel_prize) { # <p>#:ety.nobel_prize#</p> # } #
+                        # if(ety.prizes) { # <p>#:ety.prizes#</p> # } #
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">

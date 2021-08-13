@@ -38,17 +38,18 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
 
         parent::__construct(
             "SELECT ?wikidata
-                (COALESCE(SAMPLE(?name),SAMPLE(?foreign_name)) AS ?name)
+                (COALESCE(SAMPLE(?name),SAMPLE(?all_names)) AS ?name)
                 (SAMPLE(?description) AS ?description)
                 (SAMPLE(?gender_name) AS ?gender)
                 (SAMPLE(?wikipedia) AS ?wikipedia)
                 (GROUP_CONCAT(DISTINCT ?occupation_name;SEPARATOR=', ') AS ?occupations)
+                (GROUP_CONCAT(DISTINCT ?citizenship_name;SEPARATOR=', ') AS ?citizenship)
                 (GROUP_CONCAT(DISTINCT ?picture;SEPARATOR='\t') AS ?pictures)
+                (GROUP_CONCAT(DISTINCT ?prize_name;SEPARATOR=', ') AS ?prizes)
                 (SAMPLE(?birth_date) AS ?birth_date)
                 (SAMPLE(?death_date) AS ?death_date)
                 (SAMPLE(?birth_place_name) AS ?birth_place)
                 (SAMPLE(?death_place_name) AS ?death_place)
-                (SAMPLE(?nobel_prize) AS ?nobel_prize)
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
@@ -57,7 +58,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                     FILTER(lang(?name)='$language').
                 }
 
-                ?wikidata rdfs:label ?foreign_name.
+                ?wikidata rdfs:label ?all_names.
 
                 OPTIONAL {
                     ?wikidata schema:description ?description.
@@ -69,6 +70,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                     {
                         ?wikidata wdt:P21 ?gender.
                         FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
+                        #?occupation wdt:P2521 []. # female form of occupation is available
                         ?occupation wdt:P2521 ?occupation_name. # female form of occupation label
                     } UNION {
                         ?wikidata wdt:P21 ?gender.
@@ -81,6 +83,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                     } UNION {
                         ?wikidata wdt:P21 ?gender.
                         FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
+                        #?occupation wdt:P3321 []. # male form of occupation is available
                         ?occupation wdt:P3321 ?occupation_name. # male form of occupation label
                     } UNION {
                         ?wikidata wdt:P21 ?gender.
@@ -136,9 +139,22 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
 
                 OPTIONAL {
                     ?wikidata wdt:P166 ?prize. # awarded prize
-                    ?prize wdt:P361 wd:Q7191. # nobel prize
-                    ?prize rdfs:label ?nobel_prize.
-                    FILTER(lang(?nobel_prize)='$language').
+                    {
+                        ?prize wdt:P361 ?prize_group.
+                        FILTER(?prize_group IN (wd:Q7191,wd:Q19020,wd:Q41254)). # Nobel, Academy (Oscar), Grammy
+                    } UNION {
+                        ?prize wdt:P31 wd:Q28444913. # Palme d'Or (Cannes)
+                    } UNION {
+                        ?prize wdt:P1027 wd:Q49024. # Golden Lion (Venice)
+                    }
+                    ?prize rdfs:label ?prize_name.
+                    FILTER(lang(?prize_name)='$language').
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P27 ?citizenship.
+                    ?citizenship rdfs:label ?citizenship_name.
+                    FILTER(lang(?citizenship_name)='$language').
                 }
             }
             GROUP BY ?wikidata",
