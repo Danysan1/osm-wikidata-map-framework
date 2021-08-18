@@ -20,7 +20,7 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 ?>
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<?=$defaultCulture;?>">
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -49,7 +49,6 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 </head>
 <body>
     <div id='map'></div>
-    <input type="hidden" id="culture" value=<?=$defaultCulture;?> >
     <input type="hidden" id="threshold-zoom-level" value=<?=$thresholdZoomLevel;?> >
 
     <script type="application/x-kendo-template" id="detail_template">
@@ -69,7 +68,13 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         <a href="#:ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
                         # }
                         if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #
-                        <p>#:ety.birth_date?kendo.toString(new Date(ety.birth_date),"d"):"?"# (#:ety.birth_place?ety.birth_place:"?"#) - #:ety.death_date?kendo.toString(new Date(ety.death_date),"d"):"?"# (#:ety.death_place?ety.death_place:"?"#)</p>
+                        <p>
+                            #:ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?"#
+                            (#:ety.birth_place ? ety.birth_place : "?"#)
+                            -
+                            #:ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?"#
+                            (#:ety.death_place ? ety.death_place : "?"#)
+                        </p>
                         # } #
                         # if(ety.gender) { # <p>#:ety.gender#</p> # } #
                         # if(ety.citizenship) { # <p>#:ety.citizenship#</p> # } #

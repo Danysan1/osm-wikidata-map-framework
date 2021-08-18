@@ -170,7 +170,7 @@ function updateDataSource(e) {
         maxLat = northEast.lat,
         maxLon = northEast.lng,
         zoomLevel = map.getZoom(),
-        language = $("#culture").val(),
+        language = document.documentElement.lang,
         queryParams = {
             from: "bbox",
             minLat,
@@ -408,7 +408,7 @@ map.on('load', mapLoadedHandler);
 $(document).ready(setCulture);
 
 function setCulture() {
-    const culture = $("#culture").val();
+    const culture = document.documentElement.lang;
     console.info("culture", culture);
     kendo.culture(culture);
 }
