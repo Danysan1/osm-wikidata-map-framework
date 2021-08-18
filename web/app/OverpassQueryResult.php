@@ -21,7 +21,7 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
         $geojson = ["type"=>"FeatureCollection", "features"=>[]];
 
         foreach ($data["elements"] as $row) {
-            if(!empty($row["tags"]) && !empty($row["tags"]["name:etymology:wikidata"])) {
+            if(!empty($row["tags"]) && is_array($row["tags"]) && !empty($row["tags"]["name:etymology:wikidata"])) {
                 $feature = [
                     "type" => "Feature",
                     "geometry" => [],
@@ -29,7 +29,8 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                 ];
                 $feature["properties"]["@id"] = $row["type"]."/".$row["id"];
 
-                $wikidataTag = $feature["properties"]["name:etymology:wikidata"];
+                //if(!empty($row["tags"]["name:etymology:wikidata"])) {
+                $wikidataTag = (string)$feature["properties"]["name:etymology:wikidata"];
                 $feature["properties"]["etymologies"] = [];
                 if (preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $wikidataTag)) {
                     foreach(explode(";", $wikidataTag) as $etymologyID) {
@@ -38,6 +39,7 @@ class OverpassQueryResult extends JSONRemoteQueryResult implements GeoJSONQueryR
                 } else {
                     error_log("Feature does not contain a valid list of wikidata tags");
                 }
+                //}
 
                 if($row["type"]=="node") {
                     // ======================================== NODES start ========================================

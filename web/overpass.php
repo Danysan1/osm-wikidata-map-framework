@@ -1,12 +1,15 @@
 <?php
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/CenterEtymologyOverpassQuery.php");
-require_once("./app/CachedBBoxEtymologyOverpassQuery.php");
+require_once("./app/BBoxEtymologyOverpassQuery.php");
+require_once("./app/BBoxEtymologyOverpassSkeletonQuery.php");
+require_once("./app/CachedBBoxQuery.php");
 require_once("./funcs.php");
 $conf = new IniFileConfiguration();
 prepareJSON($conf);
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
+//$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
 $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
 if ($from == "bbox") {
     $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
@@ -20,15 +23,19 @@ if ($from == "bbox") {
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
     
-    //$overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon);
-    $overpassQuery = new CachedBBoxEtymologyOverpassQuery(
-        $minLat,
-        $minLon,
-        $maxLat,
-        $maxLon,
-        $overpassEndpointURL,
-        (string)$this->config->get("cache-file-base-path"),
-        (int)$this->config->get("cache-timeout-hours")
+    /*if($onlySkeleton) {
+        $baseQuery = new BBoxEtymologyOverpassSkeletonQuery(
+            $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
+        );
+    } else {*/
+        $baseQuery = new BBoxEtymologyOverpassQuery(
+            $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
+        );
+    //}
+    $overpassQuery = new CachedBBoxQuery(
+        $baseQuery,
+        (string)$conf->get("cache-file-base-path"),
+        (int)$conf->get("cache-timeout-hours")
     );
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError( "centerLat", FILTER_VALIDATE_FLOAT );

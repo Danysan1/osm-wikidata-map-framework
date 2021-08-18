@@ -5,7 +5,7 @@ require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery
+class BBoxEtymologyOverpassSkeletonQuery extends BBoxOverpassQuery
 {
     /**
      * @param float $minLat
@@ -27,7 +27,7 @@ class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery
                 way['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
                 relation['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
             );
-            out body;
+            out skel;
             >;
             out skel qt;",
             $endpointURL
