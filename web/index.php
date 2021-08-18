@@ -68,6 +68,7 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         <a href="#:ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
                         # }
                         if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #
+                        <hr />
                         <p>
                             #:ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                             (#:ety.birth_place ? ety.birth_place : "?"#)
@@ -76,10 +77,10 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                             (#:ety.death_place ? ety.death_place : "?"#)
                         </p>
                         # } #
-                        # if(ety.gender) { # <p>#:ety.gender#</p> # } #
-                        # if(ety.citizenship) { # <p>#:ety.citizenship#</p> # } #
-                        # if(ety.occupations) { # <p>#:ety.occupations#</p> # } #
-                        # if(ety.prizes) { # <p>#:ety.prizes#</p> # } #
+                        # if(ety.citizenship) { # <hr /><p>#:ety.citizenship#</p> # } #
+                        # if(ety.gender) { # <hr /><p>#:ety.gender#</p> # } #
+                        # if(ety.occupations) { # <hr /><p>#:ety.occupations#</p> # } #
+                        # if(ety.prizes) { # <hr /><p>#:ety.prizes#</p> # } #
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">
