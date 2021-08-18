@@ -110,8 +110,9 @@ div.background-style-ctrl>table>tr>td {
 }
 
 div.info>hr {
-    margin-left: 2em;
-    margin-right: 2em;
+    max-width: 3em;
+    margin-left: max(3em, auto);
+    margin-right: max(3em, auto);
 }
 
 div.info>p {

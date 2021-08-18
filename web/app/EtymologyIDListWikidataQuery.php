@@ -46,8 +46,10 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 (GROUP_CONCAT(DISTINCT ?citizenship_name;SEPARATOR=', ') AS ?citizenship)
                 (GROUP_CONCAT(DISTINCT ?picture;SEPARATOR='\t') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name;SEPARATOR=', ') AS ?prizes)
+                (SAMPLE(?event_date) AS ?event_date)
                 (SAMPLE(?birth_date) AS ?birth_date)
                 (SAMPLE(?death_date) AS ?death_date)
+                (SAMPLE(?event_place_name) AS ?event_place)
                 (SAMPLE(?birth_place_name) AS ?birth_place)
                 (SAMPLE(?death_place_name) AS ?death_place)
             WHERE {
@@ -111,11 +113,21 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 }
 
                 OPTIONAL {
+                    ?wikidata wdt:P585 ?event_date.
+                }
+
+                OPTIONAL {
                     ?wikidata wdt:P569 ?birth_date.
                 }
 
                 OPTIONAL {
                     ?wikidata wdt:P570 ?death_date.
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P276 ?event_place.
+                    ?event_place rdfs:label ?event_place_name.
+                    FILTER(lang(?event_place_name)='it').
                 }
 
                 OPTIONAL {

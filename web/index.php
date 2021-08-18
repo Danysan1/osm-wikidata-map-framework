@@ -64,23 +64,36 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                     </div>
                     <div class="info column">
                         <a href="#:ety.wikidata#" class="k-button" target="_blank"><img src="img/wikidata.png" alt="Wikidata logo"> Wikidata</a>
+                        
                         # if (ety.wikipedia) { #
                         <a href="#:ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
-                        # }
-                        if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #
+                        # } #
+
+                        # if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #
                         <hr />
                         <p>
-                            #:ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?"#
+                            #=ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                             (#:ety.birth_place ? ety.birth_place : "?"#)
                             -
-                            #:ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?"#
+                            #=ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                             (#:ety.death_place ? ety.death_place : "?"#)
                         </p>
+                        # } else if (ety.event_date || ety.event_place) { #
+                        <hr />
+                        <p>
+                            #=ety.event_date ? (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang) : "?"#,
+                            #:ety.event_place ? ety.event_place : "?"#
+                        </p>
                         # } #
+
                         # if(ety.citizenship) { # <hr /><p>#:ety.citizenship#</p> # } #
+                        
                         # if(ety.gender) { # <hr /><p>#:ety.gender#</p> # } #
+                        
                         # if(ety.occupations) { # <hr /><p>#:ety.occupations#</p> # } #
+                        
                         # if(ety.prizes) { # <hr /><p>#:ety.prizes#</p> # } #
+                        <hr />
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">
