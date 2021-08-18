@@ -109,7 +109,8 @@ div.background-style-ctrl>table>tr>td {
     padding: 0;
 }
 
-div.info>hr {
+div.info>hr,
+div.pictures>hr {
     max-width: 3em;
     margin-left: max(3em, auto);
     margin-right: max(3em, auto);

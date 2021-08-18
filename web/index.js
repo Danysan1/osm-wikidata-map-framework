@@ -116,11 +116,20 @@ class BackgroundStyleControl {
 }*/
 
 mapboxgl.accessToken = mapbox_gl_token;
+let params = window.location.hash ? window.location.hash.substr(1).split(",") : null,
+    startCenterLon = (params && params[0]) ? parseFloat(params[0]) : NaN,
+    startCenterLat = (params && params[1]) ? parseFloat(params[1]) : NaN,
+    startZoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
+if (isNaN(startCenterLon) || isNaN(startCenterLat) || isNaN(startZoom)) {
+    startCenterLon = default_center_lon;
+    startCenterLat = default_center_lat;
+    startZoom = default_zoom;
+}
 const map = new mapboxgl.Map({
     container: 'map',
     style: defaultBackgroundStyle, // stylesheet location
-    center: [default_center_lon, default_center_lat], // starting position [lon, lat]
-    zoom: default_zoom, // starting zoom
+    center: [startCenterLon, startCenterLat], // starting position [lon, lat]
+    zoom: startZoom, // starting zoom
     /*pitch: 45, // starting pitch
     bearing: -17.6,
     antialias: true*/
@@ -181,14 +190,14 @@ function updateDataSource(e) {
             format: "geojson"
         };
     console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
-
+    //console.trace("updateDataSource");
 
     //kendo.ui.progress($("#map"), true);
     if (zoomLevel >= thresholdZoomLevel) {
         const wikidata_source = map.getSource("wikidata_source"),
             queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
-        console.info("Wikidata dataSource update", { wikidata_url, wikidata_source });
+        //console.info("Wikidata dataSource update", { wikidata_url, wikidata_source });
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
@@ -199,7 +208,7 @@ function updateDataSource(e) {
         const overpass_source = map.getSource("overpass_source"),
             queryString = new URLSearchParams(queryParams).toString(),
             overpass_url = './overpass.php?' + queryString;
-        console.info("Overpass dataSource update", { overpass_url, overpass_source });
+        //console.info("Overpass dataSource update", { overpass_url, overpass_source });
         if (overpass_source) {
             overpass_source.setData(overpass_url);
         } else {
@@ -295,12 +304,17 @@ function prepareOverpassLayers(overpass_url) {
     });
 }
 
+function mapMoveEndHandler(e) {
+    updateDataSource(e);
+    window.location.hash = "#" + map.getCenter().lng + "," + map.getCenter().lat + "," + map.getZoom();
+}
+
 function mapLoadedHandler(e) {
-    updateDataSource(e)
+    mapMoveEndHandler(e)
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
         //map.on('idle', updateDataSource); //! Called continuously, avoid
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
-    map.on('moveend', updateDataSource);
+    map.on('moveend', mapMoveEndHandler);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
     //map.on('zoomend', updateDataSource); // moveend is sufficient
 

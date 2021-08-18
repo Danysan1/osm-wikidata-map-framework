@@ -93,10 +93,10 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         # if(ety.occupations) { # <hr /><p>#:ety.occupations#</p> # } #
                         
                         # if(ety.prizes) { # <hr /><p>#:ety.prizes#</p> # } #
-                        <hr />
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">
+                    <hr />
                     # ety.pictures.forEach(function (img) { #
                         <a href="#=img#" target="_blank"><img src="#=img#" alt="Etymology picture" /></a>
                     # }); #
