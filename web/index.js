@@ -35,13 +35,10 @@ class BackgroundStyleControl {
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'background-style-ctrl-button';
         ctrlBtn.title = 'Choose background style';
+        ctrlBtn.textContent = '🌐';
         // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
         ctrlBtn.onclick = this.btnClickHandler.bind(this);
         td2.appendChild(ctrlBtn);
-
-        const ctrlSpan = document.createElement('span')
-        ctrlSpan.className = 'k-icon k-i-globe';
-        ctrlBtn.appendChild(ctrlSpan);
 
         this._ctrlDropDown = document.createElement('select');
         this._ctrlDropDown.className = 'hiddenDropDown';
@@ -98,12 +95,10 @@ class BackgroundStyleControl {
         this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
 
         //this._container.textContent = 'Hello, world';
-        const ctrlBtn = document.createElement('button'),
-            ctrlSpan = document.createElement('span');
+        const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'etymology-color-ctrl-button';
-        ctrlSpan.className = 'k-icon k-i-palette';
+        ctrlBtn.textContent = '🎨';
         ctrlBtn.onclick = this.btnClickHandler;
-        ctrlBtn.appendChild(ctrlSpan);
         this._container.appendChild(ctrlBtn);
 
         return this._container;
@@ -188,14 +183,14 @@ function updateDataSource(e) {
             maxLon,
             language,
             format: "geojson"
-        };
-    console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
+        },
+        queryString = new URLSearchParams(queryParams).toString();
+    console.info("updateDataSource", { e, queryParams, queryString, zoomLevel, thresholdZoomLevel });
     //console.trace("updateDataSource");
 
     //kendo.ui.progress($("#map"), true);
     if (zoomLevel >= thresholdZoomLevel) {
         const wikidata_source = map.getSource("wikidata_source"),
-            queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
         //console.info("Wikidata dataSource update", { wikidata_url, wikidata_source });
         if (wikidata_source) {
@@ -206,7 +201,6 @@ function updateDataSource(e) {
     } else {
         //queryParams.onlySkeleton = false;
         const overpass_source = map.getSource("overpass_source"),
-            queryString = new URLSearchParams(queryParams).toString(),
             overpass_url = './overpass.php?' + queryString;
         //console.info("Overpass dataSource update", { overpass_url, overpass_source });
         if (overpass_source) {

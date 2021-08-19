@@ -53,7 +53,7 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">
-            <h4>#:properties.name#</h4>
+            <h3>📍 #:properties.name#</h3>
             <a href="https://www.openstreetmap.org/#:properties["@id"]#" class="k-button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <div class="etymologies">
                 # JSON.parse(properties.etymologies).forEach(function (ety) { #
@@ -71,7 +71,7 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 
                         # if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #
                         <hr />
-                        <p>
+                        <p>📅
                             #=ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                             (#:ety.birth_place ? ety.birth_place : "?"#)
                             -
@@ -80,19 +80,19 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         </p>
                         # } else if (ety.event_date || ety.event_place) { #
                         <hr />
-                        <p>
+                        <p>📅
                             #=ety.event_date ? (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang) : "?"#,
                             #:ety.event_place ? ety.event_place : "?"#
                         </p>
                         # } #
 
-                        # if(ety.citizenship) { # <hr /><p>#:ety.citizenship#</p> # } #
+                        # if(ety.citizenship) { # <hr /><p>🌍 #:ety.citizenship#</p> # } #
                         
-                        # if(ety.gender) { # <hr /><p>#:ety.gender#</p> # } #
+                        # if(ety.gender) { # <hr /><p>⚧️ #:ety.gender#</p> # } #
                         
-                        # if(ety.occupations) { # <hr /><p>#:ety.occupations#</p> # } #
+                        # if(ety.occupations) { # <hr /><p>🛠️ #:ety.occupations#</p> # } #
                         
-                        # if(ety.prizes) { # <hr /><p>#:ety.prizes#</p> # } #
+                        # if(ety.prizes) { # <hr /><p>🏆 #:ety.prizes#</p> # } #
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures row">
