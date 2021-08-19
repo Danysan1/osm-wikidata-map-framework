@@ -183,16 +183,16 @@ function updateDataSource(e) {
             maxLon,
             language,
             format: "geojson"
-        },
-        queryString = new URLSearchParams(queryParams).toString();
-    console.info("updateDataSource", { e, queryParams, queryString, zoomLevel, thresholdZoomLevel });
+        };
+    //console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
     //console.trace("updateDataSource");
 
     //kendo.ui.progress($("#map"), true);
     if (zoomLevel >= thresholdZoomLevel) {
         const wikidata_source = map.getSource("wikidata_source"),
+            queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
-        //console.info("Wikidata dataSource update", { wikidata_url, wikidata_source });
+        console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
@@ -200,20 +200,26 @@ function updateDataSource(e) {
         }
     } else {
         //queryParams.onlySkeleton = false;
+        queryParams.onlyCenter = true;
         const overpass_source = map.getSource("overpass_source"),
+            queryString = new URLSearchParams(queryParams).toString(),
             overpass_url = './overpass.php?' + queryString;
-        //console.info("Overpass dataSource update", { overpass_url, overpass_source });
+        console.info("Overpass dataSource update", { queryParams, overpass_url, overpass_source });
         if (overpass_source) {
             overpass_source.setData(overpass_url);
         } else {
-            prepareOverpassLayers(queryParams);
+            prepareOverpassLayers(overpass_url);
         }
     }
 }
 
+/**
+ * Initializes the high-zoom-level complete (un-clustered) layer.
+ * 
+ * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
+ * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
+ */
 function prepareWikidataLayers(wikidata_url) {
-    // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
-    // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
     map.addSource('wikidata_source', {
         type: 'geojson',
         buffer: 512,
@@ -259,62 +265,6 @@ function prepareWikidataLayers(wikidata_url) {
             'fill-opacity': 0.5
         }
     });
-}
-
-function prepareOverpassLayers(overpass_url) {
-    // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
-    // https://docs.mapbox.com/mapbox-gl-js/example/cluster/
-    map.addSource('overpass_source', {
-        type: 'geojson',
-        buffer: 512,
-        data: overpass_url,
-        cluster: true,
-        clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
-        clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-    });
-
-    map.addLayer({
-        id: 'overpass_layer_cluster',
-        source: 'overpass_source',
-        type: 'circle',
-        maxzoom: thresholdZoomLevel,
-        filter: ['has', 'point_count'],
-        paint: {
-            'circle-color': [
-                'step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'
-            ],
-            'circle-radius': [
-                'step', ['get', 'point_count'], 20, 100, 30, 750, 40
-            ]
-        }
-    });
-
-    map.addLayer({
-        id: 'overpass_layer_count',
-        type: 'symbol',
-        source: 'overpass_source',
-        filter: ['has', 'point_count'],
-        layout: {
-            'text-field': '{point_count_abbreviated}',
-            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-            'text-size': 12
-        }
-    });
-}
-
-function mapMoveEndHandler(e) {
-    updateDataSource(e);
-    window.location.hash = "#" + map.getCenter().lng + "," + map.getCenter().lat + "," + map.getZoom();
-}
-
-function mapLoadedHandler(e) {
-    mapMoveEndHandler(e)
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
-        //map.on('idle', updateDataSource); //! Called continuously, avoid
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
-    map.on('moveend', mapMoveEndHandler);
-    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
-    //map.on('zoomend', updateDataSource); // moveend is sufficient
 
     // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
     // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
@@ -342,6 +292,102 @@ function mapLoadedHandler(e) {
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
         map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
     });
+}
+
+/**
+ * Initializes the low-zoom-level clustered layer.
+ * 
+ * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
+ * Add a new source from our GeoJSON data and set the 'cluster' option to true.
+ * GL-JS will add the point_count property to your source data.
+ * //@see https://docs.mapbox.com/mapbox-gl-js/example/heatmap-layer/
+ */
+function prepareOverpassLayers(overpass_url) {
+    map.addSource('overpass_source', {
+        type: 'geojson',
+        //buffer: 512,
+        data: overpass_url,
+        cluster: true,
+        clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+    });
+
+    map.addLayer({
+        id: 'overpass_layer_cluster',
+        source: 'overpass_source',
+        type: 'circle',
+        maxzoom: thresholdZoomLevel,
+        filter: ['has', 'point_count'],
+        paint: {
+            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+            // with three steps to implement three types of circles:
+            // - Blue, 20px circles when point count is less than 100
+            // - Yellow, 30px circles when point count is between 100 and 750
+            // - Pink, 40px circles when point count is greater than or equal to 750
+            'circle-color': [
+                'step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'
+            ],
+            'circle-radius': [
+                'step', ['get', 'point_count'], 20, 100, 30, 750, 40
+            ]
+        }
+    });
+
+    map.addLayer({
+        id: 'overpass_layer_count',
+        type: 'symbol',
+        source: 'overpass_source',
+        maxzoom: thresholdZoomLevel,
+        filter: ['has', 'point_count'],
+        layout: {
+            'text-field': '{point_count_abbreviated}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+        }
+    });
+
+    // inspect a cluster on click
+    map.on('click', 'overpass_layer_cluster', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['overpass_layer_cluster']
+        });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource('overpass_source').getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+                if (err) return;
+
+                map.easeTo({
+                    center: features[0].geometry.coordinates,
+                    zoom: zoom
+                });
+            }
+        );
+    });
+
+    map.on('mouseenter', 'overpass_layer_cluster', () => {
+        map.getCanvas().style.cursor = 'pointer';
+    });
+
+    map.on('mouseleave', 'overpass_layer_cluster', () => {
+        map.getCanvas().style.cursor = '';
+    });
+}
+
+function mapMoveEndHandler(e) {
+    updateDataSource(e);
+    window.location.hash = "#" + map.getCenter().lng + "," + map.getCenter().lat + "," + map.getZoom();
+}
+
+function mapLoadedHandler(e) {
+    mapMoveEndHandler(e)
+        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
+        //map.on('idle', updateDataSource); //! Called continuously, avoid
+        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
+    map.on('moveend', mapMoveEndHandler);
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
+    //map.on('zoomend', updateDataSource); // moveend is sufficient
 
     // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
     map.addControl(new MapboxGeocoder({

@@ -37,8 +37,10 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
     {
         //$overpassResult = $this->overpassQuery->send();
         $overpassResult = parent::send();
-        if (!$overpassResult->isSuccessful() || !$overpassResult->hasResult()) {
-            $out = $overpassResult;
+        if (!$overpassResult->isSuccessful()) {
+            throw new Exception("Overpass query failed: $overpassResult");
+        } elseif (!$overpassResult->hasResult()) {
+            throw new Exception("Overpass query didn't return any result");
         } else {
             $overpassGeoJSON = $overpassResult->getGeoJSONData();
             if (empty($overpassGeoJSON["features"])) {

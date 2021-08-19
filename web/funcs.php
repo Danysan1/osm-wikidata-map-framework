@@ -3,6 +3,21 @@ require_once(__DIR__."/../vendor/autoload.php");
 require_once(__DIR__."/app/Configuration.php");
 
 /**
+ * @param Throwable $t
+ * @return void
+ */
+function handleException(Throwable $t) {
+	error_log(
+		$t->getMessage().PHP_EOL.
+		$t->getTraceAsString()
+	);
+	\Sentry\captureException($t);
+	http_response_code(500);
+	//die('{"success":false, "error":"An internal error occurred"}');
+	die(json_encode(["success" => false, "error"=>$t->getMessage()]));
+}
+
+/**
  * @param Configuration $conf
  * @return void
  */
@@ -12,16 +27,7 @@ function preparePage(Configuration $conf) {
 		'dsn' => (string)$conf->get('sentry-php-dsn'),
 		'traces_sample_rate' => (float)$conf->get('sentry-php-rate'),
 	]);
-	set_exception_handler(function(Throwable $t) {
-		error_log(
-			$t->getMessage().PHP_EOL.
-			$t->getTraceAsString()
-		);
-		\Sentry\captureException($t);
-		http_response_code(500);
-		//die('{"success":false, "error":"An internal error occurred"}');
-		die(json_encode(["success" => false, "error"=>$t->getMessage()]));
-	});
+	set_exception_handler('handleException');
 	ini_set('session.cookie_httponly', 'true');
 	ini_set('session.cookie_secure', 'true');
 	ini_set('session.cookie_path', '/; samesite=Strict');

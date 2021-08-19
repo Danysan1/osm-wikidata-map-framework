@@ -1,10 +1,13 @@
 <?php
-require_once(__DIR__."/OverpassQuery.php");
+require_once(__DIR__ . "/OverpassQuery.php");
+require_once(__DIR__ . "/GeoJSONQuery.php");
+require_once(__DIR__ . "/OverpassEtymologyQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CenterEtymologyOverpassQuery extends OverpassQuery {
+class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
+{
     /**
      * @var float
      */
@@ -16,7 +19,8 @@ class CenterEtymologyOverpassQuery extends OverpassQuery {
      * @param float $radius
      * @param string $endpointURL
      */
-    public function __construct($lat,$lon,$radius,$endpointURL) {
+    public function __construct($lat, $lon, $radius, $endpointURL)
+    {
         parent::__construct(
             "[out:json][timeout:25];
             (
@@ -37,21 +41,36 @@ class CenterEtymologyOverpassQuery extends OverpassQuery {
     /**
      * @return float
      */
-    public function getCenterLat() {
+    public function getCenterLat()
+    {
         return $this->lat;
     }
 
     /**
      * @return float
      */
-    public function getCenterLon() {
+    public function getCenterLon()
+    {
         return $this->lon;
     }
 
     /**
      * @return float
      */
-    public function getRadius() {
+    public function getRadius()
+    {
         return $this->radius;
+    }
+
+    /**
+     * @return GeoJSONQueryResult
+     */
+    public function send()
+    {
+        $res = parent::send();
+        if (!$res->isSuccessful() || !$res->hasResult()) {
+            throw new Exception("Overpass query failed: $res");
+        }
+        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getResult());
     }
 }

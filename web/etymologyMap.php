@@ -26,8 +26,10 @@ if ($from == "bbox") {
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
 
+    $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
+    error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("bbox-max-area");
-    if((($maxLat-$minLat) * ($maxLon-$minLon)) > $maxArea) {
+    if($bboxArea > $maxArea) {
         http_response_code(400);
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }

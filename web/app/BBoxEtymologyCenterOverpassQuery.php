@@ -1,12 +1,18 @@
 <?php
 require_once(__DIR__ . "/BBoxOverpassQuery.php");
 require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/OverpassCenterQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxEtymologyOverpassSkeletonQuery extends BBoxOverpassQuery
+class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSONQuery
 {
+    /**
+     * @var string $query
+     */
+    private $query;
+    
     /**
      * @param float $minLat
      * @param float $minLon
@@ -27,10 +33,19 @@ class BBoxEtymologyOverpassSkeletonQuery extends BBoxOverpassQuery
                 way['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
                 relation['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
             );
-            out skel;
-            >;
-            out skel qt;",
+            out ids center;",
             $endpointURL
         );
+    }
+
+    /**
+     * @return GeoJSONQueryResult
+     */
+    public function send() {
+        $res = parent::send();
+        if(!$res->isSuccessful() || !$res->hasResult()) {
+            throw new Exception("Overpass query failed: $res");
+        }
+        return new OverpassCenterQueryResult($res->isSuccessful(), $res->getResult());
     }
 }

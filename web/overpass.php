@@ -2,7 +2,8 @@
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/CenterEtymologyOverpassQuery.php");
 require_once("./app/BBoxEtymologyOverpassQuery.php");
-require_once("./app/BBoxEtymologyOverpassSkeletonQuery.php");
+//require_once("./app/BBoxEtymologySkeletonOverpassQuery.php");
+require_once("./app/BBoxEtymologyCenterOverpassQuery.php");
 require_once("./app/CachedBBoxQuery.php");
 require_once("./funcs.php");
 $conf = new IniFileConfiguration();
@@ -10,6 +11,7 @@ prepareJSON($conf);
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
+$onlyCenter = (bool)getFilteredParamOrDefault( "onlyCenter", FILTER_VALIDATE_BOOLEAN, false );
 $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
 if ($from == "bbox") {
     $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
@@ -17,21 +19,27 @@ if ($from == "bbox") {
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
 
+    $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
+    error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("bbox-max-area");
-    if((($maxLat-$minLat) * ($maxLon-$minLon)) > $maxArea) {
+    if($bboxArea > $maxArea) {
         http_response_code(400);
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
     
     /*if($onlySkeleton) {
-        $baseQuery = new BBoxEtymologyOverpassSkeletonQuery(
+        $baseQuery = new BBoxEtymologySkeletonOverpassQuery(
             $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
         );
-    } else {*/
+    } else*/if ($onlyCenter) {
+        $baseQuery = new BBoxEtymologyCenterOverpassQuery(
+            $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
+        );
+    } else {
         $baseQuery = new BBoxEtymologyOverpassQuery(
             $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
         );
-    //}
+    }
     $overpassQuery = new CachedBBoxQuery(
         $baseQuery,
         (string)$conf->get("cache-file-base-path"),

@@ -27,6 +27,9 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
         $wikidataValues = implode(' ', array_map(function($id){return "wd:$id";}, $wikidataIDList));
 
         foreach($wikidataIDList as $wikidataID) {
+            /**
+             * @psalm-suppress DocblockTypeContradiction
+             */
             if(!is_string($wikidataID) || !preg_match("/^Q[0-9]+$/", $wikidataID)) {
                 throw new Exception("Invalid Wikidata ID: $wikidataID");
             }

@@ -1,11 +1,11 @@
 <?php
 require_once(__DIR__ . "/OverpassQuery.php");
-require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/BaseQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxOverpassQuery extends OverpassQuery implements BBoxGeoJSONQuery
+class BBoxOverpassQuery extends OverpassQuery
 {
     /**
      * @var float
@@ -61,6 +61,9 @@ class BBoxOverpassQuery extends OverpassQuery implements BBoxGeoJSONQuery
         return $this->maxLon;
     }
 
+    /**
+     * @return string
+     */
     public function getBBoxString()
     {
         return $this->minLat . "," . $this->minLon . "," . $this->maxLat . "," . $this->maxLon;

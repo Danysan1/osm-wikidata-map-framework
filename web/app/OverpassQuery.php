@@ -1,15 +1,14 @@
 <?php
 require_once(__DIR__."/BaseQuery.php");
-require_once(__DIR__."/GeoJSONQuery.php");
-require_once(__DIR__."/GeoJSONQueryResult.php");
-require_once(__DIR__."/OverpassQueryResult.php");
+require_once(__DIR__."/QueryResult.php");
+require_once(__DIR__."/JSONRemoteQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class OverpassQuery extends BaseQuery implements GeoJSONQuery {
+class OverpassQuery extends BaseQuery {
     /**
-     * @return GeoJSONQueryResult
+     * @return QueryResult
      */
     public function send() {
         $ch = curl_init();
@@ -24,6 +23,6 @@ class OverpassQuery extends BaseQuery implements GeoJSONQuery {
             $result = null;
         else
             assert(is_string($result));
-        return new OverpassQueryResult($result, $curlInfo);
+        return new JSONRemoteQueryResult($result, $curlInfo);
     }
 }

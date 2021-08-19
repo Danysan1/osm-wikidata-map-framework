@@ -1,12 +1,14 @@
 <?php
-require_once(__DIR__."/CachedBBoxQuery.php");
-require_once(__DIR__."/BBoxGeoJSONQuery.php");
-require_once(__DIR__."/BBoxEtymologyOverpassWikidataQuery.php");
+require_once(__DIR__ . "/CachedBBoxQuery.php");
+require_once(__DIR__ . "/BaseQuery.php");
+require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/BBoxEtymologyOverpassWikidataQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CachedBBoxEtymologyOverpassWikidataQuery extends CachedBBoxQuery {
+class CachedBBoxEtymologyOverpassWikidataQuery extends CachedBBoxQuery
+{
     /**
      * @param float $minLat
      * @param float $minLon
@@ -18,10 +20,10 @@ class CachedBBoxEtymologyOverpassWikidataQuery extends CachedBBoxQuery {
      * @param string $cacheFileBasePath
      * @param int $cacheTimeoutHours
      */
-    public function __construct($minLat,$minLon,$maxLat,$maxLon,$overpassEndpointURL,$wikidataEndpointURL,$language,$cacheFileBasePath,$cacheTimeoutHours)
+    public function __construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL, $wikidataEndpointURL, $language, $cacheFileBasePath, $cacheTimeoutHours)
     {
         parent::__construct(
-            new BBoxEtymologyOverpassWikidataQuery($minLat,$minLon,$maxLat,$maxLon,$overpassEndpointURL,$wikidataEndpointURL,$language),
+            new BBoxEtymologyOverpassWikidataQuery($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL, $wikidataEndpointURL, $language),
             $cacheFileBasePath,
             $cacheTimeoutHours
         );

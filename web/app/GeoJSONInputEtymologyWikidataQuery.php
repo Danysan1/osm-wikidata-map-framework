@@ -1,8 +1,9 @@
 <?php
-require_once(__DIR__."/GeoJSONQuery.php");
-require_once(__DIR__."/EtymologyIDListWikidataQuery.php");
+require_once(__DIR__ . "/GeoJSONQuery.php");
+require_once(__DIR__ . "/EtymologyIDListWikidataQuery.php");
 
-class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery {
+class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
+{
     /**
      * @var array
      */
@@ -11,20 +12,36 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery {
     /**
      * @param array $geoJSONData
      * @param string $language
+     * @param string $endpointURL
      */
-    public function __construct($geoJSONData, $language, $endpointURL) {
-        if(empty($geoJSONData["type"]) || $geoJSONData["type"] != "FeatureCollection") {
+    public function __construct($geoJSONData, $language, $endpointURL)
+    {
+        if (empty($geoJSONData["type"]) || $geoJSONData["type"] != "FeatureCollection") {
             throw new Exception("GeoJSON data is not a FeatureCollection");
-        }
-        if(empty($geoJSONData["features"])) {
+        } elseif (empty($geoJSONData["features"])) {
             throw new Exception("GeoJSON data does not contain any features");
+        } elseif (!is_array($geoJSONData["features"])) {
+            throw new Exception("GeoJSON features is not an array");
         }
         $this->geoJSONInputData = $geoJSONData;
 
         $etymologyIDs = [];
-        foreach($geoJSONData["features"] as $feature) {
-            foreach($feature["properties"]["etymologies"] as $etymology) {
-                $etymologyIDs[] = $etymology["id"];
+        foreach ($geoJSONData["features"] as $feature) {
+            if (empty($feature)) {
+                throw new Exception("Feature is empty");
+            } elseif (empty($feature["properties"]["etymologies"])) {
+                throw new Exception("Feature does not contain any etymology IDs");
+            } else {
+                /**
+                 * @psalm-suppress MixedArrayAccess
+                 */
+                $etymologies = $feature["properties"]["etymologies"];
+                if (!is_array($etymologies)) {
+                    throw new Exception("Etymology IDs is not an array");
+                }
+                foreach ($etymologies as $etymology) {
+                    $etymologyIDs[] = (string)$etymology["id"];
+                }
             }
         }
 
@@ -34,7 +51,8 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery {
     /**
      * @return array
      */
-    public function getGeoJSONInputData() {
+    public function getGeoJSONInputData()
+    {
         return $this->geoJSONInputData;
     }
 }

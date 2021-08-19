@@ -1,4 +1,4 @@
-# php sample.php wikidata 90
+# php sample.php wikidata 95
 
 SELECT ?wikidata
     (COALESCE(SAMPLE(?name),SAMPLE(?all_names)) AS ?name)

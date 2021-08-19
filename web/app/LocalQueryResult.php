@@ -18,6 +18,7 @@ class LocalQueryResult implements QueryResult {
     /**
      * @param boolean $success
      * @param array|null $result
+     * @param string $contentMimeType
      */
     public function __construct($success, $result) {
         $this->success = $success;
