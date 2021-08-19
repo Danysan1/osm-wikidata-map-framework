@@ -46,22 +46,25 @@ div.detail_container {
     overflow: auto;
 }
 
-div.detail_container div.etymologies {
-    /*max-width: 100%;*/
-    /*max-height: 100%;*/
+div.detail_container div.grid {
     /* https://css-tricks.com/look-ma-no-media-queries-responsive-layouts-using-css-grid/ */
     /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
     display: grid;
-    /*grid-template-columns: repeat(2, 1fr);*/
-    /*grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));*/
-    grid-template-columns: repeat(auto-fit, minmax(25em, 1fr));
-    /*grid-template-columns: auto;*/
-    /*grid-template-columns: repeat(auto-fit, [col-start] max-content [col-end]);*/
     grid-template-rows: auto;
     align-content: center;
     align-items: center;
     justify-content: center;
     justify-items: center;
+}
+
+div.detail_container div.grid-auto {
+    /*grid-template-columns: repeat(2, 1fr);*/
+    /*grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));*/
+    grid-template-columns: repeat(auto-fit, minmax(25em, 1fr));
+}
+
+div.detail_container div.grid-two {
+    grid-template-columns: 1fr auto;
 }
 
 div.detail_container div.etymology {
@@ -107,6 +110,12 @@ div.background-style-ctrl>table {
 
 div.background-style-ctrl>table>tr>td {
     padding: 0;
+}
+
+div.detail_container div.header>h2,
+div.detail_container div.header>h3,
+div.detail_container div.info>p {
+    max-width: 40em;
 }
 
 div.info>hr,

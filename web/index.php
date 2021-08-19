@@ -55,9 +55,10 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
         <div class="detail_container">
             <h3>📍 #:properties.name#</h3>
             <a href="https://www.openstreetmap.org/#:properties["@id"]#" class="k-button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
-            <div class="etymologies">
+            <div class="etymologies grid grid-auto">
                 # JSON.parse(properties.etymologies).forEach(function (ety) { #
-                <div class="etymology column">
+                <div class="etymology grid grid-two">
+                    <div class="column">
                     <div class="header column">
                         <h2>#:ety.name#</h2>
                         # if (ety.description) { # <h3>#:ety.description#</h3> # } #
@@ -94,9 +95,9 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         
                         # if(ety.prizes) { # <hr /><p>🏆 #:ety.prizes#</p> # } #
                     </div>
+                    </div>
                     # if (ety.pictures) { #
-                    <div class="pictures row">
-                    <hr />
+                    <div class="pictures column">
                     # ety.pictures.forEach(function (img) { #
                         <a href="#=img#" target="_blank"><img src="#=img#" alt="Etymology picture" /></a>
                     # }); #
