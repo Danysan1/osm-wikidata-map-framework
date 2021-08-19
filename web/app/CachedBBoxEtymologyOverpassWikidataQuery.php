@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__."/CachedBBoxQuery.php");
+require_once(__DIR__."/BBoxGeoJSONQuery.php");
 require_once(__DIR__."/BBoxEtymologyOverpassWikidataQuery.php");
 
 /**

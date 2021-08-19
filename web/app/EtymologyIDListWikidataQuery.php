@@ -16,7 +16,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
     private $language;
     
     /**
-     * @param array $wikidataIDList
+     * @param array<string> $wikidataIDList
      * @param string $language
      * @param string $endpointURL
      */

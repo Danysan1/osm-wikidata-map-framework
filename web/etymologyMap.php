@@ -6,7 +6,7 @@ $conf = new IniFileConfiguration();
 prepareJSON($conf);
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
-$language = (string)getFilteredParamOrError( "language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language') );
+$language = (string)getFilteredParamOrDefault( "language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language') );
 $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
@@ -55,7 +55,7 @@ $result = $overpassQuery->send();
 if(!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Query error: ".$result);
-    die('{"error":"Error getting result (overpass server error)"}');
+    die('{"error":"Error getting result (overpass/wikidata server error)"}');
 } elseif (!$result->hasResult()) {
     http_response_code(500);
     error_log("Query no result: ".$result);
