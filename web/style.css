@@ -55,6 +55,8 @@ div.detail_container div.grid {
     align-items: center;
     justify-content: center;
     justify-items: center;
+    grid-row-gap: 0.5em;
+    grid-column-gap: 0.5em;
 }
 
 div.detail_container div.grid-auto {

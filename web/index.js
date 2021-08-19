@@ -212,10 +212,13 @@ function updateDataSource(e) {
 }
 
 function prepareWikidataLayers(wikidata_url) {
+    // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
+    // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
     map.addSource('wikidata_source', {
         type: 'geojson',
         buffer: 512,
         data: wikidata_url,
+        attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>',
     });
 
     map.addLayer({
@@ -259,6 +262,7 @@ function prepareWikidataLayers(wikidata_url) {
 }
 
 function prepareOverpassLayers(overpass_url) {
+    // https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
     // https://docs.mapbox.com/mapbox-gl-js/example/cluster/
     map.addSource('overpass_source', {
         type: 'geojson',
@@ -339,7 +343,11 @@ function mapLoadedHandler(e) {
         map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
     });
 
-    map.on('sourcedata', mapSourceDataHandler);
+    // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
+    map.addControl(new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl
+    }));
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
     map.addControl(
@@ -347,6 +355,11 @@ function mapLoadedHandler(e) {
             visualizePitch: true
         })
     );
+
+    // https://docs.mapbox.com/mapbox-gl-js/api/markers/#attributioncontrol
+    /*map.addControl(new mapboxgl.AttributionControl({
+        customAttribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>'
+    }));*/
 
     // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
     // Add geolocate control to the map.
@@ -372,6 +385,8 @@ function mapLoadedHandler(e) {
     map.addControl(new BackgroundStyleControl());
 
     //map.addControl(new EtymologyColorControl());
+
+    map.on('sourcedata', mapSourceDataHandler);
 
     /*rotateCamera(0); // Start the animation.
 
