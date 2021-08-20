@@ -1,5 +1,7 @@
 <?php
 
+namespace App;
+
 /**
  * Class that allows to record a series of labeled timings.
  * These timings can then be sent to the client as a Server Timing header.

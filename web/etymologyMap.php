@@ -1,11 +1,15 @@
 <?php
 require_once("./app/ServerTiming.php");
+use \App\ServerTiming;
 $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
-require_once("./app/CachedBBoxEtymologyOverpassWikidataQuery.php");
+require_once("./app/query/combined/CachedBBoxEtymologyOverpassWikidataQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
+
+use \App\IniFileConfiguration;
+use \App\Query\Combined\CachedBBoxEtymologyOverpassWikidataQuery;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");

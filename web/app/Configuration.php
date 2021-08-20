@@ -1,5 +1,7 @@
 <?php
 
+namespace App;
+
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */

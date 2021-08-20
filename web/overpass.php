@@ -1,15 +1,22 @@
 <?php
 require_once("./app/ServerTiming.php");
+use \App\ServerTiming;
 $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
-require_once("./app/CenterEtymologyOverpassQuery.php");
-require_once("./app/BBoxEtymologyOverpassQuery.php");
+require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
+require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
 //require_once("./app/BBoxEtymologySkeletonOverpassQuery.php");
-require_once("./app/BBoxEtymologyCenterOverpassQuery.php");
-require_once("./app/CachedBBoxQuery.php");
+require_once("./app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
+require_once("./app/query/CachedBBoxQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
+
+use \App\IniFileConfiguration;
+use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
+use App\Query\Overpass\BBoxEtymologyOverpassQuery;
+use App\Query\Overpass\CenterEtymologyOverpassQuery;
+use App\Query\CachedBBoxQuery;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");

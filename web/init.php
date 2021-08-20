@@ -3,6 +3,8 @@ require_once("./app/IniFileConfiguration.php");
 require_once("./funcs.php");
 header( "Content-Type: application/javascript; charset=utf-8" );
 
+use \App\IniFileConfiguration;
+
 $conf = new IniFileConfiguration();
 
 ?>

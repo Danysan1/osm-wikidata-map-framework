@@ -1,7 +1,11 @@
 <?php
 require_once("./app/IniFileConfiguration.php");
-require_once("./app/EtymologyIDListWikidataQuery.php");
+require_once("./app/query/wikidata/EtymologyIDListWikidataQuery.php");
 require_once("./funcs.php");
+
+use \App\IniFileConfiguration;
+use \App\Query\Wikidata\EtymologyIDListWikidataQuery;
+
 $conf = new IniFileConfiguration();
 prepareJSON($conf);
 
