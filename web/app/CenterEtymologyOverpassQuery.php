@@ -69,7 +69,8 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
     {
         $res = parent::send();
         if (!$res->isSuccessful() || !$res->hasResult()) {
-            throw new Exception("Overpass query failed: $res");
+            error_log("CenterEtymologyOverpassQuery: Overpass query failed: $res");
+            throw new Exception("Overpass query failed");
         }
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getResult());
     }

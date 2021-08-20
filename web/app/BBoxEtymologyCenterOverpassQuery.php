@@ -12,7 +12,7 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
      * @var string $query
      */
     private $query;
-    
+
     /**
      * @param float $minLat
      * @param float $minLon
@@ -41,10 +41,12 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
     /**
      * @return GeoJSONQueryResult
      */
-    public function send() {
+    public function send()
+    {
         $res = parent::send();
-        if(!$res->isSuccessful() || !$res->hasResult()) {
-            throw new Exception("Overpass query failed: $res");
+        if (!$res->isSuccessful() || !$res->hasResult()) {
+            error_log("BBoxEtymologyCenterOverpassQuery: Overpass query failed: $res");
+            throw new Exception("Overpass query failed");
         }
         return new OverpassCenterQueryResult($res->isSuccessful(), $res->getResult());
     }

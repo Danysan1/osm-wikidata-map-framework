@@ -1,15 +1,17 @@
 <?php
-require_once(__DIR__."/OverpassQuery.php");
+require_once(__DIR__ . "/OverpassQuery.php");
 require_once(__DIR__ . "/OverpassEtymologyQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class GlobalEtymologyOverpassQuery extends OverpassQuery {
+class GlobalEtymologyOverpassQuery extends OverpassQuery
+{
     /**
      * @param string $endpointURL
      */
-    public function __construct($endpointURL) {
+    public function __construct($endpointURL)
+    {
         parent::__construct(
             "[out:json][timeout:25];
             (
@@ -27,10 +29,12 @@ class GlobalEtymologyOverpassQuery extends OverpassQuery {
     /**
      * @return GeoJSONQueryResult
      */
-    public function send() {
+    public function send()
+    {
         $res = parent::send();
-        if(!$res->hasResult()) {
-            throw new Exception("Overpass query failed: $res");
+        if (!$res->isSuccessful() || !$res->hasResult()) {
+            error_log("GlobalEtymologyOverpassQuery: Overpass query failed: $res");
+            throw new Exception("Overpass query failed");
         }
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getResult());
     }

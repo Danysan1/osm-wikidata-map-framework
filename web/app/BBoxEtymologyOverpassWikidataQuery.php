@@ -1,18 +1,19 @@
 <?php
-require_once(__DIR__."/BBoxGeoJSONQuery.php");
-require_once(__DIR__."/BBoxEtymologyOverpassQuery.php");
-require_once(__DIR__."/GeoJSONEtymologyWikidataQuery.php");
+require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/BBoxEtymologyOverpassQuery.php");
+require_once(__DIR__ . "/GeoJSONEtymologyWikidataQuery.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery implements BBoxGeoJSONQuery {
+class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery implements BBoxGeoJSONQuery
+{
     /** @var BBoxEtymologyOverpassQuery $overpassQuery */
     //private $overpassQuery;
-    
+
     /** @var string $language */
     private $language;
-    
+
     /** @var string $wikidataEndpointURL */
     private $wikidataEndpointURL;
 
@@ -25,7 +26,8 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
      * @param string $wikidataEndpointURL
      * @param string $language
      */
-    public function __construct($minLat,$minLon,$maxLat,$maxLon,$overpassEndpointURL,$wikidataEndpointURL,$language) {
+    public function __construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL, $wikidataEndpointURL, $language)
+    {
         //$this->overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL);
         parent::__construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL);
 
@@ -38,7 +40,8 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
         //$overpassResult = $this->overpassQuery->send();
         $overpassResult = parent::send();
         if (!$overpassResult->isSuccessful()) {
-            throw new Exception("Overpass query failed: $overpassResult");
+            error_log("BBoxEtymologyOverpassWikidataQuery: Overpass query failed: $overpassResult");
+            throw new Exception("Overpass query failed");
         } elseif (!$overpassResult->hasResult()) {
             throw new Exception("Overpass query didn't return any result");
         } else {
@@ -47,7 +50,7 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
                 $out = $overpassResult;
             } else {
                 $wikidataQuery = new GeoJSONEtymologyWikidataQuery($overpassGeoJSON, $this->language, $this->wikidataEndpointURL);
-                $wikidataResult=$wikidataQuery->send();
+                $wikidataResult = $wikidataQuery->send();
 
                 $out = $wikidataResult;
             }
