@@ -93,6 +93,7 @@ div.detail_container a.k-button {
 
 div.detail_container a.k-button img {
     max-width: 1.5em;
+    max-height: 1.5em;
     margin-right: 0.5em;
 }
 

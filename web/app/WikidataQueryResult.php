@@ -12,6 +12,7 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
         $xmlFields = [
             "wikidata"=>"uri",
             "wikipedia"=>"uri",
+            "commons"=>"literal",
             "name"=>"literal",
             "description"=>"literal",
             "gender"=>"literal",

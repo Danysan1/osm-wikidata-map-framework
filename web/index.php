@@ -65,10 +65,14 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         # if (ety.description) { # <h3>#:ety.description#</h3> # } #
                     </div>
                     <div class="info column">
-                        <a href="#:ety.wikidata#" class="k-button" target="_blank"><img src="img/wikidata.png" alt="Wikidata logo"> Wikidata</a>
+                        <a href="#:ety.wikidata#" class="k-button" target="_blank"><img src="img/wikidata.svg" alt="Wikidata logo"> Wikidata</a>
                         
                         # if (ety.wikipedia) { #
                         <a href="#:ety.wikipedia#" class="k-button" target="_blank"><img src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
+                        # } #
+                        
+                        # if (ety.commons) { #
+                        <a href="https://commons.wikimedia.org/wiki/Category:#:ety.commons#" class="k-button" target="_blank"><img src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
                         # } #
 
                         # if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) { #

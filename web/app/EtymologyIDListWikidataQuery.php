@@ -45,6 +45,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 (SAMPLE(?description) AS ?description)
                 (SAMPLE(?gender_name) AS ?gender)
                 (SAMPLE(?wikipedia) AS ?wikipedia)
+                (SAMPLE(?commons) AS ?commons)
                 (GROUP_CONCAT(DISTINCT ?occupation_name;SEPARATOR=', ') AS ?occupations)
                 (GROUP_CONCAT(DISTINCT ?citizenship_name;SEPARATOR=', ') AS ?citizenship)
                 (GROUP_CONCAT(DISTINCT ?picture;SEPARATOR='\t') AS ?pictures)
@@ -150,6 +151,10 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                         schema:inLanguage ?wikipedia_lang;
                         schema:isPartOf [ wikibase:wikiGroup 'wikipedia' ].
                     FILTER(?wikipedia_lang = '$language').
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P373 ?commons.
                 }
 
                 OPTIONAL {
