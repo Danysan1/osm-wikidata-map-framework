@@ -6,6 +6,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
         ['Dark', 'mapbox://styles/mapbox/dark-v10'],
         ['Satellite', 'mapbox://styles/mapbox/satellite-v9']
     ];
+let map;
 
 /**
  * Let the user choose the map style.
@@ -110,25 +111,35 @@ class BackgroundStyleControl {
     }
 }*/
 
-mapboxgl.accessToken = mapbox_gl_token;
-let params = window.location.hash ? window.location.hash.substr(1).split(",") : null,
-    startCenterLon = (params && params[0]) ? parseFloat(params[0]) : NaN,
-    startCenterLat = (params && params[1]) ? parseFloat(params[1]) : NaN,
-    startZoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
-if (isNaN(startCenterLon) || isNaN(startCenterLat) || isNaN(startZoom)) {
-    startCenterLon = default_center_lon;
-    startCenterLat = default_center_lat;
-    startZoom = default_zoom;
+function initMap() {
+    if (map) {
+        console.info("The map is already initialized");
+    } else {
+        console.info("Initializing the map");
+        mapboxgl.accessToken = mapbox_gl_token;
+        let params = window.location.hash ? window.location.hash.substr(1).split(",") : null,
+            startCenterLon = (params && params[0]) ? parseFloat(params[0]) : NaN,
+            startCenterLat = (params && params[1]) ? parseFloat(params[1]) : NaN,
+            startZoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
+        if (isNaN(startCenterLon) || isNaN(startCenterLat) || isNaN(startZoom)) {
+            startCenterLon = default_center_lon;
+            startCenterLat = default_center_lat;
+            startZoom = default_zoom;
+        }
+
+        map = new mapboxgl.Map({
+            container: 'map',
+            style: defaultBackgroundStyle, // stylesheet location
+            center: [startCenterLon, startCenterLat], // starting position [lon, lat]
+            zoom: startZoom, // starting zoom
+            /*pitch: 45, // starting pitch
+            bearing: -17.6,
+            antialias: true*/
+        });
+
+        map.on('load', mapLoadedHandler);
+    }
 }
-const map = new mapboxgl.Map({
-    container: 'map',
-    style: defaultBackgroundStyle, // stylesheet location
-    center: [startCenterLon, startCenterLat], // starting position [lon, lat]
-    zoom: startZoom, // starting zoom
-    /*pitch: 45, // starting pitch
-    bearing: -17.6,
-    antialias: true*/
-});
 
 /*function rotateCamera(timestamp) {
     // clamp the rotation between 0 -360 degrees
@@ -492,10 +503,6 @@ function mapLoadedHandler(e) {
         }
     });*/
 }
-map.on('load', mapLoadedHandler);
-
-
-$(document).ready(setCulture);
 
 function setCulture() {
     const culture = document.documentElement.lang;
@@ -505,11 +512,22 @@ function setCulture() {
 
 function featureToHTML(feature) {
     const detail_template_source = $("#detail_template").html();
-    console.info("featureToHTML", {
+    /*console.info("featureToHTML", {
         detail_template_source,
         feature,
         etymologies: JSON.parse(feature.properties.etymologies)
-    });
+    });*/
     const detail_template = kendo.template(detail_template_source);
     return detail_template(feature);
 }
+
+$(document).ready(function() {
+    setCulture();
+    // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
+    if (!mapboxgl.supported()) {
+        alert('Your browser does not support Mapbox GL');
+        Sentry.captureMessage("Device/Browser does not support Mapbox GL");
+    } else {
+        initMap();
+    }
+});

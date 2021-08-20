@@ -49,6 +49,7 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 </head>
 
 <body>
+    <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
     <div id='map'></div>
     <input type="hidden" id="threshold-zoom-level" value=<?= $thresholdZoomLevel; ?>>
 
