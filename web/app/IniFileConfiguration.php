@@ -1,10 +1,11 @@
 <?php
-require_once(__DIR__."/Configuration.php");
+require_once(__DIR__ . "/Configuration.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class IniFileConfiguration implements Configuration {
+class IniFileConfiguration implements Configuration
+{
 	/**
 	 * @var array<mixed>
 	 */
@@ -13,9 +14,10 @@ class IniFileConfiguration implements Configuration {
 	/**
 	 * @param string $iniFilePath
 	 */
-	public function __construct($iniFilePath = "/etc/open-etymology-map.ini") {
+	public function __construct($iniFilePath = __DIR__ . "/../open-etymology-map.ini")
+	{
 		$this->config = @parse_ini_file($iniFilePath);
-		if(empty($this->config)) {
+		if (empty($this->config)) {
 			http_response_code(500);
 			die(json_encode(["error" => "Configuration file not found"]));
 		}
@@ -26,7 +28,8 @@ class IniFileConfiguration implements Configuration {
 	 * @param string $key
 	 * @return boolean
 	 */
-	public function has($key) {
+	public function has($key)
+	{
 		return isset($this->config[$key]);
 	}
 
@@ -34,8 +37,9 @@ class IniFileConfiguration implements Configuration {
 	 * @param string $key
 	 * @return mixed
 	 */
-	public function get($key) {
-		if(!isset($this->config[$key])) {
+	public function get($key)
+	{
+		if (!isset($this->config[$key])) {
 			http_response_code(500);
 			die(json_encode(["error" => "Configuration not found: $key"]));
 		}

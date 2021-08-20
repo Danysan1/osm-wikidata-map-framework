@@ -81,15 +81,17 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
      */
     public function send()
     {
-        $cacheFilePath = $this->cacheFileBasePath . ($this->baseQuery::class) . "_cache.csv";
+        $cacheFilePath = $this->cacheFileBasePath . get_class($this->baseQuery) . "_cache.csv";
         $cacheFile = @fopen($cacheFilePath, "r");
         $timeoutThresholdTimestamp = time() - (60 * 60 * $this->cacheTimeoutHours);
         $result = null;
         $newCache = [];
-        if (!empty($cacheFile)) {
+        if (empty($cacheFile)) {
+            error_log("CachedBBoxQuery: Cache file not found, skipping cache search");
+        } else {
             if ($this->serverTiming) $this->serverTiming->add("cache_search_prepare");
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
-                //error_log("CachedBBoxEtymologyOverpassQuery::send old: ".json_encode($row));
+                //error_log("CachedBBoxQuery: ".json_encode($row));
                 $rowTimestamp = (int)$row[CACHE_COLUMN_TIMESTAMP];
                 $rowMinLat = (float)$row[CACHE_COLUMN_MIN_LAT];
                 $rowMaxLat = (float)$row[CACHE_COLUMN_MAX_LAT];
@@ -97,7 +99,7 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                 $rowMaxLon = (float)$row[CACHE_COLUMN_MAX_LON];
                 if ($rowTimestamp < $timeoutThresholdTimestamp) {
                     // Row too old, ignore
-                    error_log("CachedBBoxEtymologyOverpassQuery::send: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
+                    error_log("CachedBBoxQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
                 } elseif (
                     $rowMaxLat <= $this->getMaxLat() &&
                     $rowMinLat >= $this->getMinLat() &&
@@ -105,7 +107,7 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                     $rowMinLon >= $this->getMinLon()
                 ) {
                     // Row bbox is entirely contained by the query bbox, ignore
-                    error_log("CachedBBoxEtymologyOverpassQuery::send: trashing smaller bbox row");
+                    error_log("CachedBBoxQuery: trashing smaller bbox row");
                 } else {
                     // Row is still valid, add to new cache
                     array_push($newCache, $row);
@@ -119,7 +121,7 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                         /** @var array $cachedResult */
                         $cachedResult = json_decode((string)$row[CACHE_COLUMN_RESULT], true);
                         $result = new GeoJSONLocalQueryResult(true, $cachedResult);
-                        //error_log("CachedBBoxEtymologyOverpassQuery::send: cache hit for " . $this->getMinLat() . "/" . $this->getMinLon() . "/" . $this->getMaxLat() . "/" . $this->getMaxLon());
+                        //error_log("CachedBBoxQuery: cache hit for " . $this->getMinLat() . "/" . $this->getMinLon() . "/" . $this->getMaxLat() . "/" . $this->getMaxLon());
                     }
                 }
             }
@@ -129,7 +131,7 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
 
         if ($result == null) {
             // Cache miss, send query to Overpass
-            error_log("CachedBBoxEtymologyOverpassQuery::send: cache miss for " . $this->getMinLat() . "/" . $this->getMinLon() . "/" . $this->getMaxLat() . "/" . $this->getMaxLon());
+            error_log("CachedBBoxQuery: cache miss for " . $this->getMinLat() . "/" . $this->getMinLon() . "/" . $this->getMaxLat() . "/" . $this->getMaxLon());
             /**
              * @var GeoJSONQueryResult
              */
@@ -146,17 +148,21 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                     CACHE_COLUMN_MAX_LON => $this->getMaxLon(),
                     CACHE_COLUMN_RESULT => $result->getGeoJSON()
                 ];
-                //error_log("CachedBBoxEtymologyOverpassQuery::send new: ".json_encode($newRow));
+                //error_log("CachedBBoxQuery::send new: ".json_encode($newRow));
                 array_unshift($newCache, $newRow);
 
-                error_log("CachedBBoxEtymologyOverpassQuery::send: save cache of " . count($newCache) . " rows");
-                $cacheFile = fopen($cacheFilePath, "w+");
-                foreach ($newCache as $row) {
-                    fputcsv($cacheFile, $row);
+                error_log("CachedBBoxQuery: save cache of " . count($newCache) . " rows");
+                $cacheFile = @fopen($cacheFilePath, "w+");
+                if (empty($cacheFile)) {
+                    error_log("CachedBBoxQuery: failed to open cache file for writing");
+                } else {
+                    foreach ($newCache as $row) {
+                        fputcsv($cacheFile, $row);
+                    }
+                    fclose($cacheFile);
                 }
-                fclose($cacheFile);
             } else {
-                error_log("CachedBBoxEtymologyOverpassQuery::send: unsuccessful request to Overpass, discarding cache changes");
+                error_log("CachedBBoxQuery: unsuccessful request to Overpass, discarding cache changes");
             }
             if ($this->serverTiming) $this->serverTiming->add("cache_write");
         }

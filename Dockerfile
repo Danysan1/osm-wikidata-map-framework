@@ -29,9 +29,9 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) zip
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
-COPY ./open-etymology-map.template.ini /etc/open-etymology-map.ini
 USER www-data
 COPY --chown=www-data:www-data ./web /var/www/html
+COPY ./open-etymology-map.template.ini ./var/www/html/open-etymology-map.ini
 
 # docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
 # docker build --target "dev" --tag open-etymology-map:dev .

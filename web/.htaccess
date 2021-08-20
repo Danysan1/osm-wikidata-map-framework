@@ -1,0 +1,11 @@
+<Files "open-etymology-map.ini">  
+  Require all denied
+</Files>
+
+<Files "open-etymology-map.log">  
+  Require all denied
+</Files>
+
+<Files "open-etymology-cache">  
+  Require all denied
+</Files>

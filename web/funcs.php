@@ -26,6 +26,7 @@ function preparePage(Configuration $conf) {
 	\Sentry\init([
 		'dsn' => (string)$conf->get('sentry-php-dsn'),
 		'traces_sample_rate' => (float)$conf->get('sentry-php-rate'),
+		'environment' => (string)$conf->get('sentry-php-env'),
 	]);
 	set_exception_handler('handleException');
 	ini_set('session.cookie_httponly', 'true');
