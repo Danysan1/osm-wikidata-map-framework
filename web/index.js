@@ -179,11 +179,11 @@ function updateDataSource(e) {
     // https://leafletjs.com/reference-1.7.1.html#map-getbounds
     const bounds = map.getBounds(),
         southWest = bounds.getSouthWest(),
-        minLat = southWest.lat,
-        minLon = southWest.lng,
+        minLat = Math.round(southWest.lat * 1000) / 1000,
+        minLon = Math.round(southWest.lng * 1000) / 1000,
         northEast = bounds.getNorthEast(),
-        maxLat = northEast.lat,
-        maxLon = northEast.lng,
+        maxLat = Math.round(northEast.lat * 1000) / 1000,
+        maxLon = Math.round(northEast.lng * 1000) / 1000,
         zoomLevel = map.getZoom(),
         language = document.documentElement.lang,
         queryParams = {
@@ -409,7 +409,10 @@ function prepareOverpassLayers(overpass_url) {
 
 function mapMoveEndHandler(e) {
     updateDataSource(e);
-    window.location.hash = "#" + map.getCenter().lng + "," + map.getCenter().lat + "," + map.getZoom();
+    const lat = Math.round(map.getCenter().lat * 1000) / 1000,
+        lon = Math.round(map.getCenter().lng * 1000) / 1000,
+        zoom = Math.round(map.getZoom() * 10) / 10;
+    window.location.hash = "#" + lon + "," + lat + "," + zoom;
 }
 
 function mapLoadedHandler(e) {

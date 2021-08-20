@@ -9,11 +9,13 @@ require_once("./app/BBoxEtymologyOverpassQuery.php");
 require_once("./app/BBoxEtymologyCenterOverpassQuery.php");
 require_once("./app/CachedBBoxQuery.php");
 require_once("./funcs.php");
-$serverTiming->add("include");
+$serverTiming->add("0_include");
 
 $conf = new IniFileConfiguration();
+$serverTiming->add("1_readConfig");
+
 prepareJSON($conf);
-$serverTiming->add("prepare");
+$serverTiming->add("2_prepare");
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
@@ -63,10 +65,10 @@ if ($from == "bbox") {
 }
 
 $format = (string)getFilteredParamOrDefault( "format", FILTER_SANITIZE_STRING, null );
-$serverTiming->add("init");
+$serverTiming->add("3_init");
 
 $result = $overpassQuery->send();
-$serverTiming->add("query");
+$serverTiming->add("4_query");
 if(!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Overpass error: ".$result);
@@ -81,7 +83,7 @@ if(!$result->isSuccessful()) {
     $out = json_encode((array)$result->getResult()["elements"]);
 }
 
-$serverTiming->add("output");
+$serverTiming->add("5_output");
 $serverTiming->sendHeader();
 echo $out;
 

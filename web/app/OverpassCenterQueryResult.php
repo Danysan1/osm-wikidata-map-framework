@@ -1,10 +1,11 @@
 <?php
-require_once(__DIR__."/OverpassQueryResult.php");
+require_once(__DIR__ . "/OverpassQueryResult.php");
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class OverpassCenterQueryResult extends OverpassQueryResult {
+class OverpassCenterQueryResult extends OverpassQueryResult
+{
     /**
      * @param int $index
      * @param array $element
@@ -13,18 +14,23 @@ class OverpassCenterQueryResult extends OverpassQueryResult {
      */
     protected function convertElementToGeoJSONFeature($index, $element, $allElements)
     {
+        $elementID = (string)$element["type"] . "/" . (int)$element["id"];
         $feature = [
             "type" => "Feature",
             "geometry" => [],
+            "properties" => ["@id" => $elementID],
         ];
-        $feature["properties"]["@id"] = $element["type"]."/".$element["id"];
-        
-        if(empty($element["center"]["lon"]) || empty($element["center"]["lat"])) {
-            error_log("OverpassQueryResult::getGeoJSONData: node ".$element["id"]." has no coordinates");
+
+        if (empty($element["center"]["lon"]) || empty($element["center"]["lat"])) {
+            error_log("OverpassQueryResult::getGeoJSONData: $elementID has no coordinates");
             $feature = false;
         } else {
             $feature["geometry"]["type"] = "Point";
-            $feature["geometry"]["coordinates"] = [$element["center"]["lon"], $element["center"]["lat"]];
+            // https://docs.mapbox.com/help/troubleshooting/working-with-large-geojson-data/
+            $feature["geometry"]["coordinates"] = [
+                round($element["center"]["lon"], 5),
+                round($element["center"]["lat"], 5),
+            ];
         }
 
         return $feature;
