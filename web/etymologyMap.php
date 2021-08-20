@@ -1,9 +1,15 @@
 <?php
+require_once("./app/ServerTiming.php");
+$serverTiming = new ServerTiming();
+
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/CachedBBoxEtymologyOverpassWikidataQuery.php");
 require_once("./funcs.php");
+$serverTiming->add("include");
+
 $conf = new IniFileConfiguration();
 prepareJSON($conf);
+$serverTiming->add("prepare");
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
 $language = (string)getFilteredParamOrDefault( "language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language') );
@@ -27,7 +33,7 @@ if ($from == "bbox") {
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
 
     $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
-    error_log("BBox area: $bboxArea");
+    //error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("wikidata-bbox-max-area");
     if($bboxArea > $maxArea) {
         http_response_code(400);
@@ -52,22 +58,24 @@ if ($from == "bbox") {
 }
 
 $format = (string)getFilteredParamOrDefault( "format", FILTER_SANITIZE_STRING, null );
+$serverTiming->add("init");
 
 $result = $overpassQuery->send();
+$serverTiming->add("query");
 if(!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Query error: ".$result);
-    die('{"error":"Error getting result (overpass/wikidata server error)"}');
+    $out = '{"error":"Error getting result (overpass/wikidata server error)"}';
 } elseif (!$result->hasResult()) {
     http_response_code(500);
     error_log("Query no result: ".$result);
-    die('{"error":"Error getting result (bad response)"}');
+    $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($format == "geojson") {
-    echo $result->getGeoJSON();
+    $out = $result->getGeoJSON();
 } else {
-    echo json_encode((array)$result->getResult()["elements"]);
+    $out = json_encode((array)$result->getResult()["elements"]);
 }
 
-
-
-
+$serverTiming->add("output");
+$serverTiming->sendHeader();
+echo $out;

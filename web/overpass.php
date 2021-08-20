@@ -1,4 +1,7 @@
 <?php
+require_once("./app/ServerTiming.php");
+$serverTiming = new ServerTiming();
+
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/CenterEtymologyOverpassQuery.php");
 require_once("./app/BBoxEtymologyOverpassQuery.php");
@@ -6,8 +9,11 @@ require_once("./app/BBoxEtymologyOverpassQuery.php");
 require_once("./app/BBoxEtymologyCenterOverpassQuery.php");
 require_once("./app/CachedBBoxQuery.php");
 require_once("./funcs.php");
+$serverTiming->add("include");
+
 $conf = new IniFileConfiguration();
 prepareJSON($conf);
+$serverTiming->add("prepare");
 
 $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
@@ -20,7 +26,7 @@ if ($from == "bbox") {
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
 
     $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
-    error_log("BBox area: $bboxArea");
+    //error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("overpass-bbox-max-area");
     if($bboxArea > $maxArea) {
         http_response_code(400);
@@ -43,7 +49,8 @@ if ($from == "bbox") {
     $overpassQuery = new CachedBBoxQuery(
         $baseQuery,
         (string)$conf->get("cache-file-base-path"),
-        (int)$conf->get("cache-timeout-hours")
+        (int)$conf->get("cache-timeout-hours"),
+        $serverTiming
     );
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError( "centerLat", FILTER_VALIDATE_FLOAT );
@@ -56,22 +63,26 @@ if ($from == "bbox") {
 }
 
 $format = (string)getFilteredParamOrDefault( "format", FILTER_SANITIZE_STRING, null );
+$serverTiming->add("init");
 
 $result = $overpassQuery->send();
+$serverTiming->add("query");
 if(!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Overpass error: ".$result);
-    die('{"error":"Error getting result (overpass server error)"}');
+    $out = '{"error":"Error getting result (overpass server error)"}';
 } elseif (!$result->hasResult()) {
     http_response_code(500);
     error_log("Overpass no result: ".$result);
-    die('{"error":"Error getting result (bad response)"}');
+    $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($format == "geojson") {
-    echo $result->getGeoJSON();
+    $out = $result->getGeoJSON();
 } else {
-    echo json_encode((array)$result->getResult()["elements"]);
+    $out = json_encode((array)$result->getResult()["elements"]);
 }
 
-
+$serverTiming->add("output");
+$serverTiming->sendHeader();
+echo $out;
 
 

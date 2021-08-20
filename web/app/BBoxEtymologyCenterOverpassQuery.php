@@ -29,7 +29,9 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
             $maxLon,
             "[out:json][timeout:25];
             (
+                //node['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
                 way['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
+                //relation['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
             );
             out ids center;",
             $endpointURL

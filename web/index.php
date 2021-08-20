@@ -4,13 +4,16 @@ require_once("./funcs.php");
 $conf = new IniFileConfiguration();
 prepareHTML($conf);
 
-$lang = [];
-if (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
-    preg_match("/([a-z]{2}-[A-Z]{2})/", (string)$_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang);
-    //error_log($_SERVER['HTTP_ACCEPT_LANGUAGE']." => ".json_encode($lang));
-}
-if (isset($lang[0])) {
-    $defaultCulture = $lang[0];
+$langMatches = [];
+if(!empty($_REQUEST['lang'])
+    && is_string($_REQUEST['lang'])
+    && preg_match("/^([a-z]{2}-[A-Z]{2})$/", $_REQUEST['lang'])) {
+    $defaultCulture = $_REQUEST['lang'];
+} elseif (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])
+    && is_string($_SERVER['HTTP_ACCEPT_LANGUAGE'])
+    && preg_match("/([a-z]{2}-[A-Z]{2})/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $langMatches)
+    && isset($langMatches[0])) {
+    $defaultCulture = $langMatches[0];
 } elseif ($conf->has('default-language')) {
     $defaultCulture = (string)$conf->get('default-language');
 } else {

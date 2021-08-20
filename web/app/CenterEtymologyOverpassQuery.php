@@ -24,9 +24,9 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
         parent::__construct(
             "[out:json][timeout:25];
             (
-              node['name:etymology:wikidata'](around:$radius,$lat,$lon);
+              //node['name:etymology:wikidata'](around:$radius,$lat,$lon);
               way['name:etymology:wikidata'](around:$radius,$lat,$lon);
-              relation['name:etymology:wikidata'](around:$radius,$lat,$lon);
+              //relation['name:etymology:wikidata'](around:$radius,$lat,$lon);
             );
             out body;
             >;

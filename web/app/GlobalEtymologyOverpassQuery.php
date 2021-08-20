@@ -13,9 +13,9 @@ class GlobalEtymologyOverpassQuery extends OverpassQuery {
         parent::__construct(
             "[out:json][timeout:25];
             (
-              node['name:etymology:wikidata'];
+              //node['name:etymology:wikidata'];
               way['name:etymology:wikidata'];
-              relation['name:etymology:wikidata'];
+              //relation['name:etymology:wikidata'];
             );
             out body;
             >;
