@@ -25,7 +25,7 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
         }
         $this->geoJSONInputData = $geoJSONData;
 
-        $etymologyIDs = [];
+        $etymologyIDSet = [];
         foreach ($geoJSONData["features"] as $feature) {
             if (empty($feature)) {
                 throw new Exception("Feature is empty");
@@ -40,10 +40,11 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
                     throw new Exception("Etymology IDs is not an array");
                 }
                 foreach ($etymologies as $etymology) {
-                    $etymologyIDs[] = (string)$etymology["id"];
+                    $etymologyIDSet[(string)$etymology["id"]] = true; // Using array keys guarantees uniqueness
                 }
             }
         }
+        $etymologyIDs = array_keys($etymologyIDSet);
 
         parent::__construct($etymologyIDs, $language, $endpointURL);
     }

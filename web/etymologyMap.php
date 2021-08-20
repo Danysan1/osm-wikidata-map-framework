@@ -28,7 +28,7 @@ if ($from == "bbox") {
 
     $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
     error_log("BBox area: $bboxArea");
-    $maxArea = (float)$conf->get("bbox-max-area");
+    $maxArea = (float)$conf->get("wikidata-bbox-max-area");
     if($bboxArea > $maxArea) {
         http_response_code(400);
         die('{"error":"The requested area is too large. Please use a smaller area."};');

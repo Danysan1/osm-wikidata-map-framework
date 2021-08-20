@@ -5,11 +5,13 @@ $conf = new IniFileConfiguration();
 prepareHTML($conf);
 
 $lang = [];
-preg_match("/([a-z]{2}-[A-Z]{2})/", (string)$_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang);
-//error_log($_SERVER['HTTP_ACCEPT_LANGUAGE']." => ".json_encode($lang));
-if(isset($lang[0])) {
+if (!empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])) {
+    preg_match("/([a-z]{2}-[A-Z]{2})/", (string)$_SERVER['HTTP_ACCEPT_LANGUAGE'], $lang);
+    //error_log($_SERVER['HTTP_ACCEPT_LANGUAGE']." => ".json_encode($lang));
+}
+if (isset($lang[0])) {
     $defaultCulture = $lang[0];
-} elseif($conf->has('default-language')) {
+} elseif ($conf->has('default-language')) {
     $defaultCulture = (string)$conf->get('default-language');
 } else {
     $defaultCulture = "en-US";
@@ -20,18 +22,14 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 ?>
 
 <!DOCTYPE html>
-<html lang="<?=$defaultCulture;?>">
+<html lang="<?= $defaultCulture; ?>">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script
-    src="https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js"
-    integrity="sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU"
-    crossorigin="anonymous"
-    type="application/javascript"
-    ></script>
+    <script src="https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js" integrity="sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU" crossorigin="anonymous" type="application/javascript"></script>
     <script src="./init.php" type="application/javascript"></script>
 
     <title>Open Etymology Map</title>
@@ -40,18 +38,19 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
     <script defer src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
     <script defer src="https://kendo.cdn.telerik.com/2021.2.616/js/jquery.min.js" type="application/javascript"></script>
     <script defer src="https://kendo.cdn.telerik.com/2021.2.616/js/kendo.all.min.js" type="application/javascript"></script>
-    <script defer src="https://kendo.cdn.telerik.com/2021.2.616/js/messages/kendo.messages.<?=$defaultCulture;?>.min.js" type="application/javascript"></script>
+    <script defer src="https://kendo.cdn.telerik.com/2021.2.616/js/messages/kendo.messages.<?= $defaultCulture; ?>.min.js" type="application/javascript"></script>
     <script defer src="./index.js" type="application/javascript"></script>
-    
+
     <link rel="stylesheet" href="./style.css" type="text/css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" type="text/css">
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.common.min.css" type="text/css" />
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.bootstrap.min.css" type="text/css" />
 </head>
+
 <body>
     <div id='map'></div>
-    <input type="hidden" id="threshold-zoom-level" value=<?=$thresholdZoomLevel;?> >
+    <input type="hidden" id="threshold-zoom-level" value=<?= $thresholdZoomLevel; ?>>
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">
@@ -100,9 +99,9 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                     </div>
                     # if (ety.pictures) { #
                     <div class="pictures column">
-                    # ety.pictures.forEach(function (img) { #
+                    # ety.pictures.forEach(function (img,n) { if(n < 5) { #
                         <a href="#=img#" target="_blank"><img src="#=img#" alt="Etymology picture" /></a>
-                    # }); #
+                    # }}); #
                     </div>
                     # } #
                 </div>
@@ -111,4 +110,5 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
         </div>
     </script>
 </body>
+
 </html>
