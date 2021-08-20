@@ -9,6 +9,7 @@ require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php"
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
+use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item in a bounding box which has an etymology.

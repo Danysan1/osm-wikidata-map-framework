@@ -33,7 +33,7 @@ class ServerTiming
     public function add($name)
     {
         if (empty($name))
-            throw new InvalidArgumentException("ServerTiming::add(): Invalid name");
+            throw new \InvalidArgumentException("ServerTiming::add(): Invalid name");
 
         $this->times[] = [$name, microtime(true)];
     }

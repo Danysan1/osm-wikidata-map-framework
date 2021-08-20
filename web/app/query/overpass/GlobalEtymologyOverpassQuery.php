@@ -7,6 +7,7 @@ require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php"
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
+use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology around the globe.

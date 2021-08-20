@@ -9,6 +9,7 @@ require_once(__DIR__ . "/../../result/overpass/OverpassCenterQueryResult.php");
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\Overpass\OverpassCenterQueryResult;
+use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves only the centroid and the id of any item in a bounding box which has an etymology.
