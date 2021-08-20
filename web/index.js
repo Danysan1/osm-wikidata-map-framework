@@ -326,10 +326,10 @@ function prepareOverpassLayers(overpass_url) {
             // - Yellow, 30px circles when point count is between 100 and 750
             // - Pink, 40px circles when point count is greater than or equal to 750
             'circle-color': [
-                'step', ['get', 'point_count'], '#51bbd6', 100, '#f1f075', 750, '#f28cb1'
+                'step', ['get', 'point_count'], '#51bbd6', 30, '#f1f075', 750, '#f28cb1'
             ],
             'circle-radius': [
-                'step', ['get', 'point_count'], 20, 100, 30, 750, 40
+                'step', ['get', 'point_count'], 20, 30, 30, 750, 40
             ]
         }
     });
@@ -344,6 +344,20 @@ function prepareOverpassLayers(overpass_url) {
             'text-field': '{point_count_abbreviated}',
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12
+        }
+    });
+
+    map.addLayer({
+        id: 'overpass_layer_point',
+        type: 'circle',
+        source: 'overpass_source',
+        maxzoom: thresholdZoomLevel,
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+            'circle-color': '#11b4da',
+            'circle-radius': 10,
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#fff'
         }
     });
 
@@ -366,13 +380,20 @@ function prepareOverpassLayers(overpass_url) {
         );
     });
 
-    map.on('mouseenter', 'overpass_layer_cluster', () => {
-        map.getCanvas().style.cursor = 'pointer';
+    map.on('click', 'overpass_layer_point', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['overpass_layer_point']
+        });
+        map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: thresholdZoomLevel + 1
+        });
     });
 
-    map.on('mouseleave', 'overpass_layer_cluster', () => {
-        map.getCanvas().style.cursor = '';
-    });
+    map.on('mouseenter', 'overpass_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'overpass_layer_cluster', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'overpass_layer_point', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'overpass_layer_point', () => map.getCanvas().style.cursor = '');
 }
 
 function mapMoveEndHandler(e) {
