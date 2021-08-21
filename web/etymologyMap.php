@@ -4,11 +4,13 @@ use \App\ServerTiming;
 $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
+require_once("./app/BaseBoundingBox.php");
 require_once("./app/query/combined/CachedBBoxEtymologyOverpassWikidataQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
+use \App\BaseBoundingBox;
 use \App\Query\Combined\CachedBBoxEtymologyOverpassWikidataQuery;
 
 $conf = new IniFileConfiguration();
@@ -37,8 +39,8 @@ if ($from == "bbox") {
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
-
-    $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
+    $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+    $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("wikidata-bbox-max-area");
     if($bboxArea > $maxArea) {
@@ -46,12 +48,8 @@ if ($from == "bbox") {
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
     
-    //$overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon);
     $overpassQuery = new CachedBBoxEtymologyOverpassWikidataQuery(
-        $minLat,
-        $minLon,
-        $maxLat,
-        $maxLon,
+        $bbox,
         $overpassEndpointURL,
         $wikidataEndpointURL,
         $safeLanguage,

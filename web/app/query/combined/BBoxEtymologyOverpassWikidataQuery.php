@@ -2,10 +2,12 @@
 
 namespace App\Query\Combined;
 
+require_once(__DIR__ . '/../../BoundingBox.php');
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/../overpass/BBoxEtymologyOverpassQuery.php");
 require_once(__DIR__ . "/../wikidata/GeoJSONEtymologyWikidataQuery.php");
 
+use \App\BoundingBox;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Wikidata\GeoJSONEtymologyWikidataQuery;
@@ -29,18 +31,15 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
     private $wikidataEndpointURL;
 
     /**
-     * @param float $minLat
-     * @param float $minLon
-     * @param float $maxLat
-     * @param float $maxLon
+     * @param BoundingBox $bbox
      * @param string $overpassEndpointURL
      * @param string $wikidataEndpointURL
      * @param string $language
      */
-    public function __construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL, $wikidataEndpointURL, $language)
+    public function __construct($bbox, $overpassEndpointURL, $wikidataEndpointURL, $language)
     {
-        //$this->overpassQuery = new BBoxEtymologyOverpassQuery($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL);
-        parent::__construct($minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL);
+        //$this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassEndpointURL);
+        parent::__construct($bbox, $overpassEndpointURL);
 
         $this->language = $language;
         $this->wikidataEndpointURL = $wikidataEndpointURL;

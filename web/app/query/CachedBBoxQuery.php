@@ -6,11 +6,13 @@ require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/../result/GeoJSONQueryResult.php");
 require_once(__DIR__ . "/../result/GeoJSONLocalQueryResult.php");
 require_once(__DIR__ . "/../ServerTiming.php");
+require_once(__DIR__ . "/../BaseBoundingBox.php");
 
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\ServerTiming;
+use App\BaseBoundingBox;
 
 define("CACHE_COLUMN_TIMESTAMP", 0);
 define("CACHE_COLUMN_MIN_LAT", 1);
@@ -58,24 +60,9 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
         $this->serverTiming = $serverTiming;
     }
 
-    public function getMinLat()
+    public function getBBox()
     {
-        return $this->baseQuery->getMinLat();
-    }
-
-    public function getMaxLat()
-    {
-        return $this->baseQuery->getMaxLat();
-    }
-
-    public function getMinLon()
-    {
-        return $this->baseQuery->getMinLon();
-    }
-
-    public function getMaxLon()
-    {
-        return $this->baseQuery->getMaxLon();
+        return $this->baseQuery->getBBox();
     }
 
     public function getQuery()
@@ -108,31 +95,22 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                 $rowMaxLat = (float)$row[CACHE_COLUMN_MAX_LAT];
                 $rowMinLon = (float)$row[CACHE_COLUMN_MIN_LON];
                 $rowMaxLon = (float)$row[CACHE_COLUMN_MAX_LON];
+                $rowBBox = new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
                 if ($rowTimestamp < $timeoutThresholdTimestamp) {
                     // Row too old, ignore
                     error_log("CachedBBoxQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
-                } elseif (
-                    $rowMaxLat <= $this->getMaxLat() &&
-                    $rowMinLat >= $this->getMinLat() &&
-                    $rowMaxLon <= $this->getMaxLon() &&
-                    $rowMinLon >= $this->getMinLon()
-                ) {
+                } elseif ($this->getBBox()->contains($rowBBox)) {
                     // Row bbox is entirely contained by the query bbox, ignore
                     error_log("CachedBBoxQuery: trashing smaller bbox row");
                 } else {
                     // Row is still valid, add to new cache
                     array_push($newCache, $row);
-                    if (
-                        $rowMaxLat >= $this->getMaxLat() &&
-                        $rowMinLat <= $this->getMinLat() &&
-                        $rowMaxLon >= $this->getMaxLon() &&
-                        $rowMinLon <= $this->getMinLon()
-                    ) {
+                    if ($rowBBox->contains($this->getBBox())) {
                         // Row bbox contains entirely the query bbox, cache hit!
                         /** @var array $cachedResult */
                         $cachedResult = json_decode((string)$row[CACHE_COLUMN_RESULT], true);
                         $result = new GeoJSONLocalQueryResult(true, $cachedResult);
-                        //error_log("CachedBBoxQuery: cache hit for " . $this->getMinLat() . "/" . $this->getMinLon() . "/" . $this->getMaxLat() . "/" . $this->getMaxLon());
+                        //error_log("CachedBBoxQuery: cache hit for " . $this->getBBox());
                     }
                 }
             }
@@ -142,7 +120,7 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
 
         if ($result == null) {
             // Cache miss, send query to Overpass
-            error_log("CachedBBoxQuery: cache miss for " . $this->getMinLat() . "/" . $this->getMinLon() . "/" . $this->getMaxLat() . "/" . $this->getMaxLon());
+            error_log("CachedBBoxQuery: cache miss for " . $this->getBBox());
             /**
              * @var GeoJSONQueryResult
              */
@@ -153,10 +131,10 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                 // Write the result to the cache file
                 $newRow = [
                     CACHE_COLUMN_TIMESTAMP => time(),
-                    CACHE_COLUMN_MIN_LAT => $this->getMinLat(),
-                    CACHE_COLUMN_MAX_LAT => $this->getMaxLat(),
-                    CACHE_COLUMN_MIN_LON => $this->getMinLon(),
-                    CACHE_COLUMN_MAX_LON => $this->getMaxLon(),
+                    CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
+                    CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
+                    CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
+                    CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
                     CACHE_COLUMN_RESULT => $result->getGeoJSON()
                 ];
                 //error_log("CachedBBoxQuery::send new: ".json_encode($newRow));

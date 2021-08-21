@@ -9,7 +9,6 @@ require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 use App\Query\GeoJSONQuery;
 use App\Query\Wikidata\GeoJSONInputEtymologyWikidataQuery;
 use App\Result\GeoJSONLocalQueryResult;
-use \App\Result\GeoJSONQueryResult;
 
 /**
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.
@@ -39,7 +38,7 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
     }
 
     /**
-     * @return GeoJSONQueryResult
+     * @return \App\Result\GeoJSONQueryResult
      */
     public function send()
     {

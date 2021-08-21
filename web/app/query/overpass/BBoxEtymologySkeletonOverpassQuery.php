@@ -2,8 +2,10 @@
 
 namespace App\Query\Overpass;
 
+require_once(__DIR__ . "/../../BoundingBox.php");
 require_once(__DIR__ . "/BBoxOverpassQuery.php");
 
+use \App\BoundingBox;
 use \App\Query\Overpass\BBoxOverpassQuery;
 
 /**
@@ -14,24 +16,19 @@ use \App\Query\Overpass\BBoxOverpassQuery;
 class BBoxEtymologySkeletonOverpassQuery extends BBoxOverpassQuery
 {
     /**
-     * @param float $minLat
-     * @param float $minLon
-     * @param float $maxLat
-     * @param float $maxLon
+     * @param BoundingBox $bbox
      * @param string $endpointURL
      */
-    public function __construct($minLat, $minLon, $maxLat, $maxLon, $endpointURL)
+    public function __construct($bbox, $endpointURL)
     {
+        $bboxString = $bbox->asBBoxString();
         parent::__construct(
-            $minLat,
-            $minLon,
-            $maxLat,
-            $maxLon,
+            $bbox,
             "[out:json][timeout:25];
             (
-                //node['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
-                way['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
-                //relation['name:etymology:wikidata']($minLat,$minLon,$maxLat,$maxLon);
+                //node['name:etymology:wikidata']($bboxString);
+                way['name:etymology:wikidata']($bboxString);
+                //relation['name:etymology:wikidata']($bboxString);
             );
             out skel;
             >;

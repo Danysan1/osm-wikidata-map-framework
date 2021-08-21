@@ -5,11 +5,11 @@ namespace App\Query\Overpass;
 require_once(__DIR__ . "/OverpassQuery.php");
 require_once(__DIR__ . "/../GeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
+require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
-use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology in the vicinity of a central point.
@@ -73,7 +73,7 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
     }
 
     /**
-     * @return GeoJSONQueryResult
+     * @return \App\Result\GeoJSONQueryResult
      */
     public function send()
     {

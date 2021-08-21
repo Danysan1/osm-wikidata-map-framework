@@ -3,8 +3,10 @@
 namespace App\Query;
 
 require_once(__DIR__."/Query.php");
+require_once(__DIR__."/../BoundingBox.php");
 
 use \App\Query\Query;
+use \App\BoundingBox;
 
 /**
  * A query which takes a geographic bounding box and returns all the features in the requested area with the expected characteristics.
@@ -13,22 +15,7 @@ use \App\Query\Query;
  */
 interface BBoxQuery extends Query {
     /**
-     * @return float
+     * @return BoundingBox
      */
-    public function getMinLat();
-
-    /**
-     * @return float
-     */
-    public function getMinLon();
-
-    /**
-     * @return float
-     */
-    public function getMaxLat();
-
-    /**
-     * @return float
-     */
-    public function getMaxLon();
+    public function getBBox();
 }

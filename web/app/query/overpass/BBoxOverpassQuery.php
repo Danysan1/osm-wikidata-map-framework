@@ -2,8 +2,10 @@
 
 namespace App\Query\Overpass;
 
+require_once(__DIR__ . "/../../BoundingBox.php");
 require_once(__DIR__ . "/OverpassQuery.php");
 
+use \App\BoundingBox;
 use \App\Query\Overpass\OverpassQuery;
 
 /**
@@ -14,64 +16,26 @@ use \App\Query\Overpass\OverpassQuery;
 class BBoxOverpassQuery extends OverpassQuery
 {
     /**
-     * @var float
+     * @var BoundingBox
      */
-    private $minLat, $minLon, $maxLat, $maxLon;
+    private $bbox;
 
     /**
-     * @param float $minLat
-     * @param float $minLon
-     * @param float $maxLat
-     * @param float $maxLon
+     * @param BoundingBox $bbox
      * @param string $query
      * @param string $endpointURL
      */
-    public function __construct($minLat, $minLon, $maxLat, $maxLon, $query, $endpointURL)
+    public function __construct($bbox, $query, $endpointURL)
     {
         parent::__construct($query, $endpointURL);
-        $this->minLat = $minLat;
-        $this->minLon = $minLon;
-        $this->maxLat = $maxLat;
-        $this->maxLon = $maxLon;
+        $this->bbox = $bbox;
     }
 
     /**
-     * @return float
+     * @return BoundingBox
      */
-    public function getMinLat()
+    public function getBBox()
     {
-        return $this->minLat;
-    }
-
-    /**
-     * @return float
-     */
-    public function getMinLon()
-    {
-        return $this->minLon;
-    }
-
-    /**
-     * @return float
-     */
-    public function getMaxLat()
-    {
-        return $this->maxLat;
-    }
-
-    /**
-     * @return float
-     */
-    public function getMaxLon()
-    {
-        return $this->maxLon;
-    }
-
-    /**
-     * @return string
-     */
-    public function getBBoxString()
-    {
-        return $this->minLat . "," . $this->minLon . "," . $this->maxLat . "," . $this->maxLon;
+        return $this->bbox;
     }
 }

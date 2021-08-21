@@ -4,6 +4,7 @@ use \App\ServerTiming;
 $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
+require_once("./app/BaseBoundingBox.php");
 require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
 //require_once("./app/BBoxEtymologySkeletonOverpassQuery.php");
@@ -13,6 +14,7 @@ require_once("./funcs.php");
 $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
+use \App\BaseBoundingBox;
 use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
 use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use App\Query\Overpass\CenterEtymologyOverpassQuery;
@@ -33,8 +35,8 @@ if ($from == "bbox") {
     $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
     $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
     $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
-
-    $bboxArea = ($maxLat-$minLat) * ($maxLon-$minLon);
+    $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+    $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("overpass-bbox-max-area");
     if($bboxArea > $maxArea) {
@@ -44,15 +46,15 @@ if ($from == "bbox") {
     
     /*if($onlySkeleton) {
         $baseQuery = new BBoxEtymologySkeletonOverpassQuery(
-            $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
+            $bbox, $overpassEndpointURL
         );
     } else*/if ($onlyCenter) {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery(
-            $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
+            $bbox, $overpassEndpointURL
         );
     } else {
         $baseQuery = new BBoxEtymologyOverpassQuery(
-            $minLat, $minLon, $maxLat, $maxLon, $overpassEndpointURL
+            $bbox, $overpassEndpointURL
         );
     }
     $overpassQuery = new CachedBBoxQuery(
