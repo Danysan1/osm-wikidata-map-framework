@@ -32,12 +32,14 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q684740', '#fbb03b', // real property
             'http://www.wikidata.org/entity/Q811979', '#fbb03b', // architectural structure
             'http://www.wikidata.org/entity/Q1516079', '#fbb03b', // cultural heritage ensemble
+            'http://www.wikidata.org/entity/Q33506', '#fbb03b', // museum
             'http://www.wikidata.org/entity/Q16970', '#fbb03b', // church
             'http://www.wikidata.org/entity/Q233324', '#fbb03b', // seminary
             'http://www.wikidata.org/entity/Q160742', '#fbb03b', // abbey
             'http://www.wikidata.org/entity/Q163687', '#fbb03b', // basilica
             'http://www.wikidata.org/entity/Q120560', '#fbb03b', // minor basilica
             'http://www.wikidata.org/entity/Q44613', '#fbb03b', // monastery
+            'http://www.wikidata.org/entity/Q1564373', '#fbb03b', // mission complex
             'http://www.wikidata.org/entity/Q179700', '#fbb03b', // statue
             'http://www.wikidata.org/entity/Q1779653', '#fbb03b', // colossal statue
             // Tragedies
@@ -70,8 +72,9 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q15135589', '#fed976', // religious site
             'http://www.wikidata.org/entity/Q15303838', '#fed976', // municipality seat
             'http://www.wikidata.org/entity/Q123705', '#fed976', // neighborhood
-            'http://www.wikidata.org/entity/Q8502', '#fed976', // mountain
-            'http://www.wikidata.org/entity/Q46831', '#fed976', // mountain range
+            'http://www.wikidata.org/entity/Q7315416', '#fed976', // residence park
+            //'http://www.wikidata.org/entity/Q8502', '#fed976', // mountain
+            //'http://www.wikidata.org/entity/Q46831', '#fed976', // mountain range
             '#223b53' // other
         ]
     };
@@ -371,6 +374,8 @@ function updateDataSource(e) {
         } else {
             prepareWikidataLayers(wikidata_url);
         }
+    } else if (zoomLevel < minZoomLevel) {
+        showSnackbar("Please zoom more to see data", "orange");
     } else {
         //queryParams.onlySkeleton = false;
         queryParams.onlyCenter = true;
