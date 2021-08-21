@@ -23,8 +23,6 @@ if(!empty($_REQUEST['lang'])
     $defaultCulture = "en-US";
 }
 
-$thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
-
 ?>
 
 <!DOCTYPE html>
@@ -57,7 +55,7 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
 <body>
     <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
     <div id='map'></div>
-    <input type="hidden" id="threshold-zoom-level" value=<?= $thresholdZoomLevel; ?>>
+    <div id="snackbar"></div>
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">

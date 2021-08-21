@@ -74,8 +74,16 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q46831', '#fed976', // mountain range
             '#223b53' // other
         ]
-    },
-    thresholdZoomLevel = parseInt($("#threshold-zoom-level").val());
+    };
+console.info({
+    thresholdZoomLevel,
+    minZoomLevel,
+    defaultBackgroundStyle,
+    defaultColorScheme,
+    default_center_lon,
+    default_center_lat,
+    default_zoom
+});
 let map;
 
 /**
@@ -241,6 +249,20 @@ class EtymologyColorControl {
 
 }
 
+/**
+ * Show the error snackbar
+ * 
+ * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
+ */
+function showSnackbar(message, color = "lightcoral") {
+    var x = document.getElementById("snackbar");
+    x.className = "show";
+    x.innerText = message;
+    x.style = "background-color:" + color;
+    // After 3 seconds, remove the show class from DIV
+    setTimeout(function() { x.className = x.className.replace("show", ""); }, 3000);
+}
+
 function initMap() {
     if (map) {
         console.info("The map is already initialized");
@@ -288,15 +310,24 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
         ready = e.isSourceLoaded;
-    //console.info('sourcedata event', { wikidataSourceEvent, ready, e });
+    //console.info('sourcedata event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, ready, e });
 
     if (ready) {
-        //console.info('sourcedata ready event', { wikidataSourceEvent, e });
+        //console.info('sourcedata ready event', { wikidataSourceEvent, overpassSourceEvent, e });
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
         } else {
             updateDataSource(e);
         }
+    }
+}
+
+function mapErrorHandler(err) {
+    console.trace('Map error: ', err);
+    if ((err.sourceId == "overpass_source" || err.sourceId == "wikidata_source") && err.error.status > 200) {
+        showSnackbar("An error occurred while fetching the data.");
+    } else {
+        showSnackbar("A map error occurred.");
     }
 }
 
@@ -334,6 +365,7 @@ function updateDataSource(e) {
             queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
+        showSnackbar("Fetching data...", "lightblue");
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
@@ -461,6 +493,7 @@ function prepareOverpassLayers(overpass_url) {
         source: 'overpass_source',
         type: 'circle',
         maxzoom: thresholdZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -482,6 +515,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'symbol',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         layout: {
             'text-field': '{point_count_abbreviated}',
@@ -495,6 +529,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'circle',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['!', ['has', 'point_count']],
         paint: {
             'circle-color': '#11b4da',
@@ -600,6 +635,8 @@ function mapLoadedHandler(e) {
     //map.addControl(new EtymologyColorControl());
 
     map.on('sourcedata', mapSourceDataHandler);
+
+    map.on('error', mapErrorHandler);
 }
 
 function setCulture() {

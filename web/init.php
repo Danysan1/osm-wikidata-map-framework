@@ -19,4 +19,6 @@ Sentry.init({
 var mapbox_gl_token = '<?=(string)$conf->get("mapbox-gl-token");?>',
     default_center_lat = <?=(float)$conf->get("default-center-lat");?>,
     default_center_lon = <?=(float)$conf->get("default-center-lon");?>,
-    default_zoom = <?=(float)$conf->get("default-zoom");?>;
+    default_zoom = <?=(int)$conf->get("default-zoom");?>,
+    thresholdZoomLevel = <?=(int)$conf->get("threshold-zoom-level");?>,
+    minZoomLevel = <?=(int)$conf->get("min-zoom-level");?>;
