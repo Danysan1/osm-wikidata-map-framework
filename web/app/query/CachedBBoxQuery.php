@@ -99,18 +99,21 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                 if ($rowTimestamp < $timeoutThresholdTimestamp) {
                     // Row too old, ignore
                     error_log("CachedBBoxQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
-                } elseif ($this->getBBox()->contains($rowBBox)) {
-                    // Row bbox is entirely contained by the query bbox, ignore
+                } elseif ($this->getBBox()->strictlyContains($rowBBox)) {
+                    // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
                     error_log("CachedBBoxQuery: trashing smaller bbox row");
                 } else {
                     // Row is still valid, add to new cache
                     array_push($newCache, $row);
-                    if ($rowBBox->contains($this->getBBox())) {
+                    if ($rowBBox->containsOrEquals($this->getBBox())) {
                         // Row bbox contains entirely the query bbox, cache hit!
                         /** @var array $cachedResult */
                         $cachedResult = json_decode((string)$row[CACHE_COLUMN_RESULT], true);
                         $result = new GeoJSONLocalQueryResult(true, $cachedResult);
+                        //error_log("CachedBBoxQuery: " . $rowBBox . " contains " . $this->getBBox());
                         //error_log("CachedBBoxQuery: cache hit for " . $this->getBBox());
+                    } else {
+                        //error_log("CachedBBoxQuery: " . $rowBBox . " does not contain " . $this->getBBox());
                     }
                 }
             }
@@ -137,7 +140,8 @@ class CachedBBoxQuery implements BBoxGeoJSONQuery
                     CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
                     CACHE_COLUMN_RESULT => $result->getGeoJSON()
                 ];
-                //error_log("CachedBBoxQuery::send new: ".json_encode($newRow));
+                //error_log("CachedBBoxQuery: add new row for " . $this->getBBox());
+                //error_log("CachedBBoxQuery new row: ".json_encode($newRow));
                 array_unshift($newCache, $newRow);
 
                 error_log("CachedBBoxQuery: save cache of " . count($newCache) . " rows");

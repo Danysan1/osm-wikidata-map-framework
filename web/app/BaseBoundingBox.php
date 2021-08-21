@@ -136,13 +136,29 @@ class BaseBoundingBox implements BoundingBox
         return $this->minLat > $this->maxLat;
     }
 
-    public function contains(BoundingBox $other)
-    {
+    public function equals(BoundingBox $other) {
+        return !empty($other)
+            && $this->minLat == $other->getMinLat()
+            && $this->minLon == $other->getMinLon()
+            && $this->maxLat == $other->getMaxLat()
+            && $this->maxLon == $other->getMaxLon();
+    }
+
+    public function containsOrEquals(BoundingBox $other) {
+        if(empty($other))
+            throw new \InvalidArgumentException("The compared BoundingBox must not be empty");
+        
         $containsLatitude = $this->minLat <= $other->getMinLat() && $this->maxLat >= $other->getMaxLat();
         $thisMinLon = $this->isAcrossAntimeridian() ? $this->minLon - 360 : $this->minLon;
         $otherMinLon = $other->isAcrossAntimeridian() ? $other->getMinLon() - 360 : $other->getMinLon();
         $containsLongitude = $thisMinLon <= $otherMinLon && $this->maxLon >= $other->getMaxLon();
-        return $containsLatitude && $containsLongitude;
+        return abs($containsLatitude && $containsLongitude);
+        // abs() should not be necessary as these values should already be positive, but for safety we use it anyway.
+    }
+
+    public function strictlyContains(BoundingBox $other)
+    {
+        return !empty($other) && $this->containsOrEquals($other) && !$this->equals($other);
     }
 
     public function getArea()
@@ -155,6 +171,6 @@ class BaseBoundingBox implements BoundingBox
 
     public function __toString()
     {
-        return self::class . "(minLat " . $this->minLat . ", minLon " . $this->minLon . ", maxLat " . $this->maxLat . ", maxLon " . $this->maxLon . ")";
+        return "BaseBoundingBox(" . $this->minLat . "," . $this->minLon . "," . $this->maxLat . "," . $this->maxLon . ")";
     }
 }
