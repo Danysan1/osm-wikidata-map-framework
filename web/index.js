@@ -1,18 +1,88 @@
 const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
-    thresholdZoomLevel = parseInt($("#threshold-zoom-level").val()),
-    backgroundStyles = [
-        ['Streets', 'mapbox://styles/mapbox/streets-v11'],
-        ['Light', 'mapbox://styles/mapbox/light-v10'],
-        ['Dark', 'mapbox://styles/mapbox/dark-v10'],
-        ['Satellite', 'mapbox://styles/mapbox/satellite-v9']
-    ];
+    backgroundStyles = {
+        'Streets': 'mapbox://styles/mapbox/streets-v11',
+        'Light': 'mapbox://styles/mapbox/light-v10',
+        'Dark': 'mapbox://styles/mapbox/dark-v10',
+        'Satellite': 'mapbox://styles/mapbox/satellite-v9',
+    },
+    defaultColorScheme = '#3bb2d0',
+    colorSchemes = {
+        'Blue': '#3bb2d0',
+        'Black': '#223b53',
+        'Red': '#e55e5e',
+        'Orange': '#fbb03b',
+        'Gender': [
+            // https://www.wikidata.org/wiki/Property:P21
+            // https://meyerweb.com/eric/tools/color-blend/#3BB2D0:E55E5E:3:hex
+            'match', ['get', 'genderID', ['at', 0, ['get', 'etymologies']]],
+            'http://www.wikidata.org/entity/Q6581072', '#e55e5e', // female
+            'http://www.wikidata.org/entity/Q1052281', '#BB737B', // transgender female
+            'http://www.wikidata.org/entity/Q1097630', '#908897', // intersex
+            'http://www.wikidata.org/entity/Q2449503', '#669DB4', // transgender male
+            'http://www.wikidata.org/entity/Q6581097', '#3bb2d0', // male
+            '#223b53' // other
+        ],
+        'Type': [
+            'match', ['get', 'instanceID', ['at', 0, ['get', 'etymologies']]],
+            // People
+            'http://www.wikidata.org/entity/Q5', '#3bb2d0', // person
+            // Buildings
+            'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
+            'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
+            'http://www.wikidata.org/entity/Q684740', '#fbb03b', // real property
+            'http://www.wikidata.org/entity/Q811979', '#fbb03b', // architectural structure
+            'http://www.wikidata.org/entity/Q1516079', '#fbb03b', // cultural heritage ensemble
+            'http://www.wikidata.org/entity/Q16970', '#fbb03b', // church
+            'http://www.wikidata.org/entity/Q233324', '#fbb03b', // seminary
+            'http://www.wikidata.org/entity/Q160742', '#fbb03b', // abbey
+            'http://www.wikidata.org/entity/Q163687', '#fbb03b', // basilica
+            'http://www.wikidata.org/entity/Q120560', '#fbb03b', // minor basilica
+            'http://www.wikidata.org/entity/Q44613', '#fbb03b', // monastery
+            'http://www.wikidata.org/entity/Q179700', '#fbb03b', // statue
+            'http://www.wikidata.org/entity/Q1779653', '#fbb03b', // colossal statue
+            // Tragedies
+            'http://www.wikidata.org/entity/Q178561', '#e55e5e', // battle
+            'http://www.wikidata.org/entity/Q3199915', '#e55e5e', // massacre
+            'http://www.wikidata.org/entity/Q750215', '#e55e5e', // mass murder
+            'http://www.wikidata.org/entity/Q891854', '#e55e5e', // bomb attack
+            'http://www.wikidata.org/entity/Q898712', '#e55e5e', // aircraft hijacking
+            'http://www.wikidata.org/entity/Q217327', '#e55e5e', // suicide attack
+            'http://www.wikidata.org/entity/Q2223653', '#e55e5e', // terrorist attack
+            // Areas
+            'http://www.wikidata.org/entity/Q1414991', '#fed976', // area
+            'http://www.wikidata.org/entity/Q23442', '#fed976', // island
+            'http://www.wikidata.org/entity/Q515', '#fed976', // city
+            'http://www.wikidata.org/entity/Q1549591', '#fed976', // big city
+            'http://www.wikidata.org/entity/Q702492', '#fed976', // urban area
+            'http://www.wikidata.org/entity/Q956214', '#fed976', // chef-lieu
+            'http://www.wikidata.org/entity/Q1637706', '#fed976', // million city
+            'http://www.wikidata.org/entity/Q747074', '#fed976', // comune of Italy
+            'http://www.wikidata.org/entity/Q42744322', '#fed976', // urban municipality of Germany
+            'http://www.wikidata.org/entity/Q1620908', '#fed976', // historical region
+            'http://www.wikidata.org/entity/Q2264924', '#fed976', // port settlement
+            'http://www.wikidata.org/entity/Q15661340', '#fed976', // ancient city
+            'http://www.wikidata.org/entity/Q902814', '#fed976', // border town
+            'http://www.wikidata.org/entity/Q5119', '#fed976', // capital
+            'http://www.wikidata.org/entity/Q2202509', '#fed976', // roman city
+            'http://www.wikidata.org/entity/Q3957', '#fed976', // town
+            'http://www.wikidata.org/entity/Q486972', '#fed976', // human settlement
+            'http://www.wikidata.org/entity/Q4946461', '#fed976', // spa-town
+            'http://www.wikidata.org/entity/Q15135589', '#fed976', // religious site
+            'http://www.wikidata.org/entity/Q15303838', '#fed976', // municipality seat
+            'http://www.wikidata.org/entity/Q123705', '#fed976', // neighborhood
+            'http://www.wikidata.org/entity/Q8502', '#fed976', // mountain
+            'http://www.wikidata.org/entity/Q46831', '#fed976', // mountain range
+            '#223b53' // other
+        ]
+    },
+    thresholdZoomLevel = parseInt($("#threshold-zoom-level").val());
 let map;
 
 /**
  * Let the user choose the map style.
  * 
  * Control implemented as ES6 class
- * https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
 class BackgroundStyleControl {
 
@@ -20,7 +90,7 @@ class BackgroundStyleControl {
         this._map = map;
 
         this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group background-style-ctrl';
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl background-style-ctrl';
 
         const table = document.createElement('table');
         this._container.appendChild(table);
@@ -47,10 +117,11 @@ class BackgroundStyleControl {
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
         td1.appendChild(this._ctrlDropDown);
 
-        for (const [text, value] of backgroundStyles) {
+        for (const [text, value] of Object.entries(backgroundStyles)) {
             const option = document.createElement('option');
             option.innerText = text;
-            option.value = value;
+            //option.value = value;
+            option.value = text;
             if (value === defaultBackgroundStyle) {
                 option.selected = true;
             }
@@ -71,8 +142,12 @@ class BackgroundStyleControl {
     }
 
     dropDownClickHandler(event) {
-        console.info("BackgroundStyleControl dropDown click", event);
-        this._map.setStyle(event.target.value);
+        //const backgroundStyle = event.target.value;
+        const backgroundStyle = backgroundStyles[event.target.value];
+        console.info("BackgroundStyleControl dropDown click", { event, backgroundStyle });
+
+        this._map.setStyle(backgroundStyle);
+
         this._ctrlDropDown.className = 'hiddenDropDown';
         //updateDataSource(event);
     }
@@ -80,27 +155,57 @@ class BackgroundStyleControl {
 }
 
 /**
- * 
+ * Let the user choose a color scheme
  * 
  * Control implemented as ES6 class
- * https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/color-switcher/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setpaintproperty
  **/
-/*class EtymologyColorControl {
-    btnClickHandler(x) {
-        console.info("EtymologyColorControl click", x);
-    }
+class EtymologyColorControl {
 
     onAdd(map) {
         this._map = map;
-        this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group';
 
-        //this._container.textContent = 'Hello, world';
+        this._container = document.createElement('div');
+        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl etymology-color-ctrl';
+
+        const table = document.createElement('table');
+        this._container.appendChild(table);
+
+        const tr = document.createElement('tr');
+        table.appendChild(tr);
+
+        const td1 = document.createElement('td'),
+            td2 = document.createElement('td');
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'etymology-color-ctrl-button';
+        ctrlBtn.title = 'Choose color scheme';
         ctrlBtn.textContent = '🎨';
-        ctrlBtn.onclick = this.btnClickHandler;
-        this._container.appendChild(ctrlBtn);
+        // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
+        ctrlBtn.onclick = this.btnClickHandler.bind(this);
+        td2.appendChild(ctrlBtn);
+
+        this._ctrlDropDown = document.createElement('select');
+        this._ctrlDropDown.className = 'hiddenDropDown';
+        this._ctrlDropDown.title = 'Color scheme';
+        this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
+        td1.appendChild(this._ctrlDropDown);
+
+        for (const [text, value] of Object.entries(colorSchemes)) {
+            const option = document.createElement('option');
+            option.innerText = text;
+            //option.value = value;
+            option.value = text;
+            if (value === defaultColorScheme) {
+                option.selected = true;
+            }
+            this._ctrlDropDown.appendChild(option);
+        }
 
         return this._container;
     }
@@ -109,7 +214,32 @@ class BackgroundStyleControl {
         this._container.parentNode.removeChild(this._container);
         this._map = undefined;
     }
-}*/
+
+    btnClickHandler(event) {
+        console.info("EtymologyColorControl button click", event);
+        this._ctrlDropDown.className = 'visibleDropDown';
+    }
+
+    dropDownClickHandler(event) {
+        //const colorScheme = event.target.value;
+        const colorScheme = colorSchemes[event.target.value];
+        console.info("EtymologyColorControl dropDown click", { event, colorScheme });
+
+        [
+            ["wikidata_layer_point", "circle-color"],
+            ["wikidata_layer_lineString", 'line-color'],
+            ["wikidata_layer_polygon", 'fill-color'],
+        ].forEach(([layerID, property]) => {
+            if (this._map.getLayer(layerID)) {
+                this._map.setPaintProperty(layerID, property, colorScheme);
+            }
+        });
+
+        this._ctrlDropDown.className = 'hiddenDropDown';
+        //updateDataSource(event);
+    }
+
+}
 
 function initMap() {
     if (map) {
@@ -161,7 +291,7 @@ function mapSourceDataHandler(e) {
     //console.info('sourcedata event', { wikidataSourceEvent, ready, e });
 
     if (ready) {
-        console.info('sourcedata ready event', { wikidataSourceEvent, e });
+        //console.info('sourcedata ready event', { wikidataSourceEvent, e });
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
         } else {
@@ -247,7 +377,7 @@ function prepareWikidataLayers(wikidata_url) {
         'paint': {
             'circle-radius': 8,
             'circle-stroke-width': 2,
-            'circle-color': '#0080ff',
+            'circle-color': defaultColorScheme,
             'circle-stroke-color': 'white'
         }
     });*/
@@ -259,27 +389,27 @@ function prepareWikidataLayers(wikidata_url) {
         "filter": ["==", ["geometry-type"], "LineString"],
         "minzoom": thresholdZoomLevel,
         'paint': {
-            'line-color': '#0080ff',
+            'line-color': defaultColorScheme,
             'line-opacity': 0.5,
             'line-width': 7
         }
     });
 
-    /*map.addLayer({
+    map.addLayer({
         'id': 'wikidata_layer_polygon',
         'source': 'wikidata_source',
         'type': 'fill',
         "filter": ["==", ["geometry-type"], "Polygon"],
         "minzoom": thresholdZoomLevel,
         'paint': {
-            'fill-color': '#0080ff', // blue color fill
+            'fill-color': defaultColorScheme,
             'fill-opacity': 0.5
         }
-    });*/
+    });
 
     // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
     // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-    [ /*"wikidata_layer_point",*/ "wikidata_layer_lineString" /*, "wikidata_layer_polygon"*/ ].forEach(function(layerID) {
+    ["wikidata_layer_point", "wikidata_layer_lineString", "wikidata_layer_polygon"].forEach(function(layerID) {
         // When a click event occurs on a feature in the states layer,
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
@@ -303,6 +433,8 @@ function prepareWikidataLayers(wikidata_url) {
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
         map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
     });
+
+    setTimeout(() => map.addControl(new EtymologyColorControl()), 1000);
 }
 
 /**

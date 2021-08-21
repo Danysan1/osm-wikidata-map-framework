@@ -9,7 +9,7 @@ require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
 //require_once("./app/BBoxEtymologySkeletonOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
-require_once("./app/query/CachedBBoxQuery.php");
+require_once("./app/query/decorators/CachedBBoxQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
@@ -18,7 +18,7 @@ use \App\BaseBoundingBox;
 use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
 use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use App\Query\Overpass\CenterEtymologyOverpassQuery;
-use App\Query\CachedBBoxQuery;
+use App\Query\Decorators\CachedBBoxQuery;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");

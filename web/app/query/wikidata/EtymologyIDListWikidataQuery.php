@@ -50,6 +50,8 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
             "SELECT ?wikidata
                 (COALESCE(SAMPLE(?name),SAMPLE(?all_names)) AS ?name)
                 (SAMPLE(?description) AS ?description)
+                (SAMPLE(?instanceID) AS ?instanceID)
+                (SAMPLE(?genderID) AS ?genderID)
                 (SAMPLE(?gender_name) AS ?gender)
                 (SAMPLE(?wikipedia) AS ?wikipedia)
                 (SAMPLE(?commons) AS ?commons)
@@ -118,8 +120,12 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P21 ?gender.
-                    ?gender rdfs:label ?gender_name.
+                    ?wikidata wdt:P31 ?instanceID.
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P21 ?genderID.
+                    ?genderID rdfs:label ?gender_name.
                     FILTER(lang(?gender_name)='$language').
                 }
 

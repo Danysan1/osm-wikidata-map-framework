@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Query;
+namespace App\Query\Decorators;
 
-require_once(__DIR__ . "/BBoxGeoJSONQuery.php");
-require_once(__DIR__ . "/../result/GeoJSONQueryResult.php");
-require_once(__DIR__ . "/../result/GeoJSONLocalQueryResult.php");
-require_once(__DIR__ . "/../ServerTiming.php");
-require_once(__DIR__ . "/../BaseBoundingBox.php");
+require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
+require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
+require_once(__DIR__ . "/../../ServerTiming.php");
+require_once(__DIR__ . "/../../BaseBoundingBox.php");
 
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\GeoJSONQueryResult;

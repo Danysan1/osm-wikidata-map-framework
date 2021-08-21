@@ -22,7 +22,9 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
             "commons"=>"literal",
             "name"=>"literal",
             "description"=>"literal",
+            "instanceID"=>"uri",
             "gender"=>"literal",
+            "genderID"=>"uri",
             "occupations"=>"literal",
             "pictures"=>"literal",
             "event_date"=>"literal",
@@ -34,6 +36,7 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
             "prizes"=>"literal",
             "citizenship"=>"literal",
         ];
+
         $in = $this->getSimpleXMLElement();
         $out = [];
         

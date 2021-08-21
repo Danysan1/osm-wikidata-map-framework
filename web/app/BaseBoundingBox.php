@@ -137,6 +137,9 @@ class BaseBoundingBox implements BoundingBox
     }
 
     public function equals(BoundingBox $other) {
+        /**
+         * @psalm-suppress RedundantCondition
+         */
         return !empty($other)
             && $this->minLat == $other->getMinLat()
             && $this->minLon == $other->getMinLon()
@@ -145,6 +148,9 @@ class BaseBoundingBox implements BoundingBox
     }
 
     public function containsOrEquals(BoundingBox $other) {
+        /**
+         * @psalm-suppress TypeDoesNotContainType
+         */
         if(empty($other))
             throw new \InvalidArgumentException("The compared BoundingBox must not be empty");
         
@@ -152,12 +158,14 @@ class BaseBoundingBox implements BoundingBox
         $thisMinLon = $this->isAcrossAntimeridian() ? $this->minLon - 360 : $this->minLon;
         $otherMinLon = $other->isAcrossAntimeridian() ? $other->getMinLon() - 360 : $other->getMinLon();
         $containsLongitude = $thisMinLon <= $otherMinLon && $this->maxLon >= $other->getMaxLon();
-        return abs($containsLatitude && $containsLongitude);
-        // abs() should not be necessary as these values should already be positive, but for safety we use it anyway.
+        return $containsLatitude && $containsLongitude;
     }
 
     public function strictlyContains(BoundingBox $other)
     {
+        /**
+         * @psalm-suppress RedundantCondition
+         */
         return !empty($other) && $this->containsOrEquals($other) && !$this->equals($other);
     }
 
@@ -166,7 +174,8 @@ class BaseBoundingBox implements BoundingBox
         $latitudeDiff = $this->maxLat - $this->minLat;
         $minLon = $this->isAcrossAntimeridian() ? $this->minLon - 360 : $this->minLon;
         $longitudeDiff = $this->maxLon - $minLon;
-        return $latitudeDiff * $longitudeDiff;
+        return abs($latitudeDiff * $longitudeDiff);
+        // abs() should not be necessary as these values should already be positive, but for safety we use it anyway.
     }
 
     public function __toString()

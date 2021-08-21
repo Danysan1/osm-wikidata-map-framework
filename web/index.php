@@ -91,12 +91,16 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                             #=ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                             (#:ety.death_place ? ety.death_place : "?"#)
                         </p>
-                        # } else if (ety.event_date || ety.event_place) { #
+                        # } else if (ety.event_date) { #
                         <hr />
                         <p>📅
-                            #=ety.event_date ? (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang) : "?"#,
-                            #:ety.event_place ? ety.event_place : "?"#
+                            #=ety.event_date ? (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                         </p>
+                        # } #
+
+                        # if (ety.event_place) { #
+                        <hr />
+                        <p>📍 #:ety.event_place ? ety.event_place : "?"#</p>
                         # } #
 
                         # if(ety.citizenship) { # <hr /><p>🌍 #:ety.citizenship#</p> # } #
