@@ -28,6 +28,8 @@ class WikidataQueryResult extends XMLRemoteQueryResult {
             "occupations"=>"literal",
             "pictures"=>"literal",
             "event_date"=>"literal",
+            "start_date"=>"literal",
+            "end_date"=>"literal",
             "birth_date"=>"literal",
             "death_date"=>"literal",
             "event_place"=>"literal",

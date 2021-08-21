@@ -96,6 +96,13 @@ $thresholdZoomLevel = (int)$conf->get('threshold-zoom-level');
                         <p>📅
                             #=ety.event_date ? (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang) : "?"#
                         </p>
+                        # } else if (ety.start_date || ety.end_date) { #
+                        <hr />
+                        <p>📅
+                            #=ety.start_date ? (new Date(ety.start_date)).toLocaleDateString(document.documentElement.lang) : "?"#
+                            -
+                            #=ety.end_date ? (new Date(ety.end_date)).toLocaleDateString(document.documentElement.lang) : "?"#
+                        </p>
                         # } #
 
                         # if (ety.event_place) { #

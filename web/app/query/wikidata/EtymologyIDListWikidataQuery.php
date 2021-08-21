@@ -60,6 +60,8 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 (GROUP_CONCAT(DISTINCT ?picture;SEPARATOR='\t') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name;SEPARATOR=', ') AS ?prizes)
                 (SAMPLE(?event_date) AS ?event_date)
+                (SAMPLE(?start_date) AS ?start_date)
+                (SAMPLE(?end_date) AS ?end_date)
                 (SAMPLE(?birth_date) AS ?birth_date)
                 (SAMPLE(?death_date) AS ?death_date)
                 (SAMPLE(?event_place_name) AS ?event_place)
@@ -131,6 +133,14 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
 
                 OPTIONAL {
                     ?wikidata wdt:P585 ?event_date.
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P580 ?start_date.
+                }
+
+                OPTIONAL {
+                    ?wikidata wdt:P582 ?end_date.
                 }
 
                 OPTIONAL {
