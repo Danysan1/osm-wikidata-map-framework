@@ -238,7 +238,7 @@ function prepareWikidataLayers(wikidata_url) {
         attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>',
     });
 
-    map.addLayer({
+    /*map.addLayer({
         'id': 'wikidata_layer_point',
         'source': 'wikidata_source',
         'type': 'circle',
@@ -250,7 +250,7 @@ function prepareWikidataLayers(wikidata_url) {
             'circle-color': '#0080ff',
             'circle-stroke-color': 'white'
         }
-    });
+    });*/
 
     map.addLayer({
         'id': 'wikidata_layer_lineString',
@@ -265,7 +265,7 @@ function prepareWikidataLayers(wikidata_url) {
         }
     });
 
-    map.addLayer({
+    /*map.addLayer({
         'id': 'wikidata_layer_polygon',
         'source': 'wikidata_source',
         'type': 'fill',
@@ -275,11 +275,11 @@ function prepareWikidataLayers(wikidata_url) {
             'fill-color': '#0080ff', // blue color fill
             'fill-opacity': 0.5
         }
-    });
+    });*/
 
     // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
     // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-    ["wikidata_layer_point", "wikidata_layer_lineString", "wikidata_layer_polygon"].forEach(function(layerID) {
+    [ /*"wikidata_layer_point",*/ "wikidata_layer_lineString" /*, "wikidata_layer_polygon"*/ ].forEach(function(layerID) {
         // When a click event occurs on a feature in the states layer,
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
@@ -468,43 +468,6 @@ function mapLoadedHandler(e) {
     //map.addControl(new EtymologyColorControl());
 
     map.on('sourcedata', mapSourceDataHandler);
-
-    /*rotateCamera(0); // Start the animation.
-
-    // Add 3d buildings and remove label layers to enhance the map
-    var layers = map.getStyle().layers;
-    for (var i = 0; i < layers.length; i++) {
-        if (layers[i].type === 'symbol' && layers[i].layout['text-field']) {
-            // remove text labels
-            map.removeLayer(layers[i].id);
-        }
-    }
-
-    map.addLayer({
-        'id': '3d-buildings',
-        'source': 'composite',
-        'source-layer': 'building',
-        'filter': ['==', 'extrude', 'true'],
-        'type': 'fill-extrusion',
-        'minzoom': 15,
-        'paint': {
-            'fill-extrusion-color': '#aaa',
-
-            // use an 'interpolate' expression to add a smooth transition effect to the
-            // buildings as the user zooms in
-            'fill-extrusion-height': [
-                "interpolate", ["linear"], ["zoom"],
-                15, 0,
-                15.05, ["get", "height"]
-            ],
-            'fill-extrusion-base': [
-                "interpolate", ["linear"], ["zoom"],
-                15, 0,
-                15.05, ["get", "min_height"]
-            ],
-            'fill-extrusion-opacity': .6
-        }
-    });*/
 }
 
 function setCulture() {
