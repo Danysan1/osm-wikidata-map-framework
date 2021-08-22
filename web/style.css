@@ -147,7 +147,8 @@ div.info>p {
     /* Black background color */
     /*background-color: lightcoral;*/
     opacity: 0.9;
-    color: #fff;
+    color: #333;
+    /*color: #fff;*/
     /* White text color */
     text-align: center;
     /* Centered text */

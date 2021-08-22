@@ -6,6 +6,4 @@
   Require all denied
 </Files>
 
-<Files "open-etymology-cache">  
-  Require all denied
-</Files>
+RedirectMatch 403 ^.*open-etymology-map-cache/.*$

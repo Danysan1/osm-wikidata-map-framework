@@ -8,10 +8,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
     defaultColorScheme = '#3bb2d0',
     colorSchemes = {
         'Blue': '#3bb2d0',
-        'Black': '#223b53',
-        'Red': '#e55e5e',
-        'Orange': '#fbb03b',
-        'Gender': [
+        'By gender': [
             // https://www.wikidata.org/wiki/Property:P21
             // https://meyerweb.com/eric/tools/color-blend/#3BB2D0:E55E5E:3:hex
             'match', ['get', 'genderID', ['at', 0, ['get', 'etymologies']]],
@@ -22,10 +19,11 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q6581097', '#3bb2d0', // male
             '#223b53' // other
         ],
-        'Type': [
+        'By type': [
             'match', ['get', 'instanceID', ['at', 0, ['get', 'etymologies']]],
             // People
-            'http://www.wikidata.org/entity/Q5', '#3bb2d0', // person
+            'http://www.wikidata.org/entity/Q5', '#3bb2d0', // human
+            'http://www.wikidata.org/entity/Q21070568', '#e55e5e', // human who may be fictional
             // Buildings
             'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
             'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
@@ -36,13 +34,14 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q16970', '#fbb03b', // church
             'http://www.wikidata.org/entity/Q233324', '#fbb03b', // seminary
             'http://www.wikidata.org/entity/Q160742', '#fbb03b', // abbey
+            'http://www.wikidata.org/entity/Q817056', '#fbb03b', // benedictine abbey
             'http://www.wikidata.org/entity/Q163687', '#fbb03b', // basilica
             'http://www.wikidata.org/entity/Q120560', '#fbb03b', // minor basilica
             'http://www.wikidata.org/entity/Q44613', '#fbb03b', // monastery
             'http://www.wikidata.org/entity/Q1564373', '#fbb03b', // mission complex
             'http://www.wikidata.org/entity/Q179700', '#fbb03b', // statue
             'http://www.wikidata.org/entity/Q1779653', '#fbb03b', // colossal statue
-            // Tragedies
+            // Historic events
             'http://www.wikidata.org/entity/Q178561', '#e55e5e', // battle
             'http://www.wikidata.org/entity/Q3199915', '#e55e5e', // massacre
             'http://www.wikidata.org/entity/Q750215', '#e55e5e', // mass murder
@@ -50,9 +49,8 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q898712', '#e55e5e', // aircraft hijacking
             'http://www.wikidata.org/entity/Q217327', '#e55e5e', // suicide attack
             'http://www.wikidata.org/entity/Q2223653', '#e55e5e', // terrorist attack
-            // Areas
-            'http://www.wikidata.org/entity/Q1414991', '#fed976', // area
-            'http://www.wikidata.org/entity/Q23442', '#fed976', // island
+            'http://www.wikidata.org/entity/Q175331', '#e55e5e', // Demonstration
+            // Cities
             'http://www.wikidata.org/entity/Q515', '#fed976', // city
             'http://www.wikidata.org/entity/Q1549591', '#fed976', // big city
             'http://www.wikidata.org/entity/Q702492', '#fed976', // urban area
@@ -60,7 +58,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q1637706', '#fed976', // million city
             'http://www.wikidata.org/entity/Q747074', '#fed976', // comune of Italy
             'http://www.wikidata.org/entity/Q42744322', '#fed976', // urban municipality of Germany
-            'http://www.wikidata.org/entity/Q1620908', '#fed976', // historical region
+            'http://www.wikidata.org/entity/Q15105893', '#fed976', // town in Croatia
             'http://www.wikidata.org/entity/Q2264924', '#fed976', // port settlement
             'http://www.wikidata.org/entity/Q15661340', '#fed976', // ancient city
             'http://www.wikidata.org/entity/Q902814', '#fed976', // border town
@@ -73,10 +71,19 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q15303838', '#fed976', // municipality seat
             'http://www.wikidata.org/entity/Q123705', '#fed976', // neighborhood
             'http://www.wikidata.org/entity/Q7315416', '#fed976', // residence park
-            //'http://www.wikidata.org/entity/Q8502', '#fed976', // mountain
-            //'http://www.wikidata.org/entity/Q46831', '#fed976', // mountain range
+            // Locations
+            'http://www.wikidata.org/entity/Q1414991', '#348C31', // area
+            'http://www.wikidata.org/entity/Q1620908', '#fed976', // historical region
+            'http://www.wikidata.org/entity/Q23442', '#348C31', // island
+            'http://www.wikidata.org/entity/Q8502', '#348C31', // mountain
+            'http://www.wikidata.org/entity/Q46831', '#348C31', // mountain range
+            'http://www.wikidata.org/entity/Q3777462', '#348C31', // alpine group
+            'http://www.wikidata.org/entity/Q54050', '#348C31', // hill
             '#223b53' // other
-        ]
+        ],
+        'Black': '#223b53',
+        'Red': '#e55e5e',
+        'Orange': '#fbb03b',
     };
 console.info({
     thresholdZoomLevel,

@@ -71,6 +71,15 @@ function prepareJSON(Configuration $conf) {
 }
 
 /**
+ * @param Configuration $conf
+ * @return void
+ */
+function prepareJS(Configuration $conf) {
+	preparePage($conf);
+	header( "Content-Type: application/javascript; charset=utf-8" );
+}
+
+/**
  * @param string $paramName
  * @param int $filter
  * @see https://www.php.net/manual/en/filter.filters.php
