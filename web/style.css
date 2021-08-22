@@ -97,13 +97,21 @@ div.detail_container a.k-button img {
     margin-right: 0.5em;
 }
 
-select.hiddenDropDown {
+select.hiddenElement,
+table.hiddenElement {
     display: none;
 }
 
 select.visibleDropDown {
     display: block;
-    margin: 0 2px;
+    margin-right: 0.5em;
+    margin-left: 0.5em;
+}
+
+div#snackbar,
+div.custom-ctrl,
+div#welcome_board {
+    opacity: 0.8;
 }
 
 div.custom-ctrl>table {
@@ -146,7 +154,6 @@ div.info>p {
     /*background-color: #333;*/
     /* Black background color */
     /*background-color: lightcoral;*/
-    opacity: 0.9;
     color: #333;
     /*color: #fff;*/
     /* White text color */
@@ -223,4 +230,13 @@ div.info>p {
         bottom: 0;
         opacity: 0;
     }
+}
+
+span.legend-key {
+    display: inline-block;
+    border-radius: 20%;
+    width: 10px;
+    height: 10px;
+    margin-left: 0.5em;
+    margin-right: 0.5em;
 }
