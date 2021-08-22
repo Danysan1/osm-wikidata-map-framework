@@ -154,7 +154,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
                 OPTIONAL {
                     ?wikidata wdt:P276 ?event_place.
                     ?event_place rdfs:label ?event_place_name.
-                    FILTER(lang(?event_place_name)='it').
+                    FILTER(lang(?event_place_name)='$language').
                 }
 
                 OPTIONAL {
