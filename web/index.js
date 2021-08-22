@@ -23,7 +23,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'match', ['get', 'instanceID', ['at', 0, ['get', 'etymologies']]],
             // People
             'http://www.wikidata.org/entity/Q5', '#3bb2d0', // human
-            'http://www.wikidata.org/entity/Q21070568', '#e55e5e', // human who may be fictional
+            'http://www.wikidata.org/entity/Q21070568', '#3bb2d0', // human who may be fictional
             // Buildings
             'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
             'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
@@ -43,6 +43,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q1779653', '#fbb03b', // colossal statue
             // Historic events
             'http://www.wikidata.org/entity/Q178561', '#e55e5e', // battle
+            'http://www.wikidata.org/entity/Q188055', '#e55e5e', // siege
             'http://www.wikidata.org/entity/Q3199915', '#e55e5e', // massacre
             'http://www.wikidata.org/entity/Q750215', '#e55e5e', // mass murder
             'http://www.wikidata.org/entity/Q891854', '#e55e5e', // bomb attack
@@ -73,13 +74,20 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/streets-v11',
             'http://www.wikidata.org/entity/Q7315416', '#fed976', // residence park
             // Locations
             'http://www.wikidata.org/entity/Q1414991', '#348C31', // area
-            'http://www.wikidata.org/entity/Q1620908', '#fed976', // historical region
+            'http://www.wikidata.org/entity/Q1620908', '#348C31', // historical region
+            'http://www.wikidata.org/entity/Q35657', '#348C31', // U.S. state
             'http://www.wikidata.org/entity/Q23442', '#348C31', // island
             'http://www.wikidata.org/entity/Q8502', '#348C31', // mountain
             'http://www.wikidata.org/entity/Q46831', '#348C31', // mountain range
             'http://www.wikidata.org/entity/Q3777462', '#348C31', // alpine group
             'http://www.wikidata.org/entity/Q54050', '#348C31', // hill
-            '#223b53' // other
+            'http://www.wikidata.org/entity/Q8072', '#348C31', // volcano
+            'http://www.wikidata.org/entity/Q169358', '#348C31', // stratovolcano
+            'http://www.wikidata.org/entity/Q4421', '#348C31', // forest
+            'http://www.wikidata.org/entity/Q570116', '#348C31', // tourist attraction
+            'http://www.wikidata.org/entity/Q22698', '#348C31', // park
+            // Other
+            '#223b53'
         ],
         'Black': '#223b53',
         'Red': '#e55e5e',
