@@ -33,7 +33,7 @@ class IniFileConfiguration implements Configuration
 	 */
 	public function has($key)
 	{
-		return isset($this->config[$key]);
+		return isset($this->config[$key]) && $this->config[$key] !== "";
 	}
 
 	/**

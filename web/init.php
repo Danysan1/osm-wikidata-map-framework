@@ -9,12 +9,27 @@ prepareJS($conf);
 
 ?>
 
+<?php
+if ($conf->has("sentry-js-dsn")) {
+?>
 Sentry.init({
   dsn: "<?=(string)$conf->get("sentry-js-dsn");?>",
   environment: "<?=(string)$conf->get("sentry-js-env");?>",
   integrations: [new Sentry.Integrations.BrowserTracing()],
   tracesSampleRate: <?=(float)$conf->get("sentry-js-rate");?>,
 });
+<?php
+}
+
+if ($conf->has("google-analytics-id")) {
+  ?>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', '<?=(string)$conf->get("google-analytics-id");?>');
+<?php
+}
+?>
 
 var mapbox_gl_token = '<?=(string)$conf->get("mapbox-gl-token");?>',
     default_center_lat = <?=(float)$conf->get("default-center-lat");?>,

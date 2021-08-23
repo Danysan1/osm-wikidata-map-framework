@@ -28,12 +28,32 @@ if(!empty($_REQUEST['lang'])
 <!DOCTYPE html>
 <html lang="<?= $defaultCulture; ?>">
 
+<?php
+if(!$conf->has("mapbox-gl-token")) {
+?>
+
+<body>Missing Mapbox GL JS token from configuration</body>
+
+<?php
+} else {
+?>
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <?php if ($conf->has("sentry-js-dsn")) { ?>
     <script src="https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js" integrity="sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU" crossorigin="anonymous" type="application/javascript"></script>
+    <?php
+    }
+    
+    if ($conf->has("google-analytics-id")) {
+    ?>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<?=(string)$conf->get("google-analytics-id");?>"></script>
+    <?php
+    }
+    ?>
     <script src="./init.php" type="application/javascript"></script>
 
     <title>Open Etymology Map</title>
@@ -132,3 +152,6 @@ if(!empty($_REQUEST['lang'])
 </body>
 
 </html>
+<?php
+}
+?>
