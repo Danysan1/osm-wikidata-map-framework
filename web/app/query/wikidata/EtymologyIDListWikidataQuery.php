@@ -2,18 +2,24 @@
 
 namespace App\Query\Wikidata;
 
+require_once(__DIR__."/../../StringSet.php");
+require_once(__DIR__."/../StringSetQuery.php");
 require_once(__DIR__."/POSTWikidataQuery.php");
+require_once(__DIR__."/../../result/wikidata/WikidataEtymologyQueryResult.php");
 
+use App\StringSet;
+use App\Query\StringSetQuery;
 use \App\Query\Wikidata\POSTWikidataQuery;
+use \App\Result\Wikidata\WikidataEtymologyQueryResult;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
+class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSetQuery {
     /**
-     * @var array<string>
+     * @var StringSet
      */
     private $wikidataIDList;
 
@@ -21,17 +27,22 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
      * @var string $language
      */
     private $language;
+
+    public function send(): WikidataEtymologyQueryResult
+    {
+        return WikidataEtymologyQueryResult::fromXMLResult(parent::send());
+    }
     
     /**
-     * @param array<string> $wikidataIDList
+     * @param StringSet $wikidataIDList
      * @param string $language
      * @param string $endpointURL
      */
-    public function __construct($wikidataIDList, $language, $endpointURL) {
+    public function __construct(StringSet $wikidataIDList, $language, $endpointURL) {
         $this->wikidataIDList = $wikidataIDList;
         $this->language = $language;
         
-        $wikidataValues = implode(' ', array_map(function($id){return "wd:$id";}, $wikidataIDList));
+        $wikidataValues = implode(' ', array_map(function($id){return "wd:$id";}, $wikidataIDList->toArray()));
 
         foreach($wikidataIDList as $wikidataID) {
             /**
@@ -206,9 +217,9 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery {
     }
     
     /**
-     * @return array<string>
+     * @return StringSet
      */
-    public function getWikidataIDList() {
+    public function getStringSet(): StringSet {
         return $this->wikidataIDList;
     }
 

@@ -89,7 +89,7 @@ if(!$result->isSuccessful()) {
 } elseif ($format == "geojson") {
     $out = $result->getGeoJSON();
 } else {
-    $out = json_encode((array)$result->getResult()["elements"]);
+    $out = json_encode($result->getArray()["elements"]);
 }
 
 $serverTiming->add("5_output");

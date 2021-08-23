@@ -9,7 +9,7 @@ use \App\Query\Query;
 use \App\Result\GeoJSONQueryResult;
 
 /**
- * A query that returns a GeoJSON data.
+ * A query that returns GeoJSON data.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
@@ -18,5 +18,5 @@ interface GeoJSONQuery extends Query
     /**
      * @return GeoJSONQueryResult
      */
-    public function send();
+    public function send(): GeoJSONQueryResult;
 }

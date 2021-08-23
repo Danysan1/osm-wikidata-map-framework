@@ -7,6 +7,7 @@ require_once(__DIR__."/XMLQueryResult.php");
 
 use \App\Result\BaseRemoteQueryResult;
 use \App\Result\XMLQueryResult;
+use SimpleXMLElement;
 
 /**
  * Result of a remote query which returns XML data.
@@ -18,7 +19,7 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
     /**
      * @return boolean
      */
-    public function hasResult()
+    public function hasResult(): bool
     {
         return $this->hasBody() && $this->isXML();
     }
@@ -26,7 +27,7 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
     /**
      * @return \SimpleXMLElement
      */
-    public function getSimpleXMLElement()
+    public function getSimpleXMLElement(): SimpleXMLElement
     {
         if (!$this->hasBody()) {
             throw new \Exception("XMLRemoteQueryResult::getSimpleXMLElement: No response available, can't parse");
@@ -44,10 +45,7 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
         return $out;
     }
 
-    /**
-     * @return array
-     */
-    public function getResult()
+    public function getArray(): array
     {
         $obj = json_decode(json_encode($this->getSimpleXMLElement()), true);
 
@@ -58,5 +56,18 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
         }
 
         return $obj;
+    }
+
+    public function getXML(): string
+    {
+        if(!$this->hasBody() || !$this->isXML()) {
+            throw new \Exception("XMLRemoteQueryResult::getXML: No response available, can't parse");
+        }
+        return $this->getBody();
+    }
+
+    public function getResult(): mixed
+    {
+        return $this->getXML();
     }
 }

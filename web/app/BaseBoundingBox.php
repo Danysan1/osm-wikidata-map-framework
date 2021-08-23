@@ -178,7 +178,7 @@ class BaseBoundingBox implements BoundingBox
         // abs() should not be necessary as these values should already be positive, but for safety we use it anyway.
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return "BaseBoundingBox(" . $this->minLat . "," . $this->minLon . "," . $this->maxLat . "," . $this->maxLon . ")";
     }

@@ -3,10 +3,12 @@
 namespace App\Query\Wikidata;
 
 require_once(__DIR__."/../BaseQuery.php");
-require_once(__DIR__."/../../result/wikidata/WikidataQueryResult.php");
+require_once(__DIR__."/../../result/XMLQueryResult.php");
+require_once(__DIR__."/../../result/XMLRemoteQueryResult.php");
 
 use App\Query\BaseQuery;
-use App\Result\Wikidata\WikidataQueryResult;
+use App\Result\XMLQueryResult;
+use App\Result\XMLRemoteQueryResult;
 
 /**
  * Wikidata query sent via HTTP POST request.
@@ -15,9 +17,9 @@ use App\Result\Wikidata\WikidataQueryResult;
  */
 class POSTWikidataQuery extends BaseQuery {
     /**
-     * @return WikidataQueryResult
+     * @return XMLQueryResult
      */
-    public function send() {
+    public function send(): XMLQueryResult {
         $ch = curl_init();
         $url = $this->getEndpointURL();
         curl_setopt_array($ch, [
@@ -37,7 +39,7 @@ class POSTWikidataQuery extends BaseQuery {
             $result = null;
         else
             assert(is_string($result));
-        $out = new WikidataQueryResult($result, $curlInfo);
+        $out = new XMLRemoteQueryResult($result, $curlInfo);
         /*if(!$out->isSuccessful()) {
             error_log("Unsuccessful POSTWikidataQuery - ".$out)
         }*/

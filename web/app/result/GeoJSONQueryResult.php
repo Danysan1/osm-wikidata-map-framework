@@ -15,10 +15,10 @@ interface GeoJSONQueryResult extends QueryResult {
     /**
      * @return array{type:string}
      */
-    public function getGeoJSONData();
+    public function getGeoJSONData(): array;
 
     /**
      * @return string
      */
-    public function getGeoJSON();
+    public function getGeoJSON(): string;
 }

@@ -36,19 +36,19 @@ abstract class BaseQuery implements Query {
     /**
      * @return string
      */
-    public function getQuery() {
+    public function getQuery(): string {
         return $this->query;
     }
 
     /**
      * @return string
      */
-    public function getEndpointURL() {
+    public function getEndpointURL(): string {
         return $this->endpointURL;
     }
 
     /**
      * @return QueryResult
      */
-    public abstract function send();
+    public abstract function send(): QueryResult;
 }

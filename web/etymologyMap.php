@@ -53,12 +53,12 @@ if ($from == "bbox") {
     }
 
     $query = new BBoxEtymologyOverpassWikidataQuery($bbox, $overpassEndpointURL, $wikidataEndpointURL, $safeLanguage);
-
-    $cachedQuery = new CachedBBoxQuery($query, $cacheFileBasePath . $safeLanguage . "_", $cacheTimeoutHours, $serverTiming);
 } else {
     http_response_code(400);
     die('{"error":"You must specify the BBox"}');
 }
+
+$cachedQuery = new CachedBBoxQuery($query, $cacheFileBasePath . $safeLanguage . "_", $cacheTimeoutHours, $serverTiming);
 
 $format = (string)getFilteredParamOrDefault("format", FILTER_SANITIZE_STRING, null);
 $serverTiming->add("3_init");
@@ -76,7 +76,7 @@ if (!$result->isSuccessful()) {
 } elseif ($format == "geojson") {
     $out = $result->getGeoJSON();
 } else {
-    $out = json_encode((array)$result->getResult()["elements"]);
+    $out = json_encode($result->getArray()["elements"]);
 }
 
 $serverTiming->add("5_output");

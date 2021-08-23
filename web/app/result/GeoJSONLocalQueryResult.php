@@ -17,25 +17,27 @@ class GeoJSONLocalQueryResult extends LocalQueryResult implements GeoJSONQueryRe
 {
     /**
      * @param boolean $success
-     * @param array|null $result
+     * @param mixed $result
      */
     public function __construct($success, $result)
     {
-        /**
-         * @psalm-suppress DocblockTypeContradiction
-         */
-        if ($result !== null && (!is_array($result) || empty($result["type"]))) {
+        if ($success && $result !== null && (!is_array($result) || empty($result["type"]))) {
             throw new \Exception("Invalid GeoJSON result");
         }
         parent::__construct($success, $result);
     }
 
-    public function getGeoJSONData()
+    public function getGeoJSONData(): array
     {
         return $this->getResult();
     }
 
-    public function getGeoJSON()
+    public function getArray(): array
+    {
+        return $this->getResult();
+    }
+
+    public function getGeoJSON(): string
     {
         return json_encode($this->getGeoJSONData());
     }

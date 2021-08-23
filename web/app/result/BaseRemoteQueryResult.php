@@ -61,10 +61,7 @@ abstract class BaseRemoteQueryResult implements RemoteQueryResult
         return (int)$this->curlInfo['http_code'];
     }
 
-    /**
-     * @return boolean
-     */
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         return $this->getHttpCode() >= 200 && $this->getHttpCode() < 300;
     }

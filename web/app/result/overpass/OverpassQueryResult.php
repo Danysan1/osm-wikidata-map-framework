@@ -28,7 +28,7 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
      *
      * https://gis.stackexchange.com/questions/115733/converting-json-to-geojson-or-csv/115736#115736
      */
-    public function getGeoJSONData()
+    public function getGeoJSONData(): array
     {
         $data = $this->getResult();
         if (!isset($data["elements"]) || !is_array($data["elements"])) {
@@ -55,10 +55,15 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
         return $geojson;
     }
 
+    public function getArray(): array
+    {
+        return $this->getResult();
+    }
+
     /**
      * @return string
      */
-    public function getGeoJSON()
+    public function getGeoJSON(): string
     {
         return json_encode($this->getGeoJSONData());
     }

@@ -15,10 +15,10 @@ interface Query {
     /**
      * @return string
      */
-    public function getQuery();
+    public function getQuery(): string;
 
     /**
      * @return QueryResult
      */
-    public function send();
+    public function send(): QueryResult;
 }

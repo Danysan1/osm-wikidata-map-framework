@@ -13,18 +13,17 @@ use \App\Result\BaseRemoteQueryResult;
  */
 class JSONRemoteQueryResult extends BaseRemoteQueryResult
 {
-    /**
-     * @return bool
-     */
-    public function hasResult()
+    public function hasResult(): bool
     {
         return $this->hasBody() && $this->isJSON();
     }
 
-    /**
-     * @return array
-     */
-    public function getResult()
+    public function getArray(): array
+    {
+        return (array)json_decode($this->getResult(), true);
+    }
+
+    public function getResult(): mixed
     {
         if (!$this->hasBody()) {
             throw new \Exception("JSONRemoteQueryResult::getResult: No response available, can't parse");
@@ -32,7 +31,6 @@ class JSONRemoteQueryResult extends BaseRemoteQueryResult
         if (!$this->isJSON()) {
             throw new \Exception("JSONRemoteQueryResult::getResult: Not a valid JSON response, can't parse");
         }
-
-        return (array)json_decode($this->getBody(), true);
+        return $this->getBody();
     }
 }

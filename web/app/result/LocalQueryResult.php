@@ -2,7 +2,7 @@
 
 namespace App\Result;
 
-require_once(__DIR__."/QueryResult.php");
+require_once(__DIR__ . "/QueryResult.php");
 
 use \App\Result\QueryResult;
 
@@ -11,23 +11,24 @@ use \App\Result\QueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class LocalQueryResult implements QueryResult {
+abstract class LocalQueryResult implements QueryResult
+{
     /**
      * @var boolean
      */
     private $success;
 
     /**
-     * @var array|null
+     * @var mixed
      */
     private $result;
 
     /**
      * @param boolean $success
-     * @param array|null $result
-     * @param string $contentMimeType
+     * @param mixed $result
      */
-    public function __construct($success, $result) {
+    public function __construct($success, $result)
+    {
         $this->success = $success;
         $this->result = $result;
     }
@@ -35,23 +36,19 @@ class LocalQueryResult implements QueryResult {
     /**
      * @return boolean
      */
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         return $this->success;
     }
 
-    /**
-     * @return boolean
-     */
-    public function hasResult() {
+    public function hasResult(): bool
+    {
         return $this->result !== null;
     }
 
-    /**
-     * @return array
-     */
-    public function getResult() {
-        if($this->result === null) {
+    public function getResult(): mixed
+    {
+        if ($this->result === null) {
             throw new \Exception("No result available");
         }
         return $this->result;
@@ -59,6 +56,6 @@ class LocalQueryResult implements QueryResult {
 
     public function __toString()
     {
-        return "LocalQueryResult: ".($this->success?"Success":"Failure").PHP_EOL.json_encode($this->result);
+        return "LocalQueryResult: " . ($this->success ? "Success" : "Failure") . PHP_EOL . json_encode($this->result);
     }
 }

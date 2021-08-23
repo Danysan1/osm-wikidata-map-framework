@@ -3,8 +3,10 @@
 namespace App\Query\Wikidata;
 
 require_once(__DIR__ . "/EtymologyIDListWikidataQuery.php");
+require_once(__DIR__ . "/../../BaseStringSet.php");
 
 use \App\Query\Wikidata\EtymologyIDListWikidataQuery;
+use \App\BaseStringSet;
 
 /**
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.
@@ -55,7 +57,7 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
                 }
             }
         }
-        $etymologyIDs = array_keys($etymologyIDSet);
+        $etymologyIDs = new BaseStringSet(array_keys($etymologyIDSet));
 
         parent::__construct($etymologyIDs, $language, $endpointURL);
     }

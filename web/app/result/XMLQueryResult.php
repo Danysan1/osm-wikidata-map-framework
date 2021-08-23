@@ -2,9 +2,10 @@
 
 namespace App\Result;
 
-require_once(__DIR__."/QueryResult.php");
+require_once(__DIR__ . "/QueryResult.php");
 
 use App\Result\QueryResult;
+use SimpleXMLElement;
 
 /**
  * Query result whose content can be converted to a SimpleXMLElement.
@@ -16,7 +17,11 @@ use App\Result\QueryResult;
 interface XMLQueryResult extends QueryResult
 {
     /**
+     * @return string
+     */
+    public function getXML(): string;
+    /**
      * @return \SimpleXMLElement
      */
-    public function getSimpleXMLElement();
+    public function getSimpleXMLElement(): SimpleXMLElement;
 }

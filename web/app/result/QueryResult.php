@@ -13,20 +13,25 @@ interface QueryResult {
     /**
      * @return boolean
      */
-    public function isSuccessful();
+    public function isSuccessful(): bool;
 
     /**
      * @return boolean
      */
-    public function hasResult();
+    public function hasResult(): bool;
+
+    /**
+     * @return mixed
+     */
+    public function getResult(): mixed;
 
     /**
      * @return array
      */
-    public function getResult();
+    public function getArray(): array;
 
     /**
      * @return string
      */
-    public function __toString();
+    public function __toString(): string;
 }

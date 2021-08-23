@@ -4,10 +4,12 @@ namespace App\Query\Wikidata;
 
 require_once(__DIR__ . "/../GeoJSONQuery.php");
 require_once(__DIR__ . "/GeoJSONInputEtymologyWikidataQuery.php");
+require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 
 use App\Query\GeoJSONQuery;
 use App\Query\Wikidata\GeoJSONInputEtymologyWikidataQuery;
+use \App\Result\GeoJSONQueryResult;
 use App\Result\GeoJSONLocalQueryResult;
 
 /**
@@ -32,15 +34,15 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
         $this->wikidataQuery = new GeoJSONInputEtymologyWikidataQuery($geoJSONData, $language, $endpointURL);
     }
 
-    public function getQuery()
+    public function getQuery(): string
     {
         return $this->wikidataQuery->getQuery();
     }
 
     /**
-     * @return \App\Result\GeoJSONQueryResult
+     * @return GeoJSONQueryResult
      */
-    public function send()
+    public function send(): GeoJSONQueryResult
     {
         $wikidataResponse = $this->wikidataQuery->send();
         if (!$wikidataResponse->hasResult()) {
