@@ -2,10 +2,12 @@
 
 namespace App\Query;
 
-require_once(__DIR__."/Query.php");
-require_once(__DIR__."/../result/XMLQueryResult.php");
+require_once(__DIR__ . "/Query.php");
+require_once(__DIR__ . "/../result/QueryResult.php");
+require_once(__DIR__ . "/../result/XMLQueryResult.php");
 
 use \App\Query\Query;
+use \App\Result\QueryResult;
 use \App\Result\XMLQueryResult;
 
 /**
@@ -18,5 +20,5 @@ interface XMLQuery extends Query
     /**
      * @return XMLQueryResult
      */
-    public function send(): XMLQueryResult;
+    public function send(): QueryResult;
 }

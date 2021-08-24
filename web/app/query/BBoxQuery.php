@@ -17,5 +17,5 @@ interface BBoxQuery extends Query {
     /**
      * @return BoundingBox
      */
-    public function getBBox();
+    public function getBBox(): BoundingBox;
 }

@@ -5,11 +5,14 @@ namespace App\Query\Overpass;
 require_once(__DIR__ . "/OverpassQuery.php");
 require_once(__DIR__ . "/../GeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
+use \App\Result\QueryResult;
+use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology in the vicinity of a central point.
@@ -51,7 +54,7 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
     /**
      * @return float
      */
-    public function getCenterLat()
+    public function getCenterLat(): float
     {
         return $this->lat;
     }
@@ -59,7 +62,7 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
     /**
      * @return float
      */
-    public function getCenterLon()
+    public function getCenterLon(): float
     {
         return $this->lon;
     }
@@ -67,21 +70,21 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
     /**
      * @return float
      */
-    public function getRadius()
+    public function getRadius(): float
     {
         return $this->radius;
     }
 
     /**
-     * @return \App\Result\GeoJSONQueryResult
+     * @return GeoJSONQueryResult
      */
-    public function send()
+    public function send(): QueryResult
     {
         $res = parent::send();
         if (!$res->isSuccessful() || !$res->hasResult()) {
             error_log("CenterEtymologyOverpassQuery: Overpass query failed: $res");
             throw new \Exception("Overpass query failed");
         }
-        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getResult());
+        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
     }
 }

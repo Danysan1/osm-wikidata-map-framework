@@ -2,13 +2,13 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__."/../../StringSet.php");
-require_once(__DIR__."/../StringSetQuery.php");
-require_once(__DIR__."/POSTWikidataQuery.php");
-require_once(__DIR__."/../../result/wikidata/WikidataEtymologyQueryResult.php");
+require_once(__DIR__ . "/../../StringSet.php");
+require_once(__DIR__ . "/../StringSetXMLQuery.php");
+require_once(__DIR__ . "/POSTWikidataQuery.php");
+require_once(__DIR__ . "/../../result/wikidata/WikidataEtymologyQueryResult.php");
 
 use App\StringSet;
-use App\Query\StringSetQuery;
+use App\Query\StringSetXMLQuery;
 use \App\Query\Wikidata\POSTWikidataQuery;
 use \App\Result\Wikidata\WikidataEtymologyQueryResult;
 
@@ -17,7 +17,8 @@ use \App\Result\Wikidata\WikidataEtymologyQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSetQuery {
+class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSetXMLQuery
+{
     /**
      * @var StringSet
      */
@@ -32,28 +33,31 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
     {
         return WikidataEtymologyQueryResult::fromXMLResult(parent::send());
     }
-    
+
     /**
      * @param StringSet $wikidataIDList
      * @param string $language
      * @param string $endpointURL
      */
-    public function __construct(StringSet $wikidataIDList, $language, $endpointURL) {
+    public function __construct(StringSet $wikidataIDList, $language, $endpointURL)
+    {
         $this->wikidataIDList = $wikidataIDList;
         $this->language = $language;
-        
-        $wikidataValues = implode(' ', array_map(function($id){return "wd:$id";}, $wikidataIDList->toArray()));
 
-        foreach($wikidataIDList as $wikidataID) {
+        $wikidataValues = implode(' ', array_map(function ($id) {
+            return "wd:$id";
+        }, $wikidataIDList->toArray()));
+
+        foreach ($wikidataIDList as $wikidataID) {
             /**
              * @psalm-suppress DocblockTypeContradiction
              */
-            if(!is_string($wikidataID) || !preg_match("/^Q[0-9]+$/", $wikidataID)) {
+            if (!is_string($wikidataID) || !preg_match("/^Q[0-9]+$/", $wikidataID)) {
                 throw new \Exception("Invalid Wikidata ID: $wikidataID");
             }
         }
 
-        if(!preg_match("/^[a-z]{2}$/", $language)) {
+        if (!preg_match("/^[a-z]{2}$/", $language)) {
             throw new \Exception("Invalid language code, it must be two letters");
         }
 
@@ -215,18 +219,20 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
             $endpointURL
         );
     }
-    
+
     /**
      * @return StringSet
      */
-    public function getStringSet(): StringSet {
+    public function getStringSet(): StringSet
+    {
         return $this->wikidataIDList;
     }
 
     /**
      * @return string
      */
-    public function getLanguage() {
+    public function getLanguage(): string
+    {
         return $this->language;
     }
 }

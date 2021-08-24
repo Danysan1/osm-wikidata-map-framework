@@ -6,12 +6,15 @@ require_once(__DIR__ . "/../../BoundingBox.php");
 require_once(__DIR__ . "/BBoxOverpassQuery.php");
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/overpass/OverpassCenterQueryResult.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\BoundingBox;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\Overpass\OverpassCenterQueryResult;
+use App\Result\QueryResult;
+use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves only the centroid and the id of any item in a bounding box which has an etymology.
@@ -46,9 +49,9 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
     }
 
     /**
-     * @return \App\Result\GeoJSONQueryResult
+     * @return GeoJSONQueryResult
      */
-    public function send()
+    public function send(): QueryResult
     {
         $res = parent::send();
         if (!$res->isSuccessful() || !$res->hasResult()) {

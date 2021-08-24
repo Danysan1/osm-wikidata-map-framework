@@ -36,7 +36,7 @@ class BBoxOverpassQuery extends OverpassQuery implements BBoxQuery
     /**
      * @return BoundingBox
      */
-    public function getBBox()
+    public function getBBox(): BoundingBox
     {
         return $this->bbox;
     }

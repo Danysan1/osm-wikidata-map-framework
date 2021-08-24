@@ -4,6 +4,7 @@ namespace App\Query\Combined;
 
 require_once(__DIR__ . '/../../BoundingBox.php');
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
+require_once(__DIR__ . '/../../result/QueryResult.php');
 require_once(__DIR__ . "/../overpass/BBoxEtymologyOverpassQuery.php");
 require_once(__DIR__ . "/../wikidata/GeoJSONEtymologyWikidataQuery.php");
 
@@ -11,6 +12,7 @@ use \App\BoundingBox;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Wikidata\GeoJSONEtymologyWikidataQuery;
+use \App\Result\QueryResult;
 
 /**
  * Combined query to Overpass and Wikidata.
@@ -45,7 +47,7 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
         $this->wikidataEndpointURL = $wikidataEndpointURL;
     }
 
-    public function send()
+    public function send(): QueryResult
     {
         //$overpassResult = $this->overpassQuery->send();
         $overpassResult = parent::send();

@@ -4,10 +4,13 @@ namespace App\Query\Overpass;
 
 require_once(__DIR__ . "/OverpassQuery.php");
 require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
+use \App\Result\QueryResult;
+use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology around the globe.
@@ -39,15 +42,15 @@ class GlobalEtymologyOverpassQuery extends OverpassQuery
     }
 
     /**
-     * @return \App\Result\GeoJSONQueryResult
+     * @return GeoJSONQueryResult
      */
-    public function send()
+    public function send(): QueryResult
     {
         $res = parent::send();
         if (!$res->isSuccessful() || !$res->hasResult()) {
             error_log("GlobalEtymologyOverpassQuery: Overpass query failed: $res");
             throw new \Exception("Overpass query failed");
         }
-        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getResult());
+        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
     }
 }

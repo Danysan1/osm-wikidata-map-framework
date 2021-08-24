@@ -7,6 +7,8 @@ require_once(__DIR__ . "/../GeoJSONQueryResult.php");
 
 use \App\Result\LocalQueryResult;
 use \App\Result\GeoJSONQueryResult;
+use Exception;
+use InvalidArgumentException;
 
 /**
  * Result of an Overpass query, convertible to GeoJSON data.
@@ -15,6 +17,15 @@ use \App\Result\GeoJSONQueryResult;
  */
 abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQueryResult
 {
+    public function __construct($success, $result)
+    {
+        if($success && !is_array($result)) {
+            error_log("OverpassQueryResult: ".json_encode($result));
+            throw new InvalidArgumentException("Overpass query result must be an array");
+        }
+        parent::__construct($success, $result);
+    }
+
     /**
      * @param int $index
      * @param array $element
@@ -31,10 +42,21 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
     public function getGeoJSONData(): array
     {
         $data = $this->getResult();
-        if (!isset($data["elements"]) || !is_array($data["elements"])) {
-            throw new \Exception("No elements found in Overpass response");
+        if (!is_array($data)) {
+            throw new Exception("Overpass query result is not an array");
         }
-        $totalElements = count($data["elements"]);
+        if (!isset($data["elements"])) {
+            error_log("OverpassQueryResult: " . json_encode($data));
+            throw new \Exception("Missing element section in Overpass response");
+        }
+        if (!is_array($data["elements"])) {
+            error_log("OverpassQueryResult: " . json_encode($data));
+            throw new \Exception("Element section in Overpass response is not an array");
+        }
+        if (empty($data["elements"])) {
+            error_log("OverpassQueryResult: No elements found in Overpass response");
+        }
+        //$totalElements = count($data["elements"]);
 
         $geojson = ["type" => "FeatureCollection", "features" => []];
 

@@ -9,7 +9,7 @@ require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
 //require_once("./app/BBoxEtymologySkeletonOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
-require_once("./app/query/decorators/CachedBBoxQuery.php");
+require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
@@ -18,7 +18,7 @@ use \App\BaseBoundingBox;
 use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
 use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use App\Query\Overpass\CenterEtymologyOverpassQuery;
-use App\Query\Decorators\CachedBBoxQuery;
+use App\Query\Decorators\CachedBBoxGeoJSONQuery;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -31,10 +31,11 @@ $from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
 $onlyCenter = (bool)getFilteredParamOrDefault( "onlyCenter", FILTER_VALIDATE_BOOLEAN, false );
 $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
 if ($from == "bbox") {
-    $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT );
-    $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT );
-    $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT );
-    $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT );
+    $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
+    $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT ) - $bboxMargin;
+    $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT ) - $bboxMargin;
+    $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT ) + $bboxMargin;
+    $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT ) + $bboxMargin;
     $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
@@ -57,7 +58,7 @@ if ($from == "bbox") {
             $bbox, $overpassEndpointURL
         );
     }
-    $overpassQuery = new CachedBBoxQuery(
+    $overpassQuery = new CachedBBoxGeoJSONQuery(
         $baseQuery,
         (string)$conf->get("cache-file-base-path"),
         (int)$conf->get("cache-timeout-hours"),

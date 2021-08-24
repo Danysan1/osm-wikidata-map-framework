@@ -7,14 +7,14 @@ $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
-require_once("./app/query/decorators/CachedBBoxQuery.php");
+require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
 require_once("./app/query/combined/BBoxEtymologyOverpassWikidataQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
-use App\Query\Decorators\CachedBBoxQuery;
+use App\Query\Decorators\CachedBBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxEtymologyOverpassWikidataQuery;
 
 $conf = new IniFileConfiguration();
@@ -39,10 +39,11 @@ $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
 if ($from == "bbox") {
-    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
-    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
-    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
-    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
+    $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
+    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT) - $bboxMargin;
+    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT) - $bboxMargin;
+    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT) + $bboxMargin;
+    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT) + $bboxMargin;
     $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
@@ -58,7 +59,7 @@ if ($from == "bbox") {
     die('{"error":"You must specify the BBox"}');
 }
 
-$cachedQuery = new CachedBBoxQuery($query, $cacheFileBasePath . $safeLanguage . "_", $cacheTimeoutHours, $serverTiming);
+$cachedQuery = new CachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $cacheTimeoutHours, $serverTiming);
 
 $format = (string)getFilteredParamOrDefault("format", FILTER_SANITIZE_STRING, null);
 $serverTiming->add("3_init");

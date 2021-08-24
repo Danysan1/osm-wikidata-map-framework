@@ -3,6 +3,7 @@
 namespace App\Query\Decorators;
 
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/XMLQueryResult.php");
 require_once(__DIR__ . "/../../result/XMLLocalQueryResult.php");
 require_once(__DIR__ . "/../../BaseStringSet.php");
@@ -13,6 +14,7 @@ use \App\Query\StringSetXMLQuery;
 use \App\Result\XMLLocalQueryResult;
 use \App\BaseStringSet;
 use App\Result\XMLQueryResult;
+use App\Result\QueryResult;
 use \App\StringSet;
 use \App\ServerTiming;
 
@@ -75,7 +77,7 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
      * 
      * @return XMLQueryResult
      */
-    public function send(): XMLQueryResult
+    public function send(): QueryResult
     {
         $className = str_replace("\\", "_", get_class($this->baseQuery));
         $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
