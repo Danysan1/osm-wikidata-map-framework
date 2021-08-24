@@ -49,11 +49,7 @@ class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSO
      */
     public function send(): QueryResult
     {
-        $res = parent::send();
-        if (!$res->isSuccessful() || !$res->hasResult()) {
-            error_log("BBoxEtymologyOverpassQuery: Overpass query failed: $res");
-            throw new \Exception("Overpass query failed");
-        }
+        $res = $this->sendAndRequireResult();
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
     }
 }

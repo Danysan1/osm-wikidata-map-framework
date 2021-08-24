@@ -53,11 +53,7 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
      */
     public function send(): QueryResult
     {
-        $res = parent::send();
-        if (!$res->isSuccessful() || !$res->hasResult()) {
-            error_log("BBoxEtymologyCenterOverpassQuery: Overpass query failed: $res");
-            throw new \Exception("Overpass query failed");
-        }
-        return new OverpassCenterQueryResult($res->isSuccessful(), $res->getResult());
+        $res = $this->sendAndRequireResult();
+        return new OverpassCenterQueryResult($res->isSuccessful(), $res->getArray());
     }
 }

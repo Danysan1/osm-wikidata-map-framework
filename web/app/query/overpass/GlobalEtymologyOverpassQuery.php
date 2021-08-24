@@ -46,11 +46,7 @@ class GlobalEtymologyOverpassQuery extends OverpassQuery
      */
     public function send(): QueryResult
     {
-        $res = parent::send();
-        if (!$res->isSuccessful() || !$res->hasResult()) {
-            error_log("GlobalEtymologyOverpassQuery: Overpass query failed: $res");
-            throw new \Exception("Overpass query failed");
-        }
+        $res = $this->sendAndRequireResult();
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
     }
 }

@@ -20,6 +20,7 @@ class JSONRemoteQueryResult extends BaseRemoteQueryResult
 
     public function getArray(): array
     {
+        //error_log("JSONRemoteQueryResult: ".$this->getResult());
         return (array)json_decode($this->getResult(), true);
     }
 

@@ -9,6 +9,7 @@ require_once(__DIR__ . "/../../result/JSONRemoteQueryResult.php");
 use \App\Query\BaseQuery;
 use \App\Result\QueryResult;
 use \App\Result\JSONRemoteQueryResult;
+use Exception;
 
 /**
  * Overpass query.
@@ -21,6 +22,11 @@ class OverpassQuery extends BaseQuery
      * @return QueryResult
      */
     public function send(): QueryResult
+    {
+        return $this->_send();
+    }
+
+    private function _send(): QueryResult
     {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->getEndpointURL());
@@ -35,5 +41,27 @@ class OverpassQuery extends BaseQuery
         else
             assert(is_string($result));
         return new JSONRemoteQueryResult($result, $curlInfo);
+    }
+
+    protected function sendAndRequireResult(): QueryResult
+    {
+        $res = $this->_send();
+        if (!$res->isSuccessful()) {
+            if ($res->hasResult()) {
+                if (strpos($res->getResult(), "Dispatcher_Client::request_read_and_idx::timeout")) {
+                    throw new Exception("Overpass server timeout. Please try later.");
+                } elseif (strpos($res->getResult(), "Dispatcher_Client::request_read_and_idx::rate_limited")) {
+                    throw new Exception("Rate limited by Overpass server. Please try later.");
+                }
+            } else {
+                error_log("OverpassQuery: Overpass query failed: $res");
+                throw new \Exception("Overpass query failed");
+            }
+        } elseif (!$res->hasResult()) {
+            throw new \Exception("Overpass query has no result");
+        } else {
+            //error_log("OverpassQuery: result is of type " . gettype($res));
+        }
+        return $res;
     }
 }
