@@ -37,6 +37,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 // People
                 'http://www.wikidata.org/entity/Q5', '#3bb2d0', // human
                 'http://www.wikidata.org/entity/Q21070568', '#3bb2d0', // human who may be fictional
+                'http://www.wikidata.org/entity/Q14073567', '#3bb2d0', // sibling duo
                 // Buildings
                 'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
                 'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
@@ -99,6 +100,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 'http://www.wikidata.org/entity/Q169358', '#348C31', // stratovolcano
                 'http://www.wikidata.org/entity/Q4421', '#348C31', // forest
                 'http://www.wikidata.org/entity/Q570116', '#348C31', // tourist attraction
+                'http://www.wikidata.org/entity/Q34918903', '#348C31', // National Park of the United States
                 'http://www.wikidata.org/entity/Q22698', '#348C31', // park
                 // Other
                 '#223b53'
