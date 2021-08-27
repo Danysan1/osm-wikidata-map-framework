@@ -38,6 +38,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 'http://www.wikidata.org/entity/Q5', '#3bb2d0', // human
                 'http://www.wikidata.org/entity/Q21070568', '#3bb2d0', // human who may be fictional
                 'http://www.wikidata.org/entity/Q14073567', '#3bb2d0', // sibling duo
+                'http://www.wikidata.org/entity/Q16979650', '#3bb2d0', // sibling group
                 // Buildings
                 'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
                 'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
@@ -60,6 +61,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 'http://www.wikidata.org/entity/Q178561', '#e55e5e', // battle
                 'http://www.wikidata.org/entity/Q188055', '#e55e5e', // siege
                 'http://www.wikidata.org/entity/Q3199915', '#e55e5e', // massacre
+                'http://www.wikidata.org/entity/Q107706', '#e55e5e', // armistice
                 'http://www.wikidata.org/entity/Q750215', '#e55e5e', // mass murder
                 'http://www.wikidata.org/entity/Q891854', '#e55e5e', // bomb attack
                 'http://www.wikidata.org/entity/Q898712', '#e55e5e', // aircraft hijacking
@@ -73,6 +75,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 'http://www.wikidata.org/entity/Q956214', '#fed976', // chef-lieu
                 'http://www.wikidata.org/entity/Q1637706', '#fed976', // million city
                 'http://www.wikidata.org/entity/Q747074', '#fed976', // comune of Italy
+                'http://www.wikidata.org/entity/Q484170', '#fed976', // commune of France
                 'http://www.wikidata.org/entity/Q42744322', '#fed976', // urban municipality of Germany
                 'http://www.wikidata.org/entity/Q15105893', '#fed976', // town in Croatia
                 'http://www.wikidata.org/entity/Q2264924', '#fed976', // port settlement
