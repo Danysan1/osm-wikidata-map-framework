@@ -54,7 +54,7 @@ abstract class LocalQueryResult implements QueryResult
         return $this->result;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return "LocalQueryResult: " . ($this->success ? "Success" : "Failure") . PHP_EOL . json_encode($this->result);
     }

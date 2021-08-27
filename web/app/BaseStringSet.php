@@ -24,6 +24,10 @@ class BaseStringSet implements StringSet
         $this->stringArray = $stringArray;
     }
 
+    /**
+     * @param string $json
+     * @return self
+     */
     public static function fromJSON($json): self
     {
         return new self(json_decode($json));

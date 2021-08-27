@@ -3,14 +3,18 @@
 namespace App\Query\Wikidata;
 
 require_once(__DIR__ . "/../GeoJSONQuery.php");
+require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/GeoJSONInputEtymologyWikidataQuery.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
+require_once(__DIR__ . "/../../result/wikidata/WikidataEtymologyQueryResult.php");
 
-use App\Query\GeoJSONQuery;
-use App\Query\Wikidata\GeoJSONInputEtymologyWikidataQuery;
+use \App\Query\GeoJSONQuery;
+use \App\Query\StringSetXMLQueryFactory;
+use \App\Query\Wikidata\GeoJSONInputEtymologyWikidataQuery;
 use \App\Result\GeoJSONQueryResult;
-use App\Result\GeoJSONLocalQueryResult;
+use \App\Result\GeoJSONLocalQueryResult;
+use \App\Result\Wikidata\WikidataEtymologyQueryResult;
 
 /**
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.
@@ -26,12 +30,11 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
 
     /**
      * @param array $geoJSONData
-     * @param string $language
-     * @param string $endpointURL
+     * @param StringSetXMLQueryFactory $queryFactory
      */
-    public function __construct($geoJSONData, $language, $endpointURL)
+    public function __construct($geoJSONData, $queryFactory)
     {
-        $this->wikidataQuery = new GeoJSONInputEtymologyWikidataQuery($geoJSONData, $language, $endpointURL);
+        $this->wikidataQuery = new GeoJSONInputEtymologyWikidataQuery($geoJSONData, $queryFactory);
     }
 
     public function getQuery(): string
@@ -44,13 +47,14 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
      */
     public function send(): GeoJSONQueryResult
     {
-        $wikidataResponse = $this->wikidataQuery->send();
-        if (!$wikidataResponse->hasResult()) {
+        $response = $this->wikidataQuery->send();
+        if (!$response->hasResult()) {
             throw new \Exception("Wikidata query did not return any results");
-        } elseif (!$wikidataResponse->isSuccessful()) {
+        } elseif (!$response->isSuccessful()) {
             throw new \Exception("Wikidata query did not return successful response");
         } else {
             $geoJSONData = $this->wikidataQuery->getGeoJSONInputData();
+            $wikidataResponse = WikidataEtymologyQueryResult::fromXMLResult($response);
             $matrixData = $wikidataResponse->getMatrixData();
 
             if (!is_array($geoJSONData["features"])) {

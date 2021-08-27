@@ -32,7 +32,7 @@ $safeLang = $langMatches[1];
 
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $wikidataQuery = new EtymologyIDListWikidataQuery($wikidataIDs, $safeLang, $wikidataEndpointURL);
-$cachedQuery = new CachedStringSetXMLQuery($wikidataQuery, $query, $cacheFileBasePath . $safeLang . "_", $cacheTimeoutHours);
+$cachedQuery = new CachedStringSetXMLQuery($wikidataQuery, $cacheFileBasePath . $safeLang . "_", $cacheTimeoutHours);
 $result = $wikidataQuery->send();
 if(!$result->isSuccessful()) {
     http_response_code(500);

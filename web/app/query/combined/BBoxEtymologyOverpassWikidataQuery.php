@@ -7,12 +7,14 @@ require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . '/../../result/QueryResult.php');
 require_once(__DIR__ . "/../overpass/BBoxEtymologyOverpassQuery.php");
 require_once(__DIR__ . "/../wikidata/GeoJSONEtymologyWikidataQuery.php");
+require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 
 use \App\BoundingBox;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Wikidata\GeoJSONEtymologyWikidataQuery;
 use \App\Result\QueryResult;
+use \App\Query\StringSetXMLQueryFactory;
 
 /**
  * Combined query to Overpass and Wikidata.
@@ -26,25 +28,20 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
     /** @var BBoxEtymologyOverpassQuery $overpassQuery */
     //private $overpassQuery;
 
-    /** @var string $language */
-    private $language;
-
-    /** @var string $wikidataEndpointURL */
-    private $wikidataEndpointURL;
+    /** @var StringSetXMLQueryFactory $wikidataFactory */
+    private $wikidataFactory;
 
     /**
      * @param BoundingBox $bbox
      * @param string $overpassEndpointURL
-     * @param string $wikidataEndpointURL
-     * @param string $language
+     * @param StringSetXMLQueryFactory $wikidataFactory
      */
-    public function __construct($bbox, $overpassEndpointURL, $wikidataEndpointURL, $language)
+    public function __construct($bbox, $overpassEndpointURL, $wikidataFactory)
     {
         //$this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassEndpointURL);
         parent::__construct($bbox, $overpassEndpointURL);
 
-        $this->language = $language;
-        $this->wikidataEndpointURL = $wikidataEndpointURL;
+        $this->wikidataFactory = $wikidataFactory;
     }
 
     public function send(): QueryResult
@@ -61,7 +58,7 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
             if (empty($overpassGeoJSON["features"])) {
                 $out = $overpassResult;
             } else {
-                $wikidataQuery = new GeoJSONEtymologyWikidataQuery($overpassGeoJSON, $this->language, $this->wikidataEndpointURL);
+                $wikidataQuery = new GeoJSONEtymologyWikidataQuery($overpassGeoJSON, $this->wikidataFactory);
                 $wikidataResult = $wikidataQuery->send();
 
                 $out = $wikidataResult;

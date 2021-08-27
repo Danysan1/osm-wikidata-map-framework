@@ -2,11 +2,19 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/EtymologyIDListWikidataQuery.php");
+require_once(__DIR__ . "/../XMLQuery.php");
+require_once(__DIR__ . "/../StringSetXMLQuery.php");
+require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/../../BaseStringSet.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
+require_once(__DIR__ . "/../../result/XMLQueryResult.php");
 
-use \App\Query\Wikidata\EtymologyIDListWikidataQuery;
+use \App\Query\XMLQuery;
+use \App\Query\StringSetXMLQuery;
+use \App\Query\StringSetXMLQueryFactory;
 use \App\BaseStringSet;
+use App\Result\QueryResult;
+use App\Result\XMLQueryResult;
 
 /**
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.
@@ -15,7 +23,7 @@ use \App\BaseStringSet;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
+class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
 {
     /**
      * @var array
@@ -23,12 +31,18 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
     private $geoJSONInputData;
 
     /**
-     * @param array $geoJSONData
-     * @param string $language
-     * @param string $endpointURL
+     * @var StringSetXMLQuery
      */
-    public function __construct($geoJSONData, $language, $endpointURL)
+    private $query;
+
+    /**
+     * @param array $geoJSONData
+     * @param StringSetXMLQueryFactory $queryFactory
+     */
+    public function __construct($geoJSONData, $queryFactory)
     {
+        $this->geoJSONInputData = $geoJSONData;
+
         if (empty($geoJSONData["type"]) || $geoJSONData["type"] != "FeatureCollection") {
             throw new \Exception("GeoJSON data is not a FeatureCollection");
         } elseif (empty($geoJSONData["features"])) {
@@ -59,13 +73,26 @@ class GeoJSONInputEtymologyWikidataQuery extends EtymologyIDListWikidataQuery
         }
         $etymologyIDs = new BaseStringSet(array_keys($etymologyIDSet));
 
-        parent::__construct($etymologyIDs, $language, $endpointURL);
+        $this->query = $queryFactory->create($etymologyIDs);
+    }
+
+    /**
+     * @return XMLQueryResult
+     */
+    public function send(): QueryResult
+    {
+        return $this->query->send();
+    }
+
+    public function getQuery(): string
+    {
+        return $this->query->getQuery();
     }
 
     /**
      * @return array
      */
-    public function getGeoJSONInputData()
+    public function getGeoJSONInputData(): array
     {
         return $this->geoJSONInputData;
     }

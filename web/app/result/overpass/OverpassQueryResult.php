@@ -17,6 +17,10 @@ use InvalidArgumentException;
  */
 abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQueryResult
 {
+    /**
+     * @param bool $success
+     * @param array|null $result
+     */
     public function __construct($success, $result)
     {
         if($success && !is_array($result)) {

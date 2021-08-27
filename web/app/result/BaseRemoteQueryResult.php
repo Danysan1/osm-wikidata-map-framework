@@ -95,7 +95,7 @@ abstract class BaseRemoteQueryResult implements RemoteQueryResult
             strpos($contentType, 'application/sparql-results+xml') !== false;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         return "BaseRemoteQueryResult: " . json_encode($this->curlInfo) . PHP_EOL . $this->getBody();
     }

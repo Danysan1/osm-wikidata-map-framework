@@ -127,7 +127,7 @@ class ServerTiming
         return $this->times;
     }
 
-    public function __toString()
+    public function __toString(): string
     {
         $timeArr = array_map(function ($t) {
             return sprintf("%s=%.3fs", $t[0], $t[1] / 1000);

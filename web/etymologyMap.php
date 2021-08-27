@@ -7,6 +7,7 @@ $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
+require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
 require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
 require_once("./app/query/combined/BBoxEtymologyOverpassWikidataQuery.php");
 require_once("./funcs.php");
@@ -16,6 +17,7 @@ use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
 use App\Query\Decorators\CachedBBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxEtymologyOverpassWikidataQuery;
+use App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -37,6 +39,8 @@ if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty(
 }
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
+$cacheFileBasePath = (string)$conf->get("cache-file-base-path");
+$cacheTimeoutHours = (int)$conf->get("cache-timeout-hours");
 
 if ($from == "bbox") {
     $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
@@ -53,7 +57,13 @@ if ($from == "bbox") {
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
 
-    $query = new BBoxEtymologyOverpassWikidataQuery($bbox, $overpassEndpointURL, $wikidataEndpointURL, $safeLanguage);
+    $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
+        $safeLanguage,
+        $wikidataEndpointURL,
+        $cacheFileBasePath . $safeLanguage . "_",
+        $cacheTimeoutHours
+    );
+    $query = new BBoxEtymologyOverpassWikidataQuery($bbox, $overpassEndpointURL, $wikidataFactory);
 } else {
     http_response_code(400);
     die('{"error":"You must specify the BBox"}');

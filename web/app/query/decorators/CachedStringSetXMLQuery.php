@@ -104,8 +104,7 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
                     array_push($newCache, $row);
                     if ($rowStringSet->containsOrEquals($this->getStringSet())) {
                         // Row bbox contains entirely the query bbox, cache hit!
-                        /** @var array $cachedResult */
-                        $cachedResult = json_decode((string)$row[STRING_SET_CACHE_COLUMN_RESULT], true);
+                        $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
                         $result = new XMLLocalQueryResult(true, $cachedResult);
                         //error_log("CachedStringSetXMLQuery: " . $rowBBox . " contains " . $this->getBBox());
                         //error_log("CachedStringSetXMLQuery: cache hit for " . $this->getBBox());

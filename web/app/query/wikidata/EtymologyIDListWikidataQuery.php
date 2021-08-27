@@ -48,7 +48,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
             return "wd:$id";
         }, $wikidataIDList->toArray()));
 
-        foreach ($wikidataIDList as $wikidataID) {
+        foreach ($wikidataIDList->toArray() as $wikidataID) {
             /**
              * @psalm-suppress DocblockTypeContradiction
              */
@@ -58,6 +58,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
         }
 
         if (!preg_match("/^[a-z]{2}$/", $language)) {
+            error_log("EtymologyIDListWikidataQuery: Invalid language code $language");
             throw new \Exception("Invalid language code, it must be two letters");
         }
 

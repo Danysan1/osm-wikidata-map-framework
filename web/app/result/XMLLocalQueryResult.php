@@ -2,8 +2,8 @@
 
 namespace App\Result;
 
-require_once(__DIR__."/LocalQueryResult.php");
-require_once(__DIR__."/XMLQueryResult.php");
+require_once(__DIR__ . "/LocalQueryResult.php");
+require_once(__DIR__ . "/XMLQueryResult.php");
 
 use \App\Result\LocalQueryResult;
 use \App\Result\XMLQueryResult;
@@ -22,7 +22,7 @@ class XMLLocalQueryResult extends LocalQueryResult implements XMLQueryResult
      */
     public function __construct($success, $result)
     {
-        parent::__construct($success, $result, "application/xml");
+        parent::__construct($success, $result);
     }
 
     /**
