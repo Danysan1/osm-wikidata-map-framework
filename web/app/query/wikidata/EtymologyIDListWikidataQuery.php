@@ -5,11 +5,13 @@ namespace App\Query\Wikidata;
 require_once(__DIR__ . "/../../StringSet.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/POSTWikidataQuery.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/wikidata/WikidataEtymologyQueryResult.php");
 
 use App\StringSet;
 use App\Query\StringSetXMLQuery;
 use \App\Query\Wikidata\POSTWikidataQuery;
+use \App\Result\QueryResult;
 use \App\Result\Wikidata\WikidataEtymologyQueryResult;
 
 /**
@@ -29,7 +31,10 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
      */
     private $language;
 
-    public function send(): WikidataEtymologyQueryResult
+    /**
+     * @return WikidataEtymologyQueryResult
+     */
+    public function send(): QueryResult
     {
         return WikidataEtymologyQueryResult::fromXMLResult(parent::send());
     }

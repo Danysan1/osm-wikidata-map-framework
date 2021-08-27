@@ -5,6 +5,7 @@ namespace App\Query\Wikidata;
 require_once(__DIR__ . "/../GeoJSONQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/GeoJSONInputEtymologyWikidataQuery.php");
+require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 require_once(__DIR__ . "/../../result/wikidata/WikidataEtymologyQueryResult.php");
@@ -12,6 +13,7 @@ require_once(__DIR__ . "/../../result/wikidata/WikidataEtymologyQueryResult.php"
 use \App\Query\GeoJSONQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\Query\Wikidata\GeoJSONInputEtymologyWikidataQuery;
+use \App\Result\QueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\Wikidata\WikidataEtymologyQueryResult;
@@ -45,7 +47,7 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
     /**
      * @return GeoJSONQueryResult
      */
-    public function send(): GeoJSONQueryResult
+    public function send(): QueryResult
     {
         $response = $this->wikidataQuery->send();
         if (!$response->hasResult()) {
