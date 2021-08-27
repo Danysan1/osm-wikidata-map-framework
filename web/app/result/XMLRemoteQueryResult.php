@@ -66,7 +66,7 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
         return $this->getBody();
     }
 
-    public function getResult(): mixed
+    public function getResult()
     {
         return $this->getXML();
     }

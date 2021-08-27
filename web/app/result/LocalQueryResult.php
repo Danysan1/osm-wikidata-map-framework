@@ -46,7 +46,7 @@ abstract class LocalQueryResult implements QueryResult
         return $this->result !== null;
     }
 
-    public function getResult(): mixed
+    public function getResult()
     {
         if ($this->result === null) {
             throw new \Exception("No result available");

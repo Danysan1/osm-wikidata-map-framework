@@ -24,7 +24,7 @@ class JSONRemoteQueryResult extends BaseRemoteQueryResult
         return (array)json_decode($this->getResult(), true);
     }
 
-    public function getResult(): mixed
+    public function getResult()
     {
         if (!$this->hasBody()) {
             throw new \Exception("JSONRemoteQueryResult::getResult: No response available, can't parse");

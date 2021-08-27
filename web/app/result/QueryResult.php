@@ -23,7 +23,7 @@ interface QueryResult {
     /**
      * @return mixed
      */
-    public function getResult(): mixed;
+    public function getResult();
 
     /**
      * @return array
