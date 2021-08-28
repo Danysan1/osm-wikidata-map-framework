@@ -83,6 +83,8 @@ deploy_test:
   variables:
     LFTP_FOLDER: etymology-test
   rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: on_success
     - if: $CI_COMMIT_REF_PROTECTED
       when: manual
     
