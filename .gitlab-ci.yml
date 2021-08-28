@@ -1,21 +1,22 @@
-#include:
+include:
 #  - template: Docker.gitlab-ci.yml
 #  - template: Security/DAST.gitlab-ci.yml
 #  - template: Security/SAST.gitlab-ci.yml
 #  - template: Security/License-Scanning.gitlab-ci.yml
 #  - template: Security/Dependency-Scanning.gitlab-ci.yml
 #  - template: Security/Secret-Detection.gitlab-ci.yml
-#  - template: Security/Container-Scanning.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
 
 stages:
   - lint
   - build
 #  - test
 #  - dast
+  - deploy
 
 psalm:
   stage: lint
-  image: composer:latest
+  image: composer:2
   cache:
     - key: "composer"
       paths:
@@ -42,26 +43,59 @@ psalm:
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
 docker-build:
   stage: build
-  image: docker
+  image: docker:20
   services:
     - docker:dind
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - |
-      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
-        tag=""
-        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
-      else
-        tag=":$CI_COMMIT_REF_SLUG"
-        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-      fi
-    - docker pull "$CI_REGISTRY_IMAGE${tag}" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE${tag} , BUILDING FROM SCRATCH"
+    - tag1="$CI_REGISTRY_IMAGE/$CI_COMMIT_REF_SLUG"
+    - tag2="${tag1}:$CI_COMMIT_SHA"
+    - docker pull $tag1 || echo "NO CACHE FOR $tag1 , BUILDING FROM SCRATCH"
   script:
-    - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE${tag}" .
+    - docker build --target "prod" --cache-from $tag1 --tag $tag1 --tag $tag2 .
   after_script:
-    - docker push "$CI_REGISTRY_IMAGE${tag}"
+    - docker push $tag1
+    - docker push $tag2
   # Run this job in a branch where a Dockerfile exists
   rules:
     - if: $CI_COMMIT_BRANCH
       exists:
         - Dockerfile
+
+.lftp:
+  stage: deploy
+  when: manual
+  image: minidocks/lftp
+  before_script:
+    - lftp --version
+    - ls -l
+    - echo "LFTP_FOLDER = $LFTP_FOLDER"
+    - curl 'https://api.ipify.org'
+  script:
+    - lftp -e "set ssl:verify-certificate no;
+          ls;
+          mirror -v --reverse --only-newer --ignore-time --exclude config.inc.php src/ www.dsantini.it/$LFTP_FOLDER;
+          quit"
+        -u "$FTP_USER,$FTP_PASS"
+        "$FTP_HOST"
+
+test:
+  extends: .lftp
+  environment:
+    name: testing
+    url: https://www.dsantini.it/etymology-test
+  variables:
+    LFTP_FOLDER: etymology-test
+  only:
+    variables:
+      - $CI_COMMIT_REF_PROTECTED
+    
+prod:
+  extends: .lftp
+  environment:
+    name: production
+    url: https://www.dsantini.it/etymology
+  variables:
+    LFTP_FOLDER: etymology
+  only:
+    - master
