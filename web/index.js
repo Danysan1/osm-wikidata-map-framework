@@ -538,8 +538,8 @@ function prepareWikidataLayers(wikidata_url) {
             // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
             const popup = new mapboxgl.Popup({ maxWidth: "none" })
                 .setLngLat(map.getBounds().getNorthWest())
-                .setMaxWidth('95vw')
-                .setOffset([10, 0])
+                //.setMaxWidth('95vw')
+                //.setOffset([10, 0])
                 .setHTML(featureToHTML(e.features[0]));
             //console.info("showEtymologyPopup", { e, popup });
             popup.addTo(map);
@@ -681,8 +681,8 @@ function mapLoadedHandler(e) {
             closeOnClick: true,
             closeOnMove: true,
         }).setLngLat(map.getBounds().getNorthWest())
-        .setMaxWidth('95vw')
-        .setOffset([10, 0])
+        //.setMaxWidth('95vw')
+        //.setOffset([10, 0])
         .setDOMContent(document.getElementById("intro"))
         .addTo(map);
 

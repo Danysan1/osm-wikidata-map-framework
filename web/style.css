@@ -242,9 +242,9 @@ span.legend-key {
     margin-right: 0.5em;
 }
 
-div.mapboxgl-popup {
-    max-height: 100vh;
-    max-width: 95vw;
-    transform: translate(2.5vh, 2.5vh);
+body>div#map>div.mapboxgl-popup {
+    max-height: 99vh !important;
+    max-width: 95vw !important;
+    transform: translate(10px, 0) !important;
     z-index: 1000;
 }
