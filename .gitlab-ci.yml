@@ -1,13 +1,54 @@
-include:
-  - template: Docker.gitlab-ci.yml
-  - template: Security/DAST.gitlab-ci.yml
-  - template: Security/SAST.gitlab-ci.yml
-  - template: Security/License-Scanning.gitlab-ci.yml
-  - template: Security/Dependency-Scanning.gitlab-ci.yml
-  - template: Security/Secret-Detection.gitlab-ci.yml
-  - template: Security/Container-Scanning.gitlab-ci.yml
+#include:
+#  - template: Docker.gitlab-ci.yml
+#  - template: Security/DAST.gitlab-ci.yml
+#  - template: Security/SAST.gitlab-ci.yml
+#  - template: Security/License-Scanning.gitlab-ci.yml
+#  - template: Security/Dependency-Scanning.gitlab-ci.yml
+#  - template: Security/Secret-Detection.gitlab-ci.yml
+#  - template: Security/Container-Scanning.gitlab-ci.yml
 
 stages:
+  - lint
   - build
-  - test
-  - dast
+#  - test
+#  - dast
+
+.psalm:
+  stage: lint
+  image: composer:latest
+  cache:
+    - key: "composer"
+      paths:
+        - vendor/
+    - key: "psalm"
+      paths:
+        - psalm_cache/
+  before_script:
+    - php --version
+    - composer --version
+    - composer install --no-interaction
+    - vendor/bin/psalm --version
+  script:
+    - vendor/bin/psalm --stats --report=psalm.codeclimate.json || echo '==================== CI SONO DEI PROBLEMI NEL CODICE ===================='
+    #- vendor/bin/psalm --stats --taint-analysis --report=psalm_taint.codeclimate.json || echo '==================== CI SONO DEI PROBLEMI DI SICUREZZA NEL CODICE ===================='
+  coverage: '/^Psalm was able to infer types for \d+\.\d+% of the codebase$/'
+  #allow_failure: false
+  timeout: 2 minutes
+  artifacts:
+    paths:
+      - psalm.codeclimate.json
+      #- psalm_taint.codeclimate.json
+
+# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
+docker-build:
+  stage: build
+  image: docker
+  services:
+    - docker:dind
+  before_script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:latest || true
+    - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" --tag "$CI_REGISTRY_IMAGE:latest" .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:latest
