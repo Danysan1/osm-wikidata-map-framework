@@ -96,6 +96,7 @@ prod:
     LFTP_FOLDER: etymology
   only:
     - main
+    - tags
 
 ip_test:
   stage: deploy
