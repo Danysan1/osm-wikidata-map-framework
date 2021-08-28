@@ -77,7 +77,7 @@ if(!$conf->has("mapbox-gl-token")) {
     <div id='map'></div>
     <div id="intro">
         <h1>Open Etymology Map</h1>
-        <h3>OpenStreetMap and Wikidata based etymology map.</h3>
+        <h3>OpenStreetMap &amp; Wikidata based etymology map.</h3>
         <p>This web app uses OpenStreetMap and Wikidata to show the etymology of places on the map.</p>
         <p>
             Used technologies:

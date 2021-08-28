@@ -36,4 +36,6 @@ var mapbox_gl_token = '<?=(string)$conf->get("mapbox-gl-token");?>',
     default_center_lon = <?=(float)$conf->get("default-center-lon");?>,
     default_zoom = <?=(int)$conf->get("default-zoom");?>,
     thresholdZoomLevel = <?=(int)$conf->get("threshold-zoom-level");?>,
+    defaultBackgroundStyle = '<?=(string)$conf->get("default-background-style");?>',
+    defaultColorScheme = '<?=(string)$conf->get("default-color-scheme");?>',
     minZoomLevel = <?=(int)$conf->get("min-zoom-level");?>;

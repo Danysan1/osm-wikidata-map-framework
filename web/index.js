@@ -1,11 +1,9 @@
-const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
-    backgroundStyles = {
+const backgroundStyles = {
         'Streets': 'mapbox://styles/mapbox/streets-v11',
         'Light': 'mapbox://styles/mapbox/light-v10',
         'Dark': 'mapbox://styles/mapbox/dark-v10',
         'Satellite': 'mapbox://styles/mapbox/satellite-v9',
     },
-    defaultColorScheme = 'blue',
     colorSchemes = {
         blue: { text: 'Blue', color: '#3bb2d0', legend: null },
         gender: {
