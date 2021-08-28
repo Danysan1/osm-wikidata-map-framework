@@ -537,7 +537,9 @@ function prepareWikidataLayers(wikidata_url) {
         map.on('click', layerID, function(e) {
             // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
             const popup = new mapboxgl.Popup({ maxWidth: "none" })
-                .setLngLat(e.lngLat)
+                .setLngLat(map.getBounds().getNorthWest())
+                .setMaxWidth('95vw')
+                .setOffset([10, 0])
                 .setHTML(featureToHTML(e.features[0]));
             //console.info("showEtymologyPopup", { e, popup });
             popup.addTo(map);
@@ -654,7 +656,7 @@ function prepareOverpassLayers(overpass_url) {
         });
         map.easeTo({
             center: features[0].geometry.coordinates,
-            zoom: thresholdZoomLevel + 1
+            zoom: thresholdZoomLevel + 0.1
         });
     });
 
@@ -679,7 +681,7 @@ function mapLoadedHandler(e) {
             closeOnClick: true,
             closeOnMove: true,
         }).setLngLat(map.getBounds().getNorthWest())
-        .setMaxWidth('100vw')
+        .setMaxWidth('95vw')
         .setOffset([10, 0])
         .setDOMContent(document.getElementById("intro"))
         .addTo(map);

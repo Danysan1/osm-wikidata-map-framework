@@ -38,6 +38,7 @@ div.mapboxgl-popup-content {
     /*width: 50em;*/
     max-width: 100%;
     max-height: 100%;
+    overflow: auto;
 }
 
 div.detail_container {
@@ -239,4 +240,11 @@ span.legend-key {
     height: 10px;
     margin-left: 0.5em;
     margin-right: 0.5em;
+}
+
+div.mapboxgl-popup {
+    max-height: 100vh;
+    max-width: 95vw;
+    transform: translate(2.5vh, 2.5vh);
+    z-index: 1000;
 }

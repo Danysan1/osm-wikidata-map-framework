@@ -88,6 +88,7 @@ if(!$conf->has("mapbox-gl-token")) {
                 <li><a href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
             </ul>
         </p>
+        <strong>Click anywhere on the map to explore.</strong>
     </div>
 
     <script type="application/x-kendo-template" id="detail_template">
@@ -96,7 +97,7 @@ if(!$conf->has("mapbox-gl-token")) {
             <a href="https://www.openstreetmap.org/#:properties["@id"]#" class="k-button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <div class="etymologies grid grid-auto">
                 # JSON.parse(properties.etymologies).forEach(function (ety) { #
-                <div class="etymology grid grid-two">
+                <div class="etymology grid grid-auto">
                     <div class="column">
                     <div class="header column">
                         <h2>#:ety.name#</h2>
