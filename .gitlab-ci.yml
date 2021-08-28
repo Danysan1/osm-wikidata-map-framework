@@ -29,8 +29,8 @@ psalm:
     - composer install --no-interaction
     - vendor/bin/psalm --version
   script:
-    - vendor/bin/psalm --stats --report=psalm.codeclimate.json || echo '==================== CI SONO DEI PROBLEMI NEL CODICE ===================='
-    #- vendor/bin/psalm --stats --taint-analysis --report=psalm_taint.codeclimate.json || echo '==================== CI SONO DEI PROBLEMI DI SICUREZZA NEL CODICE ===================='
+    - vendor/bin/psalm --stats --report=psalm.codeclimate.json || echo '==================== THERE ARE PROBLEMS IN THE CODE ===================='
+    #- vendor/bin/psalm --stats --taint-analysis --report=psalm_taint.codeclimate.json || echo '==================== THERE ARE SECURITY PROBLEMS IN THE CODE ===================='
   coverage: '/^Psalm was able to infer types for \d+\.\d+% of the codebase$/'
   #allow_failure: false
   timeout: 2 minutes
@@ -55,8 +55,13 @@ docker-build:
         tag=":$CI_COMMIT_REF_SLUG"
         echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
       fi
-    - docker pull "$CI_REGISTRY_IMAGE${tag}" || echo "No cache for $CI_REGISTRY_IMAGE${tag}"
+    - docker pull "$CI_REGISTRY_IMAGE${tag}" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE${tag} , BUILDING FROM SCRATCH"
   script:
     - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE${tag}" .
   after_script:
     - docker push "$CI_REGISTRY_IMAGE${tag}"
+  # Run this job in a branch where a Dockerfile exists
+  rules:
+    - if: $CI_COMMIT_BRANCH
+      exists:
+        - Dockerfile
