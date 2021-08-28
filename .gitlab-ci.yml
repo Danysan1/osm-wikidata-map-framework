@@ -58,7 +58,7 @@ docker-build:
     - echo "Pushing $DOCKER_TAG"
     - docker image push "$DOCKER_TAG"
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
       exists: 
         - Dockerfile
       when: on_success
@@ -102,9 +102,7 @@ deploy_prod:
   variables:
     LFTP_FOLDER: etymology
   rules:
-    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-      when: manual
-    - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
       when: manual
 
 # ip_test:
@@ -132,6 +130,7 @@ sentry_release_prod:
     DEPLOY_ENV_NAME: "prod"
   needs:
     - deploy_prod
+    - gitlab_release
 
 sentry_release_test:
   extends: .sentry_release
@@ -139,6 +138,7 @@ sentry_release_test:
     DEPLOY_ENV_NAME: "test"
   needs:
     - deploy_test
+    - gitlab_release
 
 gitlab_release:
   stage: release
