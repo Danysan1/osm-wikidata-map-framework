@@ -98,4 +98,4 @@ prod:
   variables:
     LFTP_FOLDER: etymology
   only:
-    - master
+    - $CI_DEFAULT_BRANCH
