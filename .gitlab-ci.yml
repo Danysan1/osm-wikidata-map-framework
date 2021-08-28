@@ -49,14 +49,12 @@ docker-build:
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - tag1="$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-    - tag2="$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA"
-    - echo "$tag1" "$tag2"
     - docker pull "$tag1" || echo "NO CACHE FOR $tag1 , BUILDING FROM SCRATCH"
   script:
-    - docker build --target "prod" --cache-from "$tag1" --tag "$tag1" --tag "$tag2" .
+    - docker build --target "prod" --cache-from "$tag1" --tag "$tag1" .
   after_script:
-    - docker push "$tag1"
-    - docker push "$tag2"
+    - echo "Pushing $tag1"
+    - docker image push "$tag1"
   rules:
     - exists:
       - Dockerfile
