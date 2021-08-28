@@ -62,7 +62,6 @@ docker-build:
 
 .lftp:
   stage: deploy
-  when: manual
   image: minidocks/lftp
   before_script:
     - lftp --version
@@ -76,7 +75,7 @@ docker-build:
         -u "$FTP_USER,$FTP_PASS"
         "$FTP_HOST"
 
-test:
+deploy_test:
   extends: .lftp
   environment:
     name: testing
@@ -85,8 +84,9 @@ test:
     LFTP_FOLDER: etymology-test
   rules:
     - if: $CI_COMMIT_REF_PROTECTED
+      when: manual
     
-prod:
+deploy_prod:
   extends: .lftp
   environment:
     name: production
@@ -95,7 +95,9 @@ prod:
     LFTP_FOLDER: etymology
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      when: manual
     - if: '$CI_COMMIT_TAG =~ /^v\n+(\.\n+)*$/'
+      when: manual
 
 ip_test:
   stage: deploy
