@@ -102,6 +102,6 @@ prod:
 ip_test:
   stage: deploy
   when: manual
-  image: curl
+  image: curlimages/curl:7
   script:
     - curl 'https://api.ipify.org'
