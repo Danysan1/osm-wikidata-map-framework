@@ -333,10 +333,11 @@ class EtymologyColorControl {
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
 function showSnackbar(message, color = "lightcoral") {
-    var x = document.getElementById("snackbar");
-    x.className = "show";
+    var x = document.createElement("div");
+    x.className = "snackbar show";
     x.innerText = message;
     x.style = "background-color:" + color;
+    document.body.appendChild(x);
     // After 3 seconds, remove the show class from DIV
     setTimeout(function() { x.className = x.className.replace("show", ""); }, 3000);
 }
@@ -665,6 +666,17 @@ function mapMoveEndHandler(e) {
 }
 
 function mapLoadedHandler(e) {
+    console.info("mapLoadedHandler", e);
+    new mapboxgl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            closeOnMove: true,
+        }).setLngLat(map.getBounds().getNorthWest())
+        .setMaxWidth('100vw')
+        .setOffset([10, 0])
+        .setDOMContent(document.getElementById("intro"))
+        .addTo(map);
+
     mapMoveEndHandler(e)
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
         //map.on('idle', updateDataSource); //! Called continuously, avoid
@@ -711,9 +723,8 @@ function mapLoadedHandler(e) {
         unit: 'metric'
     });
     map.addControl(scale);
-
+    map.addControl(new mapboxgl.FullscreenControl());
     map.addControl(new BackgroundStyleControl());
-
     //map.addControl(new EtymologyColorControl());
 
     map.on('sourcedata', mapSourceDataHandler);

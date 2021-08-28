@@ -75,7 +75,20 @@ if(!$conf->has("mapbox-gl-token")) {
 <body>
     <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
     <div id='map'></div>
-    <div id="snackbar"></div>
+    <div id="intro">
+        <h1>Open Etymology Map</h1>
+        <h3>OpenStreetMap and Wikidata based etymology map.</h3>
+        <p>This web app uses OpenStreetMap and Wikidata to show the etymology of places on the map.</p>
+        <p>
+            Used technologies:
+            <ul>
+                <li><a href="https://www.openstreetmap.org/about">OpenStreetMap</a></li>
+                <li><a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a> and its <a href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a></li>
+                <li><a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a></li>
+                <li><a href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
+            </ul>
+        </p>
+    </div>-->
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">

@@ -108,7 +108,7 @@ select.visibleDropDown {
     margin-left: 0.5em;
 }
 
-div#snackbar,
+div.snackbar,
 div.custom-ctrl,
 div#welcome_board {
     opacity: 0.8;
@@ -144,7 +144,7 @@ div.info>p {
 
 /* The snackbar - position it at the bottom and in the middle of the screen */
 
-#snackbar {
+div.snackbar {
     visibility: hidden;
     /* Hidden by default. Visible on click */
     min-width: 250px;
@@ -176,7 +176,7 @@ div.info>p {
 
 /* Show the snackbar when clicking on a button (class added with JavaScript) */
 
-#snackbar.show {
+div.snackbar.show {
     visibility: visible;
     /* Show the snackbar */
     /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
