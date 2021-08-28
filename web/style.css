@@ -248,3 +248,15 @@ body>div#map>div.mapboxgl-popup {
     transform: translate(10px, 0) !important;
     z-index: 1000;
 }
+
+button.mapboxgl-popup-close-button {
+    font-size: 2em;
+    font-weight: bold;
+    background-color: red;
+    color: white;
+}
+
+button.mapboxgl-popup-close-button:hover {
+    background-color: darkred;
+    color: white;
+}
