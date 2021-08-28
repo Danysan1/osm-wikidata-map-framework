@@ -13,7 +13,7 @@ stages:
 #  - test
 #  - dast
 
-.psalm:
+psalm:
   stage: lint
   image: composer:latest
   cache:
@@ -47,8 +47,16 @@ docker-build:
     - docker:dind
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - |
+      if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        tag=""
+        echo "Running on default branch '$CI_DEFAULT_BRANCH': tag = 'latest'"
+      else
+        tag=":$CI_COMMIT_REF_SLUG"
+        echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
+      fi
+    - docker pull "$CI_REGISTRY_IMAGE${tag}" || echo "No cache for $CI_REGISTRY_IMAGE${tag}"
   script:
-    - docker pull $CI_REGISTRY_IMAGE:latest || true
-    - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHA" --tag "$CI_REGISTRY_IMAGE:latest" .
-    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
-    - docker push $CI_REGISTRY_IMAGE:latest
+    - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE:latest" --tag "$CI_REGISTRY_IMAGE${tag}" .
+  after_script:
+    - docker push "$CI_REGISTRY_IMAGE${tag}"
