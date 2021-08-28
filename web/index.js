@@ -1,8 +1,8 @@
 const backgroundStyles = {
-        'Streets': 'mapbox://styles/mapbox/streets-v11',
-        'Light': 'mapbox://styles/mapbox/light-v10',
-        'Dark': 'mapbox://styles/mapbox/dark-v10',
-        'Satellite': 'mapbox://styles/mapbox/satellite-v9',
+        streets: ['Streets', 'mapbox://styles/mapbox/streets-v11'],
+        light: ['Light', 'mapbox://styles/mapbox/light-v10'],
+        dark: ['Dark', 'mapbox://styles/mapbox/dark-v10'],
+        satellite: ['Satellite', 'mapbox://styles/mapbox/satellite-v9'],
     },
     colorSchemes = {
         blue: { text: 'Blue', color: '#3bb2d0', legend: null },
@@ -175,12 +175,11 @@ class BackgroundStyleControl {
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
         td1.appendChild(this._ctrlDropDown);
 
-        for (const [text, value] of Object.entries(backgroundStyles)) {
+        for (const [name, style] of Object.entries(backgroundStyles)) {
             const option = document.createElement('option');
-            option.innerText = text;
-            //option.value = value;
-            option.value = text;
-            if (value === defaultBackgroundStyle) {
+            option.innerText = style[0];
+            option.value = name;
+            if (name === defaultBackgroundStyle) {
                 option.selected = true;
             }
             this._ctrlDropDown.appendChild(option);
@@ -200,14 +199,15 @@ class BackgroundStyleControl {
     }
 
     dropDownClickHandler(event) {
-        //const backgroundStyle = event.target.value;
-        const backgroundStyle = backgroundStyles[event.target.value];
-        console.info("BackgroundStyleControl dropDown click", { event, backgroundStyle });
-
-        this._map.setStyle(backgroundStyle);
-
-        this._ctrlDropDown.className = 'hiddenElement';
-        //updateDataSource(event);
+        const backgroundStyleObj = backgroundStyles[event.target.value];
+        console.info("BackgroundStyleControl dropDown click", backgroundStyleObj, event);
+        if (backgroundStyleObj) {
+            this._map.setStyle(backgroundStyle[1]);
+            this._ctrlDropDown.className = 'hiddenElement';
+        } else {
+            console.error("Invalid selected background style", event.target.value);
+            Sentry.captureMessage("Invalid selected background style");
+        }
     }
 
 }
@@ -356,9 +356,18 @@ function initMap() {
             startZoom = default_zoom;
         }
 
+        const backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
+        let backgroundStyle;
+        if (backgroundStyleObj) {
+            backgroundStyle = backgroundStyleObj[1];
+        } else {
+            console.error("Invalid default background style", defaultBackgroundStyle);
+            Sentry.captureMessage("Invalid default background style");
+            backgroundStyle = "mapbox://styles/mapbox/streets-v11";
+        }
         map = new mapboxgl.Map({
             container: 'map',
-            style: defaultBackgroundStyle, // stylesheet location
+            style: backgroundStyle,
             center: [startCenterLon, startCenterLat], // starting position [lon, lat]
             zoom: startZoom, // starting zoom
             /*pitch: 45, // starting pitch
