@@ -46,15 +46,16 @@ docker-build:
   image: docker:20
   services:
     - docker:dind
+  variables:
+    DOCKER_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - tag1="$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-    - docker pull "$tag1" || echo "NO CACHE FOR $tag1 , BUILDING FROM SCRATCH"
+    - docker pull "$DOCKER_TAG" || echo "NO CACHE FOR $DOCKER_TAG , BUILDING FROM SCRATCH"
   script:
-    - docker build --target "prod" --cache-from "$tag1" --tag "$tag1" .
+    - docker build --target "prod" --cache-from "$DOCKER_TAG" --tag "$DOCKER_TAG" .
   after_script:
-    - echo "Pushing $tag1"
-    - docker image push "$tag1"
+    - echo "Pushing $DOCKER_TAG"
+    - docker image push "$DOCKER_TAG"
   rules:
     - exists:
       - Dockerfile
