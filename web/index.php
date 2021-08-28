@@ -73,7 +73,6 @@ if(!$conf->has("mapbox-gl-token")) {
 </head>
 
 <body>
-    <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
     <div id='map'></div>
     <div id="intro">
         <h1>Open Etymology Map</h1>
@@ -90,6 +89,8 @@ if(!$conf->has("mapbox-gl-token")) {
         </p>
         <strong>Click anywhere on the map to explore.</strong>
     </div>
+    <h1>The map is loading...</h1>
+    <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">

@@ -243,7 +243,8 @@ span.legend-key {
 }
 
 body>div#map>div.mapboxgl-popup {
-    max-height: 99vh !important;
+    max-height: 90vh !important;
+    /*max-height: 99vh !important;*/
     max-width: 95vw !important;
     transform: translate(10px, 0) !important;
     z-index: 1000;
@@ -252,11 +253,11 @@ body>div#map>div.mapboxgl-popup {
 button.mapboxgl-popup-close-button {
     font-size: 2em;
     font-weight: bold;
-    background-color: red;
+    background-color: #f44;
     color: white;
 }
 
 button.mapboxgl-popup-close-button:hover {
-    background-color: darkred;
+    background-color: #b00;
     color: white;
 }

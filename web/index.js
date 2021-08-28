@@ -511,7 +511,7 @@ function prepareWikidataLayers(wikidata_url) {
         'paint': {
             'line-color': colorSchemes[defaultColorScheme].color,
             'line-opacity': 0.5,
-            'line-width': 7
+            'line-width': 10
         }
     });
 
