@@ -70,7 +70,6 @@ docker-build:
     - lftp --version
     - ls -l
     - echo "LFTP_FOLDER = $LFTP_FOLDER"
-    - curl 'https://api.ipify.org'
   script:
     - lftp -e "set ssl:verify-certificate no;
           ls;
@@ -99,3 +98,10 @@ prod:
     LFTP_FOLDER: etymology
   only:
     - main
+
+ip_test:
+  stage: deploy
+  when: manual
+  image: curlimages/curl:7.78.0
+  script:
+    - echo $(curl 'https://api.ipify.org')
