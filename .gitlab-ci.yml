@@ -8,6 +8,7 @@ include:
   - template: Security/Container-Scanning.gitlab-ci.yml
 
 stages:
+  - release
   - lint
   - build
   - test
@@ -106,9 +107,48 @@ deploy_prod:
     - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
       when: manual
 
-ip_test:
+# ip_test:
+#   stage: deploy
+#   when: manual
+#   image: curlimages/curl:7.78.0
+#   script:
+#     - echo $(curl 'https://api.ipify.org')
+
+.sentry_release:
   stage: deploy
-  when: manual
-  image: curlimages/curl:7.78.0
+  image: getsentry/sentry-cli:1
+  #before_script:
+  #  - sentry-cli login
+  #  - export SENTRY_AUTH_TOKEN=your
   script:
-    - echo $(curl 'https://api.ipify.org')
+    - sentry-cli releases --org "dsantini" deploys "$CI_COMMIT_TAG" new -e "$DEPLOY_ENV_NAME"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
+      when: on_success
+
+sentry_release_prod:
+  extends: .sentry_release
+  variables:
+    DEPLOY_ENV_NAME: "prod"
+  needs:
+    - deploy_prod
+
+sentry_release_test:
+  extends: .sentry_release
+  variables:
+    DEPLOY_ENV_NAME: "test"
+  needs:
+    - deploy_test
+
+gitlab_release:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  script:
+    - echo "Creating release $CI_COMMIT_TAG"
+  release:
+    name: '$CI_COMMIT_TAG'
+    tag_name: '$CI_COMMIT_TAG'
+    description: "$(date '+%Y-%m-%d')"
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
+      when: on_success
