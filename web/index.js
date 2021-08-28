@@ -331,7 +331,7 @@ class EtymologyColorControl {
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
 function showSnackbar(message, color = "lightcoral") {
-    var x = document.createElement("div");
+    const x = document.createElement("div");
     x.className = "snackbar show";
     x.innerText = message;
     x.style = "background-color:" + color;
@@ -466,6 +466,7 @@ function updateDataSource(e) {
             queryString = new URLSearchParams(queryParams).toString(),
             overpass_url = './overpass.php?' + queryString;
         console.info("Overpass dataSource update", { queryParams, overpass_url, overpass_source });
+        showSnackbar("Fetching data...", "lightblue");
         if (overpass_source) {
             overpass_source.setData(overpass_url);
         } else {
