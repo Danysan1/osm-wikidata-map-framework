@@ -63,7 +63,7 @@ if ($from == "bbox") {
         $cacheFileBasePath . $safeLanguage . "_",
         $cacheTimeoutHours
     );
-    $query = new BBoxEtymologyOverpassWikidataQuery($bbox, $overpassEndpointURL, $wikidataFactory);
+    $query = new BBoxEtymologyOverpassWikidataQuery($bbox, $overpassEndpointURL, $wikidataFactory, $serverTiming);
 } else {
     http_response_code(400);
     die('{"error":"You must specify the BBox"}');

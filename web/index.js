@@ -39,6 +39,7 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 'http://www.wikidata.org/entity/Q21070568', '#3bb2d0', // human who may be fictional
                 'http://www.wikidata.org/entity/Q14073567', '#3bb2d0', // sibling duo
                 'http://www.wikidata.org/entity/Q16979650', '#3bb2d0', // sibling group
+                'http://www.wikidata.org/entity/Q20643955', '#3bb2d0', // human biblical figure
                 // Buildings
                 'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
                 'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
@@ -102,9 +103,14 @@ const defaultBackgroundStyle = 'mapbox://styles/mapbox/light-v10',
                 'http://www.wikidata.org/entity/Q8072', '#348C31', // volcano
                 'http://www.wikidata.org/entity/Q169358', '#348C31', // stratovolcano
                 'http://www.wikidata.org/entity/Q4421', '#348C31', // forest
+                'http://www.wikidata.org/entity/Q355304', '#348C31', // watercourse
+                'http://www.wikidata.org/entity/Q4022', '#348C31', // river
                 'http://www.wikidata.org/entity/Q570116', '#348C31', // tourist attraction
                 'http://www.wikidata.org/entity/Q34918903', '#348C31', // National Park of the United States
                 'http://www.wikidata.org/entity/Q22698', '#348C31', // park
+                'http://www.wikidata.org/entity/Q7245083', '#348C31', // principal meridian
+                'http://www.wikidata.org/entity/Q32099', '#348C31', // meridian
+                'http://www.wikidata.org/entity/Q146591', '#348C31', // circle of latitude
                 // Other
                 '#223b53'
             ],
