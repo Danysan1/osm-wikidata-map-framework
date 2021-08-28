@@ -58,9 +58,11 @@ docker-build:
     - docker image push "$DOCKER_TAG"
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
-      exists: Dockerfile
+      exists: 
+        - Dockerfile
       when: on_success
-    - exists: Dockerfile
+    - exists:
+        - Dockerfile
       when: manual
 
 .lftp:
