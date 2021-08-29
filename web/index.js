@@ -127,7 +127,7 @@ const backgroundStyles = {
         red: { text: 'Red', color: '#e55e5e', legend: null },
         orange: { text: 'Orange', color: '#fbb03b', legend: null },
     };
-console.info("init", {
+console.info("start", {
     thresholdZoomLevel,
     minZoomLevel,
     defaultBackgroundStyle,
@@ -137,6 +137,8 @@ console.info("init", {
     default_zoom
 });
 let map;
+
+document.addEventListener("DOMContentLoaded", initPage);
 
 /**
  * Let the user choose the map style.
@@ -776,7 +778,18 @@ function featureToHTML(feature) {
     return detail_template(feature);
 }
 
-$(document).ready(function() {
+/*function popStateHandler(e) {
+    console.info("popStateHandler", e);
+    const closeButtons = document.getElementsByClassName("mapboxgl-popup-close-button");
+    for (const button of closeButtons) {
+        button.click();
+    }
+}*/
+
+function initPage(e) {
+    console.info("initPage", e);
+    //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
+    //document.addEventListener('popstate', popStateHandler, false);
     setCulture();
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (!mapboxgl.supported()) {
@@ -785,4 +798,4 @@ $(document).ready(function() {
     } else {
         initMap();
     }
-});
+}
