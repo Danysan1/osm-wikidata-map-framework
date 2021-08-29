@@ -114,7 +114,7 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
                         $cachedResult = json_decode((string)$row[BBOX_CACHE_COLUMN_RESULT], true);
                         $result = new GeoJSONLocalQueryResult(true, $cachedResult);
                         //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
-                        //error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
+                        error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
                     } else {
                         //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " does not contain " . $this->getBBox());
                     }

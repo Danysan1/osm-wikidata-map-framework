@@ -345,9 +345,9 @@ class EtymologyColorControl {
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
 function showSnackbar(message, color = "lightcoral", timeout = 3000) {
-    //const x = document.createElement("div");
-    //document.body.appendChild(x);
-    const x = document.getElementById("snackbar");
+    const x = document.createElement("div");
+    document.body.appendChild(x);
+    //const x = document.getElementById("snackbar");
     x.className = "snackbar show";
     x.innerText = message;
     x.style = "background-color:" + color;
@@ -408,13 +408,21 @@ function mapStyleDataHandler(e) {
 }
 
 function hashChangeHandler(e) {
-    console.info("hashChangeHandler", e);
+    const position = getPositionFromHash(),
+        currLat = map.getCenter().lat,
+        currLon = map.getCenter().lng,
+        currZoom = map.getZoom();
+    console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
 
-    const position = getPositionFromHash();
-    map.flyTo({
-        center: [position.lon, position.lat],
-        zoom: position.zoom,
-    });
+    // Check if the position has changed in order to avoid unnecessary map movements
+    if (Math.abs(currLat - position.lat) > 0.001 ||
+        Math.abs(currLon - position.lon) > 0.001 ||
+        Math.abs(currZoom - position.zoom) > 0.1) {
+        map.flyTo({
+            center: [position.lon, position.lat],
+            zoom: position.zoom,
+        });
+    }
 }
 
 /**

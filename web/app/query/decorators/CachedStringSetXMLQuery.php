@@ -97,19 +97,19 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
                     // Row too old, ignore
                     error_log("CachedStringSetXMLQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
                 } elseif ($this->getStringSet()->strictlyContains($rowStringSet)) {
-                    // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
-                    error_log("CachedStringSetXMLQuery: trashing smaller bbox row");
+                    // Cache row string set is entirely contained by the new query string set, ignore the cache row
+                    error_log("CachedStringSetXMLQuery: trashing string subset row");
                 } else {
                     // Row is still valid, add to new cache
                     array_push($newCache, $row);
                     if ($rowStringSet->containsOrEquals($this->getStringSet())) {
-                        // Row bbox contains entirely the query bbox, cache hit!
+                        // Row string set contains entirely the query string set, cache hit!
                         $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
                         $result = new XMLLocalQueryResult(true, $cachedResult);
-                        //error_log("CachedStringSetXMLQuery: " . $rowBBox . " contains " . $this->getBBox());
-                        //error_log("CachedStringSetXMLQuery: cache hit for " . $this->getBBox());
+                        //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
+                        error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet());
                     } else {
-                        //error_log("CachedStringSetXMLQuery: " . $rowBBox . " does not contain " . $this->getBBox());
+                        //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " does not contain " . $this->getStringSet());
                     }
                 }
             }
@@ -133,7 +133,7 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
                     STRING_SET_CACHE_COLUMN_SET => $this->getStringSet()->toJson(),
                     STRING_SET_CACHE_COLUMN_RESULT => $result->getXML()
                 ];
-                //error_log("CachedStringSetXMLQuery: add new row for " . $this->getBBox());
+                //error_log("CachedStringSetXMLQuery: add new row for " . $this->getStringSet());
                 //error_log("CachedStringSetXMLQuery new row: ".json_encode($newRow));
                 array_unshift($newCache, $newRow);
 
