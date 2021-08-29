@@ -389,16 +389,20 @@ function initMap() {
         });
 
         map.on('load', mapLoadedHandler);
+
+        window.addEventListener('hashchange', hashChangeHandler, false);
     }
 }
 
-/*function rotateCamera(timestamp) {
-    // clamp the rotation between 0 -360 degrees
-    // Divide timestamp by 100 to slow rotation to ~10 degrees / sec
-    map.rotateTo((timestamp / 100) % 360, { duration: 0 });
-    // Request the next frame of the animation.
-    requestAnimationFrame(rotateCamera);
-}*/
+function hashChangeHandler(e) {
+    console.info("hashChangeHandler", e);
+
+    const position = getPositionFromHash();
+    map.flyTo({
+        center: [position.lon, position.lat],
+        zoom: position.zoom,
+    });
+}
 
 /**
  * Event listener that fires when one of the map's sources loads or changes.
@@ -682,8 +686,8 @@ function prepareOverpassLayers(overpass_url) {
 
 function mapMoveEndHandler(e) {
     updateDataSource(e);
-    const lat = Math.round(map.getCenter().lat * 1000) / 1000,
-        lon = Math.round(map.getCenter().lng * 1000) / 1000,
+    const lat = Math.round(map.getCenter().lat * 10000) / 10000,
+        lon = Math.round(map.getCenter().lng * 10000) / 10000,
         zoom = Math.round(map.getZoom() * 10) / 10;
     window.location.hash = "#" + lon + "," + lat + "," + zoom;
 }
