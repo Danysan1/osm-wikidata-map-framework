@@ -396,9 +396,15 @@ function initMap() {
         });
 
         map.on('load', mapLoadedHandler);
+        map.on('styledata', mapStyleDataHandler);
 
         window.addEventListener('hashchange', hashChangeHandler, false);
     }
+}
+
+function mapStyleDataHandler(e) {
+    console.info("Map style data loaded", e);
+    setCulture();
 }
 
 function hashChangeHandler(e) {
@@ -700,18 +706,8 @@ function mapMoveEndHandler(e) {
 }
 
 function mapLoadedHandler(e) {
-    const lang = document.documentElement.lang.substr(0, 2),
-        nameProperty = ['coalesce', ['get', `name_` + lang],
-            ['get', `name`]
-        ];
-    console.info("mapLoadedHandler", lang, e);
-
-    // https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
-    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
-    map.setLayoutProperty('country-label', 'text-field', nameProperty);
-    map.setLayoutProperty('road-label', 'text-field', nameProperty);
-    map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
-    map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+    console.info("mapLoadedHandler", e);
+    //setCulture();
 
     new mapboxgl.Popup({
             closeButton: true,
@@ -779,7 +775,22 @@ function mapLoadedHandler(e) {
 }
 
 function setCulture() {
-    const culture = document.documentElement.lang;
+    const culture = document.documentElement.lang,
+        lang = culture.substr(0, 2),
+        nameProperty = ['coalesce', ['get', `name_` + lang],
+            ['get', `name`]
+        ];
+    console.info("setCulture", { culture, lang, nameProperty, map });
+
+    if (map) {
+        // https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+        map.setLayoutProperty('country-label', 'text-field', nameProperty);
+        map.setLayoutProperty('road-label', 'text-field', nameProperty);
+        map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
+        map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+    }
+
     console.info("culture", culture);
     kendo.culture(culture);
 }
