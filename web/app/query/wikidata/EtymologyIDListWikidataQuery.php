@@ -139,7 +139,11 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P18 ?picture.
+                    {
+                        ?wikidata wdt:P18 ?picture. # picture
+                    } UNION {
+                        ?wikidata wdt:P94 ?picture. # coat of arms image
+                    }
                 }
 
                 OPTIONAL {
