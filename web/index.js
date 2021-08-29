@@ -1,8 +1,10 @@
 const backgroundStyles = {
-        streets: ['Streets', 'mapbox://styles/mapbox/streets-v11'],
-        light: ['Light', 'mapbox://styles/mapbox/light-v10'],
-        dark: ['Dark', 'mapbox://styles/mapbox/dark-v10'],
-        satellite: ['Satellite', 'mapbox://styles/mapbox/satellite-v9'],
+        streets: { text: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
+        light: { text: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
+        dark: { text: 'Dark', style: 'mapbox://styles/mapbox/dark-v10' },
+        satellite: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-v9' },
+        hybrid: { text: 'Satellite+Streets', style: 'mapbox://styles/mapbox/satellite-streets-v11' },
+        outdoors: { text: 'Outdoors', style: 'mapbox://styles/mapbox/outdoors-v11' },
     },
     colorSchemes = {
         blue: { text: 'Blue', color: '#3bb2d0', legend: null },
@@ -177,7 +179,7 @@ class BackgroundStyleControl {
 
         for (const [name, style] of Object.entries(backgroundStyles)) {
             const option = document.createElement('option');
-            option.innerText = style[0];
+            option.innerText = style.text;
             option.value = name;
             if (name === defaultBackgroundStyle) {
                 option.selected = true;
@@ -202,7 +204,7 @@ class BackgroundStyleControl {
         const backgroundStyleObj = backgroundStyles[event.target.value];
         console.info("BackgroundStyleControl dropDown click", backgroundStyleObj, event);
         if (backgroundStyleObj) {
-            this._map.setStyle(backgroundStyle[1]);
+            this._map.setStyle(backgroundStyleObj.style);
             this._ctrlDropDown.className = 'hiddenElement';
         } else {
             console.error("Invalid selected background style", event.target.value);
@@ -285,8 +287,19 @@ class EtymologyColorControl {
 
     dropDownClickHandler(event) {
         //const colorScheme = event.target.value;
-        const colorScheme = colorSchemes[event.target.value].color;
+        const colorScheme = colorSchemes[event.target.value];
         console.info("EtymologyColorControl dropDown click", { event, colorScheme });
+        let color, legend;
+
+        if (colorScheme) {
+            color = colorScheme.color;
+            legend = colorScheme.legend;
+        } else {
+            console.error("Invalid selected color scheme", event.target.value);
+            Sentry.captureMessage("Invalid selected color scheme");
+            color = '#3bb2d0';
+            legend = null;
+        }
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -294,11 +307,10 @@ class EtymologyColorControl {
             ["wikidata_layer_polygon", 'fill-color'],
         ].forEach(([layerID, property]) => {
             if (this._map.getLayer(layerID)) {
-                this._map.setPaintProperty(layerID, property, colorScheme);
+                this._map.setPaintProperty(layerID, property, color);
             }
         });
 
-        const legend = colorSchemes[event.target.value].legend;
         if (legend) {
             this._legend.innerHTML = '';
             legend.forEach(row => {
@@ -340,26 +352,30 @@ function showSnackbar(message, color = "lightcoral") {
     setTimeout(function() { x.className = x.className.replace("show", ""); }, 3000);
 }
 
+function getPositionFromHash() {
+    let params = window.location.hash ? window.location.hash.substr(1).split(",") : null,
+        lon = (params && params[0]) ? parseFloat(params[0]) : NaN,
+        lat = (params && params[1]) ? parseFloat(params[1]) : NaN,
+        zoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
+    if (isNaN(lon) || isNaN(lat) || isNaN(zoom)) {
+        lon = default_center_lon;
+        lat = default_center_lat;
+        zoom = default_zoom;
+    }
+    return { lat, lon, zoom };
+}
+
 function initMap() {
     if (map) {
         console.info("The map is already initialized");
     } else {
         console.info("Initializing the map");
         mapboxgl.accessToken = mapbox_gl_token;
-        let params = window.location.hash ? window.location.hash.substr(1).split(",") : null,
-            startCenterLon = (params && params[0]) ? parseFloat(params[0]) : NaN,
-            startCenterLat = (params && params[1]) ? parseFloat(params[1]) : NaN,
-            startZoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
-        if (isNaN(startCenterLon) || isNaN(startCenterLat) || isNaN(startZoom)) {
-            startCenterLon = default_center_lon;
-            startCenterLat = default_center_lat;
-            startZoom = default_zoom;
-        }
-
-        const backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
+        const startPosition = getPositionFromHash(),
+            backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
         let backgroundStyle;
         if (backgroundStyleObj) {
-            backgroundStyle = backgroundStyleObj[1];
+            backgroundStyle = backgroundStyleObj.style;
         } else {
             console.error("Invalid default background style", defaultBackgroundStyle);
             Sentry.captureMessage("Invalid default background style");
@@ -368,11 +384,8 @@ function initMap() {
         map = new mapboxgl.Map({
             container: 'map',
             style: backgroundStyle,
-            center: [startCenterLon, startCenterLat], // starting position [lon, lat]
-            zoom: startZoom, // starting zoom
-            /*pitch: 45, // starting pitch
-            bearing: -17.6,
-            antialias: true*/
+            center: [startPosition.lon, startPosition.lat], // starting position [lon, lat]
+            zoom: startPosition.zoom, // starting zoom
         });
 
         map.on('load', mapLoadedHandler);
