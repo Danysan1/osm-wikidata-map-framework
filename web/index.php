@@ -91,6 +91,7 @@ if(!$conf->has("mapbox-gl-token")) {
     </div>
     <h1>The map is loading...</h1>
     <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
+    <div id="snackbar"></div>
 
     <script type="application/x-kendo-template" id="detail_template">
         <div class="detail_container">

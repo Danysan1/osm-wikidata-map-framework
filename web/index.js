@@ -344,14 +344,19 @@ class EtymologyColorControl {
  * 
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
-function showSnackbar(message, color = "lightcoral") {
-    const x = document.createElement("div");
+function showSnackbar(message, color = "lightcoral", timeout = 3000) {
+    //const x = document.createElement("div");
+    //document.body.appendChild(x);
+    const x = document.getElementById("snackbar");
     x.className = "snackbar show";
     x.innerText = message;
     x.style = "background-color:" + color;
-    document.body.appendChild(x);
-    // After 3 seconds, remove the show class from DIV
-    setTimeout(function() { x.className = x.className.replace("show", ""); }, 3000);
+
+    if (timeout) {
+        // After N milliseconds, remove the show class from DIV
+        setTimeout(function() { x.className = x.className.replace("show", ""); }, timeout);
+    }
+    return x;
 }
 
 function getPositionFromHash() {
@@ -371,10 +376,10 @@ function initMap() {
     if (map) {
         console.info("The map is already initialized");
     } else {
-        console.info("Initializing the map");
         mapboxgl.accessToken = mapbox_gl_token;
         const startPosition = getPositionFromHash(),
             backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
+        console.info("Initializing the map", { startPosition, backgroundStyleObj });
         let backgroundStyle;
         if (backgroundStyleObj) {
             backgroundStyle = backgroundStyleObj.style;
@@ -470,7 +475,7 @@ function updateDataSource(e) {
             queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
-        showSnackbar("Fetching data...", "lightblue");
+        showSnackbar("Fetching data...", "lightblue", 10000);
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
@@ -605,7 +610,7 @@ function prepareOverpassLayers(overpass_url) {
         source: 'overpass_source',
         type: 'circle',
         maxzoom: thresholdZoomLevel,
-        minzoom: minZoomLevel,
+        //minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -627,7 +632,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'symbol',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        minzoom: minZoomLevel,
+        //minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         layout: {
             'text-field': '{point_count_abbreviated}',
@@ -641,7 +646,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'circle',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        minzoom: minZoomLevel,
+        //minzoom: minZoomLevel,
         filter: ['!', ['has', 'point_count']],
         paint: {
             'circle-color': '#11b4da',
@@ -695,7 +700,19 @@ function mapMoveEndHandler(e) {
 }
 
 function mapLoadedHandler(e) {
-    console.info("mapLoadedHandler", e);
+    const lang = document.documentElement.lang.substr(0, 2),
+        nameProperty = ['coalesce', ['get', `name_` + lang],
+            ['get', `name`]
+        ];
+    console.info("mapLoadedHandler", lang, e);
+
+    // https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+    map.setLayoutProperty('country-label', 'text-field', nameProperty);
+    map.setLayoutProperty('road-label', 'text-field', nameProperty);
+    map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
+    map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+
     new mapboxgl.Popup({
             closeButton: true,
             closeOnClick: true,
