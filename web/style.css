@@ -39,6 +39,7 @@ div.mapboxgl-popup-content {
     max-width: 100%;
     max-height: 100%;
     overflow: auto;
+    font-family: 'Arial Unicode MS Bold', 'Open Sans Semibold', sans-serif;
 }
 
 div.detail_container {
@@ -253,11 +254,11 @@ body>div#map>div.mapboxgl-popup {
 button.mapboxgl-popup-close-button {
     font-size: 2em;
     font-weight: bold;
-    background-color: #f44;
+    background-color: #f22;
     color: white;
 }
 
 button.mapboxgl-popup-close-button:hover {
-    background-color: #b00;
+    background-color: #d00;
     color: white;
 }
