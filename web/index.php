@@ -29,19 +29,21 @@ if(!empty($_REQUEST['lang'])
 <html lang="<?= $defaultCulture; ?>">
 
 <?php
-if(!$conf->has("mapbox-gl-token")) {
+if(!$conf->has("mapbox-gl-version") || !$conf->has("mapbox-gl-token"))
+{
 ?>
 
-<body>Missing Mapbox GL JS token from configuration</body>
+<body>Missing Mapbox GL JS version or token from configuration</body>
 
 <?php
 } else {
+    $mapbox_version = (string)$conf->get("mapbox-gl-version");
 ?>
 
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <?php if ($conf->has("sentry-js-dsn")) { ?>
     <script src="https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js" integrity="sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU" crossorigin="anonymous" type="application/javascript"></script>
@@ -57,8 +59,9 @@ if(!$conf->has("mapbox-gl-token")) {
     <script src="./init.php" type="application/javascript"></script>
 
     <title>Open Etymology Map</title>
+    <meta name="description" content="OpenStreetMap+Wikidata based etymology map - See the etymology of places on the map.">
 
-    <script defer src='https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.js' type="application/javascript"></script>
+    <script defer src='https://api.mapbox.com/mapbox-gl-js/<?=$mapbox_version;?>/mapbox-gl.js' type="application/javascript"></script>
     <script defer src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
     <script defer src="https://kendo.cdn.telerik.com/2021.2.616/js/jquery.min.js" type="application/javascript"></script>
     <script defer src="https://kendo.cdn.telerik.com/2021.2.616/js/kendo.all.min.js" type="application/javascript"></script>
@@ -66,7 +69,7 @@ if(!$conf->has("mapbox-gl-token")) {
     <script defer src="./index.js" type="application/javascript"></script>
 
     <link rel="stylesheet" href="./style.css" type="text/css" />
-    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/v2.3.1/mapbox-gl.css" type="text/css" />
+    <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/<?=$mapbox_version;?>/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" type="text/css">
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.common.min.css" type="text/css" />
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.bootstrap.min.css" type="text/css" />
