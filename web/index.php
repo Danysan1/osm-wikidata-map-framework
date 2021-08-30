@@ -79,10 +79,13 @@ if(!$conf->has("mapbox-gl-token")) {
         <h3>OpenStreetMap+Wikidata based etymology map.</h3>
         <p>This web app uses OpenStreetMap and Wikidata to show the etymology of places on the map.</p>
         <p>
-            Used technologies: <a href="https://www.openstreetmap.org/about">OpenStreetMap</a>,
-            <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a> and its <a href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a>,
-            <a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a>,
-            <a href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a>.
+            Used technologies:
+            <ul>
+                <li><a href="https://www.openstreetmap.org/about">OpenStreetMap</a></li>
+                <li><a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a> and its <a href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a></li>
+                <li><a href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a></li>
+                <li><a href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
+            </ul>
         </p>
         <p>
             <a href="https://gitlab.com/dsantini/open-etymology-map/-/issues">Report a problem</a> |
