@@ -78,6 +78,7 @@ if(!$conf->has("mapbox-gl-token")) {
         <h1>Open Etymology Map</h1>
         <h3>OpenStreetMap+Wikidata based etymology map.</h3>
         <p>This web app uses OpenStreetMap and Wikidata to show the etymology of places on the map.</p>
+        <strong>Click anywhere on the map to explore.</strong>
         <p>
             Used technologies:
             <ul>
@@ -87,7 +88,8 @@ if(!$conf->has("mapbox-gl-token")) {
                 <li><a href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
             </ul>
         </p>
-        <strong>Click anywhere on the map to explore.</strong>
+        <p><a href="https://gitlab.com/dsantini/open-etymology-map/-/issues">Report a problem</a></p>
+        <p><a href="https://gitlab.com/dsantini/open-etymology-map">Contribute</a></p>
     </div>
     <h1>The map is loading...</h1>
     <noscript><h1>You need Javascript enabled to run this web app</h1></noscript>
