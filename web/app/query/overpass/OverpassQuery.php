@@ -8,6 +8,7 @@ require_once(__DIR__ . "/../../result/JSONRemoteQueryResult.php");
 
 use \App\Query\BaseQuery;
 use \App\Result\QueryResult;
+use \App\Result\RemoteQueryResult;
 use \App\Result\JSONRemoteQueryResult;
 use Exception;
 
@@ -36,10 +37,11 @@ class OverpassQuery extends BaseQuery
         $result = curl_exec($ch);
         $curlInfo = (array)curl_getinfo($ch);
         curl_close($ch);
-        if (!$result)
+        if (!$result) {
             $result = null;
-        else
+        } else {
             assert(is_string($result));
+        }
         return new JSONRemoteQueryResult($result, $curlInfo);
     }
 
@@ -47,10 +49,10 @@ class OverpassQuery extends BaseQuery
     {
         $res = $this->_send();
         if (!$res->isSuccessful()) {
-            if ($res->hasResult()) {
-                if (strpos($res->getResult(), "Dispatcher_Client::request_read_and_idx::timeout")) {
+            if ($res instanceof RemoteQueryResult && $res->hasBody()) {
+                if (strpos($res->getBody(), "Dispatcher_Client::request_read_and_idx::timeout")) {
                     throw new Exception("Overpass server timeout. Please try later.");
-                } elseif (strpos($res->getResult(), "Dispatcher_Client::request_read_and_idx::rate_limited")) {
+                } elseif (strpos($res->getBody(), "Dispatcher_Client::request_read_and_idx::rate_limited")) {
                     throw new Exception("Rate limited by Overpass server. Please try later.");
                 }
             } else {
