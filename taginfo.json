@@ -1,0 +1,29 @@
+{
+    "data_format": 1,
+    "data_url": "https://www.dsantini.it/etymology/",
+    "project": {
+        "name": "Open Etymology Map",
+        "description": "This web app uses OpenStreetMap and Wikidata to show the etymology of places on the map.",
+        "project_url": "https://gitlab.com/dsantini/open-etymology-map",
+        "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/README.md",
+        "contact_name": "Daniele Santini",
+        "contact_email": "danysan95@gmail.com"
+    },
+    "tags": [{
+            "key": "name:etymology:wikidata",
+            "object_types": [
+                "node",
+                "way"
+            ],
+            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "description": "The value of name:etymology:wikidata is used to gather etymology information from Wikidata"
+        },
+        {
+            "key": "name",
+            "object_types": [
+                "node",
+                "way"
+            ]
+        }
+    ]
+}
