@@ -340,8 +340,11 @@ class EtymologyColorControl {
 }
 
 /**
- * Show the error snackbar
+ * Show an error/info snackbar
  * 
+ * @param {string} message The message to show
+ * @param {string} color The color of the snackbar
+ * @param {number} timeout The timeout in milliseconds
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
 function showSnackbar(message, color = "lightcoral", timeout = 3000) {
@@ -402,11 +405,19 @@ function initMap() {
     }
 }
 
+/**
+ * 
+ * @param {MapDataEvent} e The event to handle 
+ */
 function mapStyleDataHandler(e) {
     console.info("Map style data loaded", e);
     setCulture();
 }
 
+/**
+ * 
+ * @param {HashChangeEvent} e The event to handle 
+ */
 function hashChangeHandler(e) {
     const position = getPositionFromHash(),
         currLat = map.getCenter().lat,
@@ -427,6 +438,8 @@ function hashChangeHandler(e) {
 
 /**
  * Event listener that fires when one of the map's sources loads or changes.
+ * 
+ * @param {MapDataEvent} e The event to handle
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
  * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
  */
@@ -446,6 +459,11 @@ function mapSourceDataHandler(e) {
     }
 }
 
+/**
+ * 
+ * @param {string} err 
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
+ */
 function mapErrorHandler(err) {
     console.trace('Map error: ', err);
     if ((err.sourceId == "overpass_source" || err.sourceId == "wikidata_source") && err.error.status > 200) {
@@ -516,6 +534,7 @@ function updateDataSource(e) {
 /**
  * Initializes the high-zoom-level complete (un-clustered) layer.
  * 
+ * @param {string} wikidata_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
  */
@@ -603,6 +622,7 @@ function prepareWikidataLayers(wikidata_url) {
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
+ * @param {string} overpass_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
  * Add a new source from our GeoJSON data and set the 'cluster' option to true.
@@ -705,6 +725,10 @@ function prepareOverpassLayers(overpass_url) {
     map.on('mouseleave', 'overpass_layer_point', () => map.getCanvas().style.cursor = '');
 }
 
+/**
+ * 
+ * @param {DragEvent} e The event to handle 
+ */
 function mapMoveEndHandler(e) {
     updateDataSource(e);
     const lat = Math.round(map.getCenter().lat * 10000) / 10000,
@@ -804,7 +828,7 @@ function setCulture() {
 }
 
 function featureToHTML(feature) {
-    const detail_template_source = $("#detail_template").html();
+    const detail_template_source = document.getElementById("detail_template").innerHTML;
     /*console.info("featureToHTML", {
         detail_template_source,
         feature,
@@ -822,6 +846,10 @@ function featureToHTML(feature) {
     }
 }*/
 
+/**
+ * 
+ * @param {Event} e The event to handle 
+ */
 function initPage(e) {
     console.info("initPage", e);
     //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
