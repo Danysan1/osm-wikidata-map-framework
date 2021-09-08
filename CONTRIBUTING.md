@@ -2,6 +2,24 @@
 
 You can find here some information useful to contribute to the project.
 
+## Configuration
+
+All instance settings must be set in `open-etymology-map.ini`. A template for this config file can be found in  [open-etymology-map.template.ini](open-etymology-map.template.ini).
+
+## Deployment
+
+### Default instance
+
+The default production instance ( https://www.dsantini.it/etymology/ ) and development instance ( https://www.dsantini.it/etymology-test/ ) are deployed semi-automatically through Gitlab CI and FTP (see https://gitlab.com/dsantini/open-etymology-map/-/environments ).
+
+### Local development with Docker
+
+A local development instance can be started with Docker by running `docker-compose up` in the project root and browsing to http://localhost/ .
+
+### Production with Docker
+
+The latest version can be deployed through Docker using the image `registry.gitlab.com/dsantini/open-etymology-map` whose available tags are listed in https://gitlab.com/dsantini/open-etymology-map/container_registry/2165364.
+
 ## Data gathering process
 
 Data gathering process in ([etymologyMap](web/etymologyMap.php)):
