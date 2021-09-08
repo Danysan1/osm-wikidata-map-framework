@@ -16,9 +16,9 @@ The default production instance ( https://www.dsantini.it/etymology/ ) and devel
 
 A local development instance can be started with Docker by running `docker-compose up` in the project root and browsing to http://localhost/ .
 
-### Production with Docker
+### Production deployment with Docker
 
-The latest version can be deployed through Docker using the image `registry.gitlab.com/dsantini/open-etymology-map` whose available tags are listed in https://gitlab.com/dsantini/open-etymology-map/container_registry/2165364.
+The latest version can be deployed through Docker using the image `registry.gitlab.com/dsantini/open-etymology-map` whose available tags are listed [here](https://gitlab.com/dsantini/open-etymology-map/container_registry/2165364).
 
 ## Data gathering process
 
