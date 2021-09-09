@@ -76,16 +76,15 @@ docker-build:
   image: docker:20
   services:
     - docker:dind
-  variables:
-    DOCKER_TAG: "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   before_script:
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - docker pull "$DOCKER_TAG" || echo "NO CACHE FOR $DOCKER_TAG , BUILDING FROM SCRATCH"
+    - docker pull "$CI_REGISTRY_IMAGE" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE , BUILDING FROM SCRATCH"
   script:
-    - docker build --target "prod" --cache-from "$DOCKER_TAG" --tag "$DOCKER_TAG" .
+    - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --tag "$CI_REGISTRY_IMAGE" .
   after_script:
-    - echo "Pushing $DOCKER_TAG"
-    - docker image push "$DOCKER_TAG"
+    - echo "Pushing $CI_REGISTRY_IMAGE"
+    - docker image push "$CI_REGISTRY_IMAGE"
+    - docker image push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
       exists: 
