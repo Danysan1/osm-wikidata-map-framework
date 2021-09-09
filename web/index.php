@@ -116,13 +116,13 @@ if (!$conf->has("mapbox-gl-version") || !$conf->has("mapbox-gl-token")) {
     </div>
     <h2>The map is loading...</h2>
     <noscript>
-        <h1>You need Javascript enabled to run this web app</h1>
+        <strong>You need Javascript enabled to run this web app</strong>
     </noscript>
     <div id="snackbar"></div>
 
     <template id="detail_template">
         <div class="detail_container">
-            <h2 class="element_name"></h1>
+            <h2 class="element_name"></h2>
             <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large osm_button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <div class="etymologies_container grid grid-auto">
 
