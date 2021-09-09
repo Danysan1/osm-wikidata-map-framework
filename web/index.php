@@ -82,12 +82,14 @@ if (!$conf->has("mapbox-gl-version") || !$conf->has("mapbox-gl-token")) {
     <link rel="stylesheet" href="https://kendo.cdn.telerik.com/2021.2.616/styles/kendo.bootstrap.min.css" type="text/css" />-->
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.dsantini.it/etymology" />
+    <meta property="og:url" content="https://www.dsantini.it/etymology/" />
     <meta property="og:title" content="Open Etymology Map" />
     <meta property="og:site_name" content="Open Etymology Map" />
     <meta property="og:description" content="Interactive map that uses OpenStreetMap and Wikidata to show the etymology of streets and points of interest." />
     <meta property="og:locale" content="<?= $defaultCulture; ?>" />
     <meta name="author" content="Daniele Santini">
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://www.dsantini.it/etymology/" />
 </head>
 
 <body>
