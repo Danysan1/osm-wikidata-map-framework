@@ -49,13 +49,13 @@ function prepareHTML(Configuration $conf) {
 			"default-src 'self'; ".
 			"worker-src blob: ; ".
 			"child-src blob: ; ".
-			"img-src 'self' data: blob: https://kendo.cdn.telerik.com https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.paypalobjects.com https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://www.google.it; ".
-			"font-src 'self' 'unsafe-eval' https://fonts.gstatic.com https://use.fontawesome.com https://kendo.cdn.telerik.com; ".
-			"style-src 'self' 'unsafe-eval' 'unsafe-inline' https://fonts.googleapis.com https://use.fontawesome.com https://kendo.cdn.telerik.com https://api.mapbox.com; ".
-			"script-src 'self' 'unsafe-eval' https://browser.sentry-cdn.com https://kendo.cdn.telerik.com https://api.mapbox.com/mapbox-gl-js/ https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
+			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://www.google.it; ".
+			"font-src 'self' https://fonts.gstatic.com; ".
+			"style-src 'self' https://fonts.googleapis.com https://api.mapbox.com; ".
+			"script-src 'self' https://browser.sentry-cdn.com https://api.mapbox.com/mapbox-gl-js/ https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".
-			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")." https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com stats.g.doubleclick.net; ".
+			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")." https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; ".
 			"report-uri ".(string)$conf->get("sentry-js-uri")."; ".
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

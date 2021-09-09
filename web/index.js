@@ -598,9 +598,12 @@ function prepareWikidataLayers(wikidata_url) {
                 .setLngLat(map.getBounds().getNorthWest())
                 //.setMaxWidth('95vw')
                 //.setOffset([10, 0])
-                .setHTML(featureToHTML(e.features[0]));
+                //.setHTML(featureToHTML(e.features[0]));
+                .setHTML('<div class="detail_wrapper"></div>')
+                .addTo(map);
+            //console.info(popup, popup.getElement());
+            popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
             //console.info("showEtymologyPopup", { e, popup });
-            popup.addTo(map);
         });
 
         // Change the cursor to a pointer when
@@ -824,18 +827,129 @@ function setCulture() {
     }
 
     console.info("culture", culture);
-    kendo.culture(culture);
+    //kendo.culture(culture);
 }
 
+/**
+ * 
+ * @param {any} feature 
+ * @return {Node}
+ */
+function featureToElement(feature) {
+    const etymologies = JSON.parse(feature.properties.etymologies),
+        detail_template = document.getElementById('detail_template'),
+        etymology_template = document.getElementById('etymology_template'),
+        detail_container = detail_template.content.cloneNode(true),
+        //template_container = document.createDocumentFragment(),
+        etymologies_container = detail_container.querySelector('.etymologies_container');;
+    //template_container.appendChild(detail_container);
+    console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
+
+    detail_container.querySelector('.element_name').innerText = feature.properties.name;
+    detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
+    etymologies.forEach(function(ety) {
+        const etymology = etymology_template.content.cloneNode(true),
+            etymology_description = etymology.querySelector('.etymology_description'),
+            wikipedia_button = etymology.querySelector('.wikipedia_button'),
+            commons_button = etymology.querySelector('.commons_button'),
+            start_end_date = etymology.querySelector('.start_end_date'),
+            event_place = etymology.querySelector('.event_place'),
+            citizenship = etymology.querySelector('.citizenship'),
+            gender = etymology.querySelector('.gender'),
+            occupations = etymology.querySelector('.occupations'),
+            prizes = etymology.querySelector('.prizes'),
+            pictures = etymology.querySelector('.pictures');
+
+        etymology.querySelector('.etymology_name').innerText = ety.name;
+        if (ety.description) {
+            etymology_description.innerText = ety.description;
+        } else {
+            etymology_description.style.display = 'none';
+        }
+
+        etymology.querySelector('.wikidata_button').href = ety.wikidata;
+        if (ety.wikipedia) {
+            wikipedia_button.href = ety.wikipedia;
+        } else {
+            wikipedia_button.style.display = 'none';
+        }
+        if (ety.commons) {
+            commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+        } else {
+            commons_button.style.display = 'none';
+        }
+
+        if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
+            const birth_date = ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?",
+                birth_place = ety.birth_place ? ety.birth_place : "?",
+                death_date = ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?",
+                death_place = ety.death_place ? ety.death_place : "?";
+            start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
+        } else if (ety.event_date) {
+            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
+            start_end_date.innerText = '📅 ' + event_date;
+        } else if (ety.start_date || ety.end_date) {
+            const start_date = ety.start_date ? (new Date(ety.start_date)).toLocaleDateString(document.documentElement.lang) : "?",
+                end_date = ety.end_date ? (new Date(ety.end_date)).toLocaleDateString(document.documentElement.lang) : "?";
+            start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
+        } else {
+            start_end_date.style.display = 'none';
+        }
+        if (ety.event_place) {
+            event_place.innerText = '📍 ' + ety.event_place;
+        } else {
+            event_place.style.display = 'none';
+        }
+
+        if (ety.citizenship) {
+            citizenship.innerText = '🌍 ' + ety.citizenship;
+        } else {
+            citizenship.style.display = 'none';
+        }
+        if (ety.gender) {
+            gender.innerText = '⚧️ ' + ety.gender;
+        } else {
+            gender.style.display = 'none';
+        }
+        if (ety.occupations) {
+            occupations.innerText = '🛠️ ' + ety.occupations;
+        } else {
+            occupations.style.display = 'none';
+        }
+        if (ety.prizes) {
+            prizes.innerText = '🏆 ' + ety.prizes;
+        } else {
+            prizes.style.display = 'none';
+        }
+
+        if (ety.pictures) {
+            ety.pictures.forEach(function(img, n) {
+                if (n < 5) {
+                    const link = document.createElement('a'),
+                        picture = document.createElement('img');
+                    link.href = img;
+                    link.target = '_blank';
+                    picture.src = img;
+                    picture.alt = "Etymology picture";
+                    link.appendChild(picture);
+                    pictures.appendChild(link);
+                }
+            });
+        } else {
+            pictures.style.display = 'none';
+        }
+
+        etymologies_container.appendChild(etymology);
+    });
+    return detail_container;
+}
+
+/**
+ * @param {any} feature
+ * @return {string}
+ */
 function featureToHTML(feature) {
-    const detail_template_source = document.getElementById("detail_template").innerHTML;
-    /*console.info("featureToHTML", {
-        detail_template_source,
-        feature,
-        etymologies: JSON.parse(feature.properties.etymologies)
-    });*/
-    const detail_template = kendo.template(detail_template_source);
-    return detail_template(feature);
+    return featureToElement(feature).innerHTML;
 }
 
 /*function popStateHandler(e) {
