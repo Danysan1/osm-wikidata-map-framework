@@ -120,7 +120,7 @@ if (!$conf->has("mapbox-gl-version") || !$conf->has("mapbox-gl-token")) {
 
     <template id="detail_template">
         <div class="detail_container">
-            <h3>📍 <span class="element_name"></span></h3>
+            <h2 class="element_name"></h1>
             <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large osm_button" target="_blank"><img src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <div class="etymologies_container grid grid-auto">
 
@@ -132,7 +132,7 @@ if (!$conf->has("mapbox-gl-version") || !$conf->has("mapbox-gl-token")) {
         <div class="etymology grid grid-auto">
             <div class="column">
                 <div class="header column etymology_header">
-                    <h2 class="etymology_name"></h2>
+                    <h1 class="etymology_name"></h1>
                     <h3 class="etymology_description"></h3>
                 </div>
                 <div class="info column">

@@ -845,7 +845,7 @@ function featureToElement(feature) {
     //template_container.appendChild(detail_container);
     console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
 
-    detail_container.querySelector('.element_name').innerText = feature.properties.name;
+    detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
     detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
     etymologies.forEach(function(ety) {
         const etymology = etymology_template.content.cloneNode(true),

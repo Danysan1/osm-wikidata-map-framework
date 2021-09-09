@@ -263,7 +263,8 @@ button.mapboxgl-popup-close-button:hover {
     color: white;
 }
 
-#intro>h1,
-#intro>h2 {
+.mapboxgl-popup-content h1,
+.mapboxgl-popup-content h2,
+.mapboxgl-popup-content h3 {
     margin: revert;
 }
