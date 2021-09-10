@@ -43,6 +43,14 @@ if (!$conf->has("mapbox-gl-token")) {
 ?>
 
 <head>
+    <link rel="preload" as="script" type="application/javascript" href="./init.php">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/mapbox-gl.js">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
+    <link rel="preload" as="script" type="application/javascript" href="./index.js">
+    <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
+    <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
+    <link rel="preload" as="style" type="text/css" href="./style.css" />
+
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
