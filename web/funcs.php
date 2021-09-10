@@ -27,7 +27,6 @@ function preparePage(Configuration $conf) {
 	ini_set("error_log", (string)$conf->get("log-file-path"));
 	\Sentry\init([
 		'dsn' => (string)$conf->get('sentry-php-dsn'),
-		'traces_sample_rate' => (float)$conf->get('sentry-php-rate'),
 		'environment' => (string)$conf->get('sentry-php-env'),
 	]);
 	set_exception_handler('handleException');
@@ -51,11 +50,11 @@ function prepareHTML(Configuration $conf) {
 			"child-src blob: ; ".
 			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://www.google.it; ".
 			"font-src 'self' https://fonts.gstatic.com; ".
-			"style-src 'self' https://fonts.googleapis.com https://api.mapbox.com; ".
-			"script-src 'self' https://browser.sentry-cdn.com https://api.mapbox.com/mapbox-gl-js/ https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
+			"style-src 'self' https://fonts.googleapis.com; ".
+			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".
-			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")." https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; ".
+			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")." https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; ".
 			"report-uri ".(string)$conf->get("sentry-js-uri")."; ".
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

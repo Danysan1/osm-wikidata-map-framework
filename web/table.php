@@ -36,11 +36,7 @@ $wsIDsArePresent = count($wdIDs) > 0;
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <script
-    src="https://browser.sentry-cdn.com/6.10.0/bundle.tracing.min.js"
-    integrity="sha384-WPWd3xprDfTeciiueRO3yyPDiTpeh3M238axk2b+A0TuRmqebVE3hLm3ALEnnXtU"
-    crossorigin="anonymous"
-    ></script>
+    <script src="./node_modules/@sentry/browser/build/bundle.min.js"></script>
     <script src="./init.php"></script>
 
     <title>Open Etymology Map</title>
