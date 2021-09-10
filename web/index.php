@@ -69,7 +69,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <script defer src="./index.js" type="application/javascript"></script>
 
     <link rel="stylesheet" href="./style.css" type="text/css" />
-    <link rel="stylesheet" href="./w3.css" type="text/css">
+    <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
     <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
