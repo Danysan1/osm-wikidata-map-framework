@@ -33,14 +33,13 @@ if (
 <html lang="<?= $defaultCulture; ?>">
 
 <?php
-if (!$conf->has("mapbox-gl-version") || !$conf->has("mapbox-gl-token")) {
+if (!$conf->has("mapbox-gl-token")) {
 ?>
 
 <body>Missing Mapbox GL JS version or token from configuration</body>
 
 <?php
 } else {
-    $mapbox_version = (string)$conf->get("mapbox-gl-version");
 ?>
 
 <head>
