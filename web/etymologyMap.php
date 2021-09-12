@@ -39,8 +39,6 @@ if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty(
 }
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
-$cacheFileBasePath = (string)$conf->get("cache-file-base-path");
-$cacheTimeoutHours = (int)$conf->get("cache-timeout-hours");
 
 if ($from == "bbox") {
     $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
