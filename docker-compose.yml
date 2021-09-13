@@ -4,7 +4,7 @@ services:
     build:
       context: .
       target: dev
-    image: dsantini/openetymologymap:dev
+    image: dsantini/open-etymology-map:dev
     ports:
       - "80:80"
     volumes:
