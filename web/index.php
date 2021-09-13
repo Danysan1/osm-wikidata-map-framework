@@ -43,6 +43,7 @@ if (!$conf->has("mapbox-gl-token")) {
 ?>
 
 <head>
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@sentry/browser/build/bundle.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/mapbox-gl.js">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
