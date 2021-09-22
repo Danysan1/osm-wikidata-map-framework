@@ -2,27 +2,37 @@
 
 You can find here some information useful to contribute to the project.
 
-## Configuration
-
-All instance settings must be set in `open-etymology-map.ini`. A template for this config file can be found in  [open-etymology-map.template.ini](open-etymology-map.template.ini).
-
 ## Deployment
 
-### Default instance
+### Default instances
 
 The default production instance ( https://www.dsantini.it/etymology/ ) and development instance ( https://www.dsantini.it/etymology-test/ ) are deployed semi-automatically through Gitlab CI and FTP (see https://gitlab.com/dsantini/open-etymology-map/-/environments ).
+
+### Configuration
+
+In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`. A template for this config file can be found in  [open-etymology-map.template.ini](open-etymology-map.template.ini).
 
 ### Local development with Docker
 
 A local development instance can be started with Docker by running `docker-compose up` in the project root and browsing to http://localhost/ .
+Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
 ### Production deployment with Docker
 
 The latest version can be deployed through Docker using the image `registry.gitlab.com/dsantini/open-etymology-map` whose available tags are listed [here](https://gitlab.com/dsantini/open-etymology-map/container_registry/2165364).
 
-## Data gathering process
+```sh
+docker run --rm -d  -p 80:80/tcp registry.gitlab.com/dsantini/open-etymology-map:latest
+```
 
-Data gathering process in ([etymologyMap](web/etymologyMap.php)):
+## Front-end
+
+[index.php](web/index.php) and [index.js](web/index.js) create the map with Mapbox GL JS.
+Etymology data is obtained from the back-end with [overpass.php](web/overpass.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
+
+## Back-end
+
+Data gathering process in [etymologyMap.php](web/etymologyMap.php):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
    - If it is, serve the cached result ([CachedBBoxGeoJSONQuery](web/app/query/decorators/CachedBBoxGeoJSONQuery.php)).

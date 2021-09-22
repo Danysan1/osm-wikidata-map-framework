@@ -1,9 +1,11 @@
 # Open Etymology Map
 ### OpenStreetMap+Wikidata based etymology map
 
-This web app uses OpenStreetMap and Wikidata to show the etymology of places on the map.
+Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.
 
-By default the user language is used when fetching etymology details. You can force the another language by using `HOSTNAME/etymology/?lang=LANGUAGE_CODE`, for example https://www.dsantini.it/etymology/?lang=es-ES#11.7056,44.3577,17.1 uses `es-ES` to require data in spanish.
+By default the user language is used when fetching etymology details.
+You can force the another language by passing the ISO-639+ISO-3166 localization code to the `lang` parameter.
+For example https://www.dsantini.it/etymology/?lang=es-ES#11.7135,44.3414,15.1 passes `es-ES` to require data in spanish.
 
 ## Used technologies
 

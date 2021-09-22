@@ -70,7 +70,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <script src="./init.php" type="application/javascript"></script>
 
     <title>Open Etymology Map</title>
-    <meta name="description" content="Interactive map that uses OpenStreetMap and Wikidata to show the etymology of streets and points of interest." />
+    <meta name="description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
 
     <script defer src='./node_modules/mapbox-gl/dist/mapbox-gl.js' type="application/javascript"></script>
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
@@ -86,7 +86,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta property="og:url" content="https://www.dsantini.it/etymology/" />
     <meta property="og:title" content="Open Etymology Map" />
     <meta property="og:site_name" content="Open Etymology Map" />
-    <meta property="og:description" content="Interactive map that uses OpenStreetMap and Wikidata to show the etymology of streets and points of interest." />
+    <meta property="og:description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
     <meta property="og:locale" content="<?= $defaultCulture; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
@@ -98,7 +98,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <div id="intro">
         <h1>Open Etymology Map</h1>
         <h2>OpenStreetMap+Wikidata based etymology map.</h2>
-        <p>Interactive map that uses OpenStreetMap and Wikidata to show the etymology of streets and points of interest.</p>
+        <p>Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.</p>
         <p>
             Used technologies:
         <ul>
@@ -110,7 +110,7 @@ if (!$conf->has("mapbox-gl-token")) {
         </p>
         <p>
             <a title="Open Etymology Map issue tracker" href="https://gitlab.com/dsantini/open-etymology-map/-/issues">Report a problem</a> |
-            <a title="Open Etymology Map git repository" href="https://gitlab.com/dsantini/open-etymology-map">Contribute</a> |
+            <a title="Open Etymology Map git repository" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md">Contribute</a> |
             <a title="Daniele Santini personal website" href="https://www.dsantini.it">About me</a>
         </p>
         <h3>Click anywhere on the map to explore.</h3>

@@ -3,19 +3,21 @@
         "**/target": true
     },
     "cSpell.words": [
+        "bbox",
         "CURLOPT",
         "DAST",
-        "RETURNTRANSFER",
-        "SAST",
-        "VERIFYHOST",
-        "VERIFYPEER",
-        "bbox",
+        "dsantini",
         "gitlab",
         "mapbox",
         "mapboxgl",
+        "Montalcini",
         "rdfs",
+        "RETURNTRANSFER",
+        "SAST",
         "skel",
         "sparql",
+        "VERIFYHOST",
+        "VERIFYPEER",
         "wikibase"
     ]
 }
