@@ -27,11 +27,21 @@ RUN apt-get update && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) zip
+
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
-USER www-data
+
+#USER www-data
 COPY --chown=www-data:www-data ./web /var/www/html
-COPY ./open-etymology-map.template.ini ./var/www/html/open-etymology-map.ini
+COPY ./open-etymology-map.template.ini /var/www/html/open-etymology-map.ini
+
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && \
+	chmod +x $HOME/.nvm/nvm.sh && \
+	. $HOME/.nvm/nvm.sh && \
+	rm $HOME/.nvm/nvm.sh && \
+	nvm install --lts && \
+	cd /var/www/html && \
+	npm install
 
 # docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
 # docker build --target "dev" --tag open-etymology-map:dev .

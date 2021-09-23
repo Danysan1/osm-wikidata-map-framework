@@ -1,0 +1,5 @@
+composer.lock
+vendor/
+web/package-lock.json
+web/node_modules/
+web/open-etymology-map.ini

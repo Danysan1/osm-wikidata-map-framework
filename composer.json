@@ -1,4 +1,5 @@
 {
+    "name": "dsantini/open-etymology-map",
     "require-dev": {
         "vimeo/psalm": "^4.8"
     },

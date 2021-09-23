@@ -1,7 +1,9 @@
 {
-  "dependencies": {
-    "@sentry/browser": "^6.12.0",
-    "mapbox-gl": "^2.4.1",
-    "mapbox-gl-geocoder": "^2.0.1"
-  }
+    "name": "open-etymology-map",
+    "version": "1.0.0",
+    "dependencies": {
+        "@sentry/browser": "^6.12.0",
+        "mapbox-gl": "^2.4.1",
+        "mapbox-gl-geocoder": "^2.0.1"
+    }
 }
