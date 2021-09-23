@@ -90,7 +90,7 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
         if (empty($cacheFile)) {
             error_log("CachedBBoxGeoJSONQuery: Cache file not found, skipping cache search");
         } else {
-            if ($this->serverTiming) $this->serverTiming->add("cache_search_prepare");
+            if ($this->serverTiming) $this->serverTiming->add("bbox_cache_search_prepare");
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
                 //error_log("CachedBBoxGeoJSONQuery: ".json_encode($row));
                 $rowTimestamp = (int)$row[BBOX_CACHE_COLUMN_TIMESTAMP];
@@ -121,7 +121,7 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
                 }
             }
             fclose($cacheFile);
-            if ($this->serverTiming) $this->serverTiming->add("cache_search");
+            if ($this->serverTiming) $this->serverTiming->add("bbox_cache_search");
         }
 
         if ($result == null) {

@@ -102,7 +102,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
                     $feature["geometry"]["coordinates"] = $coordinates;
                 }
             }
-            // ======================================== NODES end ========================================
+            // ======================================== WAYS end ========================================
         } else {
             // ======================================== RELATIONS start ========================================
             //! Relations not yet supported
@@ -110,7 +110,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
             error_log("OverpassEtymologyQueryResult: skipped $elementID");
             $feature = false;
             //$feature["geometry"]["type"] = "MultiPolygon";
-            // ======================================== NODES end ========================================
+            // ======================================== RELATIONS end ========================================
         }
         return $feature;
     }

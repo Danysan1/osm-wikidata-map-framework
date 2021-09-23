@@ -88,7 +88,7 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
         if (empty($cacheFile)) {
             error_log("CachedStringSetXMLQuery: Cache file not found, skipping cache search");
         } else {
-            if ($this->serverTiming) $this->serverTiming->add("cache_search_prepare");
+            if ($this->serverTiming) $this->serverTiming->add("list_cache_search_prepare");
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
                 //error_log("CachedStringSetXMLQuery: ".json_encode($row));
                 $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
@@ -114,7 +114,7 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
                 }
             }
             fclose($cacheFile);
-            if ($this->serverTiming) $this->serverTiming->add("cache_search");
+            if ($this->serverTiming) $this->serverTiming->add("list_cache_search");
         }
 
         if ($result == null) {
