@@ -90,7 +90,8 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
         if (empty($cacheFile)) {
             error_log("CachedBBoxGeoJSONQuery: Cache file not found, skipping cache search");
         } else {
-            if ($this->serverTiming) $this->serverTiming->add("bbox_cache_search_prepare");
+            if ($this->serverTiming)
+                $this->serverTiming->add("bbox-cache-search-prepare");
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
                 //error_log("CachedBBoxGeoJSONQuery: ".json_encode($row));
                 $rowTimestamp = (int)$row[BBOX_CACHE_COLUMN_TIMESTAMP];
@@ -121,7 +122,8 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
                 }
             }
             fclose($cacheFile);
-            if ($this->serverTiming) $this->serverTiming->add("bbox_cache_search");
+            if ($this->serverTiming)
+                $this->serverTiming->add("bbox-cache-search");
         }
 
         if ($result == null) {
@@ -131,7 +133,8 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
              * @var GeoJSONQueryResult
              */
             $result = $this->baseQuery->send();
-            if ($this->serverTiming) $this->serverTiming->add("cache_missed_query");
+            if ($this->serverTiming)
+                $this->serverTiming->add("bbox-cache-missed-query");
 
             if ($result->isSuccessful()) {
                 // Write the result to the cache file
@@ -160,7 +163,8 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
             } else {
                 error_log("CachedBBoxGeoJSONQuery: unsuccessful request to Overpass, discarding cache changes");
             }
-            if ($this->serverTiming) $this->serverTiming->add("cache_write");
+            if ($this->serverTiming)
+                $this->serverTiming->add("bbox-cache-write");
         }
 
         return $result;

@@ -88,7 +88,8 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
         if (empty($cacheFile)) {
             error_log("CachedStringSetXMLQuery: Cache file not found, skipping cache search");
         } else {
-            if ($this->serverTiming) $this->serverTiming->add("list_cache_search_prepare");
+            if ($this->serverTiming)
+                $this->serverTiming->add("list-cache-search-prepare");
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
                 //error_log("CachedStringSetXMLQuery: ".json_encode($row));
                 $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
@@ -114,7 +115,8 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
                 }
             }
             fclose($cacheFile);
-            if ($this->serverTiming) $this->serverTiming->add("list_cache_search");
+            if ($this->serverTiming)
+                $this->serverTiming->add("list-cache-search");
         }
 
         if ($result == null) {
@@ -124,7 +126,8 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
              * @var XMLQueryResult
              */
             $result = $this->baseQuery->send();
-            if ($this->serverTiming) $this->serverTiming->add("cache_missed_query");
+            if ($this->serverTiming)
+                $this->serverTiming->add("list-cache-missed-query");
 
             if ($result->isSuccessful()) {
                 // Write the result to the cache file
@@ -150,7 +153,8 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
             } else {
                 error_log("CachedStringSetXMLQuery: unsuccessful request to Overpass, discarding cache changes");
             }
-            if ($this->serverTiming) $this->serverTiming->add("cache_write");
+            if ($this->serverTiming)
+                $this->serverTiming->add("list-cache-write");
         }
 
         return $result;
