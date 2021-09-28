@@ -33,8 +33,8 @@ RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-auto
 
 #USER www-data
 COPY --chown=www-data:www-data ./web /var/www/html
-#COPY ./open-etymology-map.template.ini /var/www/html/open-etymology-map.ini
-#RUN touch /var/www/html/open-etymology-map.log
+COPY ./open-etymology-map.template.ini /var/www/html/open-etymology-map.ini
+RUN touch /var/www/html/open-etymology-map.log
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && \
 	chmod +x $HOME/.nvm/nvm.sh && \
