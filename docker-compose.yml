@@ -10,5 +10,5 @@ services:
     volumes:
       - ./web:/var/www/html
       - ./open-etymology-map.ini:/var/www/html/open-etymology-map.ini
-      - ./open-etymology-map.log:/var/log/open-etymology-map.log
-      - ./open-etymology-map-cache:/tmp/open-etymology-map-cache
+      - ./open-etymology-map.log:/var/www/html/open-etymology-map.log
+      - ./open-etymology-map-cache:/var/www/html/open-etymology-map-cache/
