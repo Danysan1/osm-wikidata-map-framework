@@ -970,9 +970,12 @@ function initPage(e) {
     //document.addEventListener('popstate', popStateHandler, false);
     setCulture();
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
-    if (!mapboxgl.supported()) {
+    if (!mapboxgl) {
+        alert('There was an error while loading Mapbox GL');
+        Sentry.captureMessage("Undefined mapboxgl", 'error');
+    } else if (!mapboxgl.supported()) {
         alert('Your browser does not support Mapbox GL');
-        Sentry.captureMessage("Device/Browser does not support Mapbox GL");
+        Sentry.captureMessage("Device/Browser does not support Mapbox GL", 'error');
     } else {
         initMap();
     }
