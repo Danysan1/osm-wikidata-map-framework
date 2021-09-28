@@ -31,20 +31,20 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
     /**
      * @param BoundingBox $bbox
      * @param string $endpointURL
+     * @param boolean $nodes
+     * @param boolean $ways
+     * @param boolean $relations
      */
-    public function __construct($bbox, $endpointURL)
+    public function __construct($bbox, $endpointURL, $nodes, $ways, $relations)
     {
-        $bboxString = $bbox->asBBoxString();
         parent::__construct(
+            'name:etymology:wikidata',
             $bbox,
-            "[out:json][timeout:25];
-            (
-                //node['name:etymology:wikidata']($bboxString);
-                way['name:etymology:wikidata']($bboxString);
-                //relation['name:etymology:wikidata']($bboxString);
-            );
-            out ids center;",
-            $endpointURL
+            'out ids center;',
+            $endpointURL,
+            $nodes,
+            $ways,
+            $relations
         );
     }
 

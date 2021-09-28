@@ -38,11 +38,14 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
      * @param string $overpassEndpointURL
      * @param StringSetXMLQueryFactory $wikidataFactory
      * @param ServerTiming $timing
+     * @param boolean $nodes
+     * @param boolean $ways
+     * @param boolean $relations
      */
-    public function __construct($bbox, $overpassEndpointURL, $wikidataFactory, $timing)
+    public function __construct($bbox, $overpassEndpointURL, $wikidataFactory, $timing, $nodes, $ways, $relations)
     {
         //$this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassEndpointURL);
-        parent::__construct($bbox, $overpassEndpointURL);
+        parent::__construct($bbox, $overpassEndpointURL, $nodes, $ways, $relations);
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }

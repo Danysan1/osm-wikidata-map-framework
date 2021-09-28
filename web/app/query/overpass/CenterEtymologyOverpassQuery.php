@@ -2,13 +2,13 @@
 
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/OverpassQuery.php");
+require_once(__DIR__ . "/BaseOverpassQuery.php");
 require_once(__DIR__ . "/../GeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
-use \App\Query\Overpass\OverpassQuery;
+use \App\Query\Overpass\BaseOverpassQuery;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;
@@ -19,7 +19,7 @@ use \App\Result\GeoJSONQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
+class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQuery
 {
     /**
      * @var float
@@ -31,20 +31,20 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
      * @param float $lon
      * @param float $radius
      * @param string $endpointURL
+     * @param boolean $nodes
+     * @param boolean $ways
+     * @param boolean $relations
      */
-    public function __construct($lat, $lon, $radius, $endpointURL)
+    public function __construct($lat, $lon, $radius, $endpointURL, $nodes, $ways, $relations)
     {
         parent::__construct(
-            "[out:json][timeout:25];
-            (
-              //node['name:etymology:wikidata'](around:$radius,$lat,$lon);
-              way['name:etymology:wikidata'](around:$radius,$lat,$lon);
-              //relation['name:etymology:wikidata'](around:$radius,$lat,$lon);
-            );
-            out body;
-            >;
-            out skel qt;",
-            $endpointURL
+            'name:etymology:wikidata',
+            "around:$radius,$lat,$lon",
+            "out body; >; out skel qt;",
+            $endpointURL,
+            $nodes,
+            $ways,
+            $relations
         );
         $this->lat = $lat;
         $this->lon = $lon;

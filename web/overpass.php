@@ -1,6 +1,8 @@
 <?php
 require_once("./app/ServerTiming.php");
+
 use \App\ServerTiming;
+
 $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
@@ -26,36 +28,48 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
-$from = (string)getFilteredParamOrError( "from", FILTER_SANITIZE_STRING );
+$from = (string)getFilteredParamOrError("from", FILTER_SANITIZE_STRING);
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
-$onlyCenter = (bool)getFilteredParamOrDefault( "onlyCenter", FILTER_VALIDATE_BOOLEAN, false );
+$onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
 $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
+$nodes = $conf->has("fetch-nodes") && (bool)$conf->get("fetch-nodes");
+$ways = $conf->has("fetch-ways") && (bool)$conf->get("fetch-ways");
+$relations = $conf->has("fetch-relations") && (bool)$conf->get("fetch-relations");
 if ($from == "bbox") {
     $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
-    $minLat = (float)getFilteredParamOrError( "minLat", FILTER_VALIDATE_FLOAT ) - $bboxMargin;
-    $minLon = (float)getFilteredParamOrError( "minLon", FILTER_VALIDATE_FLOAT ) - $bboxMargin;
-    $maxLat = (float)getFilteredParamOrError( "maxLat", FILTER_VALIDATE_FLOAT ) + $bboxMargin;
-    $maxLon = (float)getFilteredParamOrError( "maxLon", FILTER_VALIDATE_FLOAT ) + $bboxMargin;
+    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT) - $bboxMargin;
+    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT) - $bboxMargin;
+    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT) + $bboxMargin;
+    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT) + $bboxMargin;
     $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("overpass-bbox-max-area");
-    if($bboxArea > $maxArea) {
+    if ($bboxArea > $maxArea) {
         http_response_code(400);
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
-    
+
     /*if($onlySkeleton) {
         $baseQuery = new BBoxEtymologySkeletonOverpassQuery(
             $bbox, $overpassEndpointURL
         );
-    } else*/if ($onlyCenter) {
+    } else*/
+    if ($onlyCenter) {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery(
-            $bbox, $overpassEndpointURL
+            $bbox,
+            $overpassEndpointURL,
+            $nodes,
+            $ways,
+            $relations
         );
     } else {
         $baseQuery = new BBoxEtymologyOverpassQuery(
-            $bbox, $overpassEndpointURL
+            $bbox,
+            $overpassEndpointURL,
+            $nodes,
+            $ways,
+            $relations
         );
     }
     $overpassQuery = new CachedBBoxGeoJSONQuery(
@@ -65,27 +79,35 @@ if ($from == "bbox") {
         $serverTiming
     );
 } elseif ($from == "center") {
-    $centerLat = (float)getFilteredParamOrError( "centerLat", FILTER_VALIDATE_FLOAT );
-    $centerLon = (float)getFilteredParamOrError( "centerLon", FILTER_VALIDATE_FLOAT );
-    $radius = (float)getFilteredParamOrError( "radius", FILTER_VALIDATE_FLOAT );
-    $overpassQuery = new CenterEtymologyOverpassQuery($centerLat, $centerLon, $radius, $overpassEndpointURL);
+    $centerLat = (float)getFilteredParamOrError("centerLat", FILTER_VALIDATE_FLOAT);
+    $centerLon = (float)getFilteredParamOrError("centerLon", FILTER_VALIDATE_FLOAT);
+    $radius = (float)getFilteredParamOrError("radius", FILTER_VALIDATE_FLOAT);
+    $overpassQuery = new CenterEtymologyOverpassQuery(
+        $centerLat,
+        $centerLon,
+        $radius,
+        $overpassEndpointURL,
+        $nodes,
+        $ways,
+        $relations
+    );
 } else {
     http_response_code(400);
     die('{"error":"You must specify either the BBox or center and radius"}');
 }
 
-$format = (string)getFilteredParamOrDefault( "format", FILTER_SANITIZE_STRING, null );
+$format = (string)getFilteredParamOrDefault("format", FILTER_SANITIZE_STRING, null);
 $serverTiming->add("3_init");
 
 $result = $overpassQuery->send();
 $serverTiming->add("4_query");
-if(!$result->isSuccessful()) {
+if (!$result->isSuccessful()) {
     http_response_code(500);
-    error_log("Overpass error: ".$result);
+    error_log("Overpass error: " . $result);
     $out = '{"error":"Error getting result (overpass server error)"}';
 } elseif (!$result->hasResult()) {
     http_response_code(500);
-    error_log("Overpass no result: ".$result);
+    error_log("Overpass no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($format == "geojson") {
     $out = $result->getGeoJSON();
@@ -96,5 +118,3 @@ if(!$result->isSuccessful()) {
 $serverTiming->add("5_output");
 $serverTiming->sendHeader();
 echo $out;
-
-

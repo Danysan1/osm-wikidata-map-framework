@@ -10,6 +10,7 @@ use \App\Query\BaseQuery;
 use \App\Result\QueryResult;
 use \App\Result\RemoteQueryResult;
 use \App\Result\JSONRemoteQueryResult;
+use Error;
 use Exception;
 
 /**
@@ -62,7 +63,8 @@ class OverpassQuery extends BaseQuery
         } elseif (!$res->hasResult()) {
             throw new \Exception("Overpass query has no result");
         } else {
-            //error_log("OverpassQuery: result is of type " . gettype($res));
+            //error_log("sendAndRequireResult: result is of type " . gettype($res));
+            //if ($res instanceof RemoteQueryResult) error_log("sendAndRequireResult: " . $res->getBody());
         }
         return $res;
     }

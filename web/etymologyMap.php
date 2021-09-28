@@ -28,6 +28,9 @@ $serverTiming->add("2_prepare");
 $from = (string)getFilteredParamOrError("from", FILTER_SANITIZE_STRING);
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language'));
 $overpassEndpointURL = (string)$conf->get('overpass-endpoint');
+$nodes = $conf->has("fetch-nodes") && (bool)$conf->get("fetch-nodes");
+$ways = $conf->has("fetch-ways") && (bool)$conf->get("fetch-ways");
+$relations = $conf->has("fetch-relations") && (bool)$conf->get("fetch-relations");
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 $cacheTimeoutHours = (int)$conf->get("cache-timeout-hours");
@@ -61,7 +64,15 @@ if ($from == "bbox") {
         $cacheFileBasePath . $safeLanguage . "_",
         $cacheTimeoutHours
     );
-    $query = new BBoxEtymologyOverpassWikidataQuery($bbox, $overpassEndpointURL, $wikidataFactory, $serverTiming);
+    $query = new BBoxEtymologyOverpassWikidataQuery(
+        $bbox,
+        $overpassEndpointURL,
+        $wikidataFactory,
+        $serverTiming,
+        $nodes,
+        $ways,
+        $relations
+    );
 } else {
     http_response_code(400);
     die('{"error":"You must specify the BBox"}');
