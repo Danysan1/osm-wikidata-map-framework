@@ -7,6 +7,7 @@ require_once(__DIR__ . '/../../ServerTiming.php');
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . '/../../result/QueryResult.php');
 require_once(__DIR__ . "/../overpass/BBoxEtymologyOverpassQuery.php");
+require_once(__DIR__ . "/../overpass/OverpassConfig.php");
 require_once(__DIR__ . "/../wikidata/GeoJSONEtymologyWikidataQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 
@@ -14,6 +15,7 @@ use \App\BoundingBox;
 use \App\ServerTiming;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
+use \App\Query\Overpass\OverpassConfig;
 use \App\Query\Wikidata\GeoJSONEtymologyWikidataQuery;
 use \App\Result\QueryResult;
 use \App\Query\StringSetXMLQueryFactory;
@@ -35,17 +37,17 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
 
     /**
      * @param BoundingBox $bbox
-     * @param string $overpassEndpointURL
+     * @param OverpassConfig $overpassConfig
      * @param StringSetXMLQueryFactory $wikidataFactory
      * @param ServerTiming $timing
      * @param boolean $nodes
      * @param boolean $ways
      * @param boolean $relations
      */
-    public function __construct($bbox, $overpassEndpointURL, $wikidataFactory, $timing, $nodes, $ways, $relations)
+    public function __construct($bbox, $overpassConfig, $wikidataFactory, $timing)
     {
         //$this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassEndpointURL);
-        parent::__construct($bbox, $overpassEndpointURL, $nodes, $ways, $relations);
+        parent::__construct($bbox, $overpassConfig);
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }

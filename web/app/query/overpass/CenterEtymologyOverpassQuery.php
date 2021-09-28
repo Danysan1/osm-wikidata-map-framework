@@ -3,12 +3,14 @@
 namespace App\Query\Overpass;
 
 require_once(__DIR__ . "/BaseOverpassQuery.php");
+require_once(__DIR__ . "/OverpassConfig.php");
 require_once(__DIR__ . "/../GeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\Query\Overpass\BaseOverpassQuery;
+use \App\Query\Overpass\OverpassConfig;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;
@@ -30,21 +32,15 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
      * @param float $lat
      * @param float $lon
      * @param float $radius
-     * @param string $endpointURL
-     * @param boolean $nodes
-     * @param boolean $ways
-     * @param boolean $relations
+     * @param OverpassConfig $config
      */
-    public function __construct($lat, $lon, $radius, $endpointURL, $nodes, $ways, $relations)
+    public function __construct($lat, $lon, $radius, $config)
     {
         parent::__construct(
             'name:etymology:wikidata',
             "around:$radius,$lat,$lon",
             "out body; >; out skel qt;",
-            $endpointURL,
-            $nodes,
-            $ways,
-            $relations
+            $config
         );
         $this->lat = $lat;
         $this->lon = $lon;

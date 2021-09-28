@@ -11,6 +11,7 @@ require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
 //require_once("./app/BBoxEtymologySkeletonOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
+require_once("./app/query/overpass/FixedEndpointOverpassConfig.php");
 require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
@@ -21,6 +22,7 @@ use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
 use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use App\Query\Overpass\CenterEtymologyOverpassQuery;
 use App\Query\Decorators\CachedBBoxGeoJSONQuery;
+use App\Query\Overpass\FixedEndpointOverpassConfig;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -31,10 +33,7 @@ $serverTiming->add("2_prepare");
 $from = (string)getFilteredParamOrError("from", FILTER_SANITIZE_STRING);
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
 $onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
-$overpassEndpointURL = (string)$conf->get('overpass-endpoint');
-$nodes = $conf->has("fetch-nodes") && (bool)$conf->get("fetch-nodes");
-$ways = $conf->has("fetch-ways") && (bool)$conf->get("fetch-ways");
-$relations = $conf->has("fetch-relations") && (bool)$conf->get("fetch-relations");
+$overpassConfig = new FixedEndpointOverpassConfig($conf);
 if ($from == "bbox") {
     $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
     $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT) - $bboxMargin;
@@ -58,18 +57,12 @@ if ($from == "bbox") {
     if ($onlyCenter) {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery(
             $bbox,
-            $overpassEndpointURL,
-            $nodes,
-            $ways,
-            $relations
+            $overpassConfig
         );
     } else {
         $baseQuery = new BBoxEtymologyOverpassQuery(
             $bbox,
-            $overpassEndpointURL,
-            $nodes,
-            $ways,
-            $relations
+            $overpassConfig
         );
     }
     $overpassQuery = new CachedBBoxGeoJSONQuery(
@@ -86,10 +79,7 @@ if ($from == "bbox") {
         $centerLat,
         $centerLon,
         $radius,
-        $overpassEndpointURL,
-        $nodes,
-        $ways,
-        $relations
+        $overpassConfig
     );
 } else {
     http_response_code(400);
