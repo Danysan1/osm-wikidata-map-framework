@@ -10,7 +10,7 @@ require_once("./app/BaseBoundingBox.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
 require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
 require_once("./app/query/combined/BBoxEtymologyOverpassWikidataQuery.php");
-require_once("./app/query/overpass/FixedEndpointOverpassConfig.php");
+require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
@@ -19,7 +19,7 @@ use \App\BaseBoundingBox;
 use App\Query\Decorators\CachedBBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxEtymologyOverpassWikidataQuery;
 use App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
-use App\Query\Overpass\FixedEndpointOverpassConfig;
+use App\Query\Overpass\RoundRobinOverpassConfig;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -29,7 +29,7 @@ $serverTiming->add("2_prepare");
 
 $from = (string)getFilteredParamOrError("from", FILTER_SANITIZE_STRING);
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language'));
-$overpassConfig = new FixedEndpointOverpassConfig($conf);
+$overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 $cacheTimeoutHours = (int)$conf->get("cache-timeout-hours");
