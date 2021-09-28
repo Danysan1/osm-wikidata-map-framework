@@ -20,6 +20,9 @@ class RoundRobinOverpassConfig implements OverpassConfig
         $this->nodes = $conf->has("fetch-nodes") && (bool)$conf->get("fetch-nodes");
         $this->ways = $conf->has("fetch-ways") && (bool)$conf->get("fetch-ways");
         $this->relations = $conf->has("fetch-relations") && (bool)$conf->get("fetch-relations");
+        if(!$this->nodes && !$this->ways && !$this->relations) {
+            throw new \Exception("No fetching options set");
+        }
     }
 
     public function getEndpoint(): string
