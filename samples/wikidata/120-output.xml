@@ -1,0 +1,17 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='death_date'/>
+		<variable name='death_date_precision'/>
+	</head>
+	<results>
+		<result>
+			<binding name='death_date_precision'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>8</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>-0430-01-01T00:00:00Z</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

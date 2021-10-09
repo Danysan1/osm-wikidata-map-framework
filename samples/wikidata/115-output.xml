@@ -1,0 +1,661 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='wikidata'/>
+		<variable name='local_name'/>
+		<variable name='en_name'/>
+		<variable name='other_name'/>
+		<variable name='name'/>
+		<variable name='description'/>
+		<variable name='instanceID'/>
+		<variable name='genderID'/>
+		<variable name='gender'/>
+		<variable name='wikipedia'/>
+		<variable name='commons'/>
+		<variable name='occupations'/>
+		<variable name='citizenship'/>
+		<variable name='pictures'/>
+		<variable name='prizes'/>
+		<variable name='event_date'/>
+		<variable name='start_date'/>
+		<variable name='end_date'/>
+		<variable name='birth_date'/>
+		<variable name='death_date'/>
+		<variable name='event_place'/>
+		<variable name='birth_place'/>
+		<variable name='death_place'/>
+	</head>
+	<results>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q1345358</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Giovanni Amendola</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Giovanni Amendola</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='ast'>Giovanni Amendola</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Giovanni Amendola</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>politico e giornalista italiano</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Giovanni_Amendola</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Giovanni Amendola</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>politico, uomo politico, giornalista, filosofo</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Regno d'Italia</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Giovanni%20Amendola%201923.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1882-04-15T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1926-04-07T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Napoli</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Cannes</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q166092</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Camillo Benso di Cavour</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='yue'>加富爾</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>politico, patriota e imprenditore italiano</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Camillo_Benso,_conte_di_Cavour</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Camillo Benso Conte di Cavour</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>personalità del mondo degli affari, diplomatico, politico, uomo politico</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Regno d'Italia, Regno di Sardegna (1720-1861)</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg	http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1810-08-10T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1861-06-06T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Torino</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Torino</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q185007</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Rita Levi-Montalcini</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Rita Levi-Montalcini</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='en'>Rita Levi-Montalcini</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Rita Levi-Montalcini</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>neurologa e accademica italiana</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581072</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>femmina</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Rita_Levi-Montalcini</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Rita Levi-Montalcini</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>neurologa, biochimica, neuroscienziata, scienziata, medica, politica, donna politica</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Stati Uniti d'America, Italia, Regno d'Italia</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Rita%20Levi%20Montalcini.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal>premio Nobel per la medicina</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1909-04-22T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2012-12-30T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Torino</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Roma</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q3840201</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Luigi Tinti</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Luigi Tinti</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='en'>Luigi Tinti</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Luigi Tinti</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>partigiano italiano</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Luigi_Tinti</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal>partigiano</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Italia, Regno d'Italia</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1920-06-21T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1954-10-01T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Imola</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Imola</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q6292252</uri>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>José Francisco Ortega</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='ar'>خوسيه فرنسيسكو أورتيغا</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='en'>José Francisco Ortega</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>esploratore</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Stati Uniti d'America</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1734-01-01T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1798-02-01T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q64707121</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Pier Grisologo Basetti</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Pier Grisologo Basetti</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='ast'>Pier Grisologo Basetti</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Pier Grisologo Basetti</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>Vescovo Cattolico</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>sacerdote cattolico, diacono cattolico</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1790-12-02T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1857-06-16T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q1067</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Dante Alighieri</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Dante Alighieri</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='en'>Dante Alighieri</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Dante Alighieri</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>poeta, scrittore e politico italiano, considerato il padre della lingua italiana (1265-1321)</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Dante_Alighieri</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Dante Alighieri</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>politico, uomo politico, autore di testi, scrittore, poeta, intellettuale, filosofo, prosatore, teorico politico, autore</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Repubblica di Firenze</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20de%20Dante.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1265-01-01T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1321-09-22T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Firenze</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Ravenna</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q10806</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>attentati dell'11 settembre 2001</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>September 11 attacks</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='si'>සැප්තැම්බර් 11 ප් රහාර</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>attentati dell'11 settembre 2001</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>serie di attacchi terroristici</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q750215</uri>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Attentati_dell%2711_settembre_2001</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>September 11 attacks</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal></literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='event_place'>
+				<literal>Manhattan, Shanksville, contea di Arlington</literal>
+			</binding>
+			<binding name='event_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2001-09-11T00:00:00Z</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q2001</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Stanley Kubrick</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Stanley Kubrick</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='ace'>Stanley Kubrick</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Stanley Kubrick</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>regista statunitense</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Stanley_Kubrick</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Stanley Kubrick</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>sceneggiatore, fotografo, direttore della fotografia, produttore cinematografico, regista cinematografico, produttore esecutivo, operatore di ripresa, regista, scenografo, montatore, scacchista</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Stati Uniti d'America</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Kubrick%20on%20the%20set%20of%20Barry%20Lyndon%20%281975%20publicity%20photo%29.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal>Leone d'oro alla carriera, Oscar ai migliori effetti speciali</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1928-07-26T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1999-03-07T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>The Bronx</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q36488</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='li'>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>fisico e inventore italiano</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Guglielmo_Marconi</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Guglielmo Marconi</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>ingegnere, fisico, inventore, politico, uomo politico, scienziato, personalità del mondo degli affari</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Regno d'Italia</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Portrait%20of%20Guglielmo%20Marconi%20%281874-1937%29%2C%20Engineer%20and%20Physicist%20%282551824648%29.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal>premio Nobel per la fisica</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1874-04-25T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1937-07-20T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Bologna</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Roma</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q55433</uri>
+			</binding>
+			<binding name='local_name'>
+				<literal xml:lang='it'>Michelangelo Antonioni</literal>
+			</binding>
+			<binding name='en_name'>
+				<literal xml:lang='en'>Michelangelo Antonioni</literal>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='hu'>Michelangelo Antonioni</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Michelangelo Antonioni</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>regista italiano</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Michelangelo_Antonioni</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Michelangelo Antonioni</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>poeta, pittore, produttore cinematografico, regista cinematografico, montatore, sceneggiatore, scrittore</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Italia, Regno d'Italia</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo%20Antonioni%20portrait%20%28cropped%29.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal>Premio della giuria, Palma d'oro, Leone d'oro</literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1912-09-29T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2007-07-30T00:00:00Z</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Ferrara</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>Roma</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>
