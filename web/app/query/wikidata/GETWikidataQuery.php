@@ -43,4 +43,9 @@ class GETWikidataQuery extends BaseQuery {
         }*/
         return $out;
     }
+
+    public function getMinifiedQuery(): string
+    {
+        return preg_replace('/(^\s+)|(\s*#[\/\s\w\(\),\']+$)/g', "", $this->getQuery());
+    }
 }

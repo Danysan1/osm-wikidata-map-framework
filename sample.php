@@ -58,6 +58,9 @@ if(!file_exists($fileName)) {
     exit(4);
 }
 $query = file_get_contents($fileName);
+if ($inputExtension == "rq") {
+    $query = preg_replace('/(^\s+)|(\s*#[\/\s\w\(\),\']+$)/m', "", $query);
+}
 
 //$queryString = http_build_query(["query"=>$query]);
 //$url = "$baseURL?$queryString";
