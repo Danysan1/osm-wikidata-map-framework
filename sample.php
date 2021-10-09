@@ -1,17 +1,17 @@
 <?php
-if(empty($argv[1])) {
+if (empty($argv[1])) {
     echo "Please provide a string as the first argument.\n";
     exit(1);
 }
 $inputString = $argv[1];
 
-if(empty($argv[2]) || !is_numeric($argv[2])) {
+if (empty($argv[2]) || !is_numeric($argv[2])) {
     echo "Please provide a number as the first argument.\n";
     exit(2);
 }
 $inputNumber = (int)$argv[2];
 
-if(strtolower($inputString)=="sophox") {
+if (strtolower($inputString) == "sophox") {
     /*
     https://wiki.openstreetmap.org/wiki/Sophox
     https://sophox.org/
@@ -20,7 +20,7 @@ if(strtolower($inputString)=="sophox") {
     $folder = "sophox";
     $inputExtension = "rq";
     $outputExtension = "xml";
-} elseif (strtolower($inputString)=="wikidata") {
+} elseif (strtolower($inputString) == "wikidata") {
     /*
     https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#SPARQL_endpoint
     */
@@ -28,7 +28,7 @@ if(strtolower($inputString)=="sophox") {
     $folder = "wikidata";
     $inputExtension = "rq";
     $outputExtension = "xml";
-} elseif (strtolower($inputString)=="overpassql") {
+} elseif (strtolower($inputString) == "overpassql") {
     /* 
     https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
     https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
@@ -38,7 +38,7 @@ if(strtolower($inputString)=="sophox") {
     $folder = "overpassql";
     $inputExtension = "overpass";
     $outputExtension = "json";
-} elseif (strtolower($inputString)=="overpassxml") {
+} elseif (strtolower($inputString) == "overpassxml") {
     /*
     https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
     https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
@@ -53,7 +53,7 @@ if(strtolower($inputString)=="sophox") {
 }
 
 $fileName = "samples/$folder/$inputNumber.$inputExtension";
-if(!file_exists($fileName)) {
+if (!file_exists($fileName)) {
     echo "File $fileName does not exist.\n";
     exit(4);
 }
@@ -64,7 +64,7 @@ if ($inputExtension == "rq") {
 
 //$queryString = http_build_query(["query"=>$query]);
 //$url = "$baseURL?$queryString";
-$url = $baseURL.urlencode($query);
+$url = $baseURL . urlencode($query);
 echo "Querying $url\n";
 
 $curl = curl_init();
@@ -78,7 +78,7 @@ curl_setopt_array($curl, [
 
 $responseBody = curl_exec($curl);
 
-if($responseBody === false) {
+if ($responseBody === false) {
     echo "Call failure.\n";
 
     $curlError = curl_error($curl);
@@ -89,7 +89,7 @@ if($responseBody === false) {
     $httpCode = curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
     echo "HTTP code: $httpCode\n";
 
-    if($httpCode == 200) {
+    if ($httpCode == 200) {
         echo "Call successful.\n";
         $outFileName = "samples/$folder/$inputNumber-output.$outputExtension";
         file_put_contents($outFileName, $responseBody);

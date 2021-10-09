@@ -2,9 +2,9 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__."/../BaseQuery.php");
-require_once(__DIR__."/../../result/XMLQueryResult.php");
-require_once(__DIR__."/../../result/XMLRemoteQueryResult.php");
+require_once(__DIR__ . "/../BaseQuery.php");
+require_once(__DIR__ . "/../../result/XMLQueryResult.php");
+require_once(__DIR__ . "/../../result/XMLRemoteQueryResult.php");
 
 use App\Query\BaseQuery;
 use App\Result\XMLQueryResult;
@@ -15,13 +15,15 @@ use App\Result\XMLRemoteQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class GETWikidataQuery extends BaseQuery {
+class GETWikidataQuery extends BaseQuery
+{
     /**
      * @return XMLQueryResult
      */
-    public function send(): XMLQueryResult {
+    public function send(): XMLQueryResult
+    {
         $ch = curl_init();
-        $url = $this->getEndpointURL()."?".http_build_query(["query"=>$this->getQuery()]);
+        $url = $this->getEndpointURL() . "?" . http_build_query(["query" => $this->getMinifiedQuery()]);
         curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
@@ -33,7 +35,7 @@ class GETWikidataQuery extends BaseQuery {
         $result = curl_exec($ch);
         $curlInfo = (array)curl_getinfo($ch);
         curl_close($ch);
-        if(!$result)
+        if (!$result)
             $result = null;
         else
             assert(is_string($result));
