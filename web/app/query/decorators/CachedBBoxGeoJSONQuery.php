@@ -99,26 +99,34 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
                 $rowMaxLat = (float)$row[BBOX_CACHE_COLUMN_MAX_LAT];
                 $rowMinLon = (float)$row[BBOX_CACHE_COLUMN_MIN_LON];
                 $rowMaxLon = (float)$row[BBOX_CACHE_COLUMN_MAX_LON];
-                $rowBBox = new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
-                if ($rowTimestamp < $timeoutThresholdTimestamp) {
-                    // Row too old, ignore
-                    error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
-                } elseif ($this->getBBox()->strictlyContains($rowBBox)) {
-                    // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
-                    error_log("CachedBBoxGeoJSONQuery: trashing smaller bbox row");
-                } else {
-                    // Row is still valid, add to new cache
-                    array_push($newCache, $row);
-                    if ($rowBBox->containsOrEquals($this->getBBox())) {
-                        // Row bbox contains entirely the query bbox, cache hit!
-                        /** @var array $cachedResult */
-                        $cachedResult = json_decode((string)$row[BBOX_CACHE_COLUMN_RESULT], true);
-                        $result = new GeoJSONLocalQueryResult(true, $cachedResult);
-                        //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
-                        error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
+                try {
+                    $rowBBox = new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
+                    if ($rowTimestamp < $timeoutThresholdTimestamp) {
+                        // Row too old, ignore
+                        error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
+                    } elseif ($this->getBBox()->strictlyContains($rowBBox)) {
+                        // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
+                        error_log("CachedBBoxGeoJSONQuery: trashing smaller bbox row");
                     } else {
-                        //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " does not contain " . $this->getBBox());
+                        // Row is still valid, add to new cache
+                        array_push($newCache, $row);
+                        if ($rowBBox->containsOrEquals($this->getBBox())) {
+                            // Row bbox contains entirely the query bbox, cache hit!
+                            /** @var array $cachedResult */
+                            $cachedResult = json_decode((string)$row[BBOX_CACHE_COLUMN_RESULT], true);
+                            $result = new GeoJSONLocalQueryResult(true, $cachedResult);
+                            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
+                            error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
+                        } else {
+                            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " does not contain " . $this->getBBox());
+                        }
                     }
+                } catch (\Exception $e) {
+                    error_log(
+                        "CachedBBoxGeoJSONQuery: trashing bad row:".PHP_EOL.
+                        $e->getMessage().PHP_EOL.
+                        json_encode($row)
+                    );
                 }
             }
             fclose($cacheFile);

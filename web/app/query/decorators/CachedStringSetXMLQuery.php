@@ -93,25 +93,33 @@ class CachedStringSetXMLQuery implements StringSetXMLQuery
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
                 //error_log("CachedStringSetXMLQuery: ".json_encode($row));
                 $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
-                $rowStringSet = BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
-                if ($rowTimestamp < $timeoutThresholdTimestamp) {
-                    // Row too old, ignore
-                    error_log("CachedStringSetXMLQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
-                } elseif ($this->getStringSet()->strictlyContains($rowStringSet)) {
-                    // Cache row string set is entirely contained by the new query string set, ignore the cache row
-                    error_log("CachedStringSetXMLQuery: trashing string subset row");
-                } else {
-                    // Row is still valid, add to new cache
-                    array_push($newCache, $row);
-                    if ($rowStringSet->containsOrEquals($this->getStringSet())) {
-                        // Row string set contains entirely the query string set, cache hit!
-                        $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
-                        $result = new XMLLocalQueryResult(true, $cachedResult);
-                        //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
-                        error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet());
+                try {
+                    $rowStringSet = BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
+                    if ($rowTimestamp < $timeoutThresholdTimestamp) {
+                        // Row too old, ignore
+                        error_log("CachedStringSetXMLQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
+                    } elseif ($this->getStringSet()->strictlyContains($rowStringSet)) {
+                        // Cache row string set is entirely contained by the new query string set, ignore the cache row
+                        error_log("CachedStringSetXMLQuery: trashing string subset row");
                     } else {
-                        //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " does not contain " . $this->getStringSet());
+                        // Row is still valid, add to new cache
+                        array_push($newCache, $row);
+                        if ($rowStringSet->containsOrEquals($this->getStringSet())) {
+                            // Row string set contains entirely the query string set, cache hit!
+                            $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
+                            $result = new XMLLocalQueryResult(true, $cachedResult);
+                            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
+                            error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet());
+                        } else {
+                            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " does not contain " . $this->getStringSet());
+                        }
                     }
+                } catch (\Exception $e) {
+                    error_log(
+                        "CachedStringSetXMLQuery: trashing bad row:" . PHP_EOL .
+                            $e->getMessage() . PHP_EOL .
+                            json_encode($row)
+                    );
                 }
             }
             fclose($cacheFile);
