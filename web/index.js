@@ -472,14 +472,13 @@ function mapSourceDataHandler(e) {
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
  */
 function mapErrorHandler(err) {
+    let errorMessage = "A map error occurred";
     if ((err.sourceId == "overpass_source" || err.sourceId == "wikidata_source") && err.error.status > 200) {
-        showSnackbar("An error occurred while fetching the data.");
-        console.error("An error occurred while fetching the data", err);
-    } else {
-        showSnackbar("A map error occurred.");
-        console.error("A map error occurred", err);
+        errorMessage = "An error occurred while fetching the data";
     }
-    Sentry.captureMessage("A map error occurred", { level: "error", extra: err });
+    showSnackbar(errorMessage);
+    Sentry.captureMessage(errorMessage, { level: "error", extra: err });
+    console.error(errorMessage, err);
 }
 
 /**
