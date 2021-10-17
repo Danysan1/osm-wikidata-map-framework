@@ -367,9 +367,9 @@ function getPositionFromHash() {
         lon = (params && params[0]) ? parseFloat(params[0]) : NaN,
         lat = (params && params[1]) ? parseFloat(params[1]) : NaN,
         zoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
-    if (lon < -90 || lon > 90) {
-        console.error("Invalid longitude", lon);
-        lon = NaN;
+    if (lat < -90 || lat > 90) {
+        console.error("Invalid latitude", lat);
+        lat = NaN;
     }
 
     if (isNaN(lon) || isNaN(lat) || isNaN(zoom)) {
