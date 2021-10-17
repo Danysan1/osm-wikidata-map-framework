@@ -123,9 +123,9 @@ class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
                     }
                 } catch (\Exception $e) {
                     error_log(
-                        "CachedBBoxGeoJSONQuery: trashing bad row:".PHP_EOL.
-                        $e->getMessage().PHP_EOL.
-                        json_encode($row)
+                        "CachedBBoxGeoJSONQuery: trashing bad row:" . PHP_EOL .
+                            $e->getMessage() . PHP_EOL .
+                            json_encode($row)
                     );
                 }
             }

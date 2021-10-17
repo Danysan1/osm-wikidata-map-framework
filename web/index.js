@@ -367,11 +367,18 @@ function getPositionFromHash() {
         lon = (params && params[0]) ? parseFloat(params[0]) : NaN,
         lat = (params && params[1]) ? parseFloat(params[1]) : NaN,
         zoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
+    if (lon < -90 || lon > 90) {
+        console.error("Invalid longitude", lon);
+        lon = NaN;
+    }
+
     if (isNaN(lon) || isNaN(lat) || isNaN(zoom)) {
+        console.info("Using default position", { lon, lat, zoom, default_center_lon, default_center_lat, default_zoom });
         lon = default_center_lon;
         lat = default_center_lat;
         zoom = default_zoom;
     }
+
     return { lat, lon, zoom };
 }
 
@@ -465,12 +472,14 @@ function mapSourceDataHandler(e) {
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
  */
 function mapErrorHandler(err) {
-    console.trace('Map error: ', err);
     if ((err.sourceId == "overpass_source" || err.sourceId == "wikidata_source") && err.error.status > 200) {
         showSnackbar("An error occurred while fetching the data.");
+        console.error("An error occurred while fetching the data", err);
     } else {
         showSnackbar("A map error occurred.");
+        console.error("A map error occurred", err);
     }
+    Sentry.captureMessage("A map error occurred", { level: "error", extra: err });
 }
 
 /**
@@ -972,10 +981,10 @@ function initPage(e) {
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (!mapboxgl) {
         alert('There was an error while loading Mapbox GL');
-        Sentry.captureMessage("Undefined mapboxgl", 'error');
+        Sentry.captureMessage("Undefined mapboxgl", { level: "error" });
     } else if (!mapboxgl.supported()) {
         alert('Your browser does not support Mapbox GL');
-        Sentry.captureMessage("Device/Browser does not support Mapbox GL", 'error');
+        Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
     } else {
         initMap();
     }
