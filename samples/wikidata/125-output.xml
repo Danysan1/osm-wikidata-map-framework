@@ -54,7 +54,7 @@
 				<literal>Giovanni Amendola</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>filosofo, giornalista, uomo politico, politico</literal>
+				<literal>giornalista, filosofo, uomo politico, politico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -113,7 +113,7 @@
 				<literal>Camillo Benso Conte di Cavour</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>diplomatico, personalità del mondo degli affari, uomo politico, politico</literal>
+				<literal>politico, uomo politico, uomo d'affari, diplomatico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia, Regno di Sardegna (1720-1861)</literal>
@@ -172,7 +172,7 @@
 				<literal>Rita Levi-Montalcini</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>donna politica, politica, medica, scienziata, neuroscienziata, biochimica, neurologa</literal>
+				<literal>politica, medica, scienziata, neuroscienziata, biochimica, neurologa</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America, Italia, Regno d'Italia</literal>
@@ -325,7 +325,7 @@
 				<literal xml:lang='it'>maschio</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>diacono cattolico, sacerdote cattolico</literal>
+				<literal>sacerdote cattolico, diacono cattolico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal></literal>
@@ -378,7 +378,7 @@
 				<literal>Dante Alighieri</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo politico, politico, autore di testi, scrittore, poeta, intellettuale, autore, prosatore, teorico politico, filosofo</literal>
+				<literal>uomo politico, politico, autore di testi, scrittore, autore, intellettuale, filosofo, poeta, prosatore, teorico politico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Repubblica di Firenze</literal>
@@ -437,7 +437,7 @@
 				<literal></literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg	http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg	http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg</literal>
 			</binding>
 			<binding name='prizes'>
 				<literal></literal>
@@ -478,7 +478,7 @@
 				<literal>Stanley Kubrick</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>scacchista, produttore cinematografico, scenografo, montatore, regista cinematografico, direttore della fotografia, fotografo, sceneggiatore, produttore esecutivo, operatore di ripresa, regista</literal>
+				<literal>scenografo, scacchista, operatore di ripresa, produttore esecutivo, regista cinematografico, regista, fotografo, sceneggiatore, produttore cinematografico, montatore, direttore della fotografia</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America</literal>
@@ -534,7 +534,7 @@
 				<literal>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>fisico, ingegnere, inventore, personalità del mondo degli affari, scienziato, uomo politico, politico</literal>
+				<literal>fisico, inventore, uomo politico, politico, uomo d'affari, ingegnere, scienziato</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -593,7 +593,7 @@
 				<literal>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>produttore cinematografico, montatore, pittore, regista cinematografico, poeta, scrittore, sceneggiatore</literal>
+				<literal>montatore, produttore cinematografico, poeta, regista cinematografico, pittore, scrittore, sceneggiatore</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Italia, Regno d'Italia</literal>

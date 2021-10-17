@@ -61,7 +61,7 @@
 				<literal>Giovanni Amendola</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>politico, uomo politico, giornalista, filosofo</literal>
+				<literal>politico, uomo politico, filosofo, giornalista</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -123,13 +123,13 @@
 				<literal>Camillo Benso Conte di Cavour</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo d'affari, politico, uomo politico, diplomatico</literal>
+				<literal>politico, uomo politico, uomo d'affari, diplomatico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia, Regno di Sardegna (1720-1861)</literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg	http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
 			</binding>
 			<binding name='prizes'>
 				<literal></literal>
@@ -400,7 +400,7 @@
 				<literal>Dante Alighieri</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>politico, uomo politico, autore di testi, scrittore, poeta, intellettuale, autore, filosofo, prosatore, teorico politico</literal>
+				<literal>politico, uomo politico, autore di testi, scrittore, intellettuale, filosofo, poeta, prosatore, teorico politico, autore</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Repubblica di Firenze</literal>
@@ -438,7 +438,7 @@
 				<literal xml:lang='en'>September 11 attacks</literal>
 			</binding>
 			<binding name='other_name'>
-				<literal xml:lang='th'>วินาศกรรม 11 กันยายน พ.ศ. 2544</literal>
+				<literal xml:lang='zea'>Anslaegen op 11 september 2001</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>attentati dell'11 settembre 2001</literal>
@@ -462,13 +462,13 @@
 				<literal></literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg</literal>
 			</binding>
 			<binding name='prizes'>
 				<literal></literal>
 			</binding>
 			<binding name='event_place'>
-				<literal>Shanksville, Manhattan, contea di Arlington</literal>
+				<literal>Shanksville, contea di Arlington, Manhattan</literal>
 			</binding>
 			<binding name='event_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2001-09-11T00:00:00Z</literal>
@@ -509,7 +509,7 @@
 				<literal>Stanley Kubrick</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>sceneggiatore, fotografo, produttore esecutivo, operatore di ripresa, direttore della fotografia, scenografo, produttore cinematografico, regista, regista cinematografico, montatore, scacchista</literal>
+				<literal>sceneggiatore, fotografo, direttore della fotografia, scenografo, regista, produttore cinematografico, montatore, produttore esecutivo, operatore di ripresa, scacchista, regista cinematografico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America</literal>
@@ -544,7 +544,7 @@
 				<literal xml:lang='en'>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='other_name'>
-				<literal xml:lang='nl'>Guglielmo Marconi</literal>
+				<literal xml:lang='de-ch'>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Guglielmo Marconi</literal>
@@ -568,7 +568,7 @@
 				<literal>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo d'affari, scienziato, ingegnere, fisico, politico, uomo politico, inventore</literal>
+				<literal>ingegnere, politico, uomo politico, inventore, uomo d'affari, scienziato, fisico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -606,7 +606,7 @@
 				<literal xml:lang='en'>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='other_name'>
-				<literal xml:lang='lv'>Mikelandželo Antonioni</literal>
+				<literal xml:lang='sl'>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Michelangelo Antonioni</literal>
@@ -630,7 +630,7 @@
 				<literal>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>poeta, pittore, regista cinematografico, produttore cinematografico, montatore, sceneggiatore, scrittore</literal>
+				<literal>produttore cinematografico, pittore, montatore, regista cinematografico, sceneggiatore, scrittore, poeta</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Italia, Regno d'Italia</literal>
