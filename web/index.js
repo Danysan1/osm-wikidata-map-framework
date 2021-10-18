@@ -402,7 +402,7 @@ function initMap() {
         // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/
         mapboxgl.setRTLTextPlugin(
             './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
-            err => console.info("RTLTextPlugin loaded", err),
+            err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
             true // Lazy load the plugin
         );
 
