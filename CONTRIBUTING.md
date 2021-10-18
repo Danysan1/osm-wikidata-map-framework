@@ -25,6 +25,12 @@ The latest version can be deployed through Docker using the image `registry.gitl
 docker run --rm -d  -p 80:80/tcp registry.gitlab.com/dsantini/open-etymology-map:latest
 ```
 
+This image can be built with:
+
+```sh
+docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod" .
+```
+
 ## Front-end
 
 [index.php](web/index.php) and [index.js](web/index.js) create the map with Mapbox GL JS.
