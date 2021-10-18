@@ -27,6 +27,9 @@ if (
     $defaultCulture = "en-US";
 }
 
+$useSentry = $conf->has("sentry-js-dsn");
+$useGoogleAnalytics = $conf->has("google-analytics-id");
+
 ?>
 
 <!DOCTYPE html>
@@ -43,7 +46,10 @@ if (!$conf->has("mapbox-gl-token")) {
 ?>
 
 <head>
+    <?php if($useSentry) { ?>
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@sentry/browser/build/bundle.min.js">
+    <?php } ?>
+
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/mapbox-gl.js">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
@@ -56,12 +62,12 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <?php if ($conf->has("sentry-js-dsn")) { ?>
+    <?php if ($useSentry) { ?>
         <script src="./node_modules/@sentry/browser/build/bundle.min.js" type="application/javascript"></script>
     <?php
     }
 
-    if ($conf->has("google-analytics-id")) {
+    if ($useGoogleAnalytics) {
     ?>
         <script async src="https://www.googletagmanager.com/gtag/js?id=<?= (string)$conf->get("google-analytics-id"); ?>"></script>
     <?php

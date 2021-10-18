@@ -210,7 +210,7 @@ class BackgroundStyleControl {
             this._ctrlDropDown.className = 'hiddenElement';
         } else {
             console.error("Invalid selected background style", event.target.value);
-            Sentry.captureMessage("Invalid selected background style");
+            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected background style");
         }
     }
 
@@ -298,7 +298,7 @@ class EtymologyColorControl {
             legend = colorScheme.legend;
         } else {
             console.error("Invalid selected color scheme", event.target.value);
-            Sentry.captureMessage("Invalid selected color scheme");
+            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");
             color = '#3bb2d0';
             legend = null;
         }
@@ -395,7 +395,7 @@ function initMap() {
             backgroundStyle = backgroundStyleObj.style;
         } else {
             console.error("Invalid default background style", defaultBackgroundStyle);
-            Sentry.captureMessage("Invalid default background style");
+            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid default background style");
             backgroundStyle = "mapbox://styles/mapbox/streets-v11";
         }
         map = new mapboxgl.Map({
@@ -477,7 +477,7 @@ function mapErrorHandler(err) {
         errorMessage = "An error occurred while fetching the data";
     }
     showSnackbar(errorMessage);
-    Sentry.captureMessage(errorMessage, { level: "error", extra: err });
+    if (typeof Sentry != 'undefined') Sentry.captureMessage(errorMessage, { level: "error", extra: err });
     console.error(errorMessage, err);
 }
 
@@ -980,10 +980,12 @@ function initPage(e) {
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (!mapboxgl) {
         alert('There was an error while loading Mapbox GL');
-        Sentry.captureMessage("Undefined mapboxgl", { level: "error" });
+        if (typeof Sentry != 'undefined')
+            Sentry.captureMessage("Undefined mapboxgl", { level: "error" });
     } else if (!mapboxgl.supported()) {
         alert('Your browser does not support Mapbox GL');
-        Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
+        if (typeof Sentry != 'undefined')
+            Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
     } else {
         initMap();
     }

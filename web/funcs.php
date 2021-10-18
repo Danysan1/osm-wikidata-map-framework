@@ -13,7 +13,7 @@ function handleException(Throwable $t) {
 		$t->getMessage().PHP_EOL.
 		$t->getTraceAsString()
 	);
-	\Sentry\captureException($t);
+	if (function_exists('\Sentry\captureException')) \Sentry\captureException($t);
 	http_response_code(500);
 	//die('{"success":false, "error":"An internal error occurred"}');
 	die(json_encode(["success" => false, "error"=>$t->getMessage()]));
@@ -25,10 +25,12 @@ function handleException(Throwable $t) {
  */
 function preparePage(Configuration $conf) {
 	ini_set("error_log", (string)$conf->get("log-file-path"));
-	\Sentry\init([
-		'dsn' => (string)$conf->get('sentry-php-dsn'),
-		'environment' => (string)$conf->get('sentry-php-env'),
-	]);
+	if ($conf->has('sentry-php-dsn')) {
+		\Sentry\init([
+			'dsn' => (string)$conf->get('sentry-php-dsn'),
+			'environment' => (string)$conf->get('sentry-php-env'),
+		]);
+	}
 	set_exception_handler('handleException');
 	ini_set('session.cookie_httponly', 'true');
 	ini_set('session.cookie_secure', 'true');
@@ -43,6 +45,8 @@ function preparePage(Configuration $conf) {
 function prepareHTML(Configuration $conf) {
 	preparePage($conf);
 	header( "Content-Type: text/html; charset=utf-8" );
+	$sentryJsDomain = $conf->has('sentry-js-domain') ? (string)$conf->get('sentry-js-domain') : "";
+	$reportUri = $conf->has('sentry-js-uri') ? "report-uri ".(string)$conf->get("sentry-js-uri")."; " : "";
 	header(
 		"Content-Security-Policy: ".
 			"default-src 'self'; ".
@@ -54,8 +58,8 @@ function prepareHTML(Configuration $conf) {
 			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".
-			"connect-src 'self' ".(string)$conf->get("sentry-js-domain")." https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; ".
-			"report-uri ".(string)$conf->get("sentry-js-uri")."; ".
+			"connect-src 'self' $sentryJsDomain https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; ".
+			$reportUri.
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
 	);
