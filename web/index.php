@@ -52,6 +52,7 @@ if (!$conf->has("mapbox-gl-token")) {
 
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/mapbox-gl.js">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./index.js">
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
@@ -79,6 +80,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta name="description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
 
     <script defer src='./node_modules/mapbox-gl/dist/mapbox-gl.js' type="application/javascript"></script>
+    <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
     <script defer src="./index.js" type="application/javascript"></script>

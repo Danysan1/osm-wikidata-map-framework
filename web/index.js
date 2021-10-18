@@ -417,6 +417,10 @@ function initMap() {
         map.on('styledata', mapStyleDataHandler);
 
         window.addEventListener('hashchange', hashChangeHandler, false);
+
+        map.addControl(new MapboxLanguage({
+            //defaultLanguage: document.documentElement.lang
+        }));
     }
 }
 
