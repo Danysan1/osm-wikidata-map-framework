@@ -398,6 +398,14 @@ function initMap() {
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid default background style");
             backgroundStyle = "mapbox://styles/mapbox/streets-v11";
         }
+
+        // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/
+        mapboxgl.setRTLTextPlugin(
+            './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
+            err => console.error("RTLTextPlugin error", err),
+            true // Lazy load the plugin
+        );
+
         map = new mapboxgl.Map({
             container: 'map',
             style: backgroundStyle,
