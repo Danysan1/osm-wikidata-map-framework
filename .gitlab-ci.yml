@@ -105,12 +105,15 @@ docker-build:
     - ls -l
     - echo "LFTP_FOLDER = $LFTP_FOLDER"
   script:
-    - lftp -e "set ssl:verify-certificate no;
+    - |
+      lftp \
+        -e "set ssl:verify-certificate no;
           ls;
           mirror -v --reverse --only-newer --ignore-time --exclude open-etymology-map.ini web/ www.dsantini.it/$LFTP_FOLDER;
-          quit"
-        -u "$FTP_USER,$FTP_PASS"
-        "$FTP_HOST" || (echo "FTP ERROR - Runner IP:  $(curl -s 'https://api.ipify.org')" && exit 5)
+          quit" \
+        -u "$FTP_USER,$FTP_PASS" \
+        "$FTP_HOST" \
+        || (echo "FTP ERROR - Runner IP:  $(curl -s 'https://api.ipify.org')" && exit 5)
 
 deploy_test:
   extends: .lftp
