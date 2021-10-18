@@ -98,6 +98,9 @@ docker-build:
   stage: deploy
   image: minidocks/lftp
   before_script:
+    - if [ -z "$FTP_USER" ] ; then echo 'Empty FTP_USER'; exit 2; fi
+    - if [ -z "$FTP_PASS" ] ; then echo 'Empty FTP_PASS'; exit 3; fi
+    - if [ -z "$FTP_HOST" ] ; then echo 'Empty FTP_HOST'; exit 4; fi
     - lftp --version
     - ls -l
     - echo "LFTP_FOLDER = $LFTP_FOLDER"
