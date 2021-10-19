@@ -2,7 +2,7 @@
 
 namespace App\Result;
 
-require_once(__DIR__."/RemoteQueryResult.php");
+require_once(__DIR__ . "/RemoteQueryResult.php");
 
 use \App\Result\RemoteQueryResult;
 
@@ -97,6 +97,10 @@ abstract class BaseRemoteQueryResult implements RemoteQueryResult
 
     public function __toString(): string
     {
-        return "BaseRemoteQueryResult: " . json_encode($this->curlInfo) . PHP_EOL . $this->getBody();
+        $ret = "BaseRemoteQueryResult: " . json_encode($this->curlInfo);
+        if ($this->hasBody()) {
+            $ret .= PHP_EOL . $this->getBody();
+        }
+        return $ret;
     }
 }
