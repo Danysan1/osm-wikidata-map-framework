@@ -2,8 +2,8 @@ const backgroundStyles = {
         streets: { text: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
         light: { text: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
         dark: { text: 'Dark', style: 'mapbox://styles/mapbox/dark-v10' },
-        satellite: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-v9' },
-        hybrid: { text: 'Satellite+Streets', style: 'mapbox://styles/mapbox/satellite-streets-v11' },
+        //satellite: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-v9' }, // Not compatible with MapboxLanguage 
+        hybrid: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-streets-v11' },
         outdoors: { text: 'Outdoors', style: 'mapbox://styles/mapbox/outdoors-v11' },
     },
     colorSchemes = {
@@ -442,7 +442,7 @@ function hashChangeHandler(e) {
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
         currZoom = map.getZoom();
-    console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
+    //console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
 
     // Check if the position has changed in order to avoid unnecessary map movements
     if (Math.abs(currLat - position.lat) > 0.001 ||
