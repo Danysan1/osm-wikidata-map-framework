@@ -566,19 +566,17 @@ function prepareWikidataLayers(wikidata_url) {
         attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>',
     });
 
-    /*map.addLayer({
-        'id': 'wikidata_layer_point',
+    map.addLayer({
+        'id': 'wikidata_layer_polygon',
         'source': 'wikidata_source',
-        'type': 'circle',
-        "filter": ["==", ["geometry-type"], "Point"],
+        'type': 'fill',
+        "filter": ["==", ["geometry-type"], "Polygon"],
         "minzoom": thresholdZoomLevel,
         'paint': {
-            'circle-radius': 8,
-            'circle-stroke-width': 2,
-            'circle-color': colorSchemes[defaultColorScheme].color,
-            'circle-stroke-color': 'white'
+            'fill-color': colorSchemes[defaultColorScheme].color,
+            'fill-opacity': 0.5
         }
-    });*/
+    });
 
     map.addLayer({
         'id': 'wikidata_layer_lineString',
@@ -594,14 +592,16 @@ function prepareWikidataLayers(wikidata_url) {
     });
 
     map.addLayer({
-        'id': 'wikidata_layer_polygon',
+        'id': 'wikidata_layer_point',
         'source': 'wikidata_source',
-        'type': 'fill',
-        "filter": ["==", ["geometry-type"], "Polygon"],
+        'type': 'circle',
+        "filter": ["==", ["geometry-type"], "Point"],
         "minzoom": thresholdZoomLevel,
         'paint': {
-            'fill-color': colorSchemes[defaultColorScheme].color,
-            'fill-opacity': 0.5
+            'circle-radius': 8,
+            'circle-stroke-width': 2,
+            'circle-color': colorSchemes[defaultColorScheme].color,
+            'circle-stroke-color': 'white'
         }
     });
 
