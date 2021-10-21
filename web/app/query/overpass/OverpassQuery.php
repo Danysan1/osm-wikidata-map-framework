@@ -50,6 +50,7 @@ class OverpassQuery extends BaseQuery
     {
         $res = $this->_send();
         if (!$res->isSuccessful()) {
+            error_log("OverpassQuery failed: " . $this->getEndpointURL() . " / " . get_class($res));
             if ($res instanceof RemoteQueryResult && $res->hasBody()) {
                 if (strpos($res->getBody(), "Dispatcher_Client::request_read_and_idx::timeout")) {
                     throw new Exception("Overpass server timeout. Please try later.");
@@ -57,7 +58,7 @@ class OverpassQuery extends BaseQuery
                     throw new Exception("Rate limited by Overpass server. Please try later.");
                 }
             } else {
-                error_log("OverpassQuery: Overpass query failed: $res");
+                //error_log("OverpassQuery failed: $res");
                 throw new \Exception("Overpass query failed");
             }
         } elseif (!$res->hasResult()) {

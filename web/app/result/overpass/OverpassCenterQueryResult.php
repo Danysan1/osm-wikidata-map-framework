@@ -31,7 +31,7 @@ class OverpassCenterQueryResult extends OverpassQueryResult
         ];
 
         if (empty($element["center"]["lon"]) || empty($element["center"]["lat"])) {
-            error_log("OverpassQueryResult::getGeoJSONData: $elementID has no coordinates");
+            error_log("OverpassCenterQueryResult::convertElementToGeoJSONFeature: $elementID has no coordinates");
             $feature = false;
         } else {
             $feature["geometry"]["type"] = "Point";

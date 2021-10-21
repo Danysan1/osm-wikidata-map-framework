@@ -23,8 +23,8 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
      */
     public function __construct($success, $result)
     {
-        if($success && !is_array($result)) {
-            error_log("OverpassQueryResult: ".json_encode($result));
+        if ($success && !is_array($result)) {
+            error_log("OverpassQueryResult::__construct: " . json_encode($result));
             throw new InvalidArgumentException("Overpass query result must be an array");
         }
         parent::__construct($success, $result);
@@ -68,8 +68,10 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
          * @psalm-suppress MixedAssignment
          */
         foreach ($data["elements"] as $index => $row) {
-            if (!is_int($index) || !is_array($row)) {
-                error_log("OverpassQueryResult::getGeoJSONData: malformed array element");
+            if (!is_int($index)) {
+                error_log("OverpassQueryResult::getGeoJSONData: malformed array key");
+            } elseif (!is_array($row)) {
+                error_log("OverpassQueryResult::getGeoJSONData: malformed array value");
             } else {
                 $feature = $this->convertElementToGeoJSONFeature($index, $row, $data["elements"]);
                 if (!empty($feature)) {

@@ -52,7 +52,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
         if ($element["type"] == "node") {
             // ======================================== NODES start ========================================
             if (empty($element["lon"]) || empty($element["lat"])) {
-                error_log("OverpassEtymologyQueryResult: $elementID has no coordinates");
+                error_log("OverpassEtymologyQueryResult::convertElementToGeoJSONFeature: $elementID has no coordinates");
             } else {
                 $feature["geometry"]["type"] = "Point";
                 // https://docs.mapbox.com/help/troubleshooting/working-with-large-geojson-data/
