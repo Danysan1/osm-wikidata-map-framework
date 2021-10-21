@@ -57,8 +57,8 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
                 $feature["geometry"]["type"] = "Point";
                 // https://docs.mapbox.com/help/troubleshooting/working-with-large-geojson-data/
                 $feature["geometry"]["coordinates"] = [
-                    round($element["lon"], 5),
-                    round($element["lat"], 5),
+                    round((float)$element["lon"], 5),
+                    round((float)$element["lat"], 5),
                 ];
             }
             // ======================================== NODES end ========================================

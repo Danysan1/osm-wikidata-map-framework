@@ -30,16 +30,22 @@ class OverpassCenterQueryResult extends OverpassQueryResult
             "properties" => ["@id" => $elementID],
         ];
 
-        if (empty($element["center"]["lon"]) || empty($element["center"]["lat"])) {
-            error_log("OverpassCenterQueryResult::convertElementToGeoJSONFeature: $elementID has no coordinates");
-            $feature = false;
-        } else {
+        if (!empty($element["center"]["lon"]) && !empty($element["center"]["lat"])) {
             $feature["geometry"]["type"] = "Point";
             // https://docs.mapbox.com/help/troubleshooting/working-with-large-geojson-data/
             $feature["geometry"]["coordinates"] = [
-                round($element["center"]["lon"], 5),
-                round($element["center"]["lat"], 5),
+                round((float)$element["center"]["lon"], 5),
+                round((float)$element["center"]["lat"], 5),
             ];
+        } elseif (!empty($element["lon"]) && !empty($element["lat"])) {
+            $feature["geometry"]["type"] = "Point";
+            $feature["geometry"]["coordinates"] = [
+                round((float)$element["lon"], 5),
+                round((float)$element["lat"], 5),
+            ];
+        } else {
+            error_log("OverpassCenterQueryResult::convertElementToGeoJSONFeature: $elementID has no coordinates");
+            $feature = false;
         }
 
         return $feature;
