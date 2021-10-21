@@ -81,8 +81,8 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
                             assert(!empty($allElements[$i]) && is_array($allElements[$i]));
                             if ($allElements[$i]["id"] == $node) {
                                 $coordinates[] = [
-                                    round($allElements[$i]["lon"], 5),
-                                    round($allElements[$i]["lat"], 5),
+                                    round((float)$allElements[$i]["lon"], 5),
+                                    round((float)$allElements[$i]["lat"], 5),
                                 ];
                             }
                         }
