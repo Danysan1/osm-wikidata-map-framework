@@ -1,5 +1,4 @@
 # Open Etymology Map
-### OpenStreetMap+Wikidata based etymology map
 
 Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.
 

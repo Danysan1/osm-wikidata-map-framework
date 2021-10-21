@@ -1,23 +1,43 @@
 # Contributing to Open Etymology Map
 
-You can find here some information useful to contribute to the project.
+## Contributing to the background map
 
-## Deployment
+The background map is provided by Mapbox, which is itself based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
+You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
-### Default instances
+## Contributing to the etymology data
+
+Open Etymology Map gets the etymology of elements on the map from OpenStreetMap and information about the etymology subjects from Wikidata.
+
+If you wish to add or correct the etymology for an element for the map you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
+You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
+
+Once you find the element of interest on OpenStreetMap you can edit it's etymology by adding/changing the value for the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) tag to the Wikidata ID of the subject which inspired the name of the map element.
+
+The wikidata ID of the etymology can be found by searching the name of the subject on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
+
+Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find it's page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, it's ID is `Q8023`. You will then need to add the tag `name:etymology:wikidata`=`Q8023` to the map element.
+
+## Contributing to this project
+
+You can find here some information useful to contribute to the Open Etymology Map project.
+
+### Deployment
+
+#### Default instances
 
 The default production instance ( https://www.dsantini.it/etymology/ ) and development instance ( https://www.dsantini.it/etymology-test/ ) are deployed semi-automatically through Gitlab CI and FTP (see https://gitlab.com/dsantini/open-etymology-map/-/environments ).
 
-### Configuration
+#### Configuration
 
 In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`. A template for this config file can be found in  [open-etymology-map.template.ini](open-etymology-map.template.ini).
 
-### Local development with Docker
+#### Local development with Docker
 
 A local development instance can be started with Docker by running `docker-compose up` in the project root and browsing to http://localhost/ .
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
-### Production deployment with Docker
+#### Production deployment with Docker
 
 The latest version can be deployed through Docker using the image `registry.gitlab.com/dsantini/open-etymology-map` whose available tags are listed [here](https://gitlab.com/dsantini/open-etymology-map/container_registry/2165364).
 
@@ -31,12 +51,12 @@ This image can be built with:
 docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod" .
 ```
 
-## Front-end
+### Front-end
 
 [index.php](web/index.php) and [index.js](web/index.js) create the map with Mapbox GL JS.
 Etymology data is obtained from the back-end with [overpass.php](web/overpass.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
 
-## Back-end
+### Back-end
 
 Data gathering process in [etymologyMap.php](web/etymologyMap.php):
 

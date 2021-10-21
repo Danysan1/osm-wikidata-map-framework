@@ -105,12 +105,11 @@ if (!$conf->has("mapbox-gl-token")) {
     <div id='map'></div>
     <div id="intro">
         <h1>Open Etymology Map</h1>
-        <h2>OpenStreetMap+Wikidata based etymology map.</h2>
         <p>Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.</p>
         <p>
             Used technologies:
         <ul>
-            <li><a title="OpenStreetMap" href="https://www.openstreetmap.org/about">OpenStreetMap</a></li>
+            <li><a title="OpenStreetMap" href="https://www.openstreetmap.org/about">OpenStreetMap</a> and its <a title="OpenStreetMap name:etymology:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata">name:etymology:wikidata</a> tag</li>
             <li><a title="Wikidata" href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a> and its <a title="Wikidata SPARQL Query Service" href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a></li>
             <li><a title="Overpass API" href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a></li>
             <li><a title="Mapbox GL JS" href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
