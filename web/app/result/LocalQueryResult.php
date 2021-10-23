@@ -58,7 +58,13 @@ abstract class LocalQueryResult implements QueryResult
         if ($this->result !== null) {
             return $this->result;
         } elseif ($this->hasPublicSourcePath()) {
-            return file_get_contents($this->getPublicSourcePath());
+            $path = $this->getPublicSourcePath();
+            $ret = @file_get_contents($path);
+            if($ret === false) {
+                error_log(get_class($this) . ": Unable to read source file '$path'");
+                throw new \Exception("Unable to read source file");
+            }
+            return $ret;
         } else {
             throw new \Exception("No result available");
         }
