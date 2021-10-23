@@ -81,7 +81,11 @@ class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
      */
     public function send(): QueryResult
     {
-        return $this->query->send();
+        $res = $this->query->send();
+        if(!$res instanceof XMLQueryResult) {
+            throw new \Exception("Query result is not an XMLQueryResult");
+        }
+        return $res;
     }
 
     public function getQuery(): string
@@ -95,5 +99,10 @@ class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
     public function getGeoJSONInputData(): array
     {
         return $this->geoJSONInputData;
+    }
+
+    public function __toString(): string
+    {
+        return "GeoJSONInputEtymologyWikidataQuery";
     }
 }

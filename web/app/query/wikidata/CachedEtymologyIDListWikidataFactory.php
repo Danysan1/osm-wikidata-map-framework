@@ -7,11 +7,13 @@ require_once(__DIR__ . "/EtymologyIDListWikidataQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/../../StringSet.php");
+require_once(__DIR__ . "/../../Configuration.php");
 
 use \App\Query\Decorators\CachedStringSetXMLQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
+use \App\Configuration;
 use \App\Query\Wikidata\EtymologyIDListWikidataQuery;
 
 /**
@@ -34,27 +36,27 @@ class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
     private $cacheFileBasePath;
 
     /**
-     * @var int $cacheTimeoutHours
+     * @var Configuration $config
      */
-    private $cacheTimeoutHours;
+    private $config;
 
     /**
      * @param string $language
      * @param string $endpointURL
      * @param string $cacheFileBasePath
-     * @param int $cacheTimeoutHours
+     * @param Configuration $config
      */
-    public function __construct($language, $endpointURL, $cacheFileBasePath, $cacheTimeoutHours)
+    public function __construct($language, $endpointURL, $cacheFileBasePath, $config)
     {
         $this->language = $language;
         $this->endpointURL = $endpointURL;
         $this->cacheFileBasePath = $cacheFileBasePath;
-        $this->cacheTimeoutHours = $cacheTimeoutHours;
+        $this->config = $config;
     }
 
     public function create(StringSet $input): StringSetXMLQuery
     {
         $baseQuery =  new EtymologyIDListWikidataQuery($input, $this->language, $this->endpointURL);
-        return new CachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->cacheTimeoutHours);
+        return new CachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->config);
     }
 }

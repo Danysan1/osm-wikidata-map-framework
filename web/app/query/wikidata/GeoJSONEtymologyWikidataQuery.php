@@ -94,4 +94,9 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
 
         return $out;
     }
+
+    public function __toString(): string
+    {
+        return "GeoJSONEtymologyWikidataQuery";
+    }
 }
