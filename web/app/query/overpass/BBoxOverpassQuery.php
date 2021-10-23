@@ -54,9 +54,4 @@ class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
     {
         return $this->bbox;
     }
-
-    public function __toString(): string
-    {
-        return get_class($this) . ", " . $this->tag . " / " . $this->getBBox()->__toString();
-    }
 }

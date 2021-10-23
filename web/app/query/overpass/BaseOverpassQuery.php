@@ -59,10 +59,9 @@ class BaseOverpassQuery extends OverpassQuery
 
     public function __toString(): string
     {
-        return get_class($this) .
+        return parent::__toString() .
             ", " . $this->tag .
             ", " . $this->position .
-            ", " . $this->outputType .
-            ", " . $this->getEndpointURL();
+            ", " . $this->outputType;
     }
 }
