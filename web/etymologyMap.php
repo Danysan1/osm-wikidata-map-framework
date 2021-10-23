@@ -7,6 +7,7 @@ $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
+require_once("./app/result/GeoJSONQueryResult.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
 require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
 require_once("./app/query/combined/BBoxEtymologyOverpassWikidataQuery.php");
@@ -16,6 +17,7 @@ $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
+use \App\Result\GeoJSONQueryResult;
 use App\Query\Decorators\CachedBBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxEtymologyOverpassWikidataQuery;
 use App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
@@ -32,7 +34,6 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_STRING
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
-$cacheTimeoutHours = (int)$conf->get("cache-timeout-hours");
 
 // "en-US" => "en"
 $langMatches = [];
@@ -61,7 +62,7 @@ if ($from == "bbox") {
         $safeLanguage,
         $wikidataEndpointURL,
         $cacheFileBasePath . $safeLanguage . "_",
-        $cacheTimeoutHours
+        $conf
     );
     $query = new BBoxEtymologyOverpassWikidataQuery(
         $bbox,
@@ -74,9 +75,8 @@ if ($from == "bbox") {
     die('{"error":"You must specify the BBox"}');
 }
 
-$cachedQuery = new CachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $cacheTimeoutHours, $serverTiming);
+$cachedQuery = new CachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
 
-$format = (string)getFilteredParamOrDefault("format", FILTER_SANITIZE_STRING, null);
 $serverTiming->add("3_init");
 
 $result = $cachedQuery->send();
@@ -89,10 +89,15 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($format == "geojson") {
-    $out = $result->getGeoJSON();
+} elseif (!$result instanceof GeoJSONQueryResult) {
+    http_response_code(500);
+    error_log("Overpass result is not GeoJSON: " . $result);
+    $out = '{"error":"Error getting result (internal type error)"}';
+} elseif ($result->hasPublicSourcePath() && $conf->has("redirect-to-cache-file") && (bool)$conf->get("redirect-to-cache-file")) {
+    $out = "";
+    header("Location: " . $result->getPublicSourcePath());
 } else {
-    $out = json_encode($result->getArray()["elements"]);
+    $out = $result->getGeoJSON();
 }
 
 $serverTiming->add("5_output");

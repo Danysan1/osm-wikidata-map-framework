@@ -95,9 +95,19 @@ abstract class BaseRemoteQueryResult implements RemoteQueryResult
             strpos($contentType, 'application/sparql-results+xml') !== false;
     }
 
+    public function hasPublicSourcePath(): bool
+    {
+        return false;
+    }
+
+    public function getPublicSourcePath(): string
+    {
+        throw new \Exception('No source path');
+    }
+
     public function __toString(): string
     {
-        $ret = "BaseRemoteQueryResult: " . json_encode($this->curlInfo);
+        $ret = get_class($this) . ", " . json_encode($this->curlInfo);
         if ($this->hasBody()) {
             $ret .= PHP_EOL . $this->getBody();
         }

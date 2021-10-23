@@ -16,6 +16,21 @@ use \App\Query\Overpass\OverpassConfig;
 class BaseOverpassQuery extends OverpassQuery
 {
     /**
+     * @var string
+     */
+    private $tag;
+
+    /**
+     * @var string
+     */
+    private $position;
+
+    /**
+     * @var string
+     */
+    private $outputType;
+
+    /**
      * @param string $tag
      * @param string $position Position filter for each element
      * @param string $outputType 'out ids center;' / 'out body; >; out skel qt;' / ...
@@ -37,5 +52,13 @@ class BaseOverpassQuery extends OverpassQuery
             $config->getEndpoint()
         );
         //error_log("BaseOverpassQuery: " . $this->getQuery());
+        $this->tag = $tag;
+        $this->position = $position;
+        $this->outputType = $outputType;
+    }
+
+    public function __toString(): string
+    {
+        return get_class($this) . ", " . $this->tag . ", " . $this->position . ", " . $this->outputType;
     }
 }

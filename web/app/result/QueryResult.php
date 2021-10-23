@@ -9,14 +9,15 @@ namespace App\Result;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-interface QueryResult {
+interface QueryResult
+{
     /**
      * @return boolean
      */
     public function isSuccessful(): bool;
 
     /**
-     * @return boolean
+     * @return bool
      */
     public function hasResult(): bool;
 
@@ -24,6 +25,16 @@ interface QueryResult {
      * @return mixed
      */
     public function getResult();
+
+    /**
+     * @return bool
+     */
+    public function hasPublicSourcePath(): bool;
+
+    /**
+     * @return string
+     */
+    public function getPublicSourcePath(): string;
 
     /**
      * @return array

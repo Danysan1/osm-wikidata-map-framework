@@ -23,6 +23,7 @@ use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use App\Query\Overpass\CenterEtymologyOverpassQuery;
 use App\Query\Decorators\CachedBBoxGeoJSONQuery;
 use App\Query\Overpass\RoundRobinOverpassConfig;
+use App\Result\GeoJSONQueryResult;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -68,7 +69,7 @@ if ($from == "bbox") {
     $overpassQuery = new CachedBBoxGeoJSONQuery(
         $baseQuery,
         (string)$conf->get("cache-file-base-path"),
-        (int)$conf->get("cache-timeout-hours"),
+        $conf,
         $serverTiming
     );
 } elseif ($from == "center") {
@@ -86,7 +87,6 @@ if ($from == "bbox") {
     die('{"error":"You must specify either the BBox or center and radius"}');
 }
 
-$format = (string)getFilteredParamOrDefault("format", FILTER_SANITIZE_STRING, null);
 $serverTiming->add("3_init");
 
 $result = $overpassQuery->send();
@@ -99,10 +99,15 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Overpass no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($format == "geojson") {
-    $out = $result->getGeoJSON();
+} elseif (!$result instanceof GeoJSONQueryResult) {
+    http_response_code(500);
+    error_log("Overpass result is not GeoJSON: " . $result);
+    $out = '{"error":"Error getting result (internal type error)"}';
+} elseif ($result->hasPublicSourcePath() && $conf->has("redirect-to-cache-file") && (bool)$conf->get("redirect-to-cache-file")) {
+    $out = "";
+    header("Location: " . $result->getPublicSourcePath());
 } else {
-    $out = json_encode($result->getArray()["elements"]);
+    $out = $result->getGeoJSON();
 }
 
 $serverTiming->add("5_output");

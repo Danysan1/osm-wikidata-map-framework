@@ -19,10 +19,9 @@ use \App\Query\Overpass\OverpassConfig;
  */
 class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
 {
-    /**
-     * @var BoundingBox
-     */
-    private $bbox;
+    private BoundingBox $bbox;
+
+    private string $tag;
 
     /**
      * @param string $tag
@@ -39,6 +38,7 @@ class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
             $config
         );
         $this->bbox = $bbox;
+        $this->tag = $tag;
     }
 
     /**
@@ -47,5 +47,10 @@ class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
     public function getBBox(): BoundingBox
     {
         return $this->bbox;
+    }
+
+    public function __toString(): string
+    {
+        return get_class($this) . ", " . $this->tag . " / " . $this->getBBox()->__toString();
     }
 }
