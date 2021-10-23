@@ -76,7 +76,7 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
     /**
      * @return QueryResult|null
      */
-    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp): mixed
+    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp)
     {
         if ($this->getBBoxFromRow($row)->containsOrEquals($this->getBBox())) {
             // Row bbox contains entirely the query bbox, cache hit!

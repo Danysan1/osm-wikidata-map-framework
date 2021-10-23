@@ -19,9 +19,15 @@ use \App\Query\Overpass\OverpassConfig;
  */
 class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
 {
-    private BoundingBox $bbox;
+    /**
+     * @var BoundingBox $bbox
+     */
+    private $bbox;
 
-    private string $tag;
+    /**
+     * @var string $tag
+     */
+    private $tag;
 
     /**
      * @param string $tag

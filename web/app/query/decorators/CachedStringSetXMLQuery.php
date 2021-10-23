@@ -74,7 +74,7 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
     /**
      * @return QueryResult|null
      */
-    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp): mixed
+    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp)
     {
         if ($this->getStringSetFromRow($row)->containsOrEquals($this->getStringSet())) {
             // Row string set contains entirely the query string set, cache hit!

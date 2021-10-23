@@ -71,7 +71,7 @@ abstract class CachedQuery
     /**
      * @return QueryResult|null
      */
-    protected abstract function getResultFromRow(array $row, int $timeoutThresholdTimestamp): mixed;
+    protected abstract function getResultFromRow(array $row, int $timeoutThresholdTimestamp);
 
     protected abstract function getRowFromResult(QueryResult $result): array;
 

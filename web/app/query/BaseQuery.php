@@ -2,8 +2,8 @@
 
 namespace App\Query;
 
-require_once(__DIR__."/Query.php");
-require_once(__DIR__."/../result/QueryResult.php");
+require_once(__DIR__ . "/Query.php");
+require_once(__DIR__ . "/../result/QueryResult.php");
 
 use \App\Query\Query;
 use \App\Result\QueryResult;
@@ -13,7 +13,8 @@ use \App\Result\QueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-abstract class BaseQuery implements Query {
+abstract class BaseQuery implements Query
+{
     /**
      * @var string $query
      */
@@ -28,22 +29,25 @@ abstract class BaseQuery implements Query {
      * @param string $query
      * @param string $endpointURL
      */
-    public function __construct($query, $endpointURL) {
+    public function __construct($query, $endpointURL)
+    {
         $this->query = $query;
         $this->endpointURL = $endpointURL;
     }
-    
+
     /**
      * @return string
      */
-    public function getQuery(): string {
+    public function getQuery(): string
+    {
         return $this->query;
     }
 
     /**
      * @return string
      */
-    public function getEndpointURL(): string {
+    public function getEndpointURL(): string
+    {
         return $this->endpointURL;
     }
 
@@ -51,4 +55,9 @@ abstract class BaseQuery implements Query {
      * @return QueryResult
      */
     public abstract function send(): QueryResult;
+
+    public function __toString(): string
+    {
+        return get_class($this) . ", " . $this->getEndpointURL();
+    }
 }
