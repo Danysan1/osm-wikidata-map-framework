@@ -34,8 +34,9 @@ class XMLLocalQueryResult extends LocalQueryResult implements XMLQueryResult
      */
     public function getSimpleXMLElement(): SimpleXMLElement
     {
-        $out = simplexml_load_string($this->getXML());
+        $out = @simplexml_load_string($this->getXML());
         if (!$out) {
+            error_log("XMLLocalQueryResult: Error parsing XML - " . $this->getXML());
             throw new \Exception('Could not parse XML body');
         }
         //error_log($out->saveXML());
