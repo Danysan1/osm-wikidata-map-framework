@@ -89,12 +89,15 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
         return $result;
     }
 
-    protected function getRowFromResult(QueryResult $result): array
+    /**
+     * @return array|null
+     */
+    protected function getRowFromResult(QueryResult $result)
     {
         if (!$result instanceof XMLQueryResult) {
             throw new \Exception("Result is not a XMLQueryResult");
         }
-        
+
         $xml = $result->getXML();
         $hash = sha1($xml);
         $xmlRelativePath = $hash . ".xml";

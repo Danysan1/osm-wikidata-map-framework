@@ -73,7 +73,10 @@ abstract class CachedQuery implements Query
      */
     protected abstract function getResultFromRow(array $row, int $timeoutThresholdTimestamp);
 
-    protected abstract function getRowFromResult(QueryResult $result): array;
+    /**
+     * @return array|null
+     */
+    protected abstract function getRowFromResult(QueryResult $result);
 
     protected abstract function shouldKeepRow(array $row, int $timeoutThresholdTimestamp): bool;
 
@@ -133,7 +136,8 @@ abstract class CachedQuery implements Query
                 $newRow = $this->getRowFromResult($result);
                 //error_log("CachedQuery: add new row for " . $this->getBBox());
                 //error_log("CachedQuery new row: ".json_encode($newRow));
-                array_unshift($newCache, $newRow);
+                if (!empty($newRow))
+                    array_unshift($newCache, $newRow);
 
                 error_log("CachedQuery: save cache of " . count($newCache) . " rows");
                 $cacheFile = @fopen($cacheFilePath, "w+");

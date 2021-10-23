@@ -92,28 +92,33 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
         return $result;
     }
 
-    protected function getRowFromResult(QueryResult $result): array
+    /**
+     * @return array|null
+     */
+    protected function getRowFromResult(QueryResult $result)
     {
         if (!$result instanceof GeoJSONQueryResult) {
             throw new \Exception("Result is not a GeoJSONQueryResult");
         }
         $json = $result->getGeoJSON();
         if ($json == '{"type":"FeatureCollection","features":[]}') { // debug
-            error_log("CachedBBoxGeoJSONQuery: saving GeoJSON with no features from " . $this->getBaseQuery());
-        }
-        $hash = sha1($json);
-        $jsonRelativePath = $hash . ".geojson";
-        $jsonAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $jsonRelativePath;
-        file_put_contents($jsonAbsolutePath, $json);
+            error_log("CachedBBoxGeoJSONQuery: not saving GeoJSON with no features from " . $this->getBaseQuery());
+            return null;
+        } else {
+            $hash = sha1($json);
+            $jsonRelativePath = $hash . ".geojson";
+            $jsonAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $jsonRelativePath;
+            file_put_contents($jsonAbsolutePath, $json);
 
-        $newRow = [
-            BBOX_CACHE_COLUMN_TIMESTAMP => time(),
-            BBOX_CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
-            BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
-            BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
-            BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
-            BBOX_CACHE_COLUMN_RESULT => $jsonRelativePath
-        ];
+            $newRow = [
+                BBOX_CACHE_COLUMN_TIMESTAMP => time(),
+                BBOX_CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
+                BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
+                BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
+                BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
+                BBOX_CACHE_COLUMN_RESULT => $jsonRelativePath
+            ];
+        }
         return $newRow;
     }
 
