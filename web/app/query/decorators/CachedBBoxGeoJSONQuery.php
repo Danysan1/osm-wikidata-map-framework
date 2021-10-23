@@ -98,8 +98,8 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
             throw new \Exception("Result is not a GeoJSONQueryResult");
         }
         $json = $result->getGeoJSON();
-        if ($json == '{"type":"FeatureCollection","features":[]}') {
-            error_log("CachedBBoxGeoJSONQuery: saving empty GeoJSON from " . $this->getBaseQuery());
+        if ($json == '{"type":"FeatureCollection","features":[]}') { // debug
+            error_log("CachedBBoxGeoJSONQuery: saving GeoJSON with no features from " . $this->getBaseQuery());
         }
         $hash = sha1($json);
         $jsonRelativePath = $hash . ".geojson";
