@@ -9,9 +9,21 @@ use \App\Query\Overpass\OverpassConfig;
 
 class RoundRobinOverpassConfig implements OverpassConfig
 {
+    /**
+     * @var array
+     */
     private $endpoints;
+    /**
+     * @var bool
+     */
     private $nodes;
+    /**
+     * @var bool
+     */
     private $ways;
+    /**
+     * @var bool
+     */
     private $relations;
 
     public function __construct(Configuration $conf)
@@ -27,7 +39,7 @@ class RoundRobinOverpassConfig implements OverpassConfig
 
     public function getEndpoint(): string
     {
-        $out = $this->endpoints[array_rand($this->endpoints)];
+        $out = (string)$this->endpoints[array_rand($this->endpoints)];
         //error_log("RoundRobinOverpassConfig: $out");
         return $out;
     }

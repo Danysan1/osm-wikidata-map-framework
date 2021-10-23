@@ -9,9 +9,21 @@ use \App\Query\Overpass\OverpassConfig;
 
 class FixedEndpointOverpassConfig implements OverpassConfig
 {
+    /**
+     * @var string
+     */
     private $endpoint;
+    /**
+     * @var bool
+     */
     private $nodes;
+    /**
+     * @var bool
+     */
     private $ways;
+    /**
+     * @var bool
+     */
     private $relations;
 
     public function __construct(Configuration $conf)

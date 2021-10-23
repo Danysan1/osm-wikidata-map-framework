@@ -19,6 +19,11 @@ abstract class LocalQueryResult implements QueryResult
     private $success;
 
     /**
+     * @var string|null
+     */
+    private $sourcePath;
+
+    /**
      * @var mixed
      */
     private $result;
@@ -26,10 +31,12 @@ abstract class LocalQueryResult implements QueryResult
     /**
      * @param boolean $success
      * @param mixed $result
+     * @param string|null $sourcePath
      */
-    public function __construct($success, $result)
+    public function __construct($success, $result, $sourcePath = null)
     {
         $this->success = $success;
+        $this->sourcePath = $sourcePath;
         $this->result = $result;
     }
 
@@ -43,19 +50,40 @@ abstract class LocalQueryResult implements QueryResult
 
     public function hasResult(): bool
     {
-        return $this->result !== null;
+        return $this->result !== null || $this->sourcePath !== null;
     }
 
     public function getResult()
     {
-        if ($this->result === null) {
+        if ($this->result !== null) {
+            return $this->result;
+        } elseif ($this->hasPublicSourcePath()) {
+            return file_get_contents($this->getPublicSourcePath());
+        } else {
             throw new \Exception("No result available");
         }
-        return $this->result;
+    }
+
+    public function hasPublicSourcePath(): bool
+    {
+        return $this->sourcePath !== null;
+    }
+
+    protected function setPublicSourcePath(string $sourcePath): void
+    {
+        $this->sourcePath = $sourcePath;
+    }
+
+    public function getPublicSourcePath(): string
+    {
+        if ($this->sourcePath === null) {
+            throw new \Exception("No source path available");
+        }
+        return $this->sourcePath;
     }
 
     public function __toString(): string
     {
-        return "LocalQueryResult: " . ($this->success ? "Success" : "Failure") . PHP_EOL . json_encode($this->result);
+        return get_class($this) . ", " . ($this->success ? "Success" : "Failure") . PHP_EOL . json_encode($this->result);
     }
 }

@@ -21,4 +21,6 @@ interface Query {
      * @return QueryResult
      */
     public function send(): QueryResult;
+
+    public function __toString(): string;
 }

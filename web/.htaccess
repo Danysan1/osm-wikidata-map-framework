@@ -6,6 +6,6 @@
   Require all denied
 </Files>
 
-RedirectMatch 403 ^.*open-etymology-map-cache/.*$
+RedirectMatch 403 ^.*open-etymology-map-cache/.*csv$
 
 AddCharset UTF-8 .json

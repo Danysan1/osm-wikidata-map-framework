@@ -79,13 +79,20 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
                 }
             }
         }
+        if (empty($geojson["features"])) { // debug
+            error_log(get_class($this) . ": GeoJSON with no features");
+        }
 
         return $geojson;
     }
 
     public function getArray(): array
     {
-        return $this->getResult();
+        $ret = $this->getResult();
+        if (!is_array($ret)) {
+            throw new Exception(get_class($this) . ": Overpass query result is not an array");
+        }
+        return $ret;
     }
 
     /**

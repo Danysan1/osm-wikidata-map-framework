@@ -2,19 +2,23 @@
 
 namespace App\Query\Decorators;
 
+require_once(__DIR__ . "/CachedQuery.php");
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../BaseBoundingBox.php");
+require_once(__DIR__ . "/../../Configuration.php");
 
+use \App\Query\Decorators\CachedQuery;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\ServerTiming;
 use \App\BaseBoundingBox;
 use \App\BoundingBox;
+use \App\Configuration;
 use \App\Result\QueryResult;
 
 define("BBOX_CACHE_COLUMN_TIMESTAMP", 0);
@@ -29,152 +33,96 @@ define("BBOX_CACHE_COLUMN_RESULT", 5);
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CachedBBoxGeoJSONQuery implements BBoxGeoJSONQuery
+class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
 {
-    /** @var string $cacheFileBasePath */
-    private $cacheFileBasePath;
-
-    /** @var int $cacheTimeoutHours */
-    private $cacheTimeoutHours;
-
-    /** @var BBoxGeoJSONQuery */
-    private $baseQuery;
-
-    /** @var ServerTiming|null $serverTiming */
-    private $serverTiming;
-
     /**
      * @param BBoxGeoJSONQuery $baseQuery
      * @param string $cacheFileBasePath
-     * @param int $cacheTimeoutHours
+     * @param Configuration $config
      * @param ServerTiming|null $serverTiming
      */
-    public function __construct($baseQuery, $cacheFileBasePath, $cacheTimeoutHours, $serverTiming = null)
+    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
     {
-        if (empty($cacheFileBasePath)) {
-            throw new \Exception("Cache file base path cannot be empty");
-        }
-        if (empty($cacheTimeoutHours)) {
-            throw new \Exception("Cache timeout hours cannot be empty");
-        }
-        $this->baseQuery = $baseQuery;
-        $this->cacheFileBasePath = $cacheFileBasePath;
-        $this->cacheTimeoutHours = $cacheTimeoutHours;
-        $this->serverTiming = $serverTiming;
+        parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
     }
 
     public function getBBox(): BoundingBox
     {
-        return $this->baseQuery->getBBox();
+        $baseQuery = $this->getBaseQuery();
+        if (!$baseQuery instanceof BBoxGeoJSONQuery) {
+            throw new \Exception("Base query is not a BBoxGeoJSONQuery");
+        }
+        return $baseQuery->getBBox();
     }
 
-    public function getQuery(): string
+    protected function shouldKeepRow(array $row, int $timeoutThresholdTimestamp): bool
     {
-        return $this->baseQuery->getQuery();
+        $rowTimestamp = (int)$row[BBOX_CACHE_COLUMN_TIMESTAMP];
+        if ($rowTimestamp < $timeoutThresholdTimestamp) {
+            // Row too old, ignore
+            error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
+            $ret = false;
+        } elseif ($this->getBBox()->strictlyContains($this->getBBoxFromRow($row))) {
+            // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
+            error_log("CachedBBoxGeoJSONQuery: trashing smaller bbox row");
+            $ret = false;
+        } else {
+            // Row is still valid, add to new cache
+            $ret = true;
+        }
+        return $ret;
     }
 
     /**
-     * There are only two hard things in Computer Science: cache invalidation and naming things.
-     * -- Phil Karlton
-     * 
-     * @return GeoJSONQueryResult
+     * @return QueryResult|null
      */
-    public function send(): QueryResult
+    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp)
     {
-        $className = str_replace("\\", "_", get_class($this->baseQuery));
-        $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
-        $cacheFile = @fopen($cacheFilePath, "r");
-        $timeoutThresholdTimestamp = time() - (60 * 60 * $this->cacheTimeoutHours);
-        $result = null;
-        $newCache = [];
-        if (empty($cacheFile)) {
-            error_log("CachedBBoxGeoJSONQuery: Cache file not found, skipping cache search");
+        if ($this->getBBoxFromRow($row)->containsOrEquals($this->getBBox())) {
+            // Row bbox contains entirely the query bbox, cache hit!
+            $cacheFileBaseURL = (string)$this->getConfig()->get("cache-file-base-url");
+            $jsonRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
+            $result = new GeoJSONLocalQueryResult(true, null, $cacheFileBaseURL . $jsonRelativePath);
+            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
+            error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
         } else {
-            if ($this->serverTiming)
-                $this->serverTiming->add("bbox-cache-search-prepare");
-            while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
-                //error_log("CachedBBoxGeoJSONQuery: ".json_encode($row));
-                $rowTimestamp = (int)$row[BBOX_CACHE_COLUMN_TIMESTAMP];
-                $rowMinLat = (float)$row[BBOX_CACHE_COLUMN_MIN_LAT];
-                $rowMaxLat = (float)$row[BBOX_CACHE_COLUMN_MAX_LAT];
-                $rowMinLon = (float)$row[BBOX_CACHE_COLUMN_MIN_LON];
-                $rowMaxLon = (float)$row[BBOX_CACHE_COLUMN_MAX_LON];
-                try {
-                    $rowBBox = new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
-                    if ($rowTimestamp < $timeoutThresholdTimestamp) {
-                        // Row too old, ignore
-                        error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
-                    } elseif ($this->getBBox()->strictlyContains($rowBBox)) {
-                        // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
-                        error_log("CachedBBoxGeoJSONQuery: trashing smaller bbox row");
-                    } else {
-                        // Row is still valid, add to new cache
-                        array_push($newCache, $row);
-                        if ($rowBBox->containsOrEquals($this->getBBox())) {
-                            // Row bbox contains entirely the query bbox, cache hit!
-                            /** @var array $cachedResult */
-                            $cachedResult = json_decode((string)$row[BBOX_CACHE_COLUMN_RESULT], true);
-                            $result = new GeoJSONLocalQueryResult(true, $cachedResult);
-                            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
-                            error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
-                        } else {
-                            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " does not contain " . $this->getBBox());
-                        }
-                    }
-                } catch (\Exception $e) {
-                    error_log(
-                        "CachedBBoxGeoJSONQuery: trashing bad row:" . PHP_EOL .
-                            $e->getMessage() . PHP_EOL .
-                            json_encode($row)
-                    );
-                }
-            }
-            fclose($cacheFile);
-            if ($this->serverTiming)
-                $this->serverTiming->add("bbox-cache-search");
+            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " does not contain " . $this->getBBox());
+            $result = null;
         }
-
-        if ($result == null) {
-            // Cache miss, send query to Overpass
-            error_log("CachedBBoxGeoJSONQuery: cache miss for " . $this->getBBox());
-            /**
-             * @var GeoJSONQueryResult
-             */
-            $result = $this->baseQuery->send();
-            if ($this->serverTiming)
-                $this->serverTiming->add("bbox-cache-missed-query");
-
-            if ($result->isSuccessful()) {
-                // Write the result to the cache file
-                $newRow = [
-                    BBOX_CACHE_COLUMN_TIMESTAMP => time(),
-                    BBOX_CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
-                    BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
-                    BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
-                    BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
-                    BBOX_CACHE_COLUMN_RESULT => $result->getGeoJSON()
-                ];
-                //error_log("CachedBBoxGeoJSONQuery: add new row for " . $this->getBBox());
-                //error_log("CachedBBoxGeoJSONQuery new row: ".json_encode($newRow));
-                array_unshift($newCache, $newRow);
-
-                error_log("CachedBBoxGeoJSONQuery: save cache of " . count($newCache) . " rows");
-                $cacheFile = @fopen($cacheFilePath, "w+");
-                if (empty($cacheFile)) {
-                    error_log("CachedBBoxGeoJSONQuery: failed to open cache file for writing");
-                } else {
-                    foreach ($newCache as $row) {
-                        fputcsv($cacheFile, $row);
-                    }
-                    fclose($cacheFile);
-                }
-            } else {
-                error_log("CachedBBoxGeoJSONQuery: unsuccessful request to Overpass, discarding cache changes");
-            }
-            if ($this->serverTiming)
-                $this->serverTiming->add("bbox-cache-write");
-        }
-
         return $result;
+    }
+
+    protected function getRowFromResult(QueryResult $result): array
+    {
+        if (!$result instanceof GeoJSONQueryResult) {
+            throw new \Exception("Result is not a GeoJSONQueryResult");
+        }
+        $json = $result->getGeoJSON();
+        if ($json == '{"type":"FeatureCollection","features":[]}') { // debug
+            error_log("CachedBBoxGeoJSONQuery: saving GeoJSON with no features from " . $this->getBaseQuery());
+        }
+        $hash = sha1($json);
+        $jsonRelativePath = $hash . ".geojson";
+        $jsonAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $jsonRelativePath;
+        file_put_contents($jsonAbsolutePath, $json);
+
+        $newRow = [
+            BBOX_CACHE_COLUMN_TIMESTAMP => time(),
+            BBOX_CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
+            BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
+            BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
+            BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
+            BBOX_CACHE_COLUMN_RESULT => $jsonRelativePath
+        ];
+        return $newRow;
+    }
+
+    private function getBBoxFromRow(array $row): BoundingBox
+    {
+        $rowMinLat = (float)$row[BBOX_CACHE_COLUMN_MIN_LAT];
+        $rowMaxLat = (float)$row[BBOX_CACHE_COLUMN_MAX_LAT];
+        $rowMinLon = (float)$row[BBOX_CACHE_COLUMN_MIN_LON];
+        $rowMaxLon = (float)$row[BBOX_CACHE_COLUMN_MAX_LON];
+        return new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App\Query\Decorators;
 
+require_once(__DIR__ . "/CachedQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/XMLQueryResult.php");
@@ -9,7 +10,9 @@ require_once(__DIR__ . "/../../result/XMLLocalQueryResult.php");
 require_once(__DIR__ . "/../../BaseStringSet.php");
 require_once(__DIR__ . "/../../StringSet.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
+require_once(__DIR__ . "/../../Configuration.php");
 
+use \App\Query\Decorators\CachedQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Result\XMLLocalQueryResult;
 use \App\BaseStringSet;
@@ -17,6 +20,7 @@ use App\Result\XMLQueryResult;
 use App\Result\QueryResult;
 use \App\StringSet;
 use \App\ServerTiming;
+use \App\Configuration;
 
 define("STRING_SET_CACHE_COLUMN_TIMESTAMP", 0);
 define("STRING_SET_CACHE_COLUMN_SET", 1);
@@ -27,144 +31,86 @@ define("STRING_SET_CACHE_COLUMN_RESULT", 2);
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CachedStringSetXMLQuery implements StringSetXMLQuery
+class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
 {
-    /** @var string $cacheFileBasePath */
-    private $cacheFileBasePath;
-
-    /** @var int $cacheTimeoutHours */
-    private $cacheTimeoutHours;
-
-    /** @var StringSetXMLQuery $baseQuery */
-    private $baseQuery;
-
-    /** @var ServerTiming|null $serverTiming */
-    private $serverTiming;
-
     /**
      * @param StringSetXMLQuery $baseQuery
      * @param string $cacheFileBasePath
-     * @param int $cacheTimeoutHours
+     * @param Configuration $config
      * @param ServerTiming|null $serverTiming
      */
-    public function __construct($baseQuery, $cacheFileBasePath, $cacheTimeoutHours, $serverTiming = null)
+    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
     {
-        if (empty($cacheFileBasePath)) {
-            throw new \Exception("Cache file base path cannot be empty");
-        }
-        if (empty($cacheTimeoutHours)) {
-            throw new \Exception("Cache timeout hours cannot be empty");
-        }
-        $this->baseQuery = $baseQuery;
-        $this->cacheFileBasePath = $cacheFileBasePath;
-        $this->cacheTimeoutHours = $cacheTimeoutHours;
-        $this->serverTiming = $serverTiming;
+        parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
     }
 
     public function getStringSet(): StringSet
     {
-        return $this->baseQuery->getStringSet();
+        $baseQuery = $this->getBaseQuery();
+        if (!$baseQuery instanceof StringSetXMLQuery) {
+            throw new \Exception("Base query is not a StringSetXMLQuery");
+        }
+        return $baseQuery->getStringSet();
     }
 
-    public function getQuery(): string
+    protected function shouldKeepRow(array $row, int $timeoutThresholdTimestamp): bool
     {
-        return $this->baseQuery->getQuery();
+        $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
+        if ($rowTimestamp < $timeoutThresholdTimestamp) {
+            // Row too old, ignore
+            error_log("CachedStringSetXMLQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
+            $ret = false;
+        } elseif ($this->getStringSet()->strictlyContains($this->getStringSetFromRow($row))) {
+            // Cache row string set is entirely contained by the new query string set, ignore the cache row
+            error_log("CachedStringSetXMLQuery: trashing string subset row");
+            $ret = false;
+        } else {
+            // Row is still valid, add to new cache
+            $ret = true;
+        }
+        return $ret;
     }
 
     /**
-     * If the cache file exists and is not expired, returns the cached result.
-     * Otherwise, executes the query and caches the result.
-     * 
-     * @return XMLQueryResult
+     * @return QueryResult|null
      */
-    public function send(): QueryResult
+    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp)
     {
-        $className = str_replace("\\", "_", get_class($this->baseQuery));
-        $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
-        $cacheFile = @fopen($cacheFilePath, "r");
-        $timeoutThresholdTimestamp = time() - (60 * 60 * $this->cacheTimeoutHours);
-        $result = null;
-        $newCache = [];
-        if (empty($cacheFile)) {
-            error_log("CachedStringSetXMLQuery: Cache file not found, skipping cache search");
+        if ($this->getStringSetFromRow($row)->containsOrEquals($this->getStringSet())) {
+            // Row string set contains entirely the query string set, cache hit!
+            $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
+            $result = new XMLLocalQueryResult(true, null, $cachedResult);
+            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
+            error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet());
         } else {
-            if ($this->serverTiming)
-                $this->serverTiming->add("list-cache-search-prepare");
-            while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
-                //error_log("CachedStringSetXMLQuery: ".json_encode($row));
-                $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
-                try {
-                    $rowStringSet = BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
-                    if ($rowTimestamp < $timeoutThresholdTimestamp) {
-                        // Row too old, ignore
-                        error_log("CachedStringSetXMLQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
-                    } elseif ($this->getStringSet()->strictlyContains($rowStringSet)) {
-                        // Cache row string set is entirely contained by the new query string set, ignore the cache row
-                        error_log("CachedStringSetXMLQuery: trashing string subset row");
-                    } else {
-                        // Row is still valid, add to new cache
-                        array_push($newCache, $row);
-                        if ($rowStringSet->containsOrEquals($this->getStringSet())) {
-                            // Row string set contains entirely the query string set, cache hit!
-                            $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
-                            $result = new XMLLocalQueryResult(true, $cachedResult);
-                            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
-                            error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet());
-                        } else {
-                            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " does not contain " . $this->getStringSet());
-                        }
-                    }
-                } catch (\Exception $e) {
-                    error_log(
-                        "CachedStringSetXMLQuery: trashing bad row:" . PHP_EOL .
-                            $e->getMessage() . PHP_EOL .
-                            json_encode($row)
-                    );
-                }
-            }
-            fclose($cacheFile);
-            if ($this->serverTiming)
-                $this->serverTiming->add("list-cache-search");
+            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " does not contain " . $this->getStringSet());
+            $result = null;
         }
-
-        if ($result == null) {
-            // Cache miss, send query to Overpass
-            error_log("CachedStringSetXMLQuery: cache miss for " . $this->getStringSet());
-            /**
-             * @var XMLQueryResult
-             */
-            $result = $this->baseQuery->send();
-            if ($this->serverTiming)
-                $this->serverTiming->add("list-cache-missed-query");
-
-            if ($result->isSuccessful()) {
-                // Write the result to the cache file
-                $newRow = [
-                    STRING_SET_CACHE_COLUMN_TIMESTAMP => time(),
-                    STRING_SET_CACHE_COLUMN_SET => $this->getStringSet()->toJson(),
-                    STRING_SET_CACHE_COLUMN_RESULT => $result->getXML()
-                ];
-                //error_log("CachedStringSetXMLQuery: add new row for " . $this->getStringSet());
-                //error_log("CachedStringSetXMLQuery new row: ".json_encode($newRow));
-                array_unshift($newCache, $newRow);
-
-                error_log("CachedStringSetXMLQuery: save cache of " . count($newCache) . " rows");
-                $cacheFile = @fopen($cacheFilePath, "w+");
-                if (empty($cacheFile)) {
-                    error_log("CachedStringSetXMLQuery: failed to open cache file for writing");
-                } else {
-                    foreach ($newCache as $row) {
-                        fputcsv($cacheFile, $row);
-                    }
-                    fclose($cacheFile);
-                }
-            } else {
-                error_log("CachedStringSetXMLQuery: unsuccessful request to Overpass, discarding cache changes");
-            }
-            if ($this->serverTiming)
-                $this->serverTiming->add("list-cache-write");
-        }
-
         return $result;
+    }
+
+    protected function getRowFromResult(QueryResult $result): array
+    {
+        if (!$result instanceof XMLQueryResult) {
+            throw new \Exception("Result is not a XMLQueryResult");
+        }
+        
+        $xml = $result->getXML();
+        $hash = sha1($xml);
+        $xmlRelativePath = $hash . ".xml";
+        $xmlAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $xmlRelativePath;
+        file_put_contents($xmlAbsolutePath, $xml);
+
+        $newRow = [
+            STRING_SET_CACHE_COLUMN_TIMESTAMP => time(),
+            STRING_SET_CACHE_COLUMN_SET => $this->getStringSet()->toJson(),
+            STRING_SET_CACHE_COLUMN_RESULT => $xmlRelativePath
+        ];
+        return $newRow;
+    }
+
+    private function getStringSetFromRow(array $row): StringSet
+    {
+        return BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
     }
 }

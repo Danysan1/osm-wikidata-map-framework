@@ -36,8 +36,9 @@ class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResu
             throw new \Exception("XMLRemoteQueryResult::getSimpleXMLElement: Not a valid XML response, can't parse");
         }
 
-        $out = simplexml_load_string($this->getBody());
+        $out = @simplexml_load_string($this->getBody());
         if (!$out) {
+            error_log("XMLRemoteQueryResult: Error parsing XML - " . $this->getXML());
             throw new \Exception('Could not parse XML body');
         }
         //error_log($out->saveXML());

@@ -18,11 +18,15 @@ class XMLLocalQueryResult extends LocalQueryResult implements XMLQueryResult
 {
     /**
      * @param boolean $success
-     * @param string $result
+     * @param mixed $result
+     * @param string|null $sourcePath
      */
-    public function __construct($success, $result)
+    public function __construct($success, $result, $sourcePath = null)
     {
-        parent::__construct($success, $result);
+        if ($success && empty($result) && empty($sourcePath)) {
+            throw new \Exception("Empty result");
+        }
+        parent::__construct($success, $result, $sourcePath);
     }
 
     /**
@@ -30,8 +34,9 @@ class XMLLocalQueryResult extends LocalQueryResult implements XMLQueryResult
      */
     public function getSimpleXMLElement(): SimpleXMLElement
     {
-        $out = simplexml_load_string($this->getXML());
+        $out = @simplexml_load_string($this->getXML());
         if (!$out) {
+            error_log("XMLLocalQueryResult: Error parsing XML - " . $this->getXML());
             throw new \Exception('Could not parse XML body');
         }
         //error_log($out->saveXML());
@@ -42,10 +47,10 @@ class XMLLocalQueryResult extends LocalQueryResult implements XMLQueryResult
     public function getXML(): string
     {
         if (!$this->hasResult()) {
-            throw new \Exception("XMLLocalQueryResult::getXML: No result available, can't get XML");
+            throw new \Exception("No result available, can't get XML");
         }
 
-        return parent::getResult();
+        return (string)parent::getResult();
     }
 
     public function getArray(): array
