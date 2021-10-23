@@ -98,7 +98,7 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
         $xml = $result->getXML();
         $hash = sha1($xml);
         $xmlRelativePath = $hash . ".xml";
-        $xmlAbsolutePath = $this->getCacheFileBasePath() . $xmlRelativePath;
+        $xmlAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $xmlRelativePath;
         file_put_contents($xmlAbsolutePath, $xml);
 
         $newRow = [

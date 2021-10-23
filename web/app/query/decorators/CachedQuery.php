@@ -17,7 +17,7 @@ use \App\Query\Query;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-abstract class CachedQuery
+abstract class CachedQuery implements Query
 {
     /** @var string $cacheFileBasePath */
     private $cacheFileBasePath;
