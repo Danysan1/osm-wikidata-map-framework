@@ -100,7 +100,7 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
         $json = $result->getGeoJSON();
         $hash = sha1($json);
         $jsonRelativePath = $hash . ".geojson";
-        $jsonAbsolutePath = $this->getCacheFileBasePath() . $jsonRelativePath;
+        $jsonAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $jsonRelativePath;
         file_put_contents($jsonAbsolutePath, $json);
 
         $newRow = [
