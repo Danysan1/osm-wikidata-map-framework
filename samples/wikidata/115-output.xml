@@ -90,6 +90,35 @@
 		</result>
 		<result>
 			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q16534203</uri>
+			</binding>
+			<binding name='other_name'>
+				<literal xml:lang='ba'>Арыҫлан</literal>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='ba'>Арыҫлан</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5084</uri>
+			</binding>
+			<binding name='occupations'>
+				<literal></literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal></literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q166092</uri>
 			</binding>
 			<binding name='local_name'>

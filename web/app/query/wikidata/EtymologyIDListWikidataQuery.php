@@ -69,7 +69,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
 
         parent::__construct(
             "SELECT ?wikidata
-                (COALESCE(SAMPLE(?name),SAMPLE(?all_names)) AS ?name)
+                (SAMPLE(?name) AS ?name)
                 (SAMPLE(?description) AS ?description)
                 (SAMPLE(?instanceID) AS ?instanceID)
                 (SAMPLE(?genderID) AS ?genderID)
@@ -91,48 +91,59 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
-                OPTIONAL {
-                    ?wikidata rdfs:label ?name.
+                {
+                    ?name ^rdfs:label ?wikidata.
                     FILTER(lang(?name)='$language').
+                } UNION {
+                    MINUS {
+                        ?other_name ^rdfs:label ?wikidata.
+                        FILTER(lang(?other_name)='$language').
+                    }
+                    ?name ^rdfs:label ?wikidata.
+                    FILTER(lang(?name)='en').
+                } UNION {
+                    MINUS {
+                        ?other_name ^rdfs:label ?wikidata.
+                        FILTER(lang(?other_name)='$language' || lang(?other_name)='en').
+                    }
+                    ?name ^rdfs:label ?wikidata.
                 }
 
-                ?wikidata rdfs:label ?all_names.
-
                 OPTIONAL {
-                    ?wikidata schema:description ?description.
+                    ?description ^schema:description ?wikidata.
                     FILTER(lang(?description)='$language').
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P106 ?occupation.
+                    ?occupation ^wdt:P106 ?wikidata.
                     {
-                        ?wikidata wdt:P21 ?gender.
+                        ?gender ^wdt:P21 ?wikidata.
                         FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
                         #?occupation wdt:P2521 []. # female form of occupation is available
-                        ?occupation wdt:P2521 ?occupation_name. # female form of occupation label
+                        ?occupation_name ^wdt:P2521 ?occupation. # female form of occupation label
                     } UNION {
-                        ?wikidata wdt:P21 ?gender.
-                        FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
                         MINUS {
-                            ?occupation wdt:P2521 ?occupation_name.
+                            ?occupation_name ^wdt:P2521 ?occupation.
                             FILTER(lang(?occupation_name)='$language').
                         }. # female form of occupation is NOT available in this language
-                        ?occupation rdfs:label ?occupation_name. # base occupation label
+                        ?gender ^wdt:P21 ?wikidata
+                        FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
+                        ?occupation_name ^rdfs:label ?occupation. # base occupation label
                     } UNION {
-                        ?wikidata wdt:P21 ?gender.
+                        ?gender ^wdt:P21 ?wikidata
                         FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
                         #?occupation wdt:P3321 []. # male form of occupation is available
-                        ?occupation wdt:P3321 ?occupation_name. # male form of occupation label
+                        ?occupation_name ^wdt:P3321 ?occupation. # male form of occupation label
                     } UNION {
-                        ?wikidata wdt:P21 ?gender.
-                        FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
                         MINUS {
-                            ?occupation wdt:P3321 ?occupation_name.
+                            ?occupation_name ^wdt:P3321 ?occupation.
                             FILTER(lang(?occupation_name)='$language').
                         }. # male form of occupation is NOT available in this language
-                        ?occupation rdfs:label ?occupation_name. # male form of occupation label
+                        ?gender ^wdt:P21 ?wikidata
+                        FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
+                        ?occupation_name ^rdfs:label ?occupation. # male form of occupation label
                     } UNION {
-                        ?occupation rdfs:label ?occupation_name. # base occupation label
+                        ?occupation_name ^rdfs:label ?occupation. # base occupation label
                         MINUS { ?wikidata wdt:P21 []. } . # no gender specified
                     }
                     FILTER(lang(?occupation_name)='$language').
@@ -140,19 +151,19 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
 
                 OPTIONAL {
                     {
-                        ?wikidata wdt:P18 ?picture. # picture
+                        ?picture ^wdt:P18 ?wikidata. # picture
                     } UNION {
-                        ?wikidata wdt:P94 ?picture. # coat of arms image
+                        ?picture ^wdt:P94 ?wikidata. # coat of arms image
                     }
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P31 ?instanceID.
+                    ?instanceID ^wdt:P31 ?wikidata.
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P21 ?genderID.
-                    ?genderID rdfs:label ?gender_name.
+                    ?genderID ^wdt:P21 ?wikidata;
+                        rdfs:label ?gender_name.
                     FILTER(lang(?gender_name)='$language').
                 }
 
@@ -177,51 +188,46 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P276 ?event_place.
-                    ?event_place rdfs:label ?event_place_name.
+                    ?event_place_name ^rdfs:label/^wdt:P276 ?wikidata.
                     FILTER(lang(?event_place_name)='$language').
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P19 ?birth_place.
-                    ?birth_place rdfs:label ?birth_place_name.
+                    ?birth_place_name ^rdfs:label/^wdt:P19 ?wikidata.
                     FILTER(lang(?birth_place_name)='$language').
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P20 ?death_place.
-                    ?death_place rdfs:label ?death_place_name.
+                    ?death_place_name ^rdfs:label/^wdt:P20 ?wikidata.
                     FILTER(lang(?death_place_name)='$language').
                 }
 
                 OPTIONAL {
                     ?wikipedia schema:about ?wikidata;
-                        schema:inLanguage ?wikipedia_lang;
+                        schema:inLanguage '$language';
                         schema:isPartOf [ wikibase:wikiGroup 'wikipedia' ].
-                    FILTER(?wikipedia_lang = '$language').
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P373 ?commons.
+                    ?commons ^wdt:P373 ?wikidata
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P166 ?prize. # awarded prize
+                    ?prize ^wdt:P166 ?wikidata # awarded prize
                     {
-                        ?prize wdt:P361 ?prize_group.
+                        ?prize_group ^wdt:P361 ?prize.
                         FILTER(?prize_group IN (wd:Q7191,wd:Q19020,wd:Q41254)). # Nobel, Academy (Oscar), Grammy
                     } UNION {
                         ?prize wdt:P31 wd:Q28444913. # Palme d'Or (Cannes)
                     } UNION {
                         ?prize wdt:P1027 wd:Q49024. # Golden Lion (Venice)
                     }
-                    ?prize rdfs:label ?prize_name.
+                    ?prize_name ^rdfs:label ?prize.
                     FILTER(lang(?prize_name)='$language').
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P27 ?citizenship.
-                    ?citizenship rdfs:label ?citizenship_name.
+                    ?citizenship_name ^rdfs:label/^wdt:P27 ?wikidata.
                     FILTER(lang(?citizenship_name)='$language').
                 }
             }

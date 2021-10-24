@@ -22,7 +22,7 @@ SELECT ?wikidata
     (SAMPLE(?birth_place_name) AS ?birth_place)
     (SAMPLE(?death_place_name) AS ?death_place)
 WHERE {
-    VALUES ?wikidata { wd:Q10806 wd:Q166092 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q1345358 wd:Q1345358 wd:Q185007 wd:Q64707121 wd:Q55433 wd:Q2001 wd:Q6292252 }
+    VALUES ?wikidata { wd:Q10806 wd:Q166092 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q1345358 wd:Q1345358 wd:Q185007 wd:Q64707121 wd:Q55433 wd:Q2001 wd:Q6292252 wd:Q16534203 }
 
     OPTIONAL {
         ?wikidata rdfs:label ?local_name.

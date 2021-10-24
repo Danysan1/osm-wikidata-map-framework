@@ -2,9 +2,6 @@
 <sparql xmlns='http://www.w3.org/2005/sparql-results#'>
 	<head>
 		<variable name='wikidata'/>
-		<variable name='local_name'/>
-		<variable name='en_name'/>
-		<variable name='other_name'/>
 		<variable name='name'/>
 		<variable name='description'/>
 		<variable name='instanceID'/>
@@ -29,15 +26,6 @@
 		<result>
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q1345358</uri>
-			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Giovanni Amendola</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Giovanni Amendola</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='ast'>Giovanni Amendola</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Giovanni Amendola</literal>
@@ -92,11 +80,8 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q16534203</uri>
 			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='ba'>Арыҫлан</literal>
-			</binding>
 			<binding name='name'>
-				<literal xml:lang='ba'>Арыҫлан</literal>
+				<literal xml:lang='uk'>Арасланова</literal>
 			</binding>
 			<binding name='instanceID'>
 				<uri>http://www.wikidata.org/entity/Q5084</uri>
@@ -121,15 +106,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q166092</uri>
 			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Camillo Benso di Cavour</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='be'>Кавур</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Camillo Benso, conte di Cavour</literal>
 			</binding>
@@ -152,13 +128,13 @@
 				<literal>Camillo Benso Conte di Cavour</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>politico, uomo politico, uomo d'affari, diplomatico</literal>
+				<literal>uomo d'affari, politico, uomo politico, diplomatico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia, Regno di Sardegna (1720-1861)</literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg	http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg</literal>
 			</binding>
 			<binding name='prizes'>
 				<literal></literal>
@@ -183,15 +159,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q185007</uri>
 			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Rita Levi-Montalcini</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Rita Levi-Montalcini</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='en'>Rita Levi-Montalcini</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Rita Levi-Montalcini</literal>
 			</binding>
@@ -214,7 +181,7 @@
 				<literal>Rita Levi-Montalcini</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>neurologa, biochimica, neuroscienziata, politica, scienziata, medica</literal>
+				<literal>neurologa, biochimica, neuroscienziata, scienziata, medica, politica</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America, Italia, Regno d'Italia</literal>
@@ -244,15 +211,6 @@
 		<result>
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q3840201</uri>
-			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Luigi Tinti</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Luigi Tinti</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='ast'>Luigi Tinti</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Luigi Tinti</literal>
@@ -304,12 +262,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q6292252</uri>
 			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>José Francisco Ortega</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='ar'>خوسيه فرنسيسكو أورتيغا</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='en'>José Francisco Ortega</literal>
 			</binding>
@@ -348,15 +300,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q64707121</uri>
 			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Pier Grisologo Basetti</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Pier Grisologo Basetti</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='ast'>Pier Grisologo Basetti</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Pier Grisologo Basetti</literal>
 			</binding>
@@ -373,7 +316,7 @@
 				<literal xml:lang='it'>maschio</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>sacerdote cattolico, diacono cattolico</literal>
+				<literal>diacono cattolico, sacerdote cattolico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal></literal>
@@ -398,15 +341,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q1067</uri>
 			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Dante Alighieri</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Dante Alighieri</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='en'>Dante Alighieri</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Dante Alighieri</literal>
 			</binding>
@@ -429,7 +363,7 @@
 				<literal>Dante Alighieri</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>politico, uomo politico, autore di testi, scrittore, intellettuale, filosofo, poeta, prosatore, teorico politico, autore</literal>
+				<literal>poeta</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Repubblica di Firenze</literal>
@@ -460,15 +394,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q10806</uri>
 			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>attentati dell'11 settembre 2001</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>September 11 attacks</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='zea'>Anslaegen op 11 september 2001</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>attentati dell'11 settembre 2001</literal>
 			</binding>
@@ -476,7 +401,7 @@
 				<literal xml:lang='it'>serie di attacchi terroristici</literal>
 			</binding>
 			<binding name='instanceID'>
-				<uri>http://www.wikidata.org/entity/Q898712</uri>
+				<uri>http://www.wikidata.org/entity/Q217327</uri>
 			</binding>
 			<binding name='wikipedia'>
 				<uri>https://it.wikipedia.org/wiki/Attentati_dell%2711_settembre_2001</uri>
@@ -491,7 +416,7 @@
 				<literal></literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg	http://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG	http://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg</literal>
 			</binding>
 			<binding name='prizes'>
 				<literal></literal>
@@ -506,15 +431,6 @@
 		<result>
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q2001</uri>
-			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Stanley Kubrick</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Stanley Kubrick</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='ace'>Stanley Kubrick</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Stanley Kubrick</literal>
@@ -538,7 +454,7 @@
 				<literal>Stanley Kubrick</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>sceneggiatore, fotografo, direttore della fotografia, scenografo, regista, produttore cinematografico, montatore, produttore esecutivo, operatore di ripresa, scacchista, regista cinematografico</literal>
+				<literal>sceneggiatore, fotografo, regista cinematografico, scenografo, produttore cinematografico, direttore della fotografia, regista, produttore esecutivo, montatore, scacchista, operatore di ripresa</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America</literal>
@@ -547,7 +463,7 @@
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Kubrick%20on%20the%20set%20of%20Barry%20Lyndon%20%281975%20publicity%20photo%29.jpg</literal>
 			</binding>
 			<binding name='prizes'>
-				<literal>Leone d'oro alla carriera, Oscar ai migliori effetti speciali</literal>
+				<literal>Oscar ai migliori effetti speciali, Leone d'oro alla carriera</literal>
 			</binding>
 			<binding name='birth_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1928-07-26T00:00:00Z</literal>
@@ -565,15 +481,6 @@
 		<result>
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q36488</uri>
-			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Guglielmo Marconi</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Guglielmo Marconi</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='de-ch'>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Guglielmo Marconi</literal>
@@ -597,7 +504,7 @@
 				<literal>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>ingegnere, politico, uomo politico, inventore, uomo d'affari, scienziato, fisico</literal>
+				<literal>uomo d'affari, politico, uomo politico, scienziato, ingegnere, fisico, inventore</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -628,15 +535,6 @@
 			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q55433</uri>
 			</binding>
-			<binding name='local_name'>
-				<literal xml:lang='it'>Michelangelo Antonioni</literal>
-			</binding>
-			<binding name='en_name'>
-				<literal xml:lang='en'>Michelangelo Antonioni</literal>
-			</binding>
-			<binding name='other_name'>
-				<literal xml:lang='sl'>Michelangelo Antonioni</literal>
-			</binding>
 			<binding name='name'>
 				<literal xml:lang='it'>Michelangelo Antonioni</literal>
 			</binding>
@@ -659,7 +557,7 @@
 				<literal>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>produttore cinematografico, pittore, montatore, regista cinematografico, sceneggiatore, scrittore, poeta</literal>
+				<literal>sceneggiatore, scrittore, regista cinematografico, produttore cinematografico, poeta, pittore, montatore</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Italia, Regno d'Italia</literal>
@@ -668,7 +566,7 @@
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo%20Antonioni%20portrait%20%28cropped%29.jpg</literal>
 			</binding>
 			<binding name='prizes'>
-				<literal>Premio della giuria, Palma d'oro, Leone d'oro</literal>
+				<literal>Leone d'oro, Palma d'oro</literal>
 			</binding>
 			<binding name='birth_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1912-09-29T00:00:00Z</literal>

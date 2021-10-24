@@ -1,8 +1,5 @@
 SELECT ?wikidata
-    (SAMPLE(?local_name) AS ?local_name)
-    (SAMPLE(?en_name) AS ?en_name)
-    (SAMPLE(?all_names) AS ?other_name)
-    (COALESCE(SAMPLE(?local_name), SAMPLE(?en_name), SAMPLE(?all_names)) AS ?name)
+    (SAMPLE(?name) AS ?name)
     (SAMPLE(?description) AS ?description)
     (SAMPLE(?instanceID) AS ?instanceID)
     (SAMPLE(?genderID) AS ?genderID)
@@ -24,17 +21,23 @@ SELECT ?wikidata
 WHERE {
     VALUES ?wikidata { wd:Q10806 wd:Q166092 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q1345358 wd:Q1345358 wd:Q185007 wd:Q64707121 wd:Q55433 wd:Q2001 wd:Q6292252 wd:Q16534203 }
 
-    OPTIONAL {
-        ?local_name ^rdfs:label ?wikidata.
-        FILTER(lang(?local_name)='it').
+    {
+        ?name ^rdfs:label ?wikidata.
+        FILTER(lang(?name)='it').
+    } UNION {
+        MINUS {
+            ?other_name ^rdfs:label ?wikidata.
+            FILTER(lang(?other_name)='it').
+        }
+        ?name ^rdfs:label ?wikidata.
+        FILTER(lang(?name)='en').
+    } UNION {
+        MINUS {
+            ?other_name ^rdfs:label ?wikidata.
+            FILTER(lang(?other_name)='it' || lang(?other_name)='en').
+        }
+        ?name ^rdfs:label ?wikidata.
     }
-
-    OPTIONAL {
-        ?en_name ^rdfs:label ?wikidata.
-        FILTER(lang(?en_name)='en').
-    }
-
-    ?all_names ^rdfs:label ?wikidata.
 
     OPTIONAL {
         ?description ^schema:description ?wikidata.
@@ -47,30 +50,30 @@ WHERE {
             ?gender ^wdt:P21 ?wikidata
             FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
             #?occupation wdt:P2521 []. # female form of occupation is available
-            ?occupation wdt:P2521 ?occupation_name. # female form of occupation label
+            ?occupation_name ^wdt:P2521 ?occupation. # female form of occupation label
         } UNION {
             MINUS {
-                ?occupation wdt:P2521 ?occupation_name.
+                ?occupation_name ^wdt:P2521 ?occupation.
                 FILTER(lang(?occupation_name)='it').
             }. # female form of occupation is NOT available in this language
             ?gender ^wdt:P21 ?wikidata
             FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
-            ?occupation rdfs:label ?occupation_name. # base occupation label
+            ?occupation_name ^rdfs:label ?occupation. # base occupation label
         } UNION {
             ?gender ^wdt:P21 ?wikidata
             FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
             #?occupation wdt:P3321 []. # male form of occupation is available
-            ?occupation wdt:P3321 ?occupation_name. # male form of occupation label
+            ?occupation_name ^wdt:P3321 ?occupation. # male form of occupation label
         } UNION {
             MINUS {
-                ?occupation wdt:P3321 ?occupation_name.
+                ?occupation_name ^wdt:P3321 ?occupation.
                 FILTER(lang(?occupation_name)='it').
             }. # male form of occupation is NOT available in this language
             ?gender ^wdt:P21 ?wikidata
             FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
-            ?occupation rdfs:label ?occupation_name. # male form of occupation label
+            ?occupation_name ^rdfs:label ?occupation. # male form of occupation label
         } UNION {
-            ?occupation rdfs:label ?occupation_name. # base occupation label
+            ?occupation_name ^rdfs:label ?occupation. # base occupation label
             MINUS { ?wikidata wdt:P21 []. } . # no gender specified
         }
         FILTER(lang(?occupation_name)='it').
