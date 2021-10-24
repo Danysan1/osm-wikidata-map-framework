@@ -88,6 +88,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 (GROUP_CONCAT(DISTINCT ?event_place_name; SEPARATOR=', ') AS ?event_place)
                 (SAMPLE(?birth_place_name) AS ?birth_place)
                 (SAMPLE(?death_place_name) AS ?death_place)
+                (SAMPLE(?wkt_coords) AS ?wkt_coords)
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
@@ -126,11 +127,11 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                             ?occupation_name ^wdt:P2521 ?occupation.
                             FILTER(lang(?occupation_name)='$language').
                         }. # female form of occupation is NOT available in this language
-                        ?gender ^wdt:P21 ?wikidata
+                        ?gender ^wdt:P21 ?wikidata.
                         FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
                         ?occupation_name ^rdfs:label ?occupation. # base occupation label
                     } UNION {
-                        ?gender ^wdt:P21 ?wikidata
+                        ?gender ^wdt:P21 ?wikidata.
                         FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
                         #?occupation wdt:P3321 []. # male form of occupation is available
                         ?occupation_name ^wdt:P3321 ?occupation. # male form of occupation label
@@ -139,21 +140,21 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                             ?occupation_name ^wdt:P3321 ?occupation.
                             FILTER(lang(?occupation_name)='$language').
                         }. # male form of occupation is NOT available in this language
-                        ?gender ^wdt:P21 ?wikidata
+                        ?gender ^wdt:P21 ?wikidata.
                         FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
                         ?occupation_name ^rdfs:label ?occupation. # male form of occupation label
                     } UNION {
-                        ?occupation_name ^rdfs:label ?occupation. # base occupation label
                         MINUS { ?wikidata wdt:P21 []. } . # no gender specified
+                        ?occupation_name ^rdfs:label ?occupation. # base occupation label
                     }
                     FILTER(lang(?occupation_name)='$language').
                 }
 
                 OPTIONAL {
                     {
-                        ?picture ^wdt:P18 ?wikidata. # picture
+                        ?picture ^wdt:P18 ?wikidata # picture
                     } UNION {
-                        ?picture ^wdt:P94 ?wikidata. # coat of arms image
+                        ?picture ^wdt:P94 ?wikidata # coat of arms image
                     }
                 }
 
@@ -209,7 +210,7 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 }
 
                 OPTIONAL {
-                    ?commons ^wdt:P373 ?wikidata
+                    ?commons ^wdt:P373 ?wikidata.
                 }
 
                 OPTIONAL {
@@ -224,6 +225,11 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                     }
                     ?prize_name ^rdfs:label ?prize.
                     FILTER(lang(?prize_name)='$language').
+                }
+
+                OPTIONAL {
+                    ?wkt_coords ^wdt:P625 ?wikidata.
+                    FILTER(STRSTARTS(?wkt_coords, 'Point')).
                 }
 
                 OPTIONAL {

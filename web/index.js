@@ -69,7 +69,7 @@ const backgroundStyles = {
                 'http://www.wikidata.org/entity/Q217327', '#e55e5e', // suicide attack
                 'http://www.wikidata.org/entity/Q2223653', '#e55e5e', // terrorist attack
                 'http://www.wikidata.org/entity/Q175331', '#e55e5e', // Demonstration
-                // Cities
+                // Human settlements
                 'http://www.wikidata.org/entity/Q515', '#fed976', // city
                 'http://www.wikidata.org/entity/Q1549591', '#fed976', // big city
                 'http://www.wikidata.org/entity/Q702492', '#fed976', // urban area
@@ -91,6 +91,7 @@ const backgroundStyles = {
                 'http://www.wikidata.org/entity/Q15303838', '#fed976', // municipality seat
                 'http://www.wikidata.org/entity/Q123705', '#fed976', // neighborhood
                 'http://www.wikidata.org/entity/Q7315416', '#fed976', // residence park
+                'http://www.wikidata.org/entity/Q5084', '#fed976', // hamlet
                 // Locations
                 'http://www.wikidata.org/entity/Q1414991', '#348C31', // area
                 'http://www.wikidata.org/entity/Q1620908', '#348C31', // historical region
@@ -875,6 +876,7 @@ function featureToElement(feature) {
             etymology_description = etymology.querySelector('.etymology_description'),
             wikipedia_button = etymology.querySelector('.wikipedia_button'),
             commons_button = etymology.querySelector('.commons_button'),
+            location_button = etymology.querySelector('.location_button'),
             start_end_date = etymology.querySelector('.start_end_date'),
             event_place = etymology.querySelector('.event_place'),
             citizenship = etymology.querySelector('.citizenship'),
@@ -900,6 +902,12 @@ function featureToElement(feature) {
             commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
         } else {
             commons_button.style.display = 'none';
+        }
+        if (ety.wkt_coords) {
+            const coords = /Point\(([\d\.]+) ([\d\.]+)\)/i.exec(ety.wkt_coords);
+            location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+        } else {
+            location_button.style.display = 'none';
         }
 
         if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {

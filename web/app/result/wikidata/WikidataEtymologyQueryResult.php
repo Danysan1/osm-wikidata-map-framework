@@ -15,9 +15,49 @@ use App\Result\XMLQueryResult;
  */
 class WikidataEtymologyQueryResult extends XMLLocalQueryResult
 {
+    /**
+     * @var array<string,string> $xpathNamespaces
+     */
+    private static $xpathNamespaces = [
+        "wd" => "http://www.w3.org/2005/sparql-results#",
+        //"geo" => "http://www.opengis.net/ont/geosparql#",
+    ];
+
+    /**
+     * @var array<string,string> $xmlFields
+     */
+    private static $xmlFields = [
+        "wikidata" => "wd:uri",
+        "wikipedia" => "wd:uri",
+        "commons" => "wd:literal",
+        "name" => "wd:literal",
+        "description" => "wd:literal",
+        "instanceID" => "wd:uri",
+        "gender" => "wd:literal",
+        "genderID" => "wd:uri",
+        "occupations" => "wd:literal",
+        "pictures" => "wd:literal",
+        "event_date" => "wd:literal",
+        "start_date" => "wd:literal",
+        "end_date" => "wd:literal",
+        "birth_date" => "wd:literal",
+        "death_date" => "wd:literal",
+        "event_place" => "wd:literal",
+        "birth_place" => "wd:literal",
+        "death_place" => "wd:literal",
+        "prizes" => "wd:literal",
+        "citizenship" => "wd:literal",
+        //"wkt_coords" => "geo:wktLiteral",
+        "wkt_coords" => "wd:literal",
+    ];
+
     public static function fromXMLResult(XMLQueryResult $res): self
     {
-        return new self($res->isSuccessful(), $res->getResult());
+        $result = $res->getResult();
+        if ($result !== NULL && !is_string($result)) {
+            throw new \Exception("WikidataEtymologyQueryResult: result is not a string");
+        }
+        return new self($res->isSuccessful(), $result);
     }
 
     /**
@@ -25,47 +65,31 @@ class WikidataEtymologyQueryResult extends XMLLocalQueryResult
      */
     public function getMatrixData()
     {
-        $xmlFields = [
-            "wikidata" => "uri",
-            "wikipedia" => "uri",
-            "commons" => "literal",
-            "name" => "literal",
-            "description" => "literal",
-            "instanceID" => "uri",
-            "gender" => "literal",
-            "genderID" => "uri",
-            "occupations" => "literal",
-            "pictures" => "literal",
-            "event_date" => "literal",
-            "start_date" => "literal",
-            "end_date" => "literal",
-            "birth_date" => "literal",
-            "death_date" => "literal",
-            "event_place" => "literal",
-            "birth_place" => "literal",
-            "death_place" => "literal",
-            "prizes" => "literal",
-            "citizenship" => "literal",
-        ];
-
         $in = $this->getSimpleXMLElement();
         $out = [];
 
         //https://stackoverflow.com/questions/42405495/simplexml-xpath-has-empty-element
-        $in->registerXPathNamespace("wd", "http://www.w3.org/2005/sparql-results#");
+        foreach (self::$xpathNamespaces as $prefix => $uri) {
+            $in->registerXPathNamespace($prefix, $uri);
+        }
         $elements = $in->xpath("/wd:sparql/wd:results/wd:result");
         foreach ($elements as $element) {
-            $element->registerXPathNamespace("wd", "http://www.w3.org/2005/sparql-results#");
+            foreach (self::$xpathNamespaces as $prefix => $uri) {
+                $element->registerXPathNamespace($prefix, $uri);
+            }
             //error_log($element->saveXML());
             $outRow = [];
-            foreach ($xmlFields as $key => $type) {
-                $value = $element->xpath("./wd:binding[@name='$key']/wd:$type/text()");
+            foreach (self::$xmlFields as $key => $type) {
+                $value = $element->xpath("./wd:binding[@name='$key']/$type/text()");
                 if (empty($value)) {
                     $outRow[$key] = null;
                 } else {
-                    $outRow[$key] = $value[0]->__toString();
-                    if ($key == "pictures")
-                        $outRow[$key] = explode("\t", $outRow[$key]);
+                    $outValue = $value[0]->__toString();
+                    if ($key == "pictures") {
+                        $outRow[$key] = explode("\t", $outValue);
+                    } else {
+                        $outRow[$key] = $outValue;
+                    }
                 }
             }
             //print_r($outRow);
