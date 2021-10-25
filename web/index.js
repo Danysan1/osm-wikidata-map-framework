@@ -904,7 +904,7 @@ function featureToElement(feature) {
             commons_button.style.display = 'none';
         }
         if (ety.wkt_coords) {
-            const coords = /Point\(([\d\.]+) ([\d\.]+)\)/i.exec(ety.wkt_coords);
+            const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
             location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
         } else {
             location_button.style.display = 'none';
