@@ -132,6 +132,7 @@ if (!$conf->has("mapbox-gl-token")) {
         <div class="detail_container">
             <h2 class="element_name"></h2>
             <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button" target="_blank"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
+            <a title="Element location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_location_button" target="_self"><span class="button_img">📍</span> Location</a>
             <div class="etymologies_container grid grid-auto">
 
             </div>
@@ -149,7 +150,7 @@ if (!$conf->has("mapbox-gl-token")) {
                     <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button" target="_blank"><img class="button_img" src="img/wikidata.svg" alt="Wikidata logo"> Wikidata</a>
                     <a title="Subject on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
                     <a title="Subject on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" target="_blank"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
-                    <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 location_button" target="_self"><span class="button_img">📍</span> Location</a>
+                    <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" target="_self"><span class="button_img">📍</span> Location</a>
 
                     <p class="start_end_date"></p>
                     <p class="event_place"></p>

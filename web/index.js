@@ -871,12 +871,19 @@ function featureToElement(feature) {
 
     detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
     detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
+    coord = feature.geometry.coordinates;
+    while (Array.isArray(coord) && Array.isArray(coord[0])) {
+        coord = coord[0];
+    }
+    detail_container.querySelector('.element_location_button').href = "#" + coord[0] + "," + coord[1] + ",18";
+
+
     etymologies.forEach(function(ety) {
         const etymology = etymology_template.content.cloneNode(true),
             etymology_description = etymology.querySelector('.etymology_description'),
             wikipedia_button = etymology.querySelector('.wikipedia_button'),
             commons_button = etymology.querySelector('.commons_button'),
-            location_button = etymology.querySelector('.location_button'),
+            location_button = etymology.querySelector('.subject_location_button'),
             start_end_date = etymology.querySelector('.start_end_date'),
             event_place = etymology.querySelector('.event_place'),
             citizenship = etymology.querySelector('.citizenship'),
