@@ -92,9 +92,15 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
+                ?instanceID ^wdt:P31 ?wikidata.
+
                 {
                     ?name ^rdfs:label ?wikidata.
                     FILTER(lang(?name)='$language').
+                    OPTIONAL {
+                        ?description ^schema:description ?wikidata.
+                        FILTER(lang(?description)='$language').
+                    }
                 } UNION {
                     MINUS {
                         ?other_name ^rdfs:label ?wikidata.
@@ -102,6 +108,10 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                     }
                     ?name ^rdfs:label ?wikidata.
                     FILTER(lang(?name)='en').
+                    OPTIONAL {
+                        ?description ^schema:description ?wikidata.
+                        FILTER(lang(?description)='en').
+                    }
                 } UNION {
                     MINUS {
                         ?other_name ^rdfs:label ?wikidata.
@@ -111,16 +121,10 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 }
 
                 OPTIONAL {
-                    ?description ^schema:description ?wikidata.
-                    FILTER(lang(?description)='$language').
-                }
-
-                OPTIONAL {
                     ?occupation ^wdt:P106 ?wikidata.
                     {
                         ?gender ^wdt:P21 ?wikidata.
                         FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
-                        #?occupation wdt:P2521 []. # female form of occupation is available
                         ?occupation_name ^wdt:P2521 ?occupation. # female form of occupation label
                     } UNION {
                         MINUS {
@@ -133,7 +137,6 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                     } UNION {
                         ?gender ^wdt:P21 ?wikidata.
                         FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
-                        #?occupation wdt:P3321 []. # male form of occupation is available
                         ?occupation_name ^wdt:P3321 ?occupation. # male form of occupation label
                     } UNION {
                         MINUS {
@@ -156,10 +159,6 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                     } UNION {
                         ?picture ^wdt:P94 ?wikidata # coat of arms image
                     }
-                }
-
-                OPTIONAL {
-                    ?instanceID ^wdt:P31 ?wikidata.
                 }
 
                 OPTIONAL {
