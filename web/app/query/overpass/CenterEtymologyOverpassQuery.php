@@ -37,7 +37,7 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
     public function __construct($lat, $lon, $radius, $config)
     {
         parent::__construct(
-            'name:etymology:wikidata',
+            ['name:etymology:wikidata', 'subject:wikidata'],
             "around:$radius,$lat,$lon",
             "out body; >; out skel qt;",
             $config

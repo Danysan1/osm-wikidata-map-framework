@@ -21,12 +21,19 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
      */
     protected function convertElementToGeoJSONFeature($index, $element, $allElements)
     {
-        if (empty($element["tags"]) || !is_array($element["tags"]) || empty($element["tags"]["name:etymology:wikidata"])) {
+        if (empty($element["tags"]) || !is_array($element["tags"])) {
+            return false;
+        }
+
+        if(!empty($element["tags"]["name:etymology:wikidata"])) {
+            $wikidataTag = str_replace(' ', '', (string)$element["tags"]["name:etymology:wikidata"]);
+        } elseif(!empty($element["tags"]["subject:wikidata"])) {
+            $wikidataTag = str_replace(' ', '', (string)$element["tags"]["subject:wikidata"]);
+        } else {
             return false;
         }
 
         $elementID = (string)$element["type"] . "/" . (int)$element["id"];
-        $wikidataTag = str_replace(' ', '', (string)$element["tags"]["name:etymology:wikidata"]);
         if (!preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $wikidataTag)) {
             error_log("Feature does not contain a valid list of wikidata tags: $elementID");
             return false;

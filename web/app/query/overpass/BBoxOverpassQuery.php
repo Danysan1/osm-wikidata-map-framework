@@ -25,26 +25,20 @@ class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
     private $bbox;
 
     /**
-     * @var string $tag
-     */
-    private $tag;
-
-    /**
-     * @param string $tag
+     * @param string|array<string> $tags
      * @param BoundingBox $bbox
      * @param string $outputType
      * @param OverpassConfig $config
      */
-    public function __construct($tag, $bbox, $outputType, $config)
+    public function __construct($tags, $bbox, $outputType, $config)
     {
         parent::__construct(
-            $tag,
+            $tags,
             $bbox->asBBoxString(),
             $outputType,
             $config
         );
         $this->bbox = $bbox;
-        $this->tag = $tag;
     }
 
     /**

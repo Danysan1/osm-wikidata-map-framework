@@ -16,9 +16,9 @@ use \App\Query\Overpass\OverpassConfig;
 class BaseOverpassQuery extends OverpassQuery
 {
     /**
-     * @var string
+     * @var array<string>
      */
-    private $tag;
+    protected $tags;
 
     /**
      * @var string
@@ -31,28 +31,29 @@ class BaseOverpassQuery extends OverpassQuery
     private $outputType;
 
     /**
-     * @param string $tag
-     * @param string $position Position filter for each element
-     * @param string $outputType 'out ids center;' / 'out body; >; out skel qt;' / ...
+     * @param string|array<string> $tags Tags to search
+     * @param string $position Position filter for the elements (bbox, center, etc.)
+     * @param string $outputType Desired output content ('out ids center;' / 'out body; >; out skel qt;' / ...)
      * @param OverpassConfig $config
      */
-    public function __construct($tag, $position, $outputType, $config)
+    public function __construct($tags, string $position, string $outputType, OverpassConfig $config)
     {
-        $nodesQuery = $config->shouldFetchNodes() ? "node['$tag']($position);" : "";
-        $waysQuery = $config->shouldFetchWays() ? "way['$tag']($position);" : "";
-        $relationsQuery = $config->shouldFetchRelations() ? "relation['$tag']($position);" : "";
-        parent::__construct(
-            "[out:json][timeout:25];
-            (
-                $nodesQuery
-                $waysQuery
-                $relationsQuery
-            );
-            $outputType",
-            $config->getEndpoint()
-        );
-        //error_log("BaseOverpassQuery: " . $this->getQuery());
-        $this->tag = $tag;
+        $this->tags = is_string($tags) ? [$tags] : $tags;
+
+        $query = "[out:json][timeout:25]; ( ";
+        foreach ($this->tags as $tag) {
+            if ($config->shouldFetchNodes())
+                $query .= " node['$tag']($position);";
+            if ($config->shouldFetchWays())
+                $query .= " way['$tag']($position);";
+            if ($config->shouldFetchRelations())
+                $query .= " relation['$tag']($position);";
+        }
+        $query .= " ); $outputType";
+        error_log(get_class($this) . ": $query");
+
+        parent::__construct($query, $config->getEndpoint());
+
         $this->position = $position;
         $this->outputType = $outputType;
     }
@@ -60,7 +61,7 @@ class BaseOverpassQuery extends OverpassQuery
     public function __toString(): string
     {
         return parent::__toString() .
-            ", " . $this->tag .
+            ", " . json_encode($this->tags) .
             ", " . $this->position .
             ", " . $this->outputType;
     }

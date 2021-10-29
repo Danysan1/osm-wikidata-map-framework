@@ -12,7 +12,7 @@ Open Etymology Map gets the etymology of elements on the map from OpenStreetMap 
 If you wish to add or correct the etymology for an element for the map you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
-Once you find the element of interest on OpenStreetMap you can edit it's etymology by adding/changing the value for the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) tag to the Wikidata ID of the subject which inspired the name of the map element.
+Once you find the element of interest on OpenStreetMap you can edit it's etymology by adding/changing the value for the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag to the Wikidata ID of the subject which inspired the name of the map element.
 
 The wikidata ID of the etymology can be found by searching the name of the subject on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
 
@@ -85,64 +85,101 @@ The result will be something similar to
         {
             "type": "Feature",
             "geometry": {
-                "type": "Polygon",
+                "type": "Point",
                 "coordinates": [
-                    [
-                        [
-                            11.70551,
-                            44.359059999999999
-                        ],
-                        [
-                            11.70576,
-                            44.359389999999998
-                        ],
-                        [
-                            11.70614,
-                            44.35924
-                        ],
-                        [
-                            11.70589,
-                            44.358910000000002
-                        ],
-                        [
-                            11.70551,
-                            44.359059999999999
-                        ]
-                    ]
+                    22.54163,
+                    51.24552
                 ]
             },
             "properties": {
-                "name": "Area verde Rita Levi Montalcini",
-                "@id": "way\/32464519",
+                "name": "Pomnik Marii Curie-Sk\u0142odowskiej",
+                "@id": "node\/3005524964",
+                "wikipedia": "en:Marie Curie Monument in Lublin",
                 "etymologies": [
                     {
-                        "wikidata": "http:\/\/www.wikidata.org\/entity\/Q185007",
-                        "wikipedia": "https:\/\/en.wikipedia.org\/wiki\/Rita_Levi-Montalcini",
-                        "commons": "Rita Levi-Montalcini",
-                        "name": "Rita Levi-Montalcini",
-                        "description": "Italian neurologist",
+                        "wikidata": "http:\/\/www.wikidata.org\/entity\/Q7186",
+                        "wikipedia": "https:\/\/en.wikipedia.org\/wiki\/Marie_Curie",
+                        "commons": "Marie Curie",
+                        "name": "Marie Curie",
+                        "description": "Polish-French physicist and chemist (1867-1934)",
                         "instanceID": "http:\/\/www.wikidata.org\/entity\/Q5",
                         "gender": "female",
                         "genderID": "http:\/\/www.wikidata.org\/entity\/Q6581072",
-                        "occupations": "neuroscientist, biochemist, neurologist, politician, physician, scientist",
+                        "occupations": "nuclear physicist, university teacher, chemist, physicist",
                         "pictures": [
-                            "http:\/\/commons.wikimedia.org\/wiki\/Special:FilePath\/Rita%20Levi%20Montalcini.jpg"
+                            "http:\/\/commons.wikimedia.org\/wiki\/Special:FilePath\/Marie%20Curie%20c.%201920s.jpg"
                         ],
                         "event_date": null,
                         "start_date": null,
                         "end_date": null,
-                        "birth_date": "1909-04-22T00:00:00Z",
-                        "death_date": "2012-12-30T00:00:00Z",
+                        "birth_date": "1867-11-07T00:00:00Z",
+                        "death_date": "1934-07-04T00:00:00Z",
                         "event_place": null,
-                        "birth_place": "Turin",
-                        "death_place": "Rome",
-                        "prizes": "Nobel Prize in Physiology or Medicine",
-                        "citizenship": "United States of America, Italy, Kingdom of Italy"
+                        "birth_place": "Warsaw",
+                        "death_place": "Sancellemoz",
+                        "prizes": "Nobel Prize in Physics, Nobel Prize in Chemistry",
+                        "citizenship": "Poland, France, Russian Empire",
+                        "wkt_coords": null
                     }
                 ]
             }
-        }
-
+        },
+        ...
+        {
+            "type": "Feature",
+            "geometry": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        11.7023,
+                        44.36173
+                    ],
+                    [
+                        11.70262,
+                        44.36161
+                    ],
+                    [
+                        11.70271,
+                        44.36158
+                    ],
+                    [
+                        11.70334,
+                        44.36134
+                    ]
+                ]
+            },
+            "properties": {
+                "name": "Via Caduti di Cefalonia",
+                "@id": "way\/22877448",
+                "etymologies": [
+                    {
+                        "wikidata": "http:\/\/www.wikidata.org\/entity\/Q537576",
+                        "wikipedia": "https:\/\/en.wikipedia.org\/wiki\/Massacre_of_the_Acqui_Division",
+                        "commons": "Massacre of the Acqui Division",
+                        "name": "massacre of the Acqui Division",
+                        "description": "1943 mass execution of Italian soldiers",
+                        "instanceID": "http:\/\/www.wikidata.org\/entity\/Q135010",
+                        "gender": null,
+                        "genderID": null,
+                        "occupations": null,
+                        "pictures": [
+                            "http:\/\/commons.wikimedia.org\/wiki\/Special:FilePath\/Argostoli%20mnimeio%20Italon.JPG"
+                        ],
+                        "event_date": "1943-09-26T00:00:00Z",
+                        "start_date": "1943-09-21T00:00:00Z",
+                        "end_date": "1943-09-26T00:00:00Z",
+                        "birth_date": null,
+                        "death_date": null,
+                        "event_place": "Kefalonia",
+                        "birth_place": null,
+                        "death_place": null,
+                        "prizes": null,
+                        "citizenship": null,
+                        "wkt_coords": "Point(20.59 38.25)"
+                    }
+                ]
+            }
+        },
         ...
     ]
 }

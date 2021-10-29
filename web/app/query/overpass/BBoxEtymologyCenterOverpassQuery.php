@@ -26,18 +26,13 @@ use \App\Result\GeoJSONQueryResult;
 class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSONQuery
 {
     /**
-     * @var string $query
-     */
-    private $query;
-
-    /**
      * @param BoundingBox $bbox
      * @param OverpassConfig $config
      */
     public function __construct($bbox, $config)
     {
         parent::__construct(
-            'name:etymology:wikidata',
+            ['name:etymology:wikidata', 'subject:wikidata'],
             $bbox,
             'out ids center;',
             $config

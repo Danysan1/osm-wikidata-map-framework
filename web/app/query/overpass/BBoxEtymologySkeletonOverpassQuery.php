@@ -24,7 +24,7 @@ class BBoxEtymologySkeletonOverpassQuery extends BBoxOverpassQuery
     public function __construct($bbox, $config)
     {
         parent::__construct(
-            'name:etymology:wikidata',
+            ['name:etymology:wikidata', 'subject:wikidata'],
             $bbox,
             'out skel; >; out skel qt;',
             $config

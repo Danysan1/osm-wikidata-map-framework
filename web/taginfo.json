@@ -16,14 +16,25 @@
                 "way"
             ],
             "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
-            "description": "The value of name:etymology:wikidata is used to gather etymology information from Wikidata"
+            "description": "The value of 'name:etymology:wikidata' is used to gather etymology information from Wikidata"
+        },
+        {
+            "key": "subject:wikidata",
+            "object_types": [
+                "node",
+                "way"
+            ],
+            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "description": "The value of 'subject:wikidata' is used to gather etymology information from Wikidata"
         },
         {
             "key": "name",
             "object_types": [
                 "node",
                 "way"
-            ]
+            ],
+            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "description": "The value of 'name' is used to display the object's name alongside it's etymology"
         }
     ]
 }

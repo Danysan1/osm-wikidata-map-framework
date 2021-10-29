@@ -29,7 +29,7 @@ abstract class BaseQuery implements Query
      * @param string $query
      * @param string $endpointURL
      */
-    public function __construct($query, $endpointURL)
+    public function __construct(string $query, string $endpointURL)
     {
         $this->query = $query;
         $this->endpointURL = $endpointURL;
