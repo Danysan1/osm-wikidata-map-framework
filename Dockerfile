@@ -40,7 +40,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | b
 	rm $HOME/.nvm/nvm.sh && \
 	nvm install --lts && \
 	cd /var/www/html && \
-	npm install
+	npm install --force --production
 
 # docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
 # docker build --target "dev" --tag open-etymology-map:dev .
