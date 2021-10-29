@@ -942,13 +942,13 @@ function featureToElement(feature) {
                 death_date = ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?",
                 death_place = ety.death_place ? ety.death_place : "?";
             start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-        } else if (ety.event_date) {
-            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
-            start_end_date.innerText = '📅 ' + event_date;
         } else if (ety.start_date || ety.end_date) {
             const start_date = ety.start_date ? (new Date(ety.start_date)).toLocaleDateString(document.documentElement.lang) : "?",
                 end_date = ety.end_date ? (new Date(ety.end_date)).toLocaleDateString(document.documentElement.lang) : "?";
             start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
+        } else if (ety.event_date) {
+            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
+            start_end_date.innerText = '📅 ' + event_date;
         } else {
             start_end_date.style.display = 'none';
         }
