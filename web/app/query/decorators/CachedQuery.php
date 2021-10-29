@@ -31,6 +31,12 @@ abstract class CachedQuery implements Query
     /** @var ServerTiming|null $serverTiming */
     private $serverTiming;
 
+    /** @var int */
+    protected $timeoutThresholdTimestamp;
+
+    /** @var string */
+    protected $cacheFileBaseURL;
+
     /**
      * @param Query $baseQuery
      * @param string $cacheFileBasePath
@@ -46,6 +52,11 @@ abstract class CachedQuery implements Query
         $this->cacheFileBasePath = $cacheFileBasePath;
         $this->config = $config;
         $this->serverTiming = $serverTiming;
+
+        $cacheTimeoutHours = (int)$config->get('cache-timeout-hours');
+        $this->timeoutThresholdTimestamp = time() - (60 * 60 * $cacheTimeoutHours);
+
+        $this->cacheFileBaseURL = (string)$this->getConfig()->get("cache-file-base-url");
     }
 
     public function getBaseQuery(): Query
@@ -71,14 +82,14 @@ abstract class CachedQuery implements Query
     /**
      * @return QueryResult|null
      */
-    protected abstract function getResultFromRow(array $row, int $timeoutThresholdTimestamp);
+    protected abstract function getResultFromRow(array $row);
 
     /**
      * @return array|null
      */
     protected abstract function getRowFromResult(QueryResult $result);
 
-    protected abstract function shouldKeepRow(array $row, int $timeoutThresholdTimestamp): bool;
+    protected abstract function shouldKeepRow(array $row): bool;
 
     /**
      * There are only two hard things in Computer Science: cache invalidation and naming things.
@@ -94,8 +105,6 @@ abstract class CachedQuery implements Query
         $className = str_replace("\\", "_", get_class($this->baseQuery));
         $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
         $cacheFile = @fopen($cacheFilePath, "r");
-        $cacheTimeoutHours = (int)$this->config->get('cache-timeout-hours');
-        $timeoutThresholdTimestamp = time() - (60 * 60 * $cacheTimeoutHours);
         $result = null;
         $newCache = [];
         if (empty($cacheFile)) {
@@ -106,9 +115,9 @@ abstract class CachedQuery implements Query
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
                 //error_log("CachedQuery: ".json_encode($row));
                 try {
-                    $shouldKeep = $this->shouldKeepRow($row, $timeoutThresholdTimestamp);
+                    $shouldKeep = $this->shouldKeepRow($row);
                     if ($shouldKeep) {
-                        $result = $this->getResultFromRow($row, $timeoutThresholdTimestamp);
+                        $result = $this->getResultFromRow($row);
                         $newCache[] = $row;
                     }
                 } catch (\Exception $e) {

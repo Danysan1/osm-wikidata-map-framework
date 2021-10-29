@@ -55,16 +55,21 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
         return $baseQuery->getBBox();
     }
 
-    protected function shouldKeepRow(array $row, int $timeoutThresholdTimestamp): bool
+    protected function shouldKeepRow(array $row): bool
     {
         $rowTimestamp = (int)$row[BBOX_CACHE_COLUMN_TIMESTAMP];
-        if ($rowTimestamp < $timeoutThresholdTimestamp) {
+        $jsonRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
+        if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
             // Row too old, ignore
-            error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $timeoutThresholdTimestamp)");
+            error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
             $ret = false;
         } elseif ($this->getBBox()->strictlyContains($this->getBBoxFromRow($row))) {
             // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
             error_log("CachedBBoxGeoJSONQuery: trashing smaller bbox row");
+            $ret = false;
+        } elseif (!is_file($this->cacheFileBaseURL . $jsonRelativePath)) {
+            // Cached result is inexistent or not a regular file, ignore
+            error_log("CachedStringSetXMLQuery: trashing non-file cached result: $jsonRelativePath");
             $ret = false;
         } else {
             // Row is still valid, add to new cache
@@ -76,13 +81,12 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
     /**
      * @return QueryResult|null
      */
-    protected function getResultFromRow(array $row, int $timeoutThresholdTimestamp)
+    protected function getResultFromRow(array $row)
     {
         if ($this->getBBoxFromRow($row)->containsOrEquals($this->getBBox())) {
             // Row bbox contains entirely the query bbox, cache hit!
-            $cacheFileBaseURL = (string)$this->getConfig()->get("cache-file-base-url");
             $jsonRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
-            $result = new GeoJSONLocalQueryResult(true, null, $cacheFileBaseURL . $jsonRelativePath);
+            $result = new GeoJSONLocalQueryResult(true, null, $this->cacheFileBaseURL . $jsonRelativePath);
             //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
             error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
         } else {
