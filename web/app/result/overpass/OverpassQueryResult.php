@@ -58,7 +58,7 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
             throw new \Exception("Element section in Overpass response is not an array");
         }
         if (empty($data["elements"])) {
-            error_log("OverpassQueryResult: No elements found in Overpass response");
+            error_log("OverpassQueryResult: No elements found in Overpass response:" . PHP_EOL . json_encode($data));
         }
         //$totalElements = count($data["elements"]);
 

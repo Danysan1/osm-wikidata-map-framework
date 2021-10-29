@@ -44,6 +44,10 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
             "properties" => ["name" => $elementName, "@id" => $elementID],
         ];
 
+        if (!empty($element["tags"]["wikipedia"])) {
+            $feature["properties"]["wikipedia"] = (string)$element["tags"]["wikipedia"];
+        }
+
         $feature["properties"]["etymologies"] = [];
         foreach (explode(";", $wikidataTag) as $etymologyID) {
             $feature["properties"]["etymologies"][] = ["id" => $etymologyID];

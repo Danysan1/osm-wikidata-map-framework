@@ -870,6 +870,7 @@ function featureToElement(feature) {
     console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
 
     detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    detail_container.querySelector('.element_wikipedia_button').href = 'https://www.wikipedia.org/wiki/' + feature.properties.wikipedia;
     detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
     coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
