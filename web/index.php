@@ -79,16 +79,16 @@ if (!$conf->has("mapbox-gl-token")) {
     <title>Open Etymology Map</title>
     <meta name="description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
 
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
+    <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
+    <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
+
     <script defer src='./node_modules/mapbox-gl/dist/mapbox-gl.js' type="application/javascript"></script>
     <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
     <script defer src="./index.js" type="application/javascript"></script>
-
-    <link rel="stylesheet" href="./style.css" type="text/css" />
-    <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
-    <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.dsantini.it/etymology/" />
