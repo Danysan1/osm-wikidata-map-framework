@@ -870,13 +870,19 @@ function featureToElement(feature) {
     //template_container.appendChild(detail_container);
     console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
 
-    detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    if (feature.properties.name) {
+        detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    }
+
     if (feature.properties.wikipedia) {
         element_wikipedia_button.href = 'https://www.wikipedia.org/wiki/' + feature.properties.wikipedia;
+        element_wikipedia_button.style.display = 'inline-flex';
     } else {
         element_wikipedia_button.style.display = 'none';
     }
+
     detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
+
     coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
         coord = coord[0];
@@ -899,6 +905,7 @@ function featureToElement(feature) {
             pictures = etymology.querySelector('.pictures');
 
         etymology.querySelector('.etymology_name').innerText = ety.name;
+
         if (ety.description) {
             etymology_description.innerText = ety.description;
         } else {
@@ -906,19 +913,25 @@ function featureToElement(feature) {
         }
 
         etymology.querySelector('.wikidata_button').href = ety.wikidata;
+
         if (ety.wikipedia) {
             wikipedia_button.href = ety.wikipedia;
+            wikipedia_button.style.display = 'inline-flex';
         } else {
             wikipedia_button.style.display = 'none';
         }
+
         if (ety.commons) {
             commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+            commons_button.style.display = 'inline-flex';
         } else {
             commons_button.style.display = 'none';
         }
+
         if (ety.wkt_coords) {
             const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
             location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+            location_button.style.display = 'inline-flex';
         } else {
             location_button.style.display = 'none';
         }
