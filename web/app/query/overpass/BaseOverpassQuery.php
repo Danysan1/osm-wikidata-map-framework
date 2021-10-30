@@ -43,14 +43,14 @@ class BaseOverpassQuery extends OverpassQuery
         $query = "[out:json][timeout:25]; ( ";
         foreach ($this->tags as $tag) {
             if ($config->shouldFetchNodes())
-                $query .= " node['$tag']($position);";
+                $query .= "node['name']['$tag']($position);";
             if ($config->shouldFetchWays())
-                $query .= " way['$tag']($position);";
+                $query .= "way['name']['$tag']($position);";
             if ($config->shouldFetchRelations())
-                $query .= " relation['$tag']($position);";
+                $query .= "relation['name']['$tag']($position);";
         }
         $query .= " ); $outputType";
-        error_log(get_class($this) . ": $query");
+        //error_log(get_class($this) . ": $query");
 
         parent::__construct($query, $config->getEndpoint());
 

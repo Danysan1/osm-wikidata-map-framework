@@ -88,7 +88,7 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
             $jsonRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
             $result = new GeoJSONLocalQueryResult(true, null, $this->cacheFileBaseURL . $jsonRelativePath);
             //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
-            error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox());
+            error_log("CachedBBoxGeoJSONQuery: cache hit for " . $this->getBBox() . ": $jsonRelativePath");
         } else {
             //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " does not contain " . $this->getBBox());
             $result = null;

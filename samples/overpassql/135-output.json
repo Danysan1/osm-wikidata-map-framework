@@ -20,6 +20,22 @@
 },
 {
   "type": "node",
+  "id": 2112865605,
+  "lat": 44.3416832,
+  "lon": 11.7059126,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "statue",
+    "name": "Ayrton Senna",
+    "subject": "Ayrton Senna",
+    "subject:wikidata": "Q10490",
+    "subject:wikipedia": "it:Ayrton Senna",
+    "wikidata": "Q27991004",
+    "wikimedia_commons": "Category:Statue of Ayrton Senna (Imola)"
+  }
+},
+{
+  "type": "node",
   "id": 2499751453,
   "lat": 44.3535539,
   "lon": 11.7053507,

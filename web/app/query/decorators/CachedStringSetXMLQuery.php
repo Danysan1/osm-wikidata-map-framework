@@ -86,7 +86,7 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
             $cachedResult = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
             $result = new XMLLocalQueryResult(true, null, $this->cacheFileBaseURL . $cachedResult);
             //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
-            error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet());
+            error_log("CachedStringSetXMLQuery: cache hit for " . $this->getStringSet() . ": $cachedResult");
         } else {
             //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " does not contain " . $this->getStringSet());
             $result = null;
