@@ -890,7 +890,7 @@ function featureToElement(feature) {
     detail_container.querySelector('.element_location_button').href = "#" + coord[0] + "," + coord[1] + ",18";
 
 
-    etymologies.forEach(function(ety) {
+    etymologies.filter(x => x != null).forEach(function(ety) {
         const etymology = etymology_template.content.cloneNode(true),
             etymology_description = etymology.querySelector('.etymology_description'),
             wikipedia_button = etymology.querySelector('.wikipedia_button'),

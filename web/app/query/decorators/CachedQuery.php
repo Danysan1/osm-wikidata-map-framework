@@ -135,7 +135,7 @@ abstract class CachedQuery implements Query
 
         if ($result == null) {
             // Cache miss, send query
-            error_log("CachedQuery: cache miss for " . $this->baseQuery);
+            //error_log("CachedQuery: cache miss for " . $this->baseQuery);
             $result = $this->baseQuery->send();
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-missed-query");

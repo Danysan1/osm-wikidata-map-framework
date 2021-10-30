@@ -92,7 +92,11 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
-                ?instanceID ^wdt:P31 ?wikidata.
+                {
+                    ?instanceID ^wdt:P31 ?wikidata.
+                } UNION {
+                    ?instanceID ^wdt:P279 ?wikidata.
+                }
 
                 {
                     ?name ^rdfs:label ?wikidata.

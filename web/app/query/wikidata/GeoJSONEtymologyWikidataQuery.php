@@ -88,6 +88,7 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
                                 }
                                 if (!$found) {
                                     error_log("Etymology information not found for $wikidataID");
+                                    $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = null;
                                 }
                             }
                         }
