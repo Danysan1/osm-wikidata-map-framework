@@ -54,7 +54,7 @@ function prepareHTML(Configuration $conf) {
 			"child-src blob: ; ".
 			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://www.google.it; ".
 			"font-src 'self' https://fonts.gstatic.com; ".
-			"style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; ".
+			"style-src 'self' https://fonts.googleapis.com; ".
 			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
 			"frame-ancestors 'none'; ".
 			"object-src 'none'; ".
