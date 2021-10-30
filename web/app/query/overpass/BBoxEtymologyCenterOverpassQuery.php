@@ -32,7 +32,8 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
     public function __construct($bbox, $config)
     {
         parent::__construct(
-            ['name:etymology:wikidata', 'subject:wikidata'],
+            //['name:etymology:wikidata', 'subject:wikidata'],
+            'name:etymology:wikidata',
             $bbox,
             'out ids center;',
             $config

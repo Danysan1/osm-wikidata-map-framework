@@ -57,13 +57,13 @@ GET {{baseUrl}}/overpass.php
 #####
 
 # Brussels / Antwerp / Ghent
-# http://www.dsantini.it/etymology/?lang=en-EN#3.7525,50.9925,9
+# http://www.dsantini.it/etymology/#4.0418,51.0282,9
 GET {{baseUrl}}/overpass.php
     ?from=bbox
-    &minLat=50.698
-    &minLon=2.82
-    &maxLat=51.285
-    &maxLon=4.685
+    &minLat=50.705
+    &minLon=2.987
+    &maxLat=51.349
+    &maxLon=5.096
     &language=en-EN
     &format=geojson
     &onlyCenter=true
