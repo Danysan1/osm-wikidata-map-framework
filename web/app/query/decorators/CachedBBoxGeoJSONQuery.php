@@ -146,4 +146,16 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
         $rowMaxLon = (float)$row[BBOX_CACHE_COLUMN_MAX_LON];
         return new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
     }
+
+    /**
+     * @return GeoJSONQueryResult
+     */
+    public function send(): QueryResult
+    {
+        $ret = parent::send();
+        if (!$ret instanceof GeoJSONQueryResult) {
+            throw new \Exception("Internal error: Result is not a GeoJSONQueryResult");
+        }
+        return $ret;
+    }
 }

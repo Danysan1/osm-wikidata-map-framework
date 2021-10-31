@@ -133,4 +133,16 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
     {
         return BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
     }
+
+    /**
+     * @return XMLQueryResult
+     */
+    public function send(): QueryResult
+    {
+        $ret = parent::send();
+        if (!$ret instanceof XMLQueryResult) {
+            throw new \Exception("Internal error: Result is not a XMLQueryResult");
+        }
+        return $ret;
+    }
 }
