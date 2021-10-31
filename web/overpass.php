@@ -99,9 +99,14 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Overpass no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($result->hasPublicSourcePath() && $conf->has("redirect-to-cache-file") && (bool)$conf->get("redirect-to-cache-file")) {
-    $out = "";
-    header("Location: " . $result->getPublicSourcePath());
+} elseif ($result->hasPublicSourcePath()) {
+    if ($conf->has("redirect-to-cache-file") && (bool)$conf->get("redirect-to-cache-file")) {
+        $out = "";
+        header("Location: " . $result->getPublicSourcePath());
+    } else {
+        $out = $result->getGeoJSON();
+        header("Cache-Location: " . $result->getPublicSourcePath());
+    }
 } else {
     $out = $result->getGeoJSON();
 }

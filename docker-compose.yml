@@ -9,6 +9,3 @@ services:
       - "80:80"
     volumes:
       - ./web:/var/www/html
-      - ./open-etymology-map.ini:/var/www/html/open-etymology-map.ini
-      - ./open-etymology-map.log:/var/www/html/open-etymology-map.log
-      - ./open-etymology-map-cache:/var/www/html/open-etymology-map-cache/
