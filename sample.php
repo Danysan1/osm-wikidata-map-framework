@@ -1,4 +1,16 @@
 <?php
+function getOverpassEndpoint() :string {
+    try {
+        /**
+         * @var array<string>
+         */
+        $possibleEndpoints = (array)parse_ini_file("open-etymology-map.template.ini")["overpass-endpoints"];
+        return $possibleEndpoints[array_rand($possibleEndpoints)];
+    } catch (Exception $e) {
+        return 'https://overpass-api.de/api/interpreter';
+    }
+}
+
 if (empty($argv[1])) {
     echo "Please provide a string as the first argument.\n";
     exit(1);
@@ -33,7 +45,7 @@ if (strtolower($inputString) == "sophox") {
     https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
     https://wiki.openstreetmap.org/wiki/Overpass_turbo/Extended_Overpass_Turbo_Queries
     */
-    $baseURL = 'https://overpass-api.de/api/interpreter?data=';
+    $baseURL = getOverpassEndpoint()."?data=";
     $folder = "overpassql";
     $inputExtension = "overpass";
     $outputExtension = "json";
@@ -42,7 +54,7 @@ if (strtolower($inputString) == "sophox") {
     https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
     https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
     */
-    $baseURL = 'https://overpass-api.de/api/interpreter?data=';
+    $baseURL = getOverpassEndpoint()."?data=";
     $folder = "overpassxml";
     $inputExtension = "xml";
     $outputExtension = "json";
@@ -67,6 +79,8 @@ for ($i = 2; $i < $argc; $i++) {
     $query = file_get_contents($fileName);
     if ($inputExtension == "rq") {
         $query = preg_replace('/(^\s+)|(\s*#[\/\s\w\(\),\']+$)/m', "", $query);
+    } elseif ($inputExtension == "overpass" && strpos($query, "out:csv") !== false) {
+        $outputExtension = "csv";
     }
 
     //$queryString = http_build_query(["query"=>$query]);
