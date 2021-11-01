@@ -68,7 +68,7 @@ class OverpassQuery extends BaseQuery
         } elseif ($res instanceof JSONRemoteQueryResult && !empty($res->getArray()["remark"])) {
             $remark = (string)$res->getArray()["remark"];
             if (strpos($remark, "Query timed out") !== false) {
-                throw new \Exception("Overpass query timed out");
+                throw new \Exception("Overpass query timed out. Please try with a smaller area.");
             } else {
                 error_log($this->getEndpointURL() . " / JSONRemoteQueryResult remark: $remark");
             }

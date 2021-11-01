@@ -647,7 +647,7 @@ function prepareWikidataLayers(wikidata_url) {
 }
 
 /**
- * Initializes the low-zoom-level clustered layer.
+ * Initializes the mid-zoom-level clustered layer.
  * 
  * @param {string} overpass_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
@@ -662,7 +662,8 @@ function prepareOverpassLayers(overpass_url) {
         //buffer: 512,
         data: overpass_url,
         cluster: true,
-        clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
         clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
     });
 
@@ -671,7 +672,7 @@ function prepareOverpassLayers(overpass_url) {
         source: 'overpass_source',
         type: 'circle',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -693,7 +694,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'symbol',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         layout: {
             'text-field': '{point_count_abbreviated}',
@@ -707,7 +708,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'circle',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['!', ['has', 'point_count']],
         paint: {
             'circle-color': '#11b4da',
@@ -831,6 +832,93 @@ function mapLoadedHandler(e) {
     map.on('sourcedata', mapSourceDataHandler);
 
     map.on('error', mapErrorHandler);
+
+    prepareGlobalLayers();
+}
+
+/**
+ * Initializes the low-zoom-level clustered layer.
+ * 
+ * @see prepareOverpassLayers
+ */
+function prepareGlobalLayers() {
+    map.addSource('global_source', {
+        type: 'geojson',
+        data: './global.php',
+        cluster: true,
+        //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
+        clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+        clusterProperties: { "etymology_count": ["+", ["get", "etymology_count"]] },
+        clusterMinPoints: 1,
+    });
+
+    map.addLayer({
+        id: 'global_layer_cluster',
+        source: 'global_source',
+        type: 'circle',
+        maxzoom: minZoomLevel,
+        filter: ['has', 'etymology_count'],
+        paint: {
+            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+            // with three steps to implement three types of circles:
+            // - Blue, 20px circles when point count is less than 100
+            // - Yellow, 30px circles when point count is between 100 and 750
+            // - Pink, 40px circles when point count is greater than or equal to 750
+            'circle-color': [
+                'step', ['get', 'etymology_count'], '#51bbd6', 2000, '#f1f075', 25000, '#f28cb1'
+            ],
+            'circle-radius': [
+                'step', ['get', 'etymology_count'], 20, 2000, 40, 25000, 60
+            ]
+        }
+    });
+
+    map.addLayer({
+        id: 'global_layer_count',
+        type: 'symbol',
+        source: 'global_source',
+        maxzoom: minZoomLevel,
+        filter: ['has', 'etymology_count'],
+        layout: {
+            'text-field': '{etymology_count}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+        }
+    });
+
+    // inspect a cluster on click
+    map.on('click', 'global_layer_cluster', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['global_layer_cluster']
+        });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource('global_source').getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+                if (err) return;
+
+                map.easeTo({
+                    center: features[0].geometry.coordinates,
+                    zoom: zoom
+                });
+            }
+        );
+    });
+
+    map.on('click', 'global_layer_point', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['global_layer_point']
+        });
+        map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: thresholdZoomLevel + 0.1
+        });
+    });
+
+    map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'global_layer_point', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'global_layer_point', () => map.getCanvas().style.cursor = '');
 }
 
 function setCulture() {
