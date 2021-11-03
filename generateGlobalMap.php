@@ -1,20 +1,15 @@
 <?php
 function getOverpassEndpoint(): string
 {
-    try {
-        /**
-         * @var array<string>
-         */
-        $possibleEndpoints = (array)parse_ini_file("open-etymology-map.template.ini")["overpass-endpoints"];
-        return $possibleEndpoints[array_rand($possibleEndpoints)];
-    } catch (Exception $e) {
-        return 'https://overpass-api.de/api/interpreter';
-    }
-}
-
-function saveResult($data)
-{
-    file_put_contents("web/open-etymology-map-cache/global-map.geojson", json_encode($data));
+    $possibleEndpoints = [ // https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+        "http://overpass-api.de/api/interpreter",
+        "https://lz4.overpass-api.de/api/interpreter",
+        "https://z.overpass-api.de/api/interpreter",
+        "https://overpass.openstreetmap.ru/api/interpreter",
+        //"https://overpass.openstreetmap.fr/api/interpreter", // From the wiki "don't exceed 1000 queries per day", so not available
+        "https://overpass.kumi.systems/api/interpreter",
+    ];
+    return $possibleEndpoints[array_rand($possibleEndpoints)];
 }
 
 $geoJSONData = [
@@ -23,27 +18,29 @@ $geoJSONData = [
 ];
 
 define('LATITUDE_INCREMENT', 2);
-define('LONGITUDINE_INCREMENT', 4);
+define('LONGITUDINE_INCREMENT', 2);
 define('MAX_TRIES', 5);
 $startLat = isset($argv[1]) ? (float)$argv[1] : -90;
 $startLon = isset($argv[2]) ? (float)$argv[2] : -180;
 $endLat = isset($argv[3]) ? (float)$argv[3] : 90;
 $endLon = isset($argv[4]) ? (float)$argv[4] : 180;
+$totalRequests = (($endLat - $startLat) / LATITUDE_INCREMENT) * (($endLon - $startLon) / LONGITUDINE_INCREMENT);
+$requestCount = 0;
 for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
     for ($minLon = $startLon; $minLon < $endLon; $minLon += LONGITUDINE_INCREMENT) {
+        $requestCount += 1;
         $maxLat = $minLat + LATITUDE_INCREMENT;
         $maxLon = $minLon + LONGITUDINE_INCREMENT;
         $bbox = "$minLat,$minLon,$maxLat,$maxLon";
-        echo "Preparing $bbox... ";
+        echo "$requestCount/$totalRequests\t| Preparing $bbox... ";
         $response = false;
         for ($try = 0; $try < MAX_TRIES && $response == false; $try++) {
             try {
-                sleep($try * exp($try));
+                sleep($try * (int)exp($try)); // exponential back-off
                 $query = "[out:csv(::count; false)];
                     (
-                        node['name:etymology:wikidata']($bbox);
-                        way['name:etymology:wikidata']($bbox);
-                        relation['name:etymology:wikidata']($bbox);
+                        nwr['name:etymology:wikidata']($bbox);
+                        nwr['subject:wikidata']($bbox);
                     );
                     out count;";
                 $url = getOverpassEndpoint() . '?data=' . urlencode($query);
@@ -54,21 +51,22 @@ for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
                     throw new Exception("Call failed");
                 } elseif (trim($response) === "") {
                     throw new Exception("Empty result");
-                }
-                $geoJSONData["features"][] = [
-                    "type" => "Feature",
-                    "geometry" => [
-                        "type" => "Point",
-                        "coordinates" => [
-                            $minLat + LATITUDE_INCREMENT / 2,
-                            $minLon + LONGITUDINE_INCREMENT / 2
+                } elseif (intval(trim($response)) > 0) {
+                    $geoJSONData["features"][] = [
+                        "type" => "Feature",
+                        "geometry" => [
+                            "type" => "Point",
+                            "coordinates" => [
+                                $minLon + LONGITUDINE_INCREMENT / 2,
+                                $minLat + LATITUDE_INCREMENT / 2
+                            ],
                         ],
-                    ],
-                    "properties" => [
-                        "etymology_count" => intval($response)
-                    ]
-                ];
-                echo "done." . PHP_EOL;
+                        "properties" => [
+                            "ety_count" => intval(trim($response))
+                        ]
+                    ];
+                }
+                echo "done: " . trim($response) . PHP_EOL;
             } catch (Exception $e) {
                 if ($try < MAX_TRIES - 1) {
                     echo $e->getMessage() . ", retrying... ";
@@ -79,4 +77,5 @@ for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
         }
     }
 }
-saveResult($geoJSONData);
+if (!file_put_contents("web/global-map.geojson", json_encode($geoJSONData)))
+    echo json_encode($geoJSONData);
