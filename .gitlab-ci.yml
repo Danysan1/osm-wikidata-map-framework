@@ -71,7 +71,7 @@ psalm:
       codequality: psalm.codeclimate.json
       #sarif: psalm_taint.codeclimate.json
   rules:
-    when: on_success
+    - when: on_success
 
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
 docker-build:
