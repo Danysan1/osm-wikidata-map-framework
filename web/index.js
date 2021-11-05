@@ -721,16 +721,18 @@ function prepareOverpassLayers(overpass_url) {
     // inspect a cluster on click
     map.on('click', 'overpass_layer_cluster', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-            layers: ['overpass_layer_cluster']
-        });
-        const clusterId = features[0].properties.cluster_id;
+                layers: ['overpass_layer_cluster']
+            }),
+            clusterId = features[0].properties.cluster_id,
+            center = features[0].geometry.coordinates;
+        console.info('Click overpass_layer_cluster', features, clusterId, center);
         map.getSource('overpass_source').getClusterExpansionZoom(
             clusterId,
             (err, zoom) => {
                 if (err) return;
 
                 map.easeTo({
-                    center: features[0].geometry.coordinates,
+                    center: center,
                     zoom: zoom
                 });
             }
@@ -739,10 +741,12 @@ function prepareOverpassLayers(overpass_url) {
 
     map.on('click', 'overpass_layer_point', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-            layers: ['overpass_layer_point']
-        });
+                layers: ['overpass_layer_point']
+            }),
+            center = features[0].geometry.coordinates;
+        console.info('Click overpass_layer_point', features, center);
         map.easeTo({
-            center: features[0].geometry.coordinates,
+            center: center,
             zoom: thresholdZoomLevel + 0.1
         });
     });
@@ -889,36 +893,38 @@ function prepareGlobalLayers() {
     // inspect a cluster on click
     map.on('click', 'global_layer_cluster', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-            layers: ['global_layer_cluster']
-        });
-        const clusterId = features[0].properties.cluster_id;
+                layers: ['global_layer_cluster']
+            }),
+            clusterId = features[0].properties.cluster_id,
+            center = features[0].geometry.coordinates;
+        if (clusterId == null) {
+            console.warn("clusterId is null");
+        } else {
+            console.info('Click global_layer_cluster', features, clusterId, center);
+        }
         map.getSource('global_source').getClusterExpansionZoom(
             clusterId,
             (err, zoom) => {
-                if (err) return;
-
-                map.easeTo({
-                    center: features[0].geometry.coordinates,
-                    zoom: zoom
-                });
+                if (err) {
+                    console.error("Not easing because of an error: ", err);
+                } else {
+                    if (!zoom) {
+                        zoom = minZoomLevel + 0.1
+                        console.warn("Empty zoom, using default", zoom, center, clusterId);
+                    } else {
+                        console.info("Easing to cluster coordinates", center, zoom, clusterId);
+                    }
+                    map.easeTo({
+                        center: center,
+                        zoom: zoom
+                    });
+                }
             }
         );
     });
 
-    map.on('click', 'global_layer_point', (e) => {
-        const features = map.queryRenderedFeatures(e.point, {
-            layers: ['global_layer_point']
-        });
-        map.easeTo({
-            center: features[0].geometry.coordinates,
-            zoom: thresholdZoomLevel + 0.1
-        });
-    });
-
     map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
     map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
-    map.on('mouseenter', 'global_layer_point', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'global_layer_point', () => map.getCanvas().style.cursor = '');
 }
 
 function setCulture() {
