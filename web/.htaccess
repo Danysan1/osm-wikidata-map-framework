@@ -9,3 +9,5 @@
 RedirectMatch 403 ^.*open-etymology-map-cache/.*csv$
 
 AddCharset UTF-8 .json
+
+AddType application/json .geojson

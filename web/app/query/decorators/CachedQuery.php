@@ -135,7 +135,7 @@ abstract class CachedQuery implements Query
 
         if ($result == null) {
             // Cache miss, send query
-            error_log("CachedQuery: cache miss for " . $this->baseQuery);
+            //error_log("CachedQuery: cache miss for " . $this->baseQuery);
             $result = $this->baseQuery->send();
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-missed-query");
@@ -148,7 +148,7 @@ abstract class CachedQuery implements Query
                 if (!empty($newRow))
                     array_unshift($newCache, $newRow);
 
-                error_log("CachedQuery: save cache of " . count($newCache) . " rows");
+                error_log("CachedQuery: save cache of " . count($newCache) . " rows for $className");
                 $cacheFile = @fopen($cacheFilePath, "w+");
                 if (empty($cacheFile)) {
                     error_log("CachedQuery: failed to open cache file for writing");

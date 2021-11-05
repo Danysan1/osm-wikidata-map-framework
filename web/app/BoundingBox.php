@@ -6,22 +6,22 @@ interface BoundingBox {
     /**
      * @return float
      */
-    public function getMinLat();
+    public function getMinLat(): float;
 
     /**
      * @return float
      */
-    public function getMinLon();
+    public function getMinLon(): float;
 
     /**
      * @return float
      */
-    public function getMaxLat();
+    public function getMaxLat(): float;
 
     /**
      * @return float
      */
-    public function getMaxLon();
+    public function getMaxLon(): float;
 
     /**
      * @return string
@@ -61,6 +61,21 @@ interface BoundingBox {
      * @return float
      */
     public function getArea();
+
+    /**
+     * @return BoundingBox|null
+     */
+    public function getOverlapWith(BoundingBox $other);
+
+    /**
+     * @return float
+     */
+    public function getAbsoluteOverlapAreaWith(BoundingBox $other): float;
+
+    /**
+     * @return float
+     */
+    public function getRelativeOverlapAreaWith(BoundingBox $other): float;
 
     /**
      * @return string

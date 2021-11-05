@@ -2,7 +2,7 @@
   "version": 0.6,
   "generator": "Overpass API 0.7.57 93a4d346",
   "osm3s": {
-    "timestamp_osm_base": "2021-10-30T08:03:46Z",
+    "timestamp_osm_base": "2021-10-30T17:08:29Z",
     "copyright": "The data included in this document is from www.openstreetmap.org. The data is made available under ODbL."
   },
   "elements": [
@@ -16,6 +16,22 @@
     "amenity": "school",
     "name": "Liceo Scientifico Rambaldi e Valeriani",
     "name:etymology:wikidata": "Q773623;Q3840229"
+  }
+},
+{
+  "type": "node",
+  "id": 2112865605,
+  "lat": 44.3416832,
+  "lon": 11.7059126,
+  "tags": {
+    "historic": "memorial",
+    "memorial": "statue",
+    "name": "Ayrton Senna",
+    "subject": "Ayrton Senna",
+    "subject:wikidata": "Q10490",
+    "subject:wikipedia": "it:Ayrton Senna",
+    "wikidata": "Q27991004",
+    "wikimedia_commons": "Category:Statue of Ayrton Senna (Imola)"
   }
 },
 {

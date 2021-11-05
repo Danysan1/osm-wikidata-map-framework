@@ -138,7 +138,7 @@
 				<literal>Regno d'Italia, Regno di Sardegna (1720-1861)</literal>
 			</binding>
 			<binding name='pictures'>
-				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg	http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg</literal>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg	http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg</literal>
 			</binding>
 			<binding name='prizes'>
 				<literal></literal>
@@ -461,7 +461,7 @@
 				<literal>Stanley Kubrick</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>scenografo, regista cinematografico, regista, scacchista, produttore esecutivo, montatore, direttore della fotografia, produttore cinematografico, operatore di ripresa, fotografo, sceneggiatore</literal>
+				<literal>scacchista, montatore, regista, produttore cinematografico, regista cinematografico, scenografo, operatore di ripresa, produttore esecutivo, direttore della fotografia, fotografo, sceneggiatore</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America</literal>
@@ -511,7 +511,7 @@
 				<literal>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>fisico, inventore, ingegnere, scienziato, uomo politico, politico, uomo d'affari</literal>
+				<literal>inventore, fisico, ingegnere, scienziato, uomo politico, politico, uomo d'affari</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -564,7 +564,7 @@
 				<literal>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>regista cinematografico, montatore, produttore cinematografico, pittore, scrittore, poeta, sceneggiatore</literal>
+				<literal>montatore, produttore cinematografico, regista cinematografico, pittore, poeta, scrittore, sceneggiatore</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Italia, Regno d'Italia</literal>

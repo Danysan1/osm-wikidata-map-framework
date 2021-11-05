@@ -106,22 +106,22 @@ class BaseBoundingBox implements BoundingBox
         return $lat;
     }
 
-    public function getMinLat()
+    public function getMinLat(): float
     {
         return $this->minLat;
     }
 
-    public function getMaxLat()
+    public function getMaxLat(): float
     {
         return $this->maxLat;
     }
 
-    public function getMinLon()
+    public function getMinLon(): float
     {
         return $this->minLon;
     }
 
-    public function getMaxLon()
+    public function getMaxLon(): float
     {
         return $this->maxLon;
     }
@@ -136,7 +136,8 @@ class BaseBoundingBox implements BoundingBox
         return $this->minLat > $this->maxLat;
     }
 
-    public function equals(BoundingBox $other) {
+    public function equals(BoundingBox $other)
+    {
         /**
          * @psalm-suppress RedundantCondition
          */
@@ -147,13 +148,14 @@ class BaseBoundingBox implements BoundingBox
             && $this->maxLon == $other->getMaxLon();
     }
 
-    public function containsOrEquals(BoundingBox $other) {
+    public function containsOrEquals(BoundingBox $other)
+    {
         /**
          * @psalm-suppress TypeDoesNotContainType
          */
-        if(empty($other))
+        if (empty($other))
             throw new \InvalidArgumentException("The compared BoundingBox must not be empty");
-        
+
         $containsLatitude = $this->minLat <= $other->getMinLat() && $this->maxLat >= $other->getMaxLat();
         $thisMinLon = $this->isAcrossAntimeridian() ? $this->minLon - 360 : $this->minLon;
         $otherMinLon = $other->isAcrossAntimeridian() ? $other->getMinLon() - 360 : $other->getMinLon();
@@ -169,13 +171,49 @@ class BaseBoundingBox implements BoundingBox
         return !empty($other) && $this->containsOrEquals($other) && !$this->equals($other);
     }
 
-    public function getArea()
+    public function getArea(): float
     {
         $latitudeDiff = $this->maxLat - $this->minLat;
         $minLon = $this->isAcrossAntimeridian() ? $this->minLon - 360 : $this->minLon;
         $longitudeDiff = $this->maxLon - $minLon;
         return abs($latitudeDiff * $longitudeDiff);
         // abs() should not be necessary as these values should already be positive, but for safety we use it anyway.
+    }
+
+    /**
+     * @return BoundingBox|null
+     */
+    public function getOverlapWith(BoundingBox $other)
+    {
+        $minLat = max($this->minLat, $other->getMinLat());
+        $maxLat = min($this->maxLat, $other->getMaxLat());
+
+        $thisMinLon = $this->isAcrossAntimeridian() ? $this->minLon - 360 : $this->minLon;
+        $otherMinLon = $other->isAcrossAntimeridian() ? $other->getMinLon() - 360 : $other->getMinLon();
+        $minLon = max($thisMinLon, $otherMinLon);
+        $maxLon = min($this->maxLon, $other->getMaxLon());
+
+        if ($minLat > $maxLat || $minLon == $maxLon)
+            return null;
+
+        return new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+    }
+
+    /**
+     * @return float Absolute overlap, >= 0
+     */
+    public function getAbsoluteOverlapAreaWith(BoundingBox $other): float
+    {
+        $overlap = $this->getOverlapWith($other);
+        return NULL == $overlap ? 0 : $overlap->getArea();
+    }
+
+    /**
+     * @return float Relative overlap, between 0 and 1
+     */
+    public function getRelativeOverlapAreaWith(BoundingBox $other): float
+    {
+        return $this->getAbsoluteOverlapAreaWith($other) / $this->getArea();
     }
 
     public function __toString(): string

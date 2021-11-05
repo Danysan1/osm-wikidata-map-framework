@@ -10,6 +10,15 @@
         "contact_email": "danysan95@gmail.com"
     },
     "tags": [{
+            "key": "name",
+            "object_types": [
+                "node",
+                "way"
+            ],
+            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "description": "The value of 'name' is used to display the object's name alongside its etymology"
+        },
+        {
             "key": "name:etymology:wikidata",
             "object_types": [
                 "node",
@@ -28,13 +37,13 @@
             "description": "The value of 'subject:wikidata' is used to gather etymology information from Wikidata"
         },
         {
-            "key": "name",
+            "key": "wikipedia",
             "object_types": [
                 "node",
                 "way"
             ],
             "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
-            "description": "The value of 'name' is used to display the object's name alongside it's etymology"
+            "description": "The value of 'wikipedia' is used to show the link to the object's wikipedia page alongside the etymology of its name"
         }
     ]
 }

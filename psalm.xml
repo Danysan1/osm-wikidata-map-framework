@@ -19,8 +19,12 @@
         <file name="vendor/composer/ClassLoader.php" />
         <file name="vendor/composer/installed.php" />
         <file name="vendor/composer/InstalledVersions.php" />
+        <file name="vendor/composer/platform_check.php" />
         <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <!--<issueHandlers>
+        <TypeDoesNotContainType errorLevel="suppress" />
+    </issueHandlers>-->
 </psalm>

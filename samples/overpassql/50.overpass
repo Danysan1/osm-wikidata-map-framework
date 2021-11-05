@@ -7,9 +7,9 @@ The original search was:
 // gather results
 (
   // query part for: “"name:etymology:wikidata"=*”
-  node["name:etymology:wikidata"](44.33189137217148,11.660528182983398,44.39055564523902,11.751079559326172);
-  way["name:etymology:wikidata"](44.33189137217148,11.660528182983398,44.39055564523902,11.751079559326172);
-  relation["name:etymology:wikidata"](44.33189137217148,11.660528182983398,44.39055564523902,11.751079559326172);
+  node["name:etymology:wikidata"](44.333,11.683,44.364,11.736);
+  way["name:etymology:wikidata"](44.333,11.683,44.364,11.736);
+  relation["name:etymology:wikidata"](44.333,11.683,44.364,11.736);
 );
 // print results
 out body;

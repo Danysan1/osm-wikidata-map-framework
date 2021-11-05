@@ -63,6 +63,15 @@ class OverpassQuery extends BaseQuery
             }
         } elseif (!$res->hasResult()) {
             throw new \Exception("Overpass query has no result");
+        } elseif (empty($res->getResult())) {
+            throw new \Exception("Overpass query has empty result");
+        } elseif ($res instanceof JSONRemoteQueryResult && !empty($res->getArray()["remark"])) {
+            $remark = (string)$res->getArray()["remark"];
+            if (strpos($remark, "Query timed out") !== false) {
+                throw new \Exception("Overpass query timed out. Please try with a smaller area.");
+            } else {
+                error_log($this->getEndpointURL() . " / JSONRemoteQueryResult remark: $remark");
+            }
         } else {
             //error_log("sendAndRequireResult: result is of type " . gettype($res));
             //if ($res instanceof RemoteQueryResult) error_log("sendAndRequireResult: " . $res->getBody());

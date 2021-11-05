@@ -538,7 +538,7 @@ function updateDataSource(e) {
             prepareWikidataLayers(wikidata_url);
         }
     } else if (zoomLevel < minZoomLevel) {
-        showSnackbar("Please zoom more to see data", "orange");
+        //showSnackbar("Please zoom more to see data", "orange");
     } else {
         //queryParams.onlySkeleton = false;
         queryParams.onlyCenter = true;
@@ -647,7 +647,7 @@ function prepareWikidataLayers(wikidata_url) {
 }
 
 /**
- * Initializes the low-zoom-level clustered layer.
+ * Initializes the mid-zoom-level clustered layer.
  * 
  * @param {string} overpass_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
@@ -662,7 +662,8 @@ function prepareOverpassLayers(overpass_url) {
         //buffer: 512,
         data: overpass_url,
         cluster: true,
-        clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
         clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
     });
 
@@ -671,7 +672,7 @@ function prepareOverpassLayers(overpass_url) {
         source: 'overpass_source',
         type: 'circle',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -693,7 +694,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'symbol',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         layout: {
             'text-field': '{point_count_abbreviated}',
@@ -707,7 +708,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'circle',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['!', ['has', 'point_count']],
         paint: {
             'circle-color': '#11b4da',
@@ -831,6 +832,93 @@ function mapLoadedHandler(e) {
     map.on('sourcedata', mapSourceDataHandler);
 
     map.on('error', mapErrorHandler);
+
+    prepareGlobalLayers();
+}
+
+/**
+ * Initializes the low-zoom-level clustered layer.
+ * 
+ * @see prepareOverpassLayers
+ */
+function prepareGlobalLayers() {
+    map.addSource('global_source', {
+        type: 'geojson',
+        data: './global-map.geojson',
+        cluster: true,
+        //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
+        clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+        clusterProperties: { "ety_count": ["+", ["get", "ety_count"]] },
+        clusterMinPoints: 1,
+    });
+
+    map.addLayer({
+        id: 'global_layer_cluster',
+        source: 'global_source',
+        type: 'circle',
+        maxzoom: minZoomLevel,
+        filter: ['has', 'ety_count'],
+        paint: {
+            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+            // with three steps to implement three types of circles:
+            // - Blue, 20px circles when point count is less than 100
+            // - Yellow, 30px circles when point count is between 100 and 750
+            // - Pink, 40px circles when point count is greater than or equal to 750
+            'circle-color': [
+                'step', ['get', 'ety_count'], '#51bbd6', 2000, '#f1f075', 40000, '#f28cb1'
+            ],
+            'circle-radius': [
+                'step', ['get', 'ety_count'], 20, 2000, 50, 40000, 60
+            ]
+        }
+    });
+
+    map.addLayer({
+        id: 'global_layer_count',
+        type: 'symbol',
+        source: 'global_source',
+        maxzoom: minZoomLevel,
+        filter: ['has', 'ety_count'],
+        layout: {
+            'text-field': '{ety_count}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+        }
+    });
+
+    // inspect a cluster on click
+    map.on('click', 'global_layer_cluster', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['global_layer_cluster']
+        });
+        const clusterId = features[0].properties.cluster_id;
+        map.getSource('global_source').getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+                if (err) return;
+
+                map.easeTo({
+                    center: features[0].geometry.coordinates,
+                    zoom: zoom
+                });
+            }
+        );
+    });
+
+    map.on('click', 'global_layer_point', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+            layers: ['global_layer_point']
+        });
+        map.easeTo({
+            center: features[0].geometry.coordinates,
+            zoom: thresholdZoomLevel + 0.1
+        });
+    });
+
+    map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'global_layer_point', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'global_layer_point', () => map.getCanvas().style.cursor = '');
 }
 
 function setCulture() {
@@ -870,13 +958,19 @@ function featureToElement(feature) {
     //template_container.appendChild(detail_container);
     console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
 
-    detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    if (feature.properties.name) {
+        detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    }
+
     if (feature.properties.wikipedia) {
         element_wikipedia_button.href = 'https://www.wikipedia.org/wiki/' + feature.properties.wikipedia;
+        element_wikipedia_button.style.display = 'inline-flex';
     } else {
         element_wikipedia_button.style.display = 'none';
     }
+
     detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
+
     coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
         coord = coord[0];
@@ -884,7 +978,7 @@ function featureToElement(feature) {
     detail_container.querySelector('.element_location_button').href = "#" + coord[0] + "," + coord[1] + ",18";
 
 
-    etymologies.forEach(function(ety) {
+    etymologies.filter(x => x != null).forEach(function(ety) {
         const etymology = etymology_template.content.cloneNode(true),
             etymology_description = etymology.querySelector('.etymology_description'),
             wikipedia_button = etymology.querySelector('.wikipedia_button'),
@@ -899,6 +993,7 @@ function featureToElement(feature) {
             pictures = etymology.querySelector('.pictures');
 
         etymology.querySelector('.etymology_name').innerText = ety.name;
+
         if (ety.description) {
             etymology_description.innerText = ety.description;
         } else {
@@ -906,19 +1001,25 @@ function featureToElement(feature) {
         }
 
         etymology.querySelector('.wikidata_button').href = ety.wikidata;
+
         if (ety.wikipedia) {
             wikipedia_button.href = ety.wikipedia;
+            wikipedia_button.style.display = 'inline-flex';
         } else {
             wikipedia_button.style.display = 'none';
         }
+
         if (ety.commons) {
             commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+            commons_button.style.display = 'inline-flex';
         } else {
             commons_button.style.display = 'none';
         }
+
         if (ety.wkt_coords) {
             const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
             location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+            location_button.style.display = 'inline-flex';
         } else {
             location_button.style.display = 'none';
         }
@@ -929,13 +1030,13 @@ function featureToElement(feature) {
                 death_date = ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?",
                 death_place = ety.death_place ? ety.death_place : "?";
             start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-        } else if (ety.event_date) {
-            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
-            start_end_date.innerText = '📅 ' + event_date;
         } else if (ety.start_date || ety.end_date) {
             const start_date = ety.start_date ? (new Date(ety.start_date)).toLocaleDateString(document.documentElement.lang) : "?",
                 end_date = ety.end_date ? (new Date(ety.end_date)).toLocaleDateString(document.documentElement.lang) : "?";
             start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
+        } else if (ety.event_date) {
+            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
+            start_end_date.innerText = '📅 ' + event_date;
         } else {
             start_end_date.style.display = 'none';
         }

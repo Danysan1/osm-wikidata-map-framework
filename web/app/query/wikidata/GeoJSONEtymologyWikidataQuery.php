@@ -78,11 +78,17 @@ class GeoJSONEtymologyWikidataQuery implements GeoJSONQuery
                                 $wikidataID = (string)$etymologies[$j]["id"];
                                 $fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
                                 //error_log("Wikidata ID: " . $fullWikidataID);
+                                $found = false;
                                 foreach ($matrixData as $row) {
                                     //error_log($row["wikidata"]);
                                     if ($row["wikidata"] == $fullWikidataID) {
+                                        $found = true;
                                         $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $row;
                                     }
+                                }
+                                if (!$found) {
+                                    error_log("Etymology information not found for $wikidataID");
+                                    $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = null;
                                 }
                             }
                         }

@@ -58,6 +58,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
     <link rel="preload" as="style" type="text/css" href="./style.css" />
+    <link rel="preload" as="fetch" type="application/json" href="./global-map.geojson" crossorigin>
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -79,16 +80,16 @@ if (!$conf->has("mapbox-gl-token")) {
     <title>Open Etymology Map</title>
     <meta name="description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
 
+    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
+    <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
+    <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
+
     <script defer src='./node_modules/mapbox-gl/dist/mapbox-gl.js' type="application/javascript"></script>
     <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
     <script defer src="./index.js" type="application/javascript"></script>
-
-    <link rel="stylesheet" href="./style.css" type="text/css" />
-    <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
-    <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.dsantini.it/etymology/" />
@@ -131,7 +132,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <template id="detail_template">
         <div class="detail_container">
             <h2 class="element_name"></h2>
-            <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">Wikipedia</a>
+            <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">Wikipedia</a>
             <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button" target="_blank"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <a title="Element location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_location_button" target="_self"><span class="button_img">📍</span> Location</a>
             <div class="etymologies_container grid grid-auto">
@@ -148,9 +149,9 @@ if (!$conf->has("mapbox-gl-token")) {
                     <h3 class="etymology_description"></h3>
                 </div>
                 <div class="info column">
-                    <a title="Subject on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
-                    <a title="Subject on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" target="_blank"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
-                    <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" target="_self"><span class="button_img">📍</span> Location</a>
+                    <a title="Subject on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" style="display:none" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
+                    <a title="Subject on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" style="display:none" target="_blank"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
+                    <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self"><span class="button_img">📍</span> Location</a>
                     <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button" target="_blank"><img class="button_img" src="img/wikidata.svg" alt="Wikidata logo"> Wikidata</a>
 
                     <p class="start_end_date"></p>
