@@ -101,8 +101,15 @@ div.detail_container a.k-button>.button_img {
 }
 
 select.hiddenElement,
-table.hiddenElement {
-    display: none;
+table.hiddenElement,
+canvas.hiddenElement,
+.hiddenElement {
+    display: none !important;
+}
+
+canvas.chart {
+    width: 25em;
+    height: 40em;
 }
 
 select.visibleDropDown {
@@ -117,9 +124,14 @@ div#welcome_board {
     opacity: 0.8;
 }
 
+button.etymology-color-ctrl-button {
+    margin-left: auto;
+}
+
 div.custom-ctrl>table {
     border-collapse: collapse;
     border-spacing: 0;
+    width: 100%;
 }
 
 div.custom-ctrl>table>tr>td {

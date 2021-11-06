@@ -239,10 +239,6 @@ class EtymologyColorControl {
         const table = document.createElement('table');
         this._container.appendChild(table);
 
-        this._legend = document.createElement('table');
-        this._legend.className = 'legend';
-        this._container.appendChild(this._legend);
-
         const tr = document.createElement('tr');
         table.appendChild(tr);
 
@@ -311,29 +307,50 @@ class EtymologyColorControl {
         ].forEach(([layerID, property]) => {
             if (this._map.getLayer(layerID)) {
                 this._map.setPaintProperty(layerID, property, color);
+            } else {
+                console.warn("Layer does not exist, can't set property", { layerID, property, color });
             }
         });
 
+        if (this._chart)
+            this._container.removeChild(this._chart);
+
         if (legend) {
-            this._legend.innerHTML = '';
+            let data = {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [],
+                }]
+            };
+
             legend.forEach(row => {
-                const tr = document.createElement('tr'),
-                    value = document.createElement('td'),
-                    valueColor = document.createElement('span'),
-                    text = document.createElement('td');
-                tr.className = 'legend-row';
-                valueColor.className = 'legend-key';
-                valueColor.style.backgroundColor = row[0];
-                text.innerText = row[1];
-                value.appendChild(valueColor);
-                tr.appendChild(value);
-                tr.appendChild(text);
-                this._legend.appendChild(tr);
+                data.datasets[0].backgroundColor.push(row[0]);
+                data.labels.push(row[1]);
+                data.datasets[0].data.push(1); // TODO
             });
-            this._legend.className = 'legend';
+
+            // https://docs.mapbox.com/mapbox-gl-js/api/map/#instance-members-querying-features
+            /*const features = map.queryRenderedFeatures({
+                //filter: [],
+                layers: ["wikidata_layer_point", "wikidata_layer_lineString", "wikidata_layer_polygon"],
+            });
+            const features = map.queryRenderedFeatures({
+                //filter: [],
+                layer: "wikidata_source",
+            });*/
+
+            //this._legend.className = 'legend';
+            this._chart = document.createElement('canvas');
+            this._chart.className = 'chart';
+            this._container.appendChild(this._chart);
+            const ctx = this._chart.getContext('2d'),
+                chartObject = new Chart(ctx, {
+                    type: "pie",
+                    data: data,
+                });
         } else {
             this._ctrlDropDown.className = 'hiddenElement';
-            this._legend.className = 'legend hiddenElement';
         }
         //updateDataSource(event);
     }
@@ -1132,4 +1149,27 @@ function initPage(e) {
     } else {
         initMap();
     }
+}
+
+function initGenderChart() {
+    const div = document.createElement('div'),
+        canvas = document.createElement('canvas'),
+        genderChart = new Chart(canvas.getContext('2d'), {
+            type: 'pie',
+            data: {
+                datasets: [{
+                    data: [10, 20, 30]
+                }],
+
+                // These labels appear in the legend and in the tooltips when hovering different arcs
+                labels: [
+                    'Red',
+                    'Yellow',
+                    'Blue'
+                ]
+            },
+            //options: options
+        });
+    div.appendChild(canvas);
+    document.body.appendChild(div);
 }

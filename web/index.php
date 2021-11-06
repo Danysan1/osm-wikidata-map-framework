@@ -90,6 +90,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
     <script defer src="./index.js" type="application/javascript"></script>
+    <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.dsantini.it/etymology/" />
