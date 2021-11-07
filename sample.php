@@ -1,78 +1,115 @@
 <?php
+function getOverpassEndpoint(): string
+{
+    try {
+        /**
+         * @var array<string>
+         */
+        $possibleEndpoints = (array)parse_ini_file("open-etymology-map.template.ini")["overpass-endpoints"];
+        return $possibleEndpoints[array_rand($possibleEndpoints)];
+    } catch (Exception $e) {
+        return 'https://overpass-api.de/api/interpreter';
+    }
+}
+
 if (empty($argv[1])) {
-    echo "Please provide a string as the first argument.\n";
+    echo "Please provide the query type as the first argument." . PHP_EOL;
     exit(1);
 }
 $inputString = $argv[1];
 
-if (empty($argv[2]) || !is_numeric($argv[2])) {
-    echo "Please provide a number as the second argument.\n";
+if (empty($argv[2])) {
+    echo "Please provide the query name as the second argument." . PHP_EOL;
     exit(2);
 }
 
-if (strtolower($inputString) == "sophox") {
-    /*
-    https://wiki.openstreetmap.org/wiki/Sophox
-    https://sophox.org/
-    */
-    $baseURL = 'https://sophox.org/sparql?query=';
-    $folder = "sophox";
-    $inputExtension = "rq";
-    $outputExtension = "xml";
-} elseif (strtolower($inputString) == "wikidata") {
-    /*
-    https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#SPARQL_endpoint
-    */
-    $baseURL = 'https://query.wikidata.org/sparql?query=';
-    $folder = "wikidata";
-    $inputExtension = "rq";
-    $outputExtension = "xml";
-} elseif (strtolower($inputString) == "overpassql") {
-    /* 
-    https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
-    https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
-    https://wiki.openstreetmap.org/wiki/Overpass_turbo/Extended_Overpass_Turbo_Queries
-    */
-    $baseURL = 'https://overpass-api.de/api/interpreter?data=';
-    $folder = "overpassql";
-    $inputExtension = "overpass";
-    $outputExtension = "json";
-} elseif (strtolower($inputString) == "overpassxml") {
-    /*
-    https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
-    https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
-    */
-    $baseURL = 'https://overpass-api.de/api/interpreter?data=';
-    $folder = "overpassxml";
-    $inputExtension = "xml";
-    $outputExtension = "json";
-} else {
-    echo "Please provide a VALID string as the first argument.\n";
-    exit(3);
+switch (strtolower($inputString)) {
+    case "sophox":
+        /*
+        https://wiki.openstreetmap.org/wiki/Sophox
+        https://sophox.org/
+        */
+        $baseURL = 'https://sophox.org/sparql?query=';
+        $folder = "sophox";
+        $inputExtension = "rq";
+        $outputExtension = "xml";
+        break;
+
+    case "wikidata":
+    case "wikidata-xml":
+    case "wdx":
+        /*
+        https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#SPARQL_endpoint
+        */
+        $baseURL = 'https://query.wikidata.org/sparql?format=xml&query=';
+        $folder = "wikidata";
+        $inputExtension = "rq";
+        $outputExtension = "xml";
+        break;
+
+    case "wikidata-json":
+    case "wdj":
+        /*
+        https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#SPARQL_endpoint
+        */
+        $baseURL = 'https://query.wikidata.org/sparql?format=json&query=';
+        $folder = "wikidata";
+        $inputExtension = "rq";
+        $outputExtension = "json";
+        break;
+
+    case "overpassql":
+    case "opq":
+        /* 
+        https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+        https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
+        https://wiki.openstreetmap.org/wiki/Overpass_turbo/Extended_Overpass_Turbo_Queries
+        */
+        $baseURL = getOverpassEndpoint() . "?data=";
+        $folder = "overpassql";
+        $inputExtension = "overpass";
+        $outputExtension = "json";
+
+    case "overpassxml":
+    case "opx":
+        /*
+        https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+        https://wiki.openstreetmap.org/wiki/Overpass_API/Language_Guide
+        */
+        $baseURL = getOverpassEndpoint() . "?data=";
+        $folder = "overpassxml";
+        $inputExtension = "xml";
+        $outputExtension = "json";
+
+    default:
+        echo "Please provide a VALID string as the first argument." . PHP_EOL;
+        exit(3);
 }
 
 $ret = 0;
 for ($i = 2; $i < $argc; $i++) {
-    if (empty($argv[$i]) || !is_numeric($argv[$i])) {
-        echo "Invalid number argument.\n";
+    if (empty($argv[$i])) {
+        echo "Invalid query name." . PHP_EOL;
         exit(2);
     }
-    $inputNumber = (int)$argv[$i];
+    $inputNumber = $argv[$i];
 
     $fileName = "samples/$folder/$inputNumber.$inputExtension";
     if (!file_exists($fileName)) {
-        echo "File $fileName does not exist.\n";
+        echo "File $fileName does not exist." . PHP_EOL;
         exit(4);
     }
     $query = file_get_contents($fileName);
     if ($inputExtension == "rq") {
         $query = preg_replace('/(^\s+)|(\s*#[\/\s\w\(\),\']+$)/m', "", $query);
+    } elseif ($inputExtension == "overpass" && strpos($query, "out:csv") !== false) {
+        $outputExtension = "csv";
     }
 
     //$queryString = http_build_query(["query"=>$query]);
     //$url = "$baseURL?$queryString";
     $url = $baseURL . urlencode($query);
-    //echo "Querying $url\n";
+    //echo "Querying $url".PHP_EOL;
 
     $curl = curl_init();
     curl_setopt_array($curl, [
@@ -83,33 +120,34 @@ for ($i = 2; $i < $argc; $i++) {
         CURLOPT_SSL_VERIFYPEER => 0
     ]);
 
+    echo "Calling $baseURL..." . PHP_EOL;
     $responseBody = curl_exec($curl);
 
     if ($responseBody === false) {
-        echo "Call failure.\n";
+        echo "Call failure." . PHP_EOL;
 
         $curlError = curl_error($curl);
-        echo "Error: $curlError\n";
+        echo "Error: $curlError" . PHP_EOL;
 
         $ret = 5;
     } else {
         $httpCode = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        echo "HTTP code: $httpCode\n";
+        echo "HTTP code: $httpCode" . PHP_EOL;
 
         if ($httpCode == 200) {
-            echo "Call successful.\n";
+            echo "Call successful." . PHP_EOL;
             $outFileName = "samples/$folder/$inputNumber-output.$outputExtension";
             file_put_contents($outFileName, $responseBody);
-            echo "Output written to $outFileName\n";
+            echo "Output written to $outFileName" . PHP_EOL;
             $ret = 0;
         } else {
-            echo "Call failed.\n";
-            echo "Response body:\n$responseBody\n";
+            echo "Call failed." . PHP_EOL;
+            echo "Response body:\n$responseBody" . PHP_EOL;
             $ret = 6;
         }
 
         $timeTaken = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
-        echo "Time taken: $timeTaken s\n";
+        echo "Time taken: $timeTaken s" . PHP_EOL;
     }
 
     curl_close($curl);

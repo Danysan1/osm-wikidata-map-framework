@@ -80,11 +80,15 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
                 (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='\t') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
-                (SAMPLE(?event_date) AS ?event_date)
+                (SAMPLE(?event_date_precision) AS ?event_date_precision)
                 (SAMPLE(?start_date) AS ?start_date)
+                (SAMPLE(?start_date_precision) AS ?start_date_precision)
                 (SAMPLE(?end_date) AS ?end_date)
+                (SAMPLE(?end_date_precision) AS ?end_date_precision)
                 (SAMPLE(?birth_date) AS ?birth_date)
+                (SAMPLE(?birth_date_precision) AS ?birth_date_precision)
                 (SAMPLE(?death_date) AS ?death_date)
+                (SAMPLE(?death_date_precision) AS ?death_date_precision)
                 (GROUP_CONCAT(DISTINCT ?event_place_name; SEPARATOR=', ') AS ?event_place)
                 (SAMPLE(?birth_place_name) AS ?birth_place)
                 (SAMPLE(?death_place_name) AS ?death_place)
@@ -172,23 +176,58 @@ class EtymologyIDListWikidataQuery extends POSTWikidataQuery implements StringSe
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P585 ?event_date.
+                    ?wikidata p:P585/psv:P585 [
+                        wikibase:timePrecision ?event_date_precision;
+                        wikibase:timeValue ?event_date
+                    ].
+                    MINUS {
+                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_event_date_precision.
+                        FILTER (?other_event_date_precision > ?event_date_precision).
+                    }.
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P580 ?start_date.
+                    ?wikidata p:P580/psv:P580 [
+                        wikibase:timePrecision ?start_date_precision;
+                        wikibase:timeValue ?start_date
+                    ].
+                    MINUS {
+                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_start_date_precision.
+                        FILTER (?other_start_date_precision > ?start_date_precision).
+                    }.
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P582 ?end_date.
+                    ?wikidata p:P582/psv:P582 [
+                        wikibase:timePrecision ?end_date_precision;
+                        wikibase:timeValue ?end_date
+                    ].
+                    MINUS {
+                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_end_date_precision.
+                        FILTER (?other_end_date_precision > ?end_date_precision).
+                    }.
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P569 ?birth_date.
+                    ?wikidata p:P569/psv:P569 [
+                        wikibase:timePrecision ?birth_date_precision;
+                        wikibase:timeValue ?birth_date
+                    ].
+                    MINUS {
+                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_birth_date_precision.
+                        FILTER (?other_birth_date_precision > ?birth_date_precision).
+                    }.
                 }
 
                 OPTIONAL {
-                    ?wikidata wdt:P570 ?death_date.
+                    ?wikidata p:P570/psv:P570 [
+                        wikibase:timePrecision ?death_date_precision;
+                        wikibase:timeValue ?death_date
+                    ].
+                    MINUS {
+                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_death_date_precision.
+                        FILTER (?other_death_date_precision > ?death_date_precision).
+                    }.
                 }
 
                 OPTIONAL {

@@ -538,7 +538,7 @@ function updateDataSource(e) {
             prepareWikidataLayers(wikidata_url);
         }
     } else if (zoomLevel < minZoomLevel) {
-        showSnackbar("Please zoom more to see data", "orange");
+        //showSnackbar("Please zoom more to see data", "orange");
     } else {
         //queryParams.onlySkeleton = false;
         queryParams.onlyCenter = true;
@@ -647,7 +647,7 @@ function prepareWikidataLayers(wikidata_url) {
 }
 
 /**
- * Initializes the low-zoom-level clustered layer.
+ * Initializes the mid-zoom-level clustered layer.
  * 
  * @param {string} overpass_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
@@ -662,7 +662,8 @@ function prepareOverpassLayers(overpass_url) {
         //buffer: 512,
         data: overpass_url,
         cluster: true,
-        clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+        //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
         clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
     });
 
@@ -671,7 +672,7 @@ function prepareOverpassLayers(overpass_url) {
         source: 'overpass_source',
         type: 'circle',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -693,7 +694,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'symbol',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
         layout: {
             'text-field': '{point_count_abbreviated}',
@@ -707,7 +708,7 @@ function prepareOverpassLayers(overpass_url) {
         type: 'circle',
         source: 'overpass_source',
         maxzoom: thresholdZoomLevel,
-        //minzoom: minZoomLevel,
+        minzoom: minZoomLevel,
         filter: ['!', ['has', 'point_count']],
         paint: {
             'circle-color': '#11b4da',
@@ -720,16 +721,18 @@ function prepareOverpassLayers(overpass_url) {
     // inspect a cluster on click
     map.on('click', 'overpass_layer_cluster', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-            layers: ['overpass_layer_cluster']
-        });
-        const clusterId = features[0].properties.cluster_id;
+                layers: ['overpass_layer_cluster']
+            }),
+            clusterId = features[0].properties.cluster_id,
+            center = features[0].geometry.coordinates;
+        console.info('Click overpass_layer_cluster', features, clusterId, center);
         map.getSource('overpass_source').getClusterExpansionZoom(
             clusterId,
             (err, zoom) => {
                 if (err) return;
 
                 map.easeTo({
-                    center: features[0].geometry.coordinates,
+                    center: center,
                     zoom: zoom
                 });
             }
@@ -738,10 +741,12 @@ function prepareOverpassLayers(overpass_url) {
 
     map.on('click', 'overpass_layer_point', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-            layers: ['overpass_layer_point']
-        });
+                layers: ['overpass_layer_point']
+            }),
+            center = features[0].geometry.coordinates;
+        console.info('Click overpass_layer_point', features, center);
         map.easeTo({
-            center: features[0].geometry.coordinates,
+            center: center,
             zoom: thresholdZoomLevel + 0.1
         });
     });
@@ -831,6 +836,95 @@ function mapLoadedHandler(e) {
     map.on('sourcedata', mapSourceDataHandler);
 
     map.on('error', mapErrorHandler);
+
+    prepareGlobalLayers();
+}
+
+/**
+ * Initializes the low-zoom-level clustered layer.
+ * 
+ * @see prepareOverpassLayers
+ */
+function prepareGlobalLayers() {
+    map.addSource('global_source', {
+        type: 'geojson',
+        data: './global-map.geojson',
+        cluster: true,
+        //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
+        clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+        clusterProperties: { "ety_count": ["+", ["get", "ety_count"]] },
+        clusterMinPoints: 1,
+    });
+
+    map.addLayer({
+        id: 'global_layer_cluster',
+        source: 'global_source',
+        type: 'circle',
+        maxzoom: minZoomLevel,
+        filter: ['has', 'ety_count'],
+        paint: {
+            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+            // with three steps to implement three types of circles:
+            // - Blue, 20px circles when point count is less than 100
+            // - Yellow, 30px circles when point count is between 100 and 750
+            // - Pink, 40px circles when point count is greater than or equal to 750
+            'circle-color': [
+                'step', ['get', 'ety_count'], '#51bbd6', 2000, '#f1f075', 40000, '#f28cb1'
+            ],
+            'circle-radius': [
+                'step', ['get', 'ety_count'], 20, 2000, 50, 40000, 60
+            ]
+        }
+    });
+
+    map.addLayer({
+        id: 'global_layer_count',
+        type: 'symbol',
+        source: 'global_source',
+        maxzoom: minZoomLevel,
+        filter: ['has', 'ety_count'],
+        layout: {
+            'text-field': '{ety_count}',
+            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+            'text-size': 12
+        }
+    });
+
+    // inspect a cluster on click
+    map.on('click', 'global_layer_cluster', (e) => {
+        const features = map.queryRenderedFeatures(e.point, {
+                layers: ['global_layer_cluster']
+            }),
+            clusterId = features[0].properties.cluster_id,
+            center = features[0].geometry.coordinates;
+        if (clusterId == null) {
+            console.warn("clusterId is null");
+        } else {
+            console.info('Click global_layer_cluster', features, clusterId, center);
+        }
+        map.getSource('global_source').getClusterExpansionZoom(
+            clusterId,
+            (err, zoom) => {
+                if (err) {
+                    console.error("Not easing because of an error: ", err);
+                } else {
+                    if (!zoom) {
+                        zoom = minZoomLevel + 0.1
+                        console.warn("Empty zoom, using default", zoom, center, clusterId);
+                    } else {
+                        console.info("Easing to cluster coordinates", center, zoom, clusterId);
+                    }
+                    map.easeTo({
+                        center: center,
+                        zoom: zoom
+                    });
+                }
+            }
+        );
+    });
+
+    map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
 }
 
 function setCulture() {
@@ -868,7 +962,7 @@ function featureToElement(feature) {
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
         etymologies_container = detail_container.querySelector('.etymologies_container');;
     //template_container.appendChild(detail_container);
-    console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
+    console.info("featureToElement", { feature, etymologies, detail_container, etymologies_container });
 
     if (feature.properties.name) {
         detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
@@ -912,88 +1006,94 @@ function featureToElement(feature) {
             etymology_description.style.display = 'none';
         }
 
-        etymology.querySelector('.wikidata_button').href = ety.wikidata;
+        try {
+            etymology.querySelector('.wikidata_button').href = ety.wikidata;
 
-        if (ety.wikipedia) {
-            wikipedia_button.href = ety.wikipedia;
-            wikipedia_button.style.display = 'inline-flex';
-        } else {
-            wikipedia_button.style.display = 'none';
-        }
+            if (ety.wikipedia) {
+                wikipedia_button.href = ety.wikipedia;
+                wikipedia_button.style.display = 'inline-flex';
+            } else {
+                wikipedia_button.style.display = 'none';
+            }
 
-        if (ety.commons) {
-            commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
-            commons_button.style.display = 'inline-flex';
-        } else {
-            commons_button.style.display = 'none';
-        }
+            if (ety.commons) {
+                commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+                commons_button.style.display = 'inline-flex';
+            } else {
+                commons_button.style.display = 'none';
+            }
 
-        if (ety.wkt_coords) {
-            const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
-            location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
-            location_button.style.display = 'inline-flex';
-        } else {
-            location_button.style.display = 'none';
-        }
+            if (ety.wkt_coords) {
+                const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
+                location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+                location_button.style.display = 'inline-flex';
+            } else {
+                location_button.style.display = 'none';
+            }
 
-        if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
-            const birth_date = ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?",
-                birth_place = ety.birth_place ? ety.birth_place : "?",
-                death_date = ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?",
-                death_place = ety.death_place ? ety.death_place : "?";
-            start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-        } else if (ety.start_date || ety.end_date) {
-            const start_date = ety.start_date ? (new Date(ety.start_date)).toLocaleDateString(document.documentElement.lang) : "?",
-                end_date = ety.end_date ? (new Date(ety.end_date)).toLocaleDateString(document.documentElement.lang) : "?";
-            start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
-        } else if (ety.event_date) {
-            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
-            start_end_date.innerText = '📅 ' + event_date;
-        } else {
-            start_end_date.style.display = 'none';
-        }
-        if (ety.event_place) {
-            event_place.innerText = '📍 ' + ety.event_place;
-        } else {
-            event_place.style.display = 'none';
-        }
+            if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
+                const birth_date = ety.birth_date ? formatDate(ety.birth_date, ety.birth_date_precision) : "?",
+                    birth_place = ety.birth_place ? ety.birth_place : "?",
+                    death_date = ety.death_date ? formatDate(ety.death_date, ety.death_date_precision) : "?",
+                    death_place = ety.death_place ? ety.death_place : "?";
+                start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
+            } else if (ety.start_date || ety.end_date) {
+                const start_date = ety.start_date ? formatDate(ety.start_date, ety.start_date_precision) : "?",
+                    end_date = ety.end_date ? formatDate(ety.end_date, ety.end_date_precision) : "?";
+                start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
+            } else if (ety.event_date) {
+                const event_date = formatDate(ety.event_date, ety.event_date_precision);
+                start_end_date.innerText = `📅 ${event_date}`
+            } else {
+                start_end_date.style.display = 'none';
+            }
+            if (ety.event_place) {
+                event_place.innerText = '📍 ' + ety.event_place;
+            } else {
+                event_place.style.display = 'none';
+            }
 
-        if (ety.citizenship) {
-            citizenship.innerText = '🌍 ' + ety.citizenship;
-        } else {
-            citizenship.style.display = 'none';
-        }
-        if (ety.gender) {
-            gender.innerText = '⚧️ ' + ety.gender;
-        } else {
-            gender.style.display = 'none';
-        }
-        if (ety.occupations) {
-            occupations.innerText = '🛠️ ' + ety.occupations;
-        } else {
-            occupations.style.display = 'none';
-        }
-        if (ety.prizes) {
-            prizes.innerText = '🏆 ' + ety.prizes;
-        } else {
-            prizes.style.display = 'none';
-        }
+            if (ety.citizenship) {
+                citizenship.innerText = '🌍 ' + ety.citizenship;
+            } else {
+                citizenship.style.display = 'none';
+            }
+            if (ety.gender) {
+                gender.innerText = '⚧️ ' + ety.gender;
+            } else {
+                gender.style.display = 'none';
+            }
+            if (ety.occupations) {
+                occupations.innerText = '🛠️ ' + ety.occupations;
+            } else {
+                occupations.style.display = 'none';
+            }
+            if (ety.prizes) {
+                prizes.innerText = '🏆 ' + ety.prizes;
+            } else {
+                prizes.style.display = 'none';
+            }
 
-        if (ety.pictures) {
-            ety.pictures.forEach(function(img, n) {
-                if (n < 5) {
-                    const link = document.createElement('a'),
-                        picture = document.createElement('img');
-                    link.href = img;
-                    link.target = '_blank';
-                    picture.src = img;
-                    picture.alt = "Etymology picture";
-                    link.appendChild(picture);
-                    pictures.appendChild(link);
-                }
-            });
-        } else {
-            pictures.style.display = 'none';
+            if (ety.pictures) {
+                ety.pictures.forEach(function(img, n) {
+                    if (n < 5) {
+                        const link = document.createElement('a'),
+                            picture = document.createElement('img');
+                        link.href = img;
+                        link.target = '_blank';
+                        picture.src = img;
+                        picture.alt = "Etymology picture";
+                        link.appendChild(picture);
+                        pictures.appendChild(link);
+                    }
+                });
+            } else {
+                pictures.style.display = 'none';
+            }
+        } catch (e) {
+            console.error(e);
+            if (typeof Sentry != 'undefined')
+                Sentry.captureException(e);
         }
 
         etymologies_container.appendChild(etymology);
@@ -1038,4 +1138,35 @@ function initPage(e) {
     } else {
         initMap();
     }
+}
+
+/**
+ * 
+ * @param {string|Date} date 
+ * @param {int} precision https://www.wikidata.org/wiki/Help:Dates#Precision
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
+ * @return {string}
+ */
+function formatDate(date, precision) {
+    let dateObject, options = {};
+
+    if (date instanceof Date)
+        dateObject = date;
+    else if (typeof date === 'string')
+        dateObject = new Date(date);
+    else
+        throw new Error("Invalid date parameter");
+
+    if (precision) {
+        if (precision >= 14) options.second = 'numeric';
+        if (precision >= 13) options.minute = 'numeric';
+        if (precision >= 12) options.hour = 'numeric';
+        if (precision >= 11) options.day = 'numeric';
+        if (precision >= 10) options.month = 'numeric';
+        options.year = 'numeric';
+    }
+
+    const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
+    //console.info("formatDate", { date, precision, dateObject, options, out });
+    return out;
 }

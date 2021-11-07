@@ -2,6 +2,10 @@ open-etymology-map.ini
 open-etymology-map.log
 open-etymology-map-cache/
 
+*.pbf
+db-data
+pgadmin-data
+
 # Created by https://www.toptal.com/developers/gitignore/api/metals,phpunit,composer,visualstudiocode,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=metals,phpunit,composer,visualstudiocode,node
 
