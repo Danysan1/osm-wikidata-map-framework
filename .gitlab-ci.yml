@@ -108,11 +108,12 @@ docker-build:
     - ls -l
     - echo "LFTP_FOLDER = $LFTP_FOLDER"
   script:
+    - if [ -z "$FORCE_DEPLOY" ]; then LFTP_IGNORE="--only-newer --ignore-time"; else LFTP_IGNORE=""; fi
     - |
       lftp \
         -e "set ssl:verify-certificate no; \
           ls; \
-          mirror -v --reverse --only-newer --ignore-time --exclude open-etymology-map.ini web/ www.dsantini.it/$LFTP_FOLDER; \
+          mirror -v --reverse $LFTP_IGNORE --exclude open-etymology-map.ini web/ www.dsantini.it/$LFTP_FOLDER; \
           quit" \
         -u "$FTP_USER,$FTP_PASS" \
         "$FTP_HOST" \
@@ -130,6 +131,13 @@ deploy_test:
       when: on_success
     - if: $CI_COMMIT_REF_PROTECTED
       when: manual
+
+force_deploy_test:
+  extends: deploy_test
+  variables:
+    FORCE_DEPLOY: "true"
+  needs:
+    - deploy_test
     
 deploy_prod:
   extends: .lftp
@@ -142,12 +150,12 @@ deploy_prod:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH || $CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
       when: manual
 
-# ip_test:
-#   stage: deploy
-#   when: manual
-#   image: curlimages/curl:7.78.0
-#   script:
-#     - echo $(curl 'https://api.ipify.org')
+force_deploy_prod:
+  extends: deploy_prod
+  variables:
+    FORCE_DEPLOY: "true"
+  needs:
+    - deploy_prod
 
 .sentry_deploy:
   stage: deploy
