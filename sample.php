@@ -1,5 +1,6 @@
 <?php
-function getOverpassEndpoint() :string {
+function getOverpassEndpoint(): string
+{
     try {
         /**
          * @var array<string>
@@ -12,13 +13,13 @@ function getOverpassEndpoint() :string {
 }
 
 if (empty($argv[1])) {
-    echo "Please provide a string as the first argument.".PHP_EOL;
+    echo "Please provide a string as the first argument." . PHP_EOL;
     exit(1);
 }
 $inputString = $argv[1];
 
 if (empty($argv[2]) || !is_numeric($argv[2])) {
-    echo "Please provide a number as the second argument.".PHP_EOL;
+    echo "Please provide a number as the second argument." . PHP_EOL;
     exit(2);
 }
 
@@ -66,14 +67,14 @@ if (strtolower($inputString) == "sophox") {
 $ret = 0;
 for ($i = 2; $i < $argc; $i++) {
     if (empty($argv[$i]) || !is_numeric($argv[$i])) {
-        echo "Invalid number argument.".PHP_EOL;
+        echo "Invalid number argument." . PHP_EOL;
         exit(2);
     }
     $inputNumber = (int)$argv[$i];
 
     $fileName = "samples/$folder/$inputNumber.$inputExtension";
     if (!file_exists($fileName)) {
-        echo "File $fileName does not exist.".PHP_EOL;
+        echo "File $fileName does not exist." . PHP_EOL;
         exit(4);
     }
     $query = file_get_contents($fileName);
@@ -97,34 +98,34 @@ for ($i = 2; $i < $argc; $i++) {
         CURLOPT_SSL_VERIFYPEER => 0
     ]);
 
-    echo "Calling $baseURL...".PHP_EOL;
+    echo "Calling $baseURL..." . PHP_EOL;
     $responseBody = curl_exec($curl);
 
     if ($responseBody === false) {
-        echo "Call failure.".PHP_EOL;
+        echo "Call failure." . PHP_EOL;
 
         $curlError = curl_error($curl);
-        echo "Error: $curlError".PHP_EOL;
+        echo "Error: $curlError" . PHP_EOL;
 
         $ret = 5;
     } else {
         $httpCode = (int)curl_getinfo($curl, CURLINFO_RESPONSE_CODE);
-        echo "HTTP code: $httpCode".PHP_EOL;
+        echo "HTTP code: $httpCode" . PHP_EOL;
 
         if ($httpCode == 200) {
-            echo "Call successful.".PHP_EOL;
+            echo "Call successful." . PHP_EOL;
             $outFileName = "samples/$folder/$inputNumber-output.$outputExtension";
             file_put_contents($outFileName, $responseBody);
-            echo "Output written to $outFileName".PHP_EOL;
+            echo "Output written to $outFileName" . PHP_EOL;
             $ret = 0;
         } else {
-            echo "Call failed.".PHP_EOL;
-            echo "Response body:\n$responseBody".PHP_EOL;
+            echo "Call failed." . PHP_EOL;
+            echo "Response body:\n$responseBody" . PHP_EOL;
             $ret = 6;
         }
 
         $timeTaken = curl_getinfo($curl, CURLINFO_TOTAL_TIME);
-        echo "Time taken: $timeTaken s".PHP_EOL;
+        echo "Time taken: $timeTaken s" . PHP_EOL;
     }
 
     curl_close($curl);
