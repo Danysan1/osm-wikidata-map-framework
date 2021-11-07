@@ -138,6 +138,9 @@ force_deploy_test:
     FORCE_DEPLOY: "true"
   needs:
     - deploy_test
+  rules:
+    - if: $CI_COMMIT_REF_PROTECTED
+      when: manual
     
 deploy_prod:
   extends: .lftp
