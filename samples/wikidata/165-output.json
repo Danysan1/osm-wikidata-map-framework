@@ -1,0 +1,47 @@
+{
+  "head" : {
+    "vars" : [ "gender_name", "count" ]
+  },
+  "results" : {
+    "bindings" : [ {
+      "gender_name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "maschio"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "10"
+      }
+    }, {
+      "gender_name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "transessuale femmina"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "gender_name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "femmina"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "4"
+      }
+    } ]
+  }
+}

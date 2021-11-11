@@ -1,0 +1,12 @@
+SELECT ?gender_name
+    (COUNT(*) AS ?count)
+WHERE {
+    VALUES ?wikidata { wd:Q10806 wd:Q166092 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q1345358 wd:Q1345358 wd:Q185007 wd:Q64707121 wd:Q55433 wd:Q2001 wd:Q6292252 wd:Q16534203 wd:Q1541043 wd:Q11762987 wd:Q365144 }
+
+    OPTIONAL {
+        ?genderID ^wdt:P21 ?wikidata;
+            rdfs:label ?gender_name.
+        FILTER(lang(?gender_name)='it').
+    }
+}
+GROUP BY ?gender_name
