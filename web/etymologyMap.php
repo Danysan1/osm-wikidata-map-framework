@@ -9,7 +9,7 @@ require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
 require_once("./app/result/GeoJSONQueryResult.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
-require_once("./app/query/decorators/CachedBBoxGeoJSONQuery.php");
+require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./app/query/combined/BBoxEtymologyOverpassWikidataQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
 require_once("./funcs.php");
@@ -18,7 +18,7 @@ $serverTiming->add("0_include");
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
 use \App\Result\GeoJSONQueryResult;
-use App\Query\Decorators\CachedBBoxGeoJSONQuery;
+use App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxEtymologyOverpassWikidataQuery;
 use App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use App\Query\Overpass\RoundRobinOverpassConfig;
@@ -75,7 +75,7 @@ if ($from == "bbox") {
     die('{"error":"You must specify the BBox"}');
 }
 
-$cachedQuery = new CachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+$cachedQuery = new CSVCachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
 
 $serverTiming->add("3_init");
 

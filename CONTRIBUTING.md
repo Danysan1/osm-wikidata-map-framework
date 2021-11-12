@@ -61,19 +61,19 @@ Etymology data is obtained from the back-end with [overpass.php](web/overpass.ph
 Data gathering process in [etymologyMap.php](web/etymologyMap.php):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
-   - If it is, serve the cached result ([CachedBBoxGeoJSONQuery](web/app/query/decorators/CachedBBoxGeoJSONQuery.php)).
+   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
    - Otherwise it is necessary to fetch the data from OpenStreetMap through Overpass.
       1. Query Overpass API in the selected area to get elements with etymology ([BBoxEtymologyOverpassQuery](web/app/query/overpass/BBoxEtymologyOverpassQuery.php)).
       2. Transform the JSON result into GeoJSON ([OverpassEtymologyQueryResult](web/app/result/overpass/OverpassEtymologyQueryResult.php)).
       3. Obtain a set of Wikidata IDs to get information about ([GeoJSONInputEtymologyWikidataQuery](web/app/query/wikidata/GeoJSONInputEtymologyWikidataQuery.php)).
       4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
-         - If it is, use the cached result ([CachedStringSetXMLQuery](web/app/query/decorators/CachedStringSetXMLQuery.php)).
+         - If it is, use the cached result ([CSVCachedStringSetXMLQuery](web/app/query/cache/CSVCachedStringSetXMLQuery.php)).
          - Otherwise it is necessary to fetch the data from OpenStreetMap.
             1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([EtymologyIDListWikidataQuery](web/app/query/wikidata/EtymologyIDListWikidataQuery.php)).
-            2. Cache the XML result ([CachedStringSetXMLQuery](web/app/query/decorators/CachedStringSetXMLQuery.php)).
+            2. Cache the XML result ([CSVCachedStringSetXMLQuery](web/app/query/cache/CSVCachedStringSetXMLQuery.php)).
       5. Obtain from the XML result from Wikidata a matrix of details for each element ([WikidataEtymologyQueryResult](web/app/result/wikidata/WikidataEtymologyQueryResult.php)).
       6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([GeoJSONEtymologyWikidataQuery](web/app/query/wikidata/GeoJSONEtymologyWikidataQuery.php)).
-      7. Cache the GeoJSON result ([CachedBBoxGeoJSONQuery](web/app/query/decorators/CachedBBoxGeoJSONQuery.php)).
+      7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
 
 The result will be something similar to
 ```json

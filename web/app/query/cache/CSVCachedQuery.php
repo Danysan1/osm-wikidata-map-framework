@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Query\Decorators;
+namespace App\Query\Cache;
 
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../Query.php");
@@ -17,7 +17,7 @@ use \App\Query\Query;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-abstract class CachedQuery implements Query
+abstract class CSVCachedQuery implements Query
 {
     /** @var string $cacheFileBasePath */
     private $cacheFileBasePath;
