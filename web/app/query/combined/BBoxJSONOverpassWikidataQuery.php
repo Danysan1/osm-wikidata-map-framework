@@ -67,14 +67,9 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         }
 
         $overpassGeoJSON = $overpassResult->getGeoJSONData();
-        if (empty($overpassGeoJSON["features"])) {
-            $out = $overpassResult;
-        } else {
-            $wikidataResult = $this->createResult($overpassGeoJSON);
-            $this->timing->add("wikidata_query");
-
-            $out = $wikidataResult;
-        }
+        $wikidataResult = $this->createResult($overpassGeoJSON);
+        $out = $wikidataResult;
+        $this->timing->add("wikidata_query");
 
         return $out;
     }

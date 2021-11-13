@@ -10,6 +10,7 @@ require_once(__DIR__ . "/../wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php")
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxJSONOverpassWikidataQuery;
 use \App\Query\Wikidata\GeoJSON2GeoJSONEtymologyWikidataQuery;
+use App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
@@ -28,9 +29,15 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
      */
     protected function createResult(array $overpassGeoJSONData): JSONQueryResult
     {
-        $wikidataQuery = new GeoJSON2GeoJSONEtymologyWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
-        $wikidataResult = $wikidataQuery->send();
-        return $wikidataResult;
+        if (!isset($overpassGeoJSONData["features"])) {
+            throw new \Exception("Invalid GeoJSON data (no features array)");
+        } elseif (empty($overpassGeoJSONData["features"])) {
+            $out = new GeoJSONLocalQueryResult(true, ["type" => "FeatureCollection", "features" => []]);
+        } else {
+            $wikidataQuery = new GeoJSON2GeoJSONEtymologyWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
+            $out = $wikidataQuery->send();
+        }
+        return $out;
     }
 
     /**

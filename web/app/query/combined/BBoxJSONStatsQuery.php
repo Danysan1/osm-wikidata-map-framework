@@ -3,9 +3,11 @@
 namespace App\Query\Combined;
 
 require_once(__DIR__ . '/../../result/JSONQueryResult.php');
+require_once(__DIR__ . '/../../result/GeoJSONQueryResult.php');
 require_once(__DIR__ . "/../wikidata/GeoJSON2JSONStatsWikidataQuery.php");
 
 use \App\Query\Wikidata\GeoJSON2JSONStatsWikidataQuery;
+use App\Result\GeoJSONLocalQueryResult;
 use \App\Result\JSONQueryResult;
 
 /**
@@ -20,8 +22,14 @@ class BBoxJSONStatsQuery extends BBoxJSONOverpassWikidataQuery
 
     protected function createResult(array $overpassGeoJSONData): JSONQueryResult
     {
-        $wikidataQuery = new GeoJSON2JSONStatsWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
-        $wikidataResult = $wikidataQuery->send();
-        return $wikidataResult;
+        if (!isset($overpassGeoJSONData["features"])) {
+            throw new \Exception("Invalid GeoJSON data (no features array)");
+        } elseif (empty($overpassGeoJSONData["features"])) {
+            $out = new GeoJSONLocalQueryResult(true, []);
+        } else {
+            $wikidataQuery = new GeoJSON2JSONStatsWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
+            $out = $wikidataQuery->send();
+        }
+        return $out;
     }
 }

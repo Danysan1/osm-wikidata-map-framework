@@ -78,6 +78,8 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
         }
         if (empty($geojson["features"])) { // debug
             error_log(get_class($this) . ": GeoJSON with no features");
+            //error_log(get_class($this) . ": " . json_encode($geojson));
+            //error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
         }
 
         return $geojson;
@@ -85,6 +87,7 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
 
     public function getJSONData(): array
     {
+        //$ret = $this->getGeoJSONData();
         $ret = $this->getResult();
         if (!is_array($ret)) {
             throw new Exception("Internal: JSON result data is not an array");
@@ -107,6 +110,7 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
 
     public function getJSON(): string
     {
+        error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
         return json_encode($this->getJSONData());
     }
 }

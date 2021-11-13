@@ -84,7 +84,7 @@ if ($from == "bbox") {
     } elseif ($to == "genderStats" || $to == "typeStats") {
         if ($to == "genderStats") {
             $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        } elseif ($to == "typeStats") {
+        } else {
             $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
         }
         $baseQuery = new BBoxJSONStatsQuery(

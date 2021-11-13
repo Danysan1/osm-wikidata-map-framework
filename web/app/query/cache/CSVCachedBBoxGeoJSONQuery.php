@@ -32,8 +32,12 @@ class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxQuery implements BBoxGeoJSO
             throw new \Exception("Result is not a GeoJSONQueryResult");
         }
         $json = $result->getGeoJSON();
-        if ($json == '{"type":"FeatureCollection","features":[]}') {
-            error_log(get_class($this) . ": not saving JSON with no features from " . $this->getBaseQuery());
+        if (strpos($json, 'features') == false || strpos($json, '"features":[]') != false) {
+            error_log(
+                get_class($this) . ": not saving JSON with no features"
+                    //. PHP_EOL . "From " . $result
+                    . PHP_EOL . "From " . $this->getBaseQuery()
+            );
             throw new \Exception("Result is empty");
         }
         return $json;
