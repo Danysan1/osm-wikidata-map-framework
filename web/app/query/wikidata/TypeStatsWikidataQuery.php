@@ -27,18 +27,21 @@ class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
     public function createQuery(string $wikidataIDList, string $language): string
     {
         return
-            "SELECT ?name
-                (COUNT(*) AS ?count)
+            "SELECT ?name ?id (COUNT(*) AS ?count)
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
             
                 OPTIONAL {
-                    ?instanceID ^wdt:P21 ?wikidata;
-                        rdfs:label ?name.
-                    FILTER(lang(?name)='$language').
+                    {
+                        ?id ^wdt:P31 ?wikidata.
+                    } UNION {
+                        ?id ^wdt:P279 ?wikidata.
+                    }
+                    ?id rdfs:label ?name.
+                    FILTER(lang(?name)='it').
                 }
             }
-            GROUP BY ?name
+            GROUP BY ?name ?id
             ORDER BY ?name";
     }
 }

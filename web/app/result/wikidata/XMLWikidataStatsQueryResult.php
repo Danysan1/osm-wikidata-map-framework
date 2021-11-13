@@ -31,6 +31,7 @@ class XMLWikidataStatsQueryResult extends XMLWikidataQueryResult
     {
         return [
             "name" => "wd:literal",
+            "id" => "wd:uri",
             //"count" => "xsd:integer",
             "count" => "wd:literal",
         ];

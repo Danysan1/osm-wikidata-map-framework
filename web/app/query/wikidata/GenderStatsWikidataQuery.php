@@ -27,18 +27,17 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
     public function createQuery(string $wikidataIDList, string $language): string
     {
         return
-            "SELECT ?name
-                (COUNT(*) AS ?count)
+            "SELECT ?name ?id (COUNT(*) AS ?count)
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
             
                 OPTIONAL {
-                    ?genderID ^wdt:P21 ?wikidata;
+                    ?id ^wdt:P21 ?wikidata;
                         rdfs:label ?name.
                     FILTER(lang(?name)='$language').
                 }
             }
-            GROUP BY ?name
+            GROUP BY ?name ?id
             ORDER BY ?name";
     }
 }
