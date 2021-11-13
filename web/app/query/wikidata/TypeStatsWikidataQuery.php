@@ -38,7 +38,7 @@ class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
                         ?id ^wdt:P279 ?wikidata.
                     }
                     ?id rdfs:label ?name.
-                    FILTER(lang(?name)='it').
+                    FILTER(lang(?name)='$language').
                 }
             }
             GROUP BY ?name ?id
