@@ -4,20 +4,21 @@ namespace App\Query\Combined;
 
 require_once(__DIR__ . '/../../BoundingBox.php');
 require_once(__DIR__ . '/../../ServerTiming.php');
-require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
-require_once(__DIR__ . '/../../result/QueryResult.php');
+require_once(__DIR__ . "/../BBoxJSONQuery.php");
+require_once(__DIR__ . '/../../result/JSONQueryResult.php');
 require_once(__DIR__ . "/../overpass/BBoxEtymologyOverpassQuery.php");
 require_once(__DIR__ . "/../overpass/OverpassConfig.php");
-require_once(__DIR__ . "/../wikidata/GeoJSONEtymologyWikidataQuery.php");
+require_once(__DIR__ . "/../wikidata/GeoJSON2JSONEtymologyWikidataQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 
 use \App\BoundingBox;
 use \App\ServerTiming;
-use \App\Query\BBoxGeoJSONQuery;
+use \App\Query\BBoxJSONQuery;
 use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
-use \App\Query\Wikidata\GeoJSONEtymologyWikidataQuery;
+use \App\Query\Wikidata\GeoJSON2JSONEtymologyWikidataQuery;
 use \App\Result\QueryResult;
+use \App\Result\JSONQueryResult;
 use \App\Query\StringSetXMLQueryFactory;
 
 /**
@@ -27,38 +28,39 @@ use \App\Query\StringSetXMLQueryFactory;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery implements BBoxGeoJSONQuery
+abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 {
     /** @var ServerTiming $timing */
-    private $timing;
+    protected $timing;
+
+    /** @var BBoxEtymologyOverpassQuery $overpassQuery */
+    private $overpassQuery;
 
     /** @var StringSetXMLQueryFactory $wikidataFactory */
-    private $wikidataFactory;
+    protected $wikidataFactory;
 
     /**
      * @param BoundingBox $bbox
      * @param OverpassConfig $overpassConfig
      * @param StringSetXMLQueryFactory $wikidataFactory
      * @param ServerTiming $timing
-     * @param boolean $nodes
-     * @param boolean $ways
-     * @param boolean $relations
      */
     public function __construct($bbox, $overpassConfig, $wikidataFactory, $timing)
     {
-        //$this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassEndpointURL);
-        parent::__construct($bbox, $overpassConfig);
+        $this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassConfig);
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }
 
+    /**
+     * @return JSONQueryResult
+     */
     public function send(): QueryResult
     {
-        //$overpassResult = $this->overpassQuery->send();
-        $overpassResult = parent::send();
+        $overpassResult = $this->overpassQuery->send();
         $this->timing->add("overpass_query");
         if (!$overpassResult->isSuccessful()) {
-            error_log("BBoxEtymologyOverpassWikidataQuery: Overpass query failed: $overpassResult");
+            error_log("BBoxGeoJSONEtymologyQuery: Overpass query failed: $overpassResult");
             throw new \Exception("Overpass query failed");
         } elseif (!$overpassResult->hasResult()) {
             throw new \Exception("Overpass query didn't return any result");
@@ -68,13 +70,29 @@ class BBoxEtymologyOverpassWikidataQuery extends BBoxEtymologyOverpassQuery impl
         if (empty($overpassGeoJSON["features"])) {
             $out = $overpassResult;
         } else {
-            $wikidataQuery = new GeoJSONEtymologyWikidataQuery($overpassGeoJSON, $this->wikidataFactory);
-            $wikidataResult = $wikidataQuery->send();
+            $wikidataResult = $this->createResult($overpassGeoJSON);
             $this->timing->add("wikidata_query");
 
             $out = $wikidataResult;
         }
 
         return $out;
+    }
+
+    protected abstract function createResult(array $overpassGeoJSONData): JSONQueryResult;
+
+    public function getBBox(): BoundingBox
+    {
+        return $this->overpassQuery->getBBox();
+    }
+
+    public function getQuery(): string
+    {
+        return $this->overpassQuery->getQuery();
+    }
+
+    public function __toString(): string
+    {
+        return get_class($this) . ": " . $this->overpassQuery;
     }
 }

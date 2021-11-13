@@ -45,10 +45,7 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
      */
     public function getGeoJSONData(): array
     {
-        $data = $this->getResult();
-        if (!is_array($data)) {
-            throw new Exception("Overpass query result is not an array");
-        }
+        $data = $this->getJSONData();
         if (!isset($data["elements"])) {
             error_log("OverpassQueryResult: " . json_encode($data));
             throw new \Exception("Missing element section in Overpass response");
@@ -86,13 +83,18 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
         return $geojson;
     }
 
-    public function getArray(): array
+    public function getJSONData(): array
     {
         $ret = $this->getResult();
         if (!is_array($ret)) {
-            throw new Exception(get_class($this) . ": Overpass query result is not an array");
+            throw new Exception("Internal: JSON result data is not an array");
         }
         return $ret;
+    }
+
+    public function getArray(): array
+    {
+        return $this->getJSONData();
     }
 
     /**
@@ -101,5 +103,10 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
     public function getGeoJSON(): string
     {
         return json_encode($this->getGeoJSONData());
+    }
+
+    public function getJSON(): string
+    {
+        return json_encode($this->getJSONData());
     }
 }

@@ -979,7 +979,7 @@ function featureToElement(feature) {
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
         etymologies_container = detail_container.querySelector('.etymologies_container');;
     //template_container.appendChild(detail_container);
-    console.info("featureToHTML", { feature, etymologies, detail_container, etymologies_container });
+    console.info("featureToElement", { feature, etymologies, detail_container, etymologies_container });
 
     if (feature.properties.name) {
         detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
@@ -1023,88 +1023,94 @@ function featureToElement(feature) {
             etymology_description.style.display = 'none';
         }
 
-        etymology.querySelector('.wikidata_button').href = ety.wikidata;
+        try {
+            etymology.querySelector('.wikidata_button').href = ety.wikidata;
 
-        if (ety.wikipedia) {
-            wikipedia_button.href = ety.wikipedia;
-            wikipedia_button.style.display = 'inline-flex';
-        } else {
-            wikipedia_button.style.display = 'none';
-        }
+            if (ety.wikipedia) {
+                wikipedia_button.href = ety.wikipedia;
+                wikipedia_button.style.display = 'inline-flex';
+            } else {
+                wikipedia_button.style.display = 'none';
+            }
 
-        if (ety.commons) {
-            commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
-            commons_button.style.display = 'inline-flex';
-        } else {
-            commons_button.style.display = 'none';
-        }
+            if (ety.commons) {
+                commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+                commons_button.style.display = 'inline-flex';
+            } else {
+                commons_button.style.display = 'none';
+            }
 
-        if (ety.wkt_coords) {
-            const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
-            location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
-            location_button.style.display = 'inline-flex';
-        } else {
-            location_button.style.display = 'none';
-        }
+            if (ety.wkt_coords) {
+                const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
+                location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+                location_button.style.display = 'inline-flex';
+            } else {
+                location_button.style.display = 'none';
+            }
 
-        if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
-            const birth_date = ety.birth_date ? (new Date(ety.birth_date)).toLocaleDateString(document.documentElement.lang) : "?",
-                birth_place = ety.birth_place ? ety.birth_place : "?",
-                death_date = ety.death_date ? (new Date(ety.death_date)).toLocaleDateString(document.documentElement.lang) : "?",
-                death_place = ety.death_place ? ety.death_place : "?";
-            start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-        } else if (ety.start_date || ety.end_date) {
-            const start_date = ety.start_date ? (new Date(ety.start_date)).toLocaleDateString(document.documentElement.lang) : "?",
-                end_date = ety.end_date ? (new Date(ety.end_date)).toLocaleDateString(document.documentElement.lang) : "?";
-            start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
-        } else if (ety.event_date) {
-            const event_date = (new Date(ety.event_date)).toLocaleDateString(document.documentElement.lang);
-            start_end_date.innerText = '📅 ' + event_date;
-        } else {
-            start_end_date.style.display = 'none';
-        }
-        if (ety.event_place) {
-            event_place.innerText = '📍 ' + ety.event_place;
-        } else {
-            event_place.style.display = 'none';
-        }
+            if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
+                const birth_date = ety.birth_date ? formatDate(ety.birth_date, ety.birth_date_precision) : "?",
+                    birth_place = ety.birth_place ? ety.birth_place : "?",
+                    death_date = ety.death_date ? formatDate(ety.death_date, ety.death_date_precision) : "?",
+                    death_place = ety.death_place ? ety.death_place : "?";
+                start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
+            } else if (ety.start_date || ety.end_date) {
+                const start_date = ety.start_date ? formatDate(ety.start_date, ety.start_date_precision) : "?",
+                    end_date = ety.end_date ? formatDate(ety.end_date, ety.end_date_precision) : "?";
+                start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
+            } else if (ety.event_date) {
+                const event_date = formatDate(ety.event_date, ety.event_date_precision);
+                start_end_date.innerText = `📅 ${event_date}`
+            } else {
+                start_end_date.style.display = 'none';
+            }
+            if (ety.event_place) {
+                event_place.innerText = '📍 ' + ety.event_place;
+            } else {
+                event_place.style.display = 'none';
+            }
 
-        if (ety.citizenship) {
-            citizenship.innerText = '🌍 ' + ety.citizenship;
-        } else {
-            citizenship.style.display = 'none';
-        }
-        if (ety.gender) {
-            gender.innerText = '⚧️ ' + ety.gender;
-        } else {
-            gender.style.display = 'none';
-        }
-        if (ety.occupations) {
-            occupations.innerText = '🛠️ ' + ety.occupations;
-        } else {
-            occupations.style.display = 'none';
-        }
-        if (ety.prizes) {
-            prizes.innerText = '🏆 ' + ety.prizes;
-        } else {
-            prizes.style.display = 'none';
-        }
+            if (ety.citizenship) {
+                citizenship.innerText = '🌍 ' + ety.citizenship;
+            } else {
+                citizenship.style.display = 'none';
+            }
+            if (ety.gender) {
+                gender.innerText = '⚧️ ' + ety.gender;
+            } else {
+                gender.style.display = 'none';
+            }
+            if (ety.occupations) {
+                occupations.innerText = '🛠️ ' + ety.occupations;
+            } else {
+                occupations.style.display = 'none';
+            }
+            if (ety.prizes) {
+                prizes.innerText = '🏆 ' + ety.prizes;
+            } else {
+                prizes.style.display = 'none';
+            }
 
-        if (ety.pictures) {
-            ety.pictures.forEach(function(img, n) {
-                if (n < 5) {
-                    const link = document.createElement('a'),
-                        picture = document.createElement('img');
-                    link.href = img;
-                    link.target = '_blank';
-                    picture.src = img;
-                    picture.alt = "Etymology picture";
-                    link.appendChild(picture);
-                    pictures.appendChild(link);
-                }
-            });
-        } else {
-            pictures.style.display = 'none';
+            if (ety.pictures) {
+                ety.pictures.forEach(function(img, n) {
+                    if (n < 5) {
+                        const link = document.createElement('a'),
+                            picture = document.createElement('img');
+                        link.href = img;
+                        link.target = '_blank';
+                        picture.src = img;
+                        picture.alt = "Etymology picture";
+                        link.appendChild(picture);
+                        pictures.appendChild(link);
+                    }
+                });
+            } else {
+                pictures.style.display = 'none';
+            }
+        } catch (e) {
+            console.error(e);
+            if (typeof Sentry != 'undefined')
+                Sentry.captureException(e);
         }
 
         etymologies_container.appendChild(etymology);
@@ -1172,4 +1178,35 @@ function initGenderChart() {
         });
     div.appendChild(canvas);
     document.body.appendChild(div);
+}
+
+/**
+ * 
+ * @param {string|Date} date 
+ * @param {int} precision https://www.wikidata.org/wiki/Help:Dates#Precision
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
+ * @return {string}
+ */
+function formatDate(date, precision) {
+    let dateObject, options = {};
+
+    if (date instanceof Date)
+        dateObject = date;
+    else if (typeof date === 'string')
+        dateObject = new Date(date);
+    else
+        throw new Error("Invalid date parameter");
+
+    if (precision) {
+        if (precision >= 14) options.second = 'numeric';
+        if (precision >= 13) options.minute = 'numeric';
+        if (precision >= 12) options.hour = 'numeric';
+        if (precision >= 11) options.day = 'numeric';
+        if (precision >= 10) options.month = 'numeric';
+        options.year = 'numeric';
+    }
+
+    const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
+    //console.info("formatDate", { date, precision, dateObject, options, out });
+    return out;
 }

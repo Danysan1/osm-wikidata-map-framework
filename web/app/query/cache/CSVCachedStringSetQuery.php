@@ -1,22 +1,20 @@
 <?php
 
-namespace App\Query\Decorators;
+namespace App\Query\Cache;
 
-require_once(__DIR__ . "/CachedQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQuery.php");
+require_once(__DIR__ . "/CSVCachedQuery.php");
+require_once(__DIR__ . "/../StringSetQuery.php");
+require_once(__DIR__ . "/CachedStringSetQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/XMLQueryResult.php");
-require_once(__DIR__ . "/../../result/XMLLocalQueryResult.php");
 require_once(__DIR__ . "/../../BaseStringSet.php");
 require_once(__DIR__ . "/../../StringSet.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use \App\Query\Decorators\CachedQuery;
-use \App\Query\StringSetXMLQuery;
-use \App\Result\XMLLocalQueryResult;
+use \App\Query\Cache\CSVCachedQuery;
+use \App\Query\StringSetQuery;
+use \App\Query\Cache\CachedStringSetQuery;
 use \App\BaseStringSet;
-use App\Result\XMLQueryResult;
 use App\Result\QueryResult;
 use \App\StringSet;
 use \App\ServerTiming;
@@ -27,14 +25,14 @@ define("STRING_SET_CACHE_COLUMN_SET", 1);
 define("STRING_SET_CACHE_COLUMN_RESULT", 2);
 
 /**
- * A query which searches objects in a given bounding box caching the result in a file.
+ * A query which searches objects in a given string set caching the result in a file.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
+abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedStringSetQuery
 {
     /**
-     * @param StringSetXMLQuery $baseQuery
+     * @param StringSetQuery $baseQuery
      * @param string $cacheFileBasePath
      * @param Configuration $config
      * @param ServerTiming|null $serverTiming
@@ -47,8 +45,8 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
     public function getStringSet(): StringSet
     {
         $baseQuery = $this->getBaseQuery();
-        if (!$baseQuery instanceof StringSetXMLQuery) {
-            throw new \Exception("Base query is not a StringSetXMLQuery");
+        if (!$baseQuery instanceof StringSetQuery) {
+            throw new \Exception("Bad base query");
         }
         return $baseQuery->getStringSet();
     }
@@ -56,22 +54,22 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
     protected function shouldKeepRow(array $row): bool
     {
         $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
-        $xmlFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
+        $contentFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
         $rowStringSet = $this->getStringSetFromRow($row);
         if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
             // Row too old, ignore
-            error_log("CachedStringSetXMLQuery: trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
+            error_log(get_class($this) . ": trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
             $ret = false;
         } elseif ($this->getStringSet()->strictlyContains($rowStringSet)) {
             // Cache row string set is entirely contained by the new query string set, ignore the cache row
             error_log(
-                "CachedStringSetXMLQuery: trashing string subset row:" . PHP_EOL .
+                get_class($this) . ": trashing string subset row:" . PHP_EOL .
                     $this->getStringSet() . " VS " . $rowStringSet
             );
             $ret = false;
-        } elseif (!is_file($this->cacheFileBaseURL . $xmlFileRelativePath)) {
+        } elseif (!is_file($this->cacheFileBaseURL . $contentFileRelativePath)) {
             // Cached result is inexistent or not a regular file, ignore
-            error_log("CachedStringSetXMLQuery: trashing non-file cached result: $xmlFileRelativePath");
+            error_log(get_class($this) . ": trashing non-file cached result: $contentFileRelativePath");
             $ret = false;
         } else {
             // Row is still valid, add to new cache
@@ -79,6 +77,8 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
         }
         return $ret;
     }
+
+    protected abstract function getResultFromFile(string $relativePath): QueryResult;
 
     /**
      * @return QueryResult|null
@@ -88,17 +88,17 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
         $rowStringSet = $this->getStringSetFromRow($row);
         if ($rowStringSet->containsOrEquals($this->getStringSet())) {
             // Row string set contains entirely the query string set, cache hit!
-            $xmlFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
-            $result = new XMLLocalQueryResult(true, null, $this->cacheFileBaseURL . $xmlFileRelativePath);
-            //error_log("CachedStringSetXMLQuery: " . $rowStringSet . " contains " . $this->getStringSet());
+            $contentFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
+            $result = $this->getResultFromFile($contentFileRelativePath);
+            //error_log(get_class($this).": " . $rowStringSet . " contains " . $this->getStringSet());
             /*error_log(
-                "CachedStringSetXMLQuery - cache hit:" . PHP_EOL .
+                get_class($this)." - cache hit:" . PHP_EOL .
                     $this->getStringSet() . " VS " . $rowStringSet . PHP_EOL .
-                    "Result: " . $xmlFileRelativePath
+                    "Result: " . $contentFileRelativePath
             );*/
         } else {
             /*error_log(
-                "CachedStringSetXMLQuery - no cache hit:" . PHP_EOL .
+                get_class($this)." - no cache hit:" . PHP_EOL .
                     $this->getStringSet() . " VS " . $rowStringSet
             );*/
             $result = null;
@@ -106,25 +106,19 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
         return $result;
     }
 
+    protected abstract function createFileFromResult(QueryResult $result): string;
+
     /**
      * @return array|null
      */
     protected function getRowFromResult(QueryResult $result)
     {
-        if (!$result instanceof XMLQueryResult) {
-            throw new \Exception("Result is not a XMLQueryResult");
-        }
-
-        $xml = $result->getXML();
-        $hash = sha1($xml);
-        $xmlRelativePath = $hash . ".xml";
-        $xmlAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $xmlRelativePath;
-        file_put_contents($xmlAbsolutePath, $xml);
+        $contentFileRelativePath = $this->createFileFromResult($result);
 
         $newRow = [
             STRING_SET_CACHE_COLUMN_TIMESTAMP => time(),
             STRING_SET_CACHE_COLUMN_SET => $this->getStringSet()->toJson(),
-            STRING_SET_CACHE_COLUMN_RESULT => $xmlRelativePath
+            STRING_SET_CACHE_COLUMN_RESULT => $contentFileRelativePath
         ];
         return $newRow;
     }
@@ -132,17 +126,5 @@ class CachedStringSetXMLQuery extends CachedQuery implements StringSetXMLQuery
     private function getStringSetFromRow(array $row): StringSet
     {
         return BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
-    }
-
-    /**
-     * @return XMLQueryResult
-     */
-    public function send(): QueryResult
-    {
-        $ret = parent::send();
-        if (!$ret instanceof XMLQueryResult) {
-            throw new \Exception("Internal error: Result is not a XMLQueryResult");
-        }
-        return $ret;
     }
 }

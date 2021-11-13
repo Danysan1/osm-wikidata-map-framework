@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Query\Decorators;
+namespace App\Query\Cache;
 
-require_once(__DIR__ . "/CachedQuery.php");
+require_once(__DIR__ . "/CSVCachedQuery.php");
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
@@ -11,7 +11,7 @@ require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../BaseBoundingBox.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use \App\Query\Decorators\CachedQuery;
+use \App\Query\Cache\CSVCachedQuery;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
@@ -33,7 +33,7 @@ define("BBOX_CACHE_COLUMN_RESULT", 5);
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
+class CSVCachedBBoxGeoJSONQuery extends CSVCachedQuery implements BBoxGeoJSONQuery
 {
     /**
      * @param BBoxGeoJSONQuery $baseQuery
@@ -62,18 +62,18 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
         $rowBBox = $this->getBBoxFromRow($row);
         if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
             // Row too old, ignore
-            error_log("CachedBBoxGeoJSONQuery: trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
+            error_log(get_class($this) . ": trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
             $ret = false;
         } elseif ($this->getBBox()->strictlyContains($rowBBox)) {
             // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
             error_log(
-                "CachedBBoxGeoJSONQuery: trashing smaller bbox row:" . PHP_EOL .
+                get_class($this) . ": trashing smaller bbox row:" . PHP_EOL .
                     $this->getBBox() . " VS " . $rowBBox
             );
             $ret = false;
         } elseif (!is_file($this->cacheFileBaseURL . $jsonFileRelativePath)) {
             // Cached result is inexistent or not a regular file, ignore
-            error_log("CachedStringSetXMLQuery: trashing non-file cached result: $jsonFileRelativePath");
+            error_log(get_class($this) . ": trashing non-file cached result: $jsonFileRelativePath");
             $ret = false;
         } else {
             // Row is still valid, add to new cache
@@ -92,15 +92,15 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
             // Row bbox contains entirely the query bbox, cache hit!
             $jsonFileRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
             $result = new GeoJSONLocalQueryResult(true, null, $this->cacheFileBaseURL . $jsonFileRelativePath);
-            //error_log("CachedBBoxGeoJSONQuery: " . $rowBBox . " contains " . $this->getBBox());
+            //error_log(get_class($this).": " . $rowBBox . " contains " . $this->getBBox());
             /*error_log(
-                "CachedBBoxGeoJSONQuery - cache hit:" . PHP_EOL .
+                get_class($this)." - cache hit:" . PHP_EOL .
                     $this->getBBox() . " VS " . $rowBBox . PHP_EOL .
                     "Result: " . $jsonFileRelativePath
             );*/
         } else {
             /*error_log(
-                "CachedBBoxGeoJSONQuery - no cache hit:" . PHP_EOL .
+                get_class($this)." - no cache hit:" . PHP_EOL .
                     $this->getBBox() . " VS " . $rowBBox
             );*/
             $result = null;
@@ -118,7 +118,7 @@ class CachedBBoxGeoJSONQuery extends CachedQuery implements BBoxGeoJSONQuery
         }
         $json = $result->getGeoJSON();
         if ($json == '{"type":"FeatureCollection","features":[]}') { // debug
-            error_log("CachedBBoxGeoJSONQuery: not saving GeoJSON with no features from " . $this->getBaseQuery());
+            error_log(get_class($this) . ": not saving GeoJSON with no features from " . $this->getBaseQuery());
             return null;
         } else {
             $hash = sha1($json);

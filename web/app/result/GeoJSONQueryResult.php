@@ -2,16 +2,17 @@
 
 namespace App\Result;
 
-require_once(__DIR__."/QueryResult.php");
+require_once(__DIR__ . "/JSONQueryResult.php");
 
-use \App\Result\QueryResult;
+use \App\Result\JSONQueryResult;
 
 /**
  * Query result whose content can be converted to GeoJSON data.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-interface GeoJSONQueryResult extends QueryResult {
+interface GeoJSONQueryResult extends JSONQueryResult
+{
     /**
      * @return array{type:string}
      */

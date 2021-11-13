@@ -1,0 +1,16 @@
+SELECT *
+WHERE {
+    ?wikidata rdfs:label ?name.
+    FILTER(lang(?name)='it').
+
+    ?wikidata p:P585/psv:P585 [
+        wikibase:timePrecision ?date_precision;
+        wikibase:timeValue ?date
+    ].
+    ?wikidata p:P585/psv:P585 [
+        wikibase:timePrecision ?other_date_precision;
+        wikibase:timeValue ?other_date
+    ].
+    FILTER(?date_precision > ?other_date_precision).
+}
+LIMIT 10

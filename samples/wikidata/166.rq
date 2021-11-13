@@ -1,0 +1,17 @@
+SELECT ?name
+    (COUNT(*) AS ?count)
+WHERE {
+    VALUES ?wikidata { wd:Q10806 wd:Q166092 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q1345358 wd:Q1345358 wd:Q185007 wd:Q64707121 wd:Q55433 wd:Q2001 wd:Q6292252 wd:Q16534203 wd:Q1541043 wd:Q11762987 wd:Q365144 }
+
+    OPTIONAL {
+        {
+            ?instance ^wdt:P31 ?wikidata.
+        } UNION {
+            ?instance ^wdt:P279 ?wikidata.
+        }
+        ?instance rdfs:label ?name.
+        FILTER(lang(?name)='it').
+    }
+}
+GROUP BY ?name
+ORDER BY ?name

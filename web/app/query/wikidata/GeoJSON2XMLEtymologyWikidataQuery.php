@@ -23,7 +23,7 @@ use App\Result\XMLQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
+class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
 {
     /**
      * @var array
@@ -103,6 +103,6 @@ class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
 
     public function __toString(): string
     {
-        return "GeoJSONInputEtymologyWikidataQuery";
+        return get_class($this) . ": " . $this->query;
     }
 }
