@@ -256,7 +256,8 @@ class EtymologyColorControl {
         td2.appendChild(ctrlBtn);
 
         this._ctrlDropDown = document.createElement('select');
-        this._ctrlDropDown.className = 'hiddenElement';
+        //this._ctrlDropDown.className = 'hiddenElement';
+        this._ctrlDropDown.className = 'visibleDropDown';
         this._ctrlDropDown.title = 'Color scheme';
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
         td1.appendChild(this._ctrlDropDown);
@@ -312,8 +313,13 @@ class EtymologyColorControl {
             }
         });
 
-        if (this._chart)
-            this._container.removeChild(this._chart);
+        if (this._chart) {
+            try {
+                this._container.removeChild(this._chart);
+            } catch (error) {
+                console.warn("Error removing chart", { error, container: this._container, chart: this._chart });
+            }
+        }
 
         if (legend) {
             let data = {
@@ -659,7 +665,7 @@ function prepareWikidataLayers(wikidata_url) {
     });
 
     if (document.getElementsByClassName("etymology-color-ctrl").length == 0) {
-        setTimeout(() => map.addControl(new EtymologyColorControl()), 1000);
+        setTimeout(() => map.addControl(new EtymologyColorControl(), 'bottom-right'), 1000);
     }
 }
 
@@ -812,43 +818,38 @@ function mapLoadedHandler(e) {
     map.addControl(new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl
-    }));
+    }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
-    map.addControl(
-        new mapboxgl.NavigationControl({
-            visualizePitch: true
-        })
-    );
+    map.addControl(new mapboxgl.NavigationControl({
+        visualizePitch: true
+    }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#attributioncontrol
     /*map.addControl(new mapboxgl.AttributionControl({
         customAttribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>'
-    }));*/
+    }), 'bottom-left');*/
 
     // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
     // Add geolocate control to the map.
-    map.addControl(
-        new mapboxgl.GeolocateControl({
-            positionOptions: {
-                enableHighAccuracy: true
-            },
-            // When active the map will receive updates to the device's location as it changes.
-            trackUserLocation: false,
-            // Draw an arrow next to the location dot to indicate which direction the device is heading.
-            showUserHeading: true
-        })
-    );
+    map.addControl(new mapboxgl.GeolocateControl({
+        positionOptions: {
+            enableHighAccuracy: true
+        },
+        // When active the map will receive updates to the device's location as it changes.
+        trackUserLocation: false,
+        // Draw an arrow next to the location dot to indicate which direction the device is heading.
+        showUserHeading: true
+    }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#scalecontrol
-    const scale = new mapboxgl.ScaleControl({
+    map.addControl(new mapboxgl.ScaleControl({
         maxWidth: 80,
         unit: 'metric'
-    });
-    map.addControl(scale);
-    map.addControl(new mapboxgl.FullscreenControl());
-    map.addControl(new BackgroundStyleControl());
-    //map.addControl(new EtymologyColorControl());
+    }), 'bottom-left');
+    map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+    map.addControl(new BackgroundStyleControl(), 'top-right');
+    //map.addControl(new EtymologyColorControl(), 'bottom-right');
 
     map.on('sourcedata', mapSourceDataHandler);
 
