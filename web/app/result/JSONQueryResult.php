@@ -14,7 +14,7 @@ use \App\Result\QueryResult;
 interface JSONQueryResult extends QueryResult
 {
     /**
-     * @return array{type:string}
+     * @return array
      */
     public function getJSONData(): array;
 

@@ -23,11 +23,9 @@ class JSONLocalQueryResult extends LocalQueryResult implements JSONQueryResult
     public function __construct($success, $result, $sourcePath = null)
     {
         if ($success && empty($result) && empty($sourcePath)) {
-            throw new \Exception("Empty result");
+            throw new \Exception("JSONLocalQueryResult: Empty result");
         } elseif ($success && $result !== null && !is_string($result) && !is_array($result)) {
-            throw new \Exception("Result must be a string or array");
-        } elseif ($success && is_array($result) && empty($result["type"])) {
-            throw new \Exception("Invalid JSON array");
+            throw new \Exception("JSONLocalQueryResult: Result must be a string or array");
         }
         parent::__construct($success, $result, $sourcePath);
     }

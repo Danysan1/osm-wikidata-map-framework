@@ -36,9 +36,6 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
      */
     public function __construct(StringSet $wikidataIDList, $language, $endpointURL)
     {
-        $this->wikidataIDList = $wikidataIDList;
-        $this->language = $language;
-
         $wikidataValues = implode(' ', array_map(function ($id) {
             return "wd:$id";
         }, $wikidataIDList->toArray()));
@@ -52,12 +49,19 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
             }
         }
 
-        if (!preg_match("/^[a-z]{2}$/", $language)) {
+        // "en-US" => "en"
+        $langMatches = [];
+        if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches)) {
             error_log("EtymologyIDListWikidataQuery: Invalid language code $language");
-            throw new \Exception("Invalid language code, it must be two letters");
+            throw new \Exception("Invalid language code");
         }
+        $language = $langMatches[1];
 
-        parent::__construct($this->createQuery($wikidataValues, $language), $endpointURL);
+        $query = $this->createQuery($wikidataValues, $language);
+        parent::__construct($query, $endpointURL);
+
+        $this->wikidataIDList = $wikidataIDList;
+        $this->language = $language;
     }
 
     /**

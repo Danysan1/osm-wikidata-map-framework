@@ -4,11 +4,11 @@ namespace App\Query\Wikidata;
 
 require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/wikidata/WikidataEtymologyQueryResult.php");
+require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
 
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
 use \App\Result\QueryResult;
-use \App\Result\Wikidata\WikidataEtymologyQueryResult;
+use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
@@ -18,14 +18,14 @@ use \App\Result\Wikidata\WikidataEtymologyQueryResult;
 class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
 {
     /**
-     * @return WikidataEtymologyQueryResult
+     * @return XMLWikidataEtymologyQueryResult
      */
     public function send(): QueryResult
     {
-        return WikidataEtymologyQueryResult::fromXMLResult(parent::send());
+        return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::send());
     }
 
-    public function createQuery(string $wikidataValues, string $language): string
+    public function createQuery(string $wikidataIDList, string $language): string
     {
         return "SELECT ?wikidata
                 (SAMPLE(?name) AS ?name)
@@ -53,7 +53,7 @@ class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
                 (SAMPLE(?death_place_name) AS ?death_place)
                 (SAMPLE(?wkt_coords) AS ?wkt_coords)
             WHERE {
-                VALUES ?wikidata { $wikidataValues }
+                VALUES ?wikidata { $wikidataIDList }
 
                 {
                     ?instanceID ^wdt:P31 ?wikidata.

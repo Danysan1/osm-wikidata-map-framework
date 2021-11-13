@@ -1,0 +1,102 @@
+{
+  "head" : {
+    "vars" : [ "name", "count" ]
+  },
+  "results" : {
+    "bindings" : [ {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "attacco suicida"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "attentato terroristico"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "borgata"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "dirottamento aereo"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "memoriale di guerra"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "strage"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "tomba"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "12"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "umano"
+      }
+    } ]
+  }
+}

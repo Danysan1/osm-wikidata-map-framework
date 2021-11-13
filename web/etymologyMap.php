@@ -7,21 +7,27 @@ $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
-require_once("./app/result/GeoJSONQueryResult.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
+require_once("./app/query/wikidata/GenderStatsWikidataFactory.php");
+require_once("./app/query/wikidata/TypeStatsWikidataFactory.php");
+require_once("./app/result/JSONQueryResult.php");
 require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
-require_once("./app/query/combined/BBoxEtymologyOverpassWikidataQuery.php");
+require_once("./app/query/combined/BBoxGeoJSONEtymologyQuery.php");
+require_once("./app/query/combined/BBoxJSONStatsQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
-use \App\Result\GeoJSONQueryResult;
-use App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
-use \App\Query\Combined\BBoxEtymologyOverpassWikidataQuery;
-use App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
-use App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
+use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
+use \App\Query\Combined\BBoxJSONStatsQuery;
+use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
+use \App\Query\Wikidata\GenderStatsWikidataFactory;
+use \App\Query\Wikidata\TypeStatsWikidataFactory;
+use \App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\Result\JSONQueryResult;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -29,7 +35,8 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
-$from = (string)getFilteredParamOrError("from", FILTER_SANITIZE_STRING);
+$from = (string)getFilteredParamOrDefault("from", FILTER_SANITIZE_STRING, "bbox");
+$to = (string)getFilteredParamOrDefault("to", FILTER_SANITIZE_STRING, "geojson");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
@@ -58,28 +65,48 @@ if ($from == "bbox") {
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
 
-    $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
-        $safeLanguage,
-        $wikidataEndpointURL,
-        $cacheFileBasePath . $safeLanguage . "_",
-        $conf
-    );
-    $query = new BBoxEtymologyOverpassWikidataQuery(
-        $bbox,
-        $overpassConfig,
-        $wikidataFactory,
-        $serverTiming
-    );
+    if ($to == "geojson") {
+        $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
+            $safeLanguage,
+            $wikidataEndpointURL,
+            $cacheFileBasePath . $safeLanguage . "_",
+            $conf
+        );
+        $query = new BBoxGeoJSONEtymologyQuery(
+            $bbox,
+            $overpassConfig,
+            $wikidataFactory,
+            $serverTiming
+        );
+        $query = new CSVCachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+    } elseif ($to == "genderStats") {
+        $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        $query = new BBoxJSONStatsQuery(
+            $bbox,
+            $overpassConfig,
+            $wikidataFactory,
+            $serverTiming
+        );
+    } elseif ($to == "typeStats") {
+        $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        $query = new BBoxJSONStatsQuery(
+            $bbox,
+            $overpassConfig,
+            $wikidataFactory,
+            $serverTiming
+        );
+    } else {
+        http_response_code(400);
+        die('{"error":"You must specify a valid output type"}');
+    }
 } else {
     http_response_code(400);
-    die('{"error":"You must specify the BBox"}');
+    die('{"error":"You must specify a valid search area"}');
 }
-
-$cachedQuery = new CSVCachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
 
 $serverTiming->add("3_init");
 
-$result = $cachedQuery->send();
+$result = $query->send();
 $serverTiming->add("4_query");
 if (!$result->isSuccessful()) {
     http_response_code(500);
@@ -94,11 +121,11 @@ if (!$result->isSuccessful()) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {
-        $out = $result->getGeoJSON();
+        $out = $result->getJSON();
         header("Cache-Location: " . $result->getPublicSourcePath());
     }
 } else {
-    $out = $result->getGeoJSON();
+    $out = $result->getJSON();
 }
 
 $serverTiming->add("5_output");
