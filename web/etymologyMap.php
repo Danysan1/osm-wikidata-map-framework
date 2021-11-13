@@ -12,6 +12,7 @@ require_once("./app/query/wikidata/GenderStatsWikidataFactory.php");
 require_once("./app/query/wikidata/TypeStatsWikidataFactory.php");
 require_once("./app/result/JSONQueryResult.php");
 require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
+require_once("./app/query/cache/CSVCachedBBoxJSONQuery.php");
 require_once("./app/query/combined/BBoxGeoJSONEtymologyQuery.php");
 require_once("./app/query/combined/BBoxJSONStatsQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
@@ -21,6 +22,7 @@ $serverTiming->add("0_include");
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
 use \App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
+use \App\Query\Cache\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
 use \App\Query\Combined\BBoxJSONStatsQuery;
 use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
@@ -72,29 +74,26 @@ if ($from == "bbox") {
             $cacheFileBasePath . $safeLanguage . "_",
             $conf
         );
-        $query = new BBoxGeoJSONEtymologyQuery(
+        $baseQuery = new BBoxGeoJSONEtymologyQuery(
             $bbox,
             $overpassConfig,
             $wikidataFactory,
             $serverTiming
         );
-        $query = new CSVCachedBBoxGeoJSONQuery($query, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
-    } elseif ($to == "genderStats") {
-        $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $query = new BBoxJSONStatsQuery(
+        $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+    } elseif ($to == "genderStats" || $to == "typeStats") {
+        if ($to == "genderStats") {
+            $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        } elseif ($to == "typeStats") {
+            $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        }
+        $baseQuery = new BBoxJSONStatsQuery(
             $bbox,
             $overpassConfig,
             $wikidataFactory,
             $serverTiming
         );
-    } elseif ($to == "typeStats") {
-        $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $query = new BBoxJSONStatsQuery(
-            $bbox,
-            $overpassConfig,
-            $wikidataFactory,
-            $serverTiming
-        );
+        $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
     } else {
         http_response_code(400);
         die('{"error":"You must specify a valid output type"}');

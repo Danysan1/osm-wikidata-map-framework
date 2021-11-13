@@ -91,6 +91,17 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         return $this->overpassQuery->getQuery();
     }
 
+    public function getQueryTypeCode(): string
+    {
+        $thisClassName = get_class($this);
+        $thisStartPos = strrpos($thisClassName, "\\");
+        $thisClass = substr($thisClassName, $thisStartPos ? $thisStartPos + 1 : 0); // class_basename();
+        $factoryClassName = get_class($this->wikidataFactory);
+        $factoryStartPos = strrpos($factoryClassName, "\\");
+        $factoryClass = substr($factoryClassName, $factoryStartPos ? $factoryStartPos + 1 : 0);
+        return $thisClass . "_" . $factoryClass;
+    }
+
     public function __toString(): string
     {
         return get_class($this) . ": " . $this->overpassQuery;

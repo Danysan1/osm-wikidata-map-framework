@@ -108,10 +108,7 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
 
     protected abstract function createFileFromResult(QueryResult $result): string;
 
-    /**
-     * @return array|null
-     */
-    protected function getRowFromResult(QueryResult $result)
+    protected function getRowFromResult(QueryResult $result): array
     {
         $contentFileRelativePath = $this->createFileFromResult($result);
 

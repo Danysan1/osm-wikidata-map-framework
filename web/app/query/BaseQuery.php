@@ -56,6 +56,13 @@ abstract class BaseQuery implements Query
      */
     public abstract function send(): QueryResult;
 
+    public function getQueryTypeCode(): string
+    {
+        $className = get_class($this);
+        $startPos = strrpos($className, "\\");
+        return substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
+    }
+
     public function __toString(): string
     {
         return get_class($this) . ", " . $this->getEndpointURL();

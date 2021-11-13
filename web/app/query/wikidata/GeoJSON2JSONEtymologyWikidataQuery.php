@@ -61,6 +61,14 @@ abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
 
     protected abstract function createQueryResult(XMLQueryResult $wikidataResult): JSONQueryResult;
 
+    public function getQueryTypeCode(): string
+    {
+        $className = get_class($this);
+        $startPos = strrpos($className, "\\");
+        $thisClass = substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
+        return $thisClass . "_" . $this->wikidataQuery->getQueryTypeCode();
+    }
+
     public function __toString(): string
     {
         return get_class($this) . ": " . $this->wikidataQuery;
