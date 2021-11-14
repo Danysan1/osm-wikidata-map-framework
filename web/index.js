@@ -309,7 +309,7 @@ class EtymologyColorControl {
 
         if (colorScheme) {
             color = colorScheme.color;
-            legend = colorSchemeToLegend(colorScheme);
+            legend = colorScheme.colorMap ? colorSchemeToLegend(colorScheme) : null;
         } else {
             console.error("Invalid selected color scheme", event.target.value);
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");

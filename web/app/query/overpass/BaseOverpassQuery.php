@@ -40,7 +40,7 @@ class BaseOverpassQuery extends OverpassQuery
     {
         $this->tags = is_string($tags) ? [$tags] : $tags;
 
-        $query = "[out:json][timeout:25]; ( ";
+        $query = "[out:json][timeout:40]; ( ";
         foreach ($this->tags as $tag) {
             if ($config->shouldFetchNodes())
                 $query .= "node['name']['$tag']($position);";
