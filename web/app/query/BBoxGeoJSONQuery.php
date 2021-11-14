@@ -2,10 +2,10 @@
 
 namespace App\Query;
 
-require_once(__DIR__ . "/BBoxQuery.php");
+require_once(__DIR__ . "/BBoxJSONQuery.php");
 require_once(__DIR__ . "/GeoJSONQuery.php");
 
-use \App\Query\BBoxQuery;
+use \App\Query\BBoxJSONQuery;
 use \App\Query\GeoJSONQuery;
 
 /**
@@ -13,6 +13,6 @@ use \App\Query\GeoJSONQuery;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-interface BBoxGeoJSONQuery extends BBoxQuery, GeoJSONQuery
+interface BBoxGeoJSONQuery extends BBoxJSONQuery, GeoJSONQuery
 {
 }

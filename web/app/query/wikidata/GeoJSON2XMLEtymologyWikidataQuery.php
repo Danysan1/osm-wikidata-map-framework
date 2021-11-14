@@ -23,7 +23,7 @@ use App\Result\XMLQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
+class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
 {
     /**
      * @var array
@@ -82,7 +82,7 @@ class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
     public function send(): QueryResult
     {
         $res = $this->query->send();
-        if(!$res instanceof XMLQueryResult) {
+        if (!$res instanceof XMLQueryResult) {
             throw new \Exception("Query result is not an XMLQueryResult");
         }
         return $res;
@@ -101,8 +101,16 @@ class GeoJSONInputEtymologyWikidataQuery implements XMLQuery
         return $this->geoJSONInputData;
     }
 
+    public function getQueryTypeCode(): string
+    {
+        $className = get_class($this);
+        $startPos = strrpos($className, "\\");
+        $thisClass = substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
+        return $thisClass . empty($this->wikidataQuery) ? "" : ("_" . $this->wikidataQuery->getQueryTypeCode());
+    }
+
     public function __toString(): string
     {
-        return "GeoJSONInputEtymologyWikidataQuery";
+        return get_class($this) . ": " . $this->query;
     }
 }

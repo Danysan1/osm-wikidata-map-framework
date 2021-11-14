@@ -2,14 +2,14 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../decorators/CachedStringSetXMLQuery.php");
+require_once(__DIR__ . "/../cache/CSVCachedStringSetXMLQuery.php");
 require_once(__DIR__ . "/EtymologyIDListWikidataQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/../../StringSet.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use \App\Query\Decorators\CachedStringSetXMLQuery;
+use \App\Query\Cache\CSVCachedStringSetXMLQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
@@ -57,6 +57,6 @@ class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
     public function create(StringSet $input): StringSetXMLQuery
     {
         $baseQuery =  new EtymologyIDListWikidataQuery($input, $this->language, $this->endpointURL);
-        return new CachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->config);
+        return new CSVCachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->config);
     }
 }

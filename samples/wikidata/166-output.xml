@@ -1,0 +1,125 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='name'/>
+		<variable name='id'/>
+		<variable name='count'/>
+	</head>
+	<results>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>umano</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>12</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>tomba</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q381885</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>memoriale di guerra</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q575759</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>borgata</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q5084</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>attacco suicida</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q217327</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>strage</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q750215</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>animale famoso</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q26401003</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>Ursus arctos syriacus</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q839509</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>dirottamento aereo</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q898712</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>attentato terroristico</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q2223653</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

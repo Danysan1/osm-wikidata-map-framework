@@ -6,6 +6,92 @@
     "bindings" : [ {
       "wikidata" : {
         "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1055802"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "Wojtek"
+      },
+      "description" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "orso bruno siriano, trovato in Iran e adottato da soldati polacchi durante la Seconda guerra mondiale"
+      },
+      "instanceID" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q26401003"
+      },
+      "genderID" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q44148"
+      },
+      "gender" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "maschio"
+      },
+      "wikipedia" : {
+        "type" : "uri",
+        "value" : "https://it.wikipedia.org/wiki/Wojtek"
+      },
+      "commons" : {
+        "type" : "literal",
+        "value" : "Wojtek (soldier bear)"
+      },
+      "occupations" : {
+        "type" : "literal",
+        "value" : "soldato"
+      },
+      "citizenship" : {
+        "type" : "literal",
+        "value" : ""
+      },
+      "pictures" : {
+        "type" : "literal",
+        "value" : "http://commons.wikimedia.org/wiki/Special:FilePath/Wojtek%20the%20bear.jpg"
+      },
+      "prizes" : {
+        "type" : "literal",
+        "value" : ""
+      },
+      "birth_date" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
+        "type" : "literal",
+        "value" : "1942-01-01T00:00:00Z"
+      },
+      "birth_date_precision" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "9"
+      },
+      "death_date" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
+        "type" : "literal",
+        "value" : "1963-12-01T00:00:00Z"
+      },
+      "death_date_precision" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "10"
+      },
+      "event_place" : {
+        "type" : "literal",
+        "value" : ""
+      },
+      "birth_place" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "Stato Imperiale dell'Iran"
+      },
+      "death_place" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "zoo di Edimburgo"
+      }
+    }, {
+      "wikidata" : {
+        "type" : "uri",
         "value" : "http://www.wikidata.org/entity/Q1345358"
       },
       "name" : {
@@ -41,7 +127,7 @@
       },
       "occupations" : {
         "type" : "literal",
-        "value" : "politico, uomo politico, filosofo, giornalista"
+        "value" : "politico, uomo politico, giornalista, filosofo"
       },
       "citizenship" : {
         "type" : "literal",
@@ -221,7 +307,7 @@
       },
       "pictures" : {
         "type" : "literal",
-        "value" : "http://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg"
+        "value" : "http://commons.wikimedia.org/wiki/Special:FilePath/COA%20Camillo%20Benso%20di%20Cavour%20Annunziata.svg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Francesco%20Hayez%20041.jpg"
       },
       "prizes" : {
         "type" : "literal",
@@ -299,7 +385,7 @@
       },
       "occupations" : {
         "type" : "literal",
-        "value" : "neurologa, biochimica, neuroscienziata, scienziata, medica, politica"
+        "value" : "scienziata, medica, politica, neuroscienziata, neurologa, biochimica"
       },
       "citizenship" : {
         "type" : "literal",
@@ -346,6 +432,77 @@
         "xml:lang" : "it",
         "type" : "literal",
         "value" : "Roma"
+      }
+    }, {
+      "wikidata" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q365144"
+      },
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "Caitlyn Jenner"
+      },
+      "description" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "personaggio televisivo e multiplista statunitense"
+      },
+      "instanceID" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q5"
+      },
+      "genderID" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1052281"
+      },
+      "gender" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "transessuale femmina"
+      },
+      "wikipedia" : {
+        "type" : "uri",
+        "value" : "https://it.wikipedia.org/wiki/Caitlyn_Jenner"
+      },
+      "commons" : {
+        "type" : "literal",
+        "value" : "Caitlyn Jenner"
+      },
+      "occupations" : {
+        "type" : "literal",
+        "value" : "attrice, donna d'affari, attrice televisiva, produttrice cinematografica, modella, speaker motivazionale, telecronista sportivo, pilota automobilistico, atleta"
+      },
+      "citizenship" : {
+        "type" : "literal",
+        "value" : "Stati Uniti d'America"
+      },
+      "pictures" : {
+        "type" : "literal",
+        "value" : "http://commons.wikimedia.org/wiki/Special:FilePath/Caitlyn%20Jenner.jpeg"
+      },
+      "prizes" : {
+        "type" : "literal",
+        "value" : ""
+      },
+      "birth_date" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
+        "type" : "literal",
+        "value" : "1949-12-28T00:00:00Z"
+      },
+      "birth_date_precision" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "11"
+      },
+      "event_place" : {
+        "type" : "literal",
+        "value" : ""
+      },
+      "birth_place" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "Mount Kisco"
       }
     }, {
       "wikidata" : {
@@ -668,7 +825,7 @@
       },
       "instanceID" : {
         "type" : "uri",
-        "value" : "http://www.wikidata.org/entity/Q217327"
+        "value" : "http://www.wikidata.org/entity/Q750215"
       },
       "wikipedia" : {
         "type" : "uri",
@@ -688,7 +845,7 @@
       },
       "pictures" : {
         "type" : "literal",
-        "value" : "http://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG\thttp://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg\thttp://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg"
+        "value" : "http://commons.wikimedia.org/wiki/Special:FilePath/UA%20Flight%20175%20hits%20WTC%20south%20tower%209-11%20edit.jpeg\thttp://commons.wikimedia.org/wiki/Special:FilePath/September%2014%202001.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Flight%20paths%20of%20hijacked%20planes-September%2011%20attacks.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Flight%2093%20impact%20site%20marker%20PA1.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Collection-of-unattributed-photographs-of-the-september-11th-terrorist-attack-172.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/Aerial%20view%20of%20the%20Pentagon%20during%20rescue%20operations%20post-September%2011%20attack.JPEG\thttp://commons.wikimedia.org/wiki/Special:FilePath/September%2011%20Photo%20Montage.jpg\thttp://commons.wikimedia.org/wiki/Special:FilePath/North%20face%20south%20tower%20after%20plane%20strike%209-11.jpg"
       },
       "prizes" : {
         "type" : "literal",
@@ -696,7 +853,7 @@
       },
       "event_place" : {
         "type" : "literal",
-        "value" : "contea di Arlington, Manhattan, Shanksville"
+        "value" : "Shanksville, Manhattan, contea di Arlington"
       },
       "event_date" : {
         "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
@@ -746,7 +903,7 @@
       },
       "occupations" : {
         "type" : "literal",
-        "value" : "sceneggiatore, fotografo, direttore della fotografia, scenografo, produttore cinematografico, montatore, regista, scacchista, operatore di ripresa, produttore esecutivo, regista cinematografico"
+        "value" : "sceneggiatore, fotografo, produttore esecutivo, operatore di ripresa, regista cinematografico, direttore della fotografia, regista, montatore, scenografo, produttore cinematografico, scacchista"
       },
       "citizenship" : {
         "type" : "literal",
@@ -758,7 +915,7 @@
       },
       "prizes" : {
         "type" : "literal",
-        "value" : "Leone d'oro alla carriera, Oscar ai migliori effetti speciali"
+        "value" : "Leone d'oro alla carriera"
       },
       "birth_date" : {
         "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",
@@ -827,7 +984,7 @@
       },
       "occupations" : {
         "type" : "literal",
-        "value" : "uomo d'affari, politico, uomo politico, scienziato, fisico, inventore, ingegnere"
+        "value" : "uomo d'affari, politico, uomo politico, scienziato, fisico, ingegnere, inventore"
       },
       "citizenship" : {
         "type" : "literal",
@@ -913,7 +1070,7 @@
       },
       "occupations" : {
         "type" : "literal",
-        "value" : "sceneggiatore, scrittore, poeta, produttore cinematografico, montatore, pittore, regista cinematografico"
+        "value" : "sceneggiatore, poeta, scrittore, regista cinematografico, montatore, produttore cinematografico, pittore"
       },
       "citizenship" : {
         "type" : "literal",
@@ -925,7 +1082,7 @@
       },
       "prizes" : {
         "type" : "literal",
-        "value" : "Palma d'oro, Leone d'oro"
+        "value" : "Premio della giuria, Palma d'oro, Leone d'oro"
       },
       "birth_date" : {
         "datatype" : "http://www.w3.org/2001/XMLSchema#dateTime",

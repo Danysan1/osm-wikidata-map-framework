@@ -1,0 +1,43 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='name'/>
+		<variable name='id'/>
+		<variable name='count'/>
+	</head>
+	<results>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q6581097</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>10</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>femmina</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q6581072</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='name'>
+				<literal xml:lang='it'>transessuale femmina</literal>
+			</binding>
+			<binding name='id'>
+				<uri>http://www.wikidata.org/entity/Q1052281</uri>
+			</binding>
+			<binding name='count'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>1</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

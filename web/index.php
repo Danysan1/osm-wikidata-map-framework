@@ -90,6 +90,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
     <script defer src="./index.js" type="application/javascript"></script>
+    <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.dsantini.it/etymology/" />
@@ -99,6 +100,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta property="og:locale" content="<?= $defaultCulture; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
+    <meta name="keywords" content="etymology, hodonyms, odonymy, onomastica, odonomastica, odonimia, odonimi, Straßenname, odónimo, Odonymie, straatnaam, Toponym, OpenStreetMap, Wikidata, map, open data, linked data, urban, city">
     <link rel="canonical" href="https://www.dsantini.it/etymology/" />
 </head>
 
