@@ -573,6 +573,7 @@ function mapSourceDataHandler(e) {
         console.info('sourcedata ready event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, e });
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
+            showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent && colorControl) {
                 colorControl.updateChart(e);
             }
@@ -634,7 +635,7 @@ function updateDataSource(e) {
             queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
-        showSnackbar("Fetching data...", "lightblue", 10000);
+        showSnackbar("Fetching data...", "lightblue");
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
