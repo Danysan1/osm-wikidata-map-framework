@@ -418,8 +418,13 @@ class EtymologyColorControl {
         this.setChartData(data);
     }
 
-    setChartData(data) {
-        console.info("setChartData", { container: this._container, chart: this._chart, data });
+    setChartData(chartData) {
+        console.info("setChartData", { container: this._container, chart: this._chart, chartData });
+        if (typeof Chart == 'undefined')
+            throw new Error("Chart.js is not loaded");
+        if (typeof ChartDataLabels == 'undefined')
+            throw new Error("Chart.js ChartDataLabels is not loaded");
+
         if (this._chart) {
             try {
                 this._container.removeChild(this._chart);
@@ -433,9 +438,32 @@ class EtymologyColorControl {
         this._chart.className = 'chart';
         this._container.appendChild(this._chart);
         const ctx = this._chart.getContext('2d'),
+            chartOptions = {
+                // http://www.java2s.com/example/javascript/chart.js/chartjs-and-data-labels-to-show-percentage-value-in-pie-piece.html
+                tooltips: {
+                    enabled: false
+                },
+                plugins: {
+                    datalabels: {
+                        formatter: (value, ctx) => {
+                            let datasets = ctx.chart.data.datasets;
+                            if (datasets.indexOf(ctx.dataset) === datasets.length - 1) {
+                                let sum = datasets[0].data.reduce((a, b) => a + b, 0);
+                                let percentage = Math.round((value / sum) * 100) + '%';
+                                return percentage;
+                            } else {
+                                return percentage;
+                            }
+                        },
+                        color: '#fff',
+                    }
+                }
+            },
             chartObject = new Chart(ctx, {
                 type: "pie",
-                data: data,
+                data: chartData,
+                plugins: [ChartDataLabels],
+                options: chartOptions,
             });
     }
 }

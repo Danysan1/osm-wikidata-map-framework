@@ -58,7 +58,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
     <link rel="preload" as="style" type="text/css" href="./style.css" />
-    <link rel="preload" as="fetch" type="application/json" href="./global-map.geojson" crossorigin>
+    <!--<link rel="preload" as="fetch" type="application/json" href="./global-map.geojson" crossorigin>-->
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -91,6 +91,7 @@ if (!$conf->has("mapbox-gl-token")) {
 
     <script defer src="./index.js" type="application/javascript"></script>
     <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
+    <script defer src="./node_modules/chartjs-plugin-datalabels/dist/chartjs-plugin-datalabels.min.js" type="application/javascript"></script>
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://www.dsantini.it/etymology/" />
