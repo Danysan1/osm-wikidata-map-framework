@@ -113,9 +113,8 @@ canvas.chart {
 }
 
 select.visibleDropDown {
-    display: block;
-    margin-right: 0.5em;
-    margin-left: 0.5em;
+    display: inline-block;
+    margin: 5px;
 }
 
 div.snackbar,
@@ -124,18 +123,20 @@ div#welcome_board {
     opacity: 0.8;
 }
 
-button.etymology-color-ctrl-button {
-    margin-left: auto;
-}
-
 div.custom-ctrl>table {
     border-collapse: collapse;
     border-spacing: 0;
     width: 100%;
 }
 
+div.custom-ctrl>table>tr>td.button-cell {
+    width: 1em;
+}
+
 div.custom-ctrl>table>tr>td {
     padding: 0;
+    text-align: left;
+    /*text-align: right;*/
 }
 
 div.detail_container div.header>h2,

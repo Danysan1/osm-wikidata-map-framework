@@ -7,7 +7,7 @@ const backgroundStyles = {
         outdoors: { text: 'Outdoors', style: 'mapbox://styles/mapbox/outdoors-v11' },
     },
     colorSchemes = {
-        blue: { text: 'Blue', color: '#3bb2d0', legend: null },
+        blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
         gender: {
             text: 'By gender',
             color: [
@@ -28,7 +28,8 @@ const backgroundStyles = {
                 ['#669DB4', 'Transgender male'],
                 ['#3bb2d0', 'Male'],
                 ['#223b53', 'Other']
-            ]
+            ],
+            urlCode: "genderStats",
         },
         type: {
             text: 'By type',
@@ -122,11 +123,12 @@ const backgroundStyles = {
                 ['#fed976', 'Cities'],
                 ['#348C31', 'Locations'],
                 ['#223b53', 'Other']
-            ]
+            ],
+            urlCode: "typeStats",
         },
-        black: { text: 'Black', color: '#223b53', legend: null },
-        red: { text: 'Red', color: '#e55e5e', legend: null },
-        orange: { text: 'Orange', color: '#fbb03b', legend: null },
+        black: { text: 'Uniform black', color: '#223b53', legend: null },
+        red: { text: 'Uniform red', color: '#e55e5e', legend: null },
+        orange: { text: 'Uniform orange', color: '#fbb03b', legend: null },
     };
 console.info("start", {
     thresholdZoomLevel,
@@ -137,7 +139,7 @@ console.info("start", {
     default_center_lat,
     default_zoom
 });
-let map;
+let map, colorControl;
 
 document.addEventListener("DOMContentLoaded", initPage);
 
@@ -253,14 +255,20 @@ class EtymologyColorControl {
         ctrlBtn.textContent = '🎨';
         // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
         ctrlBtn.onclick = this.btnClickHandler.bind(this);
-        td2.appendChild(ctrlBtn);
+        /*td2.appendChild(ctrlBtn);
+        td2.className = 'button-cell';*/
+        td1.appendChild(ctrlBtn);
+        td1.className = 'button-cell';
 
         this._ctrlDropDown = document.createElement('select');
         //this._ctrlDropDown.className = 'hiddenElement';
         this._ctrlDropDown.className = 'visibleDropDown';
         this._ctrlDropDown.title = 'Color scheme';
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
-        td1.appendChild(this._ctrlDropDown);
+        /*td1.appendChild(this._ctrlDropDown);
+        td1.className = 'dropdown-cell';*/
+        td2.appendChild(this._ctrlDropDown);
+        td2.className = 'dropdown-cell';
 
         for (const [value, scheme] of Object.entries(colorSchemes)) {
             const option = document.createElement('option');
@@ -313,54 +321,108 @@ class EtymologyColorControl {
             }
         });
 
+        if (!legend) {
+            this._ctrlDropDown.className = 'hiddenElement';
+        }
+
+        this.updateChart(event);
+
+        //updateDataSource(event);
+    }
+
+    updateChart(event) {
+        const colorScheme = colorSchemes[this._ctrlDropDown.value];
+        console.info("updateChart", { event, colorScheme, chart: this._chart });
+
+        let data = {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+            }]
+        };
+
+        if (colorScheme && colorScheme.urlCode) {
+            //if (this._chartXHR)
+            //    this._chartXHR.abort();
+            const bounds = map.getBounds(),
+                southWest = bounds.getSouthWest(),
+                minLat = Math.round(southWest.lat * 1000) / 1000,
+                minLon = Math.round(southWest.lng * 1000) / 1000,
+                northEast = bounds.getNorthEast(),
+                maxLat = Math.round(northEast.lat * 1000) / 1000,
+                maxLon = Math.round(northEast.lng * 1000) / 1000,
+                language = document.documentElement.lang,
+                queryParams = {
+                    from: "bbox",
+                    to: colorScheme.urlCode,
+                    minLat,
+                    minLon,
+                    maxLat,
+                    maxLon,
+                    language,
+                },
+                queryString = new URLSearchParams(queryParams).toString(),
+                stats_url = './etymologyMap.php?' + queryString,
+                xhr = new XMLHttpRequest();
+            xhr.onreadystatechange = (e) => {
+                if (xhr.readyState == 4 && xhr.status == 200) {
+                    JSON.parse(xhr.responseText).forEach(row => {
+                        //data.datasets[0].backgroundColor.push(row[""]);
+                        data.labels.push(row["name"]);
+                        data.datasets[0].data.push(row["count"]);
+                    });
+                    this.setChartData(data);
+                } else {
+                    console.error("XHR error", { e });
+                    if (colorScheme.legend)
+                        this.createChartFromLegend(colorScheme.legend);
+                }
+            }
+            xhr.open('GET', stats_url, true);
+            xhr.send();
+            this._chartXHR = xhr;
+        } else if (colorScheme && colorScheme.legend) {
+            this.createChartFromLegend(colorScheme.legend);
+        }
+    }
+
+    createChartFromLegend(legend) {
+        let data = {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+            }]
+        };
+        legend.forEach(row => {
+            data.datasets[0].backgroundColor.push(row[0]);
+            data.labels.push(row[1]);
+            data.datasets[0].data.push(0); // dummy data
+        });
+        this.setChartData(data);
+    }
+
+    setChartData(data) {
+        console.info("setChartData", { container: this._container, chart: this._chart, data });
         if (this._chart) {
             try {
                 this._container.removeChild(this._chart);
             } catch (error) {
-                console.warn("Error removing chart", { error, container: this._container, chart: this._chart });
+                console.warn("Error removing old chart", { error, container: this._container, chart: this._chart });
             }
         }
 
-        if (legend) {
-            let data = {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [],
-                }]
-            };
-
-            legend.forEach(row => {
-                data.datasets[0].backgroundColor.push(row[0]);
-                data.labels.push(row[1]);
-                data.datasets[0].data.push(1); // TODO
+        //this._legend.className = 'legend';
+        this._chart = document.createElement('canvas');
+        this._chart.className = 'chart';
+        this._container.appendChild(this._chart);
+        const ctx = this._chart.getContext('2d'),
+            chartObject = new Chart(ctx, {
+                type: "pie",
+                data: data,
             });
-
-            // https://docs.mapbox.com/mapbox-gl-js/api/map/#instance-members-querying-features
-            /*const features = map.queryRenderedFeatures({
-                //filter: [],
-                layers: ["wikidata_layer_point", "wikidata_layer_lineString", "wikidata_layer_polygon"],
-            });
-            const features = map.queryRenderedFeatures({
-                //filter: [],
-                layer: "wikidata_source",
-            });*/
-
-            //this._legend.className = 'legend';
-            this._chart = document.createElement('canvas');
-            this._chart.className = 'chart';
-            this._container.appendChild(this._chart);
-            const ctx = this._chart.getContext('2d'),
-                chartObject = new Chart(ctx, {
-                    type: "pie",
-                    data: data,
-                });
-        } else {
-            this._ctrlDropDown.className = 'hiddenElement';
-        }
-        //updateDataSource(event);
     }
-
 }
 
 /**
@@ -493,9 +555,12 @@ function mapSourceDataHandler(e) {
     //console.info('sourcedata event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, ready, e });
 
     if (ready) {
-        //console.info('sourcedata ready event', { wikidataSourceEvent, overpassSourceEvent, e });
+        console.info('sourcedata ready event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, e });
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
+            if (wikidataSourceEvent && colorControl) {
+                colorControl.updateChart(e);
+            }
         } else {
             updateDataSource(e);
         }
@@ -538,12 +603,12 @@ function updateDataSource(e) {
         language = document.documentElement.lang,
         queryParams = {
             from: "bbox",
+            to: "geojson",
             minLat,
             minLon,
             maxLat,
             maxLon,
             language,
-            format: "geojson"
         };
     //console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
     //console.trace("updateDataSource");
@@ -665,7 +730,9 @@ function prepareWikidataLayers(wikidata_url) {
     });
 
     if (document.getElementsByClassName("etymology-color-ctrl").length == 0) {
-        setTimeout(() => map.addControl(new EtymologyColorControl(), 'bottom-right'), 1000);
+        colorControl = new EtymologyColorControl();
+        setTimeout(() => map.addControl(colorControl, 'top-left'), 100);
+        //map.addControl(colorControl, 'top-left');
     }
 }
 
@@ -818,7 +885,7 @@ function mapLoadedHandler(e) {
     map.addControl(new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
         mapboxgl: mapboxgl
-    }), 'top-right');
+    }), 'top-left');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
     map.addControl(new mapboxgl.NavigationControl({
@@ -1156,29 +1223,6 @@ function initPage(e) {
     } else {
         initMap();
     }
-}
-
-function initGenderChart() {
-    const div = document.createElement('div'),
-        canvas = document.createElement('canvas'),
-        genderChart = new Chart(canvas.getContext('2d'), {
-            type: 'pie',
-            data: {
-                datasets: [{
-                    data: [10, 20, 30]
-                }],
-
-                // These labels appear in the legend and in the tooltips when hovering different arcs
-                labels: [
-                    'Red',
-                    'Yellow',
-                    'Blue'
-                ]
-            },
-            //options: options
-        });
-    div.appendChild(canvas);
-    document.body.appendChild(div);
 }
 
 /**
