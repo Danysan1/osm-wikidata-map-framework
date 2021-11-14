@@ -42,6 +42,6 @@ class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
                 }
             }
             GROUP BY ?name ?id
-            ORDER BY ?name";
+            ORDER BY DESC(?count)";
     }
 }

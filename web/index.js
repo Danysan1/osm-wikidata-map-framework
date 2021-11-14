@@ -6,124 +6,118 @@ const backgroundStyles = {
         hybrid: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-streets-v11' },
         outdoors: { text: 'Outdoors', style: 'mapbox://styles/mapbox/outdoors-v11' },
     },
+    genderColorMap = [
+        // https://www.wikidata.org/wiki/Property:P21
+        // https://meyerweb.com/eric/tools/color-blend/#3BB2D0:E55E5E:3:hex
+        ["Female", "Female", "#e55e5e", "http://www.wikidata.org/entity/Q6581072"],
+        ["Transgender female", "Transgender female", "#BB737B", "http://www.wikidata.org/entity/Q1052281"],
+        ["Intersex", "Intersex", "#908897", "http://www.wikidata.org/entity/Q1097630"],
+        ["Transgender male", "Transgender male", "#669DB4", "http://www.wikidata.org/entity/Q2449503"],
+        ["Male", "Male", "#3bb2d0", "http://www.wikidata.org/entity/Q6581097"],
+        ["Other", "Other", "#223b53", null],
+    ],
+    typeColorMap = [
+        ["People", "human", "#3bb2d0", "http://www.wikidata.org/entity/Q5"],
+        ["People", "human who may be fictional", "#3bb2d0", "http://www.wikidata.org/entity/Q21070568"],
+        ["People", "sibling duo", "#3bb2d0", "http://www.wikidata.org/entity/Q14073567"],
+        ["People", "sibling group", "#3bb2d0", "http://www.wikidata.org/entity/Q16979650"],
+        ["People", "human biblical figure", "#3bb2d0", "http://www.wikidata.org/entity/Q20643955"],
+        ["Buildings", "castle", "#fbb03b", "http://www.wikidata.org/entity/Q23413"],
+        ["Buildings", "château", "#fbb03b", "http://www.wikidata.org/entity/Q751876"],
+        ["Buildings", "real property", "#fbb03b", "http://www.wikidata.org/entity/Q684740"],
+        ["Buildings", "architectural structure", "#fbb03b", "http://www.wikidata.org/entity/Q811979"],
+        ["Buildings", "cultural heritage ensemble", "#fbb03b", "http://www.wikidata.org/entity/Q1516079"],
+        ["Buildings", "museum", "#fbb03b", "http://www.wikidata.org/entity/Q33506"],
+        ["Buildings", "church", "#fbb03b", "http://www.wikidata.org/entity/Q16970"],
+        ["Buildings", "seminary", "#fbb03b", "http://www.wikidata.org/entity/Q233324"],
+        ["Buildings", "abbey", "#fbb03b", "http://www.wikidata.org/entity/Q160742"],
+        ["Buildings", "benedictine abbey", "#fbb03b", "http://www.wikidata.org/entity/Q817056"],
+        ["Buildings", "basilica", "#fbb03b", "http://www.wikidata.org/entity/Q163687"],
+        ["Buildings", "minor basilica", "#fbb03b", "http://www.wikidata.org/entity/Q120560"],
+        ["Buildings", "monastery", "#fbb03b", "http://www.wikidata.org/entity/Q44613"],
+        ["Buildings", "mission complex", "#fbb03b", "http://www.wikidata.org/entity/Q1564373"],
+        ["Buildings", "statue", "#fbb03b", "http://www.wikidata.org/entity/Q179700"],
+        ["Buildings", "colossal statue", "#fbb03b", "http://www.wikidata.org/entity/Q1779653"],
+        ["Buildings", "university", "#fbb03b", "http://www.wikidata.org/entity/Q3918"],
+        ["Historic events", "battle", "#e55e5e", "http://www.wikidata.org/entity/Q178561"],
+        ["Historic events", "siege", "#e55e5e", "http://www.wikidata.org/entity/Q188055"],
+        ["Historic events", "massacre", "#e55e5e", "http://www.wikidata.org/entity/Q3199915"],
+        ["Historic events", "armistice", "#e55e5e", "http://www.wikidata.org/entity/Q107706"],
+        ["Historic events", "mass murder", "#e55e5e", "http://www.wikidata.org/entity/Q750215"],
+        ["Historic events", "bomb attack", "#e55e5e", "http://www.wikidata.org/entity/Q891854"],
+        ["Historic events", "aircraft hijacking", "#e55e5e", "http://www.wikidata.org/entity/Q898712"],
+        ["Historic events", "suicide attack", "#e55e5e", "http://www.wikidata.org/entity/Q217327"],
+        ["Historic events", "terrorist attack", "#e55e5e", "http://www.wikidata.org/entity/Q2223653"],
+        ["Historic events", "Demonstration", "#e55e5e", "http://www.wikidata.org/entity/Q175331"],
+        ["Human settlements", "city", "#fed976", "http://www.wikidata.org/entity/Q515"],
+        ["Human settlements", "big city", "#fed976", "http://www.wikidata.org/entity/Q1549591"],
+        ["Human settlements", "urban area", "#fed976", "http://www.wikidata.org/entity/Q702492"],
+        ["Human settlements", "chef-lieu", "#fed976", "http://www.wikidata.org/entity/Q956214"],
+        ["Human settlements", "million city", "#fed976", "http://www.wikidata.org/entity/Q1637706"],
+        ["Human settlements", "comune of Italy", "#fed976", "http://www.wikidata.org/entity/Q747074"],
+        ["Human settlements", "commune of France", "#fed976", "http://www.wikidata.org/entity/Q484170"],
+        ["Human settlements", "urban municipality of Germany", "#fed976", "http://www.wikidata.org/entity/Q42744322"],
+        ["Human settlements", "town in Croatia", "#fed976", "http://www.wikidata.org/entity/Q15105893"],
+        ["Human settlements", "port settlement", "#fed976", "http://www.wikidata.org/entity/Q2264924"],
+        ["Human settlements", "ancient city", "#fed976", "http://www.wikidata.org/entity/Q15661340"],
+        ["Human settlements", "border town", "#fed976", "http://www.wikidata.org/entity/Q902814"],
+        ["Human settlements", "capital", "#fed976", "http://www.wikidata.org/entity/Q5119"],
+        ["Human settlements", "roman city", "#fed976", "http://www.wikidata.org/entity/Q2202509"],
+        ["Human settlements", "town", "#fed976", "http://www.wikidata.org/entity/Q3957"],
+        ["Human settlements", "human settlement", "#fed976", "http://www.wikidata.org/entity/Q486972"],
+        ["Human settlements", "spa-town", "#fed976", "http://www.wikidata.org/entity/Q4946461"],
+        ["Human settlements", "religious site", "#fed976", "http://www.wikidata.org/entity/Q15135589"],
+        ["Human settlements", "municipality seat", "#fed976", "http://www.wikidata.org/entity/Q15303838"],
+        ["Human settlements", "neighborhood", "#fed976", "http://www.wikidata.org/entity/Q123705"],
+        ["Human settlements", "residence park", "#fed976", "http://www.wikidata.org/entity/Q7315416"],
+        ["Human settlements", "hamlet", "#fed976", "http://www.wikidata.org/entity/Q5084"],
+        ["Locations", "area", "#348C31", "http://www.wikidata.org/entity/Q1414991"],
+        ["Locations", "historical region", "#348C31", "http://www.wikidata.org/entity/Q1620908"],
+        ["Locations", "U.S. state", "#348C31", "http://www.wikidata.org/entity/Q35657"],
+        ["Locations", "island", "#348C31", "http://www.wikidata.org/entity/Q23442"],
+        ["Locations", "mountain", "#348C31", "http://www.wikidata.org/entity/Q8502"],
+        ["Locations", "mountain range", "#348C31", "http://www.wikidata.org/entity/Q46831"],
+        ["Locations", "alpine group", "#348C31", "http://www.wikidata.org/entity/Q3777462"],
+        ["Locations", "hill", "#348C31", "http://www.wikidata.org/entity/Q54050"],
+        ["Locations", "volcano", "#348C31", "http://www.wikidata.org/entity/Q8072"],
+        ["Locations", "stratovolcano", "#348C31", "http://www.wikidata.org/entity/Q169358"],
+        ["Locations", "forest", "#348C31", "http://www.wikidata.org/entity/Q4421"],
+        ["Locations", "watercourse", "#348C31", "http://www.wikidata.org/entity/Q355304"],
+        ["Locations", "river", "#348C31", "http://www.wikidata.org/entity/Q4022"],
+        ["Locations", "tourist attraction", "#348C31", "http://www.wikidata.org/entity/Q570116"],
+        ["Locations", "National Park of the United States", "#348C31", "http://www.wikidata.org/entity/Q34918903"],
+        ["Locations", "park", "#348C31", "http://www.wikidata.org/entity/Q22698"],
+        ["Locations", "principal meridian", "#348C31", "http://www.wikidata.org/entity/Q7245083"],
+        ["Locations", "meridian", "#348C31", "http://www.wikidata.org/entity/Q32099"],
+        ["Locations", "circle of latitude", "#348C31", "http://www.wikidata.org/entity/Q146591"],
+        ["Other", "Other", "#223b53", null],
+    ],
     colorSchemes = {
         blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
         gender: {
+            colorMap: genderColorMap,
             text: 'By gender',
-            color: [
-                // https://www.wikidata.org/wiki/Property:P21
-                // https://meyerweb.com/eric/tools/color-blend/#3BB2D0:E55E5E:3:hex
-                'match', ['get', 'genderID', ['at', 0, ['get', 'etymologies']]],
-                'http://www.wikidata.org/entity/Q6581072', '#e55e5e', // female
-                'http://www.wikidata.org/entity/Q1052281', '#BB737B', // transgender female
-                'http://www.wikidata.org/entity/Q1097630', '#908897', // intersex
-                'http://www.wikidata.org/entity/Q2449503', '#669DB4', // transgender male
-                'http://www.wikidata.org/entity/Q6581097', '#3bb2d0', // male
-                '#223b53' // other
-            ],
-            legend: [
-                ['#e55e5e', 'Female'],
-                ['#BB737B', 'Transgender female'],
-                ['#908897', 'Intersex'],
-                ['#669DB4', 'Transgender male'],
-                ['#3bb2d0', 'Male'],
-                ['#223b53', 'Other']
-            ],
+            color: genderColorMap.reduce(
+                function(array, x) {
+                    if (x[3])
+                        array.push(x[3]);
+                    array.push(x[2]);
+                    return array;
+                }, ['match', ['get', 'genderID', ['at', 0, ['get', 'etymologies']]]]
+            ),
             urlCode: "genderStats",
         },
         type: {
+            colorMap: typeColorMap,
             text: 'By type',
-            color: [
-                'match', ['get', 'instanceID', ['at', 0, ['get', 'etymologies']]],
-                // People
-                'http://www.wikidata.org/entity/Q5', '#3bb2d0', // human
-                'http://www.wikidata.org/entity/Q21070568', '#3bb2d0', // human who may be fictional
-                'http://www.wikidata.org/entity/Q14073567', '#3bb2d0', // sibling duo
-                'http://www.wikidata.org/entity/Q16979650', '#3bb2d0', // sibling group
-                'http://www.wikidata.org/entity/Q20643955', '#3bb2d0', // human biblical figure
-                // Buildings
-                'http://www.wikidata.org/entity/Q23413', '#fbb03b', // castle
-                'http://www.wikidata.org/entity/Q751876', '#fbb03b', // château
-                'http://www.wikidata.org/entity/Q684740', '#fbb03b', // real property
-                'http://www.wikidata.org/entity/Q811979', '#fbb03b', // architectural structure
-                'http://www.wikidata.org/entity/Q1516079', '#fbb03b', // cultural heritage ensemble
-                'http://www.wikidata.org/entity/Q33506', '#fbb03b', // museum
-                'http://www.wikidata.org/entity/Q16970', '#fbb03b', // church
-                'http://www.wikidata.org/entity/Q233324', '#fbb03b', // seminary
-                'http://www.wikidata.org/entity/Q160742', '#fbb03b', // abbey
-                'http://www.wikidata.org/entity/Q817056', '#fbb03b', // benedictine abbey
-                'http://www.wikidata.org/entity/Q163687', '#fbb03b', // basilica
-                'http://www.wikidata.org/entity/Q120560', '#fbb03b', // minor basilica
-                'http://www.wikidata.org/entity/Q44613', '#fbb03b', // monastery
-                'http://www.wikidata.org/entity/Q1564373', '#fbb03b', // mission complex
-                'http://www.wikidata.org/entity/Q179700', '#fbb03b', // statue
-                'http://www.wikidata.org/entity/Q1779653', '#fbb03b', // colossal statue
-                'http://www.wikidata.org/entity/Q3918', '#fbb03b', // university
-                // Historic events
-                'http://www.wikidata.org/entity/Q178561', '#e55e5e', // battle
-                'http://www.wikidata.org/entity/Q188055', '#e55e5e', // siege
-                'http://www.wikidata.org/entity/Q3199915', '#e55e5e', // massacre
-                'http://www.wikidata.org/entity/Q107706', '#e55e5e', // armistice
-                'http://www.wikidata.org/entity/Q750215', '#e55e5e', // mass murder
-                'http://www.wikidata.org/entity/Q891854', '#e55e5e', // bomb attack
-                'http://www.wikidata.org/entity/Q898712', '#e55e5e', // aircraft hijacking
-                'http://www.wikidata.org/entity/Q217327', '#e55e5e', // suicide attack
-                'http://www.wikidata.org/entity/Q2223653', '#e55e5e', // terrorist attack
-                'http://www.wikidata.org/entity/Q175331', '#e55e5e', // Demonstration
-                // Human settlements
-                'http://www.wikidata.org/entity/Q515', '#fed976', // city
-                'http://www.wikidata.org/entity/Q1549591', '#fed976', // big city
-                'http://www.wikidata.org/entity/Q702492', '#fed976', // urban area
-                'http://www.wikidata.org/entity/Q956214', '#fed976', // chef-lieu
-                'http://www.wikidata.org/entity/Q1637706', '#fed976', // million city
-                'http://www.wikidata.org/entity/Q747074', '#fed976', // comune of Italy
-                'http://www.wikidata.org/entity/Q484170', '#fed976', // commune of France
-                'http://www.wikidata.org/entity/Q42744322', '#fed976', // urban municipality of Germany
-                'http://www.wikidata.org/entity/Q15105893', '#fed976', // town in Croatia
-                'http://www.wikidata.org/entity/Q2264924', '#fed976', // port settlement
-                'http://www.wikidata.org/entity/Q15661340', '#fed976', // ancient city
-                'http://www.wikidata.org/entity/Q902814', '#fed976', // border town
-                'http://www.wikidata.org/entity/Q5119', '#fed976', // capital
-                'http://www.wikidata.org/entity/Q2202509', '#fed976', // roman city
-                'http://www.wikidata.org/entity/Q3957', '#fed976', // town
-                'http://www.wikidata.org/entity/Q486972', '#fed976', // human settlement
-                'http://www.wikidata.org/entity/Q4946461', '#fed976', // spa-town
-                'http://www.wikidata.org/entity/Q15135589', '#fed976', // religious site
-                'http://www.wikidata.org/entity/Q15303838', '#fed976', // municipality seat
-                'http://www.wikidata.org/entity/Q123705', '#fed976', // neighborhood
-                'http://www.wikidata.org/entity/Q7315416', '#fed976', // residence park
-                'http://www.wikidata.org/entity/Q5084', '#fed976', // hamlet
-                // Locations
-                'http://www.wikidata.org/entity/Q1414991', '#348C31', // area
-                'http://www.wikidata.org/entity/Q1620908', '#348C31', // historical region
-                'http://www.wikidata.org/entity/Q35657', '#348C31', // U.S. state
-                'http://www.wikidata.org/entity/Q23442', '#348C31', // island
-                'http://www.wikidata.org/entity/Q8502', '#348C31', // mountain
-                'http://www.wikidata.org/entity/Q46831', '#348C31', // mountain range
-                'http://www.wikidata.org/entity/Q3777462', '#348C31', // alpine group
-                'http://www.wikidata.org/entity/Q54050', '#348C31', // hill
-                'http://www.wikidata.org/entity/Q8072', '#348C31', // volcano
-                'http://www.wikidata.org/entity/Q169358', '#348C31', // stratovolcano
-                'http://www.wikidata.org/entity/Q4421', '#348C31', // forest
-                'http://www.wikidata.org/entity/Q355304', '#348C31', // watercourse
-                'http://www.wikidata.org/entity/Q4022', '#348C31', // river
-                'http://www.wikidata.org/entity/Q570116', '#348C31', // tourist attraction
-                'http://www.wikidata.org/entity/Q34918903', '#348C31', // National Park of the United States
-                'http://www.wikidata.org/entity/Q22698', '#348C31', // park
-                'http://www.wikidata.org/entity/Q7245083', '#348C31', // principal meridian
-                'http://www.wikidata.org/entity/Q32099', '#348C31', // meridian
-                'http://www.wikidata.org/entity/Q146591', '#348C31', // circle of latitude
-                // Other
-                '#223b53'
-            ],
-            legend: [
-                ['#3bb2d0', "Human"],
-                ['#fbb03b', 'Buildings'],
-                ['#e55e5e', 'Historic events'],
-                ['#fed976', 'Cities'],
-                ['#348C31', 'Locations'],
-                ['#223b53', 'Other']
-            ],
+            color: typeColorMap.reduce(
+                function(array, x) {
+                    if (x[3])
+                        array.push(x[3]);
+                    array.push(x[2]);
+                    return array;
+                }, ['match', ['get', 'instanceID', ['at', 0, ['get', 'etymologies']]]]
+            ),
             urlCode: "typeStats",
         },
         black: { text: 'Uniform black', color: '#223b53', legend: null },
@@ -139,6 +133,21 @@ console.info("start", {
     default_center_lat,
     default_zoom
 });
+
+/**
+ * @param {object} colorscheme
+ * @return {array}
+ * @see https://stackoverflow.com/a/14438954/2347196
+ * @see https://codeburst.io/javascript-array-distinct-5edc93501dc4
+ */
+function colorSchemeToLegend(colorScheme) {
+    if (!colorScheme.colorMap)
+        throw new Error("colorSchemeToLegend: colorMap is not defined");
+    const map = colorScheme.colorMap,
+        distinctLabels = [...(new Set(map.map(color => color[0])))];
+    return distinctLabels.map(label => [map.find(row => row[0] == label)[2], label]);
+}
+
 let map, colorControl;
 
 document.addEventListener("DOMContentLoaded", initPage);
@@ -207,7 +216,7 @@ class BackgroundStyleControl {
 
     dropDownClickHandler(event) {
         const backgroundStyleObj = backgroundStyles[event.target.value];
-        console.info("BackgroundStyleControl dropDown click", backgroundStyleObj, event);
+        console.info("BackgroundStyleControl dropDown click", { backgroundStyleObj, event });
         if (backgroundStyleObj) {
             this._map.setStyle(backgroundStyleObj.style);
             this._ctrlDropDown.className = 'hiddenElement';
@@ -296,18 +305,18 @@ class EtymologyColorControl {
     dropDownClickHandler(event) {
         //const colorScheme = event.target.value;
         const colorScheme = colorSchemes[event.target.value];
-        console.info("EtymologyColorControl dropDown click", { event, colorScheme });
         let color, legend;
 
         if (colorScheme) {
             color = colorScheme.color;
-            legend = colorScheme.legend;
+            legend = colorSchemeToLegend(colorScheme);
         } else {
             console.error("Invalid selected color scheme", event.target.value);
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");
             color = '#3bb2d0';
             legend = null;
         }
+        console.info("EtymologyColorControl dropDown click", { event, colorScheme, color, legend });
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -343,6 +352,7 @@ class EtymologyColorControl {
         };
 
         if (colorScheme && colorScheme.urlCode) {
+            console.info("updateChart main: URL code", { colorScheme });
             //if (this._chartXHR)
             //    this._chartXHR.abort();
             const bounds = map.getBounds(),
@@ -366,24 +376,29 @@ class EtymologyColorControl {
                 stats_url = './etymologyMap.php?' + queryString,
                 xhr = new XMLHttpRequest();
             xhr.onreadystatechange = (e) => {
-                if (xhr.readyState == 4 && xhr.status == 200) {
-                    JSON.parse(xhr.responseText).forEach(row => {
-                        //data.datasets[0].backgroundColor.push(row[""]);
-                        data.labels.push(row["name"]);
-                        data.datasets[0].data.push(row["count"]);
-                    });
-                    this.setChartData(data);
-                } else {
-                    console.error("XHR error", { e });
-                    if (colorScheme.legend)
-                        this.createChartFromLegend(colorScheme.legend);
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        JSON.parse(xhr.responseText).forEach(row => {
+                            const colorMapItem = colorScheme.colorMap.find(x => x[3] == row.id),
+                                color = colorMapItem ? colorMapItem[2] : '#223b53';
+                            //console.info("updateChart row", { xhr, row, colorScheme, colorMapItem, color });
+                            data.datasets[0].backgroundColor.push(color);
+                            data.labels.push(row["name"]);
+                            data.datasets[0].data.push(row["count"]);
+                        });
+                        this.setChartData(data);
+                    } else {
+                        console.error("XHR error", { xhr, state: xhr.readyState, status: xhr.status, e });
+                        this.createChartFromLegend(colorSchemeToLegend(colorScheme));
+                    }
                 }
             }
             xhr.open('GET', stats_url, true);
             xhr.send();
             this._chartXHR = xhr;
-        } else if (colorScheme && colorScheme.legend) {
-            this.createChartFromLegend(colorScheme.legend);
+        } else if (colorScheme && colorScheme.colorMap) {
+            console.info("updateChart fallback: legend", { colorScheme });
+            this.createChartFromLegend(colorSchemeToLegend(colorScheme));
         }
     }
 

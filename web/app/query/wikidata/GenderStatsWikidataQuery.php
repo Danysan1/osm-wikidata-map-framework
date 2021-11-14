@@ -31,6 +31,7 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
             
+                ?wikidata wdt:P31 wd:Q5
                 OPTIONAL {
                     ?id ^wdt:P21 ?wikidata;
                         rdfs:label ?name.
@@ -38,6 +39,6 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
                 }
             }
             GROUP BY ?name ?id
-            ORDER BY ?name";
+            ORDER BY DESC(?count)";
     }
 }

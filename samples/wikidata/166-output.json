@@ -1,101 +1,163 @@
 {
   "head" : {
-    "vars" : [ "name", "count" ]
+    "vars" : [ "name", "id", "count" ]
   },
   "results" : {
     "bindings" : [ {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "attacco suicida"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "attentato terroristico"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "borgata"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "dirottamento aereo"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "memoriale di guerra"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "strage"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "tomba"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "12"
-      },
       "name" : {
         "xml:lang" : "it",
         "type" : "literal",
         "value" : "umano"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q5"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "12"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "tomba"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q381885"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "memoriale di guerra"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q575759"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "borgata"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q5084"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "attacco suicida"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q217327"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "animale famoso"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q26401003"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "Ursus arctos syriacus"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q839509"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "dirottamento aereo"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q898712"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "attentato terroristico"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q2223653"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "strage"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q750215"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
+      }
+    }, {
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
       }
     } ]
   }

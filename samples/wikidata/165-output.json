@@ -1,46 +1,52 @@
 {
   "head" : {
-    "vars" : [ "name", "count" ]
+    "vars" : [ "name", "id", "count" ]
   },
   "results" : {
     "bindings" : [ {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "4"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "1"
-      },
-      "name" : {
-        "xml:lang" : "it",
-        "type" : "literal",
-        "value" : "femmina"
-      }
-    }, {
-      "count" : {
-        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
-        "type" : "literal",
-        "value" : "10"
-      },
       "name" : {
         "xml:lang" : "it",
         "type" : "literal",
         "value" : "maschio"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q6581097"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "10"
       }
     }, {
+      "name" : {
+        "xml:lang" : "it",
+        "type" : "literal",
+        "value" : "femmina"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q6581072"
+      },
       "count" : {
         "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
         "type" : "literal",
         "value" : "1"
-      },
+      }
+    }, {
       "name" : {
         "xml:lang" : "it",
         "type" : "literal",
         "value" : "transessuale femmina"
+      },
+      "id" : {
+        "type" : "uri",
+        "value" : "http://www.wikidata.org/entity/Q1052281"
+      },
+      "count" : {
+        "datatype" : "http://www.w3.org/2001/XMLSchema#integer",
+        "type" : "literal",
+        "value" : "1"
       }
     } ]
   }
