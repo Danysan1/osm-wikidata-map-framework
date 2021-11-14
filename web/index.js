@@ -888,10 +888,10 @@ function mapLoadedHandler(e) {
         .setDOMContent(document.getElementById("intro"))
         .addTo(map);
 
-    mapMoveEndHandler(e)
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
-        //map.on('idle', updateDataSource); //! Called continuously, avoid
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
+    mapMoveEndHandler(e);
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
+    //map.on('idle', updateDataSource); //! Called continuously, avoid
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
     map.on('moveend', mapMoveEndHandler);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
     //map.on('zoomend', updateDataSource); // moveend is sufficient
@@ -899,8 +899,9 @@ function mapLoadedHandler(e) {
     // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
     map.addControl(new MapboxGeocoder({
         accessToken: mapboxgl.accessToken,
+        collapsed: true,
         mapboxgl: mapboxgl
-    }), 'top-left');
+    }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
     map.addControl(new mapboxgl.NavigationControl({
