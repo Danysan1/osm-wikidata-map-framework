@@ -15,7 +15,10 @@ use App\Result\QueryResult;
  */
 abstract class WikidataQuery extends BaseQuery
 {
-    private string $method;
+    /**
+     * @var string $method The HTTP method to use.
+     */
+    private $method;
 
     /**
      * @param string $query
