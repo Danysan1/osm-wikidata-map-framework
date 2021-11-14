@@ -902,7 +902,7 @@ function mapLoadedHandler(e) {
         accessToken: mapboxgl.accessToken,
         collapsed: true,
         mapboxgl: mapboxgl
-    }), 'top-right');
+    }), 'top-left');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
     map.addControl(new mapboxgl.NavigationControl({

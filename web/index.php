@@ -102,6 +102,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, hodonyms, odonymy, onomastica, odonomastica, odonimia, odonimi, Straßenname, odónimo, Odonymie, straatnaam, Toponym, OpenStreetMap, Wikidata, map, open data, linked data, urban, city">
     <link rel="canonical" href="https://www.dsantini.it/etymology/" />
+    <link rel="icon" type="image/x-icon" sizes="16x16" href="../favicon.ico">
 </head>
 
 <body>
@@ -133,7 +134,7 @@ if (!$conf->has("mapbox-gl-token")) {
 
     <template id="detail_template">
         <div class="detail_container">
-            <h2 class="element_name"></h2>
+            <h3 class="element_name"></h3>
             <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">Wikipedia</a>
             <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button" target="_blank"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <a title="Element location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_location_button" target="_self"><span class="button_img">📍</span> Location</a>
@@ -147,7 +148,7 @@ if (!$conf->has("mapbox-gl-token")) {
         <div class="etymology grid grid-auto">
             <div class="column">
                 <div class="header column etymology_header">
-                    <h1 class="etymology_name"></h1>
+                    <h2 class="etymology_name"></h2>
                     <h3 class="etymology_description"></h3>
                 </div>
                 <div class="info column">
