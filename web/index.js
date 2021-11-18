@@ -894,6 +894,14 @@ function mapMoveEndHandler(e) {
         lon = Math.round(map.getCenter().lng * 10000) / 10000,
         zoom = Math.round(map.getZoom() * 10) / 10;
     window.location.hash = "#" + lon + "," + lat + "," + zoom;
+    try {
+        if (zoom < thresholdZoomLevel)
+            document.getElementsByClassName("etymology-color-ctrl")[0].classList.add("hiddenElement");
+        else
+            document.getElementsByClassName("etymology-color-ctrl")[0].classList.remove("hiddenElement");
+    } catch (e) {
+        console.error(e);
+    }
 }
 
 function mapLoadedHandler(e) {
