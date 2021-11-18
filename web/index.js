@@ -394,7 +394,8 @@ class EtymologyColorControl {
             console.info("updateChart fallback: legend", { colorScheme });
             this.createChartFromLegend(colorSchemeToLegend(colorScheme));
         } else {
-            this._ctrlDropDown.className = 'hiddenElement';
+            if (event.type && event.type == 'change')
+                this._ctrlDropDown.className = 'hiddenElement';
             this.removeChart();
         }
     }
