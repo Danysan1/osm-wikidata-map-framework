@@ -305,18 +305,16 @@ class EtymologyColorControl {
     dropDownClickHandler(event) {
         //const colorScheme = event.target.value;
         const colorScheme = colorSchemes[event.target.value];
-        let color, legend;
+        let color;
 
         if (colorScheme) {
             color = colorScheme.color;
-            legend = colorScheme.colorMap ? colorSchemeToLegend(colorScheme) : null;
         } else {
             console.error("Invalid selected color scheme", event.target.value);
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");
             color = '#3bb2d0';
-            legend = null;
         }
-        console.info("EtymologyColorControl dropDown click", { event, colorScheme, color, legend });
+        console.info("EtymologyColorControl dropDown click", { event, colorScheme, color });
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -330,10 +328,6 @@ class EtymologyColorControl {
             }
         });
 
-        if (!legend) {
-            this._ctrlDropDown.className = 'hiddenElement';
-        }
-
         this.updateChart(event);
 
         //updateDataSource(event);
@@ -341,7 +335,7 @@ class EtymologyColorControl {
 
     updateChart(event) {
         const colorScheme = colorSchemes[this._ctrlDropDown.value];
-        console.info("updateChart", { event, colorScheme, chart: this._chart });
+        console.info("updateChart", { event, colorScheme });
 
         let data = {
             labels: [],
@@ -353,8 +347,8 @@ class EtymologyColorControl {
 
         if (colorScheme && colorScheme.urlCode) {
             console.info("updateChart main: URL code", { colorScheme });
-            //if (this._chartXHR)
-            //    this._chartXHR.abort();
+            if (this._chartXHR)
+                this._chartXHR.abort();
             const bounds = map.getBounds(),
                 southWest = bounds.getSouthWest(),
                 minLat = Math.round(southWest.lat * 1000) / 1000,
@@ -399,6 +393,9 @@ class EtymologyColorControl {
         } else if (colorScheme && colorScheme.colorMap) {
             console.info("updateChart fallback: legend", { colorScheme });
             this.createChartFromLegend(colorSchemeToLegend(colorScheme));
+        } else {
+            this._ctrlDropDown.className = 'hiddenElement';
+            this.removeChart();
         }
     }
 
@@ -419,24 +416,47 @@ class EtymologyColorControl {
     }
 
     setChartData(data) {
-        console.info("setChartData", { container: this._container, chart: this._chart, data });
-        if (this._chart) {
-            try {
-                this._container.removeChild(this._chart);
-            } catch (error) {
-                console.warn("Error removing old chart", { error, container: this._container, chart: this._chart });
-            }
-        }
+        console.info("setChartData", {
+            container: this._container,
+            chartElement: this._chartElement,
+            chartObject: this._chartObject,
+            data
+        });
+        if (this._chartObject) {
+            // https://www.chartjs.org/docs/latest/developers/updates.html
+            this._chartObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
+            this._chartObject.data.labels = data.labels;
+            this._chartObject.data.datasets[0].data = data.datasets[0].data;
 
-        //this._legend.className = 'legend';
-        this._chart = document.createElement('canvas');
-        this._chart.className = 'chart';
-        this._container.appendChild(this._chart);
-        const ctx = this._chart.getContext('2d'),
-            chartObject = new Chart(ctx, {
+            this._chartObject.update();
+        } else {
+            //this._legend.className = 'legend';
+            this._chartElement = document.createElement('canvas');
+            this._chartElement.className = 'chart';
+            this._container.appendChild(this._chartElement);
+            const ctx = this._chartElement.getContext('2d');
+            this._chartObject = new Chart(ctx, {
                 type: "pie",
                 data: data,
+                options: {
+                    animation: {
+                        animateScale: true,
+                    }
+                }
             });
+        }
+    }
+
+    removeChart() {
+        if (this._chartElement) {
+            try {
+                this._container.removeChild(this._chartElement);
+                this._chartElement = undefined;
+                this._chartObject = undefined;
+            } catch (error) {
+                console.warn("Error removing old chart", { error, container: this._container, chart: this._chartElement });
+            }
+        }
     }
 }
 
