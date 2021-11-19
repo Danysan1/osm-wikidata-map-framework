@@ -31,6 +31,65 @@
 	<results>
 		<result>
 			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q1055802</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Wojtek</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>orso bruno siriano, trovato in Iran e adottato da soldati polacchi durante la Seconda guerra mondiale</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q26401003</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q44148</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>maschio</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Wojtek</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Wojtek (soldier bear)</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>soldato</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal></literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Wojtek%20the%20bear.jpg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1942-01-01T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_date_precision'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>9</literal>
+			</binding>
+			<binding name='death_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1963-12-01T00:00:00Z</literal>
+			</binding>
+			<binding name='death_date_precision'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>10</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Stato Imperiale dell'Iran</literal>
+			</binding>
+			<binding name='death_place'>
+				<literal xml:lang='it'>zoo di Edimburgo</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
 				<uri>http://www.wikidata.org/entity/Q1345358</uri>
 			</binding>
 			<binding name='name'>
@@ -237,7 +296,7 @@
 				<literal>Rita Levi-Montalcini</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>neurologa, biochimica, neuroscienziata, scienziata, medica, politica</literal>
+				<literal>scienziata, medica, politica, neuroscienziata, neurologa, biochimica</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America, Italia, Regno d'Italia</literal>
@@ -268,6 +327,56 @@
 			</binding>
 			<binding name='death_place'>
 				<literal xml:lang='it'>Roma</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='wikidata'>
+				<uri>http://www.wikidata.org/entity/Q365144</uri>
+			</binding>
+			<binding name='name'>
+				<literal xml:lang='it'>Caitlyn Jenner</literal>
+			</binding>
+			<binding name='description'>
+				<literal xml:lang='it'>personaggio televisivo e multiplista statunitense</literal>
+			</binding>
+			<binding name='instanceID'>
+				<uri>http://www.wikidata.org/entity/Q5</uri>
+			</binding>
+			<binding name='genderID'>
+				<uri>http://www.wikidata.org/entity/Q1052281</uri>
+			</binding>
+			<binding name='gender'>
+				<literal xml:lang='it'>transessuale femmina</literal>
+			</binding>
+			<binding name='wikipedia'>
+				<uri>https://it.wikipedia.org/wiki/Caitlyn_Jenner</uri>
+			</binding>
+			<binding name='commons'>
+				<literal>Caitlyn Jenner</literal>
+			</binding>
+			<binding name='occupations'>
+				<literal>attrice, donna d'affari, attrice televisiva, produttrice cinematografica, modella, speaker motivazionale, telecronista sportivo, pilota automobilistico, atleta</literal>
+			</binding>
+			<binding name='citizenship'>
+				<literal>Stati Uniti d'America</literal>
+			</binding>
+			<binding name='pictures'>
+				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Caitlyn%20Jenner.jpeg</literal>
+			</binding>
+			<binding name='prizes'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_date'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1949-12-28T00:00:00Z</literal>
+			</binding>
+			<binding name='birth_date_precision'>
+				<literal datatype='http://www.w3.org/2001/XMLSchema#integer'>11</literal>
+			</binding>
+			<binding name='event_place'>
+				<literal></literal>
+			</binding>
+			<binding name='birth_place'>
+				<literal xml:lang='it'>Mount Kisco</literal>
 			</binding>
 		</result>
 		<result>
@@ -393,7 +502,7 @@
 				<literal xml:lang='it'>maschio</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>diacono cattolico, sacerdote cattolico</literal>
+				<literal>sacerdote cattolico, diacono cattolico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal></literal>
@@ -511,7 +620,7 @@
 				<literal></literal>
 			</binding>
 			<binding name='event_place'>
-				<literal>Manhattan, contea di Arlington, Shanksville</literal>
+				<literal>contea di Arlington, Manhattan, Shanksville</literal>
 			</binding>
 			<binding name='event_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>2001-09-11T00:00:00Z</literal>
@@ -546,7 +655,7 @@
 				<literal>Stanley Kubrick</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>fotografo, sceneggiatore, produttore esecutivo, operatore di ripresa, regista cinematografico, direttore della fotografia, scacchista, regista, scenografo, montatore, produttore cinematografico</literal>
+				<literal>sceneggiatore, fotografo, direttore della fotografia, produttore cinematografico, scenografo, regista, montatore, regista cinematografico, produttore esecutivo, scacchista, operatore di ripresa</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Stati Uniti d'America</literal>
@@ -555,7 +664,7 @@
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Kubrick%20on%20the%20set%20of%20Barry%20Lyndon%20%281975%20publicity%20photo%29.jpg</literal>
 			</binding>
 			<binding name='prizes'>
-				<literal>Leone d'oro alla carriera, Oscar ai migliori effetti speciali</literal>
+				<literal>Leone d'oro alla carriera</literal>
 			</binding>
 			<binding name='birth_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1928-07-26T00:00:00Z</literal>
@@ -602,7 +711,7 @@
 				<literal>Guglielmo Marconi</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>uomo d'affari, politico, uomo politico, scienziato, ingegnere, fisico, inventore</literal>
+				<literal>uomo d'affari, politico, uomo politico, scienziato, inventore, ingegnere, fisico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Regno d'Italia</literal>
@@ -661,7 +770,7 @@
 				<literal>Michelangelo Antonioni</literal>
 			</binding>
 			<binding name='occupations'>
-				<literal>sceneggiatore, scrittore, poeta, pittore, regista cinematografico, montatore, produttore cinematografico</literal>
+				<literal>sceneggiatore, scrittore, poeta, produttore cinematografico, montatore, pittore, regista cinematografico</literal>
 			</binding>
 			<binding name='citizenship'>
 				<literal>Italia, Regno d'Italia</literal>
@@ -670,7 +779,7 @@
 				<literal>http://commons.wikimedia.org/wiki/Special:FilePath/Michelangelo%20Antonioni%20portrait%20%28cropped%29.jpg</literal>
 			</binding>
 			<binding name='prizes'>
-				<literal>Palma d'oro, Leone d'oro</literal>
+				<literal>Leone d'oro, Premio della giuria, Palma d'oro</literal>
 			</binding>
 			<binding name='birth_date'>
 				<literal datatype='http://www.w3.org/2001/XMLSchema#dateTime'>1912-09-29T00:00:00Z</literal>

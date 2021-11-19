@@ -2,11 +2,11 @@
 
 namespace App\Query;
 
-require_once(__DIR__ . "/Query.php");
+require_once(__DIR__ . "/JSONQuery.php");
 require_once(__DIR__ . "/../result/QueryResult.php");
 require_once(__DIR__ . "/../result/GeoJSONQueryResult.php");
 
-use \App\Query\Query;
+use \App\Query\JSONQuery;
 use \App\Result\QueryResult;
 use \App\Result\GeoJSONQueryResult;
 
@@ -15,7 +15,7 @@ use \App\Result\GeoJSONQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-interface GeoJSONQuery extends Query
+interface GeoJSONQuery extends JSONQuery
 {
     /**
      * @return GeoJSONQueryResult

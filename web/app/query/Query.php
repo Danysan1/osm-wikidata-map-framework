@@ -22,5 +22,7 @@ interface Query {
      */
     public function send(): QueryResult;
 
+    public function getQueryTypeCode(): string;
+
     public function __toString(): string;
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Query\Decorators;
+namespace App\Query\Cache;
 
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../Query.php");
@@ -17,7 +17,7 @@ use \App\Query\Query;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-abstract class CachedQuery implements Query
+abstract class CSVCachedQuery implements Query
 {
     /** @var string $cacheFileBasePath */
     private $cacheFileBasePath;
@@ -84,10 +84,7 @@ abstract class CachedQuery implements Query
      */
     protected abstract function getResultFromRow(array $row);
 
-    /**
-     * @return array|null
-     */
-    protected abstract function getRowFromResult(QueryResult $result);
+    protected abstract function getRowFromResult(QueryResult $result): array;
 
     protected abstract function shouldKeepRow(array $row): bool;
 
@@ -102,7 +99,7 @@ abstract class CachedQuery implements Query
      */
     public function send(): QueryResult
     {
-        $className = str_replace("\\", "_", get_class($this->baseQuery));
+        $className = $this->baseQuery->getQueryTypeCode();
         $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
         $cacheFile = @fopen($cacheFilePath, "r");
         $result = null;
@@ -141,22 +138,28 @@ abstract class CachedQuery implements Query
                 $this->serverTiming->add("cache-missed-query");
 
             if ($result->isSuccessful()) {
-                // Write the result to the cache file
-                $newRow = $this->getRowFromResult($result);
-                //error_log("CachedQuery: add new row for " . $this->getBBox());
-                //error_log("CachedQuery new row: ".json_encode($newRow));
-                if (!empty($newRow))
+                try {
+                    // Write the result to the cache file
+                    $newRow = $this->getRowFromResult($result);
+                    //error_log("CachedQuery: add new row for " . $this->getBBox());
+                    //error_log("CachedQuery new row: ".json_encode($newRow));
+                    if (empty($newRow)) {
+                        error_log(get_class($this) . ": new row is empty, skipping cache save");
+                    }
                     array_unshift($newCache, $newRow);
 
-                error_log("CachedQuery: save cache of " . count($newCache) . " rows for $className");
-                $cacheFile = @fopen($cacheFilePath, "w+");
-                if (empty($cacheFile)) {
-                    error_log("CachedQuery: failed to open cache file for writing");
-                } else {
-                    foreach ($newCache as $row) {
-                        fputcsv($cacheFile, $row);
+                    error_log("CachedQuery: save cache of " . count($newCache) . " rows for $className");
+                    $cacheFile = @fopen($cacheFilePath, "w+");
+                    if (empty($cacheFile)) {
+                        error_log("CachedQuery: failed to open cache file for writing");
+                    } else {
+                        foreach ($newCache as $row) {
+                            fputcsv($cacheFile, $row);
+                        }
+                        fclose($cacheFile);
                     }
-                    fclose($cacheFile);
+                } catch (\Exception $e) {
+                    error_log("CachedQuery: failed to write cache file: " . $e->getMessage());
                 }
             } else {
                 error_log("CachedQuery: unsuccessful request, discarding cache changes");
@@ -166,6 +169,11 @@ abstract class CachedQuery implements Query
         }
 
         return $result;
+    }
+
+    public function getQueryTypeCode(): string
+    {
+        return $this->baseQuery->getQueryTypeCode();
     }
 
     public function __toString(): string

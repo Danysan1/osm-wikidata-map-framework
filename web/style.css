@@ -101,14 +101,20 @@ div.detail_container a.k-button>.button_img {
 }
 
 select.hiddenElement,
-table.hiddenElement {
-    display: none;
+table.hiddenElement,
+canvas.hiddenElement,
+.hiddenElement {
+    display: none !important;
+}
+
+canvas.chart {
+    width: 25em;
+    height: 40em;
 }
 
 select.visibleDropDown {
-    display: block;
-    margin-right: 0.5em;
-    margin-left: 0.5em;
+    display: inline-block;
+    margin: 5px;
 }
 
 div.snackbar,
@@ -120,10 +126,17 @@ div#welcome_board {
 div.custom-ctrl>table {
     border-collapse: collapse;
     border-spacing: 0;
+    width: 100%;
+}
+
+div.custom-ctrl>table>tr>td.button-cell {
+    width: 1em;
 }
 
 div.custom-ctrl>table>tr>td {
     padding: 0;
+    text-align: left;
+    /*text-align: right;*/
 }
 
 div.detail_container div.header>h2,
