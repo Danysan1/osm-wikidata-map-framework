@@ -1,17 +1,4 @@
 <?php
-require_once("./vendor/autoload.php");
-
-$db = new PDO(
-    "sqlite:web/open-etymology-map.sqlite",
-    "oem",
-    "oem",
-    [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES => true
-    ]
-);
-
 function getOverpassEndpoint(): string
 {
     $possibleEndpoints = [ // https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
@@ -25,8 +12,13 @@ function getOverpassEndpoint(): string
     return $possibleEndpoints[array_rand($possibleEndpoints)];
 }
 
-define('LATITUDE_INCREMENT', 1);
-define('LONGITUDINE_INCREMENT', 1);
+$geoJSONData = [
+    "type" => "FeatureCollection",
+    "features" => []
+];
+
+define('LATITUDE_INCREMENT', 2);
+define('LONGITUDINE_INCREMENT', 2);
 define('MAX_TRIES', 5);
 $startLat = isset($argv[1]) ? (float)$argv[1] : -90;
 $startLon = isset($argv[2]) ? (float)$argv[2] : -180;
@@ -45,15 +37,12 @@ for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
         for ($try = 0; $try < MAX_TRIES && $response == false; $try++) {
             try {
                 sleep($try * (int)exp($try)); // exponential back-off
-                $query = "[out:json];
+                $query = "[out:csv(::count; false)];
                     (
                         nwr['name:etymology:wikidata']($bbox);
                         nwr['subject:wikidata']($bbox);
-                        nwr['wikidata']($bbox);
                     );
-                    out body;
-                    >;
-                    out skel qt;";
+                    out count;";
                 $url = getOverpassEndpoint() . '?data=' . urlencode($query);
                 echo 'executing... ';
                 $response = file_get_contents($url);
@@ -63,9 +52,6 @@ for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
                 } elseif (trim($response) === "") {
                     throw new Exception("Empty result");
                 } elseif (intval(trim($response)) > 0) {
-                    $db->prepare(
-                        "TODO"
-                    );
                     $geoJSONData["features"][] = [
                         "type" => "Feature",
                         "geometry" => [
@@ -91,3 +77,5 @@ for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
         }
     }
 }
+if (!file_put_contents("../web/global-map.geojson", json_encode($geoJSONData)))
+    echo json_encode($geoJSONData);
