@@ -10,7 +10,7 @@
  Target Server Version : 3030001
  File Encoding         : 65001
 
- Date: 17/11/2021 21:14:20
+ Date: 20/11/2021 00:23:25
 */
 
 PRAGMA foreign_keys = false;
@@ -100,17 +100,16 @@ CREATE TABLE "etymology_text" (
 );
 
 -- ----------------------------
--- Table structure for tag
+-- Table structure for osmdata
 -- ----------------------------
-DROP TABLE IF EXISTS "tag";
-CREATE TABLE "tag" (
-  "tag_id" UNSIGNED BIG INT NOT NULL,
-  "tag_ele_id" UNSIGNED BIG INT NOT NULL,
-  "tag_key" VARCHAR,
-  "tag_value" VARCHAR,
-  "tag_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY ("tag_id"),
-  CONSTRAINT "tag_ele" FOREIGN KEY ("tag_ele_id") REFERENCES "element" ("ele_id") ON DELETE CASCADE ON UPDATE NO ACTION
+DROP TABLE IF EXISTS "osmdata";
+CREATE TABLE "osmdata" (
+  "id" UNSIGNED BIG INT NOT NULL,
+  "wkb" GEOMETRY,
+  "osm_type" TEXT,
+  "osm_id" BIGINT,
+  "tags" JSON,
+  PRIMARY KEY ("id")
 );
 
 -- ----------------------------
