@@ -892,15 +892,14 @@ function mapMoveEndHandler(e) {
     updateDataSource(e);
     const lat = Math.round(map.getCenter().lat * 10000) / 10000,
         lon = Math.round(map.getCenter().lng * 10000) / 10000,
-        zoom = Math.round(map.getZoom() * 10) / 10;
+        zoom = Math.round(map.getZoom() * 10) / 10,
+        etymologyContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
     window.location.hash = "#" + lon + "," + lat + "," + zoom;
-    try {
+    if (etymologyContainer) {
         if (zoom < thresholdZoomLevel)
-            document.getElementsByClassName("etymology-color-ctrl")[0].classList.add("hiddenElement");
+            etymologyContainer.classList.add("hiddenElement");
         else
-            document.getElementsByClassName("etymology-color-ctrl")[0].classList.remove("hiddenElement");
-    } catch (e) {
-        console.error(e);
+            etymologyContainer.classList.remove("hiddenElement");
     }
 }
 

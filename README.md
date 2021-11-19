@@ -17,7 +17,7 @@ For more details see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Screenshots
 
+![Detail view](screenshots/blue.jpeg)
+![Color grouping by gender](screenshots/by_gender.jpeg)
+![Color grouping by type](screenshots/by_type.jpeg)
 ![Cluster view](screenshots/clusters.jpeg)
-![Base view](screenshots/blue.jpeg)
-![Color by type](screenshots/by_type.jpeg)
-![Color by gender](screenshots/by_gender.jpeg) |
