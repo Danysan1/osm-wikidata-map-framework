@@ -1,3 +1,7 @@
+SELECT load_extension('mod_spatialite');
+
+DROP TABLE IF EXISTS osmgeojson;
+
 /*
  Navicat SQLite Data Transfer
 
@@ -20,17 +24,16 @@ PRAGMA foreign_keys = false;
 -- ----------------------------
 DROP TABLE IF EXISTS "element";
 CREATE TABLE "element" (
-  "ele_id" UNSIGNED BIG INT NOT NULL,
-  "ele_lat" FLOAT,
-  "ele_lon" FLOAT,
+  "ele_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  "ele_geom" GEOMETRY NOT NULL,
   "ele_osm_type" VARCHAR(8) NOT NULL,
   "ele_osm_id" INT NOT NULL,
-  "ele_wkb" VARCHAR,
+  "ele_lat" FLOAT,
+  "ele_lon" FLOAT,
   "ele_wikidata_id" VARCHAR(10),
   "ele_subject_wikidata_id" VARCHAR(10),
   "ele_name_etymology_wikidata_id" VARCHAR(10),
-  "ele_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY ("ele_id")
+  "ele_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 -- ----------------------------
@@ -51,7 +54,7 @@ CREATE TABLE "element_etymology" (
 -- ----------------------------
 DROP TABLE IF EXISTS "etymology";
 CREATE TABLE "etymology" (
-  "ety_id" UNSIGNED BIG INT NOT NULL,
+  "ety_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   "ety_wikidata_id" VARCHAR(10) NOT NULL,
   "ety_named_after_ety_id" UNSIGNED BIG INT,
   "ety_instance_of_ety_id" UNSIGNED BIG INT,
@@ -69,7 +72,6 @@ CREATE TABLE "etymology" (
   "ety_death_date_precision" INT,
   "ety_commons_url" VARCHAR,
   "ety_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY ("ety_id"),
   CONSTRAINT "ety_named_after_ety" FOREIGN KEY ("ety_named_after_ety_id") REFERENCES "etymology" ("ety_id") ON DELETE SET NULL ON UPDATE NO ACTION,
   CONSTRAINT "ety_instance_of_ety" FOREIGN KEY ("ety_instance_of_ety_id") REFERENCES "etymology" ("ety_id") ON DELETE SET NULL ON UPDATE NO ACTION,
   CONSTRAINT "ety_gender_ety" FOREIGN KEY ("ety_gender_ety_id") REFERENCES "etymology" ("ety_id") ON DELETE SET NULL ON UPDATE NO ACTION
@@ -80,7 +82,7 @@ CREATE TABLE "etymology" (
 -- ----------------------------
 DROP TABLE IF EXISTS "etymology_text";
 CREATE TABLE "etymology_text" (
-  "ett_id" UNSIGNED BIG INT NOT NULL,
+  "ett_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   "ett_ety_id" UNSIGNED BIG INT NOT NULL,
   "ett_language" CHAR(2),
   "ett_name" VARCHAR,
@@ -95,22 +97,20 @@ CREATE TABLE "etymology_text" (
   "ett_birth_place" VARCHAR,
   "ett_death_place" VARCHAR,
   "ett_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY ("ett_id"),
   CONSTRAINT "ett_ety" FOREIGN KEY ("ett_ety_id") REFERENCES "etymology" ("ety_id") ON DELETE CASCADE ON UPDATE NO ACTION
 );
 
 -- ----------------------------
 -- Table structure for osmdata
 -- ----------------------------
-DROP TABLE IF EXISTS "osmdata";
-CREATE TABLE "osmdata" (
-  "id" UNSIGNED BIG INT NOT NULL,
-  "wkb" GEOMETRY,
-  "osm_type" TEXT,
-  "osm_id" BIGINT,
-  "tags" JSON,
-  PRIMARY KEY ("id")
-);
+-- DROP TABLE IF EXISTS "osmdata";
+-- CREATE TABLE "osmdata" (
+--   "id" UNSIGNED BIG INT NOT NULL PRIMARY KEY,
+--   "geom" GEOMETRY,
+--   "osm_type" TEXT,
+--   "osm_id" BIGINT,
+--   "tags" JSON
+-- );
 
 -- ----------------------------
 -- Indexes structure for table element
