@@ -1,5 +1,10 @@
 SELECT load_extension('mod_spatialite');
 
+SELECT CASE WHEN 0=CheckSpatialMetaData() THEN InitSpatialMetaDataFull('WGS84_ONLY') END;
+
+SELECT DisableSpatialIndex('osmgeojson','geometry');
+SELECT DiscardGeometryColumn('osmgeojson','geometry');
+DROP TABLE IF EXISTS idx_osmgeojson_geometry;
 DROP TABLE IF EXISTS osmgeojson;
 
 /*
@@ -103,14 +108,15 @@ CREATE TABLE "etymology_text" (
 -- ----------------------------
 -- Table structure for osmdata
 -- ----------------------------
--- DROP TABLE IF EXISTS "osmdata";
--- CREATE TABLE "osmdata" (
---   "id" UNSIGNED BIG INT NOT NULL PRIMARY KEY,
---   "geom" GEOMETRY,
---   "osm_type" TEXT,
---   "osm_id" BIGINT,
---   "tags" JSON
--- );
+SELECT DiscardGeometryColumn('osmdata','geometry');
+DROP TABLE IF EXISTS "osmdata";
+CREATE TABLE "osmdata" (
+  "id" UNSIGNED BIG INT NOT NULL PRIMARY KEY,
+  "osm_type" TEXT,
+  "osm_id" BIGINT,
+  "tags" JSON
+);
+SELECT AddGeometryColumn('osmdata', 'geometry', 4326, 'GEOMETRY');
 
 -- ----------------------------
 -- Indexes structure for table element
