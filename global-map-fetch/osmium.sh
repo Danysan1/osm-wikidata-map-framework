@@ -1,14 +1,16 @@
 #!/bin/bash
-set -e
 
+# You must pass as argument to this script the name of the .pbf input extract
+#
 # https://docs.osmcode.org/osmium/latest/osmium-export.html
 # https://docs.osmcode.org/osmium/latest/osmium-extract.html
 # https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
 
+set -e
+
 if [ ! -f "filtered_$1" ]; then
     echo '========================= Filtering OSM data... ========================='
-    #osmium tags-filter --verbose --overwrite -o "filtered_$1" $1 'name:etymology,name:etymology:wikidata,subject,subject:wikidata,wikidata'
-    osmium tags-filter --verbose --overwrite -o "filtered_$1" $1 'subject:wikidata'
+    osmium tags-filter --verbose --overwrite -o "filtered_$1" $1 'name:etymology,name:etymology:wikidata,subject,subject:wikidata,wikidata'
 fi
 
 # if [ ! -f "filtered_$1.txt" ]; then
