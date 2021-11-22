@@ -124,6 +124,16 @@ const backgroundStyles = {
         red: { text: 'Uniform red', color: '#e55e5e', legend: null },
         orange: { text: 'Uniform orange', color: '#fbb03b', legend: null },
     };
+const urlSearchParams = new URLSearchParams(window.location.search);
+if (urlSearchParams.has("colorScheme")) {
+    const colorScheme = urlSearchParams.get("colorScheme"),
+        validColorSchemes = Object.keys(colorSchemes);
+    if (validColorSchemes.includes(colorScheme)) {
+        defaultColorScheme = colorScheme;
+    } else {
+        console.warn("Not using invalid color scheme from parameters", { colorScheme, validColorSchemes, defaultColorScheme })
+    }
+}
 console.info("start", {
     thresholdZoomLevel,
     minZoomLevel,
