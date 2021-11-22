@@ -380,8 +380,10 @@ class EtymologyColorControl {
                 stats_url = './etymologyMap.php?' + queryString,
                 xhr = new XMLHttpRequest();
             xhr.onreadystatechange = (e) => {
-                if (xhr.readyState == 4) {
-                    if (xhr.status == 200) {
+                const readyState = xhr.readyState,
+                    status = xhr.status;
+                if (readyState == XMLHttpRequest.DONE) {
+                    if (status == 200) {
                         JSON.parse(xhr.responseText).forEach(row => {
                             const colorMapItem = colorScheme.colorMap.find(x => x[3] == row.id),
                                 color = colorMapItem ? colorMapItem[2] : '#223b53';
@@ -391,8 +393,10 @@ class EtymologyColorControl {
                             data.datasets[0].data.push(row["count"]);
                         });
                         this.setChartData(data);
+                    } else if (readyState == XMLHttpRequest.UNSENT || status == 0) {
+                        console.info("XHR aborted", { xhr, readyState, status, e });
                     } else {
-                        console.error("XHR error", { xhr, state: xhr.readyState, status: xhr.status, e });
+                        console.error("XHR error", { xhr, readyState, status, e });
                         this.createChartFromLegend(colorSchemeToLegend(colorScheme));
                     }
                 }
