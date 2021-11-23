@@ -30,7 +30,12 @@ The default production instance ( https://www.dsantini.it/etymology/ ) and devel
 
 #### Configuration
 
-In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`. A template for this config file can be found in  [open-etymology-map.template.ini](open-etymology-map.template.ini).
+In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`.
+
+A template for this config file can be found in [`open-etymology-map.template.ini`](open-etymology-map.template.ini). When copying the template `.ini` you must set `mapbox-gl-token`, while other options should already be ok as a starting point.
+
+If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
+If you enable Sentry JS on the frontend remember to add `www.google.*` and `inline` in your project's settings `Security Headers` > `CSP Instructions` (`https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`) > `Additional ignored sources` or you will quickly burn through your quota because of irrelevant CSP messages.
 
 #### Local development with Docker
 

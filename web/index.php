@@ -100,7 +100,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta property="og:locale" content="<?= $defaultCulture; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
-    <meta name="keywords" content="etymology, hodonyms, odonymy, onomastica, odonomastica, odonimia, odonimi, Straßenname, odónimo, Odonymie, straatnaam, Toponym, OpenStreetMap, Wikidata, map, open data, linked data, urban, city">
+    <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, urban, city">
     <link rel="canonical" href="https://www.dsantini.it/etymology/" />
     <link rel="icon" type="image/x-icon" sizes="16x16" href="../favicon.ico">
 </head>
