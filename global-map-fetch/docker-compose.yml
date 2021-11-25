@@ -2,7 +2,6 @@ version: "3.9"
 services:
 
   postgres:
-    #image: openfirmware/postgres-osm
     image: postgis/postgis:14-3.1-alpine
     ports:
       - "5432:5432"
@@ -16,7 +15,7 @@ services:
 
 
   pgadmin:
-    image: dpage/pgadmin4:6
+    image: dpage/pgadmin4:6.2
     ports:
       - "8080:80"
     depends_on:
@@ -29,12 +28,7 @@ services:
       - ./pgadmin_init.json:/pgadmin4/servers.json
     restart: "always"
       
-  osm2pgsql:
-    #image: openfirmware/osm2pgsql
-    image: disrvptor/osm2pgsql
-    command: osm2pgsql --create --slim --hstore --cache 2000 --number-processes 2 --database osm --username osm --host postgres --port 5432 /osm/extract.osm.pbf
+  osmium:
+    image: stefda/osmium-tool
     depends_on:
       - postgres
-    volumes:
-      - ./extract.osm.pbf:/osm/extract.osm.pbf
-    restart: "no"
