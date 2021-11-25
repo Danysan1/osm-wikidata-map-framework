@@ -17,7 +17,7 @@ For more details see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Screenshots
 
-![Detail view](screenshots/blue.jpeg)
-![Color grouping by gender](screenshots/by_gender.jpeg)
-![Color grouping by type](screenshots/by_type.jpeg)
-![Cluster view](screenshots/clusters.jpeg)
+[![Detail view](screenshots/blue.jpeg)](https://www.dsantini.it/etymology/#11.71,44.3415,15)
+[![Color grouping by gender](screenshots/by_gender.jpeg)](https://www.dsantini.it/etymology/?colorScheme=gender#11.7088,44.3538,15)
+[![Color grouping by type](screenshots/by_type.jpeg)](https://www.dsantini.it/etymology/?colorScheme=type#-121.904,37.3287,15.1)
+[![Cluster view](screenshots/clusters.jpeg)](https://www.dsantini.it/etymology/#-122.0721,37.5315,9)

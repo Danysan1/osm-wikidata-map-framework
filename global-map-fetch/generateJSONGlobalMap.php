@@ -77,5 +77,5 @@ for ($minLat = $startLat; $minLat < $endLat; $minLat += LATITUDE_INCREMENT) {
         }
     }
 }
-if (!file_put_contents("web/global-map.geojson", json_encode($geoJSONData)))
+if (!file_put_contents("../web/global-map.geojson", json_encode($geoJSONData)))
     echo json_encode($geoJSONData);
