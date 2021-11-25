@@ -30,5 +30,9 @@ services:
       
   osmium:
     image: stefda/osmium-tool
+    volumes:
+      - ./workdir:/workdir
+    working_dir: /workdir
+    command: ./osmium.sh extract.osm.pbf
     depends_on:
       - postgres
