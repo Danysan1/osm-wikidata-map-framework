@@ -47,7 +47,8 @@ $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 // "en-US" => "en"
 $langMatches = [];
 if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty($langMatches[1])) {
-    throw new Exception("Invalid language code");
+    http_response_code(400);
+    die('{"error":"Invalid language code."};');
 }
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
