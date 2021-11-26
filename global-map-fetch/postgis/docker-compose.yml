@@ -36,3 +36,4 @@ services:
     command: ./osmium.sh extract.osm.pbf
     depends_on:
       - postgres
+    restart: "no"
