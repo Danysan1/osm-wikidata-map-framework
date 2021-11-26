@@ -5,7 +5,7 @@
             "Group": "Servers",
             "Port": 5432,
             "Username": "osm",
-            "Host": "postgres",
+            "Host": "postgis_db",
             "SSLMode": "prefer",
             "MaintenanceDB": "postgres"
         }
