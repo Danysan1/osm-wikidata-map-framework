@@ -1,0 +1,5 @@
+SELECT ?ele ?namedAfter
+WHERE {
+  VALUES ?ele { __ELEMENTS__ }.
+  ?ele wdt:P138 ?namedAfter.
+}
