@@ -7,22 +7,22 @@
 set -e
 
 if [ -z "$1" ]; then
-    echo 'You must pass as first argument the name of the .pbf input extract'
+    echo 'ERROR: You must pass as first argument the name of the .pbf input extract'
     exit 10
 fi
 
 if [ ! -f "$1" ]; then
-    echo 'The file you passed as first argument does not exist'
+    echo 'ERROR: The file you passed as first argument does not exist'
     exit 20
 fi
 
 if ! command -v osmium > /dev/null; then
-    echo 'osmium is not installed'
+    echo 'ERROR: osmium is not installed'
     exit 30
 else
     osmium_version=$( osmium --version | egrep '^osmium version' | cut -d ' ' -f 3 )
     if [[ "$osmium_version" == 1.1 ]] || [[ "$osmium_version" != 1.1* ]]; then
-        echo "osmium 1.10 or above is required, $osmium_version is installed"
+        echo "ERROR: osmium 1.10 or above is required, $osmium_version is installed"
         exit 40
     fi
 fi

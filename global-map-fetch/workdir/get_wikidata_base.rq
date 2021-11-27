@@ -2,7 +2,7 @@ SELECT ?wikidata
     (SAMPLE(?instanceID) AS ?instanceID)
     (SAMPLE(?genderID) AS ?genderID)
     (SAMPLE(?commons) AS ?commons)
-    (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='\t') AS ?pictures)
+    (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='`') AS ?pictures)
     (SAMPLE(?event_date) AS ?event_date)
     (SAMPLE(?event_date_precision) AS ?event_date_precision)
     (SAMPLE(?start_date) AS ?start_date)
