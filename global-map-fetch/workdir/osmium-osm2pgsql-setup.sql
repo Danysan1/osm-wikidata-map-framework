@@ -29,10 +29,10 @@ CREATE TABLE "wikidata_picture" (
 );
 
 CREATE TABLE "wikidata_named_after" (
-  wd_wikidata_id VARCHAR(10) NOT NULL,
-  wd_wikidata_named_after_id VARCHAR(10) NOT NULL,
-  CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wd_wikidata_id, wd_wikidata_named_after_id),
-  CONSTRAINT "wd_named_after_id_fkey" FOREIGN KEY ("wd_wikidata_named_after_id") REFERENCES "wikidata" ("wd_wikidata_id") ON DELETE SET NULL ON UPDATE NO ACTION
+  wna_wikidata_id VARCHAR(10) NOT NULL,
+  wna_named_after_wikidata_id VARCHAR(10) NOT NULL,
+  CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wikidata_id, wna_named_after_wikidata_id),
+  CONSTRAINT "wd_named_after_id_fkey" FOREIGN KEY ("wna_named_after_wikidata_id") REFERENCES "wikidata" ("wd_wikidata_id") ON DELETE SET NULL ON UPDATE NO ACTION
 );
 
 CREATE TABLE "wikidata_text" (
@@ -64,23 +64,3 @@ SELECT CASE
     ELSE $1::TIMESTAMP
 END;
 $BODY$;
-
-DROP VIEW IF EXISTS public."element";
-CREATE VIEW public."element" AS
-SELECT
-  way AS geometry,
-  'node' AS osm_type,
-  osm_id
-FROM public."planet_osm_point"
-UNION
-SELECT
-  way AS geometry,
-  'way' AS osm_type,
-  osm_id
-FROM public."planet_osm_line"
-UNION
-SELECT
-  way AS geometry,
-  'relation' AS osm_type,
-  osm_id
-FROM public."planet_osm_line";

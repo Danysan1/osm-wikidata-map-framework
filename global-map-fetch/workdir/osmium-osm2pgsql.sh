@@ -76,4 +76,4 @@ else
     psql -h "$2" -d osm -U osm -t -f 'load_wikidata_base.tmp.sql'
 fi
 
-#psql -h "$2" -d osm -U osm -f 'osmium-osm2pgsql-convert.sql'
+psql -h "$2" -d osm -U osm -f 'create_view.sql'
