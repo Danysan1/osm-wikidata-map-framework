@@ -1,4 +1,3 @@
-DROP MATERIALIZED VIEW IF EXISTS public."element";
 CREATE MATERIALIZED VIEW public."element" AS
 SELECT *
 FROM (

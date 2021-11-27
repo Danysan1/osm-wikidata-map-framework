@@ -1,3 +1,4 @@
+DROP MATERIALIZED VIEW IF EXISTS public."element";
 DROP TABLE IF EXISTS "wikidata_text";
 DROP TABLE IF EXISTS "wikidata_named_after";
 DROP TABLE IF EXISTS "wikidata_picture";

@@ -4,5 +4,5 @@ CREATE TABLE "osmdata" (
   "geom" GEOMETRY NOT NULL,
   "osm_type" TEXT NOT NULL,
   "osm_id" BIGINT NOT NULL,
-  "tags" JSON
+  "tags" JSONB
 );
