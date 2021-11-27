@@ -1,5 +1,5 @@
-SELECT ?ele ?namedAfter
+SELECT ?element ?namedAfter
 WHERE {
-  VALUES ?ele { __ELEMENTS__ }.
-  ?ele wdt:P138 ?namedAfter.
+  VALUES ?element { __ELEMENTS__ }.
+  ?element wdt:P138 ?namedAfter.
 }
