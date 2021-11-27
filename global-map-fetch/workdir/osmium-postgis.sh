@@ -10,5 +10,3 @@ psql -h "$2" -U osm -d osm -f 'osmium-postgis-setup.sql'
 echo '========================= Loading data into DB ========================='
 psql -h "$2" -U osm -d osm -c "\copy osmdata FROM 'filtered_$1.pg'"
 
-echo '========================= Converting data ========================='
-psql -h "$2" -U osm -d osm -f 'osmium-postgis-convert.sql'
