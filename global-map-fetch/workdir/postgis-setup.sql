@@ -20,7 +20,9 @@ CREATE TABLE "wikidata" (
   "wd_death_date" TIMESTAMP,
   "wd_death_date_precision" INT,
   "wd_commons" VARCHAR,
-  "wd_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  "wd_gender_id" INT REFERENCES wikidata(wd_id),
+  "wd_instance_id" INT REFERENCES wikidata(wd_id),
+  "wd_download_date" TIMESTAMP DEFAULT NULL
 );
 
 CREATE TABLE "etymology" (
@@ -28,7 +30,7 @@ CREATE TABLE "etymology" (
   "et_type" VARCHAR(7),
   "et_osm_id" BIGINT,
   "et_wd_id" INT REFERENCES wikidata(wd_id),
-  CONSTRAINT etymolgy_element_wikidata UNIQUE (et_type, et_osm_id, et_wd_id)
+  CONSTRAINT etymolgy_unique_element_wikidata UNIQUE (et_type, et_osm_id, et_wd_id)
 );
 
 CREATE INDEX IF NOT EXISTS wd_wikidata_id_index
@@ -54,7 +56,6 @@ CREATE TABLE "wikidata_text" (
   "wdt_language" CHAR(2) NOT NULL,
   "wdt_name" VARCHAR,
   "wdt_description" VARCHAR,
-  "wdt_gender" VARCHAR,
   "wdt_wikipedia_url" VARCHAR,
   "wdt_occupations" VARCHAR,
   "wdt_citizenship" VARCHAR,
@@ -63,7 +64,8 @@ CREATE TABLE "wikidata_text" (
   "wdt_event_place" VARCHAR,
   "wdt_birth_place" VARCHAR,
   "wdt_death_place" VARCHAR,
-  "wdt_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  "wdt_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
 );
 
 DROP FUNCTION IF EXISTS translateTimestamp;

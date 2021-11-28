@@ -1,6 +1,6 @@
 UPDATE wikidata
 SET wd_position = CASE 
-		WHEN response->'wkt_coords' IS NULL OR response->'wkt_coords'->>'value' = ''
+		WHEN response->'wkt_coords' IS NULL OR response->'wkt_coords'->>'value' IS NULL OR response->'wkt_coords'->>'value' = ''
 		THEN NULL
 		ELSE ST_GeomFromText(response->'wkt_coords'->>'value', 4326)
 	END,
@@ -14,7 +14,8 @@ SET wd_position = CASE
 	wd_birth_date_precision = (response->'birth_date_precision'->>'value')::INT,
 	wd_death_date = translateTimestamp(response->'death_date'->>'value'),
 	wd_death_date_precision = (response->'death_date_precision'->>'value')::INT,
-	wd_commons = response->'commons'->>'value'
+	wd_commons = response->'commons'->>'value',
+	wd_download_date = CURRENT_TIMESTAMP
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
 WHERE REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') = wikidata.wd_wikidata_id;
 

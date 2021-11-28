@@ -32,6 +32,10 @@ WHERE {
     }
 
     OPTIONAL {
+        ?genderID ^wdt:P21 ?wikidata.
+    }
+
+    OPTIONAL {
         ?wikidata p:P585/psv:P585 [
             wikibase:timePrecision ?event_date_precision;
             wikibase:timeValue ?event_date

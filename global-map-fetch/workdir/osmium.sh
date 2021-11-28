@@ -29,7 +29,7 @@ fi
 
 if [ ! -f "filtered_$1" ]; then
     echo '========================= Filtering OSM data... ========================='
-    osmium tags-filter --verbose --overwrite -o "filtered_$1" "$1" 'name:etymology,name:etymology:wikidata,subject,subject:wikidata,wikidata'
+    osmium tags-filter --verbose --overwrite -o "filtered_$1" "$1" 'name:etymology:wikidata,subject:wikidata,wikidata'
 else
     echo '========================= Data already filtered ========================='
 fi
