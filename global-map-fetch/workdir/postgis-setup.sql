@@ -6,7 +6,7 @@ DROP TABLE IF EXISTS "wikidata";
 
 CREATE TABLE "wikidata" (
   "wd_id" SERIAL NOT NULL PRIMARY KEY,
-  "wd_wikidata_id" VARCHAR(10) NOT NULL UNIQUE,
+  "wd_wikidata_id" VARCHAR(12) NOT NULL UNIQUE,
   "wd_position" GEOMETRY,
   "wd_event_date" TIMESTAMP,
   "wd_event_date_precision" INT,
@@ -22,6 +22,11 @@ CREATE TABLE "wikidata" (
   "wd_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX IF NOT EXISTS wd_wikidata_id_index
+    ON public.wikidata USING btree
+    (wd_wikidata_id COLLATE pg_catalog."default" ASC NULLS LAST)
+    TABLESPACE pg_default;
+
 CREATE TABLE "wikidata_picture" (
   "wdp_id" SERIAL NOT NULL PRIMARY KEY,
   "wdp_wd_id" INT NOT NULL,
@@ -30,8 +35,8 @@ CREATE TABLE "wikidata_picture" (
 );
 
 CREATE TABLE "wikidata_named_after" (
-  wna_wikidata_id VARCHAR(10) NOT NULL,
-  wna_named_after_wikidata_id VARCHAR(10) NOT NULL,
+  wna_wikidata_id VARCHAR(12) NOT NULL,
+  wna_named_after_wikidata_id VARCHAR(12) NOT NULL,
   CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wikidata_id, wna_named_after_wikidata_id),
   CONSTRAINT "wd_named_after_id_fkey" FOREIGN KEY ("wna_named_after_wikidata_id") REFERENCES "wikidata" ("wd_wikidata_id") ON DELETE SET NULL ON UPDATE NO ACTION
 );
