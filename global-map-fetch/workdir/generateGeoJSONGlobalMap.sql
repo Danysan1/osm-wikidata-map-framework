@@ -10,7 +10,7 @@ FROM (
 		) + (
 		SELECT COUNT(*) FROM planet_osm_line WHERE osm_id IN (SELECT et_osm_id FROM etymology WHERE et_type='line') AND way @ bbox
 		) + (
-		SELECT COUNT(*) FROM planet_osm_point WHERE osm_id IN (SELECT et_osm_id FROM etymology WHERE et_type='polygon') AND way @ bbox
+		SELECT COUNT(*) FROM planet_osm_polygon WHERE osm_id IN (SELECT et_osm_id FROM etymology WHERE et_type='polygon') AND way @ bbox
 		) AS ety_count
 	FROM (
 		SELECT min_lon, min_lat, ST_MakeEnvelope(min_lon, min_lat, min_lon+0.05, min_lat+0.05, 4326) AS bbox
