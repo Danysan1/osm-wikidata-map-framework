@@ -28,7 +28,7 @@ else
     curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_ids.tmp.rq' -o 'get_wikidata_ids.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql'
 fi
 
-if [ $(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(*) FROM wikidata_named_after" | xargs) != '0' ]; then
+if [ "$(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(*) FROM wikidata_named_after" | xargs)" != '0' ]; then
     echo '========================= Wikidata named-after data already loaded into DB ========================='
 else
     echo '========================= Loading Wikidata named-after data into DB ========================='
@@ -42,13 +42,13 @@ if [ -f 'get_wikidata_base.tmp.json' ]; then
     echo '========================= Wikidata base data already downloaded ========================='
 else
     echo '========================= Downloading Wikidata base data ========================='
-    WIKIDATA_IDS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_id, ' ') FROM public.wikidata")
+    WIKIDATA_IDS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_id, ' ') FROM wikidata")
     echo "s/__WIKIDATA_IDS__/$WIKIDATA_IDS/g" > get_wikidata_base.tmp.sed
     sed -f 'get_wikidata_base.tmp.sed' 'get_wikidata_base.rq' > get_wikidata_base.tmp.rq
     curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_base.tmp.rq' -o 'get_wikidata_base.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql'
 fi
 
-if [ $(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(wd_position) FROM wikidata" | xargs) != '0' ]; then
+if [ "$(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(wd_position) FROM wikidata" | xargs)" != '0' ]; then
     echo '========================= Wikidata base data already loaded into DB ========================='
 else
     echo '========================= Loading Wikidata base data into DB ========================='
@@ -58,4 +58,5 @@ else
     psql -h "$2" -d osm -U osm -t -f 'load_wikidata_base.tmp.sql'
 fi
 
-psql -h "$2" -d osm -U osm -f 'create_view.sql'
+echo '========================= Elaborating etymology data ========================='
+psql -h "$2" -d osm -U osm -f 'osmium-osm2pgsql-convert.sql'

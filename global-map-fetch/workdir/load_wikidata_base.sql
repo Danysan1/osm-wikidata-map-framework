@@ -1,4 +1,4 @@
-UPDATE public.wikidata
+UPDATE wikidata
 SET wd_position = CASE 
 		WHEN response->'wkt_coords' IS NULL OR response->'wkt_coords'->>'value' = ''
 		THEN NULL
@@ -18,9 +18,9 @@ SET wd_position = CASE
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
 WHERE REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') = wikidata.wd_wikidata_id;
 
-INSERT INTO public.wikidata_picture (wdp_wd_id, wdp_picture)
+INSERT INTO wikidata_picture (wdp_wd_id, wdp_picture)
 SELECT wd.wd_id, picture
-FROM public.wikidata AS wd
+FROM wikidata AS wd
 JOIN (
 	SELECT
 		REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_id,

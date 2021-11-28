@@ -1,6 +1,53 @@
--- Find malformed wikidata tags
-SELECT DISTINCT REGEXP_SPLIT_TO_TABLE(tags->'wikidata',';') FROM planet_osm_line WHERE tags->'wikidata' NOT LIKE 'Q%'
+INSERT INTO etymology (et_type, et_osm_id, et_wd_id)
+SELECT DISTINCT ele.type, ele.osm_id, wd.wd_id
+FROM (
+  SELECT
+    'node' AS type,
+    osm_id,
+    tags->'wikidata' AS wikidata_id,
+    tags->'subject:wikidata' AS subject_wikidata_id,
+    tags->'name:etymology:wikidata' AS etymology_wikidata_id
+  FROM "planet_osm_point"
+  UNION
+  SELECT
+    'line' AS type,
+    osm_id,
+    tags->'wikidata' AS wikidata_id,
+    tags->'subject:wikidata' AS subject_wikidata_id,
+    tags->'name:etymology:wikidata' AS etymology_wikidata_id
+  FROM "planet_osm_line"
+  UNION
+  SELECT
+    'polygon' AS type,
+    osm_id,
+    tags->'wikidata' AS wikidata_id,
+    tags->'subject:wikidata' AS subject_wikidata_id,
+    tags->'name:etymology:wikidata' AS etymology_wikidata_id
+  FROM "planet_osm_polygon"
+) AS ele
+LEFT JOIN "wikidata_named_after" AS wna
+  ON wna.wna_wikidata_id = ele.wikidata_id
+LEFT JOIN "wikidata" AS wd
+  ON wd.wd_wikidata_id = ele.subject_wikidata_id
+  OR wd.wd_wikidata_id = ele.etymology_wikidata_id
+  OR wd.wd_wikidata_id = wna.wna_named_after_wikidata_id
+WHERE wd.wd_id IS NOT NULL;
+
+CREATE VIEW v_element AS
+SELECT name, wikidata.*, way
+FROM etymology
+JOIN planet_osm_point ON et_osm_id = osm_id
+JOIN wikidata ON et_wd_id = wd_id
+WHERE et_type='point'
 UNION
-SELECT DISTINCT REGEXP_SPLIT_TO_TABLE(tags->'subject:wikidata',';') FROM planet_osm_line WHERE tags->'subject:wikidata' NOT LIKE 'Q%'
+SELECT name, wikidata.*, way
+FROM etymology
+JOIN planet_osm_line ON et_osm_id = osm_id
+JOIN wikidata ON et_wd_id = wd_id
+WHERE et_type='line'
 UNION
-SELECT DISTINCT REGEXP_SPLIT_TO_TABLE(tags->'name:etymology:wikidata',';') FROM planet_osm_line WHERE tags->'name:etymology:wikidata' NOT LIKE 'Q%';
+SELECT name, wikidata.*, way
+FROM etymology
+JOIN planet_osm_polygon ON et_osm_id = osm_id
+JOIN wikidata ON et_wd_id = wd_id
+WHERE et_type='polygon';
