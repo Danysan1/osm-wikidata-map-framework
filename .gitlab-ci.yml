@@ -1,9 +1,9 @@
-#include:
+include:
 #  - template: Docker.gitlab-ci.yml
 #  - template: Security/DAST.gitlab-ci.yml
 #  - template: Security/SAST.gitlab-ci.yml
-#  - template: Security/License-Scanning.gitlab-ci.yml
-#  - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/License-Scanning.gitlab-ci.yml
+  - template: Security/Dependency-Scanning.gitlab-ci.yml
 #  - template: Security/Secret-Detection.gitlab-ci.yml
 #  - template: Security/Container-Scanning.gitlab-ci.yml
 
@@ -13,9 +13,8 @@ variables:
 
 stages:
   - release
-  - lint
 #  - build
-#  - test
+  - test
 #  - dast
   - deploy
 
@@ -45,7 +44,7 @@ sentry_release:
       when: on_success
 
 psalm:
-  stage: lint
+  stage: test
   image: composer:2
   cache:
     - key: "composer"
