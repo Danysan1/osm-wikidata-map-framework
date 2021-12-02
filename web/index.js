@@ -1020,7 +1020,7 @@ function prepareGlobalLayers() {
             // - Yellow, 30px circles when point count is between 100 and 750
             // - Pink, 40px circles when point count is greater than or equal to 750
             'circle-color': [
-                'step', ['get', 'ety_count'], '#51bbd6', 2000, '#f1f075', 40000, '#f28cb1'
+                'step', ['get', 'ety_count'], '#51bbd6', 2000, '#f1f075', 30000, '#f28cb1'
             ],
             'circle-radius': [
                 'step', ['get', 'ety_count'], 20, 2000, 50, 40000, 60
