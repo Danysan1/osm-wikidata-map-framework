@@ -31,7 +31,7 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
-$from = (string)getFilteredParamOrError("from", FILTER_SANITIZE_STRING);
+$from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
 $onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
