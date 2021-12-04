@@ -1,3 +1,12 @@
+INSERT INTO wikidata (wd_wikidata_id)
+SELECT REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
+WHERE REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN ( SELECT wd_wikidata_id FROM wikidata )
+UNION
+SELECT REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
+WHERE REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN ( SELECT wd_wikidata_id FROM wikidata );
+
 UPDATE wikidata
 SET wd_position = CASE 
 		WHEN response->'wkt_coords' IS NULL OR response->'wkt_coords'->>'value' IS NULL OR response->'wkt_coords'->>'value' = ''
@@ -20,6 +29,8 @@ SET wd_position = CASE
 	wd_death_date = response->'death_date'->>'value',
 	wd_death_date_precision = (response->'death_date_precision'->>'value')::INT,
 	wd_commons = response->'commons'->>'value',
+	wd_instance_id = (SELECT wd_id FROM wikidata WHERE wd_wikidata_id = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')),
+	wd_gender_id = (SELECT wd_id FROM wikidata WHERE wd_wikidata_id = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')),
 	wd_download_date = CURRENT_TIMESTAMP
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
 WHERE REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') = wikidata.wd_wikidata_id;
