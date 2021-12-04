@@ -35,11 +35,7 @@ services:
     volumes:
       - ./workdir:/workdir
     working_dir: /workdir
-    #command: ./osmium-spatialite.sh extract.osm.pbf
-    #command: ./osmium-postgis.sh extract.osm.pbf postgis_db
-    command: ./osmium-osm2pgsql.sh extract.osm.pbf postgis_db
+    command: ./entrypoint.sh
     depends_on:
       - postgis_db
-    environment:
-      - PGPASSWORD=osm
     restart: "no"
