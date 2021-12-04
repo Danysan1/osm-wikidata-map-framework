@@ -17,10 +17,12 @@ SELECT ?wikidata
 WHERE {
     VALUES ?wikidata { __WIKIDATA_IDS__ }
 
-    {
-        ?instanceID ^wdt:P31 ?wikidata.
-    } UNION {
-        ?instanceID ^wdt:P279 ?wikidata.
+    OPTIONAL {
+        {
+            ?instanceID ^wdt:P31 ?wikidata.
+        } UNION {
+            ?instanceID ^wdt:P279 ?wikidata.
+        }
     }
 
     OPTIONAL {

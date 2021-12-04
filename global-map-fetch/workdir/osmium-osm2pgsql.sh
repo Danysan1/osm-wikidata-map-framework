@@ -39,7 +39,7 @@ if [ "$(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(*) FROM wikidata_named_af
     echo '========================= Wikidata named-after data already loaded into DB ========================='
 else
     echo '========================= Loading Wikidata named-after data into DB ========================='
-    WIKIDATA_JSON=$(cat get_wikidata_ids.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e "s/|/\|/g")
+    WIKIDATA_JSON=$(cat get_wikidata_ids.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e "s/|/\|/g" -e 's/\\/\\\\/g')
     echo "s|__WIKIDATA_JSON__|$WIKIDATA_JSON|g" > load_wikidata_ids.tmp.sed
     sed -f 'load_wikidata_ids.tmp.sed' 'load_wikidata_ids.sql' > load_wikidata_ids.tmp.sql
     psql -h "$2" -d osm -U osm -t -f 'load_wikidata_ids.tmp.sql'
@@ -57,7 +57,7 @@ else
         curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_base.tmp.rq' -o 'get_wikidata_base.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql'
         
         echo '========================= Loading Wikidata base data into DB ========================='
-        WIKIDATA_JSON=$(cat get_wikidata_base.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e "s/|/\|/g")
+        WIKIDATA_JSON=$(cat get_wikidata_base.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e "s/|/\|/g" -e 's/\\/\\\\/g')
         echo "s|__WIKIDATA_JSON__|$WIKIDATA_JSON|g" > load_wikidata_base.tmp.sed
         sed -f 'load_wikidata_base.tmp.sed' 'load_wikidata_base.sql' > load_wikidata_base.tmp.sql
         psql -h "$2" -d osm -U osm -t -f 'load_wikidata_base.tmp.sql'
@@ -93,7 +93,7 @@ if [ "$(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(wdt_language) FROM wikida
     echo '========================= Wikidata text initializazion data already loaded into DB ========================='
 else
     echo '========================= Loading Wikidata text initializazion data into DB ========================='
-    WIKIDATA_JSON=$(cat get_wikidata_text.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e "s/|/\|/g")
+    WIKIDATA_JSON=$(cat get_wikidata_text.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e "s/|/\|/g" -e 's/\\/\\\\/g')
     echo "s|__WIKIDATA_JSON__|$WIKIDATA_JSON|g" > load_wikidata_text.tmp.sed
     sed -f 'load_wikidata_text.tmp.sed' 'load_wikidata_text.sql' > load_wikidata_text.tmp.sql
     psql -h "$2" -d osm -U osm -t -f 'load_wikidata_text.tmp.sql'
