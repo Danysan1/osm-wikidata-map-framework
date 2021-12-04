@@ -4,10 +4,21 @@ DROP TABLE IF EXISTS "wikidata_named_after";
 DROP TABLE IF EXISTS "wikidata_picture";
 DROP TABLE IF EXISTS "etymology";
 DROP TABLE IF EXISTS "wikidata";
+DROP FUNCTION IF EXISTS translateTimestamp;
+
+CREATE FUNCTION translateTimestamp(IN text TEXT)
+    RETURNS timestamp without time zone
+    LANGUAGE 'sql' AS $BODY$
+SELECT CASE
+    WHEN $1 IS NULL THEN NULL
+    WHEN LEFT($1,1)='-' THEN CONCAT(SUBSTRING($1,2),' BC')::TIMESTAMP
+    ELSE $1::TIMESTAMP
+END;
+$BODY$;
 
 CREATE TABLE "wikidata" (
   "wd_id" SERIAL NOT NULL PRIMARY KEY,
-  "wd_wikidata_id" VARCHAR(12) NOT NULL UNIQUE,
+  "wd_wikidata_id" VARCHAR(12) NOT NULL UNIQUE CHECK (LEFT(wd_wikidata_id,1) = 'Q'),
   "wd_position" GEOMETRY,
   --"wd_event_date" TIMESTAMP,
   "wd_event_date" VARCHAR,
@@ -72,14 +83,3 @@ CREATE TABLE "wikidata_text" (
   "wdt_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
 );
-
-DROP FUNCTION IF EXISTS translateTimestamp;
-CREATE FUNCTION translateTimestamp(IN text TEXT)
-    RETURNS timestamp without time zone
-    LANGUAGE 'sql' AS $BODY$
-SELECT CASE
-    WHEN $1 IS NULL THEN NULL
-    WHEN LEFT($1,1)='-' THEN CONCAT(SUBSTRING($1,2),' BC')::TIMESTAMP
-    ELSE $1::TIMESTAMP
-END;
-$BODY$;

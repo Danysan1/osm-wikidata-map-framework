@@ -33,20 +33,35 @@ LEFT JOIN "wikidata" AS wd
   OR wd.wd_wikidata_id = wna.wna_named_after_wikidata_id
 WHERE wd.wd_id IS NOT NULL;
 
-CREATE VIEW v_element AS
-SELECT name, wikidata.*, way
+CREATE MATERIALIZED VIEW IF NOT EXISTS v_element AS
+SELECT
+  name,
+  'node' AS type,
+  osm_id AS id,
+  wikidata.*,
+  way AS geom
 FROM etymology
 JOIN planet_osm_point ON et_osm_id = osm_id
 JOIN wikidata ON et_wd_id = wd_id
 WHERE et_type='point'
 UNION
-SELECT name, wikidata.*, way
+SELECT
+  name,
+  CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS type,
+  CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS id,
+  wikidata.*,
+  way AS geom
 FROM etymology
 JOIN planet_osm_line ON et_osm_id = osm_id
 JOIN wikidata ON et_wd_id = wd_id
 WHERE et_type='line'
 UNION
-SELECT name, wikidata.*, way
+SELECT
+  name,
+  CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS type,
+  CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS id,
+  wikidata.*,
+  way AS geom
 FROM etymology
 JOIN planet_osm_polygon ON et_osm_id = osm_id
 JOIN wikidata ON et_wd_id = wd_id
