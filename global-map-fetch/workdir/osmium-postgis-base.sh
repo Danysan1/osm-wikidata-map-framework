@@ -16,7 +16,9 @@ if ! command -v psql > /dev/null; then
 elif ! psql -h "$2" -U osm -d osm -c 'SELECT version()' > /dev/null ; then
     echo "ERROR: could not connect to PostgreSQL database on '$2'"
     exit 70
-elif ! psql -h "$2" -U osm -d osm -c 'SELECT PostGIS_Version()' > /dev/null ; then
-    echo 'ERROR: PostGIS is required, it is not installed on the DB'
-    exit 80
+#elif ! psql -h "$2" -U osm -d osm -c 'SELECT PostGIS_Version()' > /dev/null ; then
+#    echo 'ERROR: PostGIS is required, it is not installed on the DB'
+#    exit 80
 fi
+
+psql -h "$2" -U osm -d osm -f 'setup-postgis.sql'
