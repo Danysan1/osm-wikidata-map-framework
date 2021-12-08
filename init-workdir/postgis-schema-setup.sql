@@ -30,10 +30,6 @@ CREATE TABLE "element" (
   --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors, osm2pgsql creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
 );
 
-CREATE INDEX element_geometry_idx
-  ON element
-  USING GIST (el_geometry);
-
 INSERT INTO element (
   el_osm_type,
   el_osm_id,
@@ -64,6 +60,9 @@ SELECT
   tags->'name:etymology:wikidata',
   way AS geom
 FROM planet_osm_polygon;
+
+CREATE UNIQUE INDEX element_id_idx ON element (el_id) WITH (fillfactor='100');
+CREATE INDEX element_geometry_idx ON element USING GIST (el_geometry) WITH (fillfactor='100');
 
 CREATE TABLE "element_wikidata_ids" (
   "ew_id" BIGSERIAL NOT NULL PRIMARY KEY,
@@ -116,10 +115,7 @@ CREATE TABLE "etymology" (
   CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
 );
 
--- CREATE INDEX IF NOT EXISTS wd_wikidata_id_index
---     ON wikidata USING btree
---     (wd_wikidata_id COLLATE pg_catalog."default" ASC NULLS LAST)
---     TABLESPACE pg_default;
+CREATE INDEX etymology_id_idx ON etymology (et_el_id) WITH (fillfactor='100');
 
 CREATE TABLE "wikidata_picture" (
   "wdp_id" SERIAL NOT NULL PRIMARY KEY,
