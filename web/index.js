@@ -603,10 +603,16 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
         ready = e.isSourceLoaded;
-    console.info('sourcedata event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, ready, e });
+    console.info('sourcedata event', {
+        type: e.dataType,
+        source: e.sourceId,
+        wikidataSourceEvent,
+        overpassSourceEvent,
+        ready,
+        e
+    });
 
     if (ready) {
-        console.info('sourcedata ready event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, e });
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
             showSnackbar("Data loaded", "lightgreen");

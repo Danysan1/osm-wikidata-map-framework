@@ -1,5 +1,5 @@
 # https://hub.docker.com/_/php
-FROM php:8-apache-buster AS base
+FROM php:8.1-apache-buster AS base
 WORKDIR /var/www
 
 COPY ./composer_install.sh ./composer_install.sh
