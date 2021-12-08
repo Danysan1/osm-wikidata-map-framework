@@ -1120,7 +1120,7 @@ function featureToElement(feature) {
         element_wikipedia_button.style.display = 'none';
     }
 
-    detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
+    detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
 
     coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {

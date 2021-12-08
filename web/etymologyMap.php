@@ -15,6 +15,7 @@ require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./app/query/cache/CSVCachedBBoxJSONQuery.php");
 require_once("./app/query/combined/BBoxGeoJSONEtymologyQuery.php");
 require_once("./app/query/combined/BBoxJSONStatsQuery.php");
+require_once("./app/query/postgis/BBoxEtymologyPostGISQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
@@ -29,7 +30,7 @@ use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Query\Wikidata\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
-use \App\Result\JSONQueryResult;
+use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -71,7 +72,12 @@ if ($from == "bbox") {
 
     if ($to == "geojson") {
         if ($enableDB) {
-            // TODO
+            $query = new BBoxEtymologyPostGISQuery(
+                $bbox,
+                $safeLanguage,
+                $wikidataEndpointURL,
+                $serverTiming
+            );
         } else {
             $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
                 $safeLanguage,

@@ -25,30 +25,29 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
             return false;
         }
 
-        if(!empty($element["tags"]["name:etymology:wikidata"])) {
+        if (!empty($element["tags"]["name:etymology:wikidata"])) {
             $wikidataTag = str_replace(' ', '', (string)$element["tags"]["name:etymology:wikidata"]);
-        } elseif(!empty($element["tags"]["subject:wikidata"])) {
+        } elseif (!empty($element["tags"]["subject:wikidata"])) {
             $wikidataTag = str_replace(' ', '', (string)$element["tags"]["subject:wikidata"]);
         } else {
             return false;
         }
 
-        $elementID = (string)$element["type"] . "/" . (int)$element["id"];
         if (!preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $wikidataTag)) {
-            error_log("Feature does not contain a valid list of wikidata tags: $elementID");
+            error_log("Feature does not contain a valid list of wikidata tags: " . (string)$element["type"] . "/" . (int)$element["id"]);
             return false;
         }
 
         if (empty($element["tags"]["name"])) {
             $elementName = null;
-            error_log("Abnormal element with etymology but no name: $elementID");
+            error_log("Abnormal element with etymology but no name: " . (string)$element["type"] . "/" . (int)$element["id"]);
         } else {
             $elementName = (string)$element["tags"]["name"];
         }
         $feature = [
             "type" => "Feature",
             "geometry" => [],
-            "properties" => ["name" => $elementName, "@id" => $elementID],
+            "properties" => ["name" => $elementName, "osm_type" => $element["type"], "osm_id" => $element["id"]],
         ];
 
         if (!empty($element["tags"]["wikipedia"])) {
