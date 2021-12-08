@@ -3,19 +3,19 @@
 namespace App\Query\Wikidata;
 
 require_once(__DIR__ . "/../../StringSet.php");
-require_once(__DIR__ . "/../StringSetXMLQuery.php");
-require_once(__DIR__ . "/XMLWikidataQuery.php");
+require_once(__DIR__ . "/../StringSetJSONQuery.php");
+require_once(__DIR__ . "/JSONWikidataQuery.php");
 
 use App\StringSet;
-use App\Query\StringSetXMLQuery;
-use \App\Query\Wikidata\XMLWikidataQuery;
+use App\Query\StringSetJSONQuery;
+use \App\Query\Wikidata\JSONWikidataQuery;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements StringSetXMLQuery
+abstract class StringSetJSONWikidataQuery extends JSONWikidataQuery implements StringSetJSONQuery
 {
     /**
      * @var StringSet
@@ -52,7 +52,7 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
         // "en-US" => "en"
         $langMatches = [];
         if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches)) {
-            error_log("StringSetXMLWikidataQuery: Invalid language code $language");
+            error_log("StringSetJSONWikidataQuery: Invalid language code $language");
             throw new \Exception("Invalid language code");
         }
         $language = $langMatches[1];

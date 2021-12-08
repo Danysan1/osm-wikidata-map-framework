@@ -15,7 +15,7 @@ use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
+class EtymologyIDListWikidataFullQuery extends StringSetXMLWikidataQuery
 {
     /**
      * @return XMLWikidataEtymologyQueryResult

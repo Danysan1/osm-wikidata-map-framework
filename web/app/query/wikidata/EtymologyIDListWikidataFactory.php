@@ -2,7 +2,7 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/EtymologyIDListWikidataQuery.php");
+require_once(__DIR__ . "/EtymologyIDListWikidataFullQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/../../StringSet.php");
@@ -10,7 +10,7 @@ require_once(__DIR__ . "/../../StringSet.php");
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
-use \App\Query\Wikidata\EtymologyIDListWikidataQuery;
+use \App\Query\Wikidata\EtymologyIDListWikidataFullQuery;
 
 /**
  * @author Daniele Santini <daniele@dsantini.it>
@@ -39,6 +39,6 @@ class EtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
 
     public function create(StringSet $input): StringSetXMLQuery
     {
-        return new EtymologyIDListWikidataQuery($input, $this->language, $this->endpointURL);
+        return new EtymologyIDListWikidataFullQuery($input, $this->language, $this->endpointURL);
     }
 }
