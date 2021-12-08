@@ -43,6 +43,7 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
+$enableDB = $conf->has("db-enable") && (bool)$conf->get("db-enable");
 
 // "en-US" => "en"
 $langMatches = [];
@@ -69,32 +70,40 @@ if ($from == "bbox") {
     }
 
     if ($to == "geojson") {
-        $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
-            $safeLanguage,
-            $wikidataEndpointURL,
-            $cacheFileBasePath . $safeLanguage . "_",
-            $conf
-        );
-        $baseQuery = new BBoxGeoJSONEtymologyQuery(
-            $bbox,
-            $overpassConfig,
-            $wikidataFactory,
-            $serverTiming
-        );
-        $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
-    } elseif ($to == "genderStats" || $to == "typeStats") {
-        if ($to == "genderStats") {
-            $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        if ($enableDB) {
+            // TODO
         } else {
-            $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+            $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
+                $safeLanguage,
+                $wikidataEndpointURL,
+                $cacheFileBasePath . $safeLanguage . "_",
+                $conf
+            );
+            $baseQuery = new BBoxGeoJSONEtymologyQuery(
+                $bbox,
+                $overpassConfig,
+                $wikidataFactory,
+                $serverTiming
+            );
+            $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
         }
-        $baseQuery = new BBoxJSONStatsQuery(
-            $bbox,
-            $overpassConfig,
-            $wikidataFactory,
-            $serverTiming
-        );
-        $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+    } elseif ($to == "genderStats" || $to == "typeStats") {
+        if ($enableDB) {
+            // TODO
+        } else {
+            if ($to == "genderStats") {
+                $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+            } else {
+                $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+            }
+            $baseQuery = new BBoxJSONStatsQuery(
+                $bbox,
+                $overpassConfig,
+                $wikidataFactory,
+                $serverTiming
+            );
+            $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+        }
     } else {
         http_response_code(400);
         die('{"error":"You must specify a valid output type"}');
