@@ -22,3 +22,5 @@ echo "Using DB at host '$DB_HOST'" | tee -a osmium.log
 
 #./osmium-postgis.sh extract.osm.pbf "$DB_HOST" 2>&1 | tee -a osmium.log
 ./osmium-osm2pgsql.sh extract.osm.pbf "$DB_HOST" 2>&1 | tee -a osmium.log
+
+echo 'Procedure complete. Exiting.'

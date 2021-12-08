@@ -49,5 +49,6 @@ services:
       - "80:80"
     depends_on:
       - postgis_db
+    restart: "always"
     volumes:
       - ./web:/var/www/html

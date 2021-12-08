@@ -1,20 +1,10 @@
 INSERT INTO wikidata (wd_wikidata_id)
 SELECT val
 FROM (
-	SELECT TRIM(REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')) as val
+	SELECT REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '') as val
 	FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings')
 	UNION
-	SELECT TRIM(REGEXP_SPLIT_TO_TABLE(tags->'subject:wikidata',';')) as val FROM planet_osm_point
-	UNION
-	SELECT TRIM(REGEXP_SPLIT_TO_TABLE(tags->'subject:wikidata',';')) as val FROM planet_osm_line
-	UNION
-	SELECT TRIM(REGEXP_SPLIT_TO_TABLE(tags->'subject:wikidata',';')) as val FROM planet_osm_polygon
-	UNION
-	SELECT TRIM(REGEXP_SPLIT_TO_TABLE(tags->'name:etymology:wikidata',';')) as val FROM planet_osm_point
-	UNION
-	SELECT TRIM(REGEXP_SPLIT_TO_TABLE(tags->'name:etymology:wikidata',';')) as val FROM planet_osm_line
-	UNION
-	SELECT TRIM(REGEXP_SPLIT_TO_TABLE(tags->'name:etymology:wikidata',';')) as val FROM planet_osm_polygon
+	SELECT ew_wikidata_id FROM element_wikidata_ids
 ) AS x
 WHERE LEFT(val,1)='Q';
 
