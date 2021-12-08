@@ -230,6 +230,7 @@ class BackgroundStyleControl {
         if (backgroundStyleObj) {
             this._map.setStyle(backgroundStyleObj.style);
             this._ctrlDropDown.className = 'hiddenElement';
+            setCulture();
         } else {
             console.error("Invalid selected background style", event.target.value);
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected background style");
@@ -566,7 +567,7 @@ function initMap() {
  */
 function mapStyleDataHandler(e) {
     console.info("Map style data loaded", e);
-    setCulture();
+    //setCulture();
 }
 
 /**
@@ -578,7 +579,7 @@ function hashChangeHandler(e) {
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
         currZoom = map.getZoom();
-    //console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
+    console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
 
     // Check if the position has changed in order to avoid unnecessary map movements
     if (Math.abs(currLat - position.lat) > 0.001 ||
@@ -602,7 +603,7 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
         ready = e.isSourceLoaded;
-    //console.info('sourcedata event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, ready, e });
+    console.info('sourcedata event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, ready, e });
 
     if (ready) {
         console.info('sourcedata ready event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, e });

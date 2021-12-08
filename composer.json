@@ -1,9 +1,24 @@
 {
     "name": "dsantini/open-etymology-map",
+    "description": "Open Etymology Map - Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata",
+    "type": "project",
+    "version": "1",
     "require-dev": {
         "vimeo/psalm": "^4.8"
     },
     "require": {
+        "php": "^7.3|^8.0",
         "sentry/sdk": "^3.1"
-    }
+    },
+    "config": {
+        "platform": {
+            "php": "7.3.28"
+        }
+    },
+    "homepage": "https://www.dsantini.it/etymology",
+    "license": "GPL-3.0",
+    "authors": [{
+        "name": "Daniele Santini",
+        "email": "danysan95@gmail.com"
+    }]
 }

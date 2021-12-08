@@ -37,9 +37,9 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
-$from = (string)getFilteredParamOrDefault("from", FILTER_SANITIZE_STRING, "bbox");
-$to = (string)getFilteredParamOrDefault("to", FILTER_SANITIZE_STRING, "geojson");
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_STRING, (string)$conf->get('default-language'));
+$from = (string)getFilteredParamOrDefault("from", FILTER_UNSAFE_RAW, "bbox");
+$to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
+$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default-language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");

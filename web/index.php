@@ -48,10 +48,13 @@ if (!$conf->has("mapbox-gl-token")) {
 <head>
     <?php if($useSentry) { ?>
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@sentry/browser/build/bundle.min.js">
-    <?php } ?>
+    <?php
+    } 
 
+    $mapboxGlJS = $conf->has('debug')&&$conf->get('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js';
+    ?>
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/mapbox-gl.js">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/<?=$mapboxGlJS;?>">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./index.js">
@@ -85,7 +88,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
-    <script defer src='./node_modules/mapbox-gl/dist/mapbox-gl.js' type="application/javascript"></script>
+    <script defer src='./node_modules/mapbox-gl/dist/<?=$mapboxGlJS;?>' type="application/javascript"></script>
     <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
