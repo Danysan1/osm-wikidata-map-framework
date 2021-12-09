@@ -107,7 +107,9 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
         $stCheck->execute($this->queryParams);
         $missingWikidataText = $stCheck->fetchAll(PDO::FETCH_NUM);
         if (!empty($missingWikidataText)) {
-            $searchSet = new BaseStringSet($missingWikidataText);
+            //error_log("missingWikidataText=" . json_encode($missingWikidataText));
+            $searchArray = array_column($missingWikidataText,0);
+            $searchSet = new BaseStringSet($searchArray);
             $wikidataQuery = new EtymologyIDListWikidataTextQuery(
                 $searchSet,
                 $this->language,
@@ -172,7 +174,6 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
                 FROM element
                 JOIN etymology ON et_el_id = el_id
                 JOIN wikidata AS wd ON et_wd_id = wd.wd_id
-                LEFT JOIN wikidata_picture AS wdp ON wdp.wdp_wd_id = wd.wd_id
                 LEFT JOIN wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
                 LEFT JOIN wikidata AS gender ON wd.wd_gender_id = gender.wd_id

@@ -12,19 +12,19 @@ FROM base AS dev
 # https://gist.github.com/ben-albon/3c33628662dcd4120bf4
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 RUN apt-get update && \
-	apt-get install -y libzip-dev zip git && \
+	apt-get install -y libpq-dev libzip-dev zip git && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-RUN docker-php-ext-install -j$(nproc) zip
+RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install
 
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
-	apt-get install -y libzip-dev zip && \
+	apt-get install -y libpq-dev libzip-dev zip && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-RUN docker-php-ext-install -j$(nproc) zip
+RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar

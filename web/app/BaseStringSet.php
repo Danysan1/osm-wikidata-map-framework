@@ -21,6 +21,14 @@ class BaseStringSet implements StringSet
      */
     public function __construct($stringArray)
     {
+        foreach ($stringArray as $s) {
+            /**
+             * @psalm-suppress DocblockTypeContradiction
+             */
+            if (!is_string($s))
+                throw new \Exception("Non-string element passed to BaseStringSet");
+        }
+
         $this->stringArray = $stringArray;
     }
 
