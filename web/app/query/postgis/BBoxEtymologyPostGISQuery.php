@@ -33,11 +33,6 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
     private $language;
 
     /**
-     * @var array $queryParams
-     */
-    private $queryParams;
-
-    /**
      * @var string $wikidataEndpointURL
      */
     private $wikidataEndpointURL;
@@ -66,13 +61,6 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
         $this->db = $db;
         $this->wikidataEndpointURL = $wikidataEndpointURL;
         $this->serverTiming = $serverTiming;
-        $this->queryParams = [
-            "min_lon" => $bbox->getMinLon(),
-            "max_lon" => $bbox->getMaxLon(),
-            "min_lat" => $bbox->getMinLat(),
-            "max_lat" => $bbox->getMaxLat(),
-            "lang" => $language,
-        ];
     }
 
     /**
@@ -80,6 +68,14 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
      */
     public function send(): QueryResult
     {
+        $queryParams = [
+            "min_lon" => $this->bbox->getMinLon(),
+            "max_lon" => $this->bbox->getMaxLon(),
+            "min_lat" => $this->bbox->getMinLat(),
+            "max_lat" => $this->bbox->getMaxLat(),
+            "lang" => $this->language,
+        ];
+
         $stCheck = $this->db->prepare(
             "WITH
                 wiki AS (
@@ -104,11 +100,14 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
             JOIN wiki ON wiki.wd_instance_id = instance.wd_id
             WHERE instance.wd_id NOT IN (SELECT wdt_wd_id FROM available)"
         );
-        $stCheck->execute($this->queryParams);
+        $stCheck->execute($queryParams);
+        if ($this->serverTiming != null)
+            $this->serverTiming->add("wikidata-text-query");
+
         $missingWikidataText = $stCheck->fetchAll(PDO::FETCH_NUM);
         if (!empty($missingWikidataText)) {
             //error_log("missingWikidataText=" . json_encode($missingWikidataText));
-            $searchArray = array_column($missingWikidataText,0);
+            $searchArray = array_column($missingWikidataText, 0);
             $searchSet = new BaseStringSet($searchArray);
             $wikidataQuery = new EtymologyIDListWikidataTextQuery(
                 $searchSet,
@@ -116,11 +115,46 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
                 $this->wikidataEndpointURL
             );
             $wikidataResult = $wikidataQuery->send();
-            // TODO
+            if ($this->serverTiming != null)
+                $this->serverTiming->add("wikidata-text-download");
+
+            //error_log("wikidataResult=$wikidataResult");
+            $stInsert = $this->db->prepare(
+                "INSERT INTO wikidata_text (
+                    wdt_wd_id,
+                    wdt_language,
+                    wdt_name,
+                    wdt_description,
+                    wdt_wikipedia_url,
+                    wdt_occupations,
+                    wdt_citizenship,
+                    wdt_prizes,
+                    wdt_event_place,
+                    wdt_birth_place,
+                    wdt_death_place
+                )
+                SELECT
+                    wd_id,
+                    :lang,
+                    response->'name'->>'value',
+                    response->'description'->>'value',
+                    response->'wikipedia'->>'value',
+                    response->'occupations'->>'value',
+                    response->'citizenship'->>'value',
+                    response->'prizes'->>'value',
+                    response->'event_place'->>'value',
+                    response->'birth_place'->>'value',
+                    response->'death_place'->>'value'
+                FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
+                JOIN wikidata ON wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
+            );
+            $stInsert->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
         }
 
         $stRes = $this->db->prepare($this->getQuery());
-        $stRes->execute($this->queryParams);
+        $stRes->execute($queryParams);
+        if ($this->serverTiming != null)
+            $this->serverTiming->add("wikidata-query");
         return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
     }
 

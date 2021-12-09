@@ -138,7 +138,6 @@ CREATE TABLE "wikidata_text" (
   "wdt_wikipedia_url" VARCHAR,
   "wdt_occupations" VARCHAR,
   "wdt_citizenship" VARCHAR,
-  "wdt_pictures" VARCHAR,
   "wdt_prizes" VARCHAR,
   "wdt_event_place" VARCHAR,
   "wdt_birth_place" VARCHAR,
