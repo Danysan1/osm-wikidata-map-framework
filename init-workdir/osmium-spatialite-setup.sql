@@ -35,9 +35,9 @@ CREATE TABLE "element" (
   "ele_osm_id" INT NOT NULL,
   "ele_lat" FLOAT,
   "ele_lon" FLOAT,
-  "ele_wikidata_id" VARCHAR(10),
-  "ele_subject_wikidata_id" VARCHAR(10),
-  "ele_name_etymology_wikidata_id" VARCHAR(10),
+  "ele_wikidata_cod" VARCHAR(10),
+  "ele_subject_wikidata_cod" VARCHAR(10),
+  "ele_name_etymology_wikidata_cod" VARCHAR(10),
   "ele_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -60,7 +60,7 @@ CREATE TABLE "element_etymology" (
 DROP TABLE IF EXISTS "etymology";
 CREATE TABLE "etymology" (
   "ety_id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  "ety_wikidata_id" VARCHAR(10) NOT NULL,
+  "ety_wikidata_cod" VARCHAR(10) NOT NULL,
   "ety_named_after_ety_id" UNSIGNED BIG INT,
   "ety_instance_of_ety_id" UNSIGNED BIG INT,
   "ety_gender_ety_id" UNSIGNED BIG INT,

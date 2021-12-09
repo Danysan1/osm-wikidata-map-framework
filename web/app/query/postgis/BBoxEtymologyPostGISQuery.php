@@ -83,7 +83,7 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
         $stCheck = $this->db->prepare(
             "WITH
                 wiki AS (
-                    SELECT DISTINCT wd_id, wd_wikidata_id, wd_gender_id, wd_instance_id
+                    SELECT DISTINCT wd_id, wd_wikidata_cod, wd_gender_id, wd_instance_id
                     FROM etymology
                     JOIN wikidata ON et_wd_id = wd_id
                     JOIN element ON et_el_id = el_id
@@ -92,14 +92,14 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
                 available AS (
                     SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang
                 )
-            SELECT wd_wikidata_id FROM wiki WHERE wd_id NOT IN (SELECT wdt_wd_id FROM available)
+            SELECT wd_wikidata_cod FROM wiki WHERE wd_id NOT IN (SELECT wdt_wd_id FROM available)
             UNION
-            SELECT gender.wd_wikidata_id
+            SELECT gender.wd_wikidata_cod
             FROM wikidata AS gender
             JOIN wiki ON wiki.wd_gender_id = gender.wd_id
             WHERE gender.wd_id NOT IN (SELECT wdt_wd_id FROM available)
             UNION
-            SELECT instance.wd_wikidata_id
+            SELECT instance.wd_wikidata_cod
             FROM wikidata AS instance
             JOIN wiki ON wiki.wd_instance_id = instance.wd_id
             WHERE instance.wd_id NOT IN (SELECT wdt_wd_id FROM available)"
@@ -156,16 +156,16 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
                         'event_date_precision', wd.wd_event_date_precision,
                         'event_place', wdt.wdt_event_place,
                         'gender', gender_text.wdt_name,
-                        'genderID', 'http://www.wikidata.org/entity/'||gender.wd_wikidata_id,
+                        'genderID', 'http://www.wikidata.org/entity/'||gender.wd_wikidata_cod,
                         'instance', instance_text.wdt_name,
-                        'instanceID', 'http://www.wikidata.org/entity/'||instance.wd_instance_id,
+                        'instanceID', 'http://www.wikidata.org/entity/'||instance.wd_wikidata_cod,
                         'name', wdt.wdt_name,
                         'occupations', wdt.wdt_occupations,
                         'pictures', (SELECT JSON_AGG(wdp_picture) FROM wikidata_picture WHERE wdp_wd_id = wd.wd_id),
                         'prizes', wdt.wdt_prizes,
                         'start_date', wd.wd_start_date,
                         'start_date_precision', wd.wd_start_date_precision,
-                        'wikidata', 'http://www.wikidata.org/entity/'||wd.wd_wikidata_id,
+                        'wikidata', 'http://www.wikidata.org/entity/'||wd.wd_wikidata_cod,
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies

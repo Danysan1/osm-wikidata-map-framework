@@ -15,7 +15,7 @@ SELECT ?wikidata
     (SAMPLE(?death_date_precision) AS ?death_date_precision)
     (SAMPLE(?wkt_coords) AS ?wkt_coords)
 WHERE {
-    VALUES ?wikidata { __WIKIDATA_IDS__ }
+    VALUES ?wikidata { __WIKIDATA_CODS__ }
 
     OPTIONAL {
         {

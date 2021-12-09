@@ -24,34 +24,34 @@ if [ -n "$3" ] || [ $(psql -h "$2" -U osm -d osm -t -c "SELECT EXISTS (
 fi
 
 
-if [ -f 'get_wikidata_ids.tmp.json' ]; then
+if [ -f 'get_wikidata_cods.tmp.json' ]; then
     echo '========================= Wikidata named-after data already downloaded ========================='
 else
     echo '========================= Downloading Wikidata named-after data ========================='
-    WIKIDATA_IDS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG(DISTINCT 'wd:'||ew_wikidata_id, ' ') FROM element_wikidata_ids WHERE NOT ew_etymology")
-    echo "s/__ELEMENTS__/$WIKIDATA_IDS/g" > get_wikidata_ids.tmp.sed
-    sed -f 'get_wikidata_ids.tmp.sed' 'get_named_after_ids.rq' > get_wikidata_ids.tmp.rq
-    curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_ids.tmp.rq' -o 'get_wikidata_ids.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql'
+    WIKIDATA_CODS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG(DISTINCT 'wd:'||ew_wikidata_cod, ' ') FROM element_wikidata_cods WHERE NOT ew_etymology")
+    echo "s/__ELEMENTS__/$WIKIDATA_CODS/g" > get_wikidata_cods.tmp.sed
+    sed -f 'get_wikidata_cods.tmp.sed' 'get_named_after_ids.rq' > get_wikidata_cods.tmp.rq
+    curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_cods.tmp.rq' -o 'get_wikidata_cods.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql'
 fi
 
 if [ "$(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(*) FROM wikidata_named_after" | xargs)" != '0' ]; then
     echo '========================= Wikidata named-after data already loaded into DB ========================='
 else
     echo '========================= Loading Wikidata named-after data into DB ========================='
-    WIKIDATA_JSON=$(cat get_wikidata_ids.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e 's/|/\\|/g' -e 's/\\/\\\\/g')
-    echo "s|__WIKIDATA_JSON__|$WIKIDATA_JSON|g" > load_wikidata_ids.tmp.sed
-    sed -f 'load_wikidata_ids.tmp.sed' 'load_wikidata_ids.sql' > load_wikidata_ids.tmp.sql
-    psql -h "$2" -d osm -U osm -t -f 'load_wikidata_ids.tmp.sql'
+    WIKIDATA_JSON=$(cat get_wikidata_cods.tmp.json | tr -d '\n' | sed -e "s/'/''/g" -e 's/|/\\|/g' -e 's/\\/\\\\/g')
+    echo "s|__WIKIDATA_JSON__|$WIKIDATA_JSON|g" > load_wikidata_cods.tmp.sed
+    sed -f 'load_wikidata_cods.tmp.sed' 'load_wikidata_cods.sql' > load_wikidata_cods.tmp.sql
+    psql -h "$2" -d osm -U osm -t -f 'load_wikidata_cods.tmp.sql'
 fi
 
 
 if [ "$(psql -h "$2" -U osm -d osm -t -c "SELECT COUNT(*) FROM wikidata WHERE wd_download_date IS NULL" | xargs)" == '0' ]; then
     echo '========================= Wikidata base data already loaded into DB ========================='
 else
-    WIKIDATA_IDS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_id, ' ') FROM (SELECT wd_wikidata_id FROM wikidata WHERE wd_download_date IS NULL LIMIT 1500) AS x" | xargs)
-    while [ -n "$WIKIDATA_IDS" ]; do
+    WIKIDATA_CODS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_cod, ' ') FROM (SELECT wd_wikidata_cod FROM wikidata WHERE wd_download_date IS NULL LIMIT 1500) AS x" | xargs)
+    while [ -n "$WIKIDATA_CODS" ]; do
         echo '========================= Downloading Wikidata base data ========================='
-        echo "s/__WIKIDATA_IDS__/$WIKIDATA_IDS/g" > get_wikidata_base.tmp.sed
+        echo "s/__WIKIDATA_CODS__/$WIKIDATA_CODS/g" > get_wikidata_base.tmp.sed
         sed -f 'get_wikidata_base.tmp.sed' 'get_wikidata_base.rq' > get_wikidata_base.tmp.rq
         curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_base.tmp.rq' -o 'get_wikidata_base.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql' || (echo 'Download failed' && sleep 5)
         
@@ -61,7 +61,7 @@ else
         sed -f 'load_wikidata_base.tmp.sed' 'load_wikidata_base.sql' > load_wikidata_base.tmp.sql
         psql -h "$2" -d osm -U osm -t -f 'load_wikidata_base.tmp.sql'
 
-        WIKIDATA_IDS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_id, ' ') FROM (SELECT wd_wikidata_id FROM wikidata WHERE wd_download_date IS NULL LIMIT 1500) AS x" | xargs)
+        WIKIDATA_CODS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_cod, ' ') FROM (SELECT wd_wikidata_cod FROM wikidata WHERE wd_download_date IS NULL LIMIT 1500) AS x" | xargs)
     done
 fi
 
@@ -86,8 +86,8 @@ fi
 #     echo '========================= Wikidata text initializazion data already downloaded ========================='
 # else
 #     echo '========================= Downloading Wikidata  text initializazion data ========================='
-#     WIKIDATA_IDS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_id, ' ') FROM wikidata LIMIT 500")
-#     echo "s/__WIKIDATA_IDS__/$WIKIDATA_IDS/g" > get_wikidata_text.tmp.sed
+#     WIKIDATA_CODS=$(psql -h "$2" -d osm -U osm -t -c "SELECT STRING_AGG('wd:'||wd_wikidata_cod, ' ') FROM wikidata LIMIT 500")
+#     echo "s/__WIKIDATA_CODS__/$WIKIDATA_CODS/g" > get_wikidata_text.tmp.sed
 #     sed -e "s/__LANGUAGE__/'it'/" -f 'get_wikidata_text.tmp.sed' 'get_wikidata_text.rq' > get_wikidata_text.tmp.rq
 #     curl -X 'POST' --data-urlencode 'format=json' --data-urlencode 'query@get_wikidata_text.tmp.rq' -o 'get_wikidata_text.tmp.json' -H "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36" 'https://query.wikidata.org/sparql'
 # fi

@@ -10,7 +10,7 @@ SELECT ?wikidata
     (SAMPLE(?death_place_name) AS ?death_place)
 WHERE {
     VALUES ?lang { __LANGUAGE__ }
-    VALUES ?wikidata { __WIKIDATA_IDS__ }
+    VALUES ?wikidata { __WIKIDATA_CODS__ }
 
     {
         ?name ^rdfs:label ?wikidata.

@@ -1,11 +1,11 @@
-INSERT INTO wikidata (wd_wikidata_id)
+INSERT INTO wikidata (wd_wikidata_cod)
 SELECT REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
-WHERE REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN ( SELECT wd_wikidata_id FROM wikidata )
+WHERE REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN ( SELECT wd_wikidata_cod FROM wikidata )
 UNION
 SELECT REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
-WHERE REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN ( SELECT wd_wikidata_id FROM wikidata );
+WHERE REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN ( SELECT wd_wikidata_cod FROM wikidata );
 
 UPDATE wikidata
 SET wd_position = CASE 
@@ -29,19 +29,19 @@ SET wd_position = CASE
 	wd_death_date = response->'death_date'->>'value',
 	wd_death_date_precision = (response->'death_date_precision'->>'value')::INT,
 	wd_commons = response->'commons'->>'value',
-	wd_instance_id = (SELECT wd_id FROM wikidata WHERE wd_wikidata_id = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')),
-	wd_gender_id = (SELECT wd_id FROM wikidata WHERE wd_wikidata_id = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')),
+	wd_instance_id = (SELECT wd_id FROM wikidata WHERE wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')),
+	wd_gender_id = (SELECT wd_id FROM wikidata WHERE wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')),
 	wd_download_date = CURRENT_TIMESTAMP
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
-WHERE REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') = wikidata.wd_wikidata_id;
+WHERE REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') = wikidata.wd_wikidata_cod;
 
 INSERT INTO wikidata_picture (wdp_wd_id, wdp_picture)
 SELECT wd.wd_id, picture
 FROM wikidata AS wd
 JOIN (
 	SELECT
-		REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_id,
+		REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_cod,
 		REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '`') AS picture
 	FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings') AS response
-) AS pic ON pic.wikidata_id = wd.wd_wikidata_id
+) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
 WHERE picture IS NOT NULL AND picture != '';

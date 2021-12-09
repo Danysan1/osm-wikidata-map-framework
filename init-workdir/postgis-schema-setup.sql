@@ -4,7 +4,7 @@ DROP TABLE IF EXISTS "wikidata_named_after";
 DROP TABLE IF EXISTS "wikidata_picture";
 DROP TABLE IF EXISTS "etymology";
 DROP TABLE IF EXISTS "wikidata";
-DROP TABLE IF EXISTS "element_wikidata_ids";
+DROP TABLE IF EXISTS "element_wikidata_cods";
 DROP TABLE IF EXISTS "element";
 DROP FUNCTION IF EXISTS translateTimestamp;
 
@@ -64,29 +64,29 @@ FROM planet_osm_polygon;
 CREATE UNIQUE INDEX element_id_idx ON element (el_id) WITH (fillfactor='100');
 CREATE INDEX element_geometry_idx ON element USING GIST (el_geometry) WITH (fillfactor='100');
 
-CREATE TABLE "element_wikidata_ids" (
+CREATE TABLE "element_wikidata_cods" (
   "ew_id" BIGSERIAL NOT NULL PRIMARY KEY,
   "ew_el_id" BIGINT NOT NULL,
-  "ew_wikidata_id" VARCHAR(12) NOT NULL CHECK (LEFT(ew_wikidata_id,1) = 'Q'),
+  "ew_wikidata_cod" VARCHAR(12) NOT NULL CHECK (LEFT(ew_wikidata_cod,1) = 'Q'),
   "ew_etymology" BOOLEAN NOT NULL
 );
 
-INSERT INTO element_wikidata_ids (ew_el_id, ew_wikidata_id, ew_etymology)
-SELECT el_id, TRIM(wikidata_id), FALSE
-FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_wikidata,';') AS splitted(wikidata_id)
-WHERE LEFT(TRIM(wikidata_id),1) = 'Q'
+INSERT INTO element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
+SELECT el_id, TRIM(wikidata_cod), FALSE
+FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_wikidata,';') AS splitted(wikidata_cod)
+WHERE LEFT(TRIM(wikidata_cod),1) = 'Q'
 UNION
-SELECT el_id, TRIM(subject_wikidata_id), TRUE
-FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_subject_wikidata,';') AS splitted(subject_wikidata_id)
-WHERE LEFT(TRIM(subject_wikidata_id),1) = 'Q'
+SELECT el_id, TRIM(subject_wikidata_cod), TRUE
+FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_subject_wikidata,';') AS splitted(subject_wikidata_cod)
+WHERE LEFT(TRIM(subject_wikidata_cod),1) = 'Q'
 UNION
-SELECT el_id, TRIM(name_etymology_wikidata_id), TRUE
-FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_name_etymology_wikidata,';') AS splitted(name_etymology_wikidata_id)
-WHERE LEFT(TRIM(name_etymology_wikidata_id),1) = 'Q';
+SELECT el_id, TRIM(name_etymology_wikidata_cod), TRUE
+FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_name_etymology_wikidata,';') AS splitted(name_etymology_wikidata_cod)
+WHERE LEFT(TRIM(name_etymology_wikidata_cod),1) = 'Q';
 
 CREATE TABLE "wikidata" (
   "wd_id" SERIAL NOT NULL PRIMARY KEY,
-  "wd_wikidata_id" VARCHAR(12) NOT NULL UNIQUE CHECK (LEFT(wd_wikidata_id,1) = 'Q'),
+  "wd_wikidata_cod" VARCHAR(12) NOT NULL UNIQUE CHECK (LEFT(wd_wikidata_cod,1) = 'Q'),
   "wd_position" GEOMETRY,
   --"wd_event_date" TIMESTAMP,
   "wd_event_date" VARCHAR,
@@ -124,9 +124,9 @@ CREATE TABLE "wikidata_picture" (
 );
 
 CREATE TABLE "wikidata_named_after" (
-  wna_wikidata_id VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_id),
-  wna_named_after_wikidata_id VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_id),
-  CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wikidata_id, wna_named_after_wikidata_id)
+  wna_wikidata_cod VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_cod),
+  wna_named_after_wikidata_cod VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_cod),
+  CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wikidata_cod, wna_named_after_wikidata_cod)
 );
 
 CREATE TABLE "wikidata_text" (
