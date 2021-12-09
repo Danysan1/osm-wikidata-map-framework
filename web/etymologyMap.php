@@ -46,6 +46,22 @@ $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 $enableDB = $conf->has("db-enable") && (bool)$conf->get("db-enable");
 
+if ($enableDB) {
+    $host = (string)$conf->get("db-host");
+    $port = (int)$conf->get("db-port");
+    $dbname = (string)$conf->get("db-database");
+    $db = new PDO(
+        "pgsql:host=$host;port=$port;dbname=$dbname",
+        (string)$conf->get("db-user"),
+        (string)$conf->get("db-password"),
+        [
+            PDO::ATTR_EMULATE_PREPARES => false, // https://websitebeaver.com/php-pdo-prepared-statements-to-prevent-sql-injection
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
+        ]
+    );
+}
+
 // "en-US" => "en"
 $langMatches = [];
 if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty($langMatches[1])) {
@@ -72,9 +88,11 @@ if ($from == "bbox") {
 
     if ($to == "geojson") {
         if ($enableDB) {
+            assert($db instanceof PDO);
             $query = new BBoxEtymologyPostGISQuery(
                 $bbox,
                 $safeLanguage,
+                $db,
                 $wikidataEndpointURL,
                 $serverTiming
             );
