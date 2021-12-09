@@ -168,7 +168,7 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
-                'features', JSON_AGG(ST_AsGeoJSON(ele.*)::json)
+                'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::json), '[]'::JSON)
                 )
             FROM (
                 SELECT
