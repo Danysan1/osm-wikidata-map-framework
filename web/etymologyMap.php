@@ -8,13 +8,15 @@ $serverTiming = new ServerTiming();
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
+require_once("./app/query/postgis/BBoxGenderStatsPostGISQuery.php");
+require_once("./app/query/postgis/BBoxTypeStatsPostGISQuery.php");
 require_once("./app/query/wikidata/GenderStatsWikidataFactory.php");
 require_once("./app/query/wikidata/TypeStatsWikidataFactory.php");
 require_once("./app/result/JSONQueryResult.php");
 require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./app/query/cache/CSVCachedBBoxJSONQuery.php");
 require_once("./app/query/combined/BBoxGeoJSONEtymologyQuery.php");
-require_once("./app/query/combined/BBoxJSONStatsQuery.php");
+require_once("./app/query/combined/BBoxStatsOverpassWikidataQuery.php");
 require_once("./app/query/postgis/BBoxEtymologyPostGISQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
 require_once("./funcs.php");
@@ -25,8 +27,10 @@ use \App\BaseBoundingBox;
 use \App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Cache\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
-use \App\Query\Combined\BBoxJSONStatsQuery;
+use \App\Query\Combined\BBoxStatsOverpassWikidataQuery;
 use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
+use \App\Query\PostGIS\BBoxGenderStatsPostGISQuery;
+use \App\Query\PostGIS\BBoxTypeStatsPostGISQuery;
 use \App\Query\Wikidata\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
@@ -87,8 +91,7 @@ if ($from == "bbox") {
     }
 
     if ($to == "geojson") {
-        if ($enableDB) {
-            assert($db instanceof PDO);
+        if (!empty($db)) {
             $query = new BBoxEtymologyPostGISQuery(
                 $bbox,
                 $safeLanguage,
@@ -109,24 +112,50 @@ if ($from == "bbox") {
                 $wikidataFactory,
                 $serverTiming
             );
-            $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+            $query = new CSVCachedBBoxGeoJSONQuery(
+                $baseQuery,
+                $cacheFileBasePath . $safeLanguage . "_",
+                $conf,
+                $serverTiming
+            );
         }
     } elseif ($to == "genderStats" || $to == "typeStats") {
-        if ($enableDB) {
-            // TODO
+        if (!empty($db)) {
+            if ($to == "genderStats") {
+                $query = new BBoxGenderStatsPostGISQuery(
+                    $bbox,
+                    $safeLanguage,
+                    $db,
+                    $wikidataEndpointURL,
+                    $serverTiming
+                );
+            } else {
+                $query = new BBoxTypeStatsPostGISQuery(
+                    $bbox,
+                    $safeLanguage,
+                    $db,
+                    $wikidataEndpointURL,
+                    $serverTiming
+                );
+            }
         } else {
             if ($to == "genderStats") {
                 $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
             } else {
                 $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
             }
-            $baseQuery = new BBoxJSONStatsQuery(
+            $baseQuery = new BBoxStatsOverpassWikidataQuery(
                 $bbox,
                 $overpassConfig,
                 $wikidataFactory,
                 $serverTiming
             );
-            $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+            $query = new CSVCachedBBoxJSONQuery(
+                $baseQuery,
+                $cacheFileBasePath . $safeLanguage . "_",
+                $conf,
+                $serverTiming
+            );
         }
     } else {
         http_response_code(400);
