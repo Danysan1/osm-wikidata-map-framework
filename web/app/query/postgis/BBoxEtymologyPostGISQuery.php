@@ -84,21 +84,13 @@ class BBoxEtymologyPostGISQuery implements BBoxGeoJSONQuery
                     JOIN wikidata ON et_wd_id = wd_id
                     JOIN element ON et_el_id = el_id
                     WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-                ),
-                available AS (
-                    SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang
                 )
-            SELECT wd_wikidata_cod FROM wiki WHERE wd_id NOT IN (SELECT wdt_wd_id FROM available)
+            SELECT wd_wikidata_cod FROM wiki WHERE wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang)
             UNION
-            SELECT gender.wd_wikidata_cod
-            FROM wikidata AS gender
-            JOIN wiki ON wiki.wd_gender_id = gender.wd_id
-            WHERE gender.wd_id NOT IN (SELECT wdt_wd_id FROM available)
-            UNION
-            SELECT instance.wd_wikidata_cod
-            FROM wikidata AS instance
-            JOIN wiki ON wiki.wd_instance_id = instance.wd_id
-            WHERE instance.wd_id NOT IN (SELECT wdt_wd_id FROM available)"
+            SELECT wd_miss.wd_wikidata_cod
+            FROM wikidata AS wd_miss
+            JOIN wiki ON wiki.wd_gender_id = wd_miss.wd_id OR wiki.wd_instance_id = wd_miss.wd_id
+            WHERE wd_miss.wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang)"
         );
         $stCheck->execute($queryParams);
         if ($this->serverTiming != null)

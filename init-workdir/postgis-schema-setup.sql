@@ -109,19 +109,23 @@ CREATE TABLE "wikidata" (
   "wd_download_date" TIMESTAMP DEFAULT NULL
 );
 
+CREATE UNIQUE INDEX wikidata_id_idx ON wikidata (wd_id) WITH (fillfactor='100');
+
 CREATE TABLE "etymology" (
   "et_el_id" BIGINT NOT NULL REFERENCES element(el_id),
   "et_wd_id" INT NOT NULL REFERENCES wikidata(wd_id),
   CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
 );
 
-CREATE INDEX etymology_id_idx ON etymology (et_el_id) WITH (fillfactor='100');
+CREATE INDEX etymology_el_id_idx ON etymology (et_el_id) WITH (fillfactor='100');
 
 CREATE TABLE "wikidata_picture" (
   "wdp_id" SERIAL NOT NULL PRIMARY KEY,
   "wdp_wd_id" INT NOT NULL REFERENCES wikidata(wd_id),
   "wdp_picture" VARCHAR NOT NULL
 );
+
+CREATE INDEX wikidata_picture_id_idx ON wikidata_picture (wdp_wd_id) WITH (fillfactor='100');
 
 CREATE TABLE "wikidata_named_after" (
   wna_wikidata_cod VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_cod),
@@ -145,3 +149,5 @@ CREATE TABLE "wikidata_text" (
   "wdt_download_date" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
 );
+
+CREATE INDEX wikidata_text_id_idx ON wikidata_text (wdt_wd_id) WITH (fillfactor='100');
