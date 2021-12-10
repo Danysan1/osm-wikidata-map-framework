@@ -52,7 +52,7 @@ class BBoxGenderStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQu
                 LEFT JOIN wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-                GROUP BY gender.wd_id
+                GROUP BY gender.wd_id, gender_text.wdt_name
             ) AS ele";
     }
 }
