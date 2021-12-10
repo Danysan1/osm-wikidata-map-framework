@@ -22,18 +22,16 @@ class BBoxGenderStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQu
     {
         $this->prepareSend();
 
-        $queryParams = [
-            "min_lon" => $this->bbox->getMinLon(),
-            "max_lon" => $this->bbox->getMaxLon(),
-            "min_lat" => $this->bbox->getMinLat(),
-            "max_lat" => $this->bbox->getMaxLat(),
-            "lang" => $this->language,
-        ];
-
-        $stRes = $this->db->prepare($this->getQuery());
-        $stRes->execute($queryParams);
-        if ($this->serverTiming != null)
-            $this->serverTiming->add("wikidata-query");
+        $stRes = $this->getDB()->prepare($this->getQuery());
+        $stRes->execute([
+            "min_lon" => $this->getBBox()->getMinLon(),
+            "max_lon" => $this->getBBox()->getMaxLon(),
+            "min_lat" => $this->getBBox()->getMinLat(),
+            "max_lat" => $this->getBBox()->getMaxLat(),
+            "lang" => $this->getLanguage(),
+        ]);
+        if ($this->getServerTiming() != null)
+            $this->getServerTiming()->add("wikidata-query");
         return new JSONLocalQueryResult(true, $stRes->fetchColumn());
     }
 

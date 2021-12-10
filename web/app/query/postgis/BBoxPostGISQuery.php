@@ -139,6 +139,21 @@ abstract class BBoxPostGISQuery implements BBoxQuery
         }
     }
 
+    protected function getDB(): PDO
+    {
+        return $this->db;
+    }
+
+    protected function getServerTiming(): ServerTiming
+    {
+        return $this->serverTiming;
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
+    }
+
     public function getBBox(): BoundingBox
     {
         return $this->bbox;
