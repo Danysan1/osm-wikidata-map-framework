@@ -7,6 +7,7 @@ $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
+require_once("./app/PostGIS_PDO.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
 require_once("./app/query/postgis/BBoxGenderStatsPostGISQuery.php");
 require_once("./app/query/postgis/BBoxTypeStatsPostGISQuery.php");
@@ -24,6 +25,7 @@ $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
+use App\PostGIS_PDO;
 use \App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Cache\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
@@ -50,21 +52,8 @@ $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 $enableDB = $conf->has("db-enable") && (bool)$conf->get("db-enable");
 
-if ($enableDB) {
-    $host = (string)$conf->get("db-host");
-    $port = (int)$conf->get("db-port");
-    $dbname = (string)$conf->get("db-database");
-    $db = new PDO(
-        "pgsql:host=$host;port=$port;dbname=$dbname",
-        (string)$conf->get("db-user"),
-        (string)$conf->get("db-password"),
-        [
-            PDO::ATTR_EMULATE_PREPARES => false, // https://websitebeaver.com/php-pdo-prepared-statements-to-prevent-sql-injection
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION
-        ]
-    );
-}
+if ($enableDB)
+    $db = new PostGIS_PDO($conf);
 
 // "en-US" => "en"
 $langMatches = [];

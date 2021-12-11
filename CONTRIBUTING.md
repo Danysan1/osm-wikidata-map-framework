@@ -59,7 +59,7 @@ docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod"
 ### Front-end
 
 [index.php](web/index.php) and [index.js](web/index.js) create the map with Mapbox GL JS.
-Etymology data is obtained from the back-end with [overpass.php](web/overpass.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
+Etymology data is obtained from the back-end with [elements.php](web/elements.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
 
 ### Back-end
 

@@ -690,7 +690,7 @@ function updateDataSource(e) {
         queryParams.onlyCenter = true;
         const overpass_source = map.getSource("overpass_source"),
             queryString = new URLSearchParams(queryParams).toString(),
-            overpass_url = './overpass.php?' + queryString;
+            overpass_url = './elements.php?' + queryString;
         console.info("Overpass dataSource update", { queryParams, overpass_url, overpass_source });
         showSnackbar("Fetching data...", "lightblue");
         if (overpass_source) {
