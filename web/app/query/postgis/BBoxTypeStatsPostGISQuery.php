@@ -2,25 +2,25 @@
 
 namespace App\Query\PostGIS;
 
-require_once(__DIR__ . "/BBoxPostGISQuery.php");
+require_once(__DIR__ . "/BBoxTextPostGISQuery.php");
 require_once(__DIR__ . "/../BBoxJSONQuery.php");
 require_once(__DIR__ . "/../../result/JSONQueryResult.php");
 require_once(__DIR__ . "/../../result/JSONLocalQueryResult.php");
 
 use \App\Query\BBoxJSONQuery;
-use \App\Query\PostGIS\BBoxPostGISQuery;
+use \App\Query\PostGIS\BBoxTextPostGISQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\JSONLocalQueryResult;
 use App\Result\QueryResult;
 
-class BBoxTypeStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQuery
+class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSONQuery
 {
     /**
      * @return JSONQueryResult
      */
     public function send(): QueryResult
     {
-        $this->prepareSend();
+        $this->downloadMissingText();
 
         $stRes = $this->getDB()->prepare($this->getQuery());
         $stRes->execute([
@@ -31,7 +31,7 @@ class BBoxTypeStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQuer
             "lang" => $this->getLanguage(),
         ]);
         if ($this->getServerTiming() != null)
-            $this->getServerTiming()->add("wikidata-query");
+            $this->getServerTiming()->add("stats-query");
         return new JSONLocalQueryResult(true, $stRes->fetchColumn());
     }
 
@@ -44,7 +44,7 @@ class BBoxTypeStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQuer
                     'name', wdt_name
                 )), '[]'::JSON)
             FROM (
-                SELECT COUNT(wd.wd_id) AS count, instance.wd_wikidata_cod, instance_text.wdt_name
+                SELECT COUNT(DISTINCT wd.wd_id) AS count, instance.wd_wikidata_cod, instance_text.wdt_name
                 FROM element
                 JOIN etymology ON et_el_id = el_id
                 JOIN wikidata AS wd ON et_wd_id = wd.wd_id
