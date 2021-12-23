@@ -8,9 +8,9 @@ FROM (
 ) AS x
 WHERE LEFT(val,1)='Q';
 
-INSERT INTO wikidata_named_after (wna_wikidata_cod, wna_named_after_wikidata_cod)
-SELECT DISTINCT
-	REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', ''),
-	REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
+INSERT INTO wikidata_named_after (wna_wd_id, wna_named_after_wd_id)
+SELECT DISTINCT w1.wd_id, w2.wd_id
 FROM json_array_elements(('__WIKIDATA_JSON__'::JSON)->'results'->'bindings')
+JOIN wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+JOIN wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
 WHERE LEFT(value->'namedAfter'->>'value', 31) = 'http://www.wikidata.org/entity/';

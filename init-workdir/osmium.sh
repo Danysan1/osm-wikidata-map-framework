@@ -12,7 +12,7 @@ if [ -z "$1" ]; then
 fi
 
 if [ ! -f "$1" ]; then
-    echo 'ERROR: The file you passed as first argument does not exist'
+    echo "ERROR: The file you passed as first argument does not exist: '$1'"
     exit 20
 fi
 
@@ -29,23 +29,26 @@ fi
 
 if [ ! -f "filtered_$1" ]; then
     echo '========================= Filtering OSM data... ========================='
-    osmium tags-filter --verbose --overwrite -o "filtered_$1" "$1" 'name:etymology:wikidata,subject:wikidata,wikidata'
+    osmium tags-filter --verbose --remove-tags --overwrite -o "filtered_$1" "$1" 'name:etymology:wikidata,subject:wikidata,wikidata'
 else
     echo '========================= Data already filtered ========================='
 fi
+
+# The next sctions is not necessary if you intend to use osm2pgsql
+# It will be executed only if the third parameter is passed and "txt", "geojson" or "pg"
 
 if [ -f "filtered_$1.txt" ]; then
     echo '========================= Data already exported to text ========================='
 elif [ "$3" = 'txt' ]; then
     echo '========================= Exporting OSM data to text... ========================='
-    osmium export --verbose --overwrite -o "filtered_$1.txt" -f 'text' --config='osmium.json' "filtered_$1"
+    osmium export --verbose --overwrite -o "filtered_$1.txt" -f 'text' --config='osmium.json' --index-type=dense_file_array,/tmp/osmium-nodes.cache "filtered_$1"
 fi
 
 if [ -f "filtered_$1.geojson" ]; then
     echo '========================= Data already exported to geojson ========================='
 elif [ "$3" = 'geojson' ]; then
     echo '========================= Exporting OSM data to geojson... ========================='
-    osmium export --verbose --overwrite -o "filtered_$1.geojson" -f 'geojson' --config='osmium.json' --add-unique-id='counter' "filtered_$1"
+    osmium export --verbose --overwrite -o "filtered_$1.geojson" -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=dense_file_array,/tmp/osmium-nodes.cache "filtered_$1"
 fi
 
 
@@ -53,5 +56,5 @@ if [ -f "filtered_$1.pg" ]; then
     echo '========================= Data already exported to PostGIS tsv ========================='
 elif [ "$3" = 'pg' ]; then
     echo '========================= Exporting OSM data to PostGIS tsv... ========================='
-    osmium export --verbose --overwrite -o "filtered_$1.pg" -f 'pg' --config='osmium.json' --add-unique-id='counter' "filtered_$1"
+    osmium export --verbose --overwrite -o "filtered_$1.pg" -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=dense_file_array,/tmp/osmium-nodes.cache "filtered_$1"
 fi

@@ -1,13 +1,3 @@
-DROP VIEW IF EXISTS "v_element";
-DROP TABLE IF EXISTS "wikidata_text";
-DROP TABLE IF EXISTS "wikidata_named_after";
-DROP TABLE IF EXISTS "wikidata_picture";
-DROP TABLE IF EXISTS "etymology";
-DROP TABLE IF EXISTS "wikidata";
-DROP TABLE IF EXISTS "element_wikidata_cods";
-DROP TABLE IF EXISTS "element";
-DROP FUNCTION IF EXISTS translateTimestamp;
-
 CREATE FUNCTION translateTimestamp(IN text TEXT)
     RETURNS timestamp without time zone
     LANGUAGE 'sql' AS $BODY$
@@ -20,46 +10,15 @@ $BODY$;
 
 CREATE TABLE "element" (
   el_id BIGSERIAL NOT NULL PRIMARY KEY,
+  el_geometry GEOMETRY NOT NULL,
   el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
   el_osm_id BIGINT NOT NULL,
   el_name VARCHAR,
   el_wikidata VARCHAR,
   el_subject_wikidata VARCHAR,
-  el_name_etymology_wikidata VARCHAR,
-  el_geometry GEOMETRY NOT NULL
-  --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors, osm2pgsql creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
+  el_name_etymology_wikidata VARCHAR
+  --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
 );
-
-INSERT INTO element (
-  el_osm_type,
-  el_osm_id,
-  el_name,
-  el_wikidata,
-  el_subject_wikidata,
-  el_name_etymology_wikidata,
-  el_geometry)
-SELECT 'node', osm_id, name, tags->'wikidata', tags->'subject:wikidata', tags->'name:etymology:wikidata', way
-FROM planet_osm_point
-UNION
-SELECT
-  CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
-  CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-  name,
-  tags->'wikidata',
-  tags->'subject:wikidata',
-  tags->'name:etymology:wikidata',
-  way AS geom
-FROM planet_osm_line
-UNION
-SELECT
-  CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
-  CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-  name,
-  tags->'wikidata',
-  tags->'subject:wikidata',
-  tags->'name:etymology:wikidata',
-  way AS geom
-FROM planet_osm_polygon;
 
 CREATE UNIQUE INDEX element_id_idx ON element (el_id) WITH (fillfactor='100');
 CREATE INDEX element_geometry_idx ON element USING GIST (el_geometry) WITH (fillfactor='100');
@@ -70,19 +29,6 @@ CREATE TABLE "element_wikidata_cods" (
   "ew_wikidata_cod" VARCHAR(12) NOT NULL CHECK (LEFT(ew_wikidata_cod,1) = 'Q'),
   "ew_etymology" BOOLEAN NOT NULL
 );
-
-INSERT INTO element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
-SELECT el_id, TRIM(wikidata_cod), FALSE
-FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_wikidata,';') AS splitted(wikidata_cod)
-WHERE LEFT(TRIM(wikidata_cod),1) = 'Q'
-UNION
-SELECT el_id, TRIM(subject_wikidata_cod), TRUE
-FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_subject_wikidata,';') AS splitted(subject_wikidata_cod)
-WHERE LEFT(TRIM(subject_wikidata_cod),1) = 'Q'
-UNION
-SELECT el_id, TRIM(name_etymology_wikidata_cod), TRUE
-FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_name_etymology_wikidata,';') AS splitted(name_etymology_wikidata_cod)
-WHERE LEFT(TRIM(name_etymology_wikidata_cod),1) = 'Q';
 
 CREATE TABLE "wikidata" (
   "wd_id" SERIAL NOT NULL PRIMARY KEY,
@@ -128,9 +74,9 @@ CREATE TABLE "wikidata_picture" (
 CREATE INDEX wikidata_picture_id_idx ON wikidata_picture (wdp_wd_id) WITH (fillfactor='100');
 
 CREATE TABLE "wikidata_named_after" (
-  wna_wikidata_cod VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_cod),
-  wna_named_after_wikidata_cod VARCHAR(12) NOT NULL REFERENCES wikidata(wd_wikidata_cod),
-  CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wikidata_cod, wna_named_after_wikidata_cod)
+  wna_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
+  wna_named_after_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
+  CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wd_id, wna_named_after_wd_id)
 );
 
 CREATE TABLE "wikidata_text" (

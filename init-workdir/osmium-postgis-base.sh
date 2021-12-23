@@ -17,7 +17,7 @@ fi
 
 # https://docs.docker.com/compose/startup-order/
 CONNECTION_TRIES=0
-until psql -h "$2" -U osm -d osm -c 'SELECT version()'; do
+until psql -h "$2" -v ON_ERROR_STOP=1 -U osm -d osm -c 'SELECT version()'; do
     >&2 echo "Postgres is unavailable - sleeping"
     ((CONNECTION_TRIES+=1))
     if [ $CONNECTION_TRIES -gt 60 ]; then
@@ -28,9 +28,9 @@ until psql -h "$2" -U osm -d osm -c 'SELECT version()'; do
 done
 
 echo '========================= Checking PostGIS ========================='
-psql -h "$2" -U osm -d osm -f 'setup-postgis.sql'
+psql -h "$2" -v ON_ERROR_STOP=1 -U osm -d osm -f 'setup-postgis.sql'
 
-if ! psql -h "$2" -U osm -d osm -c 'SELECT PostGIS_Version()' ; then
+if ! psql -h "$2" -v ON_ERROR_STOP=1 -U osm -d osm -c 'SELECT PostGIS_Version()' ; then
     echo 'ERROR: PostGIS is required, it is not installed on the DB and initialization failed'
     exit 80
 fi

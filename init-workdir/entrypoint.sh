@@ -3,6 +3,7 @@
 
 #./osmium-spatialite.sh extract.osm.pbf 2>&1 | tee -a osmium.log
 
+echo '========================= Starting import procedure ========================='
 
 # https://www.postgresql.org/docs/14/libpq-envars.html
 # https://www.postgresql.org/docs/14/libpq-pgpass.html
@@ -20,7 +21,7 @@ fi
 DB_HOST=$(cut -f 1 -d ':' ~/.pgpass)
 echo "Using DB at host '$DB_HOST'" | tee -a osmium.log
 
-#./osmium-postgis.sh extract.osm.pbf "$DB_HOST" 2>&1 | tee -a osmium.log
-./osmium-osm2pgsql.sh extract.osm.pbf "$DB_HOST" 2>&1 | tee -a osmium.log
+./osmium-postgis.sh extract.osm.pbf "$DB_HOST" 2>&1 | tee -a osmium.log
+#./osmium-osm2pgsql.sh extract.osm.pbf "$DB_HOST" 2>&1 | tee -a osmium.log
 
-echo 'Procedure complete. Exiting.'
+echo '========================= Ending import procedure ========================='
