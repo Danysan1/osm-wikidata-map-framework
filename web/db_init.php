@@ -338,38 +338,39 @@ if ($use_db) {
             }
         }
 
-        echo '========================= Converting wikidata codes... =========================' . PHP_EOL;
-        $dbh->exec(
-            "CREATE TEMPORARY TABLE element_wikidata_cods (
-                ew_id BIGSERIAL NOT NULL PRIMARY KEY,
-                ew_el_id BIGINT NOT NULL,
-                ew_wikidata_cod VARCHAR(12) NOT NULL CHECK (LEFT(ew_wikidata_cod,1) = 'Q'),
-                ew_etymology BOOLEAN NOT NULL
-            )"
-        );
-        $n_wikidata_cods = $dbh->exec(
-            "INSERT INTO element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
-            SELECT el_id, TRIM(wikidata_cod), FALSE
-            FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_wikidata,';') AS splitted(wikidata_cod)
-            WHERE wikidata_cod ~* '^Q\d+$'
-            UNION
-            SELECT el_id, TRIM(subject_wikidata_cod), TRUE
-            FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_subject_wikidata,';') AS splitted(subject_wikidata_cod)
-            WHERE subject_wikidata_cod ~* '^Q\d+$'
-            UNION
-            SELECT el_id, TRIM(name_etymology_wikidata_cod), TRUE
-            FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_name_etymology_wikidata,';') AS splitted(name_etymology_wikidata_cod)
-            WHERE name_etymology_wikidata_cod ~* '^Q\d+$'"
-        );
-        echo "========================= Converted $n_wikidata_cods wikidata codes =========================" . PHP_EOL;
-
-        $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-
-        $wikidataNamedAfterRQFile = "$workDir/wikidata_named_after.tmp.rq";
-        $wikidataNamedAfterJSONFile = "$workDir/wikidata_named_after.tmp.json";
-        if ($dbh->query("SELECT EXISTS (SELECT FROM wikidata_named_after)")->fetchColumn()) {
-            echo '========================= Wikidata named-after data already loaded =========================' . PHP_EOL;
+        if ($dbh->query("SELECT EXISTS (SELECT FROM etymology)")->fetchColumn()) {
+            echo '========================= Etymologies already loaded =========================' . PHP_EOL;
         } else {
+            echo '========================= Converting wikidata codes... =========================' . PHP_EOL;
+            $dbh->exec(
+                "CREATE TEMPORARY TABLE element_wikidata_cods (
+                    ew_id BIGSERIAL NOT NULL PRIMARY KEY,
+                    ew_el_id BIGINT NOT NULL,
+                    ew_wikidata_cod VARCHAR(12) NOT NULL CHECK (LEFT(ew_wikidata_cod,1) = 'Q'),
+                    ew_etymology BOOLEAN NOT NULL
+                )"
+            );
+            $n_wikidata_cods = $dbh->exec(
+                "INSERT INTO element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
+                SELECT el_id, TRIM(wikidata_cod), FALSE
+                FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_wikidata,';') AS splitted(wikidata_cod)
+                WHERE wikidata_cod ~* '^Q\d+$'
+                UNION
+                SELECT el_id, TRIM(subject_wikidata_cod), TRUE
+                FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_subject_wikidata,';') AS splitted(subject_wikidata_cod)
+                WHERE subject_wikidata_cod ~* '^Q\d+$'
+                UNION
+                SELECT el_id, TRIM(name_etymology_wikidata_cod), TRUE
+                FROM element, LATERAL REGEXP_SPLIT_TO_TABLE(el_name_etymology_wikidata,';') AS splitted(name_etymology_wikidata_cod)
+                WHERE name_etymology_wikidata_cod ~* '^Q\d+$'"
+            );
+            echo "========================= Converted $n_wikidata_cods wikidata codes =========================" . PHP_EOL;
+
+            $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
+
+            $wikidataNamedAfterRQFile = "$workDir/wikidata_named_after.tmp.rq";
+            $wikidataNamedAfterJSONFile = "$workDir/wikidata_named_after.tmp.json";
+
             echo '========================= Downloading Wikidata named-after data... =========================' . PHP_EOL;
             $wikidataCodsToFetch = $dbh->query(
                 "SELECT STRING_AGG(DISTINCT 'wd:'||ew_wikidata_cod, ' ') FROM element_wikidata_cods WHERE NOT ew_etymology"
@@ -409,31 +410,31 @@ if ($use_db) {
             $sth_wna->execute();
             $n_wna = $sth_wna->rowCount();
             echo "========================= Loaded $n_wd Wikidata entities and $n_wna named-after associations =========================" . PHP_EOL;
+
+            echo '========================= Converting etymologies... =========================' . PHP_EOL;
+            $n_ety = $dbh->exec(
+                "INSERT INTO etymology (et_el_id, et_wd_id)
+                SELECT DISTINCT ew_el_id, wd_id
+                FROM element_wikidata_cods
+                JOIN wikidata ON ew_wikidata_cod = wd_wikidata_cod
+                WHERE ew_etymology
+                UNION
+                SELECT DISTINCT ew.ew_el_id, nawd.wd_id
+                FROM element_wikidata_cods AS ew
+                JOIN wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
+                JOIN wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
+                JOIN wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
+                WHERE NOT ew.ew_etymology"
+            );
+            echo "========================= Converted $n_ety etymologies =========================" . PHP_EOL;
         }
 
-        echo '========================= Converting etymologies... =========================' . PHP_EOL;
-        $n_ety = $dbh->exec(
-            "INSERT INTO etymology (et_el_id, et_wd_id)
-            SELECT DISTINCT ew_el_id, wd_id
-            FROM element_wikidata_cods
-            JOIN wikidata ON ew_wikidata_cod = wd_wikidata_cod
-            WHERE ew_etymology
-            UNION
-            SELECT DISTINCT ew.ew_el_id, nawd.wd_id
-            FROM element_wikidata_cods AS ew
-            JOIN wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
-            JOIN wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
-            JOIN wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
-            WHERE NOT ew.ew_etymology"
-        );
-        echo "========================= Converted $n_ety etymologies =========================" . PHP_EOL;
-
-        echo '========================= Cleaning up elements... =========================' . PHP_EOL;
+        echo '========================= Cleaning up elements without etymology... =========================' . PHP_EOL;
         $n_ele = $dbh->exec(
             "DELETE FROM element
             WHERE el_id NOT IN (SELECT et_el_id FROM etymology)"
         );
-        echo "========================= Cleaned up $n_ele elements =========================" . PHP_EOL;
+        echo "========================= Cleaned up $n_ele elements without etymology =========================" . PHP_EOL;
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
