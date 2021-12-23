@@ -70,7 +70,8 @@ if (empty($argv[2])) {
     $convert_to_pg = TRUE;
 } elseif ($argv[2] == "osm2pgsql") {
     echo 'Using osm2pgsql' . PHP_EOL;
-    if (exec("which osm2pgsql", $output, $retval)) {
+    exec("which osm2pgsql", $output, $retval);
+    if ($retval !== 0) {
         echo "ERROR: osm2pgsql is not installed" . PHP_EOL;
         exit(1);
     }
@@ -334,7 +335,12 @@ if ($use_db) {
                 );
                 echo "========================= Converted $n_element elements =========================" . PHP_EOL;
             } else { // use_osm2pgsql
-                // TODO
+                $host = (string)$conf->get("db-host");
+                $port = (int)$conf->get("db-port");
+                $dbname = (string)$conf->get("db-database");
+                $user = (string)$conf->get("db-user");
+                $password = (string)$conf->get("db-password");
+                execAndCheck("PGPASSWORD='$password' osm2pgsql --host='$host' --port='$port' --database='$dbname' --user='$user' --hstore --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '$filteredFile'");
             }
         }
 
