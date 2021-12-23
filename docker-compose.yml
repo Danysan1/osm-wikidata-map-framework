@@ -26,18 +26,18 @@ services:
       - ./pgadmin_init.json:/pgadmin4/servers.json
     restart: "always"
       
-  osmium:
-    build:
-      context: .
-      dockerfile: osmium-psql.Dockerfile
-    image: dsantini/osmium-psql
-    volumes:
-      - ./init-workdir:/workdir
-    working_dir: /workdir
-    command: ./entrypoint.sh
-    depends_on:
-      - postgis_db
-    restart: "no"
+  # osmium:
+  #   build:
+  #     context: .
+  #     dockerfile: osmium-psql.Dockerfile
+  #   image: dsantini/osmium-psql
+  #   volumes:
+  #     - ./init-workdir:/workdir
+  #   working_dir: /workdir
+  #   command: ./entrypoint.sh
+  #   depends_on:
+  #     - postgis_db
+  #   restart: "no"
 
   web:
     build:
