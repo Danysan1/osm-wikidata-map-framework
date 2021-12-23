@@ -81,6 +81,7 @@ function execAndCheck(string $command): array
 {
     $exRetval = 1;
     $exOutput = null;
+    echo "Executing: $command".PHP_EOL;
     exec($command, $exOutput, $exRetval);
     echo implode(PHP_EOL, array_map(function ($str) {
         return empty($str) ? '' : "    $str";
