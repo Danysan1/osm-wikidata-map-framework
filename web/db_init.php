@@ -183,19 +183,19 @@ if ($use_db) {
             exit(1);
         }
 
-        //if ($dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='wikidata_text')")->fetchColumn()) {
-        //    echo '========================= DB schema already prepared =========================' . PHP_EOL;
-        //} else {
-        echo '========================= Preparing DB schema... =========================' . PHP_EOL;
-        $dbh->exec('DROP TABLE IF EXISTS "wikidata_text"');
-        $dbh->exec('DROP TABLE IF EXISTS "wikidata_picture"');
-        $dbh->exec('DROP TABLE IF EXISTS "etymology"');
-        $dbh->exec('DROP TABLE IF EXISTS "wikidata_named_after"');
-        $dbh->exec('DROP TABLE IF EXISTS "wikidata"');
-        $dbh->exec('DROP TABLE IF EXISTS "element"');
-        $dbh->exec('DROP FUNCTION IF EXISTS translateTimestamp');
-        $dbh->exec(
-            "CREATE FUNCTION translateTimestamp(IN text TEXT)
+        if ($dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='wikidata_text')")->fetchColumn()) {
+            echo '========================= DB schema already prepared =========================' . PHP_EOL;
+        } else {
+            echo '========================= Preparing DB schema... =========================' . PHP_EOL;
+            $dbh->exec('DROP TABLE IF EXISTS "wikidata_text"');
+            $dbh->exec('DROP TABLE IF EXISTS "wikidata_picture"');
+            $dbh->exec('DROP TABLE IF EXISTS "etymology"');
+            $dbh->exec('DROP TABLE IF EXISTS "wikidata_named_after"');
+            $dbh->exec('DROP TABLE IF EXISTS "wikidata"');
+            $dbh->exec('DROP TABLE IF EXISTS "element"');
+            $dbh->exec('DROP FUNCTION IF EXISTS translateTimestamp');
+            $dbh->exec(
+                "CREATE FUNCTION translateTimestamp(IN text TEXT)
                     RETURNS timestamp without time zone
                     LANGUAGE 'sql' AS \$BODY$
                 SELECT CASE
@@ -204,9 +204,9 @@ if ($use_db) {
                     ELSE $1::TIMESTAMP
                 END;
                 \$BODY$;"
-        );
-        $dbh->exec(
-            "CREATE TABLE \"element\" (
+            );
+            $dbh->exec(
+                "CREATE TABLE element (
                     el_id BIGSERIAL NOT NULL PRIMARY KEY,
                     el_geometry GEOMETRY NOT NULL,
                     el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
@@ -217,11 +217,11 @@ if ($use_db) {
                     el_name_etymology_wikidata VARCHAR
                     --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
                 )"
-        );
-        $dbh->exec("CREATE UNIQUE INDEX element_id_idx ON element (el_id) WITH (fillfactor='100')");
-        $dbh->exec("CREATE INDEX element_geometry_idx ON element USING GIST (el_geometry) WITH (fillfactor='100')");
-        $dbh->exec(
-            "CREATE TABLE wikidata (
+            );
+            $dbh->exec("CREATE UNIQUE INDEX element_id_idx ON element (el_id) WITH (fillfactor='100')");
+            $dbh->exec("CREATE INDEX element_geometry_idx ON element USING GIST (el_geometry) WITH (fillfactor='100')");
+            $dbh->exec(
+                "CREATE TABLE wikidata (
                     wd_id SERIAL NOT NULL PRIMARY KEY,
                     wd_wikidata_cod VARCHAR(12) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
                     wd_position GEOMETRY,
@@ -245,33 +245,33 @@ if ($use_db) {
                     wd_instance_id INT REFERENCES wikidata(wd_id),
                     wd_download_date TIMESTAMP DEFAULT NULL
                 )"
-        );
-        $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON wikidata (wd_id) WITH (fillfactor='100')");
-        $dbh->exec(
-            "CREATE TABLE etymology (
+            );
+            $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON wikidata (wd_id) WITH (fillfactor='100')");
+            $dbh->exec(
+                "CREATE TABLE etymology (
                     et_el_id BIGINT NOT NULL REFERENCES element(el_id),
                     et_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
                     CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
                 )"
-        );
-        $dbh->exec("CREATE INDEX etymology_el_id_idx ON etymology (et_el_id) WITH (fillfactor='100')");
-        $dbh->exec(
-            "CREATE TABLE wikidata_picture (
+            );
+            $dbh->exec("CREATE INDEX etymology_el_id_idx ON etymology (et_el_id) WITH (fillfactor='100')");
+            $dbh->exec(
+                "CREATE TABLE wikidata_picture (
                     wdp_id SERIAL NOT NULL PRIMARY KEY,
                     wdp_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
                     wdp_picture VARCHAR NOT NULL
                 )"
-        );
-        $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
-        $dbh->exec(
-            "CREATE TABLE wikidata_named_after (
+            );
+            $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
+            $dbh->exec(
+                "CREATE TABLE wikidata_named_after (
                     wna_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
                     wna_named_after_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
                     CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wd_id, wna_named_after_wd_id)
                 )"
-        );
-        $dbh->exec(
-            "CREATE TABLE wikidata_text (
+            );
+            $dbh->exec(
+                "CREATE TABLE wikidata_text (
                     wdt_id SERIAL NOT NULL PRIMARY KEY,
                     wdt_wd_id INT NOT NULL REFERENCES wikidata(wd_id),
                     wdt_language CHAR(2) NOT NULL,
@@ -287,15 +287,15 @@ if ($use_db) {
                     wdt_download_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
                 )"
-        );
-        $dbh->exec("CREATE INDEX wikidata_text_id_idx ON wikidata_text (wdt_wd_id) WITH (fillfactor='100')");
-        echo '========================= DB schema prepared =========================' . PHP_EOL;
-        //}
+            );
+            $dbh->exec("CREATE INDEX wikidata_text_id_idx ON wikidata_text (wdt_wd_id) WITH (fillfactor='100')");
+            echo '========================= DB schema prepared =========================' . PHP_EOL;
+        }
 
-        if ($convert_to_pg) {
-            if ($dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='public' AND table_name='osmdata')")->fetchColumn()) {
-                echo '========================= Table "osmdata" already set up =========================' . PHP_EOL;
-            } else {
+        if ($dbh->query("SELECT EXISTS (SELECT FROM element)")->fetchColumn()) {
+            echo '========================= Elements already converted =========================' . PHP_EOL;
+        } else {
+            if ($convert_to_pg) {
                 echo '========================= Setting up table "osmdata"... =========================' . PHP_EOL;
                 $dbh->exec(
                     'CREATE TEMPORARY TABLE "osmdata" (
@@ -307,19 +307,11 @@ if ($use_db) {
                     )'
                 );
                 echo '========================= Table "osmdata" set up =========================' . PHP_EOL;
-            }
 
-            if ($dbh->query("SELECT EXISTS (SELECT FROM osmdata)")->fetchColumn()) {
-                echo '========================= Data already loaded into DB =========================' . PHP_EOL;
-            } else {
                 echo '========================= Loading data into DB... =========================' . PHP_EOL;
                 $dbh->pgsqlCopyFromFile("osmdata", $pgFile);
                 echo '========================= Data loaded into DB =========================' . PHP_EOL;
-            }
 
-            if ($dbh->query("SELECT EXISTS (SELECT FROM element)")->fetchColumn()) {
-                echo '========================= Elements already converted =========================' . PHP_EOL;
-            } else {
                 echo '========================= Converting elements... =========================' . PHP_EOL;
                 $n_element = $dbh->exec(
                     "INSERT INTO element (
@@ -341,14 +333,14 @@ if ($use_db) {
                     FROM osmdata"
                 );
                 echo "========================= Converted $n_element elements =========================" . PHP_EOL;
+            } else { // use_osm2pgsql
+                // TODO
             }
-        } else { // use_osm2pgsql
-            // TODO
         }
 
         echo '========================= Converting wikidata codes... =========================' . PHP_EOL;
         $dbh->exec(
-            "CREATE TABLE element_wikidata_cods (
+            "CREATE TEMPORARY TABLE element_wikidata_cods (
                 ew_id BIGSERIAL NOT NULL PRIMARY KEY,
                 ew_el_id BIGINT NOT NULL,
                 ew_wikidata_cod VARCHAR(12) NOT NULL CHECK (LEFT(ew_wikidata_cod,1) = 'Q'),
@@ -418,6 +410,30 @@ if ($use_db) {
             $n_wna = $sth_wna->rowCount();
             echo "========================= Loaded $n_wd Wikidata entities and $n_wna named-after associations =========================" . PHP_EOL;
         }
+
+        echo '========================= Converting etymologies... =========================' . PHP_EOL;
+        $n_ety = $dbh->exec(
+            "INSERT INTO etymology (et_el_id, et_wd_id)
+            SELECT DISTINCT ew_el_id, wd_id
+            FROM element_wikidata_cods
+            JOIN wikidata ON ew_wikidata_cod = wd_wikidata_cod
+            WHERE ew_etymology
+            UNION
+            SELECT DISTINCT ew.ew_el_id, nawd.wd_id
+            FROM element_wikidata_cods AS ew
+            JOIN wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
+            JOIN wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
+            JOIN wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
+            WHERE NOT ew.ew_etymology"
+        );
+        echo "========================= Converted $n_ety etymologies =========================" . PHP_EOL;
+
+        echo '========================= Cleaning up elements... =========================' . PHP_EOL;
+        $n_ele = $dbh->exec(
+            "DELETE FROM element
+            WHERE el_id NOT IN (SELECT et_el_id FROM etymology)"
+        );
+        echo "========================= Cleaned up $n_ele elements =========================" . PHP_EOL;
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
