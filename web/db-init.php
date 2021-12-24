@@ -454,6 +454,8 @@ if ($use_db) {
             $n_wna = $sth_wna->rowCount();
             echo "========================= Loaded $n_wd Wikidata entities and $n_wna named-after associations =========================" . PHP_EOL;
 
+            // Possibly in the future: brothers => ?element wdt:P31 wd:Q14073567; wdt:P527 ?namedAfter;
+
             echo '========================= Converting etymologies... =========================' . PHP_EOL;
             $n_ety = $dbh->exec(
                 "INSERT INTO etymology (et_el_id, et_wd_id)
@@ -478,6 +480,28 @@ if ($use_db) {
             WHERE el_id NOT IN (SELECT et_el_id FROM etymology)"
         );
         echo "========================= Cleaned up $n_ele elements without etymology =========================" . PHP_EOL;
+
+        echo '========================= Generating global map... =========================' . PHP_EOL;
+        $sth_global_map = $dbh->query(
+            "SELECT JSON_BUILD_OBJECT(
+                'type', 'FeatureCollection',
+                'features', JSON_AGG(ST_AsGeoJSON(point.*)::json)
+                )
+            FROM (
+                SELECT
+                    ST_SetSRID( ST_Point( min_lon+0.015, min_lat+0.015), 4326) AS geom,
+                    (
+                        SELECT COUNT(DISTINCT et_el_id)
+                        FROM etymology
+                        JOIN element ON et_el_id = el_id
+                        WHERE el_geometry @ ST_MakeEnvelope(min_lon, min_lat, min_lon+0.03, min_lat+0.03, 4326)
+                    ) AS num
+                FROM GENERATE_SERIES(-180, 180, 0.03) AS min_lon, GENERATE_SERIES(-55, 70, 0.03) AS min_lat
+            ) AS point
+            WHERE num > 0"
+        );
+        file_put_contents(__DIR__.'/global-map.geojson', $sth_global_map->fetchColumn());
+        echo '========================= Generated global map... =========================' . PHP_EOL;
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
