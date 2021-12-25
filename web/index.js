@@ -1003,7 +1003,7 @@ function prepareGlobalLayers() {
         cluster: true,
         //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
         clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
-        clusterProperties: { "ety_count": ["+", ["get", "ety_count"]] },
+        clusterProperties: { "num": ["+", ["get", "num"]] },
         clusterMinPoints: 1,
     });
 
@@ -1012,7 +1012,7 @@ function prepareGlobalLayers() {
         source: 'global_source',
         type: 'circle',
         maxzoom: minZoomLevel,
-        filter: ['has', 'ety_count'],
+        filter: ['has', 'num'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
             // with three steps to implement three types of circles:
@@ -1020,10 +1020,10 @@ function prepareGlobalLayers() {
             // - Yellow, 30px circles when point count is between 100 and 750
             // - Pink, 40px circles when point count is greater than or equal to 750
             'circle-color': [
-                'step', ['get', 'ety_count'], '#51bbd6', 2000, '#f1f075', 25000, '#f28cb1'
+                'step', ['get', 'num'], '#51bbd6', 2000, '#f1f075', 25000, '#f28cb1'
             ],
             'circle-radius': [
-                'step', ['get', 'ety_count'], 20, 2000, 50, 40000, 60
+                'step', ['get', 'num'], 20, 2000, 50, 40000, 60
             ]
         }
     });
@@ -1033,9 +1033,9 @@ function prepareGlobalLayers() {
         type: 'symbol',
         source: 'global_source',
         maxzoom: minZoomLevel,
-        filter: ['has', 'ety_count'],
+        filter: ['has', 'num'],
         layout: {
-            'text-field': '{ety_count}',
+            'text-field': '{num}',
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12
         }

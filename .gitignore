@@ -14,6 +14,7 @@ pgadmin-data
 vendor/
 cache/
 /web/storage/
+*.geojson
 
 # Created by https://www.toptal.com/developers/gitignore/api/metals,phpunit,composer,visualstudiocode,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=metals,phpunit,composer,visualstudiocode,node

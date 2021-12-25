@@ -49,7 +49,7 @@ if ($from == "bbox") {
     $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
-    $maxArea = (float)$conf->get("overpass-bbox-max-area");
+    $maxArea = (float)$conf->get("elements-bbox-max-area");
     if ($bboxArea > $maxArea) {
         http_response_code(400);
         die('{"error":"The requested area is too large. Please use a smaller area."};');
