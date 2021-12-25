@@ -103,6 +103,35 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
             //error_log("wikidataResult=$wikidataResult");
 
+            $stInsertGender = $this->getDB()->prepare(
+                "INSERT INTO wikidata (wd_wikidata_cod)
+                SELECT DISTINCT REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                FROM json_array_elements((:result::JSON)->'results'->'bindings')
+                LEFT JOIN wikidata ON wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE LEFT(value->'genderID'->>'value', 31) = 'http://www.wikidata.org/entity/'
+                AND wd_id IS NULL
+                UNION
+                SELECT DISTINCT REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                FROM json_array_elements((:result::JSON)->'results'->'bindings')
+                LEFT JOIN wikidata ON wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE LEFT(value->'instanceID'->>'value', 31) = 'http://www.wikidata.org/entity/'
+                AND wd_id IS NULL"
+            );
+            $stInsertGender->execute(["result" => $wikidataResult->getJSON()]);
+            if ($this->getServerTiming() != null)
+                $this->getServerTiming()->add("wikidata-insert-gender");
+
+            $stInsertGenderText = $this->getDB()->prepare(
+                "INSERT INTO wikidata_text (wdt_wd_id, wdt_language, wdt_name)
+                SELECT DISTINCT wd.wd_id, :lang, value->'gender'->>'value'
+                FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
+                JOIN wikidata AS wd ON wd.wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE wd.wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text)"
+            );
+            $stInsertGenderText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            if ($this->getServerTiming() != null)
+                $this->getServerTiming()->add("wikidata-insert-gender-text");
+
             $stInsert = $this->getDB()->prepare(
                 "UPDATE wikidata 
                 SET wd_position = ST_GeomFromText(response->'wkt_coords'->>'value'),
@@ -117,14 +146,18 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     wd_death_date = translateTimestamp(response->'death_date'->>'value'),
                     wd_death_date_precision = (response->'death_date_precision'->>'value')::INT,
                     wd_commons = response->'commons'->>'value',
+                    wd_gender_id = gender.wd_id,
+                    wd_instance_id = instance.wd_id,
                     wd_download_date = NOW()
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
-                WHERE wd_download_date IS NULL
-                AND wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
+                LEFT JOIN wikidata AS gender ON gender.wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                LEFT JOIN wikidata AS instance ON instance.wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE wikidata.wd_download_date IS NULL
+                AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
             $stInsert->execute(["result" => $wikidataResult->getJSON()]);
             if ($this->getServerTiming() != null)
-                $this->getServerTiming()->add("wikidata-insert");
+                $this->getServerTiming()->add("wikidata-insert-wikidata");
 
             $stInsertPicture = $this->getDB()->prepare(
                 "INSERT INTO wikidata_picture (wdp_wd_id, wdp_picture)
@@ -136,9 +169,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                         REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '`') AS picture
                     FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 ) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
+                LEFT JOIN wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
                 WHERE pic.picture IS NOT NULL
                 AND pic.picture != ''
-                AND wd.wd_id NOT IN (SELECT DISTINCT wdp_wd_id FROM wikidata_picture)"
+                AND wdp.wdp_id IS NULL"
             );
             $stInsertPicture->execute(["result" => $wikidataResult->getJSON()]);
             if ($this->getServerTiming() != null)

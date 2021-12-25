@@ -435,20 +435,21 @@ if ($use_db) {
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
                     $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->send()->getJSON();
                     file_put_contents($wikidataNamedAfterJSONFile, $jsonResult);
-                    echo '========================= Wikidata named-after data downloaded =========================' . PHP_EOL;
 
                     echo '========================= Loading Wikidata named-after data... =========================' . PHP_EOL;
                     $sth_wd = $dbh->prepare(
                         "INSERT INTO wikidata (wd_wikidata_cod)
                         SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
                         FROM json_array_elements((:response::JSON)->'results'->'bindings')
+                        LEFT JOIN wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
                         WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                        AND REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN (SELECT wd_wikidata_cod FROM wikidata)
+                        AND wd_id IS NULL
                         UNION
                         SELECT DISTINCT REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
                         FROM json_array_elements((:response::JSON)->'results'->'bindings')
+                        LEFT JOIN wikidata ON wd_wikidata_cod = REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
                         WHERE LEFT(value->'namedAfter'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                        AND REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '') NOT IN (SELECT wd_wikidata_cod FROM wikidata)"
+                        AND wd_id IS NULL"
                     );
                     $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
                     $sth_wd->execute();
@@ -473,8 +474,9 @@ if ($use_db) {
                     "INSERT INTO wikidata (wd_wikidata_cod)
                     SELECT DISTINCT ew_wikidata_cod
                     FROM element_wikidata_cods
+                    LEFT JOIN wikidata ON wd_wikidata_cod = ew_wikidata_cod
                     WHERE ew_etymology
-                    AND ew_wikidata_cod NOT IN (SELECT wd_wikidata_cod FROM wikidata)"
+                    AND wd_id IS NULL"
                 );
                 echo "========================= Loaded $n_wd Wikidata entities =========================" . PHP_EOL;
 
@@ -543,6 +545,10 @@ if ($use_db) {
         );
         file_put_contents(__DIR__ . '/global-map.geojson', $sth_global_map->fetchColumn());
         echo '========================= Generated global map... =========================' . PHP_EOL;
+
+        //echo '========================= Generating backup... =========================' . PHP_EOL;
+        //execAndCheck("PGPASSWORD='$password' pg_dump --file 'open-etymology-map.backup' --host '$host' --port '$port' --database='$dbname' --username '$user' --no-password --verbose --format=c --blobs --no-owner --section=pre-data --section=data --section=post-data --no-privileges --no-tablespaces --no-unlogged-table-data --schema 'public' 'osm'")
+        //echo '========================= Backup generated... =========================' . PHP_EOL;
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
