@@ -44,11 +44,13 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 )
             FROM (
                 SELECT
+                    el_id,
                     el_geometry AS geom,
                     el_osm_type AS osm_type,
                     el_osm_id AS osm_id,
                     el_name AS name,
                     JSON_AGG(JSON_BUILD_OBJECT(
+                        'wd_id', wd.wd_id,
                         'birth_date', wd.wd_birth_date,
                         'birth_date_precision', wd.wd_birth_date_precision,
                         'birth_place', wdt.wdt_birth_place,

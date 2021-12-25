@@ -2,30 +2,14 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
-
-use \App\Query\Wikidata\StringSetXMLWikidataQuery;
-use \App\Result\QueryResult;
-use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
-
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataFullQuery extends StringSetXMLWikidataQuery
+class EtymologyIDListWikidataBaseQuery
 {
-    /**
-     * @return XMLWikidataEtymologyQueryResult
-     */
-    public function send(): QueryResult
-    {
-        return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::send());
-    }
-
-    public function createQuery(string $wikidataIDList, string $language): string
+    public static function createQuery(string $wikidataIDList, string $language): string
     {
         return "SELECT ?wikidata
                 (SAMPLE(?name) AS ?name)
@@ -37,7 +21,7 @@ class EtymologyIDListWikidataFullQuery extends StringSetXMLWikidataQuery
                 (SAMPLE(?commons) AS ?commons)
                 (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
                 (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
-                (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='\t') AS ?pictures)
+                (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='`') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
                 (SAMPLE(?event_date_precision) AS ?event_date_precision)
                 (SAMPLE(?start_date) AS ?start_date)
