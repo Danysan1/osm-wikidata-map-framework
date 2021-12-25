@@ -1305,6 +1305,8 @@ function formatDate(date, precision) {
         dateObject = date;
     else if (typeof date === 'string')
         dateObject = new Date(date);
+    else if (typeof date === 'number')
+        dateObject = new Date(date * 1000); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
     else
         throw new Error("Invalid date parameter");
 
