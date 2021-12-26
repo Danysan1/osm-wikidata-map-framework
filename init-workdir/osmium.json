@@ -1,7 +1,0 @@
-{
-    "attributes": {
-        "type": true,
-        "id": true
-    },
-    "include_tags": ["name", "wikidata", "subject:wikidata", "name:etymology:wikidata"]
-}

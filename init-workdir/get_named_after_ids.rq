@@ -1,5 +1,0 @@
-SELECT ?element ?namedAfter
-WHERE {
-  VALUES ?element { __ELEMENTS__ }.
-  ?element wdt:P138 ?namedAfter.
-}
