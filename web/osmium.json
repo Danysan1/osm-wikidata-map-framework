@@ -3,7 +3,7 @@
         "type": true,
         "id": true
     },
-    "linear_tags": ["area=no"],
+    "linear_tags": ["area=no", "junction=roundabout"],
     "area_tags": null,
     "include_tags": ["name", "wikidata", "subject:wikidata", "name:etymology:wikidata"]
 }
