@@ -133,10 +133,17 @@ class EtymologyIDListWikidataBaseQuery
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P580/psv:P580 [
-                        wikibase:timePrecision ?start_date_precision;
-                        wikibase:timeValue ?start_date
-                    ].
+                    {
+                        ?wikidata p:P580/psv:P580 [ # start time
+                            wikibase:timePrecision ?start_date_precision;
+                            wikibase:timeValue ?start_date
+                        ].
+                    } UNION {
+                        ?wikidata p:P571/psv:P571 [ # inception
+                            wikibase:timePrecision ?start_date_precision;
+                            wikibase:timeValue ?start_date
+                        ].
+                    }
                     MINUS {
                         ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_start_date_precision.
                         FILTER (?other_start_date_precision > ?start_date_precision).
@@ -144,10 +151,17 @@ class EtymologyIDListWikidataBaseQuery
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P582/psv:P582 [
-                        wikibase:timePrecision ?end_date_precision;
-                        wikibase:timeValue ?end_date
-                    ].
+                    {
+                        ?wikidata p:P582/psv:P582 [ # end time
+                            wikibase:timePrecision ?end_date_precision;
+                            wikibase:timeValue ?end_date
+                        ].
+                    } UNION {
+                        ?wikidata p:P576/psv:P576 [ # dissolved, abolished or demolished date
+                            wikibase:timePrecision ?end_date_precision;
+                            wikibase:timeValue ?end_date
+                        ].
+                    }
                     MINUS {
                         ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_end_date_precision.
                         FILTER (?other_end_date_precision > ?end_date_precision).
