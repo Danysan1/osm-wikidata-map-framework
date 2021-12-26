@@ -23,6 +23,7 @@ class EtymologyIDListWikidataBaseQuery
                 (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
                 (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='`') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
+                (SAMPLE(?event_date) AS ?event_date)
                 (SAMPLE(?event_date_precision) AS ?event_date_precision)
                 (SAMPLE(?start_date) AS ?start_date)
                 (SAMPLE(?start_date_precision) AS ?start_date_precision)

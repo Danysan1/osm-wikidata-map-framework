@@ -75,13 +75,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 )
             SELECT wd_wikidata_cod
             FROM wikidata_etymology
-            WHERE wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang)
-            UNION
-            SELECT wd_miss.wd_wikidata_cod
-            FROM wikidata AS wd_miss
-            JOIN wikidata_etymology AS wde
-                ON wde.wd_gender_id = wd_miss.wd_id OR wde.wd_instance_id = wd_miss.wd_id
-            WHERE wd_miss.wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang)"
+            WHERE wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language = :lang)"
         );
         $sthMissingWikidata->execute($queryParams);
         if ($this->getServerTiming() != null)
@@ -123,10 +117,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
             $stInsertGenderText = $this->getDB()->prepare(
                 "INSERT INTO wikidata_text (wdt_wd_id, wdt_language, wdt_name)
-                SELECT DISTINCT wd.wd_id, :lang, value->'gender'->>'value'
+                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, value->'gender'->>'value'
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
                 JOIN wikidata AS wd ON wd.wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE wd.wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text)"
+                WHERE wd.wd_id NOT IN (SELECT wdt_wd_id FROM wikidata_text WHERE wdt_language=:lang::VARCHAR)"
             );
             $stInsertGenderText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
             if ($this->getServerTiming() != null)
