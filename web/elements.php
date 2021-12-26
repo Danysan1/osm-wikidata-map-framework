@@ -36,7 +36,7 @@ $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
 //$onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
-$enableDB = $conf->has("db-enable") && (bool)$conf->get("db-enable");
+$enableDB = $conf->getBool("db-enable");
 if ($enableDB)
     $db = new PostGIS_PDO($conf);
 
@@ -102,7 +102,7 @@ if (!$result->isSuccessful()) {
     error_log("Overpass no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($result->hasPublicSourcePath()) {
-    if ($conf->has("redirect-to-cache-file") && (bool)$conf->get("redirect-to-cache-file")) {
+    if ($conf->getBool("redirect-to-cache-file")) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {

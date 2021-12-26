@@ -19,7 +19,7 @@ class IniFileConfiguration implements Configuration
 	/**
 	 * @param string $iniFilePath
 	 */
-	public function __construct($iniFilePath = __DIR__ . "/../open-etymology-map.ini")
+	public function __construct(string $iniFilePath = __DIR__ . "/../open-etymology-map.ini")
 	{
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config)) {
@@ -28,11 +28,7 @@ class IniFileConfiguration implements Configuration
 		//echo json_encode($this->config);
 	}
 
-	/**
-	 * @param string $key
-	 * @return boolean
-	 */
-	public function has($key)
+	public function has(string $key): bool
 	{
 		return isset($this->config[$key]) && $this->config[$key] !== "";
 	}
@@ -41,11 +37,16 @@ class IniFileConfiguration implements Configuration
 	 * @param string $key
 	 * @return mixed
 	 */
-	public function get($key)
+	public function get(string $key)
 	{
 		if (!isset($this->config[$key])) {
 			throw new Exception("Configuration not found: $key");
 		}
 		return $this->config[$key];
+	}
+
+	public function getBool(string $key): bool
+	{
+		return !empty($this->config[$key]) && $this->config[$key] != "false";
 	}
 }

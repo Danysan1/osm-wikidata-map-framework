@@ -50,7 +50,7 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
-$enableDB = $conf->has("db-enable") && (bool)$conf->get("db-enable");
+$enableDB = $conf->getBool("db-enable");
 
 if ($enableDB)
     $db = new PostGIS_PDO($conf);
@@ -168,7 +168,7 @@ if (!$result->isSuccessful()) {
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($result->hasPublicSourcePath()) {
-    if ($conf->has("redirect-to-cache-file") && (bool)$conf->get("redirect-to-cache-file")) {
+    if ($conf->getBool("redirect-to-cache-file")) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {
