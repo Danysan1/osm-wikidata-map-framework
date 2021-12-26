@@ -1319,6 +1319,10 @@ function formatDate(date, precision) {
         options.year = 'numeric';
     }
 
+    if (dateObject < new Date('0000-01-01T00:00:00')) {
+        options.era = "short";
+    }
+
     const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
     //console.info("formatDate", { date, precision, dateObject, options, out });
     return out;
