@@ -210,17 +210,13 @@ if ($use_db) {
                 END;
                 \$BODY$;"
             );
-            $dbh->exec( // About 90% of elements is deleted, it's faster to copy them; https://stackoverflow.com/a/7088514/2347196
+            $dbh->exec(
                 "CREATE TABLE element_temp (
-                    el_id BIGSERIAL NOT NULL PRIMARY KEY,
-                    el_geometry GEOMETRY NOT NULL,
-                    el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
-                    el_osm_id BIGINT NOT NULL,
-                    el_tags JSONB,
-                    el_name VARCHAR,
-                    el_wikidata VARCHAR,
-                    el_subject_wikidata VARCHAR,
-                    el_name_etymology_wikidata VARCHAR
+                    elt_id BIGSERIAL NOT NULL PRIMARY KEY,
+                    elt_geometry GEOMETRY NOT NULL,
+                    elt_osm_type VARCHAR(8) NOT NULL CHECK (elt_osm_type IN ('node','way','relation')),
+                    elt_osm_id BIGINT NOT NULL,
+                    elt_tags JSONB
                 )"
             );
             $dbh->exec(
@@ -318,20 +314,9 @@ if ($use_db) {
         } else {
             if ($convert_to_pg) {
                 echo '========================= Loading OSM elements into DB... =========================' . PHP_EOL;
-                $dbh->pgsqlCopyFromFile("element_temp", $pgFile, "\t", "\\\\N", 'el_id,el_geometry,el_osm_type,el_osm_id,el_tags');
+                $dbh->pgsqlCopyFromFile("element_temp", $pgFile, "\t", "\\\\N", 'elt_id,elt_geometry,elt_osm_type,elt_osm_id,elt_tags');
                 $n_osmdata = $dbh->query("SELECT COUNT(*) FROM element_temp")->fetchColumn();
                 echo "========================= Loaded $n_osmdata OSM elements into DB =========================" . PHP_EOL;
-
-                echo '========================= Converting elements... =========================' . PHP_EOL;
-                $n_element = $dbh->exec(
-                    "UPDATE element_temp
-                    SET el_name = el_tags->>'name',
-                        el_wikidata = el_tags->>'wikidata',
-                        el_subject_wikidata = el_tags->>'subject:wikidata',
-                        el_name_etymology_wikidata = el_tags->>'name:etymology:wikidata'
-                    WHERE el_tags IS NOT NULL"
-                );
-                echo "========================= Converted $n_element elements =========================" . PHP_EOL;
             } else { // use_osm2pgsql
                 $host = (string)$conf->get("db-host");
                 $port = (int)$conf->get("db-port");
@@ -339,7 +324,7 @@ if ($use_db) {
                 $user = (string)$conf->get("db-user");
                 $password = (string)$conf->get("db-password");
                 echo '========================= Loading data into DB... =========================' . PHP_EOL;
-                execAndCheck("PGPASSWORD='$password' osm2pgsql --host='$host' --port='$port' --database='$dbname' --user='$user' --hstore --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '$filteredFile'");
+                execAndCheck("PGPASSWORD='$password' osm2pgsql --host='$host' --port='$port' --database='$dbname' --user='$user' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '$filteredFile'");
                 $n_point = $dbh->query("SELECT COUNT(*) FROM planet_osm_point")->fetchColumn();
                 $n_line = $dbh->query("SELECT COUNT(*) FROM planet_osm_line")->fetchColumn();
                 $n_polygon = $dbh->query("SELECT COUNT(*) FROM planet_osm_polygon")->fetchColumn();
@@ -348,33 +333,25 @@ if ($use_db) {
                 echo '========================= Converting elements... =========================' . PHP_EOL;
                 $n_element = $dbh->exec(
                     "INSERT INTO element_temp (
-                        el_osm_type,
-                        el_osm_id,
-                        el_name,
-                        el_wikidata,
-                        el_subject_wikidata,
-                        el_name_etymology_wikidata,
-                        el_geometry)
-                    SELECT 'node', osm_id, name, tags->'wikidata', tags->'subject:wikidata', tags->'name:etymology:wikidata', way
+                        elt_osm_type,
+                        elt_osm_id,
+                        elt_tags,
+                        elt_geometry
+                    )
+                    SELECT 'node', osm_id, hstore_to_jsonb(tags), way
                     FROM planet_osm_point
                     UNION
                     SELECT
                         CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
                         CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-                        name,
-                        tags->'wikidata',
-                        tags->'subject:wikidata',
-                        tags->'name:etymology:wikidata',
+                        hstore_to_jsonb(tags),
                         way AS geom
                     FROM planet_osm_line
                     UNION
                     SELECT
                         CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
                         CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-                        name,
-                        tags->'wikidata',
-                        tags->'subject:wikidata',
-                        tags->'name:etymology:wikidata',
+                        hstore_to_jsonb(tags),
                         way AS geom
                     FROM planet_osm_polygon"
                 );
@@ -391,16 +368,16 @@ if ($use_db) {
                 echo '========================= Converting wikidata codes... =========================' . PHP_EOL;
                 $n_wikidata_cods = $dbh->exec(
                     "INSERT INTO element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
-                    SELECT el_id, UPPER(TRIM(wikidata_cod)), FALSE
-                    FROM element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(el_wikidata,';') AS splitted(wikidata_cod)
+                    SELECT elt_id, UPPER(TRIM(wikidata_cod)), FALSE
+                    FROM element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(elt_tags->>'wikidata',';') AS splitted(wikidata_cod)
                     WHERE TRIM(wikidata_cod) ~* '^Q\d+$'
                     UNION
-                    SELECT el_id, UPPER(TRIM(subject_wikidata_cod)), TRUE
-                    FROM element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(el_subject_wikidata,';') AS splitted(subject_wikidata_cod)
+                    SELECT elt_id, UPPER(TRIM(subject_wikidata_cod)), TRUE
+                    FROM element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(elt_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
                     WHERE TRIM(subject_wikidata_cod) ~* '^Q\d+$'
                     UNION
-                    SELECT el_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE
-                    FROM element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(el_name_etymology_wikidata,';') AS splitted(name_etymology_wikidata_cod)
+                    SELECT elt_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE
+                    FROM element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(elt_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
                     WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
                 );
                 echo "========================= Converted $n_wikidata_cods wikidata codes =========================" . PHP_EOL;
@@ -414,7 +391,6 @@ if ($use_db) {
                 $wikidataNamedAfterRQFile = "$workDir/wikidata_named_after.tmp.rq";
                 $wikidataNamedAfterJSONFile = "$workDir/wikidata_named_after.tmp.json";
 
-                echo '========================= Counting Wikidata codes to check =========================' . PHP_EOL;
                 $n_todo_named_after = $dbh->query(
                     "SELECT COUNT(DISTINCT ew_wikidata_cod) FROM element_wikidata_cods WHERE NOT ew_etymology"
                 )->fetchColumn();
@@ -514,15 +490,15 @@ if ($use_db) {
             echo '========================= Cleaning up elements without etymology... =========================' . PHP_EOL;
             $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM element_temp")->fetchColumn();
             /*$n_cleaned = $dbh->exec(
-                "DELETE FROM element_temp WHERE el_id NOT IN (SELECT DISTINCT et_el_id FROM etymology)"
+                "DELETE FROM element_temp WHERE elt_id NOT IN (SELECT DISTINCT et_el_id FROM etymology)"
             );
             $n_remaining = $n_tot - $n_cleaned;
             $dbh->exec('ALTER TABLE element_temp RENAME TO element');*/
             $n_remaining = $dbh->exec( // About 90% of elements is deleted, it's faster to copy them; https://stackoverflow.com/a/7088514/2347196
                 "INSERT INTO element (el_id, el_geometry, el_osm_type, el_osm_id, el_name)
-                SELECT el_id, el_geometry, el_osm_type, el_osm_id, el_name
+                SELECT elt_id, elt_geometry, elt_osm_type, elt_osm_id, elt_tags->>'name'
                 FROM element_temp
-                WHERE el_id IN (SELECT DISTINCT et_el_id FROM etymology)"
+                WHERE elt_id IN (SELECT DISTINCT et_el_id FROM etymology)"
             );
             $n_cleaned = $n_tot - $n_remaining;
             $dbh->exec('DROP TABLE "element_temp"');
@@ -541,7 +517,7 @@ if ($use_db) {
                     COUNT(DISTINCT et_el_id) AS num
                 FROM etymology
                 JOIN element ON et_el_id = el_id
-                WHERE ST_Area(el_geometry) < 0.1
+                WHERE ST_Area(el_geometry) < 0.01
                 GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)
             ) AS point"
         );
