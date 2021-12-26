@@ -110,6 +110,8 @@ class EtymologyIDListWikidataBaseQuery
                         ?picture ^wdt:P18 ?wikidata # picture
                     } UNION {
                         ?picture ^wdt:P94 ?wikidata # coat of arms image
+                    } UNION {
+                        ?picture ^wdt:P242 ?wikidata # locator map image
                     }
                 }
 
