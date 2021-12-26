@@ -2,7 +2,7 @@
 
 # New York
 # https://www.dsantini.it/etymology/#-74.027,40.7306,9
-GET {{baseUrl}}/overpass.php
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=40.229
     &minLon=-75.345
@@ -16,7 +16,7 @@ GET {{baseUrl}}/overpass.php
 
 # San Jose / San Francisco
 # https://www.dsantini.it/etymology/#-122.138,37.612,9
-GET {{baseUrl}}/overpass.php
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=37.087
     &minLon=-123.456
@@ -30,7 +30,7 @@ GET {{baseUrl}}/overpass.php
 
 # Berlin
 # https://www.dsantini.it/etymology/#13.4247,52.5072,9
-GET {{baseUrl}}/overpass.php
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=52.104
     &minLon=12.106
@@ -44,7 +44,7 @@ GET {{baseUrl}}/overpass.php
 
 # Dortmund / Dusserdorf / Cologne
 # https://www.dsantini.it/etymology/#7.1627,51.2419,9
-GET {{baseUrl}}/overpass.php
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=50.827
     &minLon=5.844
@@ -58,7 +58,7 @@ GET {{baseUrl}}/overpass.php
 
 # Brussels / Antwerp / Ghent
 # http://www.dsantini.it/etymology/#4.0418,51.0282,9
-GET {{baseUrl}}/overpass.php
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=50.705
     &minLon=2.987

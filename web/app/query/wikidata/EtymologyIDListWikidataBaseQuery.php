@@ -2,30 +2,14 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
-
-use \App\Query\Wikidata\StringSetXMLWikidataQuery;
-use \App\Result\QueryResult;
-use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
-
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
+class EtymologyIDListWikidataBaseQuery
 {
-    /**
-     * @return XMLWikidataEtymologyQueryResult
-     */
-    public function send(): QueryResult
-    {
-        return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::send());
-    }
-
-    public function createQuery(string $wikidataIDList, string $language): string
+    public static function createQuery(string $wikidataIDList, string $language): string
     {
         return "SELECT ?wikidata
                 (SAMPLE(?name) AS ?name)
@@ -37,8 +21,9 @@ class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
                 (SAMPLE(?commons) AS ?commons)
                 (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
                 (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
-                (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='\t') AS ?pictures)
+                (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='`') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
+                (SAMPLE(?event_date) AS ?event_date)
                 (SAMPLE(?event_date_precision) AS ?event_date_precision)
                 (SAMPLE(?start_date) AS ?start_date)
                 (SAMPLE(?start_date_precision) AS ?start_date_precision)
@@ -125,6 +110,8 @@ class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
                         ?picture ^wdt:P18 ?wikidata # picture
                     } UNION {
                         ?picture ^wdt:P94 ?wikidata # coat of arms image
+                    } UNION {
+                        ?picture ^wdt:P242 ?wikidata # locator map image
                     }
                 }
 
@@ -146,10 +133,17 @@ class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P580/psv:P580 [
-                        wikibase:timePrecision ?start_date_precision;
-                        wikibase:timeValue ?start_date
-                    ].
+                    {
+                        ?wikidata p:P580/psv:P580 [ # start time
+                            wikibase:timePrecision ?start_date_precision;
+                            wikibase:timeValue ?start_date
+                        ].
+                    } UNION {
+                        ?wikidata p:P571/psv:P571 [ # inception
+                            wikibase:timePrecision ?start_date_precision;
+                            wikibase:timeValue ?start_date
+                        ].
+                    }
                     MINUS {
                         ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_start_date_precision.
                         FILTER (?other_start_date_precision > ?start_date_precision).
@@ -157,10 +151,17 @@ class EtymologyIDListWikidataQuery extends StringSetXMLWikidataQuery
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P582/psv:P582 [
-                        wikibase:timePrecision ?end_date_precision;
-                        wikibase:timeValue ?end_date
-                    ].
+                    {
+                        ?wikidata p:P582/psv:P582 [ # end time
+                            wikibase:timePrecision ?end_date_precision;
+                            wikibase:timeValue ?end_date
+                        ].
+                    } UNION {
+                        ?wikidata p:P576/psv:P576 [ # dissolved, abolished or demolished date
+                            wikibase:timePrecision ?end_date_precision;
+                            wikibase:timeValue ?end_date
+                        ].
+                    }
                     MINUS {
                         ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_end_date_precision.
                         FILTER (?other_end_date_precision > ?end_date_precision).

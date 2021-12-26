@@ -23,11 +23,10 @@ class OverpassCenterQueryResult extends OverpassQueryResult
      */
     protected function convertElementToGeoJSONFeature($index, $element, $allElements)
     {
-        $elementID = (string)$element["type"] . "/" . (int)$element["id"];
         $feature = [
             "type" => "Feature",
             "geometry" => [],
-            "properties" => ["@id" => $elementID],
+            "properties" => ["osm_type" => $element["type"], "osm_id" => $element["id"]],
         ];
 
         if (!empty($element["center"]["lon"]) && !empty($element["center"]["lat"])) {
@@ -44,7 +43,7 @@ class OverpassCenterQueryResult extends OverpassQueryResult
                 round((float)$element["lat"], 5),
             ];
         } else {
-            error_log("OverpassCenterQueryResult::convertElementToGeoJSONFeature: $elementID has no coordinates");
+            error_log("OverpassCenterQueryResult::convertElementToGeoJSONFeature: " . (string)$element["type"] . '/' . (int)$element["id"] . " has no coordinates");
             $feature = false;
         }
 

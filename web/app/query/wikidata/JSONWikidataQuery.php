@@ -41,6 +41,7 @@ class JSONWikidataQuery extends WikidataQuery implements JSONQuery
     public function send(): QueryResult
     {
         $ret = parent::send();
+        //error_log("JSONWikidataQuery result=$ret");
         if (!$ret instanceof JSONQueryResult)
             throw new \Exception("Invalid result type");
         return $ret;

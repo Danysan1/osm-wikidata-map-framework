@@ -7,29 +7,36 @@ $serverTiming = new ServerTiming();
 
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
+require_once("./app/PostGIS_PDO.php");
 require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
+require_once("./app/query/postgis/BBoxGenderStatsPostGISQuery.php");
+require_once("./app/query/postgis/BBoxTypeStatsPostGISQuery.php");
 require_once("./app/query/wikidata/GenderStatsWikidataFactory.php");
 require_once("./app/query/wikidata/TypeStatsWikidataFactory.php");
 require_once("./app/result/JSONQueryResult.php");
 require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./app/query/cache/CSVCachedBBoxJSONQuery.php");
 require_once("./app/query/combined/BBoxGeoJSONEtymologyQuery.php");
-require_once("./app/query/combined/BBoxJSONStatsQuery.php");
+require_once("./app/query/combined/BBoxStatsOverpassWikidataQuery.php");
+require_once("./app/query/postgis/BBoxEtymologyPostGISQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
 use \App\BaseBoundingBox;
+use App\PostGIS_PDO;
 use \App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Cache\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
-use \App\Query\Combined\BBoxJSONStatsQuery;
+use \App\Query\Combined\BBoxStatsOverpassWikidataQuery;
 use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
+use \App\Query\PostGIS\BBoxGenderStatsPostGISQuery;
+use \App\Query\PostGIS\BBoxTypeStatsPostGISQuery;
 use \App\Query\Wikidata\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
-use \App\Result\JSONQueryResult;
+use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
 
 $conf = new IniFileConfiguration();
 $serverTiming->add("1_readConfig");
@@ -43,6 +50,10 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
+$enableDB = $conf->has("db-enable") && (bool)$conf->get("db-enable");
+
+if ($enableDB)
+    $db = new PostGIS_PDO($conf);
 
 // "en-US" => "en"
 $langMatches = [];
@@ -69,32 +80,72 @@ if ($from == "bbox") {
     }
 
     if ($to == "geojson") {
-        $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
-            $safeLanguage,
-            $wikidataEndpointURL,
-            $cacheFileBasePath . $safeLanguage . "_",
-            $conf
-        );
-        $baseQuery = new BBoxGeoJSONEtymologyQuery(
-            $bbox,
-            $overpassConfig,
-            $wikidataFactory,
-            $serverTiming
-        );
-        $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
-    } elseif ($to == "genderStats" || $to == "typeStats") {
-        if ($to == "genderStats") {
-            $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        if (!empty($db)) {
+            $query = new BBoxEtymologyPostGISQuery(
+                $bbox,
+                $safeLanguage,
+                $db,
+                $wikidataEndpointURL,
+                $serverTiming
+            );
         } else {
-            $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+            $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
+                $safeLanguage,
+                $wikidataEndpointURL,
+                $cacheFileBasePath . $safeLanguage . "_",
+                $conf
+            );
+            $baseQuery = new BBoxGeoJSONEtymologyQuery(
+                $bbox,
+                $overpassConfig,
+                $wikidataFactory,
+                $serverTiming
+            );
+            $query = new CSVCachedBBoxGeoJSONQuery(
+                $baseQuery,
+                $cacheFileBasePath . $safeLanguage . "_",
+                $conf,
+                $serverTiming
+            );
         }
-        $baseQuery = new BBoxJSONStatsQuery(
-            $bbox,
-            $overpassConfig,
-            $wikidataFactory,
-            $serverTiming
-        );
-        $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath . $safeLanguage . "_", $conf, $serverTiming);
+    } elseif ($to == "genderStats" || $to == "typeStats") {
+        if (!empty($db)) {
+            if ($to == "genderStats") {
+                $query = new BBoxGenderStatsPostGISQuery(
+                    $bbox,
+                    $safeLanguage,
+                    $db,
+                    $wikidataEndpointURL,
+                    $serverTiming
+                );
+            } else {
+                $query = new BBoxTypeStatsPostGISQuery(
+                    $bbox,
+                    $safeLanguage,
+                    $db,
+                    $wikidataEndpointURL,
+                    $serverTiming
+                );
+            }
+        } else {
+            if ($to == "genderStats") {
+                $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+            } else {
+                $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+            }
+            $baseQuery = new BBoxStatsOverpassWikidataQuery(
+                $bbox,
+                $overpassConfig,
+                $wikidataFactory,
+                $serverTiming
+            );
+            $query = new CSVCachedBBoxJSONQuery(
+                $baseQuery,
+                $cacheFileBasePath . $safeLanguage . "_",
+                $conf,
+                $serverTiming
+            );
+        }
     } else {
         http_response_code(400);
         die('{"error":"You must specify a valid output type"}');

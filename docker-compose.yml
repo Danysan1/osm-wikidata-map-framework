@@ -1,11 +1,41 @@
 version: "3.9"
 services:
+  postgis_db:
+    image: postgis/postgis:14-3.1-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=osm
+      - POSTGRES_PASSWORD=osm
+      - POSTGRES_DB=osm
+    volumes:
+      - ./db-data:/var/lib/postgresql/data
+    restart: "always"
+
+  pgadmin:
+    image: dpage/pgadmin4:6.2
+    ports:
+      - "8080:80"
+    depends_on:
+      - postgis_db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: "app@app.app"
+      PGADMIN_DEFAULT_PASSWORD: "app"
+    volumes:
+      - ./pgadmin-data:/var/lib/pgadmin
+      - ./pgadmin_init.json:/pgadmin4/servers.json
+    restart: "always"
+
   web:
     build:
       context: .
+      dockerfile: open-etymology-map.Dockerfile
       target: dev
     image: dsantini/open-etymology-map:dev
     ports:
       - "80:80"
+    depends_on:
+      - postgis_db
+    restart: "always"
     volumes:
       - ./web:/var/www/html

@@ -2,6 +2,8 @@
 
 namespace App;
 
+use Exception;
+
 require_once(__DIR__ . "/Configuration.php");
 
 /**
@@ -21,8 +23,7 @@ class IniFileConfiguration implements Configuration
 	{
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config)) {
-			http_response_code(500);
-			die(json_encode(["error" => "Configuration file not found"]));
+			throw new Exception("Configuration file not found");
 		}
 		//echo json_encode($this->config);
 	}
@@ -43,8 +44,7 @@ class IniFileConfiguration implements Configuration
 	public function get($key)
 	{
 		if (!isset($this->config[$key])) {
-			http_response_code(500);
-			die(json_encode(["error" => "Configuration not found: $key"]));
+			throw new Exception("Configuration not found: $key");
 		}
 		return $this->config[$key];
 	}

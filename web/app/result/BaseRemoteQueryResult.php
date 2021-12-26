@@ -80,7 +80,9 @@ abstract class BaseRemoteQueryResult implements RemoteQueryResult
     public function isJSON()
     {
         $contentType = $this->getMimeType();
-        return strpos($contentType, 'application/json') !== false;
+        //error_log("BaseRemoteQueryResult isJSON() mime type = $contentType");
+        return !!preg_match('/^application\/([\w\-]+\+)*json/', $contentType);
+        //return strpos($contentType, 'application/json') !== false;
     }
 
     /**

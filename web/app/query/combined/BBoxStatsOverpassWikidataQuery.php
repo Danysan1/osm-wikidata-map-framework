@@ -17,7 +17,7 @@ use \App\Result\JSONQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxJSONStatsQuery extends BBoxJSONOverpassWikidataQuery
+class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
 {
 
     protected function createResult(array $overpassGeoJSONData): JSONQueryResult
