@@ -203,6 +203,8 @@ if ($use_db) {
                     LANGUAGE 'sql' AS \$BODY$
                 SELECT CASE
                     WHEN $1 IS NULL THEN NULL
+                    WHEN LEFT($1,1)!='-' AND SPLIT_PART($1,'-',1)::INT>294276 THEN NULL -- https://www.postgresql.org/docs/9.1/datatype-datetime.html#DATATYPE-DATETIME-TABLE
+                    WHEN LEFT($1,1)='-' AND SPLIT_PART(SUBSTRING($1,2),'-',1)::INT>4713 THEN NULL
                     WHEN LEFT($1,1)='-' THEN CONCAT(SUBSTRING($1,2),' BC')::TIMESTAMP
                     ELSE $1::TIMESTAMP
                 END;
