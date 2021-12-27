@@ -45,11 +45,11 @@ class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSON
                 )), '[]'::JSON)
             FROM (
                 SELECT COUNT(DISTINCT wd.wd_id) AS count, instance.wd_wikidata_cod, instance_text.wdt_name
-                FROM element
-                JOIN etymology ON et_el_id = el_id
-                JOIN wikidata AS wd ON et_wd_id = wd.wd_id
-                JOIN wikidata AS instance ON wd.wd_instance_id = instance.wd_id
-                LEFT JOIN wikidata_text AS instance_text
+                FROM oem.element
+                JOIN oem.etymology ON et_el_id = el_id
+                JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
+                JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
+                LEFT JOIN oem.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY instance.wd_id, instance_text.wdt_name

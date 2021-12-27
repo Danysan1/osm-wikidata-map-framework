@@ -45,11 +45,11 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
                 )), '[]'::JSON)
             FROM (
                 SELECT COUNT(DISTINCT wd.wd_id) AS count, gender.wd_wikidata_cod, gender_text.wdt_name
-                FROM element
-                JOIN etymology ON et_el_id = el_id
-                JOIN wikidata AS wd ON et_wd_id = wd.wd_id
-                JOIN wikidata AS gender ON wd.wd_gender_id = gender.wd_id
-                LEFT JOIN wikidata_text AS gender_text
+                FROM oem.element
+                JOIN oem.etymology ON et_el_id = el_id
+                JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
+                JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
+                LEFT JOIN oem.wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY gender.wd_id, gender_text.wdt_name

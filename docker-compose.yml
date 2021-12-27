@@ -5,15 +5,15 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=osm
-      - POSTGRES_PASSWORD=osm
-      - POSTGRES_DB=osm
+      - POSTGRES_USER=oem
+      - POSTGRES_PASSWORD=oem
+      - POSTGRES_DB=oem
     volumes:
       - ./db-data:/var/lib/postgresql/data
     restart: "always"
 
   pgadmin:
-    image: dpage/pgadmin4:6.2
+    image: dpage/pgadmin4:6.3
     ports:
       - "8080:80"
     depends_on:

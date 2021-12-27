@@ -41,9 +41,9 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             )
         FROM (
             SELECT ST_Centroid(el_geometry) AS geom
-            FROM element
+            FROM oem.element
             WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-            AND el_id IN (SELECT et_el_id FROM etymology)
+            AND el_id IN (SELECT et_el_id FROM oem.etymology)
         ) as ele";
     }
 }
