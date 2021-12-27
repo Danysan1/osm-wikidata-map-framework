@@ -11,10 +11,10 @@ sudo systemctl start postgresql
 sudo systemctl enable postgresql
 sudo -u postgres psql -c "CREATE USER oem WITH PASSWORD '!!REDACTED!!';"
 sudo -u postgres psql -c "CREATE DATABASE oem OWNER oem;"
-sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS postgis";
-sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch";
-sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS postgis_topology";
-sudo -u postgres psql -c "CREATE EXTENSION IF NOT EXISTS hstore";
+sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS postgis";
+sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch";
+sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS postgis_topology";
+sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS hstore";
 
 # https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-LAMP.html
 # https://wiki.debian.org/it/LaMp
