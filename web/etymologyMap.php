@@ -5,22 +5,22 @@ use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once("./app/IniFileConfiguration.php");
-require_once("./app/BaseBoundingBox.php");
-require_once("./app/PostGIS_PDO.php");
-require_once("./app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
-require_once("./app/query/postgis/BBoxGenderStatsPostGISQuery.php");
-require_once("./app/query/postgis/BBoxTypeStatsPostGISQuery.php");
-require_once("./app/query/wikidata/GenderStatsWikidataFactory.php");
-require_once("./app/query/wikidata/TypeStatsWikidataFactory.php");
-require_once("./app/result/JSONQueryResult.php");
-require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
-require_once("./app/query/cache/CSVCachedBBoxJSONQuery.php");
-require_once("./app/query/combined/BBoxGeoJSONEtymologyQuery.php");
-require_once("./app/query/combined/BBoxStatsOverpassWikidataQuery.php");
-require_once("./app/query/postgis/BBoxEtymologyPostGISQuery.php");
-require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
-require_once("./funcs.php");
+require_once(__DIR__ . "/app/IniFileConfiguration.php");
+require_once(__DIR__ . "/app/BaseBoundingBox.php");
+require_once(__DIR__ . "/app/PostGIS_PDO.php");
+require_once(__DIR__ . "/app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
+require_once(__DIR__ . "/app/query/postgis/BBoxGenderStatsPostGISQuery.php");
+require_once(__DIR__ . "/app/query/postgis/BBoxTypeStatsPostGISQuery.php");
+require_once(__DIR__ . "/app/query/wikidata/GenderStatsWikidataFactory.php");
+require_once(__DIR__ . "/app/query/wikidata/TypeStatsWikidataFactory.php");
+require_once(__DIR__ . "/app/result/JSONQueryResult.php");
+require_once(__DIR__ . "/app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/app/query/cache/CSVCachedBBoxJSONQuery.php");
+require_once(__DIR__ . "/app/query/combined/BBoxGeoJSONEtymologyQuery.php");
+require_once(__DIR__ . "/app/query/combined/BBoxStatsOverpassWikidataQuery.php");
+require_once(__DIR__ . "/app/query/postgis/BBoxEtymologyPostGISQuery.php");
+require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
+require_once(__DIR__ . "/funcs.php");
 $serverTiming->add("0_include");
 
 use \App\IniFileConfiguration;
