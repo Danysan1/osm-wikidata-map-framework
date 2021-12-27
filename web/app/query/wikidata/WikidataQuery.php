@@ -42,14 +42,14 @@ abstract class WikidataQuery extends BaseQuery
 
     public function send(): QueryResult
     {
-        $ch = curl_init();
+        $ch = \curl_init();
         $requestQuery = $this->getRequestQuery();
         $url = $this->getEndpointURL();
         if ($this->method == "GET")
             $url .= "?" . $requestQuery;
         $post = $this->method == "POST";
         $postData = $post ? $requestQuery : null;
-        curl_setopt_array($ch, [
+        \curl_setopt_array($ch, [
             CURLOPT_URL => $url,
             CURLOPT_POST => $post,
             CURLOPT_POSTFIELDS => $postData,
@@ -58,10 +58,10 @@ abstract class WikidataQuery extends BaseQuery
             CURLOPT_SSL_VERIFYHOST => 0,
             CURLOPT_SSL_VERIFYPEER => 0
         ]);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $result = curl_exec($ch);
+        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        $result = \curl_exec($ch);
         $curlInfo = (array)curl_getinfo($ch);
-        curl_close($ch);
+        \curl_close($ch);
         if (!$result)
             $result = null;
         else
