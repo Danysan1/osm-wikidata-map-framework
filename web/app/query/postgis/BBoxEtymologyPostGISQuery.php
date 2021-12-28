@@ -9,15 +9,13 @@ require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;
+use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use App\Result\QueryResult;
 
 class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJSONQuery
 {
-    /**
-     * @return GeoJSONQueryResult
-     */
     public function send(): QueryResult
     {
         $this->downloadMissingText();
@@ -30,9 +28,25 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             "max_lat" => $this->getBBox()->getMaxLat(),
             "lang" => $this->getLanguage(),
         ]);
-        if ($this->getServerTiming() != null)
+        if ($this->hasServerTiming())
             $this->getServerTiming()->add("etymology-query");
         return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        return $out;
+    }
+
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof GeoJSONQueryResult)
+            throw new \Exception("sendAndGetGeoJSONResult(): can't get GeoJSON result");
+        return $out;
     }
 
     public function getQuery(): string
@@ -71,7 +85,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'instanceID', 'http://www.wikidata.org/entity/'||instance.wd_wikidata_cod,
                         'name', wdt.wdt_name,
                         'occupations', wdt.wdt_occupations,
-                        'pictures', (SELECT JSON_AGG(wdp_picture) FROM wikidata_picture WHERE wdp_wd_id = wd.wd_id),
+                        'pictures', (SELECT JSON_AGG(wdp_picture) FROM oem.wikidata_picture WHERE wdp_wd_id = wd.wd_id),
                         'prizes', wdt.wdt_prizes,
                         'start_date', EXTRACT(epoch FROM wd.wd_start_date),
                         'start_date_precision', wd.wd_start_date_precision,
@@ -79,16 +93,16 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies
-                FROM element
-                JOIN etymology ON et_el_id = el_id
-                JOIN wikidata AS wd ON et_wd_id = wd.wd_id
-                LEFT JOIN wikidata_text AS wdt
+                FROM oem.element
+                JOIN oem.etymology ON et_el_id = el_id
+                JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
+                LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
-                LEFT JOIN wikidata AS gender ON wd.wd_gender_id = gender.wd_id
-                LEFT JOIN wikidata_text AS gender_text
+                LEFT JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
+                LEFT JOIN oem.wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
-                LEFT JOIN wikidata AS instance ON wd.wd_instance_id = instance.wd_id
-                LEFT JOIN wikidata_text AS instance_text
+                LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
+                LEFT JOIN oem.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el_id

@@ -10,6 +10,7 @@ use \PDO;
 use \App\BoundingBox;
 use \App\ServerTiming;
 use \App\Query\BBoxQuery;
+use Exception;
 
 abstract class BBoxPostGISQuery implements BBoxQuery
 {
@@ -45,8 +46,16 @@ abstract class BBoxPostGISQuery implements BBoxQuery
         return $this->db;
     }
 
+    protected function hasServerTiming(): bool
+    {
+        return !empty($this->serverTiming);
+    }
+
     protected function getServerTiming(): ServerTiming
     {
+        if (empty($this->serverTiming))
+            throw new Exception("getServerTiming(): No ServerTiming available");
+
         return $this->serverTiming;
     }
 

@@ -17,8 +17,7 @@ use \App\Result\XMLQueryResult;
  */
 interface XMLQuery extends Query
 {
-    /**
-     * @return XMLQueryResult
-     */
     public function send(): QueryResult;
+
+    public function sendAndGetXMLResult(): XMLQueryResult;
 }

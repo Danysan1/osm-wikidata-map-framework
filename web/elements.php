@@ -91,7 +91,7 @@ if ($from == "bbox") {
 
 $serverTiming->add("3_init");
 
-$result = $query->send();
+$result = $query->sendAndGetGeoJSONResult();
 $serverTiming->add("4_query");
 if (!$result->isSuccessful()) {
     http_response_code(500);

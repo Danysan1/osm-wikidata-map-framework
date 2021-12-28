@@ -52,12 +52,9 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         $this->wikidataFactory = $wikidataFactory;
     }
 
-    /**
-     * @return JSONQueryResult
-     */
     public function send(): QueryResult
     {
-        $overpassResult = $this->overpassQuery->send();
+        $overpassResult = $this->overpassQuery->sendAndGetGeoJSONResult();
         $this->timing->add("overpass_query");
         if (!$overpassResult->isSuccessful()) {
             error_log("BBoxGeoJSONEtymologyQuery: Overpass query failed: $overpassResult");

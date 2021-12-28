@@ -16,9 +16,6 @@ use \App\Result\Wikidata\XMLWikidataStatsQueryResult;
  */
 class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
 {
-    /**
-     * @return XMLWikidataStatsQueryResult
-     */
     public function send(): QueryResult
     {
         return XMLWikidataStatsQueryResult::fromXMLResult(parent::send());
