@@ -51,9 +51,6 @@ abstract class BaseQuery implements Query
         return $this->endpointURL;
     }
 
-    /**
-     * @return QueryResult
-     */
     public abstract function send(): QueryResult;
 
     public function getQueryTypeCode(): string

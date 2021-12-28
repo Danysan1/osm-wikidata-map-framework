@@ -19,9 +19,6 @@ use \App\Query\Wikidata\EtymologyIDListWikidataBaseQuery;
  */
 class EtymologyIDListXMLWikidataQuery extends StringSetXMLWikidataQuery
 {
-    /**
-     * @return XMLWikidataEtymologyQueryResult
-     */
     public function send(): QueryResult
     {
         return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::send());

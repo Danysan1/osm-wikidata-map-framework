@@ -17,8 +17,7 @@ use \App\Result\GeoJSONQueryResult;
  */
 interface GeoJSONQuery extends JSONQuery
 {
-    /**
-     * @return GeoJSONQueryResult
-     */
     public function send(): QueryResult;
+
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult;
 }

@@ -15,9 +15,6 @@ use App\Result\QueryResult;
 
 class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSONQuery
 {
-    /**
-     * @return JSONQueryResult
-     */
     public function send(): QueryResult
     {
         $this->downloadMissingText();
@@ -33,6 +30,14 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("stats-query");
         return new JSONLocalQueryResult(true, $stRes->fetchColumn());
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        return $out;
     }
 
     public function getQuery(): string

@@ -14,6 +14,7 @@ use \App\Query\Overpass\OverpassConfig;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;
+use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 
 /**
@@ -71,12 +72,25 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
         return $this->radius;
     }
 
-    /**
-     * @return GeoJSONQueryResult
-     */
     public function send(): QueryResult
     {
         $res = $this->sendAndRequireResult();
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        return $out;
+    }
+
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof GeoJSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get GeoJSON result");
+        return $out;
     }
 }

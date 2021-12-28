@@ -9,15 +9,13 @@ require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;
+use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use App\Result\QueryResult;
 
 class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJSONQuery
 {
-    /**
-     * @return GeoJSONQueryResult
-     */
     public function send(): QueryResult
     {
         $this->downloadMissingText();
@@ -33,6 +31,22 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("etymology-query");
         return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        return $out;
+    }
+
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof GeoJSONQueryResult)
+            throw new \Exception("sendAndGetGeoJSONResult(): can't get GeoJSON result");
+        return $out;
     }
 
     public function getQuery(): string
