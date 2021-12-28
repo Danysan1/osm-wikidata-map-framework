@@ -1016,14 +1016,17 @@ function prepareGlobalLayers() {
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
             // with three steps to implement three types of circles:
-            // - Blue, 20px circles when point count is less than 100
-            // - Yellow, 30px circles when point count is between 100 and 750
-            // - Pink, 40px circles when point count is greater than or equal to 750
             'circle-color': [
-                'step', ['get', 'num'], '#51bbd6', 2000, '#f1f075', 25000, '#f28cb1'
+                'step', ['get', 'num'],
+                '#51bbd6', 5000, // count < 5000 => Blue circle
+                '#f1f075', 20000, // 5000 <= count < 25000 => Yellow circle
+                '#f28cb1' // count > 25000 => Pink circle
             ],
             'circle-radius': [
-                'step', ['get', 'num'], 20, 2000, 50, 40000, 60
+                'step', ['get', 'num'],
+                20, 5000, // count < 5000 => 15px circle
+                30, 20000, // 5000 <= count < 25000 => 30px circle
+                40 // count > 25000 => 40px circle
             ]
         }
     });
@@ -1080,7 +1083,7 @@ function prepareGlobalLayers() {
 
 function setCulture() {
     const culture = document.documentElement.lang,
-        lang = culture.substr(0, 2),
+        lang = culture.substring(0, 3),
         nameProperty = ['coalesce', ['get', `name_` + lang],
             ['get', `name`]
         ];
