@@ -15,6 +15,7 @@ class EtymologyIDListWikidataBaseQuery
                 (SAMPLE(?name) AS ?name)
                 (SAMPLE(?description) AS ?description)
                 (SAMPLE(?instanceID) AS ?instanceID)
+                (SAMPLE(?instance_name) AS ?instance)
                 (SAMPLE(?genderID) AS ?genderID)
                 (SAMPLE(?gender_name) AS ?gender)
                 (SAMPLE(?wikipedia) AS ?wikipedia)
@@ -44,6 +45,10 @@ class EtymologyIDListWikidataBaseQuery
                     ?instanceID ^wdt:P31 ?wikidata.
                 } UNION {
                     ?instanceID ^wdt:P279 ?wikidata.
+                }
+                OPTIONAL {
+                    ?instanceID rdfs:label ?instance_name.
+                    FILTER(lang(?instance_name)='$language').
                 }
 
                 {

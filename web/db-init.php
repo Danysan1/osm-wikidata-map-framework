@@ -258,7 +258,8 @@ if ($use_db) {
                     wd_commons VARCHAR,
                     wd_gender_id INT REFERENCES oem.wikidata(wd_id),
                     wd_instance_id INT REFERENCES oem.wikidata(wd_id),
-                    wd_download_date TIMESTAMP DEFAULT NULL
+                    wd_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    wd_full_download_date TIMESTAMP DEFAULT NULL
                 )"
             );
             $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON oem.wikidata (wd_id) WITH (fillfactor='100')");
@@ -300,7 +301,8 @@ if ($use_db) {
                     wdt_event_place VARCHAR,
                     wdt_birth_place VARCHAR,
                     wdt_death_place VARCHAR,
-                    wdt_download_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    wdt_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                    wdt_full_download_date TIMESTAMP DEFAULT NULL,
                     CONSTRAINT oem.wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
                 )"
             );

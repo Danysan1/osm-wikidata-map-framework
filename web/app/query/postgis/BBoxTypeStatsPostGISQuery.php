@@ -52,6 +52,7 @@ class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSON
                 LEFT JOIN oem.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+                AND instance_text.wdt_name IS NOT NULL
                 GROUP BY instance.wd_id, instance_text.wdt_name
             ) AS ele";
     }
