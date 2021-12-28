@@ -40,12 +40,9 @@ class CSVCachedBBoxJSONQuery extends CSVCachedBBoxQuery implements BBoxJSONQuery
         return "json";
     }
 
-    /**
-     * @return JSONQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetJSONResult(): JSONQueryResult
     {
-        $ret = parent::send();
+        $ret = $this->send();
         if (!$ret instanceof JSONQueryResult) {
             throw new \Exception("Internal error: Result is not a JSONQueryResult");
         }

@@ -56,12 +56,9 @@ class CSVCachedStringSetXMLQuery extends CSVCachedStringSetQuery implements Stri
         return $xmlRelativePath;
     }
 
-    /**
-     * @return XMLQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetXMLResult(): XMLQueryResult
     {
-        $ret = parent::send();
+        $ret = $this->send();
         if (!$ret instanceof XMLQueryResult) {
             throw new \Exception("Internal error: Result is not a XMLQueryResult");
         }

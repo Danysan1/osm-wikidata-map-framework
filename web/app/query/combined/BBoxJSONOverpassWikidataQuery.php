@@ -71,6 +71,15 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         return $out;
     }
 
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $ret = $this->send();
+        if (!$ret instanceof JSONQueryResult) {
+            throw new \Exception("Internal error: Result is not a JSONQueryResult");
+        }
+        return $ret;
+    }
+
     protected abstract function createResult(array $overpassGeoJSONData): JSONQueryResult;
 
     public function getBBox(): BoundingBox
