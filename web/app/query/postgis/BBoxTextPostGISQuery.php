@@ -76,7 +76,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)"
         );
         $sthMissingWikidata->execute($queryParams);
-        if ($this->getServerTiming() != null)
+        if ($this->hasServerTiming())
             $this->getServerTiming()->add("missing-wikidata-query");
 
         $missingWikidataText = $sthMissingWikidata->fetchAll(PDO::FETCH_NUM);
@@ -90,7 +90,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 $this->wikidataEndpointURL
             );
             $wikidataResult = $wikidataQuery->send();
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-download");
 
             //error_log("wikidataResult=$wikidataResult");
@@ -110,7 +110,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 AND wd_id IS NULL"
             );
             $stInsertGender->execute(["result" => $wikidataResult->getJSON()]);
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender");
 
             $stInsertGenderText = $this->getDB()->prepare(
@@ -130,7 +130,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE wdt.wdt_id IS NULL"
             );
             $stInsertGenderText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender-text");
 
             $stInsertWikidata = $this->getDB()->prepare(
@@ -157,7 +157,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
             $stInsertWikidata->execute(["result" => $wikidataResult->getJSON()]);
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-wikidata");
 
             $stInsertPicture = $this->getDB()->prepare(
@@ -176,7 +176,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 AND wdp.wdp_id IS NULL"
             );
             $stInsertPicture->execute(["result" => $wikidataResult->getJSON()]);
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-picture-insert");
 
             $stUpdateText = $this->getDB()->prepare(
@@ -200,7 +200,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 AND wikidata_text.wdt_id = wdt.wdt_id"
             );
             $stUpdateText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-insert");
 
             $stInsertText = $this->getDB()->prepare(
@@ -239,7 +239,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE wdt.wdt_id IS NULL"
             );
             $stInsertText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
-            if ($this->getServerTiming() != null)
+            if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-insert");
         }
     }

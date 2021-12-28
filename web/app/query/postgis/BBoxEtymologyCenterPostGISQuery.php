@@ -27,7 +27,7 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             "min_lat" => $this->getBBox()->getMinLat(),
             "max_lat" => $this->getBBox()->getMaxLat()
         ]);
-        if ($this->getServerTiming() != null)
+        if ($this->hasServerTiming())
             $this->getServerTiming()->add("wikidata-query");
         return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
     }

@@ -30,7 +30,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             "max_lat" => $this->getBBox()->getMaxLat(),
             "lang" => $this->getLanguage(),
         ]);
-        if ($this->getServerTiming() != null)
+        if ($this->hasServerTiming())
             $this->getServerTiming()->add("etymology-query");
         return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
     }

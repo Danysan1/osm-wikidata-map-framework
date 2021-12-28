@@ -30,7 +30,7 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
             "max_lat" => $this->getBBox()->getMaxLat(),
             "lang" => $this->getLanguage(),
         ]);
-        if ($this->getServerTiming() != null)
+        if ($this->hasServerTiming())
             $this->getServerTiming()->add("stats-query");
         return new JSONLocalQueryResult(true, $stRes->fetchColumn());
     }
