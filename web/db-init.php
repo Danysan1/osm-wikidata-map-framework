@@ -279,12 +279,12 @@ if ($use_db) {
                     wdp_picture VARCHAR NOT NULL
                 )"
             );
-            $dbh->exec("CREATE INDEX oem.wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
+            $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
             $dbh->exec(
                 "CREATE TABLE oem.wikidata_named_after (
                     wna_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
                     wna_named_after_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-                    CONSTRAINT oem.wikidata_named_after_pkey PRIMARY KEY (wna_wd_id, wna_named_after_wd_id)
+                    CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wd_id, wna_named_after_wd_id)
                 )"
             );
             $dbh->exec(
@@ -303,10 +303,10 @@ if ($use_db) {
                     wdt_death_place VARCHAR,
                     wdt_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                     wdt_full_download_date TIMESTAMP DEFAULT NULL,
-                    CONSTRAINT oem.wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
+                    CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
                 )"
             );
-            $dbh->exec("CREATE INDEX oem.wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100')");
+            $dbh->exec("CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100')");
             echo '========================= DB schema prepared =========================' . PHP_EOL;
         }
 
@@ -504,8 +504,8 @@ if ($use_db) {
                 WHERE elt_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
             );
             $n_cleaned = $n_tot - $n_remaining;
-            $dbh->exec('DROP TABLE "oem.element_temp"');
             echo "========================= Cleaned up $n_cleaned elements without etymology ($n_remaining remaining) =========================" . PHP_EOL;
+            $dbh->exec('DROP TABLE oem.element_temp');
         }
 
         echo '========================= Generating global map... =========================' . PHP_EOL;
