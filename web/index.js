@@ -1019,14 +1019,14 @@ function prepareGlobalLayers() {
             'circle-color': [
                 'step', ['get', 'num'],
                 '#51bbd6', 5000, // count < 5000 => Blue circle
-                '#f1f075', 20000, // 5000 <= count < 25000 => Yellow circle
-                '#f28cb1' // count > 25000 => Pink circle
+                '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
+                '#f28cb1' // count > 20000 => Pink circle
             ],
             'circle-radius': [
                 'step', ['get', 'num'],
                 20, 5000, // count < 5000 => 15px circle
-                30, 20000, // 5000 <= count < 25000 => 30px circle
-                40 // count > 25000 => 40px circle
+                30, 20000, // 5000 <= count < 20000 => 30px circle
+                40 // count > 20000 => 40px circle
             ]
         }
     });
