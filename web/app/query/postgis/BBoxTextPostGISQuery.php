@@ -89,7 +89,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 $this->language,
                 $this->wikidataEndpointURL
             );
-            $wikidataResult = $wikidataQuery->send();
+            $wikidataResult = $wikidataQuery->sendAndGetJSONResult();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-download");
 
@@ -153,7 +153,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 LEFT JOIN oem.wikidata AS gender ON gender.wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
                 LEFT JOIN oem.wikidata AS instance ON instance.wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE wikidata.wd_download_date IS NULL
+                WHERE wikidata.wd_full_download_date IS NULL
                 AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
             $stInsertWikidata->execute(["result" => $wikidataResult->getJSON()]);
