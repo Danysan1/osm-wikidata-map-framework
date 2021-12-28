@@ -66,19 +66,14 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         ];
 
         $sthMissingWikidata = $this->getDB()->prepare(
-            "WITH wikidata_etymology AS (
-                    SELECT DISTINCT wd_id, wd_wikidata_cod, wd_gender_id, wd_instance_id
-                    FROM oem.etymology
-                    JOIN oem.wikidata ON et_wd_id = wd_id
-                    JOIN oem.element ON et_el_id = el_id
-                    WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-                )
-            SELECT wd_wikidata_cod
-            FROM wikidata_etymology
+            "SELECT wd.wd_wikidata_cod
+            FROM oem.element AS el
+            JOIN oem.etymology AS et ON et.et_el_id = el.el_id
+            JOIN oem.wikidata AS wd ON et.et_wd_id = wd.wd_id
             LEFT JOIN oem.wikidata_text AS wdt
-                ON wdt.wdt_wd_id = wd_id AND wdt.wdt_language = :lang
-            WHERE wd.wd_full_download_date IS NULL
-            OR wdt.wdt_full_download_date IS NULL"
+                ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
+            WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+            AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)"
         );
         $sthMissingWikidata->execute($queryParams);
         if ($this->getServerTiming() != null)
