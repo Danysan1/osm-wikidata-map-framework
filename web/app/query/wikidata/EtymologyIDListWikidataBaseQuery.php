@@ -41,13 +41,9 @@ class EtymologyIDListWikidataBaseQuery
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
 
-                {
-                    ?instanceID ^wdt:P31 ?wikidata.
-                } UNION {
-                    ?instanceID ^wdt:P279 ?wikidata.
-                }
-                OPTIONAL {
-                    ?instanceID rdfs:label ?instance_name.
+                OPTIONAL { # https://www.wikidata.org/wiki/Property:P31 / https://www.wikidata.org/wiki/Property:P279
+                    ?instanceID ^wdt:P31 ?wikidata;
+                        rdfs:label ?instance_name.
                     FILTER(lang(?instance_name)='$language').
                 }
 
@@ -117,6 +113,8 @@ class EtymologyIDListWikidataBaseQuery
                         ?picture ^wdt:P94 ?wikidata # coat of arms image
                     } UNION {
                         ?picture ^wdt:P242 ?wikidata # locator map image
+                    } UNION {
+                        ?picture ?wdt:P15 ?wikidata # route map
                     }
                 }
 
