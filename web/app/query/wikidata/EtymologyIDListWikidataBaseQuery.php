@@ -114,7 +114,7 @@ class EtymologyIDListWikidataBaseQuery
                     } UNION {
                         ?picture ^wdt:P242 ?wikidata # locator map image
                     } UNION {
-                        ?picture ?wdt:P15 ?wikidata # route map
+                        ?picture ^wdt:P15 ?wikidata # route map
                     }
                 }
 

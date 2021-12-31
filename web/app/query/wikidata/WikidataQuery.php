@@ -72,7 +72,7 @@ abstract class WikidataQuery extends BaseQuery
     public function getMinifiedQuery(): string
     {
         $original = $this->getQuery();
-        $minified = preg_replace('/(?:^\s+)|(?:\s*#[\/\s\w\(\),\']+$)/m', "", $original);
+        $minified = preg_replace('/(?:^\s+)|(?:\s*#[\/\s\w\(\),\'\:\.]+$)/m', "", $original);
         if (empty($minified)) {
             error_log("getMinifiedQuery:" . PHP_EOL . $original . PHP_EOL . $minified);
             throw new \Exception("Query minimization led to an empty string");
