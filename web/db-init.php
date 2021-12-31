@@ -196,7 +196,7 @@ if ($use_db) {
             $dbh->exec('DROP TABLE IF EXISTS oem.wikidata');
             $dbh->exec('DROP TABLE IF EXISTS oem.element_wikidata_cods');
             $dbh->exec('DROP TABLE IF EXISTS oem.element');
-            $dbh->exec('DROP TABLE IF EXISTS oem.element_temp');
+            $dbh->exec('DROP TABLE IF EXISTS oem.osmdata');
             $dbh->exec('DROP FUNCTION IF EXISTS translateTimestamp');
             $dbh->exec(
                 "CREATE FUNCTION translateTimestamp(IN text TEXT)
@@ -212,12 +212,12 @@ if ($use_db) {
                 \$BODY$;"
             );
             $dbh->exec(
-                "CREATE TABLE oem.element_temp (
-                    elt_id BIGSERIAL NOT NULL PRIMARY KEY,
-                    elt_geometry GEOMETRY NOT NULL,
-                    elt_osm_type VARCHAR(8) NOT NULL CHECK (elt_osm_type IN ('node','way','relation')),
-                    elt_osm_id BIGINT NOT NULL,
-                    elt_tags JSONB
+                "CREATE TABLE oem.osmdata (
+                    osm_id BIGSERIAL NOT NULL PRIMARY KEY,
+                    osm_geometry GEOMETRY NOT NULL,
+                    osm_osm_type VARCHAR(8) NOT NULL CHECK (osm_osm_type IN ('node','way','relation')),
+                    osm_osm_id BIGINT NOT NULL,
+                    osm_tags JSONB
                 )"
             );
             $dbh->exec(
@@ -310,15 +310,16 @@ if ($use_db) {
             echo '========================= DB schema prepared =========================' . PHP_EOL;
         }
 
-        if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='element_temp')")->fetchColumn()) {
+        if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata')")->fetchColumn()) {
             echo '========================= Temporary tables already deleted, not loading elements =========================' . PHP_EOL;
-        } elseif ($dbh->query("SELECT EXISTS (SELECT FROM oem.element_temp)")->fetchColumn()) {
+        } elseif ($dbh->query("SELECT EXISTS (SELECT FROM oem.osmdata)")->fetchColumn()) {
             echo '========================= Elements already loaded =========================' . PHP_EOL;
         } else {
             if ($convert_to_pg) {
                 echo '========================= Loading OSM elements into DB... =========================' . PHP_EOL;
-                $dbh->pgsqlCopyFromFile("oem.element_temp", $pgFile, "\t", "\\\\N", 'elt_id,elt_geometry,elt_osm_type,elt_osm_id,elt_tags');
-                $n_osmdata = $dbh->query("SELECT COUNT(*) FROM oem.element_temp")->fetchColumn();
+                /** @psalm-suppress UndefinedMethod */
+                $dbh->pgsqlCopyFromFile("oem.osmdata", $pgFile, "\t", "\\\\N", 'osm_id,osm_geometry,osm_osm_type,osm_osm_id,osm_tags');
+                $n_osmdata = $dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
                 echo "========================= Loaded $n_osmdata OSM elements into DB =========================" . PHP_EOL;
             } else { // use_osm2pgsql
                 $host = (string)$conf->get("db-host");
@@ -335,11 +336,11 @@ if ($use_db) {
 
                 echo '========================= Converting elements... =========================' . PHP_EOL;
                 $n_element = $dbh->exec(
-                    "INSERT INTO oem.element_temp (
-                        elt_osm_type,
-                        elt_osm_id,
-                        elt_tags,
-                        elt_geometry
+                    "INSERT INTO oem.osmdata (
+                        osm_osm_type,
+                        osm_osm_id,
+                        osm_tags,
+                        osm_geometry
                     )
                     SELECT 'node', osm_id, hstore_to_jsonb(tags), way
                     FROM planet_osm_point
@@ -371,16 +372,16 @@ if ($use_db) {
                 echo '========================= Converting wikidata codes... =========================' . PHP_EOL;
                 $n_wikidata_cods = $dbh->exec(
                     "INSERT INTO oem.element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
-                    SELECT elt_id, UPPER(TRIM(wikidata_cod)), FALSE
-                    FROM oem.element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(elt_tags->>'wikidata',';') AS splitted(wikidata_cod)
+                    SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE
+                    FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
                     WHERE TRIM(wikidata_cod) ~* '^Q\d+$'
                     UNION
-                    SELECT elt_id, UPPER(TRIM(subject_wikidata_cod)), TRUE
-                    FROM oem.element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(elt_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
+                    SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), TRUE
+                    FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
                     WHERE TRIM(subject_wikidata_cod) ~* '^Q\d+$'
                     UNION
-                    SELECT elt_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE
-                    FROM oem.element_temp, LATERAL REGEXP_SPLIT_TO_TABLE(elt_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
+                    SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE
+                    FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
                     WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
                 );
                 echo "========================= Converted $n_wikidata_cods wikidata codes =========================" . PHP_EOL;
@@ -414,7 +415,7 @@ if ($use_db) {
                             ?element wdt:P138 ?namedAfter.
                         }";
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
-                    $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->send()->getJSON();
+                    $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
                     file_put_contents($wikidataNamedAfterJSONFile, $jsonResult);
 
                     echo '========================= Loading Wikidata named-after data... =========================' . PHP_EOL;
@@ -487,25 +488,25 @@ if ($use_db) {
             }
         }
 
-        if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='element_temp')")->fetchColumn()) {
+        if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata')")->fetchColumn()) {
             echo '========================= Temporary tables already deleted, not cleaning up elements =========================' . PHP_EOL;
         } else {
             echo '========================= Cleaning up elements without etymology... =========================' . PHP_EOL;
-            $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.element_temp")->fetchColumn();
+            $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
             /*$n_cleaned = $dbh->exec(
-                "DELETE FROM oem.element_temp WHERE elt_id NOT IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
+                "DELETE FROM oem.osmdata WHERE osm_id NOT IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
             );
             $n_remaining = $n_tot - $n_cleaned;
-            $dbh->exec('ALTER TABLE oem.element_temp RENAME TO element');*/
+            $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
             $n_remaining = $dbh->exec( // About 90% of elements is deleted, it's faster to copy them; https://stackoverflow.com/a/7088514/2347196
                 "INSERT INTO oem.element (el_id, el_geometry, el_osm_type, el_osm_id, el_name)
-                SELECT elt_id, elt_geometry, elt_osm_type, elt_osm_id, elt_tags->>'name'
-                FROM oem.element_temp
-                WHERE elt_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
+                SELECT osm_id, osm_geometry, osm_osm_type, osm_osm_id, osm_tags->>'name'
+                FROM oem.osmdata
+                WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
             );
             $n_cleaned = $n_tot - $n_remaining;
             echo "========================= Cleaned up $n_cleaned elements without etymology ($n_remaining remaining) =========================" . PHP_EOL;
-            $dbh->exec('DROP TABLE oem.element_temp');
+            $dbh->exec('DROP TABLE oem.osmdata');
         }
 
         echo '========================= Generating global map... =========================' . PHP_EOL;
