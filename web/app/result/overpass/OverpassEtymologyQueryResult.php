@@ -62,7 +62,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
         if ($element["type"] == "node") {
             // ======================================== NODES start ========================================
             if (empty($element["lon"]) || empty($element["lat"])) {
-                error_log("OverpassEtymologyQueryResult::convertElementToGeoJSONFeature: $elementID has no coordinates");
+                error_log("OverpassEtymologyQueryResult::convertElementToGeoJSONFeature: https://www.openstreetmap.org/node/".(int)$element["id"]." has no coordinates");
             } else {
                 $feature["geometry"]["type"] = "Point";
                 // https://docs.mapbox.com/help/troubleshooting/working-with-large-geojson-data/
@@ -75,7 +75,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
         } elseif ($element["type"] == "way") {
             // ======================================== WAYS start ========================================
             if (empty($element["nodes"]) || !is_array($element["nodes"])) {
-                error_log("OverpassEtymologyQueryResult: $elementID has no nodes");
+                error_log("OverpassEtymologyQueryResult: https://www.openstreetmap.org/way/".(int)$element["id"]." has no nodes");
             } else {
                 $totalNodes = count($element["nodes"]);
                 $coordinates = [];
@@ -117,7 +117,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
             // ======================================== RELATIONS start ========================================
             //! Relations not yet supported
             //TODO
-            error_log("OverpassEtymologyQueryResult: skipped $elementID");
+            error_log("OverpassEtymologyQueryResult: skipped https://www.openstreetmap.org/relation/".(int)$element["id"]."");
             $feature = false;
             //$feature["geometry"]["type"] = "MultiPolygon";
             // ======================================== RELATIONS end ========================================

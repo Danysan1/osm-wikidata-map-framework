@@ -21,7 +21,7 @@ class EtymologyIDListXMLWikidataQuery extends StringSetXMLWikidataQuery
 {
     public function send(): QueryResult
     {
-        return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::send());
+        return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
     }
 
     public function createQuery(string $wikidataIDList, string $language): string
