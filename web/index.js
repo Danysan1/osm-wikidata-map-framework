@@ -692,7 +692,7 @@ function updateDataSource(e) {
             queryString = new URLSearchParams(queryParams).toString(),
             overpass_url = './elements.php?' + queryString;
         console.info("Overpass dataSource update", { queryParams, overpass_url, overpass_source });
-        showSnackbar("Fetching data...", "lightblue");
+        //showSnackbar("Fetching data...", "lightblue");
         if (overpass_source) {
             overpass_source.setData(overpass_url);
         } else {
