@@ -12,14 +12,8 @@ use \App\Result\QueryResult;
  * @author Daniele Santini <daniele@dsantini.it>
  */
 interface Query {
-    /**
-     * @return string
-     */
     public function getQuery(): string;
 
-    /**
-     * @return QueryResult
-     */
     public function send(): QueryResult;
 
     public function getQueryTypeCode(): string;

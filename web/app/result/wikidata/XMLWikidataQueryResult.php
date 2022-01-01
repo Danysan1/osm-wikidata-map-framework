@@ -62,7 +62,7 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
                 } else {
                     $outValue = $value[0]->__toString();
                     if (in_array($key, $this->getArrayXMLFields())) {
-                        $outRow[$key] = explode("\t", $outValue);
+                        $outRow[$key] = explode("`", $outValue);
                     } else {
                         $outRow[$key] = $outValue;
                     }

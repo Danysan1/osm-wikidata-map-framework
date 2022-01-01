@@ -17,8 +17,7 @@ use \App\Result\JSONQueryResult;
  */
 interface JSONQuery extends Query
 {
-    /**
-     * @return JSONQueryResult
-     */
     public function send(): QueryResult;
+
+    public function sendAndGetJSONResult(): JSONQueryResult;
 }

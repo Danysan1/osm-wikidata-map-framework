@@ -29,19 +29,16 @@ class XMLWikidataQuery extends WikidataQuery implements XMLQuery
     /**
      * @param string|null $result
      * @param array $curlInfo
-     * @return XMLQueryResult
+     * @return QueryResult
      */
     protected function getResultFromCurlData($result, $curlInfo): QueryResult
     {
         return new XMLRemoteQueryResult($result, $curlInfo);
     }
 
-    /**
-     * @return XMLQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetXMLResult(): XMLQueryResult
     {
-        $ret = parent::send();
+        $ret = $this->send();
         if (!$ret instanceof XMLQueryResult)
             throw new \Exception("Invalid result type");
         return $ret;

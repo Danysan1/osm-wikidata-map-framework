@@ -76,12 +76,14 @@ class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
         $this->query = $queryFactory->create($etymologyIDs);
     }
 
-    /**
-     * @return XMLQueryResult
-     */
     public function send(): QueryResult
     {
-        $res = $this->query->send();
+        return $this->query->send();
+    }
+
+    public function sendAndGetXMLResult(): XMLQueryResult
+    {
+        $res = $this->send();
         if (!$res instanceof XMLQueryResult) {
             throw new \Exception("Query result is not an XMLQueryResult");
         }

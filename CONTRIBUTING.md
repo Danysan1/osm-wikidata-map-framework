@@ -24,9 +24,7 @@ You can find here some information useful to contribute to the Open Etymology Ma
 
 ### Deployment
 
-#### Default instances
-
-The default production instance ( https://www.dsantini.it/etymology/ ) and development instance ( https://www.dsantini.it/etymology-test/ ) are deployed semi-automatically through Gitlab CI and FTP (see https://gitlab.com/dsantini/open-etymology-map/-/environments ).
+The default production instance is https://etymology.dsantini.it and the development instance is https://etymology-test.dsantini.it .
 
 #### Configuration
 
@@ -59,7 +57,7 @@ docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod"
 ### Front-end
 
 [index.php](web/index.php) and [index.js](web/index.js) create the map with Mapbox GL JS.
-Etymology data is obtained from the back-end with [overpass.php](web/overpass.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
+Etymology data is obtained from the back-end with [elements.php](web/elements.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
 
 ### Back-end
 
@@ -74,7 +72,7 @@ Data gathering process in [etymologyMap.php](web/etymologyMap.php):
       4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
          - If it is, use the cached result ([CSVCachedStringSetXMLQuery](web/app/query/cache/CSVCachedStringSetXMLQuery.php)).
          - Otherwise it is necessary to fetch the data from OpenStreetMap.
-            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([EtymologyIDListWikidataQuery](web/app/query/wikidata/EtymologyIDListWikidataQuery.php)).
+            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([EtymologyIDListXMLWikidataQuery](web/app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
             2. Cache the XML result ([CSVCachedStringSetXMLQuery](web/app/query/cache/CSVCachedStringSetXMLQuery.php)).
       5. Obtain from the XML result from Wikidata a matrix of details for each element ([XMLWikidataEtymologyQueryResult](web/app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
       6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([GeoJSON2GeoJSONEtymologyWikidataQuery](web/app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).

@@ -603,10 +603,16 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
         ready = e.isSourceLoaded;
-    console.info('sourcedata event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, ready, e });
+    console.info('sourcedata event', {
+        type: e.dataType,
+        source: e.sourceId,
+        wikidataSourceEvent,
+        overpassSourceEvent,
+        ready,
+        e
+    });
 
     if (ready) {
-        console.info('sourcedata ready event', { type: e.dataType, wikidataSourceEvent, overpassSourceEvent, e });
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
             showSnackbar("Data loaded", "lightgreen");
@@ -671,7 +677,7 @@ function updateDataSource(e) {
             queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
-        showSnackbar("Fetching data...", "lightblue");
+        //showSnackbar("Fetching data...", "lightblue");
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
@@ -684,7 +690,7 @@ function updateDataSource(e) {
         queryParams.onlyCenter = true;
         const overpass_source = map.getSource("overpass_source"),
             queryString = new URLSearchParams(queryParams).toString(),
-            overpass_url = './overpass.php?' + queryString;
+            overpass_url = './elements.php?' + queryString;
         console.info("Overpass dataSource update", { queryParams, overpass_url, overpass_source });
         showSnackbar("Fetching data...", "lightblue");
         if (overpass_source) {
@@ -997,7 +1003,7 @@ function prepareGlobalLayers() {
         cluster: true,
         //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
         clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
-        clusterProperties: { "ety_count": ["+", ["get", "ety_count"]] },
+        clusterProperties: { "num": ["+", ["get", "num"]] },
         clusterMinPoints: 1,
     });
 
@@ -1006,18 +1012,21 @@ function prepareGlobalLayers() {
         source: 'global_source',
         type: 'circle',
         maxzoom: minZoomLevel,
-        filter: ['has', 'ety_count'],
+        filter: ['has', 'num'],
         paint: {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
             // with three steps to implement three types of circles:
-            // - Blue, 20px circles when point count is less than 100
-            // - Yellow, 30px circles when point count is between 100 and 750
-            // - Pink, 40px circles when point count is greater than or equal to 750
             'circle-color': [
-                'step', ['get', 'ety_count'], '#51bbd6', 2000, '#f1f075', 40000, '#f28cb1'
+                'step', ['get', 'num'],
+                '#51bbd6', 5000, // count < 5000 => Blue circle
+                '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
+                '#f28cb1' // count > 20000 => Pink circle
             ],
             'circle-radius': [
-                'step', ['get', 'ety_count'], 20, 2000, 50, 40000, 60
+                'step', ['get', 'num'],
+                20, 5000, // count < 5000 => 15px circle
+                30, 20000, // 5000 <= count < 20000 => 30px circle
+                40 // count > 20000 => 40px circle
             ]
         }
     });
@@ -1027,9 +1036,9 @@ function prepareGlobalLayers() {
         type: 'symbol',
         source: 'global_source',
         maxzoom: minZoomLevel,
-        filter: ['has', 'ety_count'],
+        filter: ['has', 'num'],
         layout: {
-            'text-field': '{ety_count}',
+            'text-field': '{num}',
             'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
             'text-size': 12
         }
@@ -1074,7 +1083,7 @@ function prepareGlobalLayers() {
 
 function setCulture() {
     const culture = document.documentElement.lang,
-        lang = culture.substr(0, 2),
+        lang = culture.substring(0, 3),
         nameProperty = ['coalesce', ['get', `name_` + lang],
             ['get', `name`]
         ];
@@ -1120,7 +1129,7 @@ function featureToElement(feature) {
         element_wikipedia_button.style.display = 'none';
     }
 
-    detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties['@id'];
+    detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
 
     coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
@@ -1299,6 +1308,8 @@ function formatDate(date, precision) {
         dateObject = date;
     else if (typeof date === 'string')
         dateObject = new Date(date);
+    else if (typeof date === 'number')
+        dateObject = new Date(date * 1000); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
     else
         throw new Error("Invalid date parameter");
 
@@ -1309,6 +1320,10 @@ function formatDate(date, precision) {
         if (precision >= 11) options.day = 'numeric';
         if (precision >= 10) options.month = 'numeric';
         options.year = 'numeric';
+    }
+
+    if (dateObject < new Date('0000-01-01T00:00:00')) {
+        options.era = "short";
     }
 
     const out = dateObject.toLocaleDateString(document.documentElement.lang, options);

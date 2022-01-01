@@ -1,8 +1,8 @@
-# baseUrl: http://localhost / https://www.dsantini.it/etymology / https://www.dsantini.it/etymology-test
+# baseUrl: http://localhost / https://etymology.dsantini.it / https://etymology-test.dsantini.it
 
 # New York
-# https://www.dsantini.it/etymology/#-74.027,40.7306,9
-GET {{baseUrl}}/overpass.php
+# https://etymology.dsantini.it/#-74.027,40.7306,9
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=40.229
     &minLon=-75.345
@@ -15,8 +15,8 @@ GET {{baseUrl}}/overpass.php
 #####
 
 # San Jose / San Francisco
-# https://www.dsantini.it/etymology/#-122.138,37.612,9
-GET {{baseUrl}}/overpass.php
+# https://etymology.dsantini.it/#-122.138,37.612,9
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=37.087
     &minLon=-123.456
@@ -29,8 +29,8 @@ GET {{baseUrl}}/overpass.php
 #####
 
 # Berlin
-# https://www.dsantini.it/etymology/#13.4247,52.5072,9
-GET {{baseUrl}}/overpass.php
+# https://etymology.dsantini.it/#13.4247,52.5072,9
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=52.104
     &minLon=12.106
@@ -43,8 +43,8 @@ GET {{baseUrl}}/overpass.php
 #####
 
 # Dortmund / Dusserdorf / Cologne
-# https://www.dsantini.it/etymology/#7.1627,51.2419,9
-GET {{baseUrl}}/overpass.php
+# https://etymology.dsantini.it/#7.1627,51.2419,9
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=50.827
     &minLon=5.844
@@ -57,8 +57,8 @@ GET {{baseUrl}}/overpass.php
 #####
 
 # Brussels / Antwerp / Ghent
-# http://www.dsantini.it/etymology/#4.0418,51.0282,9
-GET {{baseUrl}}/overpass.php
+# http://etymology.dsantini.it/#4.0418,51.0282,9
+GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=50.705
     &minLon=2.987

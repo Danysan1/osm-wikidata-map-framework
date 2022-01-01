@@ -26,16 +26,12 @@ use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
  */
 class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidataQuery implements GeoJSONQuery
 {
-    /**
-     * @return GeoJSONQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
-        $ret = parent::send();
-        if (!($ret instanceof GeoJSONQueryResult)) {
-            throw new \Exception("The result of the query must be a GeoJSONQueryResult");
-        }
-        return $ret;
+        $out = $this->send();
+        if (!$out instanceof GeoJSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get GeoJSON result");
+        return $out;
     }
 
     protected function createQueryResult(XMLQueryResult $wikidataResult): JSONQueryResult

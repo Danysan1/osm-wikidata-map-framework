@@ -24,9 +24,6 @@ use \App\Result\GeoJSONQueryResult;
  */
 class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements BBoxGeoJSONQuery
 {
-    /**
-     * @return GeoJSONQueryResult
-     */
     protected function createResult(array $overpassGeoJSONData): JSONQueryResult
     {
         if (!isset($overpassGeoJSONData["features"])) {
@@ -35,20 +32,16 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
             $out = new GeoJSONLocalQueryResult(true, ["type" => "FeatureCollection", "features" => []]);
         } else {
             $wikidataQuery = new GeoJSON2GeoJSONEtymologyWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
-            $out = $wikidataQuery->send();
+            $out = $wikidataQuery->sendAndGetGeoJSONResult();
         }
         return $out;
     }
 
-    /**
-     * @return GeoJSONQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
-        $ret = parent::send();
-        if (!($ret instanceof GeoJSONQueryResult)) {
-            throw new \Exception("Result is not GeoJSONQueryResult");
-        }
-        return $ret;
+        $out = $this->send();
+        if (!$out instanceof GeoJSONQueryResult)
+            throw new \Exception("sendAndGetGeoJSONResult(): can't get GeoJSON result");
+        return $out;
     }
 }

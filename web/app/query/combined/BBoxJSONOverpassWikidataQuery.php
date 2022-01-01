@@ -52,12 +52,9 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         $this->wikidataFactory = $wikidataFactory;
     }
 
-    /**
-     * @return JSONQueryResult
-     */
     public function send(): QueryResult
     {
-        $overpassResult = $this->overpassQuery->send();
+        $overpassResult = $this->overpassQuery->sendAndGetGeoJSONResult();
         $this->timing->add("overpass_query");
         if (!$overpassResult->isSuccessful()) {
             error_log("BBoxGeoJSONEtymologyQuery: Overpass query failed: $overpassResult");
@@ -72,6 +69,15 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         $this->timing->add("wikidata_query");
 
         return $out;
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $ret = $this->send();
+        if (!$ret instanceof JSONQueryResult) {
+            throw new \Exception("Internal error: Result is not a JSONQueryResult");
+        }
+        return $ret;
     }
 
     protected abstract function createResult(array $overpassGeoJSONData): JSONQueryResult;

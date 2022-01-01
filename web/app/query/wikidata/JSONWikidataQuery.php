@@ -28,21 +28,18 @@ class JSONWikidataQuery extends WikidataQuery implements JSONQuery
     /**
      * @param string|null $result
      * @param array $curlInfo
-     * @return JSONQueryResult
+     * @return QueryResult
      */
     protected function getResultFromCurlData($result, $curlInfo): QueryResult
     {
         return new JSONRemoteQueryResult($result, $curlInfo);
     }
 
-    /**
-     * @return JSONQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetJSONResult(): JSONQueryResult
     {
-        $ret = parent::send();
-        if (!$ret instanceof JSONQueryResult)
-            throw new \Exception("Invalid result type");
-        return $ret;
+        $out = $this->send();
+        if (!$out instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        return $out;
     }
 }

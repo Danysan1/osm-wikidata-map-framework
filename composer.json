@@ -12,10 +12,10 @@
     },
     "config": {
         "platform": {
-            "php": "7.3.28"
+            "php": "7.4.25"
         }
     },
-    "homepage": "https://www.dsantini.it/etymology",
+    "homepage": "https://etymology.dsantini.it",
     "license": "GPL-3.0",
     "authors": [{
         "name": "Daniele Santini",

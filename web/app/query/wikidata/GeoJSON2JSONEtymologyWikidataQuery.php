@@ -44,12 +44,9 @@ abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
         return $this->wikidataQuery->getQuery();
     }
 
-    /**
-     * @return JSONQueryResult
-     */
     public function send(): QueryResult
     {
-        $response = $this->wikidataQuery->send();
+        $response = $this->wikidataQuery->sendAndGetXMLResult();
         if (!$response->hasResult()) {
             throw new \Exception("Wikidata query did not return any results");
         } elseif (!$response->isSuccessful()) {
@@ -57,6 +54,14 @@ abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
         } else {
             return $this->createQueryResult($response);
         }
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        $out = $this->send();
+        if (!$out instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        return $out;
     }
 
     protected abstract function createQueryResult(XMLQueryResult $wikidataResult): JSONQueryResult;

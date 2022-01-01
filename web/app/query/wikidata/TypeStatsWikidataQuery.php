@@ -16,12 +16,9 @@ use \App\Result\Wikidata\XMLWikidataStatsQueryResult;
  */
 class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
 {
-    /**
-     * @return XMLWikidataStatsQueryResult
-     */
     public function send(): QueryResult
     {
-        return XMLWikidataStatsQueryResult::fromXMLResult(parent::send());
+        return XMLWikidataStatsQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
     }
 
     public function createQuery(string $wikidataIDList, string $language): string

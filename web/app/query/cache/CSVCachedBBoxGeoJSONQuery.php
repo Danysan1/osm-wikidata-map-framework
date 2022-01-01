@@ -10,6 +10,7 @@ require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 
 use \App\Query\Cache\CSVCachedBBoxQuery;
 use \App\Query\BBoxGeoJSONQuery;
+use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
@@ -48,12 +49,18 @@ class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxQuery implements BBoxGeoJSO
         return "geojson";
     }
 
-    /**
-     * @return GeoJSONQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetJSONResult(): JSONQueryResult
     {
-        $ret = parent::send();
+        $ret = $this->send();
+        if (!$ret instanceof JSONQueryResult) {
+            throw new \Exception("Internal error: Result is not a JSONQueryResult");
+        }
+        return $ret;
+    }
+
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
+    {
+        $ret = $this->send();
         if (!$ret instanceof GeoJSONQueryResult) {
             throw new \Exception("Internal error: Result is not a GeoJSONQueryResult");
         }

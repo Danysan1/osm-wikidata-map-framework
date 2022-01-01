@@ -17,7 +17,7 @@ use \App\Result\JSONQueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxJSONStatsQuery extends BBoxJSONOverpassWikidataQuery
+class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
 {
 
     protected function createResult(array $overpassGeoJSONData): JSONQueryResult
@@ -28,7 +28,7 @@ class BBoxJSONStatsQuery extends BBoxJSONOverpassWikidataQuery
             $out = new JSONLocalQueryResult(true, []);
         } else {
             $wikidataQuery = new GeoJSON2JSONStatsWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
-            $out = $wikidataQuery->send();
+            $out = $wikidataQuery->sendAndGetJSONResult();
         }
         return $out;
     }
