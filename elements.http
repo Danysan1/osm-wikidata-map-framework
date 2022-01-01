@@ -1,7 +1,7 @@
-# baseUrl: http://localhost / https://www.dsantini.it/etymology / https://www.dsantini.it/etymology-test
+# baseUrl: http://localhost / https://etymology.dsantini.it / https://etymology-test.dsantini.it
 
 # New York
-# https://www.dsantini.it/etymology/#-74.027,40.7306,9
+# https://etymology.dsantini.it/#-74.027,40.7306,9
 GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=40.229
@@ -15,7 +15,7 @@ GET {{baseUrl}}/elements.php
 #####
 
 # San Jose / San Francisco
-# https://www.dsantini.it/etymology/#-122.138,37.612,9
+# https://etymology.dsantini.it/#-122.138,37.612,9
 GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=37.087
@@ -29,7 +29,7 @@ GET {{baseUrl}}/elements.php
 #####
 
 # Berlin
-# https://www.dsantini.it/etymology/#13.4247,52.5072,9
+# https://etymology.dsantini.it/#13.4247,52.5072,9
 GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=52.104
@@ -43,7 +43,7 @@ GET {{baseUrl}}/elements.php
 #####
 
 # Dortmund / Dusserdorf / Cologne
-# https://www.dsantini.it/etymology/#7.1627,51.2419,9
+# https://etymology.dsantini.it/#7.1627,51.2419,9
 GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=50.827
@@ -57,7 +57,7 @@ GET {{baseUrl}}/elements.php
 #####
 
 # Brussels / Antwerp / Ghent
-# http://www.dsantini.it/etymology/#4.0418,51.0282,9
+# http://etymology.dsantini.it/#4.0418,51.0282,9
 GET {{baseUrl}}/elements.php
     ?from=bbox
     &minLat=50.705

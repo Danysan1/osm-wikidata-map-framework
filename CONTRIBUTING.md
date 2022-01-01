@@ -24,9 +24,7 @@ You can find here some information useful to contribute to the Open Etymology Ma
 
 ### Deployment
 
-#### Default instances
-
-The default production instance ( https://www.dsantini.it/etymology/ ) and development instance ( https://www.dsantini.it/etymology-test/ ) are deployed semi-automatically through Gitlab CI and FTP (see https://gitlab.com/dsantini/open-etymology-map/-/environments ).
+The default production instance is https://etymology.dsantini.it and the development instance is https://etymology-test.dsantini.it .
 
 #### Configuration
 

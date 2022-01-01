@@ -1,10 +1,10 @@
 {
     "data_format": 1,
-    "data_url": "https://www.dsantini.it/etymology/taginfo.json",
+    "data_url": "https://etymology.dsantini.it/taginfo.json",
     "project": {
         "name": "Open Etymology Map",
         "description": "Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.",
-        "project_url": "https://www.dsantini.it/etymology/",
+        "project_url": "https://etymology.dsantini.it/",
         "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/README.md",
         "contact_name": "Daniele Santini",
         "contact_email": "danysan95@gmail.com"
@@ -35,6 +35,15 @@
             ],
             "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
             "description": "The value of 'subject:wikidata' is used to gather etymology information from Wikidata"
+        },
+        {
+            "key": "wikidata",
+            "object_types": [
+                "node",
+                "way"
+            ],
+            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "description": "The value of 'wikidata' is used to gather etymology information from the 'named after' property of  Wikidata"
         },
         {
             "key": "wikipedia",

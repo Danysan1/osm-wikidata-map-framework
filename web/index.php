@@ -96,7 +96,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://www.dsantini.it/etymology/" />
+    <meta property="og:url" content="https://etymology.dsantini.it/" />
     <meta property="og:title" content="Open Etymology Map" />
     <meta property="og:site_name" content="Open Etymology Map" />
     <meta property="og:description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
@@ -104,7 +104,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
-    <link rel="canonical" href="https://www.dsantini.it/etymology/" />
+    <link rel="canonical" href="https://etymology.dsantini.it/" />
     <link rel="icon" type="image/x-icon" sizes="16x16" href="../favicon.ico">
 </head>
 
@@ -116,9 +116,9 @@ if (!$conf->has("mapbox-gl-token")) {
         <p>
             Used technologies:
         <ul>
-            <li><a title="OpenStreetMap" href="https://www.openstreetmap.org/about">OpenStreetMap</a> and its tags "<a title="OpenStreetMap name:etymology:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata">name:etymology:wikidata</a>" and "<a title="OpenStreetMap name:etymology:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:subject">subject:wikidata</a>"</li>
-            <li><a title="Wikidata" href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a> and its <a title="Wikidata SPARQL Query Service" href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a></li>
-            <li><a title="Overpass API" href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a></li>
+            <li><a title="OpenStreetMap" href="https://www.openstreetmap.org/about">OpenStreetMap</a> and its tags "<a title="OpenStreetMap name:etymology:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata">name:etymology:wikidata</a>", "<a title="OpenStreetMap subject:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:subject">subject:wikidata</a>" and "<a title="OpenStreetMap wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:wikidata">wikidata</a>"</li>
+            <li><a title="Wikidata" href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>, its "<a title="Wikidata 'named after' property" href="https://www.wikidata.org/wiki/Property:P138">named after</a>" property and its <a title="Wikidata SPARQL Query Service" href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a></li>
+            <!--<li><a title="Overpass API" href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a></li>-->
             <li><a title="Mapbox GL JS" href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
         </ul>
         </p>
