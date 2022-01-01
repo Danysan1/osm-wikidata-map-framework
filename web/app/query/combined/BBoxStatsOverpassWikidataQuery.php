@@ -28,7 +28,7 @@ class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
             $out = new JSONLocalQueryResult(true, []);
         } else {
             $wikidataQuery = new GeoJSON2JSONStatsWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
-            $out = $wikidataQuery->send();
+            $out = $wikidataQuery->sendAndGetJSONResult();
         }
         return $out;
     }

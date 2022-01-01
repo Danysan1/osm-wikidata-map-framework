@@ -32,7 +32,7 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
             $out = new GeoJSONLocalQueryResult(true, ["type" => "FeatureCollection", "features" => []]);
         } else {
             $wikidataQuery = new GeoJSON2GeoJSONEtymologyWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
-            $out = $wikidataQuery->send();
+            $out = $wikidataQuery->sendAndGetGeoJSONResult();
         }
         return $out;
     }

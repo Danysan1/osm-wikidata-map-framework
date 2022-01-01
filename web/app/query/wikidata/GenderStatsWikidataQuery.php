@@ -18,7 +18,7 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
 {
     public function send(): QueryResult
     {
-        return XMLWikidataStatsQueryResult::fromXMLResult(parent::send());
+        return XMLWikidataStatsQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
     }
 
     public function createQuery(string $wikidataIDList, string $language): string

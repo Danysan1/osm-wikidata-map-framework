@@ -56,15 +56,11 @@ class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements Str
         return $xmlRelativePath;
     }
 
-    /**
-     * @return JSONQueryResult
-     */
-    public function send(): QueryResult
+    public function sendAndGetJSONResult(): JSONQueryResult
     {
-        $ret = parent::send();
-        if (!$ret instanceof JSONQueryResult) {
-            throw new \Exception("Internal error: Result is not a JSONQueryResult");
-        }
+        $ret = $this->send();
+        if (!$ret instanceof JSONQueryResult)
+            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
         return $ret;
     }
 }

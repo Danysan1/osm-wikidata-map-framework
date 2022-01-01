@@ -46,7 +46,7 @@ abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
 
     public function send(): QueryResult
     {
-        $response = $this->wikidataQuery->send();
+        $response = $this->wikidataQuery->sendAndGetXMLResult();
         if (!$response->hasResult()) {
             throw new \Exception("Wikidata query did not return any results");
         } elseif (!$response->isSuccessful()) {
