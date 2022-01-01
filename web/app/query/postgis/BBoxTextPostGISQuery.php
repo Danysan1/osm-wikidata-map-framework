@@ -162,7 +162,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
             $stInsertPicture = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata_picture (wdp_wd_id, wdp_picture)
-                SELECT wd.wd_id, pic.picture
+                SELECT DISTINCT wd.wd_id, pic.picture
                 FROM oem.wikidata AS wd
                 JOIN (
                     SELECT
@@ -218,7 +218,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     wdt_birth_place,
                     wdt_death_place
                 )
-                SELECT
+                SELECT DISTINCT
                     wd_id,
                     :lang,
                     CURRENT_TIMESTAMP,
@@ -234,7 +234,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 JOIN oem.wikidata AS wd
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
-                LEFT JOIN oem.wikidata_text As wdt
+                LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
                 WHERE wdt.wdt_id IS NULL"
             );
