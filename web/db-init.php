@@ -98,22 +98,21 @@ function execAndCheck(string $command): array
     return $exOutput;
 }
 
-/**
- * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
- */
 
-$filteredFile = "$workDir/filtered_$sourceFilename";
+$filteredTmpFile = "$workDir/filtered_with_flags_$sourceFilename";
+$filteredFile = "$workDir/filtered_no_flags_$sourceFilename";
 if (is_file($filteredFile)) {
     echo '========================= Data already filtered =========================' . PHP_EOL;
 } else {
     echo '========================= Filtering OSM data... =========================' . PHP_EOL;
-    execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredFile' '$sourceFile' 'name:etymology:wikidata,subject:wikidata,wikidata'");
+    /**
+     * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
+     */
+    execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFile' 'wikidata,subject:wikidata,name:etymology:wikidata'");
+    execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFile' '$filteredTmpFile' 'man_made=flagpole'");
     echo '========================= Filtered OSM data =========================' . PHP_EOL;
 }
 
-/**
- * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
- */
 
 if (!is_file("osmium.json")) {
     echo "ERROR: missing osmium.json" . PHP_EOL;
@@ -125,6 +124,9 @@ if (is_file($txtFile)) {
     echo '========================= Data already exported to text =========================' . PHP_EOL;
 } elseif ($convert_to_txt) {
     echo '========================= Exporting OSM data to text... =========================' . PHP_EOL;
+    /**
+     * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
+     */
     execAndCheck("osmium export --verbose --overwrite -o '$txtFile' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=dense_file_array,/tmp/osmium-nodes.cache '$filteredFile'");
     echo '========================= Exported OSM data to text =========================' . PHP_EOL;
 }
