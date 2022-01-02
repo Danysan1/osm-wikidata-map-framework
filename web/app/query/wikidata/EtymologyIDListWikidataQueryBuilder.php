@@ -7,7 +7,7 @@ namespace App\Query\Wikidata;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataBaseQuery
+class EtymologyIDListWikidataQueryBuilder
 {
     public static function createQuery(string $wikidataIDList, string $language): string
     {
@@ -115,6 +115,8 @@ class EtymologyIDListWikidataBaseQuery
                         ?picture ^wdt:P242 ?wikidata # locator map image
                     } UNION {
                         ?picture ^wdt:P15 ?wikidata # route map
+                    } UNION {
+                        ?picture ^wdt:P41 ?wikidata # flag
                     }
                 }
 
