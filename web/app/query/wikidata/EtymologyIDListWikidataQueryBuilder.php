@@ -7,7 +7,7 @@ namespace App\Query\Wikidata;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class EtymologyIDListWikidataBaseQuery
+class EtymologyIDListWikidataQueryBuilder
 {
     public static function createQuery(string $wikidataIDList, string $language): string
     {
