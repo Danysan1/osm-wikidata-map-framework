@@ -3,12 +3,12 @@
 namespace App\Query\Wikidata;
 
 require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
+require_once(__DIR__ . "/../../result/XMLQueryResult.php");
 require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
 require_once(__DIR__ . "/EtymologyIDListWikidataQueryBuilder.php");
 
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
-use \App\Result\QueryResult;
+use \App\Result\XMLQueryResult;
 use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
 use \App\Query\Wikidata\EtymologyIDListWikidataQueryBuilder;
 
@@ -19,7 +19,7 @@ use \App\Query\Wikidata\EtymologyIDListWikidataQueryBuilder;
  */
 class EtymologyIDListXMLWikidataQuery extends StringSetXMLWikidataQuery
 {
-    public function send(): QueryResult
+    public function sendAndGetXMLResult(): XMLQueryResult
     {
         return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
     }
