@@ -739,8 +739,8 @@ function prepareWikidataLayers(wikidata_url) {
         'paint': {
             'line-color': colorSchemes[defaultColorScheme].color,
             'line-opacity': 0.5,
-            'line-width': 5,
-            'line-offset': -2.4, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+            'line-width': 6,
+            'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
         }
     });
 
