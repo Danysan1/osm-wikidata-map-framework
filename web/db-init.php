@@ -116,6 +116,9 @@ if (is_file($filteredFile)) {
     execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFile' 'wikidata,subject:wikidata,name:etymology:wikidata'");
     execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFile' '$filteredTmpFile' 'man_made=flagpole'");
     echo '========================= Filtered OSM data =========================' . PHP_EOL;
+    
+    if(is_file("/tmp/osmium.sparse.cache"))
+        unlink("/tmp/osmium.sparse.cache");
 }
 
 
