@@ -5,17 +5,17 @@
 The background map is provided by Mapbox, which is itself based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
-## How to report a problem to the etymology of an element
+## How to report a problem in the etymology of an element
 
 If the etymology associated to the element is correct but there is a problem in the details (birth date, nationality, ...):
-1. From the etymology window for the element on Open Etymology Map click on the "Wikidata" button
+1. From the etymology window click on the "Wikidata" button for the etymology with the problem
 2. At the top of the opened page click on "Discussion"
 3. Append in the opened text box the description of the problem you found in the data
 4. Confirm your comment by clicking on the blue button below
 
-If the problem is related to the etymology itself (which etymology is associated to the element):
-1. From the etymology window for the element on Open Etymology Map click on the "OpenStreetMap" button
-2. On the left of the opened page check if `name:etymology:wikidata` or `subject:wikidata` is present. If it is, click on the button on the right to add a note to the map and describe the problem
+If the problem is related to the etymology itself (a wrong etymology is associated to the element):
+1. From the etymology window click on the "OpenStreetMap" button
+2. On the left of the opened page check if the `name:etymology:wikidata` or `subject:wikidata` tag is present. If it is, click on the dialog button on the right to add a note to the map and describe the problem
 3. If the tags above are absent, the `wikidata` tag will be present and its value will be clickable. Click on it.
 4. If the opened page represents the element from the map (not its etymology, not something else):
    1. At the top of the opened page click on "Discussion"
@@ -46,11 +46,14 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 
 ## How to contribute to this project
 
-You can find here some information useful to contribute to the Open Etymology Map project.
+Any suggestion to improve this page is really appreciated, as it helps more contributors to improve the map.
+
+You can find below some information useful to contribute to the Open Etymology Map codebase.
 
 ### Deployment
 
 The default production instance is https://etymology.dsantini.it and the development instance is https://etymology-test.dsantini.it .
+During development you can run a local instance of Open Etymology Map using the [instructions you will find below](#local-development-with-docker).
 
 #### Configuration
 
@@ -60,6 +63,17 @@ A template for this config file can be found in [`open-etymology-map.template.in
 
 If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 If you enable Sentry JS on the frontend remember to add `www.google.*` and `inline` in your project's settings `Security Headers` > `CSP Instructions` (`https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`) > `Additional ignored sources` or you will quickly burn through your quota because of irrelevant CSP messages.
+
+#### Database initialization
+
+Open Etymology Map can fetch map data from Overpass o from a PostGIS DataBase.
+If you intend to use the DB you will need to initialize it first:
+1. initialize `open-etymology-map.ini` as shown [above](#configuration)
+2. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data, depending on which area you want to show on the map.
+3. using command line, move to the [web/](web/) folder and run `./db-init.php YOUR_PBF_FILE_NAME.pbf`
+4. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
+
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours).
 
 #### Local development with Docker
 
@@ -87,7 +101,17 @@ Etymology data is obtained from the back-end with [elements.php](web/elements.ph
 
 ### Back-end
 
-Data gathering process in [etymologyMap.php](web/etymologyMap.php):
+#### New back-end (v2)
+
+Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db-enable = true`:
+
+1. [`BBoxTextPostGISQuery::downloadMissingText()`](web/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
+    - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](web/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
+2. [`BBoxEtymologyPostGISQuery`](web/app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
+
+#### Old back-end (v1)
+
+Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db-enable = false`):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
    - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
@@ -104,7 +128,9 @@ Data gathering process in [etymologyMap.php](web/etymologyMap.php):
       6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([GeoJSON2GeoJSONEtymologyWikidataQuery](web/app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
       7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
 
-The result will be something similar to
+#### Output
+The output of [etymologyMap.php](web/etymologyMap.php) will be both in [v1](#old-back-end-v1) and in [v2](#new-back-end-v2) something similar to ...
+
 ```json
 {
     "type": "FeatureCollection",
