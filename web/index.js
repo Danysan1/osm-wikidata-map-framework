@@ -330,7 +330,8 @@ class EtymologyColorControl {
         [
             ["wikidata_layer_point", "circle-color"],
             ["wikidata_layer_lineString", 'line-color'],
-            ["wikidata_layer_polygon", 'fill-color'],
+            ["wikidata_layer_polygon_fill", 'fill-color'],
+            ["wikidata_layer_polygon_border", 'line-color'],
         ].forEach(([layerID, property]) => {
             if (this._map.getLayer(layerID)) {
                 this._map.setPaintProperty(layerID, property, color);
@@ -717,14 +718,29 @@ function prepareWikidataLayers(wikidata_url) {
     });
 
     map.addLayer({
-        'id': 'wikidata_layer_polygon',
+        'id': 'wikidata_layer_polygon_fill',
         'source': 'wikidata_source',
         'type': 'fill',
         "filter": ["==", ["geometry-type"], "Polygon"],
         "minzoom": thresholdZoomLevel,
         'paint': {
             'fill-color': colorSchemes[defaultColorScheme].color,
-            'fill-opacity': 0.5
+            'fill-opacity': 0.5,
+            'fill-outline-color': "rgba(0, 0, 0, 0)",
+        }
+    });
+
+    map.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
+        'id': 'wikidata_layer_polygon_border',
+        'source': 'wikidata_source',
+        'type': 'line',
+        "filter": ["==", ["geometry-type"], "Polygon"],
+        "minzoom": thresholdZoomLevel,
+        'paint': {
+            'line-color': colorSchemes[defaultColorScheme].color,
+            'line-opacity': 0.5,
+            'line-width': 5,
+            'line-offset': -2.4, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
         }
     });
 
@@ -757,7 +773,12 @@ function prepareWikidataLayers(wikidata_url) {
 
     // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
     // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-    ["wikidata_layer_point", "wikidata_layer_lineString", "wikidata_layer_polygon"].forEach(function(layerID) {
+    [
+        "wikidata_layer_point",
+        "wikidata_layer_lineString",
+        "wikidata_layer_polygon_fill",
+        "wikidata_layer_polygon_border"
+    ].forEach(function(layerID) {
         // When a click event occurs on a feature in the states layer,
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
