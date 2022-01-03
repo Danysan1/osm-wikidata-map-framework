@@ -1157,6 +1157,7 @@ function featureToElement(feature) {
     }
 
     detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
+    //detail_container.querySelector('.ety_error_button').href = 'https://www.openstreetmap.org/note/new#layers=N&map=18/' + feature.properties.point_lat + '/' + feature.properties.point_lon;
 
     coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {

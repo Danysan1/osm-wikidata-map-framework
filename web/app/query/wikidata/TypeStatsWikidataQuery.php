@@ -6,7 +6,7 @@ require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
 require_once(__DIR__ . "/../../result/wikidata/XMLWikidataStatsQueryResult.php");
 
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
-use \App\Result\QueryResult;
+use \App\Result\XMLQueryResult;
 use \App\Result\Wikidata\XMLWikidataStatsQueryResult;
 
 /**
@@ -16,7 +16,7 @@ use \App\Result\Wikidata\XMLWikidataStatsQueryResult;
  */
 class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
 {
-    public function send(): QueryResult
+    public function sendAndGetXMLResult(): XMLQueryResult
     {
         return XMLWikidataStatsQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
     }
