@@ -51,7 +51,7 @@ docker run --rm -d  -p 80:80/tcp registry.gitlab.com/dsantini/open-etymology-map
 This image can be built with:
 
 ```sh
-docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod" .
+docker build --pull --rm -f "open-etymology-map.Dockerfile" -t "open-etymology-map" --target "prod" .
 ```
 
 ### Front-end
