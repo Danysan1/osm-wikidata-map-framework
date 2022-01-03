@@ -102,6 +102,7 @@ function execAndCheck(string $command): array
     return $exOutput;
 }
 
+echo 'Started at ' . date('c') . PHP_EOL;
 
 $filteredTmpFile = "$workDir/filtered_with_flags_$sourceFilename";
 $filteredFile = "$workDir/filtered_$sourceFilename";
@@ -373,6 +374,8 @@ if ($use_db) {
                 );
                 echo "========================= Converted $n_element elements =========================" . PHP_EOL;
             }
+
+            echo 'Loading complete at ' . date('c') . PHP_EOL;
         }
 
         if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='element_wikidata_cods')")->fetchColumn()) {
@@ -503,6 +506,8 @@ if ($use_db) {
                     $dbh->exec("DROP TABLE oem.element_wikidata_cods");
                 echo "========================= Converted $n_ety etymologies =========================" . PHP_EOL;
             }
+
+            echo 'Conversion complete at ' . date('c') . PHP_EOL;
         }
 
         if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata')")->fetchColumn()) {
@@ -553,4 +558,6 @@ if ($use_db) {
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
+
+    echo 'Finished at ' . date('c') . PHP_EOL;
 }
