@@ -424,7 +424,11 @@ if ($use_db) {
                         "SELECT ?element ?namedAfter
                         WHERE {
                             VALUES ?element { $wikidataCodsToFetch }.
-                            ?element wdt:P138 ?namedAfter.
+                            {
+                                ?element wdt:P138 ?namedAfter.
+                            } UNION {
+                                ?element owl:sameAs/wdt:P138 ?namedAfter.
+                            }
                         }";
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
                     $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
