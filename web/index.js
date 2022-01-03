@@ -1116,7 +1116,13 @@ function featureToElement(feature) {
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
         etymologies_container = detail_container.querySelector('.etymologies_container');;
     //template_container.appendChild(detail_container);
-    console.info("featureToElement", { feature, etymologies, detail_container, etymologies_container });
+    console.info("featureToElement", {
+        el_id: feature.properties.el_id,
+        feature,
+        etymologies,
+        detail_container,
+        etymologies_container
+    });
 
     if (feature.properties.name) {
         detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
@@ -1177,8 +1183,15 @@ function featureToElement(feature) {
                 commons_button.style.display = 'none';
             }
 
+            let coords = null,
+                coordsOk = false;
             if (ety.wkt_coords) {
-                const coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
+                coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
+                coordsOk = coords && coords.length > 1;
+                if (!coordsOk)
+                    console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
+            }
+            if (coordsOk) {
                 location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
                 location_button.style.display = 'inline-flex';
             } else {
