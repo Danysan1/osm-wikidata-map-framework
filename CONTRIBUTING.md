@@ -1,24 +1,50 @@
 # Contributing to Open Etymology Map
 
-## Contributing to the background map
+## How to contribute to the background map
 
 The background map is provided by Mapbox, which is itself based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
-## Contributing to the etymology data
+## How to report a problem to the etymology of an element
+
+If the etymology associated to the element is correct but there is a problem in the details (birth date, nationality, ...):
+1. From the etymology window for the element on Open Etymology Map click on the "Wikidata" button
+2. At the top of the opened page click on "Discussion"
+3. Append in the opened text box the description of the problem you found in the data
+4. Confirm your comment by clicking on the blue button below
+
+If the problem is related to the etymology itself (which etymology is associated to the element):
+1. From the etymology window for the element on Open Etymology Map click on the "OpenStreetMap" button
+2. On the left of the opened page check if `name:etymology:wikidata` or `subject:wikidata` is present. If it is, click on the button on the right to add a note to the map and describe the problem
+3. If the tags above are absent, the `wikidata` tag will be present and its value will be clickable. Click on it.
+4. If the opened page represents the element from the map (not its etymology, not something else):
+   1. At the top of the opened page click on "Discussion"
+   2. Append in the opened text box the description of the problem you found in the etymology for the object
+   3. Confirm your comment by clicking on the blue button below
+5. If instead the opened page represents something else, go back to the OpenStreetMap page, click on the button on the right to add a note to the map and write that the `wikidata` tag points to the wrong element
+
+## How to contribute to the etymology data
 
 Open Etymology Map gets the etymology of elements on the map from OpenStreetMap and information about the etymology subjects from Wikidata.
 
 If you wish to add or correct the etymology for an element for the map you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
-Once you find the element of interest on OpenStreetMap you can edit it's etymology by adding/changing the value for the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag to the Wikidata ID of the subject which inspired the name of the map element.
-
-The wikidata ID of the etymology can be found by searching the name of the subject on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
+The wikidata ID of an object can be found by searching its name on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
 
 Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find it's page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, it's ID is `Q8023`. You will then need to add the tag `name:etymology:wikidata`=`Q8023` to the map element.
 
-## Contributing to this project
+1. Find the element of interest on OpenStreetMap
+2. If the element has a [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag then the element should already be available on Open Etymology Map. If it isn't, the tag value may contain an error, like not being a valid Wikidata ID. If it is present but with the wrong etymology, search on Wikidata the ID for the correct etymology and edit the tag with the new ID.
+3. If the element has a `wikidata` tag check the referenced Wikidata element. If it does not represent the same real world object of the OSM element, search the correct one and change it. If it contains a ["named after"](https://www.wikidata.org/wiki/Property:P138) relation check that it links to the correct etymology. If it is absent, add it:
+   1. Click "+ Add statement"
+   2. On the left choose `P138` ("named after") as property
+   3. On the right search the desired etymology to use as the value
+4. If none of these tags is present, search the etymology on Wikidata
+5. If the Wikidata element for the etymology is not available create it
+6. Add to the OpenStreetMap element the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag (depending on the meaning of the etymology) with the Wikidata ID as value
+
+## How to contribute to this project
 
 You can find here some information useful to contribute to the Open Etymology Map project.
 

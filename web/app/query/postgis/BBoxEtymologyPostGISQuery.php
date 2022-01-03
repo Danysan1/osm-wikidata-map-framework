@@ -63,6 +63,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el_osm_type AS osm_type,
                     el_osm_id AS osm_id,
                     el_name AS name,
+                    --ST_X(ST_PointOnSurface(el_geometry)) AS point_lon,
+                    --ST_Y(ST_PointOnSurface(el_geometry)) AS point_lat,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'wd_id', wd.wd_id,
                         'birth_date', EXTRACT(epoch FROM wd.wd_birth_date),
