@@ -41,7 +41,7 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
    2. On the left choose `P138` ("named after") as property
    3. On the right search the desired etymology to use as the value
 4. If none of these tags is present, search the etymology on Wikidata
-5. If the Wikidata element for the etymology is not available create it
+5. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
 6. Add to the OpenStreetMap element the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
 
 ## How to contribute to this project
