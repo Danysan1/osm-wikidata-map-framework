@@ -144,7 +144,7 @@ if (!$conf->has("mapbox-gl-token")) {
             <div class="etymologies_container grid grid-auto">
 
             </div>
-            <a title="Report a problem in this element etymology" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element"><span class="button_img">⚠️</span> Report a problem in this element etymology</a>
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element"><span class="button_img">⚠️</span> Report a problem in this element</a>
         </div>
     </template>
 
