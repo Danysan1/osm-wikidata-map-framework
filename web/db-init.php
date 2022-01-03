@@ -19,6 +19,7 @@ $use_osm2pgsql = FALSE;
 $convert_to_geojson = FALSE;
 $convert_to_pg = FALSE;
 $convert_to_txt = FALSE;
+$keep_temp_tables = in_array("--keep-temp-tables", $argv);
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -52,7 +53,10 @@ $workDir = dirname($sourceFile);
 $sourceFilename = basename($sourceFile);
 echo "Working on file $sourceFilename in directory $workDir" . PHP_EOL;
 
-if (empty($argv[2])) {
+if ($keep_temp_tables)
+    echo 'Keeping temporary tables' . PHP_EOL;
+
+if (empty($argv[2]) || $argv[2] == "default") {
     echo 'Using osmium-export to pg (default)' . PHP_EOL;
     $use_osmium_export = TRUE;
     $convert_to_pg = TRUE;
@@ -98,22 +102,22 @@ function execAndCheck(string $command): array
     return $exOutput;
 }
 
-/**
- * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
- */
+echo 'Started at ' . date('c') . PHP_EOL;
 
+$filteredTmpFile = "$workDir/filtered_with_flags_$sourceFilename";
 $filteredFile = "$workDir/filtered_$sourceFilename";
 if (is_file($filteredFile)) {
     echo '========================= Data already filtered =========================' . PHP_EOL;
 } else {
     echo '========================= Filtering OSM data... =========================' . PHP_EOL;
-    execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredFile' '$sourceFile' 'name:etymology:wikidata,subject:wikidata,wikidata'");
+    /**
+     * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
+     */
+    execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFile' 'wikidata,subject:wikidata,name:etymology:wikidata'");
+    execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFile' '$filteredTmpFile' 'man_made=flagpole'");
     echo '========================= Filtered OSM data =========================' . PHP_EOL;
 }
 
-/**
- * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
- */
 
 if (!is_file("osmium.json")) {
     echo "ERROR: missing osmium.json" . PHP_EOL;
@@ -125,7 +129,10 @@ if (is_file($txtFile)) {
     echo '========================= Data already exported to text =========================' . PHP_EOL;
 } elseif ($convert_to_txt) {
     echo '========================= Exporting OSM data to text... =========================' . PHP_EOL;
-    execAndCheck("osmium export --verbose --overwrite -o '$txtFile' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=dense_file_array,/tmp/osmium-nodes.cache '$filteredFile'");
+    /**
+     * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
+     */
+    execAndCheck("osmium export --verbose --overwrite -o '$txtFile' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,/tmp/osmium.sparse.cache '$filteredFile'");
     echo '========================= Exported OSM data to text =========================' . PHP_EOL;
 }
 
@@ -134,7 +141,10 @@ if (is_file($geojsonFile)) {
     echo '========================= Data already exported to geojson =========================' . PHP_EOL;
 } elseif ($convert_to_geojson) {
     echo '========================= Exporting OSM data to geojson... =========================' . PHP_EOL;
-    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFile' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=dense_file_array,/tmp/osmium-nodes.cache '$filteredFile'");
+    /**
+     * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
+     */
+    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFile' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,/tmp/osmium.sparse.cache '$filteredFile'");
     echo '========================= Exported OSM data to geojson =========================' . PHP_EOL;
 }
 
@@ -143,7 +153,10 @@ if (is_file($pgFile)) {
     echo '========================= Data already exported to PostGIS tsv =========================' . PHP_EOL;
 } elseif ($convert_to_pg) {
     echo '========================= Exporting OSM data to PostGIS tsv... =========================' . PHP_EOL;
-    execAndCheck("osmium export --verbose --overwrite -o '$pgFile' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=dense_file_array,/tmp/osmium-nodes.cache '$filteredFile'");
+    /**
+     * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
+     */
+    execAndCheck("osmium export --verbose --overwrite -o '$pgFile' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,/tmp/osmium.sparse.cache '$filteredFile'");
     echo '========================= Exported OSM data to PostGIS tsv =========================' . PHP_EOL;
 }
 
@@ -361,6 +374,8 @@ if ($use_db) {
                 );
                 echo "========================= Converted $n_element elements =========================" . PHP_EOL;
             }
+
+            echo 'Loading complete at ' . date('c') . PHP_EOL;
         }
 
         if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='element_wikidata_cods')")->fetchColumn()) {
@@ -412,7 +427,11 @@ if ($use_db) {
                         "SELECT ?element ?namedAfter
                         WHERE {
                             VALUES ?element { $wikidataCodsToFetch }.
-                            ?element wdt:P138 ?namedAfter.
+                            {
+                                ?element wdt:P138 ?namedAfter.
+                            } UNION {
+                                ?element owl:sameAs/wdt:P138 ?namedAfter.
+                            }
                         }";
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
                     $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
@@ -483,9 +502,12 @@ if ($use_db) {
                     JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
                     WHERE NOT ew.ew_etymology"
                 );
-                $dbh->exec("DROP TABLE oem.element_wikidata_cods");
+                if (!$keep_temp_tables)
+                    $dbh->exec("DROP TABLE oem.element_wikidata_cods");
                 echo "========================= Converted $n_ety etymologies =========================" . PHP_EOL;
             }
+
+            echo 'Conversion complete at ' . date('c') . PHP_EOL;
         }
 
         if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata')")->fetchColumn()) {
@@ -498,7 +520,8 @@ if ($use_db) {
             );
             $n_remaining = $n_tot - $n_cleaned;
             $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
-            $n_remaining = $dbh->exec( // About 90% of elements is deleted, it's faster to copy them; https://stackoverflow.com/a/7088514/2347196
+            // Almost 90% of elements would be deleted, it's faster to copy them in another table; https://stackoverflow.com/a/7088514/2347196
+            $n_remaining = $dbh->exec(
                 "INSERT INTO oem.element (el_id, el_geometry, el_osm_type, el_osm_id, el_name)
                 SELECT osm_id, osm_geometry, osm_osm_type, osm_osm_id, osm_tags->>'name'
                 FROM oem.osmdata
@@ -506,7 +529,8 @@ if ($use_db) {
             );
             $n_cleaned = $n_tot - $n_remaining;
             echo "========================= Cleaned up $n_cleaned elements without etymology ($n_remaining remaining) =========================" . PHP_EOL;
-            $dbh->exec('DROP TABLE oem.osmdata');
+            if (!$keep_temp_tables)
+                $dbh->exec('DROP TABLE oem.osmdata');
         }
 
         echo '========================= Generating global map... =========================' . PHP_EOL;
@@ -534,4 +558,6 @@ if ($use_db) {
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
+
+    echo 'Finished at ' . date('c') . PHP_EOL;
 }
