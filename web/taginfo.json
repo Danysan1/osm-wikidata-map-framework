@@ -3,7 +3,7 @@
     "data_url": "https://etymology.dsantini.it/taginfo.json",
     "project": {
         "name": "Open Etymology Map",
-        "description": "Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.",
+        "description": "Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.",
         "project_url": "https://etymology.dsantini.it/",
         "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/README.md",
         "contact_name": "Daniele Santini",

@@ -81,7 +81,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <script src="./init.php" type="application/javascript"></script>
 
     <title>Open Etymology Map</title>
-    <meta name="description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
+    <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
     <link rel="stylesheet" href="./style.css" type="text/css" />
     <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
@@ -99,7 +99,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta property="og:url" content="https://etymology.dsantini.it/" />
     <meta property="og:title" content="Open Etymology Map" />
     <meta property="og:site_name" content="Open Etymology Map" />
-    <meta property="og:description" content="Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata." />
+    <meta property="og:description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
     <meta property="og:locale" content="<?= $defaultCulture; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
@@ -112,7 +112,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <div id='map'></div>
     <div id="intro">
         <h1>Open Etymology Map</h1>
-        <p>Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.</p>
+        <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>
 
         <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
