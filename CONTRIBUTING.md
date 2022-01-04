@@ -96,22 +96,6 @@ This image can be built with:
 docker build --pull --rm -f "open-etymology-map.Dockerfile" -t "open-etymology-map" --target "prod" .
 ```
 
-#### Database initialization
-
-Open Etymology Map can fetch map data from Overpass or, since v2, from a PostGIS DataBase.
-If you intend to use the DB you will need to initialize it first:
-1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
-   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web`](docker-compose.yml) service
-   - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
-2. initialize `open-etymology-map.ini` as shown [above](#configuration)
-3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data, depending on which area you want to show on the map.
-4. using command line, move to the [web/](web/) folder (`/var/www/html/` if you are attached to the local `docker-compose` development instance) and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
-5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
-
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours; use a local extract in development to use less RAM and time).
-
-Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
-
 ### Structure
 
 #### Front-end
@@ -179,6 +163,21 @@ Once the DB is initialized, this is the data gathering process in [etymologyMap.
 1. [`BBoxTextPostGISQuery::downloadMissingText()`](web/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
     - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](web/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
 2. [`BBoxEtymologyPostGISQuery`](web/app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
+
+##### Database initialization
+
+If you intend to use the DB you will need to initialize it first:
+1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
+   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web`](docker-compose.yml) service
+   - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
+2. initialize `open-etymology-map.ini` as shown [above](#configuration)
+3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data, depending on which area you want to show on the map.
+4. using command line, move to the [web/](web/) folder (`/var/www/html/` if you are attached to the local `docker-compose` development instance) and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
+5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
+
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours; use a local extract in development to use less RAM and time).
+
+Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
 
 #### Old back-end (v1)
 

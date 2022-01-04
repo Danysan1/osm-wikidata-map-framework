@@ -5,6 +5,7 @@ WORKDIR /var/www
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
 COPY ./composer.json /var/www/composer.json
+RUN a2enmod headers
 
 # https://docs.docker.com/develop/develop-images/multistage-build/
 # https://docs.docker.com/engine/reference/commandline/build/
