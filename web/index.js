@@ -160,7 +160,39 @@ function colorSchemeToLegend(colorScheme) {
 
 let map, colorControl;
 
+function openIntroWindow(map, event) {
+    new mapboxgl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            closeOnMove: true,
+        }).setLngLat(map.getBounds().getNorthWest())
+        .setDOMContent(document.getElementById("intro").cloneNode(true))
+        .addTo(map);
+}
+
 document.addEventListener("DOMContentLoaded", initPage);
+
+/**
+ * Let the user re-open the info window.
+ * 
+ * Control implemented as ES6 class
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ */
+class InfoControl {
+    onAdd(map) {
+        const container = document.createElement('div');
+        container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
+
+        const ctrlBtn = document.createElement('button');
+        ctrlBtn.className = 'info-ctrl-button';
+        ctrlBtn.title = 'Info about Open Etymology Map';
+        ctrlBtn.textContent = 'ℹ️';
+        ctrlBtn.onclick = e => openIntroWindow(map, e)
+        container.appendChild(ctrlBtn);
+
+        return container;
+    }
+}
 
 /**
  * Let the user choose the map style.
@@ -949,15 +981,7 @@ function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
     //setCulture();
 
-    new mapboxgl.Popup({
-            closeButton: true,
-            closeOnClick: true,
-            closeOnMove: true,
-        }).setLngLat(map.getBounds().getNorthWest())
-        //.setMaxWidth('95vw')
-        //.setOffset([10, 0])
-        .setDOMContent(document.getElementById("intro"))
-        .addTo(map);
+    openIntroWindow(map, e);
 
     mapMoveEndHandler(e);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
@@ -1003,7 +1027,7 @@ function mapLoadedHandler(e) {
     }), 'bottom-left');
     map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
     map.addControl(new BackgroundStyleControl(), 'top-right');
-    //map.addControl(new EtymologyColorControl(), 'bottom-right');
+    map.addControl(new InfoControl(), 'top-right');
 
     map.on('sourcedata', mapSourceDataHandler);
 
