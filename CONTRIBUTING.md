@@ -25,7 +25,7 @@ If the problem is related to the etymology itself (a wrong etymology is associat
 
 ## How to contribute to the etymology data
 
-Open Etymology Map gets the etymology of elements on the map from OpenStreetMap and information about the etymology subjects from Wikidata.
+Open Etymology Map gets the etymology of elements on the map from [OpenStreetMap](https://www.openstreetmap.org/welcome) and information about the etymology subjects from [Wikidata](https://www.wikidata.org/wiki/Wikidata:Introduction).
 
 If you wish to add or correct the etymology for an element for the map you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
@@ -53,7 +53,7 @@ To add the etymology to an element:
      2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
      3. Add to the OpenStreetMap element the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
 
-## How to contribute to this project
+## How to contribute to Open Etymology Map
 
 Any suggestion to improve this documentation page is really appreciated, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects. You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/dsantini/open-etymology-map/-/issues/new) describing your suggestion.
 
@@ -72,17 +72,6 @@ A template for this config file can be found in [`open-etymology-map.template.in
 
 If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 If you enable Sentry JS on the frontend remember to add `www.google.*` and `inline` in your project's settings `Security Headers` > `CSP Instructions` (`https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`) > `Additional ignored sources` or you will quickly burn through your quota because of irrelevant CSP messages.
-
-#### Database initialization
-
-Open Etymology Map can fetch map data from Overpass o from a PostGIS DataBase.
-If you intend to use the DB you will need to initialize it first:
-1. initialize `open-etymology-map.ini` as shown [above](#configuration)
-2. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data, depending on which area you want to show on the map.
-3. using command line, move to the [web/](web/) folder and run `./db-init.php YOUR_PBF_FILE_NAME.pbf`
-4. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
-
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours).
 
 #### Local development with Docker
 
@@ -103,16 +92,83 @@ This image can be built with:
 docker build --pull --rm -f "open-etymology-map.Dockerfile" -t "open-etymology-map" --target "prod" .
 ```
 
-### Front-end
+#### Database initialization
 
-[index.php](web/index.php) and [index.js](web/index.js) create the map with Mapbox GL JS.
-Etymology data is obtained from the back-end with [elements.php](web/elements.php) (when [`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) and [etymologyMap.php](web/etymologyMap.php) (when zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)).
+Open Etymology Map can fetch map data from Overpass or, since v2, from a PostGIS DataBase.
+If you intend to use the DB you will need to initialize it first:
+1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
+   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web`](docker-compose.yml) service
+   - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
+2. initialize `open-etymology-map.ini` as shown [above](#configuration)
+3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data, depending on which area you want to show on the map.
+4. using command line, move to the [web/](web/) folder (`/var/www/html/` if you are attached to the local `docker-compose` development instance) and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
+5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
 
-### Back-end
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours).
+
+### Structure
+
+#### Front-end
+
+[index.php](web/index.php) and [index.js](web/index.js) create the map using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs).
+
+Since v2, at very low zoom level (zoom < [`min-zoom-level`](open-etymology-map.template.ini)), clustered element count is shown from [`global-map.geojson`](https://etymology.dsantini.it/global-map.geojson) (generated by [db-init.php](web/db-init.php)).
+
+At low zoom level ([`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) clustered count is obtained from the back-end with [elements.php](web/elements.php).
+
+At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
 
 #### New back-end (v2)
 
-Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db-enable = true`:
+```plantuml
+@startuml oem_v2
+actor user as "User"
+file pbf as "OSM pbf planet file"
+frame oem as "Open Etymology Map v2" {
+    database db as "Database"
+    component init as "db-init.php"
+    node "Front-end" {
+        component index as "index.php"
+    }
+    node "Back-end" {
+        component etymologyMap as "etymologyMap.php"
+        package "App\Query\PostGIS" {
+            card BBoxEtymologyPostGISQuery
+            card BBoxGenderStatsPostGISQuery
+            card BBoxTypeStatsPostGISQuery
+            card BBoxTextPostGISQuery
+        }
+        package "App\Query\Wikidata" {
+            card EtymologyIDListJSONWikidataQuery
+        }
+    }
+}
+agent wikidata as "Wikidata SPARQL API"
+
+user --> index
+index -(0- etymologyMap
+etymologyMap --> BBoxEtymologyPostGISQuery
+etymologyMap --> BBoxGenderStatsPostGISQuery
+etymologyMap --> BBoxTypeStatsPostGISQuery
+
+BBoxEtymologyPostGISQuery --^ BBoxTextPostGISQuery
+BBoxGenderStatsPostGISQuery --^ BBoxTextPostGISQuery
+BBoxTypeStatsPostGISQuery --^ BBoxTextPostGISQuery
+
+BBoxTextPostGISQuery -(0- db
+BBoxTextPostGISQuery --> EtymologyIDListJSONWikidataQuery
+
+EtymologyIDListJSONWikidataQuery -(0- wikidata
+
+init -(0- db
+init --> pbf
+@enduml
+```
+
+[db-init.php](web/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+This script starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
+
+Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db-enable = true`:
 
 1. [`BBoxTextPostGISQuery::downloadMissingText()`](web/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
     - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](web/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
@@ -120,11 +176,66 @@ Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2
 
 #### Old back-end (v1)
 
+```plantuml
+@startuml oem_v1
+actor user as "User"
+frame oem as "Open Etymology Map v1" {
+    node "Front-end" {
+        component index as "index.php"
+    }
+    node "Back-end" {
+        component etymologyMap as "etymologyMap.php"
+        package "App\Query\Cache" {
+            card CSVCachedBBoxGeoJSONQuery
+            card CSVCachedBBoxJSONQuery
+        }
+        package "App\Query\Combined" {
+            card BBoxGeoJSONEtymologyQuery
+            card BBoxStatsOverpassWikidataQuery
+            card BBoxJSONOverpassWikidataQuery
+        }
+        package "App\Query\Wikidata" {
+            card EtymologyIDListXMLWikidataQuery
+            card TypeStatsWikidataQuery
+            card GenderStatsWikidataQuery
+        }
+        package "App\Query\Overpass" {
+            card BBoxEtymologyOverpassQuery
+        }
+    }
+}
+agent overpass as "Overpass API"
+agent wikidata as "Wikidata SPARQL API"
+
+user --> index
+index -(0- etymologyMap
+
+etymologyMap --> CSVCachedBBoxGeoJSONQuery
+etymologyMap --> CSVCachedBBoxJSONQuery
+
+CSVCachedBBoxGeoJSONQuery --> BBoxGeoJSONEtymologyQuery
+CSVCachedBBoxJSONQuery --> BBoxStatsOverpassWikidataQuery
+
+BBoxGeoJSONEtymologyQuery --^ BBoxJSONOverpassWikidataQuery
+
+BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
+BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
+BBoxStatsOverpassWikidataQuery --> GenderStatsWikidataQuery
+BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
+
+BBoxEtymologyOverpassQuery -(0- overpass
+EtymologyIDListXMLWikidataQuery -(0- wikidata
+GenderStatsWikidataQuery -(0- wikidata
+TypeStatsWikidataQuery -(0- wikidata
+
+@enduml
+```
+
 Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db-enable = false`):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
    - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
-   - Otherwise it is necessary to fetch the data from OpenStreetMap through Overpass.
+   - Otherwise it is necessary to fetch the data from OpenStreetMap through [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
       1. Query Overpass API in the selected area to get elements with etymology ([BBoxEtymologyOverpassQuery](web/app/query/overpass/BBoxEtymologyOverpassQuery.php)).
       2. Transform the JSON result into GeoJSON ([OverpassEtymologyQueryResult](web/app/result/overpass/OverpassEtymologyQueryResult.php)).
       3. Obtain a set of Wikidata IDs to get information about ([GeoJSON2XMLEtymologyWikidataQuery](web/app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).

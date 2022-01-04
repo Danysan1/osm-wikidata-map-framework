@@ -113,18 +113,11 @@ if (!$conf->has("mapbox-gl-token")) {
     <div id="intro">
         <h1>Open Etymology Map</h1>
         <p>Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata.</p>
-        <p>
-            Used technologies:
-        <ul>
-            <li><a title="OpenStreetMap" href="https://www.openstreetmap.org/about">OpenStreetMap</a> and its tags "<a title="OpenStreetMap name:etymology:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata">name:etymology:wikidata</a>", "<a title="OpenStreetMap subject:wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:subject">subject:wikidata</a>" and "<a title="OpenStreetMap wikidata tag" href="https://wiki.openstreetmap.org/wiki/Key:wikidata">wikidata</a>"</li>
-            <li><a title="Wikidata" href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>, its "<a title="Wikidata 'named after' property" href="https://www.wikidata.org/wiki/Property:P138">named after</a>" property and its <a title="Wikidata SPARQL Query Service" href="https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service">SPARQL Query Service</a></li>
-            <!--<li><a title="Overpass API" href="https://wiki.openstreetmap.org/wiki/Overpass_API">Overpass API</a></li>-->
-            <li><a title="Mapbox GL JS" href="https://www.mapbox.com/mapbox-gljs">Mapbox GL JS</a></li>
-        </ul>
-        </p>
+
+        <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
+
         <p>
             <a title="Open Etymology Map issue tracker" href="https://gitlab.com/dsantini/open-etymology-map/-/issues/new">Report a problem</a> |
-            <a title="Open Etymology Map git repository" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md">Contribute</a> |
             <a title="Daniele Santini personal website" href="https://www.dsantini.it">About me</a>
         </p>
         <h3>Click anywhere on the map to explore.</h3>
