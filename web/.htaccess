@@ -9,9 +9,24 @@
 RedirectMatch 403 ^.*open-etymology-map-cache/.*csv$
 
 AddCharset UTF-8 .json
+AddCharset UTF-8 .geojson
 
-AddType application/json .geojson
+AddType application/geo+json .geojson
 
 <filesMatch ".geojson$">
   Header set Cache-Control "max-age=31536000, public"
 </filesMatch>
+
+<IfModule mod_mime.c>
+	AddType application/x-javascript .js
+	AddType text/css .css
+</IfModule>
+<IfModule mod_deflate.c>
+	AddOutputFilterByType DEFLATE text/css application/x-javascript text/x-component text/html text/plain text/xml application/javascript application/geo+json
+  <IfModule mod_setenvif.c>
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+    BrowserMatch ^Mozilla/4.0[678] no-gzip
+    BrowserMatch bMSIE !no-gzip !gzip-only-text/html
+  </IfModule>
+</IfModule>
+Header append Vary User-Agent env=!dont-vary
