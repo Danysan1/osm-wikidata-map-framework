@@ -75,7 +75,11 @@ If you enable Sentry JS on the frontend remember to add `www.google.*` and `inli
 
 #### Local development with Docker
 
-A local development instance can be started with Docker by running `docker-compose up` in the project root and browsing to http://localhost/ .
+A local development instance can be started with Docker by running `docker-compose up` in the project root. This will start
+- An instance of Open Etymology exposed at http://localhost:80
+- A PostgreSQL+PostGIS DB exposed on localhost:5432
+- A PGAdmin instance exposed at http://localhost:8080
+
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
 #### Production deployment with Docker
@@ -104,7 +108,9 @@ If you intend to use the DB you will need to initialize it first:
 4. using command line, move to the [web/](web/) folder (`/var/www/html/` if you are attached to the local `docker-compose` development instance) and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
 5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
 
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours).
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours; use a local extract in development to use less RAM and time).
+
+Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
 
 ### Structure
 

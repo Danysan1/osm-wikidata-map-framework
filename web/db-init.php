@@ -116,9 +116,6 @@ if (is_file($filteredFile)) {
     execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFile' 'wikidata,subject:wikidata,name:etymology:wikidata'");
     execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFile' '$filteredTmpFile' 'man_made=flagpole'");
     echo '========================= Filtered OSM data =========================' . PHP_EOL;
-    
-    if(is_file("/tmp/osmium.sparse.cache"))
-        unlink("/tmp/osmium.sparse.cache");
 }
 
 
@@ -126,6 +123,8 @@ if (!is_file("osmium.json")) {
     echo "ERROR: missing osmium.json" . PHP_EOL;
     exit(1);
 }
+
+$cacheFile = tempnam(sys_get_temp_dir(), 'osmium');
 
 $txtFile = "$workDir/filtered_$sourceFilename.txt";
 if (is_file($txtFile)) {
@@ -135,7 +134,7 @@ if (is_file($txtFile)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$txtFile' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,/tmp/osmium.sparse.cache '$filteredFile'");
+    execAndCheck("osmium export --verbose --overwrite -o '$txtFile' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFile '$filteredFile'");
     echo '========================= Exported OSM data to text =========================' . PHP_EOL;
 }
 
@@ -147,7 +146,7 @@ if (is_file($geojsonFile)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFile' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,/tmp/osmium.sparse.cache '$filteredFile'");
+    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFile' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFile '$filteredFile'");
     echo '========================= Exported OSM data to geojson =========================' . PHP_EOL;
 }
 
@@ -159,7 +158,7 @@ if (is_file($pgFile)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$pgFile' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,/tmp/osmium.sparse.cache '$filteredFile'");
+    execAndCheck("osmium export --verbose --overwrite -o '$pgFile' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFile '$filteredFile'");
     echo '========================= Exported OSM data to PostGIS tsv =========================' . PHP_EOL;
 }
 
