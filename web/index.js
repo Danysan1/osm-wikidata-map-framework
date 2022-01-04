@@ -1209,7 +1209,7 @@ function featureToElement(feature) {
                 coordsOk = false;
             if (ety.wkt_coords) {
                 coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
-                coordsOk = coords && coords.length > 1;
+                coordsOk = coords && coords.length > 1 && coords.at;
                 if (!coordsOk)
                     console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
             }
