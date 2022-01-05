@@ -104,7 +104,7 @@ function execAndCheck(string $command): array
 
 echo 'Started at ' . date('c') . PHP_EOL;
 
-$filteredTmpFile = "$workDir/filtered_with_flags_$sourceFilename";
+$filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFilename";
 $filteredFile = "$workDir/filtered_$sourceFilename";
 if (is_file($filteredFile)) {
     echo '========================= Data already filtered =========================' . PHP_EOL;
@@ -409,15 +409,15 @@ if ($use_db) {
             } else {
                 $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
 
-                $wikidataNamedAfterRQFile = "$workDir/wikidata_named_after.tmp.rq";
-                $wikidataNamedAfterJSONFile = "$workDir/wikidata_named_after.tmp.json";
+                $wikidataNamedAfterRQFile = sys_get_temp_dir() . "/wikidata_named_after.tmp.rq";
+                $wikidataNamedAfterJSONFile = sys_get_temp_dir() . "/wikidata_named_after.tmp.json";
 
                 $n_todo_named_after = $dbh->query(
                     "SELECT COUNT(DISTINCT ew_wikidata_cod) FROM oem.element_wikidata_cods WHERE NOT ew_etymology"
                 )->fetchColumn();
                 echo "========================= Counted $n_todo_named_after Wikidata codes to check =========================" . PHP_EOL;
 
-                $pageSize = 10000;
+                $pageSize = 15000;
                 for ($offset = 0; $offset < $n_todo_named_after; $offset += $pageSize) {
                     echo "========================= Downloading Wikidata named-after data (starting from $offset)... =========================" . PHP_EOL;
                     $wikidataCodsToFetch = $dbh->query(
@@ -430,9 +430,13 @@ if ($use_db) {
                         WHERE {
                             VALUES ?element { $wikidataCodsToFetch }.
                             {
-                                ?element wdt:P138 ?namedAfter.
+                                ?element wdt:P138 ?namedAfter. # named after - https://www.wikidata.org/wiki/Property:P138
                             } UNION {
                                 ?element owl:sameAs/wdt:P138 ?namedAfter.
+                            } UNION {
+                                ?element wdt:P825 ?namedAfter. # dedicated to - https://www.wikidata.org/wiki/Property:P825
+                            } UNION {
+                                ?element owl:sameAs/wdt:P825 ?namedAfter.
                             }
                         }";
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
