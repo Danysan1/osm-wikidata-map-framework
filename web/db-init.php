@@ -426,7 +426,7 @@ if ($use_db) {
                         ) AS x"
                     )->fetchColumn();
                     $namedAfterQuery =
-                        "SELECT ?element ?namedAfter
+                        "SELECT DISTINCT ?element ?namedAfter
                         WHERE {
                             VALUES ?element { $wikidataCodsToFetch }.
                             {
