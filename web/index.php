@@ -46,15 +46,15 @@ if (!$conf->has("mapbox-gl-token")) {
 ?>
 
 <head>
-    <?php if($useSentry) { ?>
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@sentry/browser/build/bundle.min.js">
+    <?php if ($useSentry) { ?>
+        <link rel="preload" as="script" type="application/javascript" href="./node_modules/@sentry/browser/build/bundle.min.js">
     <?php
-    } 
+    }
 
-    $mapboxGlJS = $conf->has('debug')&&$conf->get('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js';
+    $mapboxGlJS = $conf->has('debug') && $conf->get('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js';
     ?>
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/<?=$mapboxGlJS;?>">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/<?= $mapboxGlJS; ?>">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./index.js">
@@ -88,7 +88,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
-    <script defer src='./node_modules/mapbox-gl/dist/<?=$mapboxGlJS;?>' type="application/javascript"></script>
+    <script defer src='./node_modules/mapbox-gl/dist/<?= $mapboxGlJS; ?>' type="application/javascript"></script>
     <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
     <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
@@ -117,6 +117,7 @@ if (!$conf->has("mapbox-gl-token")) {
         <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
         <p>
+            <?php if (is_file('LAST_UPDATE')) { ?>Last update: <?= htmlspecialchars(file_get_contents('LAST_UPDATE')); ?> |<?php } ?>
             <a title="Open Etymology Map issue tracker" href="https://gitlab.com/dsantini/open-etymology-map/-/issues/new">Report a problem</a> |
             <a title="Daniele Santini personal website" href="https://www.dsantini.it">About me</a>
         </p>

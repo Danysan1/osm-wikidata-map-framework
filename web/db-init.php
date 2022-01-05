@@ -531,6 +531,7 @@ if ($use_db) {
             );
             $n_cleaned = $n_tot - $n_remaining;
             echo "========================= Cleaned up $n_cleaned elements without etymology ($n_remaining remaining) =========================" . PHP_EOL;
+            file_put_contents('LAST_UPDATE', date('Y-m-d'));
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
         }
