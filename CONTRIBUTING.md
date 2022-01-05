@@ -47,11 +47,14 @@ To add the etymology to an element:
      2. On the left choose `P138` ("named after") as property
      3. On the right search the desired etymology to use as the value
 4. If none of these tags is present, ypu can either:
-   - Search the Wikidata object for the element and if it is available add it to the element through the `wikidata` tag (tools like https://osm.wikidata.link/ may help you in this process) and add the "named after" property as shown above
    - Link the Wikidata object for the etymology to the element
      1. Search the etymology on Wikidata
      2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
      3. Add to the OpenStreetMap element the [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) or [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
+   - If it is available link the Wikidata object for the element to the element and to the etymology object
+     1. Search the Wikidata object for the element
+     2. If it is available add it to the element through the `wikidata` tag (tools like https://osm.wikidata.link/ may help you in this process)
+     3. Add the "named after" property to the Wikidata object as shown above
 
 ## How to contribute to Open Etymology Map
 
