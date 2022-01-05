@@ -16,7 +16,7 @@ const backgroundStyles = {
         ["Male", "Male", "#3bb2d0", "http://www.wikidata.org/entity/Q6581097"],
         ["Other", "Other", "#223b53", null],
     ],
-        typeColorMap = [
+    typeColorMap = [
         ["People", "human", "#3bb2d0", "http://www.wikidata.org/entity/Q5"],
         ["People", "human who may be fictional", "#3bb2d0", "http://www.wikidata.org/entity/Q21070568"],
         ["People", "sibling duo", "#3bb2d0", "http://www.wikidata.org/entity/Q14073567"],
