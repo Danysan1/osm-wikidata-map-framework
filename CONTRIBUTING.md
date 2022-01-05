@@ -36,7 +36,6 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 
 ```plantuml
 @startuml
-!theme aws-orange
 map "Wikidata object Q7322" as wikia #457b9d {
 
 }
