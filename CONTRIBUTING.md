@@ -34,6 +34,48 @@ The wikidata ID of an object/person/... can be found by searching its name on [w
 
 Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find it's page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, it's ID is `Q8023`.
 
+```plantuml
+@startuml
+!theme aws-orange
+map "Wikidata object Q7322" as wikia #457b9d {
+
+}
+map "Wikidata object Q1492" as wikib #457b9d {
+
+}
+map "Wikidata object Q2288815" as wikic #457b9d {
+  P138 (named after) => Q7322
+}
+map "Wikidata object Q16567" as wikid #457b9d {
+  P138 (named after) => Q7322
+}
+map "OSM element" as osma #2a9d8f {
+  name:etymology:wikidata => Q7322
+}
+map "OSM element" as osmb #2a9d8f {
+  subject:wikidata => Q7322
+}
+map "OSM element" as osmc #2a9d8f {
+  subject:wikidata => Q7322;Q1492
+}
+map "OSM element" as osmd #2a9d8f {
+  wikidata => Q2288815
+}
+map "OSM element" as osme #2a9d8f {
+  wikidata => Q16567
+}
+
+osma --> wikia
+osmb --> wikia
+osmc --> wikia
+osmc --> wikib
+osmd ..> wikic
+osme ..> wikid
+wikic --> wikia
+wikid --> wikia
+@enduml
+```
+
 To add the etymology to an element:
 
 1. Find the element of interest on OpenStreetMap
