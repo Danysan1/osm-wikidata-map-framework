@@ -107,6 +107,7 @@ const backgroundStyles = {
         ["Nature", "sea", "#348C31", "http://www.wikidata.org/entity/Q165"],
         ["Nature", "strait", "#348C31", "http://www.wikidata.org/entity/Q37901"],
         ["Other", "Other", "#223b53", null],
+    ],
     colorSchemes = {
         blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
         gender: {
