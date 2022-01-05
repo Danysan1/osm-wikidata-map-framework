@@ -36,31 +36,31 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 
 ```plantuml
 @startuml
-map "Wikidata object Q7322" as wikia #457b9d {
+map "Wikidata object Q7322" as wikia #a2d2ff {
 
 }
-map "Wikidata object Q1492" as wikib #457b9d {
+map "Wikidata object Q1492" as wikib #a2d2ff {
 
 }
-map "Wikidata object Q2288815" as wikic #457b9d {
+map "Wikidata object Q2288815" as wikic #a2d2ff {
+  P825 (dedicated to) => Q7322
+}
+map "Wikidata object Q16567" as wikid #a2d2ff {
   P138 (named after) => Q7322
 }
-map "Wikidata object Q16567" as wikid #457b9d {
-  P138 (named after) => Q7322
-}
-map "OSM element" as osma #2a9d8f {
+map "OSM element A" as osma #95d5b2 {
   name:etymology:wikidata => Q7322
 }
-map "OSM element" as osmb #2a9d8f {
+map "OSM element B" as osmb #95d5b2 {
   subject:wikidata => Q7322
 }
-map "OSM element" as osmc #2a9d8f {
+map "OSM element C" as osmc #95d5b2 {
   subject:wikidata => Q7322;Q1492
 }
-map "OSM element" as osmd #2a9d8f {
+map "OSM element D" as osmd #95d5b2 {
   wikidata => Q2288815
 }
-map "OSM element" as osme #2a9d8f {
+map "OSM element E" as osme #95d5b2 {
   wikidata => Q16567
 }
 
@@ -68,10 +68,12 @@ osma --> wikia
 osmb --> wikia
 osmc --> wikia
 osmc --> wikib
-osmd ..> wikic
-osme ..> wikid
+osmd --> wikic
+osme --> wikid
 wikic --> wikia
 wikid --> wikia
+note left of wikia: Etymology for A, B, C, D and E
+note left of wikib: Etymology for C
 @enduml
 ```
 
@@ -83,9 +85,9 @@ To add the etymology to an element:
    - If it is available on OEM but with the wrong etymology, search on Wikidata the ID for the correct etymology and edit the incorrect tag with the new ID.
 3. If the element has a `wikidata` tag check the referenced Wikidata element.
    - If it does not represent the same real world object of the OSM element, search the correct one and change it. 
-   - If it contains a ["named after"](https://www.wikidata.org/wiki/Property:P138) or ["dedicated to"](https://www.wikidata.org/wiki/Property:P825) relation check that it links to the correct etymology. If it is absent, add it:
+   - If it contains a [`P138` ("named after")](https://www.wikidata.org/wiki/Property:P138) or [`P825` ("dedicated to")](https://www.wikidata.org/wiki/Property:P825) relation check that it links to the correct etymology. If it is absent, add it:
      1. Click "+ Add statement"
-     2. On the left choose `P138` ("named after") or `P825` ("dedicated to") (depending on which is more appropriate) as property
+     2. On the left choose `P138` or `P825` (depending on which is more appropriate) as property
      3. On the right search the desired etymology to use as the value
 4. If none of these tags is present, you can either:
    - Link the Wikidata object for the etymology to the element
