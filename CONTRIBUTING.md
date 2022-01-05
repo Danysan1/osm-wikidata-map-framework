@@ -42,11 +42,11 @@ To add the etymology to an element:
    - If it is available on OEM but with the wrong etymology, search on Wikidata the ID for the correct etymology and edit the incorrect tag with the new ID.
 3. If the element has a `wikidata` tag check the referenced Wikidata element.
    - If it does not represent the same real world object of the OSM element, search the correct one and change it. 
-   - If it contains a ["named after"](https://www.wikidata.org/wiki/Property:P138) relation check that it links to the correct etymology. If it is absent, add it:
+   - If it contains a ["named after"](https://www.wikidata.org/wiki/Property:P138) or ["dedicated to"](https://www.wikidata.org/wiki/Property:P825) relation check that it links to the correct etymology. If it is absent, add it:
      1. Click "+ Add statement"
-     2. On the left choose `P138` ("named after") as property
+     2. On the left choose `P138` ("named after") or `P825` ("dedicated to") (depending on which is more appropriate) as property
      3. On the right search the desired etymology to use as the value
-4. If none of these tags is present, ypu can either:
+4. If none of these tags is present, you can either:
    - Link the Wikidata object for the etymology to the element
      1. Search the etymology on Wikidata
      2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
@@ -54,7 +54,7 @@ To add the etymology to an element:
    - If it is available link the Wikidata object for the element to the element and to the etymology object
      1. Search the Wikidata object for the element
      2. If it is available add it to the element through the `wikidata` tag (tools like https://osm.wikidata.link/ may help you in this process)
-     3. Add the "named after" property to the Wikidata object as shown above
+     3. Add the "named after" or "dedicated to" property to the Wikidata object as shown above
 
 ## How to contribute to Open Etymology Map
 
