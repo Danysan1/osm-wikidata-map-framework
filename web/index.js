@@ -140,10 +140,51 @@ const backgroundStyles = {
         red: { text: 'Uniform red', color: '#e55e5e', legend: null },
         orange: { text: 'Uniform orange', color: '#fbb03b', legend: null },
     };
-const urlSearchParams = new URLSearchParams(window.location.search);
-if (urlSearchParams.has("colorScheme")) {
-    const colorScheme = urlSearchParams.get("colorScheme"),
-        validColorSchemes = Object.keys(colorSchemes);
+
+/**
+ * Gets the parameters passed through the fragment
+ * 
+ * @returns {object} Parameters passed through the fragment
+ */
+function getFragmentParams() {
+    const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
+        out = {
+            lon: (hashParams && hashParams[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : undefined,
+            lat: (hashParams && hashParams[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : undefined,
+            zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : undefined,
+            colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : undefined,
+        };
+    console.info("getFragmentParams", hashParams, out);
+    return out;
+}
+
+/**
+ * If a parameter is !== undefined it is updated in the fragment.
+ * If it is === is left untouched
+ * 
+ * @param {number?} lon
+ * @param {number?} lat
+ * @param {number?} zoom
+ * @param {string?} colorScheme
+ * @returns {string} The fragment actually set
+ */
+function setFragmentParams(lon, lat, zoom, colorScheme) {
+    let p = getFragmentParams();
+
+    if (lon !== undefined) p.lon = lon;
+    if (lat !== undefined) p.lat = lat;
+    if (zoom !== undefined) p.zoom = zoom;
+    if (colorScheme !== undefined) p.colorScheme = colorScheme;
+
+    const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
+    window.location.hash = fragment;
+    console.info("setFragmentParams", p, fragment);
+    return fragment;
+}
+
+let colorScheme = getFragmentParams().colorScheme;
+if (colorScheme) {
+    const validColorSchemes = Object.keys(colorSchemes);
     if (validColorSchemes.includes(colorScheme)) {
         defaultColorScheme = colorScheme;
     } else {
@@ -348,6 +389,8 @@ class EtymologyColorControl {
             this._ctrlDropDown.appendChild(option);
         }
 
+        setFragmentParams(undefined, undefined, undefined, defaultColorScheme);
+
         return this._container;
     }
 
@@ -362,18 +405,18 @@ class EtymologyColorControl {
     }
 
     dropDownClickHandler(event) {
-        //const colorScheme = event.target.value;
-        const colorScheme = colorSchemes[event.target.value];
+        const colorScheme = event.target.value,
+            colorSchemeObj = colorSchemes[colorScheme];
         let color;
 
-        if (colorScheme) {
-            color = colorScheme.color;
+        if (colorSchemeObj) {
+            color = colorSchemeObj.color;
         } else {
-            console.error("Invalid selected color scheme", event.target.value);
+            console.error("Invalid selected color scheme", colorScheme);
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");
             color = '#3bb2d0';
         }
-        console.info("EtymologyColorControl dropDown click", { event, colorScheme, color });
+        console.info("EtymologyColorControl dropDown click", { event, colorSchemeObj, color });
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -390,6 +433,7 @@ class EtymologyColorControl {
 
         this.updateChart(event);
 
+        setFragmentParams(undefined, undefined, undefined, colorScheme);
         //updateDataSource(event);
     }
 
@@ -549,23 +593,20 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 }
 
 function getPositionFromHash() {
-    let params = window.location.hash ? window.location.hash.substr(1).split(",") : null,
-        lon = (params && params[0]) ? parseFloat(params[0]) : NaN,
-        lat = (params && params[1]) ? parseFloat(params[1]) : NaN,
-        zoom = (params && params[2]) ? parseFloat(params[2]) : NaN;
-    if (lat < -90 || lat > 90) {
-        console.error("Invalid latitude", lat);
-        lat = NaN;
+    let p = getFragmentParams();
+    if (p.lat < -90 || p.lat > 90) {
+        console.error("Invalid latitude", p.lat);
+        p.lat = undefined;
     }
 
-    if (isNaN(lon) || isNaN(lat) || isNaN(zoom)) {
-        console.info("Using default position", { lon, lat, zoom, default_center_lon, default_center_lat, default_zoom });
-        lon = default_center_lon;
-        lat = default_center_lat;
-        zoom = default_zoom;
+    if (p.lon === undefined || p.lat === undefined || p.zoom === undefined) {
+        console.info("Using default position", { p, default_center_lon, default_center_lat, default_zoom });
+        p.lon = default_center_lon;
+        p.lat = default_center_lat;
+        p.zoom = default_zoom;
     }
 
-    return { lat, lon, zoom };
+    return p;
 }
 
 function initMap() {
@@ -652,14 +693,16 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
         ready = e.isSourceLoaded;
-    console.info('sourcedata event', {
-        type: e.dataType,
-        source: e.sourceId,
-        wikidataSourceEvent,
-        overpassSourceEvent,
-        ready,
-        e
-    });
+    if (wikidataSourceEvent || overpassSourceEvent || ready) {
+        console.info('sourcedata event', {
+            type: e.dataType,
+            source: e.sourceId,
+            wikidataSourceEvent,
+            overpassSourceEvent,
+            ready,
+            e
+        });
+    }
 
     if (ready) {
         if (wikidataSourceEvent || overpassSourceEvent) {
@@ -982,9 +1025,10 @@ function mapMoveEndHandler(e) {
     updateDataSource(e);
     const lat = Math.round(map.getCenter().lat * 10000) / 10000,
         lon = Math.round(map.getCenter().lng * 10000) / 10000,
-        zoom = Math.round(map.getZoom() * 10) / 10,
-        etymologyContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
-    window.location.hash = "#" + lon + "," + lat + "," + zoom;
+        zoom = Math.round(map.getZoom() * 10) / 10;
+    setFragmentParams(lon, lat, zoom, undefined);
+
+    const etymologyContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
     if (etymologyContainer) {
         if (zoom < thresholdZoomLevel)
             etymologyContainer.classList.add("hiddenElement");
