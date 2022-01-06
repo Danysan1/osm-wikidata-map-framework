@@ -19,7 +19,8 @@ $use_osm2pgsql = FALSE;
 $convert_to_geojson = FALSE;
 $convert_to_pg = FALSE;
 $convert_to_txt = FALSE;
-$keep_temp_tables = in_array("--keep-temp-tables", $argv);
+$keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $argv);
+$reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -55,6 +56,9 @@ echo "Working on file $sourceFilename in directory $workDir" . PHP_EOL;
 
 if ($keep_temp_tables)
     echo 'Keeping temporary tables' . PHP_EOL;
+
+if ($reset)
+    echo 'Doing a hard reset of the DB' . PHP_EOL;
 
 if (empty($argv[2]) || $argv[2] == "default") {
     echo 'Using osmium-export to pg (default)' . PHP_EOL;
@@ -199,6 +203,9 @@ if ($use_db) {
             exit(1);
         }
 
+        if($reset)
+            $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
+
         if ($dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='wikidata_text')")->fetchColumn()) {
             echo '========================= DB schema already prepared =========================' . PHP_EOL;
         } else {
@@ -241,7 +248,8 @@ if ($use_db) {
                     el_geometry GEOMETRY NOT NULL,
                     el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
                     el_osm_id BIGINT NOT NULL,
-                    el_name VARCHAR
+                    el_name VARCHAR,
+                    el_wikipedia VARCHAR
                     --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
                 )"
             );
@@ -537,8 +545,20 @@ if ($use_db) {
             $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
             // Almost 90% of elements would be deleted, it's faster to copy them in another table; https://stackoverflow.com/a/7088514/2347196
             $n_remaining = $dbh->exec(
-                "INSERT INTO oem.element (el_id, el_geometry, el_osm_type, el_osm_id, el_name)
-                SELECT osm_id, osm_geometry, osm_osm_type, osm_osm_id, osm_tags->>'name'
+                "INSERT INTO oem.element (
+                    el_id,
+                    el_geometry,
+                    el_osm_type,
+                    el_osm_id,
+                    el_name,
+                    el_wikipedia
+                ) SELECT 
+                    osm_id,
+                    osm_geometry,
+                    osm_osm_type,
+                    osm_osm_id,
+                    osm_tags->>'name',
+                    SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
                 FROM oem.osmdata
                 WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
             );
