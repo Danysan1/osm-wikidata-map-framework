@@ -60,23 +60,19 @@ if ($keep_temp_tables)
 if ($reset)
     echo 'Doing a hard reset of the DB' . PHP_EOL;
 
-if (empty($argv[2]) || $argv[2] == "default") {
-    echo 'Using osmium-export to pg (default)' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
-} elseif ($argv[2] == "txt") {
+if (!empty($argv[2]) && $argv[2] == "txt") {
     echo 'Using osmium-export to txt' . PHP_EOL;
     $use_osmium_export = TRUE;
     $convert_to_txt = TRUE;
-} elseif ($argv[2] == "geojson") {
+} elseif (!empty($argv[2]) && $argv[2] == "geojson") {
     echo 'Using osmium-export to geojson' . PHP_EOL;
     $use_osmium_export = TRUE;
     $convert_to_geojson = TRUE;
-} elseif ($argv[2] == "pg") {
+} elseif (!empty($argv[2]) && $argv[2] == "pg") {
     echo 'Using osmium-export to pg' . PHP_EOL;
     $use_osmium_export = TRUE;
     $convert_to_pg = TRUE;
-} elseif ($argv[2] == "osm2pgsql") {
+} elseif (!empty($argv[2]) && $argv[2] == "osm2pgsql") {
     echo 'Using osm2pgsql' . PHP_EOL;
     exec("which osm2pgsql", $output, $retval);
     if ($retval !== 0) {
@@ -85,8 +81,9 @@ if (empty($argv[2]) || $argv[2] == "default") {
     }
     $use_osm2pgsql = TRUE;
 } else {
-    echo "ERROR: Bad argument" . PHP_EOL;
-    exit(1);
+    echo 'Using osmium-export to pg (default)' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_pg = TRUE;
 }
 $use_db = $use_osm2pgsql || $convert_to_pg;
 
@@ -203,7 +200,7 @@ if ($use_db) {
             exit(1);
         }
 
-        if($reset)
+        if ($reset)
             $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
 
         if ($dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='wikidata_text')")->fetchColumn()) {
@@ -564,7 +561,13 @@ if ($use_db) {
             );
             $n_cleaned = $n_tot - $n_remaining;
             echo "========================= Cleaned up $n_cleaned elements without etymology ($n_remaining remaining) =========================" . PHP_EOL;
-            file_put_contents('LAST_UPDATE', date('Y-m-d'));
+
+            $matches = [];
+            if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFile, $matches) && count($matches) >= 4)
+                $lastUpdate = '20' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
+            else
+                $lastUpdate = date('Y-m-d');
+            file_put_contents('LAST_UPDATE', $lastUpdate);
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
         }
