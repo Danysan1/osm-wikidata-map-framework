@@ -27,13 +27,18 @@ If the problem is related to the etymology itself (a wrong etymology is associat
 
 Open Etymology Map gets the etymology of elements on the map from [OpenStreetMap](https://www.openstreetmap.org/welcome) and information about the etymology subjects from [Wikidata](https://www.wikidata.org/wiki/Wikidata:Introduction).
 
-If you wish to add or correct the etymology for an element for the map you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
+Some tools make it easy to contribute to OpenStreetMap by linking etymology data:
+
+- https://osm.wikidata.link/ helps discovering missing `wikidata` tags and find their possible value
+- https://mapcomplete.osm.be/etymology helps discovering missing `name:etymology:wikidata` tags and find their possible value
+
+If those tools aren't enough and you want to manually add or correct the etymology to an element you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
 The wikidata ID of an object/person/... can be found by searching its name on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
-
 Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find it's page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, it's ID is `Q8023`.
 
+Open Etymology Map obtains the etymology data from multiple tags:
 ```plantuml
 @startuml
 map "Wikidata object Q7322" as wikia #a2d2ff {
@@ -84,13 +89,6 @@ OpenStreetMap|`name:etymology:wikidata`|It contains the ID of the Wikidata item 
 OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
 Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name, or namesake (in at least one language)|[Info](https://www.wikidata.org/wiki/Property:P138)
 Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
-
-Some tools make it easy to contribute to OpenStreetMap by linking etymology data:
-
-- https://osm.wikidata.link/ helps discovering missing `wikidata` tags and find their possible value
-- https://mapcomplete.osm.be/etymology helps discovering missing `name:etymology:wikidata` tags and find their possible value
-
-If those tools aren't enough and you want to manually add the etymology to an element you can:
 
 1. Find the element of interest on OpenStreetMap
 2. If the element has a `name:etymology:wikidata` or `subject:wikidata` tag then the element should already be available on Open Etymology Map.
