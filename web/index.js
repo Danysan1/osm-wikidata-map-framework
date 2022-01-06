@@ -762,7 +762,7 @@ function prepareWikidataLayers(wikidata_url) {
         type: 'geojson',
         buffer: 512,
         data: wikidata_url,
-        attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>',
+        attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
     });
 
     map.addLayer({
@@ -1021,7 +1021,7 @@ function mapLoadedHandler(e) {
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#attributioncontrol
     /*map.addControl(new mapboxgl.AttributionControl({
-        customAttribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction" target="_blank">Wikidata</a>'
+        customAttribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>'
     }), 'bottom-left');*/
 
     // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
@@ -1309,7 +1309,6 @@ function featureToElement(feature) {
                         const link = document.createElement('a'),
                             picture = document.createElement('img');
                         link.href = img;
-                        link.target = '_blank';
                         picture.src = img;
                         picture.alt = "Etymology picture";
                         link.appendChild(picture);
