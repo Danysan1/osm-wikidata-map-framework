@@ -29,10 +29,10 @@ Open Etymology Map gets the etymology of elements on the map from [OpenStreetMap
 
 Some tools make it easy to contribute to OpenStreetMap by linking etymology data:
 
-- https://osm.wikidata.link/ helps discovering missing `wikidata` tags and find their possible value
 - https://mapcomplete.osm.be/etymology helps discovering missing `name:etymology:wikidata` tags and find their possible value
+- https://osm.wikidata.link/ helps discovering missing `wikidata` tags and find their possible value
 
-If those tools aren't enough and you want to manually add or correct the etymology to an element you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
+If those tools aren't enough for your needs and you want to manually add or correct the etymology of an element you can do it on [openstreetmap.org](https://www.openstreetmap.org/).
 You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
 
 The wikidata ID of an object/person/... can be found by searching its name on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
