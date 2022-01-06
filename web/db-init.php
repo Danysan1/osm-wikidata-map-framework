@@ -252,7 +252,9 @@ if ($use_db) {
                     --ew_id BIGSERIAL NOT NULL PRIMARY KEY,
                     ew_el_id BIGINT NOT NULL,
                     ew_wikidata_cod VARCHAR(15) NOT NULL CHECK (ew_wikidata_cod  ~* '^Q\d+$'),
-                    ew_etymology BOOLEAN NOT NULL
+                    ew_from_name_etymology BOOLEAN,
+                    ew_from_subject BOOLEAN,
+                    ew_from_wikidata BOOLEAN
                 )"
             );
             $dbh->exec(
@@ -283,6 +285,9 @@ if ($use_db) {
                     --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
                     et_el_id BIGINT NOT NULL,
                     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+                    et_from_name_etymology BOOLEAN,
+                    et_from_subject BOOLEAN,
+                    et_from_wikidata BOOLEAN,
                     CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
                 )"
             );
@@ -388,16 +393,16 @@ if ($use_db) {
             } else {
                 echo '========================= Converting wikidata codes... =========================' . PHP_EOL;
                 $n_wikidata_cods = $dbh->exec(
-                    "INSERT INTO oem.element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_etymology)
-                    SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE
+                    "INSERT INTO oem.element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_from_name_etymology, ew_from_subject, ew_from_wikidata)
+                    SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE, FALSE, TRUE
                     FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
                     WHERE TRIM(wikidata_cod) ~* '^Q\d+$'
                     UNION
-                    SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), TRUE
+                    SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
                     FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
                     WHERE TRIM(subject_wikidata_cod) ~* '^Q\d+$'
                     UNION
-                    SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE
+                    SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE, FALSE, FALSE
                     FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
                     WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
                 );
@@ -413,7 +418,7 @@ if ($use_db) {
                 $wikidataNamedAfterJSONFile = sys_get_temp_dir() . "/wikidata_named_after.tmp.json";
 
                 $n_todo_named_after = $dbh->query(
-                    "SELECT COUNT(DISTINCT ew_wikidata_cod) FROM oem.element_wikidata_cods WHERE NOT ew_etymology"
+                    "SELECT COUNT(DISTINCT ew_wikidata_cod) FROM oem.element_wikidata_cods WHERE ew_from_wikidata"
                 )->fetchColumn();
                 echo "========================= Counted $n_todo_named_after Wikidata codes to check =========================" . PHP_EOL;
 
@@ -422,7 +427,7 @@ if ($use_db) {
                     echo "========================= Downloading Wikidata named-after data (starting from $offset)... =========================" . PHP_EOL;
                     $wikidataCodsToFetch = $dbh->query(
                         "SELECT STRING_AGG('wd:'||ew_wikidata_cod, ' ') FROM (
-                            SELECT DISTINCT ew_wikidata_cod FROM oem.element_wikidata_cods WHERE NOT ew_etymology ORDER BY ew_wikidata_cod LIMIT $pageSize OFFSET $offset
+                            SELECT DISTINCT ew_wikidata_cod FROM oem.element_wikidata_cods WHERE ew_from_wikidata ORDER BY ew_wikidata_cod LIMIT $pageSize OFFSET $offset
                         ) AS x"
                     )->fetchColumn();
                     $namedAfterQuery =
@@ -482,7 +487,7 @@ if ($use_db) {
                     SELECT DISTINCT ew_wikidata_cod
                     FROM oem.element_wikidata_cods
                     LEFT JOIN oem.wikidata ON wd_wikidata_cod = ew_wikidata_cod
-                    WHERE ew_etymology
+                    WHERE (ew_from_name_etymology OR ew_from_subject)
                     AND wd_id IS NULL"
                 );
                 echo "========================= Loaded $n_wd Wikidata entities =========================" . PHP_EOL;
@@ -495,18 +500,22 @@ if ($use_db) {
             } else {
                 echo '========================= Converting etymologies... =========================' . PHP_EOL;
                 $n_ety = $dbh->exec(
-                    "INSERT INTO oem.etymology (et_el_id, et_wd_id)
-                    SELECT DISTINCT ew_el_id, wd_id
-                    FROM oem.element_wikidata_cods
-                    JOIN oem.wikidata ON ew_wikidata_cod = wd_wikidata_cod
-                    WHERE ew_etymology
-                    UNION
-                    SELECT DISTINCT ew.ew_el_id, nawd.wd_id
-                    FROM oem.element_wikidata_cods AS ew
-                    JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
-                    JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
-                    JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
-                    WHERE NOT ew.ew_etymology"
+                    "INSERT INTO oem.etymology (et_el_id, et_wd_id, et_from_name_etymology, et_from_subject, et_from_wikidata)
+                    SELECT ew_el_id, wd_id, BOOL_OR(ew_from_name_etymology), BOOL_OR(ew_from_subject), BOOL_OR(ew_from_wikidata)
+                    FROM (
+                        SELECT DISTINCT ew_el_id, wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata
+                        FROM oem.element_wikidata_cods
+                        JOIN oem.wikidata ON ew_wikidata_cod = wd_wikidata_cod
+                        WHERE ew_from_name_etymology OR ew_from_subject
+                        UNION
+                        SELECT DISTINCT ew.ew_el_id, nawd.wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata
+                        FROM oem.element_wikidata_cods AS ew
+                        JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
+                        JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
+                        JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
+                        WHERE ew_from_wikidata
+                    ) AS x
+                    GROUP BY ew_el_id, wd_id"
                 );
                 if (!$keep_temp_tables)
                     $dbh->exec("DROP TABLE oem.element_wikidata_cods");
