@@ -176,7 +176,39 @@ function colorSchemeToLegend(colorScheme) {
 
 let map, colorControl;
 
+function openIntroWindow(map, event) {
+    new mapboxgl.Popup({
+            closeButton: true,
+            closeOnClick: true,
+            closeOnMove: true,
+        }).setLngLat(map.getBounds().getNorthWest())
+        .setDOMContent(document.getElementById("intro").cloneNode(true))
+        .addTo(map);
+}
+
 document.addEventListener("DOMContentLoaded", initPage);
+
+/**
+ * Let the user re-open the info window.
+ * 
+ * Control implemented as ES6 class
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ */
+class InfoControl {
+    onAdd(map) {
+        const container = document.createElement('div');
+        container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
+
+        const ctrlBtn = document.createElement('button');
+        ctrlBtn.className = 'info-ctrl-button';
+        ctrlBtn.title = 'Info about Open Etymology Map';
+        ctrlBtn.textContent = 'ℹ️';
+        ctrlBtn.onclick = e => openIntroWindow(map, e)
+        container.appendChild(ctrlBtn);
+
+        return container;
+    }
+}
 
 /**
  * Let the user choose the map style.
@@ -755,8 +787,8 @@ function prepareWikidataLayers(wikidata_url) {
         'paint': {
             'line-color': colorSchemes[defaultColorScheme].color,
             'line-opacity': 0.5,
-            'line-width': 5,
-            'line-offset': -2.4, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+            'line-width': 6,
+            'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
         }
     });
 
@@ -965,15 +997,7 @@ function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
     //setCulture();
 
-    new mapboxgl.Popup({
-            closeButton: true,
-            closeOnClick: true,
-            closeOnMove: true,
-        }).setLngLat(map.getBounds().getNorthWest())
-        //.setMaxWidth('95vw')
-        //.setOffset([10, 0])
-        .setDOMContent(document.getElementById("intro"))
-        .addTo(map);
+    openIntroWindow(map, e);
 
     mapMoveEndHandler(e);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
@@ -1019,7 +1043,7 @@ function mapLoadedHandler(e) {
     }), 'bottom-left');
     map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
     map.addControl(new BackgroundStyleControl(), 'top-right');
-    //map.addControl(new EtymologyColorControl(), 'bottom-right');
+    map.addControl(new InfoControl(), 'top-right');
 
     map.on('sourcedata', mapSourceDataHandler);
 
@@ -1225,7 +1249,7 @@ function featureToElement(feature) {
                 coordsOk = false;
             if (ety.wkt_coords) {
                 coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
-                coordsOk = coords && coords.length > 1;
+                coordsOk = coords && coords.length > 1 && coords.at;
                 if (!coordsOk)
                     console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
             }

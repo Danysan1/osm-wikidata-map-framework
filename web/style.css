@@ -301,7 +301,7 @@ button.mapboxgl-popup-close-button:hover {
     margin: 0;
     min-height: 3rem;
     padding: calc(.75rem - 1px) calc(1.5rem - 1px);
-    position: relative;
+    /*position: relative;*/
     text-decoration: none;
     transition: all 250ms;
     user-select: none;

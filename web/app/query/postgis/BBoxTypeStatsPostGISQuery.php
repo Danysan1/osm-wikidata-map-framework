@@ -59,6 +59,7 @@ class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSON
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 AND instance_text.wdt_name IS NOT NULL
                 GROUP BY instance.wd_id, instance_text.wdt_name
+                ORDER BY count DESC
             ) AS ele";
     }
 }

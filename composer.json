@@ -1,6 +1,6 @@
 {
     "name": "dsantini/open-etymology-map",
-    "description": "Open Etymology Map - Interactive map that shows the etymology of streets and points of interest based on OpenStreetMap and Wikidata",
+    "description": "Open Etymology Map - Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata",
     "type": "project",
     "version": "1",
     "require-dev": {
