@@ -66,20 +66,27 @@ $safeLanguage = $langMatches[1];
 
 if ($from == "bbox") {
     $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
-    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT) - $bboxMargin;
-    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT) - $bboxMargin;
-    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT) + $bboxMargin;
-    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT) + $bboxMargin;
-    $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
-    $bboxArea = $bbox->getArea();
-    //error_log("BBox area: $bboxArea");
-    $maxArea = (float)$conf->get("wikidata-bbox-max-area");
-    if ($bboxArea > $maxArea) {
-        http_response_code(400);
-        die('{"error":"The requested area is too large. Please use a smaller area."};');
-    }
+    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
+    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
+    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
+    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
+
 
     if ($to == "geojson") {
+        $bbox = new BaseBoundingBox(
+            $minLat - $bboxMargin,
+            $minLon - $bboxMargin,
+            $maxLat + $bboxMargin,
+            $maxLon + $bboxMargin
+        );
+        $bboxArea = $bbox->getArea();
+        //error_log("BBox area: $bboxArea");
+        $maxArea = (float)$conf->get("wikidata-bbox-max-area");
+        if ($bboxArea > $maxArea) {
+            http_response_code(400);
+            die('{"error":"The requested area is too large. Please use a smaller area."};');
+        }
+
         if (!empty($db)) {
             $query = new BBoxEtymologyPostGISQuery(
                 $bbox,
@@ -109,6 +116,8 @@ if ($from == "bbox") {
             );
         }
     } elseif ($to == "genderStats" || $to == "typeStats") {
+        $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+
         if (!empty($db)) {
             if ($to == "genderStats") {
                 $query = new BBoxGenderStatsPostGISQuery(

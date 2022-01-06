@@ -455,11 +455,11 @@ class EtymologyColorControl {
                 this._chartXHR.abort();
             const bounds = map.getBounds(),
                 southWest = bounds.getSouthWest(),
-                minLat = Math.round(southWest.lat * 1000) / 1000,
-                minLon = Math.round(southWest.lng * 1000) / 1000,
+                minLat = southWest.lat, // Math.round(southWest.lat * 1000) / 1000,
+                minLon = southWest.lng, // Math.round(southWest.lng * 1000) / 1000,
                 northEast = bounds.getNorthEast(),
-                maxLat = Math.round(northEast.lat * 1000) / 1000,
-                maxLon = Math.round(northEast.lng * 1000) / 1000,
+                maxLat = northEast.lat, // Math.round(northEast.lat * 1000) / 1000,
+                maxLon = northEast.lng, // Math.round(northEast.lng * 1000) / 1000,
                 language = document.documentElement.lang,
                 queryParams = {
                     from: "bbox",
@@ -744,11 +744,11 @@ function updateDataSource(e) {
     // https://leafletjs.com/reference-1.7.1.html#map-getbounds
     const bounds = map.getBounds(),
         southWest = bounds.getSouthWest(),
-        minLat = Math.round(southWest.lat * 1000) / 1000,
-        minLon = Math.round(southWest.lng * 1000) / 1000,
+        minLat = southWest.lat, // Math.round(southWest.lat * 1000) / 1000,
+        minLon = southWest.lng, // Math.round(southWest.lng * 1000) / 1000,
         northEast = bounds.getNorthEast(),
-        maxLat = Math.round(northEast.lat * 1000) / 1000,
-        maxLon = Math.round(northEast.lng * 1000) / 1000,
+        maxLat = northEast.lat, // Math.round(northEast.lat * 1000) / 1000,
+        maxLon = northEast.lng, // Math.round(northEast.lng * 1000) / 1000,
         zoomLevel = map.getZoom(),
         language = document.documentElement.lang,
         queryParams = {
