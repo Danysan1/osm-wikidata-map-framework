@@ -3,7 +3,7 @@
 ## How to contribute to the background map
 
 The background map is provided by Mapbox, which is itself based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
-You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
+You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/). Keep in mind that Mapbox doesn't update the map every month so if you edit something on OpenStreetMap it may take some time to appear in the map. If you need to report a problem directly to Mapbox you can follow the [instructions on their site](https://docs.mapbox.com/help/troubleshooting/reporting-a-problem/).
 
 ## How to report a problem in the etymology of an element
 
