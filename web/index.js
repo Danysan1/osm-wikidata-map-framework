@@ -324,6 +324,7 @@ class BackgroundStyleControl {
             this._map.setStyle(backgroundStyleObj.style);
             this._ctrlDropDown.className = 'hiddenElement';
             setCulture();
+            //updateDataSource(event);
         } else {
             console.error("Invalid selected background style", event.target.value);
             if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected background style");
@@ -769,30 +770,38 @@ function updateDataSource(e) {
 
     //kendo.ui.progress($("#map"), true);
     if (zoomLevel >= thresholdZoomLevel) {
-        const wikidata_source = map.getSource("wikidata_source"),
-            queryString = new URLSearchParams(queryParams).toString(),
+        const queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
+
+        prepareWikidataLayers(wikidata_url);
+        const wikidata_source = map.getSource("wikidata_source");
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
+
         //showSnackbar("Fetching data...", "lightblue");
         if (wikidata_source) {
             wikidata_source.setData(wikidata_url);
         } else {
-            prepareWikidataLayers(wikidata_url);
+            console.error("updateDataSource: missing wikidata_source");
         }
     } else if (zoomLevel < minZoomLevel) {
+        prepareGlobalLayers();
+
         //showSnackbar("Please zoom more to see data", "orange");
     } else {
         //queryParams.onlySkeleton = false;
         queryParams.onlyCenter = true;
-        const elements_source = map.getSource("elements_source"),
-            queryString = new URLSearchParams(queryParams).toString(),
+        const queryString = new URLSearchParams(queryParams).toString(),
             elements_url = './elements.php?' + queryString;
+
+        prepareOverpassLayers(elements_url);
+        const elements_source = map.getSource("elements_source");
         console.info("Overpass dataSource update", { queryParams, elements_url, elements_source });
+
         //showSnackbar("Fetching data...", "lightblue");
         if (elements_source) {
             elements_source.setData(elements_url);
         } else {
-            prepareOverpassLayers(elements_url);
+            console.error("updateDataSource: missing elements_source");
         }
     }
 }
@@ -805,114 +814,127 @@ function updateDataSource(e) {
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
  */
 function prepareWikidataLayers(wikidata_url) {
-    map.addSource('wikidata_source', {
-        type: 'geojson',
-        buffer: 512,
-        data: wikidata_url,
-        attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
-    });
+    if (!map.getSource("wikidata_source")) {
+        map.addSource('wikidata_source', {
+            type: 'geojson',
+            buffer: 512,
+            data: wikidata_url,
+            attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
+        });
+    }
 
-    map.addLayer({
-        'id': 'wikidata_layer_polygon_fill',
-        'source': 'wikidata_source',
-        'type': 'fill',
-        "filter": ["==", ["geometry-type"], "Polygon"],
-        "minzoom": thresholdZoomLevel,
-        'paint': {
-            'fill-color': colorSchemes[defaultColorScheme].color,
-            'fill-opacity': 0.5,
-            'fill-outline-color': "rgba(0, 0, 0, 0)",
-        }
-    });
-
-    map.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
-        'id': 'wikidata_layer_polygon_border',
-        'source': 'wikidata_source',
-        'type': 'line',
-        "filter": ["==", ["geometry-type"], "Polygon"],
-        "minzoom": thresholdZoomLevel,
-        'paint': {
-            'line-color': colorSchemes[defaultColorScheme].color,
-            'line-opacity': 0.5,
-            'line-width': 6,
-            'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
-        }
-    });
-
-    map.addLayer({
-        'id': 'wikidata_layer_lineString',
-        'source': 'wikidata_source',
-        'type': 'line',
-        "filter": ["==", ["geometry-type"], "LineString"],
-        "minzoom": thresholdZoomLevel,
-        'paint': {
-            'line-color': colorSchemes[defaultColorScheme].color,
-            'line-opacity': 0.5,
-            'line-width': 10
-        }
-    });
-
-    map.addLayer({
-        'id': 'wikidata_layer_point',
-        'source': 'wikidata_source',
-        'type': 'circle',
-        "filter": ["==", ["geometry-type"], "Point"],
-        "minzoom": thresholdZoomLevel,
-        'paint': {
-            'circle-radius': 8,
-            'circle-stroke-width': 2,
-            'circle-color': colorSchemes[defaultColorScheme].color,
-            'circle-stroke-color': 'white'
-        }
-    });
-
-    // https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
-    // https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
-    [
-        "wikidata_layer_point",
-        "wikidata_layer_lineString",
-        "wikidata_layer_polygon_fill",
-        "wikidata_layer_polygon_border"
-    ].forEach(function(layerID) {
-        // When a click event occurs on a feature in the states layer,
-        // open a popup at the location of the click, with description
-        // HTML from the click event's properties.
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
-        map.on('click', layerID, function(e) {
-            if (e.popupAlreadyShown) {
-                console.info("showEtymologyPopup: popup already shown", { layerID, e });
-            } else {
-                // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
-                const popup = new mapboxgl.Popup({ maxWidth: "none" })
-                    .setLngLat(map.getBounds().getNorthWest())
-                    //.setMaxWidth('95vw')
-                    //.setOffset([10, 0])
-                    //.setHTML(featureToHTML(e.features[0]));
-                    .setHTML('<div class="detail_wrapper"></div>')
-                    .addTo(map);
-                //console.info(popup, popup.getElement());
-                popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
-                e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
-                console.info("showEtymologyPopup: showing popup", { layerID, e, popup });
+    if (!map.getLayer("wikidata_layer_polygon_fill")) {
+        map.addLayer({
+            'id': 'wikidata_layer_polygon_fill',
+            'source': 'wikidata_source',
+            'type': 'fill',
+            "filter": ["==", ["geometry-type"], "Polygon"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'fill-color': colorSchemes[defaultColorScheme].color,
+                'fill-opacity': 0.5,
+                'fill-outline-color': "rgba(0, 0, 0, 0)",
             }
         });
+        initWikidataLayer("wikidata_layer_polygon_fill");
+    }
 
-        // Change the cursor to a pointer when
-        // the mouse is over the states layer.
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseenter
-        map.on('mouseenter', layerID, () => map.getCanvas().style.cursor = 'pointer');
+    if (!map.getLayer("wikidata_layer_polygon_border")) {
+        map.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
+            'id': 'wikidata_layer_polygon_border',
+            'source': 'wikidata_source',
+            'type': 'line',
+            "filter": ["==", ["geometry-type"], "Polygon"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'line-color': colorSchemes[defaultColorScheme].color,
+                'line-opacity': 0.5,
+                'line-width': 6,
+                'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+            }
+        });
+        initWikidataLayer("wikidata_layer_polygon_border");
+    }
 
-        // Change the cursor back to a pointer
-        // when it leaves the states layer.
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
-        map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
-    });
+    if (!map.getLayer("wikidata_layer_lineString")) {
+        map.addLayer({
+            'id': 'wikidata_layer_lineString',
+            'source': 'wikidata_source',
+            'type': 'line',
+            "filter": ["==", ["geometry-type"], "LineString"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'line-color': colorSchemes[defaultColorScheme].color,
+                'line-opacity': 0.5,
+                'line-width': 10
+            }
+        });
+        initWikidataLayer("wikidata_layer_lineString");
+    }
+
+    if (!map.getLayer("wikidata_layer_point")) {
+        map.addLayer({
+            'id': 'wikidata_layer_point',
+            'source': 'wikidata_source',
+            'type': 'circle',
+            "filter": ["==", ["geometry-type"], "Point"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'circle-radius': 8,
+                'circle-stroke-width': 2,
+                'circle-color': colorSchemes[defaultColorScheme].color,
+                'circle-stroke-color': 'white'
+            }
+        });
+        initWikidataLayer("wikidata_layer_point");
+    }
 
     if (document.getElementsByClassName("etymology-color-ctrl").length == 0) {
         colorControl = new EtymologyColorControl();
         setTimeout(() => map.addControl(colorControl, 'top-left'), 100);
         //map.addControl(colorControl, 'top-left');
     }
+}
+
+/**
+ * @param {string} layerID 
+ * 
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+ */
+function initWikidataLayer(layerID) {
+    // When a click event occurs on a feature in the states layer,
+    // open a popup at the location of the click, with description
+    // HTML from the click event's properties.
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
+    map.on('click', layerID, function(e) {
+        if (e.popupAlreadyShown) {
+            console.info("showEtymologyPopup: popup already shown", { layerID, e });
+        } else {
+            // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
+            const popup = new mapboxgl.Popup({ maxWidth: "none" })
+                .setLngLat(map.getBounds().getNorthWest())
+                //.setMaxWidth('95vw')
+                //.setOffset([10, 0])
+                //.setHTML(featureToHTML(e.features[0]));
+                .setHTML('<div class="detail_wrapper"></div>')
+                .addTo(map);
+            //console.info(popup, popup.getElement());
+            popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
+            e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
+            console.info("showEtymologyPopup: showing popup", { layerID, e, popup });
+        }
+    });
+
+    // Change the cursor to a pointer when
+    // the mouse is over the states layer.
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseenter
+    map.on('mouseenter', layerID, () => map.getCanvas().style.cursor = 'pointer');
+
+    // Change the cursor back to a pointer
+    // when it leaves the states layer.
+    // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
+    map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
 }
 
 /**
@@ -926,104 +948,113 @@ function prepareWikidataLayers(wikidata_url) {
  * //@see https://docs.mapbox.com/mapbox-gl-js/example/heatmap-layer/
  */
 function prepareOverpassLayers(elements_url) {
-    map.addSource('elements_source', {
-        type: 'geojson',
-        //buffer: 512,
-        data: elements_url,
-        cluster: true,
-        //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
-        //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
-        clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
-    });
-
-    map.addLayer({
-        id: 'elements_layer_cluster',
-        source: 'elements_source',
-        type: 'circle',
-        maxzoom: thresholdZoomLevel,
-        minzoom: minZoomLevel,
-        filter: ['has', 'point_count'],
-        paint: {
-            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-            // with three steps to implement three types of circles:
-            // - Blue, 20px circles when point count is less than 100
-            // - Yellow, 30px circles when point count is between 100 and 750
-            // - Pink, 40px circles when point count is greater than or equal to 750
-            'circle-color': [
-                'step', ['get', 'point_count'], '#51bbd6', 30, '#f1f075', 750, '#f28cb1'
-            ],
-            'circle-radius': [
-                'step', ['get', 'point_count'], 20, 30, 30, 750, 40
-            ]
-        }
-    });
-
-    map.addLayer({
-        id: 'elements_layer_count',
-        type: 'symbol',
-        source: 'elements_source',
-        maxzoom: thresholdZoomLevel,
-        minzoom: minZoomLevel,
-        filter: ['has', 'point_count'],
-        layout: {
-            'text-field': '{point_count_abbreviated}',
-            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-            'text-size': 12
-        }
-    });
-
-    map.addLayer({
-        id: 'elements_layer_point',
-        type: 'circle',
-        source: 'elements_source',
-        maxzoom: thresholdZoomLevel,
-        minzoom: minZoomLevel,
-        filter: ['!', ['has', 'point_count']],
-        paint: {
-            'circle-color': '#11b4da',
-            'circle-radius': 10,
-            'circle-stroke-width': 1,
-            'circle-stroke-color': '#fff'
-        }
-    });
-
-    // inspect a cluster on click
-    map.on('click', 'elements_layer_cluster', (e) => {
-        const features = map.queryRenderedFeatures(e.point, {
-                layers: ['elements_layer_cluster']
-            }),
-            clusterId = features[0].properties.cluster_id,
-            center = features[0].geometry.coordinates;
-        console.info('Click elements_layer_cluster', features, clusterId, center);
-        map.getSource('elements_source').getClusterExpansionZoom(
-            clusterId,
-            (err, zoom) => {
-                if (err) return;
-
-                map.easeTo({
-                    center: center,
-                    zoom: zoom
-                });
-            }
-        );
-    });
-
-    map.on('click', 'elements_layer_point', (e) => {
-        const features = map.queryRenderedFeatures(e.point, {
-                layers: ['elements_layer_point']
-            }),
-            center = features[0].geometry.coordinates;
-        console.info('Click elements_layer_point', features, center);
-        map.easeTo({
-            center: center,
-            zoom: thresholdZoomLevel + 0.1
+    if (!map.getSource("elements_source")) {
+        map.addSource('elements_source', {
+            type: 'geojson',
+            //buffer: 512,
+            data: elements_url,
+            cluster: true,
+            //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
+            //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
+            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
         });
-    });
+    }
 
-    map.on('mouseenter', 'elements_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'elements_layer_cluster', () => map.getCanvas().style.cursor = '');
-    map.on('mouseenter', 'elements_layer_point', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'elements_layer_point', () => map.getCanvas().style.cursor = '');
+    if (!map.getLayer("elements_layer_cluster")) {
+        map.addLayer({
+            id: 'elements_layer_cluster',
+            source: 'elements_source',
+            type: 'circle',
+            maxzoom: thresholdZoomLevel,
+            minzoom: minZoomLevel,
+            filter: ['has', 'point_count'],
+            paint: {
+                // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+                // with three steps to implement three types of circles:
+                // - Blue, 20px circles when point count is less than 100
+                // - Yellow, 30px circles when point count is between 100 and 750
+                // - Pink, 40px circles when point count is greater than or equal to 750
+                'circle-color': [
+                    'step', ['get', 'point_count'], '#51bbd6', 30, '#f1f075', 750, '#f28cb1'
+                ],
+                'circle-radius': [
+                    'step', ['get', 'point_count'], 20, 30, 30, 750, 40
+                ]
+            }
+        });
+    }
+
+    if (!map.getLayer("elements_layer_cluster")) {
+        map.addLayer({
+            id: 'elements_layer_count',
+            type: 'symbol',
+            source: 'elements_source',
+            maxzoom: thresholdZoomLevel,
+            minzoom: minZoomLevel,
+            filter: ['has', 'point_count'],
+            layout: {
+                'text-field': '{point_count_abbreviated}',
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 12
+            }
+        });
+
+        // inspect a cluster on click
+        map.on('click', 'elements_layer_cluster', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                    layers: ['elements_layer_cluster']
+                }),
+                clusterId = features[0].properties.cluster_id,
+                center = features[0].geometry.coordinates;
+            console.info('Click elements_layer_cluster', features, clusterId, center);
+            map.getSource('elements_source').getClusterExpansionZoom(
+                clusterId,
+                (err, zoom) => {
+                    if (err) return;
+
+                    map.easeTo({
+                        center: center,
+                        zoom: zoom
+                    });
+                }
+            );
+        });
+
+        map.on('mouseenter', 'elements_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'elements_layer_cluster', () => map.getCanvas().style.cursor = '');
+    }
+
+    if (!map.getLayer("elements_layer_point")) {
+        map.addLayer({
+            id: 'elements_layer_point',
+            type: 'circle',
+            source: 'elements_source',
+            maxzoom: thresholdZoomLevel,
+            minzoom: minZoomLevel,
+            filter: ['!', ['has', 'point_count']],
+            paint: {
+                'circle-color': '#11b4da',
+                'circle-radius': 10,
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#fff'
+            }
+        });
+
+        map.on('click', 'elements_layer_point', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                    layers: ['elements_layer_point']
+                }),
+                center = features[0].geometry.coordinates;
+            console.info('Click elements_layer_point', features, center);
+            map.easeTo({
+                center: center,
+                zoom: thresholdZoomLevel + 0.1
+            });
+        });
+
+        map.on('mouseenter', 'elements_layer_point', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'elements_layer_point', () => map.getCanvas().style.cursor = '');
+    }
 }
 
 /**
@@ -1102,7 +1133,7 @@ function mapLoadedHandler(e) {
 
     map.on('error', mapErrorHandler);
 
-    prepareGlobalLayers();
+    //prepareGlobalLayers();
 }
 
 /**
@@ -1111,88 +1142,94 @@ function mapLoadedHandler(e) {
  * @see prepareOverpassLayers
  */
 function prepareGlobalLayers() {
-    map.addSource('global_source', {
-        type: 'geojson',
-        data: './global-map.geojson',
-        cluster: true,
-        //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
-        clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
-        clusterProperties: { "num": ["+", ["get", "num"]] },
-        clusterMinPoints: 1,
-    });
+    if (!map.getSource("global_source")) {
+        map.addSource('global_source', {
+            type: 'geojson',
+            data: './global-map.geojson',
+            cluster: true,
+            //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
+            clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+            clusterProperties: { "num": ["+", ["get", "num"]] },
+            clusterMinPoints: 1,
+        });
+    }
 
-    map.addLayer({
-        id: 'global_layer_cluster',
-        source: 'global_source',
-        type: 'circle',
-        maxzoom: minZoomLevel,
-        filter: ['has', 'num'],
-        paint: {
-            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-            // with three steps to implement three types of circles:
-            'circle-color': [
-                'step', ['get', 'num'],
-                '#51bbd6', 5000, // count < 5000 => Blue circle
-                '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
-                '#f28cb1' // count > 20000 => Pink circle
-            ],
-            'circle-radius': [
-                'step', ['get', 'num'],
-                20, 5000, // count < 5000 => 15px circle
-                30, 20000, // 5000 <= count < 20000 => 30px circle
-                40 // count > 20000 => 40px circle
-            ]
-        }
-    });
-
-    map.addLayer({
-        id: 'global_layer_count',
-        type: 'symbol',
-        source: 'global_source',
-        maxzoom: minZoomLevel,
-        filter: ['has', 'num'],
-        layout: {
-            'text-field': '{num}',
-            'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-            'text-size': 12
-        }
-    });
-
-    // inspect a cluster on click
-    map.on('click', 'global_layer_cluster', (e) => {
-        const features = map.queryRenderedFeatures(e.point, {
-                layers: ['global_layer_cluster']
-            }),
-            clusterId = features[0].properties.cluster_id,
-            center = features[0].geometry.coordinates;
-        if (clusterId == null) {
-            console.warn("clusterId is null");
-        } else {
-            console.info('Click global_layer_cluster', features, clusterId, center);
-        }
-        map.getSource('global_source').getClusterExpansionZoom(
-            clusterId,
-            (err, zoom) => {
-                if (err) {
-                    console.error("Not easing because of an error: ", err);
-                } else {
-                    if (!zoom) {
-                        zoom = minZoomLevel + 0.1
-                        console.warn("Empty zoom, using default", zoom, center, clusterId);
-                    } else {
-                        console.info("Easing to cluster coordinates", center, zoom, clusterId);
-                    }
-                    map.easeTo({
-                        center: center,
-                        zoom: zoom
-                    });
-                }
+    if (!map.getLayer("global_layer_cluster")) {
+        map.addLayer({
+            id: 'global_layer_cluster',
+            source: 'global_source',
+            type: 'circle',
+            maxzoom: minZoomLevel,
+            filter: ['has', 'num'],
+            paint: {
+                // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+                // with three steps to implement three types of circles:
+                'circle-color': [
+                    'step', ['get', 'num'],
+                    '#51bbd6', 5000, // count < 5000 => Blue circle
+                    '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
+                    '#f28cb1' // count > 20000 => Pink circle
+                ],
+                'circle-radius': [
+                    'step', ['get', 'num'],
+                    20, 5000, // count < 5000 => 15px circle
+                    30, 20000, // 5000 <= count < 20000 => 30px circle
+                    40 // count > 20000 => 40px circle
+                ]
             }
-        );
-    });
+        });
 
-    map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
+        // inspect a cluster on click
+        map.on('click', 'global_layer_cluster', (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                    layers: ['global_layer_cluster']
+                }),
+                clusterId = features[0].properties.cluster_id,
+                center = features[0].geometry.coordinates;
+            if (clusterId == null) {
+                console.warn("clusterId is null");
+            } else {
+                console.info('Click global_layer_cluster', features, clusterId, center);
+            }
+            map.getSource('global_source').getClusterExpansionZoom(
+                clusterId,
+                (err, zoom) => {
+                    if (err) {
+                        console.error("Not easing because of an error: ", err);
+                    } else {
+                        if (!zoom) {
+                            zoom = minZoomLevel + 0.1
+                            console.warn("Empty zoom, using default", zoom, center, clusterId);
+                        } else {
+                            console.info("Easing to cluster coordinates", center, zoom, clusterId);
+                        }
+                        map.easeTo({
+                            center: center,
+                            zoom: zoom
+                        });
+                    }
+                }
+            );
+        });
+
+        map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
+    }
+
+    if (!map.getLayer("global_layer_count")) {
+        map.addLayer({
+            id: 'global_layer_count',
+            type: 'symbol',
+            source: 'global_source',
+            maxzoom: minZoomLevel,
+            filter: ['has', 'num'],
+            layout: {
+                'text-field': '{num}',
+                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
+                'text-size': 12
+            }
+        });
+    }
 }
 
 function setCulture() {
