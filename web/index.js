@@ -695,7 +695,7 @@ function hashChangeHandler(e) {
  */
 function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
-        overpassSourceEvent = e.dataType == "source" && e.sourceId == "overpass_source",
+        overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
         ready = e.isSourceLoaded;
     if (wikidataSourceEvent || overpassSourceEvent || ready) {
         console.info('sourcedata event', {
@@ -728,7 +728,7 @@ function mapSourceDataHandler(e) {
  */
 function mapErrorHandler(err) {
     let errorMessage;
-    if (["overpass_source", "wikidata_source"].includes(err.sourceId) && err.error.status > 200) {
+    if (["elements_source", "wikidata_source"].includes(err.sourceId) && err.error.status > 200) {
         showSnackbar("An error occurred while fetching the data");
         errorMessage = "An error occurred while fetching " + err.sourceId;
     } else {
@@ -784,15 +784,15 @@ function updateDataSource(e) {
     } else {
         //queryParams.onlySkeleton = false;
         queryParams.onlyCenter = true;
-        const overpass_source = map.getSource("overpass_source"),
+        const elements_source = map.getSource("elements_source"),
             queryString = new URLSearchParams(queryParams).toString(),
-            overpass_url = './elements.php?' + queryString;
-        console.info("Overpass dataSource update", { queryParams, overpass_url, overpass_source });
+            elements_url = './elements.php?' + queryString;
+        console.info("Overpass dataSource update", { queryParams, elements_url, elements_source });
         //showSnackbar("Fetching data...", "lightblue");
-        if (overpass_source) {
-            overpass_source.setData(overpass_url);
+        if (elements_source) {
+            elements_source.setData(elements_url);
         } else {
-            prepareOverpassLayers(overpass_url);
+            prepareOverpassLayers(elements_url);
         }
     }
 }
@@ -918,18 +918,18 @@ function prepareWikidataLayers(wikidata_url) {
 /**
  * Initializes the mid-zoom-level clustered layer.
  * 
- * @param {string} overpass_url
+ * @param {string} elements_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
  * Add a new source from our GeoJSON data and set the 'cluster' option to true.
  * GL-JS will add the point_count property to your source data.
  * //@see https://docs.mapbox.com/mapbox-gl-js/example/heatmap-layer/
  */
-function prepareOverpassLayers(overpass_url) {
-    map.addSource('overpass_source', {
+function prepareOverpassLayers(elements_url) {
+    map.addSource('elements_source', {
         type: 'geojson',
         //buffer: 512,
-        data: overpass_url,
+        data: elements_url,
         cluster: true,
         //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
         //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
@@ -937,8 +937,8 @@ function prepareOverpassLayers(overpass_url) {
     });
 
     map.addLayer({
-        id: 'overpass_layer_cluster',
-        source: 'overpass_source',
+        id: 'elements_layer_cluster',
+        source: 'elements_source',
         type: 'circle',
         maxzoom: thresholdZoomLevel,
         minzoom: minZoomLevel,
@@ -959,9 +959,9 @@ function prepareOverpassLayers(overpass_url) {
     });
 
     map.addLayer({
-        id: 'overpass_layer_count',
+        id: 'elements_layer_count',
         type: 'symbol',
-        source: 'overpass_source',
+        source: 'elements_source',
         maxzoom: thresholdZoomLevel,
         minzoom: minZoomLevel,
         filter: ['has', 'point_count'],
@@ -973,9 +973,9 @@ function prepareOverpassLayers(overpass_url) {
     });
 
     map.addLayer({
-        id: 'overpass_layer_point',
+        id: 'elements_layer_point',
         type: 'circle',
-        source: 'overpass_source',
+        source: 'elements_source',
         maxzoom: thresholdZoomLevel,
         minzoom: minZoomLevel,
         filter: ['!', ['has', 'point_count']],
@@ -988,14 +988,14 @@ function prepareOverpassLayers(overpass_url) {
     });
 
     // inspect a cluster on click
-    map.on('click', 'overpass_layer_cluster', (e) => {
+    map.on('click', 'elements_layer_cluster', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-                layers: ['overpass_layer_cluster']
+                layers: ['elements_layer_cluster']
             }),
             clusterId = features[0].properties.cluster_id,
             center = features[0].geometry.coordinates;
-        console.info('Click overpass_layer_cluster', features, clusterId, center);
-        map.getSource('overpass_source').getClusterExpansionZoom(
+        console.info('Click elements_layer_cluster', features, clusterId, center);
+        map.getSource('elements_source').getClusterExpansionZoom(
             clusterId,
             (err, zoom) => {
                 if (err) return;
@@ -1008,22 +1008,22 @@ function prepareOverpassLayers(overpass_url) {
         );
     });
 
-    map.on('click', 'overpass_layer_point', (e) => {
+    map.on('click', 'elements_layer_point', (e) => {
         const features = map.queryRenderedFeatures(e.point, {
-                layers: ['overpass_layer_point']
+                layers: ['elements_layer_point']
             }),
             center = features[0].geometry.coordinates;
-        console.info('Click overpass_layer_point', features, center);
+        console.info('Click elements_layer_point', features, center);
         map.easeTo({
             center: center,
             zoom: thresholdZoomLevel + 0.1
         });
     });
 
-    map.on('mouseenter', 'overpass_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'overpass_layer_cluster', () => map.getCanvas().style.cursor = '');
-    map.on('mouseenter', 'overpass_layer_point', () => map.getCanvas().style.cursor = 'pointer');
-    map.on('mouseleave', 'overpass_layer_point', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'elements_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'elements_layer_cluster', () => map.getCanvas().style.cursor = '');
+    map.on('mouseenter', 'elements_layer_point', () => map.getCanvas().style.cursor = 'pointer');
+    map.on('mouseleave', 'elements_layer_point', () => map.getCanvas().style.cursor = '');
 }
 
 /**
