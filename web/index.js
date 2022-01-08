@@ -794,7 +794,7 @@ function updateDataSource(e) {
         const queryString = new URLSearchParams(queryParams).toString(),
             elements_url = './elements.php?' + queryString;
 
-        prepareOverpassLayers(elements_url);
+        prepareElementsLayers(elements_url);
         const elements_source = map.getSource("elements_source");
         console.info("Overpass dataSource update", { queryParams, elements_url, elements_source });
 
@@ -810,9 +810,15 @@ function updateDataSource(e) {
 /**
  * Initializes the high-zoom-level complete (un-clustered) layer.
  * 
+ * The order of declaration is important:
+ * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
+ * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
+ * 
  * @param {string} wikidata_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
  */
 function prepareWikidataLayers(wikidata_url) {
     if (!map.getSource("wikidata_source")) {
@@ -822,55 +828,6 @@ function prepareWikidataLayers(wikidata_url) {
             data: wikidata_url,
             attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
         });
-    }
-
-    if (!map.getLayer("wikidata_layer_polygon_fill")) {
-        map.addLayer({
-            'id': 'wikidata_layer_polygon_fill',
-            'source': 'wikidata_source',
-            'type': 'fill',
-            "filter": ["==", ["geometry-type"], "Polygon"],
-            "minzoom": thresholdZoomLevel,
-            'paint': {
-                'fill-color': colorSchemes[defaultColorScheme].color,
-                'fill-opacity': 0.5,
-                'fill-outline-color': "rgba(0, 0, 0, 0)",
-            }
-        });
-        initWikidataLayer("wikidata_layer_polygon_fill");
-    }
-
-    if (!map.getLayer("wikidata_layer_polygon_border")) {
-        map.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
-            'id': 'wikidata_layer_polygon_border',
-            'source': 'wikidata_source',
-            'type': 'line',
-            "filter": ["==", ["geometry-type"], "Polygon"],
-            "minzoom": thresholdZoomLevel,
-            'paint': {
-                'line-color': colorSchemes[defaultColorScheme].color,
-                'line-opacity': 0.5,
-                'line-width': 6,
-                'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
-            }
-        });
-        initWikidataLayer("wikidata_layer_polygon_border");
-    }
-
-    if (!map.getLayer("wikidata_layer_lineString")) {
-        map.addLayer({
-            'id': 'wikidata_layer_lineString',
-            'source': 'wikidata_source',
-            'type': 'line',
-            "filter": ["==", ["geometry-type"], "LineString"],
-            "minzoom": thresholdZoomLevel,
-            'paint': {
-                'line-color': colorSchemes[defaultColorScheme].color,
-                'line-opacity': 0.5,
-                'line-width': 10
-            }
-        });
-        initWikidataLayer("wikidata_layer_lineString");
     }
 
     if (!map.getLayer("wikidata_layer_point")) {
@@ -888,6 +845,55 @@ function prepareWikidataLayers(wikidata_url) {
             }
         });
         initWikidataLayer("wikidata_layer_point");
+    }
+
+    if (!map.getLayer("wikidata_layer_lineString")) {
+        map.addLayer({
+            'id': 'wikidata_layer_lineString',
+            'source': 'wikidata_source',
+            'type': 'line',
+            "filter": ["==", ["geometry-type"], "LineString"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'line-color': colorSchemes[defaultColorScheme].color,
+                'line-opacity': 0.5,
+                'line-width': 10
+            }
+        }, "wikidata_layer_point");
+        initWikidataLayer("wikidata_layer_lineString");
+    }
+
+    if (!map.getLayer("wikidata_layer_polygon_border")) {
+        map.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
+            'id': 'wikidata_layer_polygon_border',
+            'source': 'wikidata_source',
+            'type': 'line',
+            "filter": ["==", ["geometry-type"], "Polygon"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'line-color': colorSchemes[defaultColorScheme].color,
+                'line-opacity': 0.5,
+                'line-width': 6,
+                'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+            }
+        }, "wikidata_layer_lineString");
+        initWikidataLayer("wikidata_layer_polygon_border");
+    }
+
+    if (!map.getLayer("wikidata_layer_polygon_fill")) {
+        map.addLayer({
+            'id': 'wikidata_layer_polygon_fill',
+            'source': 'wikidata_source',
+            'type': 'fill',
+            "filter": ["==", ["geometry-type"], "Polygon"],
+            "minzoom": thresholdZoomLevel,
+            'paint': {
+                'fill-color': colorSchemes[defaultColorScheme].color,
+                'fill-opacity': 0.5,
+                'fill-outline-color': "rgba(0, 0, 0, 0)",
+            }
+        }, "wikidata_layer_polygon_border");
+        initWikidataLayer("wikidata_layer_polygon_fill");
     }
 
     if (document.getElementsByClassName("etymology-color-ctrl").length == 0) {
@@ -948,7 +954,7 @@ function initWikidataLayer(layerID) {
  * GL-JS will add the point_count property to your source data.
  * //@see https://docs.mapbox.com/mapbox-gl-js/example/heatmap-layer/
  */
-function prepareOverpassLayers(elements_url) {
+function prepareElementsLayers(elements_url) {
     if (!map.getSource("elements_source")) {
         map.addSource('elements_source', {
             type: 'geojson',
@@ -1141,7 +1147,7 @@ function mapLoadedHandler(e) {
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
- * @see prepareOverpassLayers
+ * @see prepareElementsLayers
  */
 function prepareGlobalLayers() {
     if (!map.getSource("global_source")) {
