@@ -117,9 +117,19 @@ if (!$conf->has("mapbox-gl-token")) {
         <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
         <p>
-            <?php if (is_file('LAST_UPDATE')) { ?>Last update: <?= htmlspecialchars(file_get_contents('LAST_UPDATE')); ?> |<?php } ?>
-            <a title="Open Etymology Map issue tracker" href="https://gitlab.com/dsantini/open-etymology-map/-/issues/new">Report a problem</a> |
-            <a title="Daniele Santini personal website" href="https://www.dsantini.it">About me</a>
+            <?php if (is_file('LAST_UPDATE')) { ?>
+                Last update: <?= htmlspecialchars(file_get_contents('LAST_UPDATE')); ?> |
+            <?php
+            }
+            if ($conf->has("report-problem-url")) {
+            ?>
+                <a title="Report a problem in Open Etymology Map" href="<?= $conf->get("report-problem-url"); ?>">Report a problem</a> |
+            <?php
+            }
+            if ($conf->has("about-me-url")) {
+            ?>
+                <a title="Daniele Santini personal website" href="<?= $conf->get("about-me-url"); ?>">About me</a>
+            <?php } ?>
         </p>
         <h3>Click anywhere on the map to explore.</h3>
     </div>
