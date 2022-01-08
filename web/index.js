@@ -158,7 +158,7 @@ function getFragmentParams() {
             zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : undefined,
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : undefined,
         };
-    console.info("getFragmentParams", hashParams, out);
+    //console.info("getFragmentParams", hashParams, out);
     return out;
 }
 
@@ -182,7 +182,7 @@ function setFragmentParams(lon, lat, zoom, colorScheme) {
 
     const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
     window.location.hash = fragment;
-    console.info("setFragmentParams", p, fragment);
+    //console.info("setFragmentParams", p, fragment);
     return fragment;
 }
 
@@ -394,7 +394,7 @@ class EtymologyColorControl {
             this._ctrlDropDown.appendChild(option);
         }
 
-        setFragmentParams(undefined, undefined, undefined, defaultColorScheme);
+        //setFragmentParams(undefined, undefined, undefined, defaultColorScheme); //! Creates a bug when using geo-localization or location search
 
         return this._container;
     }
@@ -597,7 +597,7 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
     return x;
 }
 
-function getPositionFromHash() {
+function getPositionFromFragment() {
     let p = getFragmentParams();
     if (p.lat < -90 || p.lat > 90) {
         console.error("Invalid latitude", p.lat);
@@ -619,7 +619,7 @@ function initMap() {
         console.info("The map is already initialized");
     } else {
         mapboxgl.accessToken = mapbox_gl_token;
-        const startPosition = getPositionFromHash(),
+        const startPosition = getPositionFromFragment(),
             backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
         console.info("Initializing the map", { startPosition, backgroundStyleObj });
         let backgroundStyle;
@@ -648,6 +648,7 @@ function initMap() {
         map.on('load', mapLoadedHandler);
         map.on('styledata', mapStyleDataHandler);
 
+        setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, defaultColorScheme);
         window.addEventListener('hashchange', hashChangeHandler, false);
 
         map.addControl(new MapboxLanguage({
@@ -670,7 +671,7 @@ function mapStyleDataHandler(e) {
  * @param {HashChangeEvent} e The event to handle 
  */
 function hashChangeHandler(e) {
-    const position = getPositionFromHash(),
+    const position = getPositionFromFragment(),
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
         currZoom = map.getZoom();
@@ -1066,6 +1067,7 @@ function mapMoveEndHandler(e) {
     const lat = Math.round(map.getCenter().lat * 10000) / 10000,
         lon = Math.round(map.getCenter().lng * 10000) / 10000,
         zoom = Math.round(map.getZoom() * 10) / 10;
+    console.info("mapMoveEndHandler", { e, lat, lon, zoom });
     setFragmentParams(lon, lat, zoom, undefined);
 
     const etymologyContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
