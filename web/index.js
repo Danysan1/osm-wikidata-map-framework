@@ -879,17 +879,22 @@ function prepareWikidataLayers(wikidata_url) {
         // HTML from the click event's properties.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
         map.on('click', layerID, function(e) {
-            // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
-            const popup = new mapboxgl.Popup({ maxWidth: "none" })
-                .setLngLat(map.getBounds().getNorthWest())
-                //.setMaxWidth('95vw')
-                //.setOffset([10, 0])
-                //.setHTML(featureToHTML(e.features[0]));
-                .setHTML('<div class="detail_wrapper"></div>')
-                .addTo(map);
-            //console.info(popup, popup.getElement());
-            popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
-            //console.info("showEtymologyPopup", { e, popup });
+            if (e.popupAlreadyShown) {
+                console.info("showEtymologyPopup: popup already shown", { layerID, e });
+            } else {
+                // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
+                const popup = new mapboxgl.Popup({ maxWidth: "none" })
+                    .setLngLat(map.getBounds().getNorthWest())
+                    //.setMaxWidth('95vw')
+                    //.setOffset([10, 0])
+                    //.setHTML(featureToHTML(e.features[0]));
+                    .setHTML('<div class="detail_wrapper"></div>')
+                    .addTo(map);
+                //console.info(popup, popup.getElement());
+                popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
+                e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
+                console.info("showEtymologyPopup: showing popup", { layerID, e, popup });
+            }
         });
 
         // Change the cursor to a pointer when
