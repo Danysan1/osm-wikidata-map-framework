@@ -56,6 +56,7 @@ const backgroundStyles = {
         ["Historic events", "terrorist attack", "#e55e5e", "http://www.wikidata.org/entity/Q2223653"],
         ["Historic events", "Demonstration", "#e55e5e", "http://www.wikidata.org/entity/Q175331"],
         ["Historic events", "calendar day of a given year", "#e55e5e", "http://www.wikidata.org/entity/Q47150325"],
+        ["Historic events", "student protest", "#e55e5e", "http://www.wikidata.org/entity/Q1679887"],
         ["Human settlements", "city", "#fed976", "http://www.wikidata.org/entity/Q515"],
         ["Human settlements", "big city", "#fed976", "http://www.wikidata.org/entity/Q1549591"],
         ["Human settlements", "global city", "#fed976", "http://www.wikidata.org/entity/Q208511"],
@@ -95,6 +96,7 @@ const backgroundStyles = {
         ["Locations", "principal meridian", "#51318C", "http://www.wikidata.org/entity/Q7245083"],
         ["Locations", "meridian", "#51318C", "http://www.wikidata.org/entity/Q32099"],
         ["Locations", "circle of latitude", "#51318C", "http://www.wikidata.org/entity/Q146591"],
+        ["Locations", "geographic region", "#51318C", "http://www.wikidata.org/entity/Q82794"],
         ["Nature", "mountain", "#348C31", "http://www.wikidata.org/entity/Q8502"],
         ["Nature", "mountain range", "#348C31", "http://www.wikidata.org/entity/Q46831"],
         ["Nature", "alpine group", "#348C31", "http://www.wikidata.org/entity/Q3777462"],
@@ -221,7 +223,7 @@ function colorSchemeToLegend(colorScheme) {
 
 let map, colorControl;
 
-function openIntroWindow(map, event) {
+function openIntroWindow() {
     new mapboxgl.Popup({
             closeButton: true,
             closeOnClick: true,
@@ -248,7 +250,7 @@ class InfoControl {
         ctrlBtn.className = 'info-ctrl-button';
         ctrlBtn.title = 'Info about Open Etymology Map';
         ctrlBtn.textContent = 'ℹ️';
-        ctrlBtn.onclick = e => openIntroWindow(map, e)
+        ctrlBtn.onclick = openIntroWindow;
         container.appendChild(ctrlBtn);
 
         return container;
@@ -644,6 +646,7 @@ function initMap() {
             center: [startPosition.lon, startPosition.lat], // starting position [lon, lat]
             zoom: startPosition.zoom, // starting zoom
         });
+        openIntroWindow();
 
         map.on('load', mapLoadedHandler);
         map.on('styledata', mapStyleDataHandler);
@@ -1088,8 +1091,7 @@ function mapMoveEndHandler(e) {
 function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
     //setCulture();
-
-    openIntroWindow(map, e);
+    //openIntroWindow();
 
     mapMoveEndHandler(e);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
