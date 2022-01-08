@@ -114,7 +114,7 @@ if (!$conf->has("mapbox-gl-token")) {
         <h1>Open Etymology Map</h1>
         <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>
 
-        <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
+        <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
         <p>
             <?php if (is_file('LAST_UPDATE')) { ?>Last update: <?= htmlspecialchars(file_get_contents('LAST_UPDATE')); ?> |<?php } ?>
@@ -132,13 +132,13 @@ if (!$conf->has("mapbox-gl-token")) {
     <template id="detail_template">
         <div class="detail_container">
             <h3 class="element_name"></h3>
-            <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">Wikipedia</a>
-            <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button" target="_blank"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
+            <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">Wikipedia</a>
+            <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
             <a title="Element location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_location_button" target="_self"><span class="button_img">📍</span> Location</a>
             <div class="etymologies_container grid grid-auto">
 
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" target="_blank" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element"><span class="button_img">⚠️</span> Report a problem in this element</a>
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element"><span class="button_img">⚠️</span> Report a problem in this element</a>
         </div>
     </template>
 
@@ -150,10 +150,10 @@ if (!$conf->has("mapbox-gl-token")) {
                     <h3 class="etymology_description"></h3>
                 </div>
                 <div class="info column">
-                    <a title="Subject on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" style="display:none" target="_blank"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
-                    <a title="Subject on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" style="display:none" target="_blank"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
+                    <a title="Subject on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" style="display:none"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
+                    <a title="Subject on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" style="display:none"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
                     <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self"><span class="button_img">📍</span> Location</a>
-                    <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button" target="_blank"><img class="button_img" src="img/wikidata.svg" alt="Wikidata logo"> Wikidata</a>
+                    <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button"><img class="button_img" src="img/wikidata.svg" alt="Wikidata logo"> Wikidata</a>
 
                     <p class="start_end_date"></p>
                     <p class="event_place"></p>
