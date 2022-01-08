@@ -402,14 +402,17 @@ if ($use_db) {
                     SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE, FALSE, TRUE
                     FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
                     WHERE TRIM(wikidata_cod) ~* '^Q\d+$'
+                    AND ST_Area(osm_geometry) < 0.01
                     UNION
                     SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
                     FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
                     WHERE TRIM(subject_wikidata_cod) ~* '^Q\d+$'
+                    AND ST_Area(osm_geometry) < 0.01
                     UNION
                     SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE, FALSE, FALSE
                     FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
-                    WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
+                    WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'
+                    AND ST_Area(osm_geometry) < 0.01"
                 );
                 echo "========================= Converted $n_wikidata_cods wikidata codes =========================" . PHP_EOL;
             }
@@ -584,7 +587,6 @@ if ($use_db) {
                     COUNT(DISTINCT et_el_id) AS num
                 FROM oem.etymology
                 JOIN oem.element ON et_el_id = el_id
-                WHERE ST_Area(el_geometry) < 0.01
                 GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)
             ) AS point"
         );
