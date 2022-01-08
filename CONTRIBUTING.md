@@ -233,7 +233,7 @@ If you intend to use the DB you will need to initialize it first:
 4. using command line, move to the [web/](web/) folder (`/var/www/html/` if you are attached to the local `docker-compose` development instance) and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
 5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
 
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 16GB RAM (and a lot of patience, DB initialization may require some hours; use a local extract in development to use less RAM and time).
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/dsantini/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/dsantini/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
 
