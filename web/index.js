@@ -1171,7 +1171,12 @@ function prepareGlobalLayers() {
             cluster: true,
             //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
             clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
-            clusterProperties: { "el_num": ["+", ["get", "el_num"]] },
+            clusterProperties: {
+                "el_num": ["+", [
+                    "coalesce", ["get", "el_num"],
+                    ["get", "num"]
+                ]]
+            },
             clusterMinPoints: 1,
         });
     }
