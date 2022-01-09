@@ -16,8 +16,14 @@ For example https://etymology.dsantini.it/?lang=es-ES#11.7135,44.3414,15.1 passe
 For more details see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Screenshots
+Detail view:
+[![Detail view](screenshots/blue.jpeg)](https://etymology.dsantini.it/#11.71,44.3415,15,blu)
 
-[![Detail view](screenshots/blue.jpeg)](https://etymology.dsantini.it/#11.71,44.3415,15)
-[![Color grouping by gender](screenshots/by_gender.jpeg)](https://etymology.dsantini.it/?colorScheme=gender#11.7088,44.3538,15)
-[![Color grouping by type](screenshots/by_type.jpeg)](https://etymology.dsantini.it/?colorScheme=type#-121.904,37.3287,15.1)
-[![Cluster view](screenshots/clusters.jpeg)](https://etymology.dsantini.it/#-122.0721,37.5315,9)
+Color grouping by gender:
+[![Color grouping by gender](screenshots/by_gender.jpeg)](https://etymology.dsantini.it/?colorScheme=gender#11.7088,44.3538,15,gender)
+
+Color grouping by type:
+[![Color grouping by type](screenshots/by_type.jpeg)](https://etymology.dsantini.it/?colorScheme=type#-121.904,37.3287,15.1,type)
+
+Cluster view:
+[![Cluster view](screenshots/clusters.jpeg)](https://etymology.dsantini.it/#-122.0721,37.5315,9,blue)
