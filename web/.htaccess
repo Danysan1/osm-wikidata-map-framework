@@ -14,7 +14,8 @@ AddCharset UTF-8 .geojson
 AddType application/geo+json .geojson
 
 <filesMatch ".geojson$">
-  Header set Cache-Control "max-age=31536000, public"
+  # cache image files for 1 month = 2629744 seconds
+  Header set Cache-Control "max-age=2629744, public"
 </filesMatch>
 
 <IfModule mod_mime.c>
