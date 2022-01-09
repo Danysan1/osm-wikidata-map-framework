@@ -54,10 +54,11 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::JSON), '[]'::JSON)
             )
         FROM (
-            SELECT ST_Centroid(el_geometry) AS geom
+            SELECT ST_Centroid(ST_Collect(el_geometry)) AS geom
             FROM oem.element
             WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
             AND el_id IN (SELECT et_el_id FROM oem.etymology)
+            GROUP BY el_name
         ) as ele";
     }
 }

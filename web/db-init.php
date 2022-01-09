@@ -582,7 +582,7 @@ if ($use_db) {
             FROM (
                 SELECT
                     ST_SetSRID( ST_Point( ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)), 4326) AS geom,
-                    COUNT(DISTINCT et_el_id) AS num
+                    COUNT(DISTINCT el_name) AS num
                 FROM oem.etymology
                 JOIN oem.element ON et_el_id = el_id
                 GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)

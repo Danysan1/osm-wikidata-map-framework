@@ -994,7 +994,7 @@ function prepareElementsLayers(elements_url) {
         });
     }
 
-    if (!map.getLayer("elements_layer_cluster")) {
+    if (!map.getLayer("elements_layer_count")) {
         map.addLayer({
             id: 'elements_layer_count',
             type: 'symbol',
