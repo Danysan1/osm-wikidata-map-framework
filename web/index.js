@@ -948,6 +948,30 @@ function initWikidataLayer(layerID) {
 }
 
 /**
+ * 
+ * @param {string} field 
+ * @returns {object} 
+ */
+function clusterPaintFromField(field) {
+    return {
+        // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+        // with three steps to implement three types of circles:
+        'circle-color': [
+            'step', ['get', field],
+            '#51bbd6', 5000, // count < 5000 => Blue circle
+            '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
+            '#f28cb1' // count > 20000 => Pink circle
+        ],
+        'circle-radius': [
+            'step', ['get', field],
+            20, 5000, // count < 5000 => 15px circle
+            30, 20000, // 5000 <= count < 20000 => 30px circle
+            40 // count > 20000 => 40px circle
+        ]
+    };
+}
+
+/**
  * Initializes the mid-zoom-level clustered layer.
  * 
  * @param {string} elements_url
@@ -966,7 +990,7 @@ function prepareElementsLayers(elements_url) {
             cluster: true,
             //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
             //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
-            clusterRadius: 50 // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
         });
     }
 
@@ -978,19 +1002,7 @@ function prepareElementsLayers(elements_url) {
             maxzoom: thresholdZoomLevel,
             minzoom: minZoomLevel,
             filter: ['has', 'point_count'],
-            paint: {
-                // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-                // with three steps to implement three types of circles:
-                // - Blue, 20px circles when point count is less than 100
-                // - Yellow, 30px circles when point count is between 100 and 750
-                // - Pink, 40px circles when point count is greater than or equal to 750
-                'circle-color': [
-                    'step', ['get', 'point_count'], '#51bbd6', 30, '#f1f075', 750, '#f28cb1'
-                ],
-                'circle-radius': [
-                    'step', ['get', 'point_count'], 20, 30, 30, 750, 40
-                ]
-            }
+            paint: clusterPaintFromField('point_count'),
         });
     }
 
@@ -1159,7 +1171,7 @@ function prepareGlobalLayers() {
             cluster: true,
             //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
             clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
-            clusterProperties: { "num": ["+", ["get", "num"]] },
+            clusterProperties: { "el_num": ["+", ["get", "el_num"]] },
             clusterMinPoints: 1,
         });
     }
@@ -1170,23 +1182,8 @@ function prepareGlobalLayers() {
             source: 'global_source',
             type: 'circle',
             maxzoom: minZoomLevel,
-            filter: ['has', 'num'],
-            paint: {
-                // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-                // with three steps to implement three types of circles:
-                'circle-color': [
-                    'step', ['get', 'num'],
-                    '#51bbd6', 5000, // count < 5000 => Blue circle
-                    '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
-                    '#f28cb1' // count > 20000 => Pink circle
-                ],
-                'circle-radius': [
-                    'step', ['get', 'num'],
-                    20, 5000, // count < 5000 => 15px circle
-                    30, 20000, // 5000 <= count < 20000 => 30px circle
-                    40 // count > 20000 => 40px circle
-                ]
-            }
+            filter: ['has', "el_num"],
+            paint: clusterPaintFromField("el_num"),
         });
 
         // inspect a cluster on click
@@ -1232,9 +1229,9 @@ function prepareGlobalLayers() {
             type: 'symbol',
             source: 'global_source',
             maxzoom: minZoomLevel,
-            filter: ['has', 'num'],
+            filter: ['has', "el_num"],
             layout: {
-                'text-field': '{num}',
+                'text-field': '{el_num}',
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12
             }
