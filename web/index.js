@@ -958,15 +958,15 @@ function clusterPaintFromField(field) {
         // with three steps to implement three types of circles:
         'circle-color': [
             'step', ['get', field],
-            '#51bbd6', 5000, // count < 5000 => Blue circle
-            '#f1f075', 20000, // 5000 <= count < 20000 => Yellow circle
-            '#f28cb1' // count > 20000 => Pink circle
+            '#51bbd6', 3000, // count < 3000 => Blue circle
+            '#f1f075', 15000, // 3000 <= count < 15000 => Yellow circle
+            '#f28cb1' // count > 15000 => Pink circle
         ],
         'circle-radius': [
             'step', ['get', field],
-            20, 5000, // count < 5000 => 15px circle
-            30, 20000, // 5000 <= count < 20000 => 30px circle
-            40 // count > 20000 => 40px circle
+            20, 3000, // count < 3000 => 15px circle
+            30, 15000, // 3000 <= count < 15000 => 30px circle
+            40 // count > 15000 => 40px circle
         ]
     };
 }
