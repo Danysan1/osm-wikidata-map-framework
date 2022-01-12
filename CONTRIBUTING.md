@@ -109,6 +109,8 @@ OpenStreetMap|`wikidata`|The ID of the Wikidata item about the feature (for exam
 OpenStreetMap|`name:etymology:wikidata`|It contains the ID of the Wikidata item for the feature's namesake.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
 OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
 Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name, or namesake (in at least one language)|[Info](https://www.wikidata.org/wiki/Property:P138)
+Wikidata|`P180` ("depicts")|Depicted entity|[Info](https://www.wikidata.org/wiki/Property:P180)
+Wikidata|`P547` ("commemorates")|What the place, monument, memorial, or holiday, commemorates|[Info](https://www.wikidata.org/wiki/Property:P547)
 Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
 
 1. Find the element of interest on OpenStreetMap
@@ -201,14 +203,18 @@ frame oem as "Open Etymology Map v2" {
     }
     node "Back-end" {
         component etymologyMap as "etymologyMap.php"
+        component elements as "elements.php"
         package "App\Query\PostGIS" {
             card BBoxEtymologyPostGISQuery
             card BBoxGenderStatsPostGISQuery
             card BBoxTypeStatsPostGISQuery
-            card BBoxTextPostGISQuery
+            card BBoxEtymologyCenterPostGISQuery
+            card BBoxPostGISQuery
         }
         package "App\Query\Wikidata" {
             card EtymologyIDListJSONWikidataQuery
+            card JSONWikidataQuery
+            card WikidataQuery
         }
     }
 }
@@ -216,21 +222,29 @@ agent wikidata as "Wikidata SPARQL API"
 
 user --> index
 index -(0- etymologyMap
+index -(0- elements
+
 etymologyMap --> BBoxEtymologyPostGISQuery
 etymologyMap --> BBoxGenderStatsPostGISQuery
 etymologyMap --> BBoxTypeStatsPostGISQuery
+elements --> BBoxEtymologyCenterPostGISQuery
 
-BBoxEtymologyPostGISQuery --^ BBoxTextPostGISQuery
-BBoxGenderStatsPostGISQuery --^ BBoxTextPostGISQuery
-BBoxTypeStatsPostGISQuery --^ BBoxTextPostGISQuery
+BBoxEtymologyPostGISQuery --^ BBoxPostGISQuery
+BBoxGenderStatsPostGISQuery --^ BBoxPostGISQuery
+BBoxTypeStatsPostGISQuery --^ BBoxPostGISQuery
+BBoxEtymologyCenterPostGISQuery --^ BBoxPostGISQuery
 
-BBoxTextPostGISQuery -(0- db
-BBoxTextPostGISQuery --> EtymologyIDListJSONWikidataQuery
+EtymologyIDListJSONWikidataQuery --^ JSONWikidataQuery
+JSONWikidataQuery --^ WikidataQuery
 
-EtymologyIDListJSONWikidataQuery -(0- wikidata
+BBoxPostGISQuery -(0- db
+BBoxPostGISQuery --> EtymologyIDListJSONWikidataQuery
+
+WikidataQuery -(0- wikidata
 
 init -(0- db
 init --> pbf
+init --> JSONWikidataQuery
 @enduml
 ```
 
@@ -269,6 +283,7 @@ frame oem as "Open Etymology Map v1" {
     }
     node "Back-end" {
         component etymologyMap as "etymologyMap.php"
+        component elements as "elements.php"
         package "App\Query\Cache" {
             card CSVCachedBBoxGeoJSONQuery
             card CSVCachedBBoxJSONQuery
@@ -279,12 +294,15 @@ frame oem as "Open Etymology Map v1" {
             card BBoxJSONOverpassWikidataQuery
         }
         package "App\Query\Wikidata" {
+            card WikidataQuery
             card EtymologyIDListXMLWikidataQuery
             card TypeStatsWikidataQuery
             card GenderStatsWikidataQuery
         }
         package "App\Query\Overpass" {
+            card OverpassQuery
             card BBoxEtymologyOverpassQuery
+            card BBoxEtymologyCenterOverpassQuery
         }
     }
 }
@@ -293,24 +311,32 @@ agent wikidata as "Wikidata SPARQL API"
 
 user --> index
 index -(0- etymologyMap
+index -(0- elements
 
 etymologyMap --> CSVCachedBBoxGeoJSONQuery
 etymologyMap --> CSVCachedBBoxJSONQuery
+elements --> BBoxEtymologyCenterOverpassQuery
 
 CSVCachedBBoxGeoJSONQuery --> BBoxGeoJSONEtymologyQuery
 CSVCachedBBoxJSONQuery --> BBoxStatsOverpassWikidataQuery
 
 BBoxGeoJSONEtymologyQuery --^ BBoxJSONOverpassWikidataQuery
+BBoxStatsOverpassWikidataQuery --^ BBoxJSONOverpassWikidataQuery
+
+BBoxEtymologyOverpassQuery --^ OverpassQuery
+BBoxEtymologyCenterOverpassQuery --^ OverpassQuery
+
+EtymologyIDListXMLWikidataQuery --^ WikidataQuery
+TypeStatsWikidataQuery --^ WikidataQuery
+GenderStatsWikidataQuery --^ WikidataQuery
 
 BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
 BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
 BBoxStatsOverpassWikidataQuery --> GenderStatsWikidataQuery
 BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
 
-BBoxEtymologyOverpassQuery -(0- overpass
-EtymologyIDListXMLWikidataQuery -(0- wikidata
-GenderStatsWikidataQuery -(0- wikidata
-TypeStatsWikidataQuery -(0- wikidata
+OverpassQuery --(0- overpass
+WikidataQuery --(0- wikidata
 
 @enduml
 ```
