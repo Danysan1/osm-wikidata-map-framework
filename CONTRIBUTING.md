@@ -71,16 +71,16 @@ map "OSM element C" as osmc #95d5b2 {
   subject:wikidata => Q7322;Q1492
 }
 map "OSM element D" as osmd #95d5b2 {
-  wikidata => Q2288815
+  wikidata => Q16567
 }
 map "OSM element E" as osme #95d5b2 {
-  wikidata => Q16567
+  wikidata => Q5112138
 }
 map "OSM element F" as osmf #95d5b2 {
-  wikidata => Q2288815
+  wikidata => Q86518088
 }
 map "OSM element G" as osmg #95d5b2 {
-  wikidata => Q16567
+  wikidata => Q2288815
 }
 
 osma --> wikia
@@ -195,8 +195,9 @@ At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.te
 @startuml oem_v2
 actor user as "User"
 file pbf as "OSM pbf planet file"
+component osmium
 frame oem as "Open Etymology Map v2" {
-    database db as "Database"
+    database db as "PostgreSQL DB"
     component init as "db-init.php"
     node "Front-end" {
         component index as "index.php"
@@ -243,6 +244,7 @@ BBoxPostGISQuery --> EtymologyIDListJSONWikidataQuery
 WikidataQuery -(0- wikidata
 
 init -(0- db
+init ..> osmium
 init --> pbf
 init --> JSONWikidataQuery
 @enduml
