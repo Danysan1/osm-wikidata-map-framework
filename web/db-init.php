@@ -447,6 +447,14 @@ if ($use_db) {
                                 ?element wdt:P825 ?namedAfter. # dedicated to - https://www.wikidata.org/wiki/Property:P825
                             } UNION {
                                 ?element owl:sameAs/wdt:P825 ?namedAfter.
+                            } UNION {
+                                ?element wdt:P547 ?namedAfter. # commemorates - https://www.wikidata.org/wiki/Property:P547
+                            } UNION {
+                                ?element owl:sameAs/wdt:P547 ?namedAfter.
+                            } UNION {
+                                ?element wdt:P180 ?namedAfter. # depicts - https://www.wikidata.org/wiki/Property:P180
+                            } UNION {
+                                ?element owl:sameAs/wdt:P180 ?namedAfter.
                             }
                         }";
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
