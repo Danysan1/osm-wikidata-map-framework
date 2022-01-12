@@ -282,6 +282,7 @@ frame oem as "Open Etymology Map v1" {
         component index as "index.php"
     }
     node "Back-end" {
+        file cache as "Cache"
         component etymologyMap as "etymologyMap.php"
         component elements as "elements.php"
         package "App\Query\Cache" {
@@ -313,22 +314,26 @@ user --> index
 index -(0- etymologyMap
 index -(0- elements
 
-etymologyMap --> CSVCachedBBoxGeoJSONQuery
-etymologyMap --> CSVCachedBBoxJSONQuery
+etymologyMap  .> CSVCachedBBoxJSONQuery
+etymologyMap  .> CSVCachedBBoxGeoJSONQuery
+elements .> CSVCachedBBoxGeoJSONQuery
+CSVCachedBBoxGeoJSONQuery --|> CSVCachedBBoxJSONQuery
+CSVCachedBBoxJSONQuery --> cache
+
 elements --> BBoxEtymologyCenterOverpassQuery
 
-CSVCachedBBoxGeoJSONQuery --> BBoxGeoJSONEtymologyQuery
-CSVCachedBBoxJSONQuery --> BBoxStatsOverpassWikidataQuery
+etymologyMap --> BBoxGeoJSONEtymologyQuery
+etymologyMap --> BBoxStatsOverpassWikidataQuery
 
-BBoxGeoJSONEtymologyQuery --^ BBoxJSONOverpassWikidataQuery
-BBoxStatsOverpassWikidataQuery --^ BBoxJSONOverpassWikidataQuery
+BBoxGeoJSONEtymologyQuery --|> BBoxJSONOverpassWikidataQuery
+BBoxStatsOverpassWikidataQuery --|> BBoxJSONOverpassWikidataQuery
 
-BBoxEtymologyOverpassQuery --^ OverpassQuery
-BBoxEtymologyCenterOverpassQuery --^ OverpassQuery
+BBoxEtymologyOverpassQuery --|> OverpassQuery
+BBoxEtymologyCenterOverpassQuery --|> OverpassQuery
 
-EtymologyIDListXMLWikidataQuery --^ WikidataQuery
-TypeStatsWikidataQuery --^ WikidataQuery
-GenderStatsWikidataQuery --^ WikidataQuery
+EtymologyIDListXMLWikidataQuery --|> WikidataQuery
+TypeStatsWikidataQuery --|> WikidataQuery
+GenderStatsWikidataQuery --|> WikidataQuery
 
 BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
 BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
