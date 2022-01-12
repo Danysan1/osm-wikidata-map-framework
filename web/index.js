@@ -478,7 +478,7 @@ class EtymologyColorControl {
                     language,
                 },
                 queryString = new URLSearchParams(queryParams).toString(),
-                stats_url = './etymologyMap.php?' + queryString,
+                stats_url = './stats.php?' + queryString,
                 xhr = new XMLHttpRequest();
             xhr.onreadystatechange = (e) => {
                 const readyState = xhr.readyState,
