@@ -47,12 +47,20 @@ map "Wikidata item Q7322" as wikia #a2d2ff {
 map "Wikidata item Q1492" as wikib #a2d2ff {
 
 }
-map "Wikidata item Q2288815" as wikic #a2d2ff {
-  P825 (dedicated to) => Q7322
-}
-map "Wikidata item Q16567" as wikid #a2d2ff {
+
+map "Wikidata item Q16567" as wikic #a2d2ff {
   P138 (named after) => Q7322
 }
+map "Wikidata item Q5112138" as wikid #a2d2ff {
+  P180 (depicts) => Q7322
+}
+map "Wikidata item Q86518088" as wikie #a2d2ff {
+  P547 (commemorates) => Q7322
+}
+map "Wikidata item Q2288815" as wikif #a2d2ff {
+  P825 (dedicated to) => Q7322
+}
+
 map "OSM element A" as osma #95d5b2 {
   name:etymology:wikidata => Q7322
 }
@@ -68,16 +76,29 @@ map "OSM element D" as osmd #95d5b2 {
 map "OSM element E" as osme #95d5b2 {
   wikidata => Q16567
 }
+map "OSM element F" as osmf #95d5b2 {
+  wikidata => Q2288815
+}
+map "OSM element G" as osmg #95d5b2 {
+  wikidata => Q16567
+}
 
 osma --> wikia
 osmb --> wikia
 osmc --> wikia
 osmc --> wikib
+
 osmd --> wikic
 osme --> wikid
+osmf --> wikie
+osmg --> wikif
+
 wikic --> wikia
 wikid --> wikia
-note left of wikia: Etymology for A, B, C, D and E
+wikie --> wikia
+wikif --> wikia
+
+note left of wikia: Etymology for A, B, C, D, E, F and G
 note left of wikib: Etymology for C
 @enduml
 ```
