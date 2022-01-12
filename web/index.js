@@ -1425,7 +1425,7 @@ function featureToElement(feature) {
             let text_from = null,
                 url_from = null;
             if (ety.from_name_etymology || ety.from_subject) {
-                etymology.querySelector('.etymology_src').innerText = "Overpass";
+                etymology.querySelector('.etymology_src').innerText = "OpenStreetMap";
                 etymology.querySelector('.etymology_src').href = OSM_URL;
             } else if (ety.from_wikidata) {
                 etymology.querySelector('.etymology_src').innerText = "Wikidata";
