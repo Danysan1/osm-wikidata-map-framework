@@ -2,15 +2,14 @@
 
 namespace App\Query\Cache;
 
-require_once(__DIR__ . "/CSVCachedBBoxQuery.php");
+require_once(__DIR__ . "/CSVCachedBBoxJSONQuery.php");
 require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 
-use \App\Query\Cache\CSVCachedBBoxQuery;
+use \App\Query\Cache\CSVCachedBBoxJSONQuery;
 use \App\Query\BBoxGeoJSONQuery;
-use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
@@ -20,7 +19,7 @@ use \App\Result\QueryResult;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxQuery implements BBoxGeoJSONQuery
+class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxJSONQuery implements BBoxGeoJSONQuery
 {
     protected function getResultFromFilePath(string $fileRelativePath): QueryResult
     {
@@ -47,15 +46,6 @@ class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxQuery implements BBoxGeoJSO
     protected function getExtension(): string
     {
         return "geojson";
-    }
-
-    public function sendAndGetJSONResult(): JSONQueryResult
-    {
-        $ret = $this->send();
-        if (!$ret instanceof JSONQueryResult) {
-            throw new \Exception("Internal error: Result is not a JSONQueryResult");
-        }
-        return $ret;
     }
 
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
