@@ -990,7 +990,7 @@ function prepareElementsLayers(elements_url) {
             cluster: true,
             //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
             //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
-            clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 150, // Radius of each cluster when clustering points (defaults to 50)
         });
     }
 
@@ -1170,7 +1170,7 @@ function prepareGlobalLayers() {
             data: './global-map.geojson',
             cluster: true,
             //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
-            clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 150, // Radius of each cluster when clustering points (defaults to 50)
             clusterProperties: {
                 "el_num": ["+", [
                     "coalesce", ["get", "el_num"],
@@ -1431,7 +1431,7 @@ function featureToElement(feature) {
                 etymology.querySelector('.etymology_src').innerText = "Wikidata";
                 etymology.querySelector('.etymology_src').href = 'http://www.wikidata.org/entity/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
             } else {
-                etymology.querySelector('etymology_src_wrapper').style.display = none;
+                etymology.querySelector('.etymology_src_wrapper').style.display = 'none';
             }
         } catch (e) {
             console.error(e);
