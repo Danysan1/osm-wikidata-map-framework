@@ -1332,7 +1332,7 @@ function featureToElement(feature) {
         }
 
         try {
-            etymology.querySelector('.wikidata_button').href = 'http://www.wikidata.org/entity/' + ety.wikidata;
+            etymology.querySelector('.wikidata_button').href = 'https://www.wikidata.org/wiki/' + ety.wikidata;
 
             if (ety.wikipedia) {
                 wikipedia_button.href = ety.wikipedia;
@@ -1429,7 +1429,7 @@ function featureToElement(feature) {
                 etymology.querySelector('.etymology_src').href = OSM_URL;
             } else if (ety.from_wikidata) {
                 etymology.querySelector('.etymology_src').innerText = "Wikidata";
-                etymology.querySelector('.etymology_src').href = 'http://www.wikidata.org/entity/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
+                etymology.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
             } else {
                 etymology.querySelector('.etymology_src_wrapper').style.display = 'none';
             }
