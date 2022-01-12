@@ -127,7 +127,7 @@ class EtymologyIDListWikidataQueryBuilder
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P585/psv:P585 [
+                    ?wikidata p:P585/psv:P585 [ # event date - https://www.wikidata.org/wiki/Property:P585
                         wikibase:timePrecision ?event_date_precision;
                         wikibase:timeValue ?event_date
                     ].
@@ -139,58 +139,66 @@ class EtymologyIDListWikidataQueryBuilder
 
                 OPTIONAL {
                     {
-                        ?wikidata p:P580/psv:P580 [ # start time
+                        ?wikidata p:P580/psv:P580 [ # start time - https://www.wikidata.org/wiki/Property:P580
                             wikibase:timePrecision ?start_date_precision;
                             wikibase:timeValue ?start_date
                         ].
+                        MINUS {
+                            ?wikidata p:P580/psv:P580/wikibase:timePrecision ?other_start_date_precision.
+                            FILTER (?other_start_date_precision > ?start_date_precision).
+                        }.
                     } UNION {
-                        ?wikidata p:P571/psv:P571 [ # inception
+                        ?wikidata p:P571/psv:P571 [ # inception - https://www.wikidata.org/wiki/Property:P571
                             wikibase:timePrecision ?start_date_precision;
                             wikibase:timeValue ?start_date
                         ].
+                        MINUS {
+                            ?wikidata p:P571/psv:P571/wikibase:timePrecision ?other_start_date_precision.
+                            FILTER (?other_start_date_precision > ?start_date_precision).
+                        }.
                     }
-                    MINUS {
-                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_start_date_precision.
-                        FILTER (?other_start_date_precision > ?start_date_precision).
-                    }.
                 }
 
                 OPTIONAL {
                     {
-                        ?wikidata p:P582/psv:P582 [ # end time
+                        ?wikidata p:P582/psv:P582 [ # end time - https://www.wikidata.org/wiki/Property:P582
                             wikibase:timePrecision ?end_date_precision;
                             wikibase:timeValue ?end_date
                         ].
+                        MINUS {
+                            ?wikidata p:P582/psv:P582/wikibase:timePrecision ?other_end_date_precision.
+                            FILTER (?other_end_date_precision > ?end_date_precision).
+                        }.
                     } UNION {
-                        ?wikidata p:P576/psv:P576 [ # dissolved, abolished or demolished date
+                        ?wikidata p:P576/psv:P576 [ # dissolved, abolished or demolished date - https://www.wikidata.org/wiki/Property:P576
                             wikibase:timePrecision ?end_date_precision;
                             wikibase:timeValue ?end_date
                         ].
+                        MINUS {
+                            ?wikidata p:P576/psv:P576/wikibase:timePrecision ?other_end_date_precision.
+                            FILTER (?other_end_date_precision > ?end_date_precision).
+                        }.
                     }
-                    MINUS {
-                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_end_date_precision.
-                        FILTER (?other_end_date_precision > ?end_date_precision).
-                    }.
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P569/psv:P569 [
+                    ?wikidata p:P569/psv:P569 [ # birth date - https://www.wikidata.org/wiki/Property:P569
                         wikibase:timePrecision ?birth_date_precision;
                         wikibase:timeValue ?birth_date
                     ].
                     MINUS {
-                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_birth_date_precision.
+                        ?wikidata p:P569/psv:P569/wikibase:timePrecision ?other_birth_date_precision.
                         FILTER (?other_birth_date_precision > ?birth_date_precision).
                     }.
                 }
 
                 OPTIONAL {
-                    ?wikidata p:P570/psv:P570 [
+                    ?wikidata p:P570/psv:P570 [ # death date - https://www.wikidata.org/wiki/Property:P570
                         wikibase:timePrecision ?death_date_precision;
                         wikibase:timeValue ?death_date
                     ].
                     MINUS {
-                        ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_death_date_precision.
+                        ?wikidata p:P570/psv:P570/wikibase:timePrecision ?other_death_date_precision.
                         FILTER (?other_death_date_precision > ?death_date_precision).
                     }.
                 }
