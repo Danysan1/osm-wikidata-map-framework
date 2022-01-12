@@ -31,6 +31,22 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
     protected abstract function getXMLFields(): array;
 
     /**
+     * Fields containing Wikidata entities whose ID must be extracted
+     * 
+     * Example: "http://www.wikidata.org/entity/Q1345358" => "Q1345358"
+     * 
+     * @return array<string>
+     */
+    protected function getEntityXMLFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * Fields containing arrays glued with the character "`"
+     * 
+     * Example: "foo`bar`quz" => ["foo","bar","quz"]
+     * 
      * @return array<string>
      */
     protected function getArrayXMLFields(): array
@@ -63,6 +79,8 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
                     $outValue = $value[0]->__toString();
                     if (in_array($key, $this->getArrayXMLFields())) {
                         $outRow[$key] = explode("`", $outValue);
+                    } elseif (in_array($key, $this->getEntityXMLFields())) {
+                        $outRow[$key] = preg_replace('/http:\/\/www.wikidata.org\/entity\//', '', $outValue);
                     } else {
                         $outRow[$key] = $outValue;
                     }
