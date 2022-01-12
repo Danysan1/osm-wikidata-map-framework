@@ -168,6 +168,8 @@ if (!$conf->has("mapbox-gl-token")) {
             </div>
 
             <div class="pictures column"></div>
+
+            <span class="etymology_src_wrapper">Etymology source: <a title="Etymology source" class="etymology_src"></a></span>
         </div>
     </template>
 </body>
