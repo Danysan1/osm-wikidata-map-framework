@@ -210,7 +210,8 @@ frame oem as "Open Etymology Map v2" {
             card BBoxGenderStatsPostGISQuery
             card BBoxTypeStatsPostGISQuery
             card BBoxEtymologyCenterPostGISQuery
-            card BBoxPostGISQuery
+            card BBoxTextPostGISQuery
+            card PostGISQuery
         }
         package "App\Query\Wikidata" {
             card EtymologyIDListJSONWikidataQuery
@@ -231,16 +232,17 @@ stats --> BBoxGenderStatsPostGISQuery
 stats --> BBoxTypeStatsPostGISQuery
 elements --> BBoxEtymologyCenterPostGISQuery
 
-BBoxEtymologyPostGISQuery --^ BBoxPostGISQuery
-BBoxGenderStatsPostGISQuery --^ BBoxPostGISQuery
-BBoxTypeStatsPostGISQuery --^ BBoxPostGISQuery
-BBoxEtymologyCenterPostGISQuery --^ BBoxPostGISQuery
+BBoxTextPostGISQuery --|> PostGISQuery
+BBoxEtymologyPostGISQuery --|> BBoxTextPostGISQuery
+BBoxGenderStatsPostGISQuery --|> BBoxTextPostGISQuery
+BBoxTypeStatsPostGISQuery --|> BBoxTextPostGISQuery
+BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 
-EtymologyIDListJSONWikidataQuery --^ JSONWikidataQuery
-JSONWikidataQuery --^ WikidataQuery
+EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
+JSONWikidataQuery --|> WikidataQuery
 
-BBoxPostGISQuery -(0- db
-BBoxPostGISQuery --> EtymologyIDListJSONWikidataQuery
+PostGISQuery -(0- db
+BBoxTextPostGISQuery --> EtymologyIDListJSONWikidataQuery
 
 WikidataQuery -(0- wikidata
 
