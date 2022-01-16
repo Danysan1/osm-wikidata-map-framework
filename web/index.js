@@ -810,6 +810,8 @@ function updateDataSource(e) {
     }
 }
 
+let isColorSchemeDropdownInitialized = false;
+
 /**
  * Initializes the high-zoom-level complete (un-clustered) layer.
  * 
@@ -899,10 +901,10 @@ function prepareWikidataLayers(wikidata_url) {
         initWikidataLayer("wikidata_layer_polygon_fill");
     }
 
-    if (document.getElementsByClassName("etymology-color-ctrl").length == 0) {
+    if (!isColorSchemeDropdownInitialized) {
         colorControl = new EtymologyColorControl();
-        setTimeout(() => map.addControl(colorControl, 'top-left'), 100);
-        //map.addControl(colorControl, 'top-left');
+        setTimeout(() => map.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+        isColorSchemeDropdownInitialized = true;
     }
 }
 
