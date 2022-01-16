@@ -1279,6 +1279,7 @@ function featureToElement(feature) {
         detail_container = detail_template.content.cloneNode(true),
         //template_container = document.createDocumentFragment(),
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
+        element_commons_button = detail_container.querySelector('.element_commons_button'),
         etymologies_container = detail_container.querySelector('.etymologies_container'),
         OSM_URL = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
     //template_container.appendChild(detail_container);
@@ -1299,6 +1300,13 @@ function featureToElement(feature) {
         element_wikipedia_button.style.display = 'inline-flex';
     } else {
         element_wikipedia_button.style.display = 'none';
+    }
+
+    if (feature.properties.commons) {
+        element_commons_button.href = 'https://commons.wikimedia.org/wiki/' + feature.properties.commons;
+        element_commons_button.style.display = 'inline-flex';
+    } else {
+        element_commons_button.style.display = 'none';
     }
 
     detail_container.querySelector('.osm_button').href = OSM_URL;

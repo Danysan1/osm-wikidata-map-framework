@@ -246,6 +246,7 @@ if ($use_db) {
                     el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
                     el_osm_id BIGINT NOT NULL,
                     el_name VARCHAR,
+                    el_commons VARCHAR,
                     el_wikipedia VARCHAR
                     --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
                 )"
@@ -563,6 +564,7 @@ if ($use_db) {
                     el_osm_type,
                     el_osm_id,
                     el_name,
+                    el_commons,
                     el_wikipedia
                 ) SELECT 
                     osm_id,
@@ -570,6 +572,7 @@ if ($use_db) {
                     osm_osm_type,
                     osm_osm_id,
                     osm_tags->>'name',
+                    SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
                     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
                 FROM oem.osmdata
                 WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)

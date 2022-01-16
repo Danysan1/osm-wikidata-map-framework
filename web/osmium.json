@@ -5,5 +5,5 @@
     },
     "linear_tags": ["area=no", "junction=roundabout"],
     "area_tags": null,
-    "include_tags": ["name", "wikipedia", "wikidata", "subject:wikidata", "name:etymology:wikidata"]
+    "include_tags": ["name", "wikipedia", "wikimedia_commons", "wikidata", "subject:wikidata", "name:etymology:wikidata"]
 }
