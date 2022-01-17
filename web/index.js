@@ -1102,12 +1102,12 @@ function mapMoveEndHandler(e) {
     console.info("mapMoveEndHandler", { e, lat, lon, zoom });
     setFragmentParams(lon, lat, zoom, undefined);
 
-    const etymologyContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
-    if (etymologyContainer) {
-        if (zoom < thresholdZoomLevel)
-            etymologyContainer.classList.add("hiddenElement");
+    const colorSchemeContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
+    if (colorSchemeContainer) {
+        if (zoom > thresholdZoomLevel)
+            colorSchemeContainer.classList.remove("hiddenElement");
         else
-            etymologyContainer.classList.remove("hiddenElement");
+            colorSchemeContainer.classList.add("hiddenElement");
     }
 }
 
