@@ -30,20 +30,15 @@ if (
 $useSentry = $conf->has("sentry-js-dsn");
 $useGoogleAnalytics = $conf->has("google-analytics-id");
 
+if (!$conf->has("mapbox-gl-token")) {
+    http_response_code(500);
+    die('<html><body>Missing Mapbox GL JS token from configuration</body></html>');
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="<?= $defaultCulture; ?>">
-
-<?php
-if (!$conf->has("mapbox-gl-token")) {
-?>
-
-<body>Missing Mapbox GL JS version or token from configuration</body>
-
-<?php
-} else {
-?>
 
 <head>
     <?php if ($useSentry) { ?>
@@ -176,6 +171,3 @@ if (!$conf->has("mapbox-gl-token")) {
 </body>
 
 </html>
-<?php
-}
-?>
