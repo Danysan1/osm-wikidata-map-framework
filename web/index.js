@@ -952,23 +952,25 @@ function initWikidataLayer(layerID) {
 /**
  * 
  * @param {string} field 
+ * @param {int} minThreshold 
+ * @param {int} maxThreshold 
  * @returns {object} 
  */
-function clusterPaintFromField(field) {
+function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000) {
     return {
         // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
         // with three steps to implement three types of circles:
         'circle-color': [
             'step', ['get', field],
-            '#51bbd6', 3000, // count < 3000 => Blue circle
-            '#f1f075', 15000, // 3000 <= count < 15000 => Yellow circle
-            '#f28cb1' // count > 15000 => Pink circle
+            '#51bbd6', minThreshold, // count < minThreshold => Blue circle
+            '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
+            '#f28cb1' // count > maxThreshold => Pink circle
         ],
         'circle-radius': [
             'step', ['get', field],
-            20, 3000, // count < 3000 => 15px circle
-            30, 15000, // 3000 <= count < 15000 => 30px circle
-            40 // count > 15000 => 40px circle
+            20, minThreshold, // count < minThreshold => 15px circle
+            30, maxThreshold, // minThreshold <= count < maxThreshold => 30px circle
+            40 // count > maxThreshold => 40px circle
         ]
     };
 }
