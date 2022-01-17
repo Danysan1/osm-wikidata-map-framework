@@ -18,6 +18,7 @@ RUN apt-get update && \
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install
+WORKDIR /var/www/html
 
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
