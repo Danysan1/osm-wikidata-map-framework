@@ -188,20 +188,22 @@ function setFragmentParams(lon, lat, zoom, colorScheme) {
     return fragment;
 }
 
-let colorScheme = getFragmentParams().colorScheme;
-if (colorScheme) {
+let startColorScheme = getFragmentParams().colorScheme;
+if (startColorScheme) {
     const validColorSchemes = Object.keys(colorSchemes);
-    if (validColorSchemes.includes(colorScheme)) {
-        defaultColorScheme = colorScheme;
-    } else {
-        console.warn("Not using invalid color scheme from parameters", { colorScheme, validColorSchemes, defaultColorScheme })
+    if (!validColorSchemes.includes(startColorScheme)) {
+        startColorScheme = defaultColorScheme;
+        console.warn("Not using invalid color scheme from parameters", { startColorScheme, validColorSchemes, defaultColorScheme });
     }
+} else {
+    startColorScheme = defaultColorScheme;
 }
 console.info("start", {
     thresholdZoomLevel,
     minZoomLevel,
     defaultBackgroundStyle,
     defaultColorScheme,
+    startColorScheme,
     default_center_lon,
     default_center_lat,
     default_zoom
@@ -390,7 +392,7 @@ class EtymologyColorControl {
             const option = document.createElement('option');
             option.innerText = scheme.text;
             option.value = value;
-            if (value === defaultColorScheme) {
+            if (value === startColorScheme) {
                 option.selected = true;
             }
             this._ctrlDropDown.appendChild(option);
