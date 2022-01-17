@@ -1,3 +1,4 @@
+/* global mapboxgl mapbox_gl_token MapboxLanguage MapboxGeocoder Sentry Chart thresholdZoomLevel minZoomLevel defaultBackgroundStyle defaultColorScheme default_center_lon default_center_lat default_zoom */
 const backgroundStyles = {
         streets: { text: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
         light: { text: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
@@ -120,7 +121,7 @@ const backgroundStyles = {
             colorMap: genderColorMap,
             text: 'By gender',
             color: genderColorMap.reduce(
-                function(array, x) {
+                function (array, x) {
                     if (x[3])
                         array.push(x[3]);
                     array.push(x[2]);
@@ -133,7 +134,7 @@ const backgroundStyles = {
             colorMap: typeColorMap,
             text: 'By type',
             color: typeColorMap.reduce(
-                function(array, x) {
+                function (array, x) {
                     if (x[3])
                         array.push(x[3]);
                     array.push(x[2]);
@@ -244,7 +245,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  */
 class InfoControl {
-    onAdd(map) {
+    onAdd() {
         const container = document.createElement('div');
         container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
 
@@ -540,13 +541,17 @@ class EtymologyColorControl {
             chartObject: this._chartObject,
             data
         });
-        if (this._chartObject) {
+        if (this._chartObject && this._chartElement) {
             // https://www.chartjs.org/docs/latest/developers/updates.html
             this._chartObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
             this._chartObject.data.labels = data.labels;
             this._chartObject.data.datasets[0].data = data.datasets[0].data;
 
             this._chartObject.update();
+        } else if (typeof Chart == "undefined" || !Chart) {
+            alert('There was an error while loading Chart.js (the library needed to create the chart)');
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Undefined Chart", { level: "error" });
         } else {
             //this._legend.className = 'legend';
             this._chartElement = document.createElement('canvas');
@@ -596,7 +601,7 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
-        setTimeout(function() { x.className = x.className.replace("show", ""); }, timeout);
+        setTimeout(function () { x.className = x.className.replace("show", ""); }, timeout);
     }
     return x;
 }
@@ -750,7 +755,7 @@ function mapErrorHandler(err) {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
  */
-function updateDataSource(e) {
+function updateDataSource() {
     // https://stackoverflow.com/questions/48592137/bounding-box-in-mapbox-js
     // https://leafletjs.com/reference-1.7.1.html#map-getbounds
     const bounds = map.getBounds(),
@@ -771,7 +776,7 @@ function updateDataSource(e) {
             maxLon,
             language,
         };
-    //console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
+    //console.info("updateDataSource", { queryParams, zoomLevel, thresholdZoomLevel });
     //console.trace("updateDataSource");
 
     //kendo.ui.progress($("#map"), true);
@@ -919,7 +924,7 @@ function initWikidataLayer(layerID) {
     // open a popup at the location of the click, with description
     // HTML from the click event's properties.
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
-    map.on('click', layerID, function(e) {
+    map.on('click', layerID, function (e) {
         if (e.popupAlreadyShown) {
             console.info("showEtymologyPopup: popup already shown", { layerID, e });
         } else {
@@ -1306,14 +1311,14 @@ function featureToElement(feature) {
     detail_container.querySelector('.osm_button').href = OSM_URL;
     //detail_container.querySelector('.ety_error_button').href = 'https://www.openstreetmap.org/note/new#layers=N&map=18/' + feature.properties.point_lat + '/' + feature.properties.point_lon;
 
-    coord = feature.geometry.coordinates;
+    let coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
         coord = coord[0];
     }
     detail_container.querySelector('.element_location_button').href = "#" + coord[0] + "," + coord[1] + ",18";
 
 
-    etymologies.filter(x => x != null).forEach(function(ety) {
+    etymologies.filter(x => x != null).forEach(function (ety) {
         const etymology = etymology_template.content.cloneNode(true),
             etymology_description = etymology.querySelector('.etymology_description'),
             wikipedia_button = etymology.querySelector('.wikipedia_button'),
@@ -1355,7 +1360,7 @@ function featureToElement(feature) {
             let coords = null,
                 coordsOk = false;
             if (ety.wkt_coords) {
-                coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
+                coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords);
                 coordsOk = coords && coords.length > 1 && coords.at;
                 if (!coordsOk)
                     console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
@@ -1411,7 +1416,7 @@ function featureToElement(feature) {
             }
 
             if (ety.pictures) {
-                ety.pictures.forEach(function(img, n) {
+                ety.pictures.forEach(function (img, n) {
                     if (n < 5) {
                         const link = document.createElement('a'),
                             picture = document.createElement('img');
@@ -1426,8 +1431,6 @@ function featureToElement(feature) {
                 pictures.style.display = 'none';
             }
 
-            let text_from = null,
-                url_from = null;
             if (ety.from_name_etymology || ety.from_subject) {
                 etymology.querySelector('.etymology_src').innerText = "OpenStreetMap";
                 etymology.querySelector('.etymology_src').href = OSM_URL;
@@ -1448,14 +1451,6 @@ function featureToElement(feature) {
     return detail_container;
 }
 
-/**
- * @param {any} feature
- * @return {string}
- */
-function featureToHTML(feature) {
-    return featureToElement(feature).innerHTML;
-}
-
 /*function popStateHandler(e) {
     console.info("popStateHandler", e);
     const closeButtons = document.getElementsByClassName("mapboxgl-popup-close-button");
@@ -1474,8 +1469,8 @@ function initPage(e) {
     //document.addEventListener('popstate', popStateHandler, false);
     setCulture();
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
-    if (!mapboxgl) {
-        alert('There was an error while loading Mapbox GL');
+    if (typeof mapboxgl == "undefined" || !mapboxgl) {
+        alert('There was an error while loading Mapbox GL JS (the library needed to create the map)');
         if (typeof Sentry != 'undefined')
             Sentry.captureMessage("Undefined mapboxgl", { level: "error" });
     } else if (!mapboxgl.supported()) {
