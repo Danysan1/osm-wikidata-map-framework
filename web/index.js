@@ -121,7 +121,7 @@ const backgroundStyles = {
             colorMap: genderColorMap,
             text: 'By gender',
             color: genderColorMap.reduce(
-                function (array, x) {
+                function(array, x) {
                     if (x[3])
                         array.push(x[3]);
                     array.push(x[2]);
@@ -134,7 +134,7 @@ const backgroundStyles = {
             colorMap: typeColorMap,
             text: 'By type',
             color: typeColorMap.reduce(
-                function (array, x) {
+                function(array, x) {
                     if (x[3])
                         array.push(x[3]);
                     array.push(x[2]);
@@ -332,7 +332,8 @@ class BackgroundStyleControl {
             //updateDataSource(event);
         } else {
             console.error("Invalid selected background style", event.target.value);
-            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected background style");
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Invalid selected background style");
         }
     }
 
@@ -423,7 +424,8 @@ class EtymologyColorControl {
             color = colorSchemeObj.color;
         } else {
             console.error("Invalid selected color scheme", colorScheme);
-            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Invalid selected color scheme", { level: 'error', extra: { colorScheme } });
             color = '#3bb2d0';
         }
         console.info("EtymologyColorControl dropDown click", { event, colorSchemeObj, color });
@@ -601,7 +603,7 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
-        setTimeout(function () { x.className = x.className.replace("show", ""); }, timeout);
+        setTimeout(function() { x.className = x.className.replace("show", ""); }, timeout);
     }
     return x;
 }
@@ -636,7 +638,8 @@ function initMap() {
             backgroundStyle = backgroundStyleObj.style;
         } else {
             console.error("Invalid default background style", defaultBackgroundStyle);
-            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid default background style");
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Invalid default background style");
             backgroundStyle = "mapbox://styles/mapbox/streets-v11";
         }
 
@@ -661,9 +664,15 @@ function initMap() {
         setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, defaultColorScheme);
         window.addEventListener('hashchange', hashChangeHandler, false);
 
-        map.addControl(new MapboxLanguage({
-            //defaultLanguage: document.documentElement.lang
-        }));
+        try {
+            map.addControl(new MapboxLanguage({
+                defaultLanguage: document.documentElement.lang.substring(0, 2)
+            }));
+        } catch (err) {
+            console.warn("Failed setting up mapbox-gl-language", err);
+            if (typeof Sentry != 'undefined')
+                Sentry.captureException(err);
+        }
     }
 }
 
@@ -747,7 +756,8 @@ function mapErrorHandler(err) {
         showSnackbar("A map error occurred");
         errorMessage = "Map error: " + err.sourceId + " - " + err.error.message
     }
-    if (typeof Sentry != 'undefined') Sentry.captureMessage(errorMessage, { level: "error", extra: err });
+    if (typeof Sentry != 'undefined')
+        Sentry.captureMessage(errorMessage, { level: "error", extra: err });
     console.error(errorMessage, err);
 }
 
@@ -926,7 +936,7 @@ function initWikidataLayer(layerID) {
     // open a popup at the location of the click, with description
     // HTML from the click event's properties.
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
-    map.on('click', layerID, function (e) {
+    map.on('click', layerID, function(e) {
         if (e.popupAlreadyShown) {
             console.info("showEtymologyPopup: popup already shown", { layerID, e });
         } else {
@@ -1113,7 +1123,7 @@ function mapMoveEndHandler(e) {
 
 function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
-    //setCulture();
+    setCulture();
     //openIntroWindow();
 
     mapMoveEndHandler(e);
@@ -1255,24 +1265,31 @@ function prepareGlobalLayers() {
     }
 }
 
+/**
+ * Set the application culture for i18n & l10n
+ * 
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+ */
 function setCulture() {
     const culture = document.documentElement.lang,
-        lang = culture.substring(0, 3),
-        nameProperty = ['coalesce', ['get', `name_` + lang],
-            ['get', `name`]
+        language = culture.substring(0, 2),
+        nameProperty = [
+            //'coalesce', ['get', 'name_' + language], ['get', `name`]
+            'get', 'name_' + language
         ];
-    console.info("setCulture", { culture, lang, nameProperty, map });
+    console.info("setCulture", { culture, language, nameProperty, map });
 
-    if (map) {
-        // https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+    if (!map) {
+        console.warn("Empty map, can't change map language");
+    } else {
+        /* //Already handled by mapbox-gl-language constructor
         map.setLayoutProperty('country-label', 'text-field', nameProperty);
         map.setLayoutProperty('road-label', 'text-field', nameProperty);
         map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
-        map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+        map.setLayoutProperty('poi-label', 'text-field', nameProperty);*/
     }
 
-    console.info("culture", culture);
     //kendo.culture(culture);
 }
 
@@ -1328,7 +1345,7 @@ function featureToElement(feature) {
     detail_container.querySelector('.element_location_button').href = "#" + coord[0] + "," + coord[1] + ",18";
 
 
-    etymologies.filter(x => x != null).forEach(function (ety) {
+    etymologies.filter(x => x != null).forEach(function(ety) {
         const etymology = etymology_template.content.cloneNode(true),
             etymology_description = etymology.querySelector('.etymology_description'),
             wikipedia_button = etymology.querySelector('.wikipedia_button'),
@@ -1426,7 +1443,7 @@ function featureToElement(feature) {
             }
 
             if (ety.pictures) {
-                ety.pictures.forEach(function (img, n) {
+                ety.pictures.forEach(function(img, n) {
                     if (n < 5) {
                         const link = document.createElement('a'),
                             picture = document.createElement('img');
@@ -1477,7 +1494,7 @@ function initPage(e) {
     console.info("initPage", e);
     //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
     //document.addEventListener('popstate', popStateHandler, false);
-    setCulture();
+    //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (typeof mapboxgl == "undefined" || !mapboxgl) {
         alert('There was an error while loading Mapbox GL JS (the library needed to create the map)');
@@ -1489,6 +1506,7 @@ function initPage(e) {
             Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
     } else {
         initMap();
+        //setCulture(); //! Map style likely still loading, setLayoutProperty() will cause an error
     }
 }
 
