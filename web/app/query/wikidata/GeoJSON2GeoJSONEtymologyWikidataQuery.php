@@ -57,12 +57,12 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                         //error_log("Number of etymologies: " . $numEtymologies);
                         for ($j = 0; $j < $numEtymologies; $j++) {
                             $wikidataID = (string)$etymologies[$j]["id"];
-                            $fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
+                            //$fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
                             //error_log("Wikidata ID: " . $fullWikidataID);
                             $found = false;
                             foreach ($matrixData as $row) {
                                 //error_log($row["wikidata"]);
-                                if ($row["wikidata"] == $fullWikidataID) {
+                                if ($row["wikidata"] == $wikidataID) {
                                     $found = true;
                                     $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $row;
                                 }

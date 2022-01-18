@@ -63,6 +63,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el_osm_type AS osm_type,
                     el_osm_id AS osm_id,
                     el_name AS name,
+                    el_commons AS commons,
                     el_wikipedia AS wikipedia,
                     --ST_X(ST_PointOnSurface(el_geometry)) AS point_lon,
                     --ST_Y(ST_PointOnSurface(el_geometry)) AS point_lat,
@@ -70,6 +71,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_name_etymology', et_from_name_etymology,
                         'from_subject', et_from_subject,
                         'from_wikidata', et_from_wikidata,
+                        'from_wikidata_cod', from_wd.wd_wikidata_cod,
+                        'from_wikidata_prop', et_from_wikidata_prop_cod,
                         'wd_id', wd.wd_id,
                         'birth_date', EXTRACT(epoch FROM wd.wd_birth_date),
                         'birth_date_precision', wd.wd_birth_date_precision,
@@ -86,16 +89,16 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'event_date_precision', wd.wd_event_date_precision,
                         'event_place', wdt.wdt_event_place,
                         'gender', gender_text.wdt_name,
-                        'genderID', 'http://www.wikidata.org/entity/'||gender.wd_wikidata_cod,
+                        'genderID', gender.wd_wikidata_cod,
                         'instance', instance_text.wdt_name,
-                        'instanceID', 'http://www.wikidata.org/entity/'||instance.wd_wikidata_cod,
+                        'instanceID', instance.wd_wikidata_cod,
                         'name', wdt.wdt_name,
                         'occupations', wdt.wdt_occupations,
                         'pictures', (SELECT JSON_AGG(wdp_picture) FROM oem.wikidata_picture WHERE wdp_wd_id = wd.wd_id),
                         'prizes', wdt.wdt_prizes,
                         'start_date', EXTRACT(epoch FROM wd.wd_start_date),
                         'start_date_precision', wd.wd_start_date_precision,
-                        'wikidata', 'http://www.wikidata.org/entity/'||wd.wd_wikidata_cod,
+                        'wikidata', wd.wd_wikidata_cod,
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies
@@ -110,6 +113,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
                 LEFT JOIN oem.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
+                LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el_id
             ) AS ele";

@@ -30,20 +30,15 @@ if (
 $useSentry = $conf->has("sentry-js-dsn");
 $useGoogleAnalytics = $conf->has("google-analytics-id");
 
+if (!$conf->has("mapbox-gl-token")) {
+    http_response_code(500);
+    die('<html><body>Missing Mapbox GL JS token from configuration</body></html>');
+}
+
 ?>
 
 <!DOCTYPE html>
 <html lang="<?= $defaultCulture; ?>">
-
-<?php
-if (!$conf->has("mapbox-gl-token")) {
-?>
-
-<body>Missing Mapbox GL JS version or token from configuration</body>
-
-<?php
-} else {
-?>
 
 <head>
     <?php if ($useSentry) { ?>
@@ -134,8 +129,9 @@ if (!$conf->has("mapbox-gl-token")) {
     <template id="detail_template">
         <div class="detail_container">
             <h3 class="element_name"></h3>
-            <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">Wikipedia</a>
-            <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">OpenStreetMap</a>
+            <a title="Element on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"> Wikipedia</a>
+            <a title="Element on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_commons_button" style="display:none"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"> Commons</a>
+            <a title="Element on OpenStreetMap" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button"><img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo"> OpenStreetMap</a>
             <a title="Element location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_location_button" target="_self"><span class="button_img">📍</span> Location</a>
             <div class="etymologies_container grid grid-auto">
 
@@ -168,11 +164,10 @@ if (!$conf->has("mapbox-gl-token")) {
             </div>
 
             <div class="pictures column"></div>
+
+            <span class="etymology_src_wrapper">Etymology source: <a title="Etymology source" class="etymology_src"></a></span>
         </div>
     </template>
 </body>
 
 </html>
-<?php
-}
-?>

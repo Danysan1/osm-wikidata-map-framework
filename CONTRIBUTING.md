@@ -47,12 +47,20 @@ map "Wikidata item Q7322" as wikia #a2d2ff {
 map "Wikidata item Q1492" as wikib #a2d2ff {
 
 }
-map "Wikidata item Q2288815" as wikic #a2d2ff {
-  P825 (dedicated to) => Q7322
-}
-map "Wikidata item Q16567" as wikid #a2d2ff {
+
+map "Wikidata item Q16567" as wikic #a2d2ff {
   P138 (named after) => Q7322
 }
+map "Wikidata item Q5112138" as wikid #a2d2ff {
+  P180 (depicts) => Q7322
+}
+map "Wikidata item Q86518088" as wikie #a2d2ff {
+  P547 (commemorates) => Q7322
+}
+map "Wikidata item Q2288815" as wikif #a2d2ff {
+  P825 (dedicated to) => Q7322
+}
+
 map "OSM element A" as osma #95d5b2 {
   name:etymology:wikidata => Q7322
 }
@@ -63,21 +71,34 @@ map "OSM element C" as osmc #95d5b2 {
   subject:wikidata => Q7322;Q1492
 }
 map "OSM element D" as osmd #95d5b2 {
-  wikidata => Q2288815
+  wikidata => Q16567
 }
 map "OSM element E" as osme #95d5b2 {
-  wikidata => Q16567
+  wikidata => Q5112138
+}
+map "OSM element F" as osmf #95d5b2 {
+  wikidata => Q86518088
+}
+map "OSM element G" as osmg #95d5b2 {
+  wikidata => Q2288815
 }
 
 osma --> wikia
 osmb --> wikia
 osmc --> wikia
 osmc --> wikib
+
 osmd --> wikic
 osme --> wikid
+osmf --> wikie
+osmg --> wikif
+
 wikic --> wikia
 wikid --> wikia
-note left of wikia: Etymology for A, B, C, D and E
+wikie --> wikia
+wikif --> wikia
+
+note left of wikia: Etymology for A, B, C, D, E, F and G
 note left of wikib: Etymology for C
 @enduml
 ```
@@ -88,6 +109,8 @@ OpenStreetMap|`wikidata`|The ID of the Wikidata item about the feature (for exam
 OpenStreetMap|`name:etymology:wikidata`|It contains the ID of the Wikidata item for the feature's namesake.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
 OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
 Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name, or namesake (in at least one language)|[Info](https://www.wikidata.org/wiki/Property:P138)
+Wikidata|`P180` ("depicts")|Depicted entity|[Info](https://www.wikidata.org/wiki/Property:P180)
+Wikidata|`P547` ("commemorates")|What the place, monument, memorial, or holiday, commemorates|[Info](https://www.wikidata.org/wiki/Property:P547)
 Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
 
 1. Find the element of interest on OpenStreetMap
@@ -166,28 +189,34 @@ At low zoom level ([`threshold-zoom-level`](open-etymology-map.template.ini) > z
 
 At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
 
-#### New back-end (v2)
+#### New back-end (v2, using PostGIS)
 
 ```plantuml
-@startuml oem_v2
 actor user as "User"
 file pbf as "OSM pbf planet file"
+component osmium
 frame oem as "Open Etymology Map v2" {
-    database db as "Database"
+    database db as "PostgreSQL DB"
     component init as "db-init.php"
     node "Front-end" {
         component index as "index.php"
     }
     node "Back-end" {
         component etymologyMap as "etymologyMap.php"
+        component elements as "elements.php"
+        component stats as "stats.php"
         package "App\Query\PostGIS" {
             card BBoxEtymologyPostGISQuery
             card BBoxGenderStatsPostGISQuery
             card BBoxTypeStatsPostGISQuery
+            card BBoxEtymologyCenterPostGISQuery
             card BBoxTextPostGISQuery
+            card PostGISQuery
         }
         package "App\Query\Wikidata" {
             card EtymologyIDListJSONWikidataQuery
+            card JSONWikidataQuery
+            card WikidataQuery
         }
     }
 }
@@ -195,22 +224,32 @@ agent wikidata as "Wikidata SPARQL API"
 
 user --> index
 index -(0- etymologyMap
+index -(0- elements
+index -(0- stats
+
 etymologyMap --> BBoxEtymologyPostGISQuery
-etymologyMap --> BBoxGenderStatsPostGISQuery
-etymologyMap --> BBoxTypeStatsPostGISQuery
+stats --> BBoxGenderStatsPostGISQuery
+stats --> BBoxTypeStatsPostGISQuery
+elements --> BBoxEtymologyCenterPostGISQuery
 
-BBoxEtymologyPostGISQuery --^ BBoxTextPostGISQuery
-BBoxGenderStatsPostGISQuery --^ BBoxTextPostGISQuery
-BBoxTypeStatsPostGISQuery --^ BBoxTextPostGISQuery
+BBoxTextPostGISQuery --|> PostGISQuery
+BBoxEtymologyPostGISQuery --|> BBoxTextPostGISQuery
+BBoxGenderStatsPostGISQuery --|> BBoxTextPostGISQuery
+BBoxTypeStatsPostGISQuery --|> BBoxTextPostGISQuery
+BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 
-BBoxTextPostGISQuery -(0- db
+EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
+JSONWikidataQuery --|> WikidataQuery
+
+PostGISQuery -(0- db
 BBoxTextPostGISQuery --> EtymologyIDListJSONWikidataQuery
 
-EtymologyIDListJSONWikidataQuery -(0- wikidata
+WikidataQuery -(0- wikidata
 
 init -(0- db
+init ..> osmium
 init --> pbf
-@enduml
+init --> JSONWikidataQuery
 ```
 
 [db-init.php](web/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
@@ -237,10 +276,9 @@ IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at le
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
 
-#### Old back-end (v1)
+#### Old back-end (v1, using Overpass)
 
 ```plantuml
-@startuml oem_v1
 actor user as "User"
 frame oem as "Open Etymology Map v1" {
     node "Front-end" {
@@ -248,50 +286,70 @@ frame oem as "Open Etymology Map v1" {
     }
     node "Back-end" {
         component etymologyMap as "etymologyMap.php"
-        package "App\Query\Cache" {
-            card CSVCachedBBoxGeoJSONQuery
-            card CSVCachedBBoxJSONQuery
-        }
+        component elements as "elements.php"
+        component stats as "stats.php"
         package "App\Query\Combined" {
             card BBoxGeoJSONEtymologyQuery
             card BBoxStatsOverpassWikidataQuery
             card BBoxJSONOverpassWikidataQuery
         }
         package "App\Query\Wikidata" {
+            card WikidataQuery
             card EtymologyIDListXMLWikidataQuery
             card TypeStatsWikidataQuery
             card GenderStatsWikidataQuery
         }
         package "App\Query\Overpass" {
+            card OverpassQuery
             card BBoxEtymologyOverpassQuery
+            card BBoxEtymologyCenterOverpassQuery
         }
+/'
+        package "App\Query\Cache" {
+            card CSVCachedBBoxGeoJSONQuery
+            card CSVCachedBBoxJSONQuery
+        }
+        'file cache as "Cache"
+'/
     }
 }
-agent overpass as "Overpass API"
 agent wikidata as "Wikidata SPARQL API"
+agent overpass as "Overpass API"
 
 user --> index
 index -(0- etymologyMap
+index -(0- elements
+index -(0- stats
 
-etymologyMap --> CSVCachedBBoxGeoJSONQuery
-etymologyMap --> CSVCachedBBoxJSONQuery
+/'
+stats  ..> CSVCachedBBoxJSONQuery
+etymologyMap  ..> CSVCachedBBoxGeoJSONQuery
+elements ..> CSVCachedBBoxGeoJSONQuery
+CSVCachedBBoxGeoJSONQuery --|> CSVCachedBBoxJSONQuery
+CSVCachedBBoxJSONQuery --> cache
+'/
 
-CSVCachedBBoxGeoJSONQuery --> BBoxGeoJSONEtymologyQuery
-CSVCachedBBoxJSONQuery --> BBoxStatsOverpassWikidataQuery
+elements --> BBoxEtymologyCenterOverpassQuery
+etymologyMap --> BBoxGeoJSONEtymologyQuery
+stats --> BBoxStatsOverpassWikidataQuery
 
-BBoxGeoJSONEtymologyQuery --^ BBoxJSONOverpassWikidataQuery
+BBoxGeoJSONEtymologyQuery --|> BBoxJSONOverpassWikidataQuery
+BBoxStatsOverpassWikidataQuery --|> BBoxJSONOverpassWikidataQuery
+
+BBoxEtymologyOverpassQuery --|> OverpassQuery
+BBoxEtymologyCenterOverpassQuery --|> OverpassQuery
+
+EtymologyIDListXMLWikidataQuery --|> WikidataQuery
+TypeStatsWikidataQuery --|> WikidataQuery
+GenderStatsWikidataQuery --|> WikidataQuery
 
 BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
 BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
 BBoxStatsOverpassWikidataQuery --> GenderStatsWikidataQuery
 BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
 
-BBoxEtymologyOverpassQuery -(0- overpass
-EtymologyIDListXMLWikidataQuery -(0- wikidata
-GenderStatsWikidataQuery -(0- wikidata
-TypeStatsWikidataQuery -(0- wikidata
-
-@enduml
+OverpassQuery --(0- overpass
+WikidataQuery --(0- wikidata
 ```
 
 Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db-enable = false`):
@@ -312,51 +370,86 @@ Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1
       7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
-The output of [etymologyMap.php](web/etymologyMap.php) will be both in [v1](#old-back-end-v1) and in [v2](#new-back-end-v2) something similar to ...
+The output of [etymologyMap.php](web/etymologyMap.php) is similar to ...
 
 ```json
 {
     "type": "FeatureCollection",
     "features": [
         ...
-        
         {
             "type": "Feature",
             "geometry": {
-                "type": "Point",
+                "type": "MultiPolygon",
                 "coordinates": [
-                    22.54163,
-                    51.24552
+                    [
+                        [
+                            [
+                                11.7055068,
+                                44.3590565
+                            ],
+                            [
+                                11.705888,
+                                44.3589083
+                            ],
+                            [
+                                11.7061427,
+                                44.3592435
+                            ],
+                            [
+                                11.7057615,
+                                44.3593916
+                            ],
+                            [
+                                11.7055068,
+                                44.3590565
+                            ]
+                        ]
+                    ]
                 ]
             },
             "properties": {
-                "name": "Pomnik Marii Curie-Sk\u0142odowskiej",
-                "@id": "node\/3005524964",
-                "wikipedia": "en:Marie Curie Monument in Lublin",
+                "el_id": 32835,
+                "osm_type": "way",
+                "osm_id": 32464519,
+                "name": "Area verde Rita Levi Montalcini",
+                "wikipedia": null,
                 "etymologies": [
                     {
-                        "wikidata": "http:\/\/www.wikidata.org\/entity\/Q7186",
-                        "wikipedia": "https:\/\/en.wikipedia.org\/wiki\/Marie_Curie",
-                        "commons": "Marie Curie",
-                        "name": "Marie Curie",
-                        "description": "Polish-French physicist and chemist (1867-1934)",
-                        "instanceID": "http:\/\/www.wikidata.org\/entity\/Q5",
-                        "gender": "female",
-                        "genderID": "http:\/\/www.wikidata.org\/entity\/Q6581072",
-                        "occupations": "nuclear physicist, university teacher, chemist, physicist",
-                        "pictures": [
-                            "http:\/\/commons.wikimedia.org\/wiki\/Special:FilePath\/Marie%20Curie%20c.%201920s.jpg"
-                        ],
-                        "event_date": null,
-                        "start_date": null,
+                        "from_name_etymology": true,
+                        "from_subject": false,
+                        "from_wikidata": false,
+                        "from_wikidata_cod": null,
+                        "from_wikidata_prop": null,
+                        "wd_id": 13284,
+                        "birth_date": -1915401600.000000,
+                        "birth_date_precision": 11,
+                        "birth_place": "Turin",
+                        "citizenship": "United States of America, Italy, Kingdom of Italy",
+                        "commons": "Rita Levi-Montalcini",
+                        "death_date": 1356825600.000000,
+                        "death_date_precision": 11,
+                        "death_place": "Rome",
+                        "description": "Italian neurologist",
                         "end_date": null,
-                        "birth_date": "1867-11-07T00:00:00Z",
-                        "death_date": "1934-07-04T00:00:00Z",
-                        "event_place": null,
-                        "birth_place": "Warsaw",
-                        "death_place": "Sancellemoz",
-                        "prizes": "Nobel Prize in Physics, Nobel Prize in Chemistry",
-                        "citizenship": "Poland, France, Russian Empire",
+                        "end_date_precision": null,
+                        "event_date": null,
+                        "event_date_precision": null,
+                        "event_place": "",
+                        "gender": "female",
+                        "genderID": "Q6581072",
+                        "instance": "human",
+                        "instanceID": "Q5",
+                        "name": "Rita Levi-Montalcini",
+                        "occupations": "scientist, physician, politician, neurologist, biochemist, neuroscientist",
+                        "pictures": [
+                            "http://commons.wikimedia.org/wiki/Special:FilePath/Rita%20Levi%20Montalcini.jpg"
+                        ],
+                        "prizes": "Nobel Prize in Physiology or Medicine",
+                        "start_date": null,
+                        "start_date_precision": null,
+                        "wikidata": "Q185007",
+                        "wikipedia": "https://en.wikipedia.org/wiki/Rita_Levi-Montalcini",
                         "wkt_coords": null
                     }
                 ]
@@ -369,51 +462,66 @@ The output of [etymologyMap.php](web/etymologyMap.php) will be both in [v1](#old
                 "type": "LineString",
                 "coordinates": [
                     [
-                        11.7023,
-                        44.36173
+                        11.7022988,
+                        44.3617264
                     ],
                     [
-                        11.70262,
-                        44.36161
+                        11.7026241,
+                        44.3616139
                     ],
                     [
-                        11.70271,
-                        44.36158
+                        11.702713,
+                        44.3615783
                     ],
                     [
-                        11.70334,
-                        44.36134
+                        11.7033379,
+                        44.3613377
                     ]
                 ]
             },
             "properties": {
+                "el_id": 28362,
+                "osm_type": "way",
+                "osm_id": 22877448,
                 "name": "Via Caduti di Cefalonia",
-                "@id": "way\/22877448",
+                "wikipedia": null,
                 "etymologies": [
                     {
-                        "wikidata": "http:\/\/www.wikidata.org\/entity\/Q537576",
-                        "wikipedia": "https:\/\/en.wikipedia.org\/wiki\/Massacre_of_the_Acqui_Division",
+                        "from_name_etymology": true,
+                        "from_subject": false,
+                        "from_wikidata": false,
+                        "from_wikidata_cod": null,
+                        "from_wikidata_prop": null,
+                        "wd_id": 13677,
+                        "birth_date": null,
+                        "birth_date_precision": null,
+                        "birth_place": null,
+                        "citizenship": "",
                         "commons": "Massacre of the Acqui Division",
-                        "name": "massacre of the Acqui Division",
-                        "description": "1943 mass execution of Italian soldiers",
-                        "instanceID": "http:\/\/www.wikidata.org\/entity\/Q135010",
+                        "death_date": null,
+                        "death_date_precision": null,
+                        "death_place": null,
+                        "description": "crimine di guerra tedesco",
+                        "end_date": -828921600.000000,
+                        "end_date_precision": 11,
+                        "event_date": -828921600.000000,
+                        "event_date_precision": 11,
+                        "event_place": "Cefalonia",
                         "gender": null,
                         "genderID": null,
-                        "occupations": null,
+                        "instance": "crimine di guerra",
+                        "instanceID": "Q135010",
+                        "name": "eccidio di Cefalonia",
+                        "occupations": "",
                         "pictures": [
-                            "http:\/\/commons.wikimedia.org\/wiki\/Special:FilePath\/Argostoli%20mnimeio%20Italon.JPG"
+                            "http://commons.wikimedia.org/wiki/Special:FilePath/Argostoli%20mnimeio%20Italon.JPG"
                         ],
-                        "event_date": "1943-09-26T00:00:00Z",
-                        "start_date": "1943-09-21T00:00:00Z",
-                        "end_date": "1943-09-26T00:00:00Z",
-                        "birth_date": null,
-                        "death_date": null,
-                        "event_place": "Kefalonia",
-                        "birth_place": null,
-                        "death_place": null,
-                        "prizes": null,
-                        "citizenship": null,
-                        "wkt_coords": "Point(20.59 38.25)"
+                        "prizes": "",
+                        "start_date": -829353600.000000,
+                        "start_date_precision": 11,
+                        "wikidata": "Q537576",
+                        "wikipedia": "https://it.wikipedia.org/wiki/Eccidio_di_Cefalonia",
+                        "wkt_coords": "POINT(20.59 38.25)"
                     }
                 ]
             }
@@ -421,4 +529,21 @@ The output of [etymologyMap.php](web/etymologyMap.php) will be both in [v1](#old
         ...
     ]
 }
+```
+
+The output of [stats.php](web/stats.php) is similar to...
+
+```json
+[
+    {
+        "count": 30,
+        "id": "Q6581097",
+        "name": "male"
+    },
+    {
+        "count": 4,
+        "id": "Q6581072",
+        "name": "female"
+    }
+]
 ```

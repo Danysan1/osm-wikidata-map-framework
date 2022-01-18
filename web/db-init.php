@@ -125,7 +125,7 @@ if (!is_file("osmium.json")) {
     exit(1);
 }
 
-$cacheFile = tempnam(sys_get_temp_dir(), 'osmium');
+$cacheFile = tempnam(sys_get_temp_dir(), 'osmium_');
 
 $txtFile = "$workDir/filtered_$sourceFilename.txt";
 if (is_file($txtFile)) {
@@ -246,6 +246,7 @@ if ($use_db) {
                     el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
                     el_osm_id BIGINT NOT NULL,
                     el_name VARCHAR,
+                    el_commons VARCHAR,
                     el_wikipedia VARCHAR
                     --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
                 )"
@@ -293,6 +294,8 @@ if ($use_db) {
                     et_from_name_etymology BOOLEAN,
                     et_from_subject BOOLEAN,
                     et_from_wikidata BOOLEAN,
+                    et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id),
+                    et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$'),
                     CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
                 )"
             );
@@ -309,6 +312,7 @@ if ($use_db) {
                 "CREATE TABLE oem.wikidata_named_after (
                     wna_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
                     wna_named_after_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+                    wna_from_prop_cod VARCHAR CHECK (wna_from_prop_cod ~* '^P\d+$'),
                     CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wd_id, wna_named_after_wd_id)
                 )"
             );
@@ -436,27 +440,17 @@ if ($use_db) {
                         ) AS x"
                     )->fetchColumn();
                     $namedAfterQuery =
-                        "SELECT DISTINCT ?element ?namedAfter
+                        "SELECT ?element (SAMPLE(?prop) AS ?prop) ?namedAfter
                         WHERE {
                             VALUES ?element { $wikidataCodsToFetch }.
+                            VALUES ?prop { wdt:P138 wdt:P825 wdt:P547 wdt:P180 }
                             {
-                                ?element wdt:P138 ?namedAfter. # named after - https://www.wikidata.org/wiki/Property:P138
+                                ?element ?prop ?namedAfter.
                             } UNION {
-                                ?element owl:sameAs/wdt:P138 ?namedAfter.
-                            } UNION {
-                                ?element wdt:P825 ?namedAfter. # dedicated to - https://www.wikidata.org/wiki/Property:P825
-                            } UNION {
-                                ?element owl:sameAs/wdt:P825 ?namedAfter.
-                            } UNION {
-                                ?element wdt:P547 ?namedAfter. # commemorates - https://www.wikidata.org/wiki/Property:P547
-                            } UNION {
-                                ?element owl:sameAs/wdt:P547 ?namedAfter.
-                            } UNION {
-                                ?element wdt:P180 ?namedAfter. # depicts - https://www.wikidata.org/wiki/Property:P180
-                            } UNION {
-                                ?element owl:sameAs/wdt:P180 ?namedAfter.
+                                ?element owl:sameAs [ ?prop ?namedAfter ].
                             }
-                        }";
+                        }
+                        GROUP BY ?element ?namedAfter";
                     file_put_contents($wikidataNamedAfterRQFile, $namedAfterQuery);
                     $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
                     file_put_contents($wikidataNamedAfterJSONFile, $jsonResult);
@@ -481,8 +475,8 @@ if ($use_db) {
                     $n_wd = $sth_wd->rowCount();
 
                     $sth_wna = $dbh->prepare(
-                        "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id)
-                        SELECT DISTINCT w1.wd_id, w2.wd_id
+                        "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
+                        SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/direct/', '')
                         FROM json_array_elements((:response::JSON)->'results'->'bindings')
                         JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
                         JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
@@ -513,15 +507,29 @@ if ($use_db) {
             } else {
                 echo '========================= Converting etymologies... =========================' . PHP_EOL;
                 $n_ety = $dbh->exec(
-                    "INSERT INTO oem.etymology (et_el_id, et_wd_id, et_from_name_etymology, et_from_subject, et_from_wikidata)
-                    SELECT ew_el_id, wd_id, BOOL_OR(ew_from_name_etymology), BOOL_OR(ew_from_subject), BOOL_OR(ew_from_wikidata)
+                    "INSERT INTO oem.etymology (
+                        et_el_id,
+                        et_wd_id,
+                        et_from_name_etymology,
+                        et_from_subject,
+                        et_from_wikidata,
+                        et_from_wikidata_wd_id,
+                        et_from_wikidata_prop_cod
+                    ) SELECT
+                        ew_el_id,
+                        wd_id,
+                        BOOL_OR(ew_from_name_etymology),
+                        BOOL_OR(ew_from_subject),
+                        BOOL_OR(ew_from_wikidata),
+                        MIN(from_wd_id),
+                        MIN(wna_from_prop_cod)
                     FROM (
-                        SELECT DISTINCT ew_el_id, wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata
+                        SELECT DISTINCT ew_el_id, wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata, NULL::BIGINT AS from_wd_id, NULL::VARCHAR AS wna_from_prop_cod
                         FROM oem.element_wikidata_cods
                         JOIN oem.wikidata ON ew_wikidata_cod = wd_wikidata_cod
                         WHERE ew_from_name_etymology OR ew_from_subject
                         UNION
-                        SELECT DISTINCT ew.ew_el_id, nawd.wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata
+                        SELECT DISTINCT ew.ew_el_id, nawd.wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata, wd.wd_id AS from_wd_id, wna_from_prop_cod
                         FROM oem.element_wikidata_cods AS ew
                         JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
                         JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
@@ -548,7 +556,7 @@ if ($use_db) {
             );
             $n_remaining = $n_tot - $n_cleaned;
             $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
-            // Almost 90% of elements would be deleted, it's faster to copy them in another table; https://stackoverflow.com/a/7088514/2347196
+            // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without; https://stackoverflow.com/a/7088514/2347196
             $n_remaining = $dbh->exec(
                 "INSERT INTO oem.element (
                     el_id,
@@ -556,6 +564,7 @@ if ($use_db) {
                     el_osm_type,
                     el_osm_id,
                     el_name,
+                    el_commons,
                     el_wikipedia
                 ) SELECT 
                     osm_id,
@@ -563,6 +572,7 @@ if ($use_db) {
                     osm_osm_type,
                     osm_osm_id,
                     osm_tags->>'name',
+                    SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
                     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
                 FROM oem.osmdata
                 WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)

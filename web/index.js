@@ -1,3 +1,4 @@
+/* global mapboxgl mapbox_gl_token MapboxLanguage MapboxGeocoder Sentry Chart thresholdZoomLevel minZoomLevel defaultBackgroundStyle defaultColorScheme default_center_lon default_center_lat default_zoom */
 const backgroundStyles = {
         streets: { text: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
         light: { text: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
@@ -9,109 +10,109 @@ const backgroundStyles = {
     genderColorMap = [
         // https://www.wikidata.org/wiki/Property:P21
         // https://meyerweb.com/eric/tools/color-blend/#3BB2D0:E55E5E:3:hex
-        ["Female", "Female", "#e55e5e", "http://www.wikidata.org/entity/Q6581072"],
-        ["Transgender female", "Transgender female", "#BB737B", "http://www.wikidata.org/entity/Q1052281"],
-        ["Intersex", "Intersex", "#908897", "http://www.wikidata.org/entity/Q1097630"],
-        ["Transgender male", "Transgender male", "#669DB4", "http://www.wikidata.org/entity/Q2449503"],
-        ["Male", "Male", "#3bb2d0", "http://www.wikidata.org/entity/Q6581097"],
+        ["Female", "Female", "#e55e5e", "Q6581072"],
+        ["Transgender female", "Transgender female", "#BB737B", "Q1052281"],
+        ["Intersex", "Intersex", "#908897", "Q1097630"],
+        ["Transgender male", "Transgender male", "#669DB4", "Q2449503"],
+        ["Male", "Male", "#3bb2d0", "Q6581097"],
         ["Other", "Other", "#223b53", null],
     ],
     typeColorMap = [
-        ["People", "human", "#3bb2d0", "http://www.wikidata.org/entity/Q5"],
-        ["People", "human who may be fictional", "#3bb2d0", "http://www.wikidata.org/entity/Q21070568"],
-        ["People", "sibling duo", "#3bb2d0", "http://www.wikidata.org/entity/Q14073567"],
-        ["People", "sibling group", "#3bb2d0", "http://www.wikidata.org/entity/Q16979650"],
-        ["People", "human biblical figure", "#3bb2d0", "http://www.wikidata.org/entity/Q20643955"],
-        ["Buildings", "castle", "#fbb03b", "http://www.wikidata.org/entity/Q23413"],
-        ["Buildings", "château", "#fbb03b", "http://www.wikidata.org/entity/Q751876"],
-        ["Buildings", "real property", "#fbb03b", "http://www.wikidata.org/entity/Q684740"],
-        ["Buildings", "architectural structure", "#fbb03b", "http://www.wikidata.org/entity/Q811979"],
-        ["Buildings", "cultural heritage ensemble", "#fbb03b", "http://www.wikidata.org/entity/Q1516079"],
-        ["Buildings", "museum", "#fbb03b", "http://www.wikidata.org/entity/Q33506"],
-        ["Buildings", "church", "#fbb03b", "http://www.wikidata.org/entity/Q16970"],
-        ["Buildings", "seminary", "#fbb03b", "http://www.wikidata.org/entity/Q233324"],
-        ["Buildings", "abbey", "#fbb03b", "http://www.wikidata.org/entity/Q160742"],
-        ["Buildings", "benedictine abbey", "#fbb03b", "http://www.wikidata.org/entity/Q817056"],
-        ["Buildings", "basilica", "#fbb03b", "http://www.wikidata.org/entity/Q163687"],
-        ["Buildings", "minor basilica", "#fbb03b", "http://www.wikidata.org/entity/Q120560"],
-        ["Buildings", "monastery", "#fbb03b", "http://www.wikidata.org/entity/Q44613"],
-        ["Buildings", "mission complex", "#fbb03b", "http://www.wikidata.org/entity/Q1564373"],
-        ["Buildings", "statue", "#fbb03b", "http://www.wikidata.org/entity/Q179700"],
-        ["Buildings", "colossal statue", "#fbb03b", "http://www.wikidata.org/entity/Q1779653"],
-        ["Buildings", "university", "#fbb03b", "http://www.wikidata.org/entity/Q3918"],
-        ["Buildings", "fort", "#fbb03b", "http://www.wikidata.org/entity/Q1785071"],
-        ["Buildings", "route nationale", "#fbb03b", "http://www.wikidata.org/entity/Q1426271"],
-        ["Buildings", "route départementale", "#fbb03b", "http://www.wikidata.org/entity/Q19796778"],
-        ["Historic events", "battle", "#e55e5e", "http://www.wikidata.org/entity/Q178561"],
-        ["Historic events", "siege", "#e55e5e", "http://www.wikidata.org/entity/Q188055"],
-        ["Historic events", "massacre", "#e55e5e", "http://www.wikidata.org/entity/Q3199915"],
-        ["Historic events", "armistice", "#e55e5e", "http://www.wikidata.org/entity/Q107706"],
-        ["Historic events", "mass murder", "#e55e5e", "http://www.wikidata.org/entity/Q750215"],
-        ["Historic events", "bomb attack", "#e55e5e", "http://www.wikidata.org/entity/Q891854"],
-        ["Historic events", "aircraft hijacking", "#e55e5e", "http://www.wikidata.org/entity/Q898712"],
-        ["Historic events", "suicide attack", "#e55e5e", "http://www.wikidata.org/entity/Q217327"],
-        ["Historic events", "war crime", "#e55e5e", "http://www.wikidata.org/entity/Q135010"],
-        ["Historic events", "invasion", "#e55e5e", "http://www.wikidata.org/entity/Q467011"],
-        ["Historic events", "resistance movement", "#e55e5e", "http://www.wikidata.org/entity/Q138796"],
-        ["Historic events", "terrorist attack", "#e55e5e", "http://www.wikidata.org/entity/Q2223653"],
-        ["Historic events", "Demonstration", "#e55e5e", "http://www.wikidata.org/entity/Q175331"],
-        ["Historic events", "calendar day of a given year", "#e55e5e", "http://www.wikidata.org/entity/Q47150325"],
-        ["Historic events", "student protest", "#e55e5e", "http://www.wikidata.org/entity/Q1679887"],
-        ["Human settlements", "city", "#fed976", "http://www.wikidata.org/entity/Q515"],
-        ["Human settlements", "big city", "#fed976", "http://www.wikidata.org/entity/Q1549591"],
-        ["Human settlements", "global city", "#fed976", "http://www.wikidata.org/entity/Q208511"],
-        ["Human settlements", "urban area", "#fed976", "http://www.wikidata.org/entity/Q702492"],
-        ["Human settlements", "chef-lieu", "#fed976", "http://www.wikidata.org/entity/Q956214"],
-        ["Human settlements", "million city", "#fed976", "http://www.wikidata.org/entity/Q1637706"],
-        ["Human settlements", "comune of Italy", "#fed976", "http://www.wikidata.org/entity/Q747074"],
-        ["Human settlements", "commune of France", "#fed976", "http://www.wikidata.org/entity/Q484170"],
-        ["Human settlements", "urban municipality of Germany", "#fed976", "http://www.wikidata.org/entity/Q42744322"],
-        ["Human settlements", "town in Croatia", "#fed976", "http://www.wikidata.org/entity/Q15105893"],
-        ["Human settlements", "port settlement", "#fed976", "http://www.wikidata.org/entity/Q2264924"],
-        ["Human settlements", "ancient city", "#fed976", "http://www.wikidata.org/entity/Q15661340"],
-        ["Human settlements", "border town", "#fed976", "http://www.wikidata.org/entity/Q902814"],
-        ["Human settlements", "capital", "#fed976", "http://www.wikidata.org/entity/Q5119"],
-        ["Human settlements", "roman city", "#fed976", "http://www.wikidata.org/entity/Q2202509"],
-        ["Human settlements", "town", "#fed976", "http://www.wikidata.org/entity/Q3957"],
-        ["Human settlements", "human settlement", "#fed976", "http://www.wikidata.org/entity/Q486972"],
-        ["Human settlements", "spa-town", "#fed976", "http://www.wikidata.org/entity/Q4946461"],
-        ["Human settlements", "religious site", "#fed976", "http://www.wikidata.org/entity/Q15135589"],
-        ["Human settlements", "municipality seat", "#fed976", "http://www.wikidata.org/entity/Q15303838"],
-        ["Human settlements", "neighborhood", "#fed976", "http://www.wikidata.org/entity/Q123705"],
-        ["Human settlements", "residence park", "#fed976", "http://www.wikidata.org/entity/Q7315416"],
-        ["Human settlements", "hamlet", "#fed976", "http://www.wikidata.org/entity/Q5084"],
-        ["Human settlements", "lieu-dit", "#fed976", "http://www.wikidata.org/entity/Q181307"],
-        ["Human settlements", "municipality of Aragon", "#fed976", "http://www.wikidata.org/entity/Q61763947"],
-        ["Locations", "area", "#51318C", "http://www.wikidata.org/entity/Q1414991"],
-        ["Locations", "historical region", "#51318C", "http://www.wikidata.org/entity/Q1620908"],
-        ["Locations", "U.S. state", "#51318C", "http://www.wikidata.org/entity/Q35657"],
-        ["Locations", "nation within the UK", "#51318C", "http://www.wikidata.org/entity/Q3336843"],
-        ["Locations", "region of France", "#51318C", "http://www.wikidata.org/entity/Q36784"],
-        ["Locations", "country", "#51318C", "http://www.wikidata.org/entity/Q6256"],
-        ["Locations", "continent", "#51318C", "http://www.wikidata.org/entity/Q5107"],
-        ["Locations", "land", "#51318C", "http://www.wikidata.org/entity/Q11081619"],
-        ["Locations", "island", "#51318C", "http://www.wikidata.org/entity/Q23442"],
-        ["Locations", "hill", "#51318C", "http://www.wikidata.org/entity/Q54050"],
-        ["Locations", "tourist attraction", "#51318C", "http://www.wikidata.org/entity/Q570116"],
-        ["Locations", "principal meridian", "#51318C", "http://www.wikidata.org/entity/Q7245083"],
-        ["Locations", "meridian", "#51318C", "http://www.wikidata.org/entity/Q32099"],
-        ["Locations", "circle of latitude", "#51318C", "http://www.wikidata.org/entity/Q146591"],
-        ["Locations", "geographic region", "#51318C", "http://www.wikidata.org/entity/Q82794"],
-        ["Nature", "mountain", "#348C31", "http://www.wikidata.org/entity/Q8502"],
-        ["Nature", "mountain range", "#348C31", "http://www.wikidata.org/entity/Q46831"],
-        ["Nature", "alpine group", "#348C31", "http://www.wikidata.org/entity/Q3777462"],
-        ["Nature", "volcano", "#348C31", "http://www.wikidata.org/entity/Q8072"],
-        ["Nature", "stratovolcano", "#348C31", "http://www.wikidata.org/entity/Q169358"],
-        ["Nature", "forest", "#348C31", "http://www.wikidata.org/entity/Q4421"],
-        ["Nature", "watercourse", "#348C31", "http://www.wikidata.org/entity/Q355304"],
-        ["Nature", "river", "#348C31", "http://www.wikidata.org/entity/Q4022"],
-        ["Nature", "National Park of the United States", "#348C31", "http://www.wikidata.org/entity/Q34918903"],
-        ["Nature", "park", "#348C31", "http://www.wikidata.org/entity/Q22698"],
-        ["Nature", "main stream", "#348C31", "http://www.wikidata.org/entity/Q573344"],
-        ["Nature", "stream", "#348C31", "http://www.wikidata.org/entity/Q47521"],
-        ["Nature", "canal", "#348C31", "http://www.wikidata.org/entity/Q12284"],
-        ["Nature", "sea", "#348C31", "http://www.wikidata.org/entity/Q165"],
-        ["Nature", "strait", "#348C31", "http://www.wikidata.org/entity/Q37901"],
+        ["People", "human", "#3bb2d0", "Q5"],
+        ["People", "human who may be fictional", "#3bb2d0", "Q21070568"],
+        ["People", "sibling duo", "#3bb2d0", "Q14073567"],
+        ["People", "sibling group", "#3bb2d0", "Q16979650"],
+        ["People", "human biblical figure", "#3bb2d0", "Q20643955"],
+        ["Buildings", "castle", "#fbb03b", "Q23413"],
+        ["Buildings", "château", "#fbb03b", "Q751876"],
+        ["Buildings", "real property", "#fbb03b", "Q684740"],
+        ["Buildings", "architectural structure", "#fbb03b", "Q811979"],
+        ["Buildings", "cultural heritage ensemble", "#fbb03b", "Q1516079"],
+        ["Buildings", "museum", "#fbb03b", "Q33506"],
+        ["Buildings", "church", "#fbb03b", "Q16970"],
+        ["Buildings", "seminary", "#fbb03b", "Q233324"],
+        ["Buildings", "abbey", "#fbb03b", "Q160742"],
+        ["Buildings", "benedictine abbey", "#fbb03b", "Q817056"],
+        ["Buildings", "basilica", "#fbb03b", "Q163687"],
+        ["Buildings", "minor basilica", "#fbb03b", "Q120560"],
+        ["Buildings", "monastery", "#fbb03b", "Q44613"],
+        ["Buildings", "mission complex", "#fbb03b", "Q1564373"],
+        ["Buildings", "statue", "#fbb03b", "Q179700"],
+        ["Buildings", "colossal statue", "#fbb03b", "Q1779653"],
+        ["Buildings", "university", "#fbb03b", "Q3918"],
+        ["Buildings", "fort", "#fbb03b", "Q1785071"],
+        ["Buildings", "route nationale", "#fbb03b", "Q1426271"],
+        ["Buildings", "route départementale", "#fbb03b", "Q19796778"],
+        ["Historic events", "battle", "#e55e5e", "Q178561"],
+        ["Historic events", "siege", "#e55e5e", "Q188055"],
+        ["Historic events", "massacre", "#e55e5e", "Q3199915"],
+        ["Historic events", "armistice", "#e55e5e", "Q107706"],
+        ["Historic events", "mass murder", "#e55e5e", "Q750215"],
+        ["Historic events", "bomb attack", "#e55e5e", "Q891854"],
+        ["Historic events", "aircraft hijacking", "#e55e5e", "Q898712"],
+        ["Historic events", "suicide attack", "#e55e5e", "Q217327"],
+        ["Historic events", "war crime", "#e55e5e", "Q135010"],
+        ["Historic events", "invasion", "#e55e5e", "Q467011"],
+        ["Historic events", "resistance movement", "#e55e5e", "Q138796"],
+        ["Historic events", "terrorist attack", "#e55e5e", "Q2223653"],
+        ["Historic events", "Demonstration", "#e55e5e", "Q175331"],
+        ["Historic events", "calendar day of a given year", "#e55e5e", "Q47150325"],
+        ["Historic events", "student protest", "#e55e5e", "Q1679887"],
+        ["Human settlements", "city", "#fed976", "Q515"],
+        ["Human settlements", "big city", "#fed976", "Q1549591"],
+        ["Human settlements", "global city", "#fed976", "Q208511"],
+        ["Human settlements", "urban area", "#fed976", "Q702492"],
+        ["Human settlements", "chef-lieu", "#fed976", "Q956214"],
+        ["Human settlements", "million city", "#fed976", "Q1637706"],
+        ["Human settlements", "comune of Italy", "#fed976", "Q747074"],
+        ["Human settlements", "commune of France", "#fed976", "Q484170"],
+        ["Human settlements", "urban municipality of Germany", "#fed976", "Q42744322"],
+        ["Human settlements", "town in Croatia", "#fed976", "Q15105893"],
+        ["Human settlements", "port settlement", "#fed976", "Q2264924"],
+        ["Human settlements", "ancient city", "#fed976", "Q15661340"],
+        ["Human settlements", "border town", "#fed976", "Q902814"],
+        ["Human settlements", "capital", "#fed976", "Q5119"],
+        ["Human settlements", "roman city", "#fed976", "Q2202509"],
+        ["Human settlements", "town", "#fed976", "Q3957"],
+        ["Human settlements", "human settlement", "#fed976", "Q486972"],
+        ["Human settlements", "spa-town", "#fed976", "Q4946461"],
+        ["Human settlements", "religious site", "#fed976", "Q15135589"],
+        ["Human settlements", "municipality seat", "#fed976", "Q15303838"],
+        ["Human settlements", "neighborhood", "#fed976", "Q123705"],
+        ["Human settlements", "residence park", "#fed976", "Q7315416"],
+        ["Human settlements", "hamlet", "#fed976", "Q5084"],
+        ["Human settlements", "lieu-dit", "#fed976", "Q181307"],
+        ["Human settlements", "municipality of Aragon", "#fed976", "Q61763947"],
+        ["Locations", "area", "#51318C", "Q1414991"],
+        ["Locations", "historical region", "#51318C", "Q1620908"],
+        ["Locations", "U.S. state", "#51318C", "Q35657"],
+        ["Locations", "nation within the UK", "#51318C", "Q3336843"],
+        ["Locations", "region of France", "#51318C", "Q36784"],
+        ["Locations", "country", "#51318C", "Q6256"],
+        ["Locations", "continent", "#51318C", "Q5107"],
+        ["Locations", "land", "#51318C", "Q11081619"],
+        ["Locations", "island", "#51318C", "Q23442"],
+        ["Locations", "hill", "#51318C", "Q54050"],
+        ["Locations", "tourist attraction", "#51318C", "Q570116"],
+        ["Locations", "principal meridian", "#51318C", "Q7245083"],
+        ["Locations", "meridian", "#51318C", "Q32099"],
+        ["Locations", "circle of latitude", "#51318C", "Q146591"],
+        ["Locations", "geographic region", "#51318C", "Q82794"],
+        ["Nature", "mountain", "#348C31", "Q8502"],
+        ["Nature", "mountain range", "#348C31", "Q46831"],
+        ["Nature", "alpine group", "#348C31", "Q3777462"],
+        ["Nature", "volcano", "#348C31", "Q8072"],
+        ["Nature", "stratovolcano", "#348C31", "Q169358"],
+        ["Nature", "forest", "#348C31", "Q4421"],
+        ["Nature", "watercourse", "#348C31", "Q355304"],
+        ["Nature", "river", "#348C31", "Q4022"],
+        ["Nature", "National Park of the United States", "#348C31", "Q34918903"],
+        ["Nature", "park", "#348C31", "Q22698"],
+        ["Nature", "main stream", "#348C31", "Q573344"],
+        ["Nature", "stream", "#348C31", "Q47521"],
+        ["Nature", "canal", "#348C31", "Q12284"],
+        ["Nature", "sea", "#348C31", "Q165"],
+        ["Nature", "strait", "#348C31", "Q37901"],
         ["Other", "Other", "#223b53", null],
     ],
     colorSchemes = {
@@ -188,20 +189,22 @@ function setFragmentParams(lon, lat, zoom, colorScheme) {
     return fragment;
 }
 
-let colorScheme = getFragmentParams().colorScheme;
-if (colorScheme) {
+let startColorScheme = getFragmentParams().colorScheme;
+if (startColorScheme) {
     const validColorSchemes = Object.keys(colorSchemes);
-    if (validColorSchemes.includes(colorScheme)) {
-        defaultColorScheme = colorScheme;
-    } else {
-        console.warn("Not using invalid color scheme from parameters", { colorScheme, validColorSchemes, defaultColorScheme })
+    if (!validColorSchemes.includes(startColorScheme)) {
+        startColorScheme = defaultColorScheme;
+        console.warn("Not using invalid color scheme from parameters", { startColorScheme, validColorSchemes, defaultColorScheme });
     }
+} else {
+    startColorScheme = defaultColorScheme;
 }
 console.info("start", {
     thresholdZoomLevel,
     minZoomLevel,
     defaultBackgroundStyle,
     defaultColorScheme,
+    startColorScheme,
     default_center_lon,
     default_center_lat,
     default_zoom
@@ -242,7 +245,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  */
 class InfoControl {
-    onAdd(map) {
+    onAdd() {
         const container = document.createElement('div');
         container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
 
@@ -329,7 +332,8 @@ class BackgroundStyleControl {
             //updateDataSource(event);
         } else {
             console.error("Invalid selected background style", event.target.value);
-            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected background style");
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Invalid selected background style");
         }
     }
 
@@ -390,7 +394,7 @@ class EtymologyColorControl {
             const option = document.createElement('option');
             option.innerText = scheme.text;
             option.value = value;
-            if (value === defaultColorScheme) {
+            if (value === startColorScheme) {
                 option.selected = true;
             }
             this._ctrlDropDown.appendChild(option);
@@ -420,7 +424,8 @@ class EtymologyColorControl {
             color = colorSchemeObj.color;
         } else {
             console.error("Invalid selected color scheme", colorScheme);
-            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid selected color scheme");
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Invalid selected color scheme", { level: 'error', extra: { colorScheme } });
             color = '#3bb2d0';
         }
         console.info("EtymologyColorControl dropDown click", { event, colorSchemeObj, color });
@@ -478,7 +483,7 @@ class EtymologyColorControl {
                     language,
                 },
                 queryString = new URLSearchParams(queryParams).toString(),
-                stats_url = './etymologyMap.php?' + queryString,
+                stats_url = './stats.php?' + queryString,
                 xhr = new XMLHttpRequest();
             xhr.onreadystatechange = (e) => {
                 const readyState = xhr.readyState,
@@ -538,13 +543,17 @@ class EtymologyColorControl {
             chartObject: this._chartObject,
             data
         });
-        if (this._chartObject) {
+        if (this._chartObject && this._chartElement) {
             // https://www.chartjs.org/docs/latest/developers/updates.html
             this._chartObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
             this._chartObject.data.labels = data.labels;
             this._chartObject.data.datasets[0].data = data.datasets[0].data;
 
             this._chartObject.update();
+        } else if (typeof Chart == "undefined" || !Chart) {
+            alert('There was an error while loading Chart.js (the library needed to create the chart)');
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Undefined Chart", { level: "error" });
         } else {
             //this._legend.className = 'legend';
             this._chartElement = document.createElement('canvas');
@@ -629,7 +638,8 @@ function initMap() {
             backgroundStyle = backgroundStyleObj.style;
         } else {
             console.error("Invalid default background style", defaultBackgroundStyle);
-            if (typeof Sentry != 'undefined') Sentry.captureMessage("Invalid default background style");
+            if (typeof Sentry != 'undefined')
+                Sentry.captureMessage("Invalid default background style");
             backgroundStyle = "mapbox://styles/mapbox/streets-v11";
         }
 
@@ -654,9 +664,15 @@ function initMap() {
         setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, defaultColorScheme);
         window.addEventListener('hashchange', hashChangeHandler, false);
 
-        map.addControl(new MapboxLanguage({
-            //defaultLanguage: document.documentElement.lang
-        }));
+        try {
+            map.addControl(new MapboxLanguage({
+                defaultLanguage: document.documentElement.lang.substring(0, 2)
+            }));
+        } catch (err) {
+            console.warn("Failed setting up mapbox-gl-language", err);
+            if (typeof Sentry != 'undefined')
+                Sentry.captureException(err);
+        }
     }
 }
 
@@ -740,7 +756,8 @@ function mapErrorHandler(err) {
         showSnackbar("A map error occurred");
         errorMessage = "Map error: " + err.sourceId + " - " + err.error.message
     }
-    if (typeof Sentry != 'undefined') Sentry.captureMessage(errorMessage, { level: "error", extra: err });
+    if (typeof Sentry != 'undefined')
+        Sentry.captureMessage(errorMessage, { level: "error", extra: err });
     console.error(errorMessage, err);
 }
 
@@ -748,7 +765,7 @@ function mapErrorHandler(err) {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
  */
-function updateDataSource(e) {
+function updateDataSource() {
     // https://stackoverflow.com/questions/48592137/bounding-box-in-mapbox-js
     // https://leafletjs.com/reference-1.7.1.html#map-getbounds
     const bounds = map.getBounds(),
@@ -769,7 +786,7 @@ function updateDataSource(e) {
             maxLon,
             language,
         };
-    //console.info("updateDataSource", { e, queryParams, zoomLevel, thresholdZoomLevel });
+    //console.info("updateDataSource", { queryParams, zoomLevel, thresholdZoomLevel });
     //console.trace("updateDataSource");
 
     //kendo.ui.progress($("#map"), true);
@@ -809,6 +826,8 @@ function updateDataSource(e) {
         }
     }
 }
+
+let isColorSchemeDropdownInitialized = false;
 
 /**
  * Initializes the high-zoom-level complete (un-clustered) layer.
@@ -899,10 +918,10 @@ function prepareWikidataLayers(wikidata_url) {
         initWikidataLayer("wikidata_layer_polygon_fill");
     }
 
-    if (document.getElementsByClassName("etymology-color-ctrl").length == 0) {
+    if (!isColorSchemeDropdownInitialized) {
         colorControl = new EtymologyColorControl();
-        setTimeout(() => map.addControl(colorControl, 'top-left'), 100);
-        //map.addControl(colorControl, 'top-left');
+        setTimeout(() => map.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+        isColorSchemeDropdownInitialized = true;
     }
 }
 
@@ -950,23 +969,25 @@ function initWikidataLayer(layerID) {
 /**
  * 
  * @param {string} field 
+ * @param {int} minThreshold 
+ * @param {int} maxThreshold 
  * @returns {object} 
  */
-function clusterPaintFromField(field) {
+function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000) {
     return {
         // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
         // with three steps to implement three types of circles:
         'circle-color': [
             'step', ['get', field],
-            '#51bbd6', 3000, // count < 3000 => Blue circle
-            '#f1f075', 15000, // 3000 <= count < 15000 => Yellow circle
-            '#f28cb1' // count > 15000 => Pink circle
+            '#51bbd6', minThreshold, // count < minThreshold => Blue circle
+            '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
+            '#f28cb1' // count > maxThreshold => Pink circle
         ],
         'circle-radius': [
             'step', ['get', field],
-            20, 3000, // count < 3000 => 15px circle
-            30, 15000, // 3000 <= count < 15000 => 30px circle
-            40 // count > 15000 => 40px circle
+            20, minThreshold, // count < minThreshold => 15px circle
+            30, maxThreshold, // minThreshold <= count < maxThreshold => 30px circle
+            40 // count > maxThreshold => 40px circle
         ]
     };
 }
@@ -990,7 +1011,7 @@ function prepareElementsLayers(elements_url) {
             cluster: true,
             //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
             //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
-            clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 150, // Radius of each cluster when clustering points (defaults to 50)
         });
     }
 
@@ -1091,18 +1112,18 @@ function mapMoveEndHandler(e) {
     console.info("mapMoveEndHandler", { e, lat, lon, zoom });
     setFragmentParams(lon, lat, zoom, undefined);
 
-    const etymologyContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
-    if (etymologyContainer) {
-        if (zoom < thresholdZoomLevel)
-            etymologyContainer.classList.add("hiddenElement");
+    const colorSchemeContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
+    if (colorSchemeContainer) {
+        if (zoom > thresholdZoomLevel)
+            colorSchemeContainer.classList.remove("hiddenElement");
         else
-            etymologyContainer.classList.remove("hiddenElement");
+            colorSchemeContainer.classList.add("hiddenElement");
     }
 }
 
 function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
-    //setCulture();
+    setCulture();
     //openIntroWindow();
 
     mapMoveEndHandler(e);
@@ -1170,7 +1191,7 @@ function prepareGlobalLayers() {
             data: './global-map.geojson',
             cluster: true,
             //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
-            clusterRadius: 100, // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 150, // Radius of each cluster when clustering points (defaults to 50)
             clusterProperties: {
                 "el_num": ["+", [
                     "coalesce", ["get", "el_num"],
@@ -1244,24 +1265,31 @@ function prepareGlobalLayers() {
     }
 }
 
+/**
+ * Set the application culture for i18n & l10n
+ * 
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+ */
 function setCulture() {
     const culture = document.documentElement.lang,
-        lang = culture.substring(0, 3),
-        nameProperty = ['coalesce', ['get', `name_` + lang],
-            ['get', `name`]
+        language = culture.substring(0, 2),
+        nameProperty = [
+            //'coalesce', ['get', 'name_' + language], ['get', `name`]
+            'get', 'name_' + language
         ];
-    console.info("setCulture", { culture, lang, nameProperty, map });
+    console.info("setCulture", { culture, language, nameProperty, map });
 
-    if (map) {
-        // https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
-        // https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+    if (!map) {
+        console.warn("Empty map, can't change map language");
+    } else {
+        /* //Already handled by mapbox-gl-language constructor
         map.setLayoutProperty('country-label', 'text-field', nameProperty);
         map.setLayoutProperty('road-label', 'text-field', nameProperty);
         map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
-        map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+        map.setLayoutProperty('poi-label', 'text-field', nameProperty);*/
     }
 
-    console.info("culture", culture);
     //kendo.culture(culture);
 }
 
@@ -1277,7 +1305,9 @@ function featureToElement(feature) {
         detail_container = detail_template.content.cloneNode(true),
         //template_container = document.createDocumentFragment(),
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
-        etymologies_container = detail_container.querySelector('.etymologies_container');;
+        element_commons_button = detail_container.querySelector('.element_commons_button'),
+        etymologies_container = detail_container.querySelector('.etymologies_container'),
+        OSM_URL = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
     //template_container.appendChild(detail_container);
     console.info("featureToElement", {
         el_id: feature.properties.el_id,
@@ -1298,10 +1328,17 @@ function featureToElement(feature) {
         element_wikipedia_button.style.display = 'none';
     }
 
-    detail_container.querySelector('.osm_button').href = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
+    if (feature.properties.commons) {
+        element_commons_button.href = 'https://commons.wikimedia.org/wiki/' + feature.properties.commons;
+        element_commons_button.style.display = 'inline-flex';
+    } else {
+        element_commons_button.style.display = 'none';
+    }
+
+    detail_container.querySelector('.osm_button').href = OSM_URL;
     //detail_container.querySelector('.ety_error_button').href = 'https://www.openstreetmap.org/note/new#layers=N&map=18/' + feature.properties.point_lat + '/' + feature.properties.point_lon;
 
-    coord = feature.geometry.coordinates;
+    let coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
         coord = coord[0];
     }
@@ -1331,7 +1368,7 @@ function featureToElement(feature) {
         }
 
         try {
-            etymology.querySelector('.wikidata_button').href = ety.wikidata;
+            etymology.querySelector('.wikidata_button').href = 'https://www.wikidata.org/wiki/' + ety.wikidata;
 
             if (ety.wikipedia) {
                 wikipedia_button.href = ety.wikipedia;
@@ -1350,7 +1387,7 @@ function featureToElement(feature) {
             let coords = null,
                 coordsOk = false;
             if (ety.wkt_coords) {
-                coords = /Point\(([-\d\.]+) ([-\d\.]+)\)/i.exec(ety.wkt_coords);
+                coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords);
                 coordsOk = coords && coords.length > 1 && coords.at;
                 if (!coordsOk)
                     console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
@@ -1420,6 +1457,16 @@ function featureToElement(feature) {
             } else {
                 pictures.style.display = 'none';
             }
+
+            if (ety.from_name_etymology || ety.from_subject) {
+                etymology.querySelector('.etymology_src').innerText = "OpenStreetMap";
+                etymology.querySelector('.etymology_src').href = OSM_URL;
+            } else if (ety.from_wikidata) {
+                etymology.querySelector('.etymology_src').innerText = "Wikidata";
+                etymology.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
+            } else {
+                etymology.querySelector('.etymology_src_wrapper').style.display = 'none';
+            }
         } catch (e) {
             console.error(e);
             if (typeof Sentry != 'undefined')
@@ -1429,14 +1476,6 @@ function featureToElement(feature) {
         etymologies_container.appendChild(etymology);
     });
     return detail_container;
-}
-
-/**
- * @param {any} feature
- * @return {string}
- */
-function featureToHTML(feature) {
-    return featureToElement(feature).innerHTML;
 }
 
 /*function popStateHandler(e) {
@@ -1455,10 +1494,10 @@ function initPage(e) {
     console.info("initPage", e);
     //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
     //document.addEventListener('popstate', popStateHandler, false);
-    setCulture();
+    //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
-    if (!mapboxgl) {
-        alert('There was an error while loading Mapbox GL');
+    if (typeof mapboxgl == "undefined" || !mapboxgl) {
+        alert('There was an error while loading Mapbox GL JS (the library needed to create the map)');
         if (typeof Sentry != 'undefined')
             Sentry.captureMessage("Undefined mapboxgl", { level: "error" });
     } else if (!mapboxgl.supported()) {
@@ -1467,6 +1506,7 @@ function initPage(e) {
             Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
     } else {
         initMap();
+        //setCulture(); //! Map style likely still loading, setLayoutProperty() will cause an error
     }
 }
 

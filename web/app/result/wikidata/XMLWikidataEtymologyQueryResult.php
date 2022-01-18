@@ -72,4 +72,12 @@ class XMLWikidataEtymologyQueryResult extends XMLWikidataQueryResult
     {
         return ["pictures"];
     }
+
+    /**
+     * @return array<string>
+     */
+    protected function getEntityXMLFields(): array
+    {
+        return ["wikidata", "instanceID", "genderID"];
+    }
 }

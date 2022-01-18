@@ -36,4 +36,12 @@ class XMLWikidataStatsQueryResult extends XMLWikidataQueryResult
             "count" => "wd:literal",
         ];
     }
+
+    /**
+     * @return array<string>
+     */
+    protected function getEntityXMLFields(): array
+    {
+        return ["id"];
+    }
 }
