@@ -1447,9 +1447,14 @@ function featureToElement(feature) {
                     if (n < 5) {
                         const link = document.createElement('a'),
                             picture = document.createElement('img');
+
+                        // Example of img: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif"
+                        link.href = img.replace(/^http:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\//, 'https://commons.wikimedia.org/wiki/File:');
+                        // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
+                        picture.src = img + '?width=500px';
+                        // Link to thumbnail, example: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=500px"
+
                         link.title = "Etymology picture via Wikimedia Commons";
-                        link.href = img; // Link to original image
-                        picture.src = img + '?width=500px'; // Link to thumbnail
                         picture.alt = "Etymology picture via Wikimedia Commons";
                         link.appendChild(picture);
                         pictures.appendChild(link);
