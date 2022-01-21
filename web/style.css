@@ -85,8 +85,8 @@ div.detail_container div.pictures img {
     /*padding: 0.5em;*/
     min-width: 15em;
     min-height: 15em;
-    max-width: 25em;
-    max-height: 25em;
+    max-width: 30em;
+    max-height: 30em;
 }
 
 div.detail_container a.k-button {

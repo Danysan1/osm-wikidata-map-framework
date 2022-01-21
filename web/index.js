@@ -1447,8 +1447,8 @@ function featureToElement(feature) {
                     if (n < 5) {
                         const link = document.createElement('a'),
                             picture = document.createElement('img');
-                        link.href = img;
-                        picture.src = img;
+                        link.href = img; // Link to original image
+                        picture.src = img + '?width=500px'; // Link to thumbnail
                         picture.alt = "Etymology picture";
                         link.appendChild(picture);
                         pictures.appendChild(link);
