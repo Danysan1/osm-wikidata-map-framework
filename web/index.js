@@ -1011,7 +1011,7 @@ function prepareElementsLayers(elements_url) {
             cluster: true,
             //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
             //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
-            clusterRadius: 150, // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
         });
     }
 
@@ -1191,7 +1191,7 @@ function prepareGlobalLayers() {
             data: './global-map.geojson',
             cluster: true,
             //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
-            clusterRadius: 150, // Radius of each cluster when clustering points (defaults to 50)
+            clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
             clusterProperties: {
                 "el_num": ["+", [
                     "coalesce", ["get", "el_num"],
