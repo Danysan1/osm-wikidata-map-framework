@@ -85,8 +85,8 @@ div.detail_container div.pictures img {
     /*padding: 0.5em;*/
     min-width: 15em;
     min-height: 15em;
-    max-width: 27em;
-    max-height: 27em;
+    max-width: 26em;
+    max-height: 26em;
 }
 
 div.detail_container a.k-button {
@@ -96,7 +96,7 @@ div.detail_container a.k-button {
 div.detail_container a.k-button>.button_img {
     max-width: 1.25em;
     max-height: 1.25em;
-    margin-right: 0.5em;
+    /* margin-right: 0.5em; */
     font-size: 1.25em;
 }
 
@@ -300,7 +300,8 @@ button.mapboxgl-popup-close-button:hover {
     line-height: 1.25;
     margin: 0;
     min-height: 3rem;
-    padding: calc(.75rem - 1px) calc(1.5rem - 1px);
+    padding: calc(.75rem - 1px) calc(1rem - 1px);
+    /*padding: calc(.75rem - 1px) calc(1.5rem - 1px);*/
     /*position: relative;*/
     text-decoration: none;
     transition: all 250ms;
@@ -328,4 +329,8 @@ button.mapboxgl-popup-close-button:hover {
     box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
     color: rgba(0, 0, 0, 0.65);
     transform: translateY(0);
+}
+
+span.button_text {
+    display: none;
 }
