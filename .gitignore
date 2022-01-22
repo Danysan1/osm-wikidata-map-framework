@@ -8,6 +8,7 @@ db-data
 pgadmin-data
 *.sqlite
 *.db
+*.backup
 *.sqlite-journal
 *.pbf.*
 *.tmp.*

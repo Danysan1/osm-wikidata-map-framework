@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   postgis_db:
-    image: postgis/postgis:14-3.1-alpine
+    image: postgis/postgis:13-3.2-alpine
     ports:
       - "5432:5432"
     environment:

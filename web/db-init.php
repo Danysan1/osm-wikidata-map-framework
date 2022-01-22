@@ -42,17 +42,17 @@ if (empty($argv[1])) {
     exit(1);
 }
 
-$sourceFile = realpath($argv[1]);
-if (empty($sourceFile)) {
+$sourceFilePath = realpath($argv[1]);
+if (empty($sourceFilePath)) {
     echo "ERROR: Could not deduce full path for the given file: " . $argv[1] . PHP_EOL;
     exit(1);
-} elseif (!is_file($sourceFile)) {
-    echo "ERROR: The file you passed as first argument does not exist: " . $sourceFile . PHP_EOL;
+} elseif (!is_file($sourceFilePath)) {
+    echo "ERROR: The file you passed as first argument does not exist: " . $sourceFilePath . PHP_EOL;
     exit(1);
 }
-$workDir = dirname($sourceFile);
-$sourceFilename = basename($sourceFile);
-echo "Working on file $sourceFilename in directory $workDir" . PHP_EOL;
+$workDir = dirname($sourceFilePath);
+$sourceFileName = basename($sourceFilePath);
+echo "Working on file $sourceFileName in directory $workDir" . PHP_EOL;
 
 if ($keep_temp_tables)
     echo 'Keeping temporary tables' . PHP_EOL;
@@ -105,18 +105,30 @@ function execAndCheck(string $command): array
 
 echo 'Started at ' . date('c') . PHP_EOL;
 
-$filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFilename";
-$filteredFile = "$workDir/filtered_$sourceFilename";
-if (is_file($filteredFile)) {
-    echo '========================= Data already filtered =========================' . PHP_EOL;
-} else {
-    echo '========================= Filtering OSM data... =========================' . PHP_EOL;
-    /**
-     * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
-     */
-    execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFile' 'wikidata,subject:wikidata,name:etymology:wikidata'");
-    execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFile' '$filteredTmpFile' 'man_made=flagpole'");
-    echo '========================= Filtered OSM data =========================' . PHP_EOL;
+function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
+{
+    $filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
+    if (is_file($filteredTmpFile)) {
+        echo '========================= Data already filtered from elements without etymology  =========================' . PHP_EOL;
+    } else {
+        echo '========================= Filtering OSM data from elements without etymology... =========================' . PHP_EOL;
+        /**
+         * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
+         */
+        execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata'");
+        echo '========================= Filtered OSM data from elements without etymology =========================' . PHP_EOL;
+    }
+
+    if (is_file($filteredFilePath)) {
+        echo '========================= Data already filtered from non-interesting elements  =========================' . PHP_EOL;
+    } else {
+        echo '========================= Filtering OSM data from non-interesting elements... =========================' . PHP_EOL;
+        /**
+         * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
+         */
+        execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
+        echo '========================= Filtered OSM data from non-interesting elements =========================' . PHP_EOL;
+    }
 }
 
 
@@ -125,53 +137,64 @@ if (!is_file("osmium.json")) {
     exit(1);
 }
 
-$cacheFile = tempnam(sys_get_temp_dir(), 'osmium_');
+$filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
+$cacheFilePath = tempnam(sys_get_temp_dir(), 'osmium_');
 
-$txtFile = "$workDir/filtered_$sourceFilename.txt";
-if (is_file($txtFile)) {
+$txtFilePath = "$workDir/$sourceFileName.txt";
+if (is_file($txtFilePath)) {
     echo '========================= Data already exported to text =========================' . PHP_EOL;
 } elseif ($convert_to_txt) {
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
     echo '========================= Exporting OSM data to text... =========================' . PHP_EOL;
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$txtFile' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFile '$filteredFile'");
+    execAndCheck("osmium export --verbose --overwrite -o '$txtFilePath' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFilePath '$filteredFilePath'");
     echo '========================= Exported OSM data to text =========================' . PHP_EOL;
 }
 
-$geojsonFile = "$workDir/filtered_$sourceFilename.geojson";
-if (is_file($geojsonFile)) {
+$geojsonFilePath = "$workDir/$sourceFileName.geojson";
+if (is_file($geojsonFilePath)) {
     echo '========================= Data already exported to geojson =========================' . PHP_EOL;
 } elseif ($convert_to_geojson) {
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
     echo '========================= Exporting OSM data to geojson... =========================' . PHP_EOL;
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFile' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFile '$filteredFile'");
+    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFilePath' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFilePath '$filteredFilePath'");
     echo '========================= Exported OSM data to geojson =========================' . PHP_EOL;
 }
 
-$pgFile = "$workDir/filtered_$sourceFilename.pg";
-if (is_file($pgFile)) {
+$pgFilePath = "$workDir/$sourceFileName.pg";
+if (is_file($pgFilePath)) {
     echo '========================= Data already exported to PostGIS tsv =========================' . PHP_EOL;
 } elseif ($convert_to_pg) {
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
     echo '========================= Exporting OSM data to PostGIS tsv... =========================' . PHP_EOL;
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$pgFile' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFile '$filteredFile'");
+    execAndCheck("osmium export --verbose --overwrite -o '$pgFilePath' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFilePath '$filteredFilePath'");
     echo '========================= Exported OSM data to PostGIS tsv =========================' . PHP_EOL;
 }
 
 
 if ($use_db) {
     try {
+        $globalMapFilePath = __DIR__ . '/global-map.geojson';
+
         $conf = new IniFileConfiguration();
-        $dbh = new PostGIS_PDO($conf);
+        $host = (string)$conf->get("db-host");
+        $port = (int)$conf->get("db-port");
+        $dbname = (string)$conf->get("db-database");
+        $user = (string)$conf->get("db-user");
+        $password = (string)$conf->get("db-password");
 
         $tries = 0;
         do {
             try {
+                $dbh = new PostGIS_PDO($conf);
                 $dbh->query('SELECT version()');
                 $failure = false;
             } catch (Exception $e) {
@@ -200,8 +223,11 @@ if ($use_db) {
             exit(1);
         }
 
-        if ($reset)
+        if ($reset) {
             $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
+            if (is_file($globalMapFilePath))
+                unlink($globalMapFilePath);
+        }
 
         if ($dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='wikidata_text')")->fetchColumn()) {
             echo '========================= DB schema already prepared =========================' . PHP_EOL;
@@ -347,17 +373,12 @@ if ($use_db) {
             if ($convert_to_pg) {
                 echo '========================= Loading OSM elements into DB... =========================' . PHP_EOL;
                 /** @psalm-suppress UndefinedMethod */
-                $dbh->pgsqlCopyFromFile("oem.osmdata", $pgFile, "\t", "\\\\N", 'osm_id,osm_geometry,osm_osm_type,osm_osm_id,osm_tags');
+                $dbh->pgsqlCopyFromFile("oem.osmdata", $pgFilePath, "\t", "\\\\N", 'osm_id,osm_geometry,osm_osm_type,osm_osm_id,osm_tags');
                 $n_osmdata = $dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
                 echo "========================= Loaded $n_osmdata OSM elements into DB =========================" . PHP_EOL;
             } else { // use_osm2pgsql
-                $host = (string)$conf->get("db-host");
-                $port = (int)$conf->get("db-port");
-                $dbname = (string)$conf->get("db-database");
-                $user = (string)$conf->get("db-user");
-                $password = (string)$conf->get("db-password");
                 echo '========================= Loading data into DB... =========================' . PHP_EOL;
-                execAndCheck("PGPASSWORD='$password' osm2pgsql --host='$host' --port='$port' --database='$dbname' --user='$user' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '$filteredFile'");
+                execAndCheck("PGPASSWORD='$password' osm2pgsql --host='$host' --port='$port' --database='$dbname' --user='$user' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '$filteredFilePath'");
                 $n_point = $dbh->query("SELECT COUNT(*) FROM planet_osm_point")->fetchColumn();
                 $n_line = $dbh->query("SELECT COUNT(*) FROM planet_osm_line")->fetchColumn();
                 $n_polygon = $dbh->query("SELECT COUNT(*) FROM planet_osm_polygon")->fetchColumn();
@@ -582,7 +603,7 @@ if ($use_db) {
             echo "========================= Cleaned up $n_cleaned elements without etymology ($n_remaining remaining) =========================" . PHP_EOL;
 
             $matches = [];
-            if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFile, $matches) && count($matches) >= 4)
+            if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFilePath, $matches) && count($matches) >= 4)
                 $lastUpdate = '20' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
             else
                 $lastUpdate = date('Y-m-d');
@@ -591,27 +612,36 @@ if ($use_db) {
                 $dbh->exec('DROP TABLE oem.osmdata');
         }
 
-        echo '========================= Generating global map... =========================' . PHP_EOL;
-        $sth_global_map = $dbh->query(
-            "SELECT JSON_BUILD_OBJECT(
-                'type', 'FeatureCollection',
-                'features', JSON_AGG(ST_AsGeoJSON(point.*)::json)
-            )
-            FROM (
-                SELECT
-                    ST_SetSRID( ST_Point( ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)), 4326) AS geom,
-                    COUNT(DISTINCT COALESCE(el_name, el_id::TEXT)) AS el_num
-                FROM oem.etymology
-                JOIN oem.element ON et_el_id = el_id
-                GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)
-            ) AS point"
-        );
-        file_put_contents(__DIR__ . '/global-map.geojson', (string)$sth_global_map->fetchColumn());
-        echo '========================= Generated global map... =========================' . PHP_EOL;
+        if (is_file($globalMapFilePath)) {
+            echo '========================= Global map already generated =========================' . PHP_EOL;
+        } else {
+            echo '========================= Generating global map... =========================' . PHP_EOL;
+            $sth_global_map = $dbh->query(
+                "SELECT JSON_BUILD_OBJECT(
+                    'type', 'FeatureCollection',
+                    'features', JSON_AGG(ST_AsGeoJSON(point.*)::json)
+                )
+                FROM (
+                    SELECT
+                        ST_SetSRID( ST_Point( ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)), 4326) AS geom,
+                        COUNT(DISTINCT COALESCE(el_name, el_id::TEXT)) AS el_num
+                    FROM oem.etymology
+                    JOIN oem.element ON et_el_id = el_id
+                    GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)
+                ) AS point"
+            );
+            file_put_contents($globalMapFilePath, (string)$sth_global_map->fetchColumn());
+            echo '========================= Generated global map... =========================' . PHP_EOL;
+        }
 
-        //echo '========================= Generating backup... =========================' . PHP_EOL;
-        //execAndCheck("PGPASSWORD='$password' pg_dump --file 'open-etymology-map.backup' --host '$host' --port '$port' --database='$dbname' --username '$user' --no-password --verbose --format=c --blobs --no-owner --section=pre-data --section=data --section=post-data --no-privileges --no-tablespaces --no-unlogged-table-data --schema 'public' 'oem'")
-        //echo '========================= Backup generated... =========================' . PHP_EOL;
+        $backupFilePath = "$workDir/$sourceFileName.backup";
+        if (is_file($backupFilePath)) {
+            echo '========================= Backup file already generated =========================' . PHP_EOL;
+        } else {
+            echo '========================= Generating backup file... =========================' . PHP_EOL;
+            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem'");
+            echo '========================= Backup file generated... =========================' . PHP_EOL;
+        }
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
     }
