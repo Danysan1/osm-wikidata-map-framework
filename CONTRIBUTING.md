@@ -51,9 +51,6 @@ map "Wikidata item Q1492" as wikib #a2d2ff {
 map "Wikidata item Q16567" as wikic #a2d2ff {
   P138 (named after) => Q7322
 }
-map "Wikidata item Q5112138" as wikid #a2d2ff {
-  P180 (depicts) => Q7322
-}
 map "Wikidata item Q86518088" as wikie #a2d2ff {
   P547 (commemorates) => Q7322
 }
@@ -89,12 +86,10 @@ osmc --> wikia
 osmc --> wikib
 
 osmd --> wikic
-osme --> wikid
 osmf --> wikie
 osmg --> wikif
 
 wikic --> wikia
-wikid --> wikia
 wikie --> wikia
 wikif --> wikia
 
@@ -109,7 +104,6 @@ OpenStreetMap|`wikidata`|The ID of the Wikidata item about the feature (for exam
 OpenStreetMap|`name:etymology:wikidata`|It contains the ID of the Wikidata item for the feature's namesake.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
 OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
 Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name, or namesake (in at least one language)|[Info](https://www.wikidata.org/wiki/Property:P138)
-Wikidata|`P180` ("depicts")|Depicted entity|[Info](https://www.wikidata.org/wiki/Property:P180)
 Wikidata|`P547` ("commemorates")|What the place, monument, memorial, or holiday, commemorates|[Info](https://www.wikidata.org/wiki/Property:P547)
 Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
 

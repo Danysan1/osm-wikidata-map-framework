@@ -464,7 +464,7 @@ if ($use_db) {
                         "SELECT ?element (SAMPLE(?prop) AS ?prop) ?namedAfter
                         WHERE {
                             VALUES ?element { $wikidataCodsToFetch }.
-                            VALUES ?prop { wdt:P138 wdt:P825 wdt:P547 wdt:P180 }
+                            VALUES ?prop { wdt:P138 wdt:P825 wdt:P547 }
                             {
                                 ?element ?prop ?namedAfter.
                             } UNION {
