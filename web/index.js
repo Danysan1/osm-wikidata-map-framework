@@ -879,7 +879,7 @@ function prepareWikidataLayers(wikidata_url) {
             'paint': {
                 'line-color': colorSchemes[defaultColorScheme].color,
                 'line-opacity': 0.5,
-                'line-width': 10
+                'line-width': 12
             }
         }, "wikidata_layer_point");
         initWikidataLayer("wikidata_layer_lineString");
@@ -895,8 +895,8 @@ function prepareWikidataLayers(wikidata_url) {
             'paint': {
                 'line-color': colorSchemes[defaultColorScheme].color,
                 'line-opacity': 0.5,
-                'line-width': 6,
-                'line-offset': -2.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+                'line-width': 8,
+                'line-offset': -3.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
             }
         }, "wikidata_layer_lineString");
         initWikidataLayer("wikidata_layer_polygon_border");
