@@ -623,11 +623,11 @@ if ($use_db) {
                 )
                 FROM (
                     SELECT
-                        ST_SetSRID( ST_Point( ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)), 4326) AS geom,
+                        ST_SetSRID( ST_Point( ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)), 4326) AS geom,
                         COUNT(DISTINCT COALESCE(el_name, el_id::TEXT)) AS el_num
                     FROM oem.etymology
                     JOIN oem.element ON et_el_id = el_id
-                    GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)
+                    GROUP BY ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2), ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)
                 ) AS point"
             );
             file_put_contents($globalMapFilePath, (string)$sth_global_map->fetchColumn());
