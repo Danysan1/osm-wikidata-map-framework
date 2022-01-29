@@ -639,7 +639,7 @@ if ($use_db) {
             echo '========================= Backup file already generated =========================' . PHP_EOL;
         } else {
             echo '========================= Generating backup file... =========================' . PHP_EOL;
-            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem'");
+            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose");
             echo '========================= Backup file generated... =========================' . PHP_EOL;
         }
     } catch (Exception $e) {
