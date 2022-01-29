@@ -977,6 +977,7 @@ function prepareWikidataLayers(map, wikidata_url) {
  * 
  * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
  */
 function initWikidataLayer(map, layerID) {
     // When a click event occurs on a feature in the states layer,
@@ -987,12 +988,16 @@ function initWikidataLayer(map, layerID) {
         if (e.popupAlreadyShown) {
             console.info("initWikidataLayer: etymology popup already shown", { layerID, e });
         } else {
-            // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
-            const popup = new mapboxgl.Popup({
+            //const popupPosition = e.lngLat,
+            const popupPosition = map.getBounds().getNorthWest(),
+                popup = new mapboxgl.Popup({
+                    closeButton: true,
+                    closeOnClick: true,
+                    closeOnMove: true,
                     maxWidth: "none",
                     className: "oem_etymology_popup"
                 })
-                .setLngLat(map.getBounds().getNorthWest())
+                .setLngLat(popupPosition)
                 //.setMaxWidth('95vw')
                 //.setOffset([10, 0])
                 //.setHTML(featureToHTML(e.features[0]));
