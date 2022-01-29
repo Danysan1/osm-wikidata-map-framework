@@ -1523,8 +1523,8 @@ function featureToElement(feature) {
                         // Example of img: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif"
                         link.href = img.replace(/^http:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\//, 'https://commons.wikimedia.org/wiki/File:');
                         // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
-                        picture.src = img + '?width=500px';
-                        // Link to thumbnail, example: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=500px"
+                        picture.src = img + '?width=400px';
+                        // Link to thumbnail, example: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=400px"
 
                         link.title = "Etymology picture via Wikimedia Commons";
                         picture.alt = "Etymology picture via Wikimedia Commons";
