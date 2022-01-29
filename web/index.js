@@ -229,7 +229,7 @@ let colorControl;
 /**
  * Opens the information intro window
  * 
- * @param {Map} map 
+ * @param {mapboxgl.Map} map 
  */
 function openIntroWindow(map) {
     new mapboxgl.Popup({
@@ -727,7 +727,7 @@ function mapStyleDataHandler(e) {
  * Handles the change of fragment data
  * 
  * @param {HashChangeEvent} e The event to handle 
- * @param {Map} map 
+ * @param {mapboxgl.Map} map 
  */
 function hashChangeHandler(e, map) {
     const position = getPositionFromFragment(),
@@ -879,8 +879,10 @@ let isColorSchemeDropdownInitialized = false;
  * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
  * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
  * 
- * @param {Map} map
+ * @param {mapboxgl.Map} map
  * @param {string} wikidata_url
+ * 
+ * @see initWikidataLayer
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
@@ -972,9 +974,10 @@ function prepareWikidataLayers(map, wikidata_url) {
 /**
  * Completes low-level details of the high zoom Wikidata layer
  * 
- * @param {Map} map
+ * @param {mapboxgl.Map} map
  * @param {string} layerID 
  * 
+ * @see prepareWikidataLayers
  * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
@@ -1049,7 +1052,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
 /**
  * Initializes the mid-zoom-level clustered layer.
  * 
- * @param {Map} map
+ * @param {mapboxgl.Map} map
  * @param {string} elements_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
@@ -1249,7 +1252,7 @@ function mapLoadedHandler(e) {
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
- * @param {Map} map
+ * @param {mapboxgl.Map} map
  * 
  * @see prepareElementsLayers
  */
