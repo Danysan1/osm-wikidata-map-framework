@@ -224,9 +224,14 @@ function colorSchemeToLegend(colorScheme) {
     return distinctLabels.map(label => [colorMap.find(row => row[0] == label)[2], label]);
 }
 
-let map, colorControl;
+let colorControl;
 
-function openIntroWindow() {
+/**
+ * Opens the information intro window
+ * 
+ * @param {Map} map 
+ */
+function openIntroWindow(map) {
     new mapboxgl.Popup({
             closeButton: true,
             closeOnClick: true,
@@ -247,7 +252,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  */
 class InfoControl {
-    onAdd() {
+    onAdd(map) {
         const container = document.createElement('div');
         container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
 
@@ -255,7 +260,7 @@ class InfoControl {
         ctrlBtn.className = 'info-ctrl-button';
         ctrlBtn.title = 'Info about Open Etymology Map';
         ctrlBtn.textContent = 'ℹ️';
-        ctrlBtn.onclick = openIntroWindow;
+        ctrlBtn.onclick = () => openIntroWindow(map);
         container.appendChild(ctrlBtn);
 
         return container;
@@ -467,7 +472,9 @@ class EtymologyColorControl {
             console.info("updateChart main: URL code", { colorScheme });
             if (this._chartXHR)
                 this._chartXHR.abort();
-            const bounds = map.getBounds(),
+
+            const map = event.target,
+                bounds = map.getBounds(),
                 southWest = bounds.getSouthWest(),
                 minLat = southWest.lat, // Math.round(southWest.lat * 1000) / 1000,
                 minLon = southWest.lng, // Math.round(southWest.lng * 1000) / 1000,
@@ -628,86 +635,82 @@ function getPositionFromFragment() {
 }
 
 /**
+ * Initializes the static map preview
+ * 
  * @see https://docs.mapbox.com/help/tutorials/improve-perceived-performance-with-static/
  * @see https://docs.mapbox.com/api/maps/static-images/
  */
 function initMapPreview() {
-    if (map) {
-        console.info("initMapPreview: The map is already initialized");
-    } else {
+    try {
         console.info("initMapPreview: Initializing the map preview");
+        const startPosition = getPositionFromFragment(),
+            lon = startPosition.lon,
+            lat = startPosition.lat,
+            zoom = startPosition.zoom,
+            map_static_preview = document.getElementById('map_static_preview'),
+            width = map_static_preview.clientWidth,
+            height = map_static_preview.clientHeight,
+            //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
+            imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + width + 'x' + height + '?access_token=' + mapbox_gl_token;
+        console.info("Initializing the map preview", { startPosition, imgURL });
 
-        try {
-            const startPosition = getPositionFromFragment(),
-                lon = startPosition.lon,
-                lat = startPosition.lat,
-                zoom = startPosition.zoom,
-                map_static_preview = document.getElementById('map_static_preview'),
-                width = map_static_preview.clientWidth,
-                height = map_static_preview.clientHeight,
-                //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
-                imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + width + 'x' + height + '?access_token=' + mapbox_gl_token;
-            console.info("Initializing the map preview", { startPosition, imgURL });
-
-            map_static_preview.style.backgroundImage = 'url(' + imgURL + ')';
-            map_static_preview.style.backgroundRepeat = 'no-repeat';
-            map_static_preview.style.backgroundSize = 'cover';
-            map_static_preview.style.visibility = 'visible';
-            document.getElementById('map').style.visibility = 'hidden';
-        } catch (e) {
-            console.error("initMapPreview: failed initializing the map preview", e);
-        }
+        map_static_preview.style.backgroundImage = 'url(' + imgURL + ')';
+        map_static_preview.style.backgroundRepeat = 'no-repeat';
+        map_static_preview.style.backgroundSize = 'cover';
+        map_static_preview.style.visibility = 'visible';
+        document.getElementById('map').style.visibility = 'hidden';
+    } catch (e) {
+        console.error("initMapPreview: failed initializing the map preview", e);
     }
 }
 
+/**
+ * Initializes the map
+ */
 function initMap() {
-    if (map) {
-        console.info("initMap: The map is already initialized");
+    mapboxgl.accessToken = mapbox_gl_token;
+    const startPosition = getPositionFromFragment(),
+        backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
+    console.info("Initializing the map", { startPosition, backgroundStyleObj });
+    let map, backgroundStyle;
+    if (backgroundStyleObj) {
+        backgroundStyle = backgroundStyleObj.style;
     } else {
-        mapboxgl.accessToken = mapbox_gl_token;
-        const startPosition = getPositionFromFragment(),
-            backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
-        console.info("Initializing the map", { startPosition, backgroundStyleObj });
-        let backgroundStyle;
-        if (backgroundStyleObj) {
-            backgroundStyle = backgroundStyleObj.style;
-        } else {
-            console.error("Invalid default background style", defaultBackgroundStyle);
-            if (typeof Sentry != 'undefined')
-                Sentry.captureMessage("Invalid default background style");
-            backgroundStyle = "mapbox://styles/mapbox/streets-v11";
-        }
+        console.error("Invalid default background style", defaultBackgroundStyle);
+        if (typeof Sentry != 'undefined')
+            Sentry.captureMessage("Invalid default background style");
+        backgroundStyle = "mapbox://styles/mapbox/streets-v11";
+    }
 
-        // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/
-        mapboxgl.setRTLTextPlugin(
-            './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
-            err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
-            true // Lazy load the plugin
-        );
+    // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/
+    mapboxgl.setRTLTextPlugin(
+        './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
+        err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
+        true // Lazy load the plugin
+    );
 
-        map = new mapboxgl.Map({
-            container: 'map',
-            style: backgroundStyle,
-            center: [startPosition.lon, startPosition.lat], // starting position [lon, lat]
-            zoom: startPosition.zoom, // starting zoom
-        });
-        openIntroWindow();
+    map = new mapboxgl.Map({
+        container: 'map',
+        style: backgroundStyle,
+        center: [startPosition.lon, startPosition.lat], // starting position [lon, lat]
+        zoom: startPosition.zoom, // starting zoom
+    });
+    openIntroWindow(map);
 
-        map.on('load', mapLoadedHandler);
-        map.on('styledata', mapStyleDataHandler);
+    map.on('load', mapLoadedHandler);
+    map.on('styledata', mapStyleDataHandler);
 
-        setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, defaultColorScheme);
-        window.addEventListener('hashchange', hashChangeHandler, false);
+    setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, defaultColorScheme);
+    window.addEventListener('hashchange', (e) => hashChangeHandler(e, map), false);
 
-        try {
-            map.addControl(new MapboxLanguage({
-                defaultLanguage: document.documentElement.lang.substring(0, 2)
-            }));
-        } catch (err) {
-            console.warn("Failed setting up mapbox-gl-language", err);
-            if (typeof Sentry != 'undefined')
-                Sentry.captureException(err);
-        }
+    try {
+        map.addControl(new MapboxLanguage({
+            defaultLanguage: document.documentElement.lang.substring(0, 2)
+        }));
+    } catch (err) {
+        console.warn("Failed setting up mapbox-gl-language", err);
+        if (typeof Sentry != 'undefined')
+            Sentry.captureException(err);
     }
 }
 
@@ -721,10 +724,12 @@ function mapStyleDataHandler(e) {
 }
 
 /**
+ * Handles the change of fragment data
  * 
  * @param {HashChangeEvent} e The event to handle 
+ * @param {Map} map 
  */
-function hashChangeHandler(e) {
+function hashChangeHandler(e, map) {
     const position = getPositionFromFragment(),
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
@@ -797,13 +802,16 @@ function mapErrorHandler(err) {
 }
 
 /**
+ * 
+ * @param {Event} event 
  * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
  */
-function updateDataSource() {
+function updateDataSource(event) {
     // https://stackoverflow.com/questions/48592137/bounding-box-in-mapbox-js
     // https://leafletjs.com/reference-1.7.1.html#map-getbounds
-    const bounds = map.getBounds(),
+    const map = event.target,
+        bounds = map.getBounds(),
         southWest = bounds.getSouthWest(),
         minLat = southWest.lat, // Math.round(southWest.lat * 1000) / 1000,
         minLon = southWest.lng, // Math.round(southWest.lng * 1000) / 1000,
@@ -829,7 +837,7 @@ function updateDataSource() {
         const queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
 
-        prepareWikidataLayers(wikidata_url);
+        prepareWikidataLayers(map, wikidata_url);
         const wikidata_source = map.getSource("wikidata_source");
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
 
@@ -840,7 +848,7 @@ function updateDataSource() {
             console.error("updateDataSource: missing wikidata_source");
         }
     } else if (zoomLevel < minZoomLevel) {
-        prepareGlobalLayers();
+        prepareGlobalLayers(map);
 
         //showSnackbar("Please zoom more to see data", "orange");
     } else {
@@ -849,7 +857,7 @@ function updateDataSource() {
         const queryString = new URLSearchParams(queryParams).toString(),
             elements_url = './elements.php?' + queryString;
 
-        prepareElementsLayers(elements_url);
+        prepareElementsLayers(map, elements_url);
         const elements_source = map.getSource("elements_source");
         console.info("Overpass dataSource update", { queryParams, elements_url, elements_source });
 
@@ -871,13 +879,14 @@ let isColorSchemeDropdownInitialized = false;
  * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
  * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
  * 
+ * @param {Map} map
  * @param {string} wikidata_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
  */
-function prepareWikidataLayers(wikidata_url) {
+function prepareWikidataLayers(map, wikidata_url) {
     if (!map.getSource("wikidata_source")) {
         map.addSource('wikidata_source', {
             type: 'geojson',
@@ -901,7 +910,7 @@ function prepareWikidataLayers(wikidata_url) {
                 'circle-stroke-color': 'white'
             }
         });
-        initWikidataLayer("wikidata_layer_point");
+        initWikidataLayer(map, "wikidata_layer_point");
     }
 
     if (!map.getLayer("wikidata_layer_lineString")) {
@@ -917,7 +926,7 @@ function prepareWikidataLayers(wikidata_url) {
                 'line-width': 12
             }
         }, "wikidata_layer_point");
-        initWikidataLayer("wikidata_layer_lineString");
+        initWikidataLayer(map, "wikidata_layer_lineString");
     }
 
     if (!map.getLayer("wikidata_layer_polygon_border")) {
@@ -934,7 +943,7 @@ function prepareWikidataLayers(wikidata_url) {
                 'line-offset': -3.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
             }
         }, "wikidata_layer_lineString");
-        initWikidataLayer("wikidata_layer_polygon_border");
+        initWikidataLayer(map, "wikidata_layer_polygon_border");
     }
 
     if (!map.getLayer("wikidata_layer_polygon_fill")) {
@@ -950,7 +959,7 @@ function prepareWikidataLayers(wikidata_url) {
                 'fill-outline-color': "rgba(0, 0, 0, 0)",
             }
         }, "wikidata_layer_polygon_border");
-        initWikidataLayer("wikidata_layer_polygon_fill");
+        initWikidataLayer(map, "wikidata_layer_polygon_fill");
     }
 
     if (!isColorSchemeDropdownInitialized) {
@@ -961,12 +970,15 @@ function prepareWikidataLayers(wikidata_url) {
 }
 
 /**
+ * Completes low-level details of the high zoom Wikidata layer
+ * 
+ * @param {Map} map
  * @param {string} layerID 
  * 
  * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
  */
-function initWikidataLayer(layerID) {
+function initWikidataLayer(map, layerID) {
     // When a click event occurs on a feature in the states layer,
     // open a popup at the location of the click, with description
     // HTML from the click event's properties.
@@ -1032,6 +1044,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
 /**
  * Initializes the mid-zoom-level clustered layer.
  * 
+ * @param {Map} map
  * @param {string} elements_url
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
@@ -1039,7 +1052,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
  * GL-JS will add the point_count property to your source data.
  * //@see https://docs.mapbox.com/mapbox-gl-js/example/heatmap-layer/
  */
-function prepareElementsLayers(elements_url) {
+function prepareElementsLayers(map, elements_url) {
     if (!map.getSource("elements_source")) {
         map.addSource('elements_source', {
             type: 'geojson',
@@ -1138,12 +1151,14 @@ function prepareElementsLayers(elements_url) {
 }
 
 /**
+ * Handles the dragging of a map
  * 
  * @param {DragEvent} e The event to handle 
  */
 function mapMoveEndHandler(e) {
     updateDataSource(e);
-    const lat = Math.round(map.getCenter().lat * 10000) / 10000,
+    const map = e.target,
+        lat = Math.round(map.getCenter().lat * 10000) / 10000,
         lon = Math.round(map.getCenter().lng * 10000) / 10000,
         zoom = Math.round(map.getZoom() * 10) / 10;
     console.info("mapMoveEndHandler", { e, lat, lon, zoom });
@@ -1158,14 +1173,20 @@ function mapMoveEndHandler(e) {
     }
 }
 
+/**
+ * Handles the completion of map loading
+ * 
+ * @param {Event} e 
+ */
 function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
+    const map = e.target;
 
     document.getElementById('map').style.visibility = 'visible';
     document.getElementById('map_static_preview').style.visibility = 'hidden';
 
     setCulture();
-    //openIntroWindow();
+    //openIntroWindow(map);
 
     mapMoveEndHandler(e);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
@@ -1217,15 +1238,17 @@ function mapLoadedHandler(e) {
 
     map.on('error', mapErrorHandler);
 
-    //prepareGlobalLayers();
+    //prepareGlobalLayers(map);
 }
 
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
+ * @param {Map} map
+ * 
  * @see prepareElementsLayers
  */
-function prepareGlobalLayers() {
+function prepareGlobalLayers(map) {
     if (!map.getSource("global_source")) {
         map.addSource('global_source', {
             type: 'geojson',
@@ -1319,17 +1342,17 @@ function setCulture() {
             //'coalesce', ['get', 'name_' + language], ['get', `name`]
             'get', 'name_' + language
         ];
-    console.info("setCulture", { culture, language, nameProperty, map });
+    console.info("setCulture", { culture, language, nameProperty });
 
-    if (!map) {
+    /*if (!map) {
         console.warn("Empty map, can't change map language");
     } else {
-        /* //Already handled by mapbox-gl-language constructor
+        //Already handled by mapbox-gl-language constructor
         map.setLayoutProperty('country-label', 'text-field', nameProperty);
         map.setLayoutProperty('road-label', 'text-field', nameProperty);
         map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
-        map.setLayoutProperty('poi-label', 'text-field', nameProperty);*/
-    }
+        map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+    }*/
 
     //kendo.culture(culture);
 }
