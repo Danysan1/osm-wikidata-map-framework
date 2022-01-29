@@ -104,23 +104,26 @@ if (!$conf->has("mapbox-gl-token")) {
 </head>
 
 <body>
-    <div id='map'></div>
-    <div id="intro">
-        <h1>Open Etymology Map</h1>
-        <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>
+    <div id="map_container">
+        <div id='map'></div>
+        <div id="map_static_preview"></div>
+        <div id="intro">
+            <h1>Open Etymology Map</h1>
+            <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>
 
-        <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
+            <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
-        <p>
-            <?= implode(" | ", [
-                is_file('LAST_UPDATE') ? 'Last update: ' . htmlspecialchars(file_get_contents('LAST_UPDATE')) : false,
-                $conf->has("report-problem-url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report-problem-url") . '">Report a problem</a>' : false,
-                '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
-            ]); ?>
-        </p>
-        <h3>Click anywhere on the map to explore.</h3>
+            <p>
+                <?= implode(" | ", [
+                    is_file('LAST_UPDATE') ? 'Last update: ' . htmlspecialchars(file_get_contents('LAST_UPDATE')) : false,
+                    $conf->has("report-problem-url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report-problem-url") . '">Report a problem</a>' : false,
+                    '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
+                ]); ?>
+            </p>
+            <h3>Click anywhere on the map to explore.</h3>
+        </div>
+        <h2>The map is loading...</h2>
     </div>
-    <h2>The map is loading...</h2>
     <noscript>
         <strong>You need Javascript enabled to run this web app</strong>
     </noscript>

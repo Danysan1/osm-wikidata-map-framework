@@ -7,6 +7,8 @@
     max-height: 15em;
 }
 
+div#map_container,
+div#map_static_preview,
 div#map {
     position: absolute;
     /*margin: 10em auto;*/
@@ -19,18 +21,20 @@ div#map {
     /*height: 750px;*/
 }
 
-div.mapboxgl-popup {
+div.mapboxgl-popup.oem_etymology_popup,
+div.mapboxgl-popup.oem_info_popup {
     min-width: 15em;
     max-width: 80%;
     min-height: 15em;
     /*height: 25em;*/
-    max-height: 50%;
+    max-height: 90%;
     /*max-height: 50em;*/
     /*width: 80%;*/
     /*height: 80%;*/
     /*position: absolute;*/
-    /*top: 10%;*/
-    /*left: 10%;*/
+    top: .3%;
+    left: .3%;
+    z-index: 1000;
 }
 
 div.mapboxgl-popup-content {

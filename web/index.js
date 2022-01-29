@@ -219,9 +219,9 @@ console.info("start", {
 function colorSchemeToLegend(colorScheme) {
     if (!colorScheme.colorMap)
         throw new Error("colorSchemeToLegend: colorMap is not defined");
-    const map = colorScheme.colorMap,
-        distinctLabels = [...(new Set(map.map(color => color[0])))];
-    return distinctLabels.map(label => [map.find(row => row[0] == label)[2], label]);
+    const colorMap = colorScheme.colorMap,
+        distinctLabels = [...(new Set(colorMap.map(color => color[0])))];
+    return distinctLabels.map(label => [colorMap.find(row => row[0] == label)[2], label]);
 }
 
 let map, colorControl;
@@ -231,6 +231,8 @@ function openIntroWindow() {
             closeButton: true,
             closeOnClick: true,
             closeOnMove: true,
+            maxWidth: 'none',
+            className: "oem_info_popup"
         }).setLngLat(map.getBounds().getNorthWest())
         .setDOMContent(document.getElementById("intro").cloneNode(true))
         .addTo(map);
@@ -625,9 +627,42 @@ function getPositionFromFragment() {
     return p;
 }
 
+/**
+ * @see https://docs.mapbox.com/help/tutorials/improve-perceived-performance-with-static/
+ * @see https://docs.mapbox.com/api/maps/static-images/
+ */
+function initMapPreview() {
+    if (map) {
+        console.info("initMapPreview: The map is already initialized");
+    } else {
+        console.info("initMapPreview: Initializing the map preview");
+
+        try {
+            const startPosition = getPositionFromFragment(),
+                lon = startPosition.lon,
+                lat = startPosition.lat,
+                zoom = startPosition.zoom,
+                map_static_preview = document.getElementById('map_static_preview'),
+                width = map_static_preview.clientWidth,
+                height = map_static_preview.clientHeight,
+                //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
+                imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + width + 'x' + height + '?access_token=' + mapbox_gl_token;
+            console.info("Initializing the map preview", { startPosition, imgURL });
+
+            map_static_preview.style.backgroundImage = 'url(' + imgURL + ')';
+            map_static_preview.style.backgroundRepeat = 'no-repeat';
+            map_static_preview.style.backgroundSize = 'cover';
+            map_static_preview.style.visibility = 'visible';
+            document.getElementById('map').style.visibility = 'hidden';
+        } catch (e) {
+            console.error("initMapPreview: failed initializing the map preview", e);
+        }
+    }
+}
+
 function initMap() {
     if (map) {
-        console.info("The map is already initialized");
+        console.info("initMap: The map is already initialized");
     } else {
         mapboxgl.accessToken = mapbox_gl_token;
         const startPosition = getPositionFromFragment(),
@@ -938,20 +973,22 @@ function initWikidataLayer(layerID) {
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
     map.on('click', layerID, function(e) {
         if (e.popupAlreadyShown) {
-            console.info("showEtymologyPopup: popup already shown", { layerID, e });
+            console.info("initWikidataLayer: etymology popup already shown", { layerID, e });
         } else {
             // https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
-            const popup = new mapboxgl.Popup({ maxWidth: "none" })
+            const popup = new mapboxgl.Popup({
+                    maxWidth: "none",
+                    className: "oem_etymology_popup"
+                })
                 .setLngLat(map.getBounds().getNorthWest())
                 //.setMaxWidth('95vw')
                 //.setOffset([10, 0])
                 //.setHTML(featureToHTML(e.features[0]));
                 .setHTML('<div class="detail_wrapper"></div>')
                 .addTo(map);
-            //console.info(popup, popup.getElement());
+            console.info("initWikidataLayer: showing etymology popup", { layerID, e, popup });
             popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
             e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
-            console.info("showEtymologyPopup: showing popup", { layerID, e, popup });
         }
     });
 
@@ -1123,6 +1160,10 @@ function mapMoveEndHandler(e) {
 
 function mapLoadedHandler(e) {
     console.info("mapLoadedHandler", e);
+
+    document.getElementById('map').style.visibility = 'visible';
+    document.getElementById('map_static_preview').style.visibility = 'hidden';
+
     setCulture();
     //openIntroWindow();
 
@@ -1511,6 +1552,7 @@ function initPage(e) {
         if (typeof Sentry != 'undefined')
             Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
     } else {
+        initMapPreview();
         initMap();
         //setCulture(); //! Map style likely still loading, setLayoutProperty() will cause an error
     }
