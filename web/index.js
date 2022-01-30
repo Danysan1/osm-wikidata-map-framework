@@ -649,10 +649,14 @@ function initMapPreview() {
             lat = startPosition.lat,
             zoom = startPosition.zoom,
             map_static_preview = document.getElementById('map_static_preview'),
-            width = Math.min(map_static_preview.clientWidth, 1280),
-            height = Math.min(map_static_preview.clientHeight, 1280),
+            width = map_static_preview.clientWidth,
+            height = map_static_preview.clientHeight,
+            maxDimension = Math.max(width, height),
+            rescaleFactor = maxDimension <= 1280 ? 1 : 1280 / maxDimension,
+            trueWidth = Math.trunc(width * rescaleFactor),
+            trueHeight = Math.trunc(height * rescaleFactor),
             //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
-            imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + width + 'x' + height + '?access_token=' + mapbox_gl_token;
+            imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + trueWidth + 'x' + trueHeight + '?access_token=' + mapbox_gl_token;
         console.info("Initializing the map preview", { startPosition, imgURL });
 
         map_static_preview.src = imgURL;
