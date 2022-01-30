@@ -79,7 +79,6 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
     <link rel="stylesheet" href="./style.css" type="text/css" />
-    <!--<link rel="stylesheet" href="./w3.css" type="text/css">-->
     <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
