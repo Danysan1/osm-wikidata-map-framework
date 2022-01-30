@@ -639,6 +639,7 @@ function getPositionFromFragment() {
  * 
  * @see https://docs.mapbox.com/help/tutorials/improve-perceived-performance-with-static/
  * @see https://docs.mapbox.com/api/maps/static-images/
+ * @see https://docs.mapbox.com/api/maps/static-images/#static-images-api-errors
  */
 function initMapPreview() {
     try {
@@ -648,15 +649,13 @@ function initMapPreview() {
             lat = startPosition.lat,
             zoom = startPosition.zoom,
             map_static_preview = document.getElementById('map_static_preview'),
-            width = map_static_preview.clientWidth,
-            height = map_static_preview.clientHeight,
+            width = Math.min(map_static_preview.clientWidth, 1280),
+            height = Math.min(map_static_preview.clientHeight, 1280),
             //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
             imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + width + 'x' + height + '?access_token=' + mapbox_gl_token;
         console.info("Initializing the map preview", { startPosition, imgURL });
 
-        map_static_preview.style.backgroundImage = 'url(' + imgURL + ')';
-        map_static_preview.style.backgroundRepeat = 'no-repeat';
-        map_static_preview.style.backgroundSize = 'cover';
+        map_static_preview.src = imgURL;
         map_static_preview.style.visibility = 'visible';
         document.getElementById('map').style.visibility = 'hidden';
     } catch (e) {
