@@ -106,16 +106,16 @@ Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was 
 
 In order to display the etymology of an element you need to create one of these combinations. Here's how to do it:
 
-1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/) (you can either search it by name or find it on the map, right click on it's position, click "Query features" and then choose it from the list of found elements)
-2. Check out the element's tags on the left of the screen:
+1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/)
+2. Check out the element's tags:
     - If the element has a `name:etymology:wikidata` or `subject:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
         - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
         - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
     - If the element has a `wikidata` tag check the referenced Wikidata element.
         - If it does not represent the same real world object of the OSM element, search the correct one and change it.
-        - If it contains a `P138` ("named after") or `P825` ("dedicated to") relation check that it links to the correct etymology. If it is absent, add it:
+        - If it contains a `P138` ("named after"), `P547` ("commemorates") or `P825` ("dedicated to") relation check that it links to the correct etymology. If it is absent, add it:
             1. Click "+ Add statement"
-            2. On the left choose `P138` or `P825` (depending on which is more appropriate) as property
+            2. On the left choose `P138`, `P547` or `P825` (depending on which is more appropriate) as property
             3. On the right search the desired etymology to use as the value
     - If none of these tags is present, you can link the Wikidata item for the etymology to the element
         1. Search the etymology on Wikidata
