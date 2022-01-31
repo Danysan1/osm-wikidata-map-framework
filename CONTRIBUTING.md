@@ -70,9 +70,6 @@ map "OSM element C" as osmc #95d5b2 {
 map "OSM element D" as osmd #95d5b2 {
   wikidata => Q16567
 }
-map "OSM element E" as osme #95d5b2 {
-  wikidata => Q5112138
-}
 map "OSM element F" as osmf #95d5b2 {
   wikidata => Q86518088
 }
@@ -107,25 +104,23 @@ Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name
 Wikidata|`P547` ("commemorates")|What the place, monument, memorial, or holiday, commemorates|[Info](https://www.wikidata.org/wiki/Property:P547)
 Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
 
-1. Find the element of interest on OpenStreetMap
-2. If the element has a `name:etymology:wikidata` or `subject:wikidata` tag then the element should already be available on Open Etymology Map.
-   - If the tags are present but the element isn't available on OEM, the tag value may contain an error, like not being a valid Wikidata ID.
-   - If it is available on OEM but with the wrong etymology, search on Wikidata the ID for the correct etymology and edit the incorrect tag with the new ID.
-3. If the element has a `wikidata` tag check the referenced Wikidata element.
-   - If it does not represent the same real world object of the OSM element, search the correct one and change it. 
-   - If it contains a `P138` ("named after") or `P825` ("dedicated to") relation check that it links to the correct etymology. If it is absent, add it:
-     1. Click "+ Add statement"
-     2. On the left choose `P138` or `P825` (depending on which is more appropriate) as property
-     3. On the right search the desired etymology to use as the value
-4. If none of these tags is present, you can either:
-   - Link the Wikidata item for the etymology to the element
-     1. Search the etymology on Wikidata
-     2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
-     3. Add to the OpenStreetMap element the `name:etymology:wikidata` or `subject:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
-   - If it is available, link the Wikidata item for the element to the element itself and add the etymology to the item:
-     1. Search the Wikidata item for the element
-     2. If it is available add it to the element through the `wikidata` tag
-     3. Add the "named after" or "dedicated to" property to the Wikidata item as shown above
+In order to display the etymology of an element you need to create one of these combinations. Here's how to do it:
+
+1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/) (you can either search it by name or find it on the map, right click on it's position, click "Query features" and then choose it from the list of found elements)
+2. Check out the element's tags on the left of the screen:
+    - If the element has a `name:etymology:wikidata` or `subject:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
+        - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
+        - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
+    - If the element has a `wikidata` tag check the referenced Wikidata element.
+        - If it does not represent the same real world object of the OSM element, search the correct one and change it.
+        - If it contains a `P138` ("named after") or `P825` ("dedicated to") relation check that it links to the correct etymology. If it is absent, add it:
+            1. Click "+ Add statement"
+            2. On the left choose `P138` or `P825` (depending on which is more appropriate) as property
+            3. On the right search the desired etymology to use as the value
+    - If none of these tags is present, you can link the Wikidata item for the etymology to the element
+        1. Search the etymology on Wikidata
+        2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
+        3. Add to the OpenStreetMap element the `name:etymology:wikidata` or `subject:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
 
 ## How to contribute to Open Etymology Map
 
