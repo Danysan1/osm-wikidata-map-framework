@@ -13,7 +13,9 @@
     "config": {
         "platform": {
             "php": "7.4.25"
-        }
+        },
+        "optimize-autoloader": true,
+        "apcu-autoloader": true
     },
     "homepage": "https://etymology.dsantini.it",
     "license": "GPL-3.0",
