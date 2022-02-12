@@ -657,7 +657,7 @@ function initMapPreview() {
             trueHeight = Math.trunc(height * rescaleFactor),
             //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
             imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + trueWidth + 'x' + trueHeight + '?access_token=' + mapbox_gl_token;
-        console.info("Initializing the map preview", { startPosition, imgURL });
+        console.info("Initializing the map preview", { startPosition, width, height, imgURL });
 
         map_static_preview.src = imgURL;
         map_static_preview.style.visibility = 'visible';
@@ -1542,7 +1542,7 @@ function featureToElement(feature) {
             if (ety.from_name_etymology || ety.from_subject) {
                 etymology.querySelector('.etymology_src').innerText = "OpenStreetMap";
                 etymology.querySelector('.etymology_src').href = OSM_URL;
-            } else if (ety.from_wikidata) {
+            } else if (ety.from_wikidata_cod) {
                 etymology.querySelector('.etymology_src').innerText = "Wikidata";
                 etymology.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
             } else {
@@ -1596,6 +1596,7 @@ function initPage(e) {
  * 
  * @param {string|Date} date 
  * @param {int} precision https://www.wikidata.org/wiki/Help:Dates#Precision
+ * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
  * @return {string}
  */

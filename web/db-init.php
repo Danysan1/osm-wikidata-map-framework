@@ -319,7 +319,9 @@ if ($use_db) {
                     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
                     et_from_name_etymology BOOLEAN,
                     et_from_subject BOOLEAN,
-                    et_from_wikidata BOOLEAN,
+                    et_from_wikidata_named_after BOOLEAN,
+                    et_from_wikidata_dedicated_to BOOLEAN,
+                    et_from_wikidata_commemorates BOOLEAN,
                     et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id),
                     et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$'),
                     CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
@@ -370,6 +372,7 @@ if ($use_db) {
         } elseif ($dbh->query("SELECT EXISTS (SELECT FROM oem.osmdata)")->fetchColumn()) {
             echo '========================= Elements already loaded =========================' . PHP_EOL;
         } else {
+            ini_set('memory_limit', '256M');
             if ($convert_to_pg) {
                 echo '========================= Loading OSM elements into DB... =========================' . PHP_EOL;
                 /** @psalm-suppress UndefinedMethod */
@@ -533,7 +536,9 @@ if ($use_db) {
                         et_wd_id,
                         et_from_name_etymology,
                         et_from_subject,
-                        et_from_wikidata,
+                        et_from_wikidata_named_after,
+                        et_from_wikidata_dedicated_to,
+                        et_from_wikidata_commemorates,
                         et_from_wikidata_wd_id,
                         et_from_wikidata_prop_cod
                     ) SELECT
@@ -541,7 +546,9 @@ if ($use_db) {
                         wd_id,
                         BOOL_OR(ew_from_name_etymology),
                         BOOL_OR(ew_from_subject),
-                        BOOL_OR(ew_from_wikidata),
+                        BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P138'),
+                        BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P825'),
+                        BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P547'),
                         MIN(from_wd_id),
                         MIN(wna_from_prop_cod)
                     FROM (
