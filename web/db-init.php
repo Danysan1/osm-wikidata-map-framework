@@ -692,7 +692,7 @@ if ($use_db) {
             echo 'Conversion complete at ' . date('c') . PHP_EOL;
         }
 
-        if ($dbh->query("SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata')")->fetchColumn()) {
+        if (isOsmDataTemporaryTableAbsent($dbh)) {
             logProgress('Temporary tables already deleted, not cleaning up elements');
         } else {
             logProgress('Cleaning up elements without etymology...');
