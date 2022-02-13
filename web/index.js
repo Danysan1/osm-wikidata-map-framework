@@ -1539,10 +1539,10 @@ function featureToElement(feature) {
                 pictures.style.display = 'none';
             }
 
-            if (ety.from_name_etymology || ety.from_subject) {
+            if (ety.from_osm) {
                 etymology.querySelector('.etymology_src').innerText = "OpenStreetMap";
                 etymology.querySelector('.etymology_src').href = OSM_URL;
-            } else if (ety.from_wikidata_cod) {
+            } else if (ety.from_wikidata) {
                 etymology.querySelector('.etymology_src').innerText = "Wikidata";
                 etymology.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
             } else {
