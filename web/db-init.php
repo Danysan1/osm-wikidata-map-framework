@@ -107,7 +107,7 @@ echo 'Started at ' . date('c') . PHP_EOL;
 
 function logProgress(string $message): void
 {
-    logProgress("$message \t--------------------------------------------------" . PHP_EOL);
+    echo "$message \t|--------------------------------------------------" . PHP_EOL;
 }
 
 function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
@@ -228,7 +228,9 @@ function setupSchema(PDO $dbh): void
             et_el_id BIGINT NOT NULL,
             et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
             et_from_name_etymology BOOLEAN,
+            et_from_name_etymology_consists BOOLEAN,
             et_from_subject BOOLEAN,
+            et_from_subject_consists BOOLEAN,
             et_from_wikidata_named_after BOOLEAN,
             et_from_wikidata_dedicated_to BOOLEAN,
             et_from_wikidata_commemorates BOOLEAN,
@@ -248,10 +250,10 @@ function setupSchema(PDO $dbh): void
     $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
     $dbh->exec(
         "CREATE TABLE oem.wikidata_named_after (
+            wna_id SERIAL NOT NULL PRIMARY KEY,
             wna_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
             wna_named_after_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-            wna_from_prop_cod VARCHAR CHECK (wna_from_prop_cod ~* '^P\d+$'),
-            CONSTRAINT wikidata_named_after_pkey PRIMARY KEY (wna_wd_id, wna_named_after_wd_id)
+            wna_from_prop_cod VARCHAR CHECK (wna_from_prop_cod ~* '^P\d+$')
         )"
     );
     $dbh->exec(
@@ -354,119 +356,71 @@ function convertElementWikidataCods(PDO $dbh): void
     logProgress("Converted $n_wikidata_cods wikidata codes");
 }
 
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): void
+function loadWikidataEntities(PDO $dbh): void
 {
-    $wikidataNamedAfterRqFile = sys_get_temp_dir() . "/wikidata_named_after.tmp.rq";
-    $wikidataNamedAfterJSONFile = sys_get_temp_dir() . "/wikidata_named_after.tmp.json";
-
-    $n_todo_named_after = $dbh->query(
-        "SELECT COUNT(DISTINCT ew_wikidata_cod) FROM oem.element_wikidata_cods WHERE ew_from_wikidata"
-    )->fetchColumn();
-    logProgress("Counted $n_todo_named_after Wikidata codes to check");
-
-    $pageSize = 15000;
-    for ($offset = 0; $offset < $n_todo_named_after; $offset += $pageSize) {
-        logProgress("Downloading Wikidata \"named-after\" data (starting from $offset)...");
-        $wikidataCodsToFetch = $dbh->query(
-            "SELECT STRING_AGG('wd:'||ew_wikidata_cod, ' ') FROM (
-                SELECT DISTINCT ew_wikidata_cod FROM oem.element_wikidata_cods WHERE ew_from_wikidata ORDER BY ew_wikidata_cod LIMIT $pageSize OFFSET $offset
-            ) AS x"
-        )->fetchColumn();
-        $namedAfterQuery =
-            "SELECT ?element (SAMPLE(?prop) AS ?prop) ?namedAfter
-            WHERE {
-                VALUES ?element { $wikidataCodsToFetch }.
-                VALUES ?prop { wdt:P138 wdt:P825 wdt:P547 }
-                {
-                    ?element ?prop ?namedAfter.
-                } UNION {
-                    ?element owl:sameAs [ ?prop ?namedAfter ].
-                }
-            }
-            GROUP BY ?element ?namedAfter";
-        file_put_contents($wikidataNamedAfterRqFile, $namedAfterQuery);
-        $jsonResult = (new JSONWikidataQuery($namedAfterQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
-        file_put_contents($wikidataNamedAfterJSONFile, $jsonResult);
-
-        logProgress('Loading Wikidata "named-after" data...');
-        $sth_wd = $dbh->prepare(
-            "INSERT INTO oem.wikidata (wd_wikidata_cod)
-            SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wd_id IS NULL
-            UNION
-            SELECT DISTINCT REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
-            FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'namedAfter'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wd_id IS NULL"
-        );
-        $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-        $sth_wd->execute();
-        $n_wd = $sth_wd->rowCount();
-
-        $sth_wna = $dbh->prepare(
-            "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
-            SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/direct/', '')
-            FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'namedAfter'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'namedAfter'->>'value', 31) = 'http://www.wikidata.org/entity/'"
-        );
-        $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-        $sth_wna->execute();
-        $n_wna = $sth_wna->rowCount();
-        logProgress("Loaded $n_wd Wikidata entities and $n_wna \"named-after\" associations");
-    }
+    $n_wd = $dbh->exec(
+        "INSERT INTO oem.wikidata (wd_wikidata_cod)
+        SELECT DISTINCT ew_wikidata_cod
+        FROM oem.element_wikidata_cods
+        LEFT JOIN oem.wikidata ON wd_wikidata_cod = ew_wikidata_cod
+        WHERE (ew_from_name_etymology OR ew_from_subject)
+        AND wd_id IS NULL"
+    );
+    logProgress("Loaded $n_wd Wikidata entities");
 }
 
-function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
-{
-    $wikidataConsistsOfRqFile = sys_get_temp_dir() . "/wikidata_consists_of.tmp.rq";
-    $wikidataConsistsOfJSONFile = sys_get_temp_dir() . "/wikidata_consists_of.tmp.json";
+function loadWikidataRelatedEntities(
+    string $wikidataCodsFilter,
+    string $relationName,
+    string $relationProps,
+    string $elementFilter,
+    PDO $dbh,
+    string $wikidataEndpointURL
+): void {
+    $wikidataRqFile = sys_get_temp_dir() . "/wikidata_$relationName.tmp.rq";
+    $wikidataJSONFile = sys_get_temp_dir() . "/wikidata_$relationName.tmp.json";
 
-    $n_todo_consists_of = $dbh->query(
+    $n_todo = $dbh->query(
         "SELECT COUNT(DISTINCT ew_wikidata_cod)
         FROM oem.element_wikidata_cods
-        WHERE ew_from_name_etymology OR ew_from_subject"
+        WHERE $wikidataCodsFilter"
     )->fetchColumn();
-    logProgress("Counted $n_todo_consists_of Wikidata codes to check");
+    logProgress("Counted $n_todo Wikidata codes to check");
+
+    if (!empty($elementFilter))
+        $elementFilter = "; $elementFilter";
 
     $pageSize = 15000;
-    for ($offset = 0; $offset < $n_todo_consists_of; $offset += $pageSize) {
-        logProgress("Downloading Wikidata \"consists of\" data (starting from $offset)...");
+    for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
+        logProgress("Downloading Wikidata \"$relationName\" data (starting from $offset)...");
         $wikidataCodsToFetch = $dbh->query(
             "SELECT STRING_AGG('wd:'||ew_wikidata_cod, ' ') FROM (
                 SELECT DISTINCT ew_wikidata_cod
                 FROM oem.element_wikidata_cods
-                WHERE ew_from_name_etymology OR ew_from_subject
+                WHERE $wikidataCodsFilter
                 ORDER BY ew_wikidata_cod
                 LIMIT $pageSize
                 OFFSET $offset
             ) AS x"
         )->fetchColumn();
-        $consistsOfQuery =
-            "SELECT ?element ?consistsOf
+        $sparqlQuery =
+            "SELECT ?element ?prop ?related
             WHERE {
                 VALUES ?element { $wikidataCodsToFetch }.
+                VALUES ?prop { $relationProps }.
                 {
-                    ?element wdt:P31 wd:Q14073567;
-                        wdt:P527 ?consistsOf.
+                    ?element ?prop ?related $elementFilter.
                 } UNION {
                     ?element owl:sameAs [
-                        wdt:P31 wd:Q14073567;
-                        wdt:P527 ?consistsOf
+                        ?prop ?related $elementFilter
                     ].
                 }
-            }
-            GROUP BY ?element ?consistsOf";
-        file_put_contents($wikidataConsistsOfRqFile, $consistsOfQuery);
-        $jsonResult = (new JSONWikidataQuery($consistsOfQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
-        file_put_contents($wikidataConsistsOfJSONFile, $jsonResult);
+            }";
+        file_put_contents($wikidataRqFile, $sparqlQuery);
+        $jsonResult = (new JSONWikidataQuery($sparqlQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
+        file_put_contents($wikidataJSONFile, $jsonResult);
 
-        logProgress('Loading Wikidata "consists of" data...');
+        logProgress("Loading Wikidata \"$relationName\" data...");
         $sth_wd = $dbh->prepare(
             "INSERT INTO oem.wikidata (wd_wikidata_cod)
             SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
@@ -475,10 +429,10 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
             WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
             AND wd_id IS NULL
             UNION
-            SELECT DISTINCT REPLACE(value->'consistsOf'->>'value', 'http://www.wikidata.org/entity/', '')
+            SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'consistsOf'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'consistsOf'->>'value', 31) = 'http://www.wikidata.org/entity/'
+            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+            WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
             AND wd_id IS NULL"
         );
         $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
@@ -490,14 +444,38 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
             SELECT DISTINCT w1.wd_id, w2.wd_id, 'P527'
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
             JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'consistsOf'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'consistsOf'->>'value', 31) = 'http://www.wikidata.org/entity/'"
+            JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+            WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'"
         );
         $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
         $sth_wna->execute();
         $n_wna = $sth_wna->rowCount();
-        logProgress("Loaded $n_wd Wikidata entities and $n_wna \"consists of\" associations");
+        logProgress("Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" associations");
     }
+}
+
+function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): void
+{
+    loadWikidataRelatedEntities(
+        "ew_from_wikidata",
+        "named after",
+        "wdt:P138 wdt:P825 wdt:P547",
+        "",
+        $dbh,
+        $wikidataEndpointURL
+    );
+}
+
+function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
+{
+    loadWikidataRelatedEntities(
+        "ew_from_name_etymology OR ew_from_subject",
+        "consists of",
+        "wdt:P527",
+        "wdt:P31 wd:Q14073567",
+        $dbh,
+        $wikidataEndpointURL
+    );
 }
 
 function convertEtymologies(PDO $dbh): void
@@ -507,7 +485,9 @@ function convertEtymologies(PDO $dbh): void
             et_el_id,
             et_wd_id,
             et_from_name_etymology,
+            et_from_name_etymology_consists,
             et_from_subject,
+            et_from_subject_consists,
             et_from_wikidata_named_after,
             et_from_wikidata_dedicated_to,
             et_from_wikidata_commemorates,
@@ -517,7 +497,9 @@ function convertEtymologies(PDO $dbh): void
             ew_el_id,
             wd_id,
             BOOL_OR(ew_from_name_etymology),
+            BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod='P527'),
             BOOL_OR(ew_from_subject),
+            BOOL_OR(ew_from_subject AND wna_from_prop_cod='P527'),
             BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P138'),
             BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P825'),
             BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P547'),
@@ -534,7 +516,6 @@ function convertEtymologies(PDO $dbh): void
             JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
             JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
             JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
-            WHERE ew_from_wikidata
         ) AS x
         GROUP BY ew_el_id, wd_id"
     );
@@ -679,25 +660,15 @@ if ($use_db) {
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.wikidata)")->fetchColumn()) {
                 logProgress('Wikidata entities already loaded');
             } else {
-                logProgress('Loading Wikidata "named after" entities...');
-                $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-                loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+                logProgress('Loading Wikidata etymology entities...');
+                loadWikidataEntities($dbh);
 
+                $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
                 logProgress('Loading Wikidata "consists of" entities...');
                 loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
 
-                logProgress('Loading Wikidata etymology entities...');
-                $n_wd = $dbh->exec(
-                    "INSERT INTO oem.wikidata (wd_wikidata_cod)
-                    SELECT DISTINCT ew_wikidata_cod
-                    FROM oem.element_wikidata_cods
-                    LEFT JOIN oem.wikidata ON wd_wikidata_cod = ew_wikidata_cod
-                    WHERE (ew_from_name_etymology OR ew_from_subject)
-                    AND wd_id IS NULL"
-                );
-                logProgress("Loaded $n_wd Wikidata entities");
-
-                // Possibly in the future: brothers => ?element wdt:P31 wd:Q14073567; wdt:P527 ?namedAfter;
+                logProgress('Loading Wikidata "named after" entities...');
+                loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
             }
 
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.etymology)")->fetchColumn()) {
