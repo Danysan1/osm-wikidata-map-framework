@@ -68,11 +68,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     --ST_X(ST_PointOnSurface(el_geometry)) AS point_lon,
                     --ST_Y(ST_PointOnSurface(el_geometry)) AS point_lat,
                     JSON_AGG(JSON_BUILD_OBJECT(
-                        'from_name_etymology', et_from_name_etymology,
-                        'from_subject', et_from_subject,
-                        'from_wikidata_named_after', et_from_wikidata_named_after,
-                        'from_wikidata_dedicated_to', et_from_wikidata_dedicated_to,
-                        'from_wikidata_commemorates', et_from_wikidata_commemorates,
+                        'from_osm', et_from_osm,
+                        'from_wikidata', et_from_wikidata,
                         'from_wikidata_cod', from_wd.wd_wikidata_cod,
                         'from_wikidata_prop', et_from_wikidata_prop_cod,
                         'wd_id', wd.wd_id,
