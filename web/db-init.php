@@ -509,8 +509,8 @@ function convertEtymologies(PDO $dbh): void
             BOOL_OR(ew_from_wikidata AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P138') AS from_wikidata_named_after,
             BOOL_OR(ew_from_wikidata AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P825') AS from_wikidata_dedicated_to,
             BOOL_OR(ew_from_wikidata AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P547') AS from_wikidata_commemorates,
-            MIN(from_wd_id) FILTER (WHERE ew_from_wikidata) AS from_wikidata_wd_id,
-            MIN(wna_from_prop_cod) FILTER (WHERE ew_from_wikidata) AS from_wikidata_prop_cod
+            MIN(from_wd_id) AS from_wikidata_wd_id,
+            MIN(wna_from_prop_cod) AS from_wikidata_prop_cod
         FROM (
             SELECT DISTINCT ew_el_id, wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata, NULL::BIGINT AS from_wd_id, NULL::VARCHAR AS wna_from_prop_cod
             FROM oem.element_wikidata_cods
