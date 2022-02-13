@@ -422,6 +422,84 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
     }
 }
 
+function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
+{
+    $wikidataConsistsOfRqFile = sys_get_temp_dir() . "/wikidata_consists_of.tmp.rq";
+    $wikidataConsistsOfJSONFile = sys_get_temp_dir() . "/wikidata_consists_of.tmp.json";
+
+    $n_todo_consists_of = $dbh->query(
+        "SELECT COUNT(DISTINCT ew_wikidata_cod)
+        FROM oem.element_wikidata_cods
+        WHERE ew_from_name_etymology OR ew_from_subject"
+    )->fetchColumn();
+    logProgress("Counted $n_todo_consists_of Wikidata codes to check");
+
+    $pageSize = 15000;
+    for ($offset = 0; $offset < $n_todo_consists_of; $offset += $pageSize) {
+        logProgress("Downloading Wikidata \"consists of\" data (starting from $offset)...");
+        $wikidataCodsToFetch = $dbh->query(
+            "SELECT STRING_AGG('wd:'||ew_wikidata_cod, ' ') FROM (
+                SELECT DISTINCT ew_wikidata_cod
+                FROM oem.element_wikidata_cods
+                WHERE ew_from_name_etymology OR ew_from_subject
+                ORDER BY ew_wikidata_cod
+                LIMIT $pageSize
+                OFFSET $offset
+            ) AS x"
+        )->fetchColumn();
+        $consistsOfQuery =
+            "SELECT ?element ?consistsOf
+            WHERE {
+                VALUES ?element { $wikidataCodsToFetch }.
+                {
+                    ?element wdt:P31 wd:Q14073567;
+                        wdt:P527 ?consistsOf.
+                } UNION {
+                    ?element owl:sameAs [
+                        wdt:P31 wd:Q14073567;
+                        wdt:P527 ?consistsOf
+                    ].
+                }
+            }
+            GROUP BY ?element ?consistsOf";
+        file_put_contents($wikidataConsistsOfRqFile, $consistsOfQuery);
+        $jsonResult = (new JSONWikidataQuery($consistsOfQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
+        file_put_contents($wikidataConsistsOfJSONFile, $jsonResult);
+
+        logProgress('Loading Wikidata "consists of" data...');
+        $sth_wd = $dbh->prepare(
+            "INSERT INTO oem.wikidata (wd_wikidata_cod)
+            SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+            FROM json_array_elements((:response::JSON)->'results'->'bindings')
+            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+            WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
+            AND wd_id IS NULL
+            UNION
+            SELECT DISTINCT REPLACE(value->'consistsOf'->>'value', 'http://www.wikidata.org/entity/', '')
+            FROM json_array_elements((:response::JSON)->'results'->'bindings')
+            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'consistsOf'->>'value', 'http://www.wikidata.org/entity/', '')
+            WHERE LEFT(value->'consistsOf'->>'value', 31) = 'http://www.wikidata.org/entity/'
+            AND wd_id IS NULL"
+        );
+        $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+        $sth_wd->execute();
+        $n_wd = $sth_wd->rowCount();
+
+        $sth_wna = $dbh->prepare(
+            "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
+            SELECT DISTINCT w1.wd_id, w2.wd_id, 'P527'
+            FROM json_array_elements((:response::JSON)->'results'->'bindings')
+            JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+            JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'consistsOf'->>'value', 'http://www.wikidata.org/entity/', '')
+            WHERE LEFT(value->'consistsOf'->>'value', 31) = 'http://www.wikidata.org/entity/'"
+        );
+        $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+        $sth_wna->execute();
+        $n_wna = $sth_wna->rowCount();
+        logProgress("Loaded $n_wd Wikidata entities and $n_wna \"consists of\" associations");
+    }
+}
+
 function convertEtymologies(PDO $dbh): void
 {
     $n_ety = $dbh->exec(
@@ -604,6 +682,9 @@ if ($use_db) {
                 logProgress('Loading Wikidata "named after" entities...');
                 $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
                 loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+
+                logProgress('Loading Wikidata "consists of" entities...');
+                loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
 
                 logProgress('Loading Wikidata etymology entities...');
                 $n_wd = $dbh->exec(
