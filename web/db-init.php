@@ -500,15 +500,15 @@ function convertEtymologies(PDO $dbh): void
         ) SELECT
             ew_el_id,
             wd_id,
-            BOOL_OR(ew_from_name_etymology OR ew_from_subject) AS from_osm,
+            BOOL_OR(wna_from_prop_cod IS NULL) AS from_osm,
+            BOOL_OR(wna_from_prop_cod IS NOT NULL) AS from_wikidata,
             BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NULL) AS from_name_etymology,
-            BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NOT NULL) AS from_name_etymology_consists,
+            BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527') AS from_name_etymology_consists,
             BOOL_OR(ew_from_subject AND wna_from_prop_cod IS NULL) AS from_subject,
-            BOOL_OR(ew_from_subject AND wna_from_prop_cod IS NOT NULL) AS from_subject_consists,
-            BOOL_OR(ew_from_wikidata) AS from_wikidata,
-            BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P138') AS from_wikidata_named_after,
-            BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P825') AS from_wikidata_dedicated_to,
-            BOOL_OR(ew_from_wikidata AND wna_from_prop_cod='P547') AS from_wikidata_commemorates,
+            BOOL_OR(ew_from_subject AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527') AS from_subject_consists,
+            BOOL_OR(ew_from_wikidata AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P138') AS from_wikidata_named_after,
+            BOOL_OR(ew_from_wikidata AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P825') AS from_wikidata_dedicated_to,
+            BOOL_OR(ew_from_wikidata AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P547') AS from_wikidata_commemorates,
             MIN(from_wd_id) FILTER (WHERE ew_from_wikidata) AS from_wikidata_wd_id,
             MIN(wna_from_prop_cod) FILTER (WHERE ew_from_wikidata) AS from_wikidata_prop_cod
         FROM (
