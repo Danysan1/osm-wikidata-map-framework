@@ -1050,10 +1050,11 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
             '#f28cb1' // count > maxThreshold => Pink circle
         ],
         'circle-radius': [
-            'step', ['get', field],
-            20, minThreshold, // count < minThreshold => 15px circle
-            30, maxThreshold, // minThreshold <= count < maxThreshold => 30px circle
-            40 // count > maxThreshold => 40px circle
+            'interpolate', ['linear'],
+            ['get', field],
+            0, 15,
+            minThreshold, 30, // count < minThreshold => 15px circle
+            maxThreshold, 40, // minThreshold <= count < maxThreshold => 30px circle
         ]
     };
 }
