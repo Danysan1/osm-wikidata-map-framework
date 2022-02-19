@@ -70,10 +70,10 @@ map "OSM element C" as osmc #95d5b2 {
 map "OSM element D" as osmd #95d5b2 {
   wikidata => Q16567
 }
-map "OSM element F" as osmf #95d5b2 {
+map "OSM element E" as osme #95d5b2 {
   wikidata => Q86518088
 }
-map "OSM element G" as osmg #95d5b2 {
+map "OSM element F" as osmf #95d5b2 {
   wikidata => Q2288815
 }
 
@@ -83,14 +83,14 @@ osmc --> wikia
 osmc --> wikib
 
 osmd --> wikic
-osmf --> wikie
-osmg --> wikif
+osme --> wikie
+osmf --> wikif
 
 wikic --> wikia
 wikie --> wikia
 wikif --> wikia
 
-note left of wikia: Etymology for A, B, C, D, E, F and G
+note left of wikia: Etymology for A, B, C, D, E and F
 note left of wikib: Etymology for C
 @enduml
 ```
