@@ -62,7 +62,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el_geometry AS geom,
                     el_osm_type AS osm_type,
                     el_osm_id AS osm_id,
-                    el_name AS name,
+                    COALESCE(el_tags->>CONCAT('name:',:lang), el_tags->>'name') AS name,
                     el_commons AS commons,
                     el_wikipedia AS wikipedia,
                     --ST_X(ST_PointOnSurface(el_geometry)) AS point_lon,
