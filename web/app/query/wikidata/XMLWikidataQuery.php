@@ -21,9 +21,9 @@ use App\Result\XMLRemoteQueryResult;
  */
 class XMLWikidataQuery extends WikidataQuery implements XMLQuery
 {
-    protected function getRequestQuery(): string
+    public function __construct(string $query, string $endpointURL)
     {
-        return http_build_query(["format" => "xml", "query" => $this->getMinifiedQuery()]);
+        parent::__construct($query, "xml", $endpointURL);
     }
 
     /**

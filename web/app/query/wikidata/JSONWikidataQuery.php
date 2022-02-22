@@ -20,9 +20,9 @@ use App\Result\JSONRemoteQueryResult;
  */
 class JSONWikidataQuery extends WikidataQuery implements JSONQuery
 {
-    protected function getRequestQuery(): string
+    public function __construct(string $query, string $endpointURL)
     {
-        return http_build_query(["format" => "json", "query" => $this->getMinifiedQuery()]);
+        parent::__construct($query, "json", $endpointURL);
     }
 
     /**

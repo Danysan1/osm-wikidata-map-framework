@@ -246,7 +246,8 @@ function setupSchema(PDO $dbh): void
         "CREATE TABLE oem.wikidata_picture (
             wdp_id SERIAL NOT NULL PRIMARY KEY,
             wdp_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-            wdp_picture VARCHAR NOT NULL
+            wdp_picture VARCHAR NOT NULL,
+            wdp_attribution VARCHAR
         )"
     );
     $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");

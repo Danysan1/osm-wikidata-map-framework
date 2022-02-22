@@ -2,11 +2,11 @@
 
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/../BaseQuery.php");
+require_once(__DIR__ . "/../JSONCurlQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/JSONRemoteQueryResult.php");
 
-use \App\Query\BaseQuery;
+use \App\Query\JSONCurlQuery;
 use \App\Result\QueryResult;
 use \App\Result\RemoteQueryResult;
 use \App\Result\JSONRemoteQueryResult;
@@ -18,37 +18,16 @@ use Exception;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class OverpassQuery extends BaseQuery
+class OverpassQuery extends JSONCurlQuery
 {
-    /**
-     * @return QueryResult
-     */
-    public function send(): QueryResult
+    public function __construct(string $query, string $endpointURL)
     {
-        return $this->_send();
-    }
-
-    private function _send(): QueryResult
-    {
-        $ch = \curl_init();
-        \curl_setopt($ch, CURLOPT_URL, $this->getEndpointURL());
-        \curl_setopt($ch, CURLOPT_POST, 1);
-        \curl_setopt($ch, CURLOPT_POSTFIELDS, $this->getQuery());
-        \curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        $result = \curl_exec($ch);
-        $curlInfo = (array)curl_getinfo($ch);
-        \curl_close($ch);
-        if (!$result) {
-            $result = null;
-        } else {
-            assert(is_string($result));
-        }
-        return new JSONRemoteQueryResult($result, $curlInfo);
+        parent::__construct($query, $endpointURL, "POST");
     }
 
     protected function sendAndRequireResult(): QueryResult
     {
-        $res = $this->_send();
+        $res = $this->send();
         if (!$res->isSuccessful()) {
             error_log("OverpassQuery failed: " . $this->getEndpointURL() . " / " . get_class($res));
             if ($res instanceof RemoteQueryResult && $res->hasBody()) {

@@ -8,13 +8,16 @@ require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../BBoxQuery.php");
 require_once(__DIR__ . "/BBoxPostGISQuery.php");
 require_once(__DIR__ . "/../wikidata/EtymologyIDListJSONWikidataQuery.php");
+require_once(__DIR__ . "/../commons/AttributionCommonsQuery.php");
 
 use \PDO;
 use \App\BoundingBox;
 use \App\BaseStringSet;
+use App\Query\Commons\AttributionCommonsQuery;
 use \App\ServerTiming;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Query\Wikidata\EtymologyIDListJSONWikidataQuery;
+use Exception;
 
 abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 {
@@ -160,24 +163,54 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-wikidata");
 
-            $stInsertPicture = $this->getDB()->prepare(
-                "INSERT INTO oem.wikidata_picture (wdp_wd_id, wdp_picture)
-                SELECT DISTINCT wd.wd_id, pic.picture
-                FROM oem.wikidata AS wd
-                JOIN (
-                    SELECT
-                        REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_cod,
-                        REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '`') AS picture
-                    FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
-                ) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
-                LEFT JOIN oem.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
-                WHERE pic.picture IS NOT NULL
-                AND pic.picture != ''
-                AND wdp.wdp_id IS NULL"
-            );
-            $stInsertPicture->execute(["result" => $wikidataResult->getJSON()]);
-            if ($this->hasServerTiming())
-                $this->getServerTiming()->add("wikidata-picture-insert");
+            try {
+                $stInsertPicture = $this->getDB()->prepare(
+                    "INSERT INTO oem.wikidata_picture (wdp_wd_id, wdp_picture)
+                    SELECT DISTINCT wd.wd_id, REPLACE(pic.picture,'http://commons.wikimedia.org/wiki/Special:FilePath/','')
+                    FROM oem.wikidata AS wd
+                    JOIN (
+                        SELECT
+                            REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_cod,
+                            REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '`') AS picture
+                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
+                    ) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
+                    LEFT JOIN oem.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
+                    WHERE pic.picture IS NOT NULL
+                    AND pic.picture != ''
+                    AND wdp.wdp_id IS NULL
+                    RETURNING CONCAT('File:',wdp_picture) AS picture"
+                );
+                $stInsertPicture->execute(["result" => $wikidataResult->getJSON()]);
+                if ($this->hasServerTiming())
+                    $this->getServerTiming()->add("wikidata-picture-insert");
+
+                $insertedPictures = $stInsertPicture->fetchAll();
+                $picturesToCheck = array_map(function (array $row): string {
+                    return urldecode($row["picture"]);
+                }, $insertedPictures);
+                $attributions = AttributionCommonsQuery::splitTitlesInChunksAndGetAttributions($picturesToCheck);
+                $countAttributions = count($attributions);
+                if ($this->hasServerTiming())
+                    $this->getServerTiming()->add("commons-attribution-fetch-$countAttributions");
+
+                foreach ($attributions as $attribution) {
+                    $stInsertAttribution = $this->getDB()->prepare(
+                        "UPDATE oem.wikidata_picture
+                        SET wdp_attribution = ?
+                        WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = ?"
+                    );
+                    $stInsertAttribution->execute([
+                        $attribution["attribution"], urlencode($attribution["picture"])
+                    ]);
+                    /*error_log(json_encode([
+                        $attribution["picture"], urlencode($attribution["picture"]), $attribution["attribution"]
+                    ]));*/
+                }
+                if ($this->hasServerTiming())
+                    $this->getServerTiming()->add("commons-attribution-insert");
+            } catch (Exception $e) {
+                error_log("An error occurred while inserting pictures: " . $e->getMessage());
+            }
 
             $stUpdateText = $this->getDB()->prepare(
                 "UPDATE oem.wikidata_text

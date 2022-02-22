@@ -16,7 +16,6 @@ use \App\Query\Overpass\OverpassConfig;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\Overpass\OverpassCenterQueryResult;
 use App\Result\QueryResult;
-use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 
 /**
@@ -45,14 +44,6 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
     {
         $res = $this->sendAndRequireResult();
         return new OverpassCenterQueryResult($res->isSuccessful(), $res->getArray());
-    }
-
-    public function sendAndGetJSONResult(): JSONQueryResult
-    {
-        $out = $this->send();
-        if (!$out instanceof JSONQueryResult)
-            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
-        return $out;
     }
 
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
