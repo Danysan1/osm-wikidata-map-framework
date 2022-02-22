@@ -1016,7 +1016,7 @@ function initWikidataLayer(map, layerID) {
                 .setHTML('<div class="detail_wrapper"></div>')
                 .addTo(map);
             console.info("initWikidataLayer: showing etymology popup", { layerID, e, popup });
-            popup.getElement().querySelector(".detail_wrapper").appendChild(featureToElement(e.features[0]));
+            popup.getElement().querySelector(".detail_wrapper").appendChild(featureToDomElement(e.features[0]));
             e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
         }
     });
@@ -1380,10 +1380,9 @@ function setCulture() {
  * @param {any} feature 
  * @return {Node}
  */
-function featureToElement(feature) {
+function featureToDomElement(feature) {
     const etymologies = JSON.parse(feature.properties.etymologies),
         detail_template = document.getElementById('detail_template'),
-        etymology_template = document.getElementById('etymology_template'),
         detail_container = detail_template.content.cloneNode(true),
         //template_container = document.createDocumentFragment(),
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
@@ -1391,7 +1390,7 @@ function featureToElement(feature) {
         etymologies_container = detail_container.querySelector('.etymologies_container'),
         OSM_URL = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
     //template_container.appendChild(detail_container);
-    console.info("featureToElement", {
+    console.info("featureToDomElement", {
         el_id: feature.properties.el_id,
         feature,
         etymologies,
@@ -1428,142 +1427,164 @@ function featureToElement(feature) {
 
 
     etymologies.filter(x => x != null).forEach(function(ety) {
-        const etymology = etymology_template.content.cloneNode(true),
-            etymology_description = etymology.querySelector('.etymology_description'),
-            wikipedia_button = etymology.querySelector('.wikipedia_button'),
-            commons_button = etymology.querySelector('.commons_button'),
-            location_button = etymology.querySelector('.subject_location_button'),
-            start_end_date = etymology.querySelector('.start_end_date'),
-            event_place = etymology.querySelector('.event_place'),
-            citizenship = etymology.querySelector('.citizenship'),
-            gender = etymology.querySelector('.gender'),
-            occupations = etymology.querySelector('.occupations'),
-            prizes = etymology.querySelector('.prizes'),
-            pictures = etymology.querySelector('.pictures');
-
-        etymology.querySelector('.etymology_name').innerText = ety.name;
-
-        if (ety.description) {
-            etymology_description.innerText = ety.description;
-        } else {
-            etymology_description.style.display = 'none';
-        }
-
         try {
-            etymology.querySelector('.wikidata_button').href = 'https://www.wikidata.org/wiki/' + ety.wikidata;
-
-            if (ety.wikipedia) {
-                wikipedia_button.href = ety.wikipedia;
-                wikipedia_button.style.display = 'inline-flex';
-            } else {
-                wikipedia_button.style.display = 'none';
-            }
-
-            if (ety.commons) {
-                commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
-                commons_button.style.display = 'inline-flex';
-            } else {
-                commons_button.style.display = 'none';
-            }
-
-            let coords = null,
-                coordsOk = false;
-            if (ety.wkt_coords) {
-                coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords);
-                coordsOk = coords && coords.length > 1 && coords.at;
-                if (!coordsOk)
-                    console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
-            }
-            if (coordsOk) {
-                location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
-                location_button.style.display = 'inline-flex';
-            } else {
-                location_button.style.display = 'none';
-            }
-
-            if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
-                const birth_date = ety.birth_date ? formatDate(ety.birth_date, ety.birth_date_precision) : "?",
-                    birth_place = ety.birth_place ? ety.birth_place : "?",
-                    death_date = ety.death_date ? formatDate(ety.death_date, ety.death_date_precision) : "?",
-                    death_place = ety.death_place ? ety.death_place : "?";
-                start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-            } else if (ety.start_date || ety.end_date) {
-                const start_date = ety.start_date ? formatDate(ety.start_date, ety.start_date_precision) : "?",
-                    end_date = ety.end_date ? formatDate(ety.end_date, ety.end_date_precision) : "?";
-                start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
-            } else if (ety.event_date) {
-                const event_date = formatDate(ety.event_date, ety.event_date_precision);
-                start_end_date.innerText = `📅 ${event_date}`
-            } else {
-                start_end_date.style.display = 'none';
-            }
-            if (ety.event_place) {
-                event_place.innerText = '📍 ' + ety.event_place;
-            } else {
-                event_place.style.display = 'none';
-            }
-
-            if (ety.citizenship) {
-                citizenship.innerText = '🌍 ' + ety.citizenship;
-            } else {
-                citizenship.style.display = 'none';
-            }
-            if (ety.gender) {
-                gender.innerText = '⚧️ ' + ety.gender;
-            } else {
-                gender.style.display = 'none';
-            }
-            if (ety.occupations) {
-                occupations.innerText = '🛠️ ' + ety.occupations;
-            } else {
-                occupations.style.display = 'none';
-            }
-            if (ety.prizes) {
-                prizes.innerText = '🏆 ' + ety.prizes;
-            } else {
-                prizes.style.display = 'none';
-            }
-
-            if (ety.pictures) {
-                ety.pictures.forEach(function(img, n) {
-                    if (n < 5) {
-                        const link = document.createElement('a'),
-                            picture = document.createElement('img');
-
-                        // Example of img: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif"
-                        link.href = img.replace(/^http:\/\/commons\.wikimedia\.org\/wiki\/Special:FilePath\//, 'https://commons.wikimedia.org/wiki/File:');
-                        // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
-                        picture.src = img + '?width=400px';
-                        // Link to thumbnail, example: "http://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=400px"
-
-                        link.title = "Etymology picture via Wikimedia Commons";
-                        picture.alt = "Etymology picture via Wikimedia Commons";
-                        link.appendChild(picture);
-                        pictures.appendChild(link);
-                    }
-                });
-            } else {
-                pictures.style.display = 'none';
-            }
-
-            if (ety.from_osm) {
-                etymology.querySelector('.etymology_src').innerText = "OpenStreetMap";
-                etymology.querySelector('.etymology_src').href = OSM_URL;
-            } else if (ety.from_wikidata) {
-                etymology.querySelector('.etymology_src').innerText = "Wikidata";
-                etymology.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
-            } else {
-                etymology.querySelector('.etymology_src_wrapper').style.display = 'none';
-            }
+            etymologies_container.appendChild(etymologyToDomElement(ety))
         } catch (e) {
             console.error(e);
             if (typeof Sentry != 'undefined')
                 Sentry.captureException(e);
         }
-
-        etymologies_container.appendChild(etymology);
     });
     return detail_container;
+}
+
+function etymologyToDomElement(ety) {
+    const etymology_template = document.getElementById('etymology_template'),
+        etyDomElement = etymology_template.content.cloneNode(true),
+        etymology_description = etyDomElement.querySelector('.etymology_description'),
+        wikipedia_button = etyDomElement.querySelector('.wikipedia_button'),
+        commons_button = etyDomElement.querySelector('.commons_button'),
+        location_button = etyDomElement.querySelector('.subject_location_button'),
+        start_end_date = etyDomElement.querySelector('.start_end_date'),
+        event_place = etyDomElement.querySelector('.event_place'),
+        citizenship = etyDomElement.querySelector('.citizenship'),
+        gender = etyDomElement.querySelector('.gender'),
+        occupations = etyDomElement.querySelector('.occupations'),
+        prizes = etyDomElement.querySelector('.prizes'),
+        pictures = etyDomElement.querySelector('.pictures');
+
+    etyDomElement.querySelector('.etymology_name').innerText = ety.name;
+
+    if (ety.description) {
+        etymology_description.innerText = ety.description;
+    } else {
+        etymology_description.style.display = 'none';
+    }
+
+    etyDomElement.querySelector('.wikidata_button').href = 'https://www.wikidata.org/wiki/' + ety.wikidata;
+
+    if (ety.wikipedia) {
+        wikipedia_button.href = ety.wikipedia;
+        wikipedia_button.style.display = 'inline-flex';
+    } else {
+        wikipedia_button.style.display = 'none';
+    }
+
+    if (ety.commons) {
+        commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+        commons_button.style.display = 'inline-flex';
+    } else {
+        commons_button.style.display = 'none';
+    }
+
+    let coords = null,
+        coordsOk = false;
+    if (ety.wkt_coords) {
+        coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords);
+        coordsOk = coords && coords.length > 1 && coords.at;
+        if (!coordsOk)
+            console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
+    }
+    if (coordsOk) {
+        location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+        location_button.style.display = 'inline-flex';
+    } else {
+        location_button.style.display = 'none';
+    }
+
+    if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
+        const birth_date = ety.birth_date ? formatDate(ety.birth_date, ety.birth_date_precision) : "?",
+            birth_place = ety.birth_place ? ety.birth_place : "?",
+            death_date = ety.death_date ? formatDate(ety.death_date, ety.death_date_precision) : "?",
+            death_place = ety.death_place ? ety.death_place : "?";
+        start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
+    } else if (ety.start_date || ety.end_date) {
+        const start_date = ety.start_date ? formatDate(ety.start_date, ety.start_date_precision) : "?",
+            end_date = ety.end_date ? formatDate(ety.end_date, ety.end_date_precision) : "?";
+        start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
+    } else if (ety.event_date) {
+        const event_date = formatDate(ety.event_date, ety.event_date_precision);
+        start_end_date.innerText = `📅 ${event_date}`
+    } else {
+        start_end_date.style.display = 'none';
+    }
+    if (ety.event_place) {
+        event_place.innerText = '📍 ' + ety.event_place;
+    } else {
+        event_place.style.display = 'none';
+    }
+
+    if (ety.citizenship) {
+        citizenship.innerText = '🌍 ' + ety.citizenship;
+    } else {
+        citizenship.style.display = 'none';
+    }
+    if (ety.gender) {
+        gender.innerText = '⚧️ ' + ety.gender;
+    } else {
+        gender.style.display = 'none';
+    }
+    if (ety.occupations) {
+        occupations.innerText = '🛠️ ' + ety.occupations;
+    } else {
+        occupations.style.display = 'none';
+    }
+    if (ety.prizes) {
+        prizes.innerText = '🏆 ' + ety.prizes;
+    } else {
+        prizes.style.display = 'none';
+    }
+
+    if (ety.pictures) {
+        ety.pictures.forEach(function(img, n) {
+            if (n < 5) {
+                pictures.appendChild(imageToDomElement(img));
+            }
+        });
+    } else {
+        pictures.style.display = 'none';
+    }
+
+    if (ety.from_osm) {
+        etyDomElement.querySelector('.etymology_src').innerText = "OpenStreetMap";
+        etyDomElement.querySelector('.etymology_src').href = OSM_URL;
+    } else if (ety.from_wikidata) {
+        etyDomElement.querySelector('.etymology_src').innerText = "Wikidata";
+        etyDomElement.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
+    } else {
+        etyDomElement.querySelector('.etymology_src_wrapper').style.display = 'none';
+    }
+
+    return etyDomElement
+}
+
+function imageToDomElement(img) {
+    const link = document.createElement('a'),
+        picture = document.createElement('img'),
+        attribution = document.createElement('p'),
+        imgContainer = document.createElement('div');
+
+    picture.className = 'pic-img';
+    picture.alt = "Etymology picture via Wikimedia Commons";
+    picture.src = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
+    // Link to thumbnail, example: "https://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=400px"
+
+    link.className = 'pic-link';
+    link.title = "Etymology picture via Wikimedia Commons";
+    link.href = 'https://commons.wikimedia.org/wiki/File:' + img.picture;
+    // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
+    link.appendChild(picture);
+    imgContainer.appendChild(link);
+
+    if (img.attribution) {
+        attribution.className = 'pic-attr';
+        attribution.innerHTML = img.attribution;
+        imgContainer.appendChild(attribution);
+    }
+
+    imgContainer.className = 'pic-container';
+
+    return imgContainer;
 }
 
 /*function popStateHandler(e) {

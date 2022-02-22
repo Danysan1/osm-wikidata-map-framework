@@ -76,7 +76,7 @@ div.detail_container div.grid-two {
 
 div.detail_container div.etymology {
     margin: 0.5em;
-    /*padding: 0.5em;*/
+    /* padding: 0.5em; */
     text-align: center;
     background-color: #f1f1f1;
     border-radius: 0.5em;
@@ -336,4 +336,29 @@ button.mapboxgl-popup-close-button:hover {
 
 span.button_text {
     display: none;
+}
+
+div.pictures div.pic-container {
+    border-width: 0.5px;
+    border-style: solid;
+    border-color: #ccc;
+    border-radius: 0.5em;
+    margin: 1px;
+}
+
+p.pic-attr {
+    overflow: hidden;
+    max-height: 0;
+    max-width: 0;
+    opacity: 0;
+    transition: height 0.5s, width 0.5s, opacity 0.5s;
+    margin-top: 0;
+    font-size: smaller;
+    text-align: center;
+}
+
+div.pic-container:hover p.pic-attr {
+    max-height: 30em;
+    max-width: 30em;
+    opacity: 1;
 }
