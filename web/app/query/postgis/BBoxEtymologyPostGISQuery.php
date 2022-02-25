@@ -69,6 +69,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     --ST_Y(ST_PointOnSurface(el_geometry)) AS point_lat,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'from_osm', et_from_osm,
+                        'from_osm_type', CASE WHEN et_from_osm THEN el_osm_type ELSE NULL END,
+                        'from_osm_id', CASE WHEN et_from_osm THEN el_osm_id ELSE NULL END,
                         'from_wikidata', et_from_wikidata,
                         'from_wikidata_cod', from_wd.wd_wikidata_cod,
                         'from_wikidata_prop', et_from_wikidata_prop_cod,

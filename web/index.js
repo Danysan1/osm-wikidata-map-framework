@@ -996,30 +996,7 @@ function initWikidataLayer(map, layerID) {
     // open a popup at the location of the click, with description
     // HTML from the click event's properties.
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
-    map.on('click', layerID, function(e) {
-        if (e.popupAlreadyShown) {
-            console.info("initWikidataLayer: etymology popup already shown", { layerID, e });
-        } else {
-            //const popupPosition = e.lngLat,
-            const popupPosition = map.getBounds().getNorthWest(),
-                popup = new mapboxgl.Popup({
-                    closeButton: true,
-                    closeOnClick: true,
-                    closeOnMove: true,
-                    maxWidth: "none",
-                    className: "oem_etymology_popup"
-                })
-                .setLngLat(popupPosition)
-                //.setMaxWidth('95vw')
-                //.setOffset([10, 0])
-                //.setHTML(featureToHTML(e.features[0]));
-                .setHTML('<div class="detail_wrapper"></div>')
-                .addTo(map);
-            console.info("initWikidataLayer: showing etymology popup", { layerID, e, popup });
-            popup.getElement().querySelector(".detail_wrapper").appendChild(featureToDomElement(e.features[0]));
-            e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
-        }
-    });
+    map.on('click', layerID, onWikidataLayerClick);
 
     // Change the cursor to a pointer when
     // the mouse is over the states layer.
@@ -1030,6 +1007,32 @@ function initWikidataLayer(map, layerID) {
     // when it leaves the states layer.
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
     map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
+}
+
+function onWikidataLayerClick(e) {
+    if (e.popupAlreadyShown) {
+        console.info("onWikidataLayerClick: etymology popup already shown", e);
+    } else {
+        const map = e.target,
+            //popupPosition = e.lngLat,
+            popupPosition = map.getBounds().getNorthWest(),
+            popup = new mapboxgl.Popup({
+                closeButton: true,
+                closeOnClick: true,
+                closeOnMove: true,
+                maxWidth: "none",
+                className: "oem_etymology_popup"
+            })
+            .setLngLat(popupPosition)
+            //.setMaxWidth('95vw')
+            //.setOffset([10, 0])
+            //.setHTML(featureToHTML(e.features[0]));
+            .setHTML('<div class="detail_wrapper"></div>')
+            .addTo(map);
+        console.info("onWikidataLayerClick: showing etymology popup", { e, popup });
+        popup.getElement().querySelector(".detail_wrapper").appendChild(featureToDomElement(e.features[0]));
+        e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
+    }
 }
 
 /**
@@ -1053,8 +1056,8 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
             'interpolate', ['linear'],
             ['get', field],
             0, 15,
-            minThreshold, 30, // count < minThreshold => 15px circle
-            maxThreshold, 40, // minThreshold <= count < maxThreshold => 30px circle
+            minThreshold, 30,
+            maxThreshold, 45,
         ]
     };
 }
@@ -1547,7 +1550,7 @@ function etymologyToDomElement(ety) {
 
     if (ety.from_osm) {
         etyDomElement.querySelector('.etymology_src').innerText = "OpenStreetMap";
-        etyDomElement.querySelector('.etymology_src').href = OSM_URL;
+        etyDomElement.querySelector('.etymology_src').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
     } else if (ety.from_wikidata) {
         etyDomElement.querySelector('.etymology_src').innerText = "Wikidata";
         etyDomElement.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
