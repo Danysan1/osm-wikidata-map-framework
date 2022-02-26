@@ -339,10 +339,10 @@ span.button_text {
 }
 
 div.pictures div.pic-container {
-    border-width: 0.5px;
-    border-style: solid;
-    border-color: #ccc;
-    border-radius: 0.5em;
+    /*border-width: 0.5px;*/
+    /*border-style: solid;*/
+    /*border-color: #ccc;*/
+    /*border-radius: 0.5em;*/
     margin: 1px;
 }
 
