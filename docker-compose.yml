@@ -70,6 +70,8 @@ services:
     restart: "always"
     volumes:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini
+      - ./web/global-map.geojson:/var/www/html/global-map.geojson
+      - ./web/LAST_UPDATE:/var/www/html/LAST_UPDATE
     profiles:
       - prod
 

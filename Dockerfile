@@ -42,4 +42,4 @@ COPY --chown=www-data:www-data --from=npm-install "/app/node_modules/" "/var/www
 COPY --chown=www-data:www-data ./web /var/www/html
 RUN touch /var/www/html/open-etymology-map.log
 
-USER www-data
+#USER www-data

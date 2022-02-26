@@ -18,9 +18,11 @@ sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-c
 git clone https://gitlab.com/dsantini/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
+> web/global-map.geojson
+> web/LAST_UPDATE
 docker-compose --profile "prod" up -d
 
 ## https://certbot.eff.org/instructions?ws=apache&os=debianbuster
 
-# docker-compose exec web_prod sudo certbot certonly --apache
-# docker-compose exec web_prod sudo certbot renew
+docker-compose exec web_prod certbot --apache
+## Rinnovo: docker-compose exec web_prod certbot renew
