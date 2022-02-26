@@ -1581,7 +1581,7 @@ function imageToDomElement(img) {
 
     if (img.attribution) {
         attribution.className = 'pic-attr';
-        attribution.innerHTML = img.attribution;
+        attribution.innerHTML = 'Image via ' + img.attribution;
         imgContainer.appendChild(attribution);
     }
 

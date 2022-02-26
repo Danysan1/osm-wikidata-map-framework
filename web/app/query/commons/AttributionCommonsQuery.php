@@ -56,18 +56,26 @@ class AttributionCommonsQuery extends JSONCurlQuery
      * @param array $page
      * @return array<array{picture:string,attribution:string}>
      */
-    private static function responseToAttributionsReducer(array $returnArray, array $page): array {
+    private static function responseToAttributionsReducer(array $returnArray, array $page): array
+    {
         $title = $page["title"];
         if (empty($page["imageinfo"])) {
             throw new Exception("responseToAttributionsReducer: missing image info in response");
         } elseif (!empty($page["imageinfo"][0]["extmetadata"])) {
             $metadata = $page["imageinfo"][0]["extmetadata"];
 
-            $attributionString = "Image via Wikimedia Commons";
-            if (!empty($metadata["LicenseShortName"]["value"]))
-                $attributionString .= ", " . $metadata["LicenseShortName"]["value"];
-            if (!empty($metadata[COMMONS_ATTRIBUTION_FIELD]["value"]))
-                $attributionString .= ", " . $metadata[COMMONS_ATTRIBUTION_FIELD]["value"];
+            $attributionString = "Wikimedia Commons";
+            if (!empty($metadata["LicenseShortName"]["value"])) {
+                $license = $metadata["LicenseShortName"]["value"];
+                $attributionString .= ", $license";
+            }
+            if (!empty($metadata[COMMONS_ATTRIBUTION_FIELD]["value"])) {
+                $fullAttribution = $metadata[COMMONS_ATTRIBUTION_FIELD]["value"];
+                $trimmedAttribution = preg_replace('/<span style="display: none;">.*<\/span>/', '', $fullAttribution);
+                //error_log("trimmedAttribution: '$title' => '$trimmedAttribution'");
+                if (!empty($trimmedAttribution))
+                    $attributionString .= ", $trimmedAttribution";
+            }
 
             $returnArray[] = [
                 "picture" => $title,

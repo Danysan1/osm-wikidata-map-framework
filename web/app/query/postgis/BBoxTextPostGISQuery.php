@@ -32,17 +32,23 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     private $wikidataEndpointURL;
 
     /**
+     * @var boolean $fetchAttribution
+     */
+    private $fetchAttribution;
+
+    /**
      * @param BoundingBox $bbox
      * @param string $language
      * @param PDO $db
      * @param string $wikidataEndpointURL
      * @param ServerTiming|null $serverTiming
      */
-    public function __construct($bbox, $language, $db, $wikidataEndpointURL, $serverTiming = null)
+    public function __construct($bbox, $language, $db, $wikidataEndpointURL, $serverTiming = null, $fetchAttribution = true)
     {
         parent::__construct($bbox, $db, $serverTiming);
         $this->language = $language;
         $this->wikidataEndpointURL = $wikidataEndpointURL;
+        $this->fetchAttribution = $fetchAttribution;
     }
 
     public function getLanguage(): string
@@ -184,30 +190,32 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 if ($this->hasServerTiming())
                     $this->getServerTiming()->add("wikidata-picture-insert");
 
-                $insertedPictures = $stInsertPicture->fetchAll();
-                $picturesToCheck = array_map(function (array $row): string {
-                    return urldecode($row["picture"]);
-                }, $insertedPictures);
-                $attributions = AttributionCommonsQuery::splitTitlesInChunksAndGetAttributions($picturesToCheck);
-                $countAttributions = count($attributions);
-                if ($this->hasServerTiming())
-                    $this->getServerTiming()->add("commons-attribution-fetch-$countAttributions");
+                if ($this->fetchAttribution) {
+                    $insertedPictures = $stInsertPicture->fetchAll();
+                    $picturesToCheck = array_map(function (array $row): string {
+                        return urldecode($row["picture"]);
+                    }, $insertedPictures);
+                    $attributions = AttributionCommonsQuery::splitTitlesInChunksAndGetAttributions($picturesToCheck);
+                    $countAttributions = count($attributions);
+                    if ($this->hasServerTiming())
+                        $this->getServerTiming()->add("commons-attribution-fetch-$countAttributions");
 
-                foreach ($attributions as $attribution) {
-                    $stInsertAttribution = $this->getDB()->prepare(
-                        "UPDATE oem.wikidata_picture
+                    foreach ($attributions as $attribution) {
+                        $stInsertAttribution = $this->getDB()->prepare(
+                            "UPDATE oem.wikidata_picture
                         SET wdp_attribution = ?
                         WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = ?"
-                    );
-                    $stInsertAttribution->execute([
-                        $attribution["attribution"], urlencode($attribution["picture"])
-                    ]);
-                    /*error_log(json_encode([
+                        );
+                        $stInsertAttribution->execute([
+                            $attribution["attribution"], urlencode($attribution["picture"])
+                        ]);
+                        /*error_log(json_encode([
                         $attribution["picture"], urlencode($attribution["picture"]), $attribution["attribution"]
                     ]));*/
+                    }
+                    if ($this->hasServerTiming())
+                        $this->getServerTiming()->add("commons-attribution-insert");
                 }
-                if ($this->hasServerTiming())
-                    $this->getServerTiming()->add("commons-attribution-insert");
             } catch (Exception $e) {
                 error_log("An error occurred while inserting pictures: " . $e->getMessage());
             }
