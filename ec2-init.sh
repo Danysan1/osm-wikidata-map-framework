@@ -18,7 +18,7 @@ sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-c
 git clone https://gitlab.com/dsantini/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
-docker-compose --profile "prod" up
+docker-compose --profile "prod" up -d
 
 ## https://certbot.eff.org/instructions?ws=apache&os=debianbuster
 

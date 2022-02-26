@@ -1,7 +1,8 @@
 version: "3.9"
 services:
   postgis_db:
-    image: postgis/postgis:13-3.2-alpine
+    #image: postgis/postgis:13-3.2-alpine #arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
+    image: odidev/postgis:13-3.1-alpine
     ports:
       - "5432:5432"
     environment:

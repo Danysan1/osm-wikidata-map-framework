@@ -171,7 +171,7 @@ A full installation complete with DB can be deployed with docker-compose:
 git clone https://gitlab.com/dsantini/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
-docker-compose --profile "prod" up
+docker-compose --profile "prod" up -d
 ```
 
 ### Structure
