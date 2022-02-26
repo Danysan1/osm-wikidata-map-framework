@@ -4,8 +4,9 @@ WORKDIR /var/www
 
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
+RUN a2enmod headers ssl
+
 COPY ./composer.json /var/www/composer.json
-RUN a2enmod headers
 
 # https://docs.docker.com/develop/develop-images/multistage-build/
 # https://docs.docker.com/engine/reference/commandline/build/
@@ -20,10 +21,15 @@ RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install
 WORKDIR /var/www/html
 
+FROM node:17-alpine AS npm-install
+WORKDIR /app
+COPY "./web/package*.json" ./
+RUN npm install --force --production
+
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
-	apt-get install -y libpq-dev libzip-dev zip && \
+	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
@@ -31,22 +37,9 @@ RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
 
-#USER www-data
+COPY --chown=www-data:www-data --from=npm-install "/app/node_modules/" "/var/www/html/node_modules"
+
 COPY --chown=www-data:www-data ./web /var/www/html
-COPY ./open-etymology-map.template.ini /var/www/html/open-etymology-map.ini
 RUN touch /var/www/html/open-etymology-map.log
 
-RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash && \
-	chmod +x $HOME/.nvm/nvm.sh && \
-	. $HOME/.nvm/nvm.sh && \
-	rm $HOME/.nvm/nvm.sh && \
-	nvm install --lts && \
-	cd /var/www/html && \
-	npm install --force --production
-
-# docker login -u $REGISTRY_USER -p $REGISTRY_PASSWORD $REGISTRY
-# docker build --target "dev" --tag open-etymology-map:dev .
-# docker build --target "prod" --tag open-etymology-map:prod .
-# docker push open-etymology-map
-# docker rm open-etymology-map_instance
-# docker run --name "open-etymology-map_instance" --publish "80:80" open-etymology-map:prod
+USER www-data

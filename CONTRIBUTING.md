@@ -144,7 +144,7 @@ If you enable Sentry JS on the frontend remember to add `www.google.*` and `inli
 
 #### Local development with Docker
 
-A local development instance can be started with Docker by running `docker-compose up` in the project root. This will start
+A local development instance can be started with Docker by running `docker-compose --profile dev up` in the project root. This will start
 - An instance of Open Etymology exposed at http://localhost:80
 - A PostgreSQL+PostGIS DB exposed on localhost:5432
 - A PGAdmin instance exposed at http://localhost:8080
@@ -162,7 +162,16 @@ docker run --rm -d  -p 80:80/tcp registry.gitlab.com/dsantini/open-etymology-map
 This image can be built with:
 
 ```sh
-docker build --pull --rm -f "open-etymology-map.Dockerfile" -t "open-etymology-map" --target "prod" .
+docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod" .
+```
+
+A full installation complete with DB can be deployed with docker-compose:
+
+```sh
+git clone https://gitlab.com/dsantini/open-etymology-map.git
+cd open-etymology-map
+cp open-etymology-map.template.ini web/open-etymology-map.ini
+docker-compose --profile "prod" up
 ```
 
 ### Structure
@@ -254,7 +263,7 @@ Once the DB is initialized, this is the data gathering process in [etymologyMap.
 
 If you intend to use the DB you will need to initialize it first:
 1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
-   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web`](docker-compose.yml) service
+   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web_dev`](docker-compose.yml) service
    - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
 2. initialize `open-etymology-map.ini` as shown [above](#configuration)
 3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data, depending on which area you want to show on the map.

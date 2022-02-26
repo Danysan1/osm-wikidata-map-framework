@@ -10,7 +10,12 @@ services:
       - POSTGRES_DB=oem
     volumes:
       - db-data:/var/lib/postgresql/data
+    networks:
+      - oem-internal
     restart: "always"
+    profiles:
+      - dev
+      - prod
 
   pgadmin:
     image: dpage/pgadmin4:6.3
@@ -24,22 +29,52 @@ services:
     volumes:
       - pgadmin-data:/var/lib/pgadmin
       - ./pgadmin_init.json:/pgadmin4/servers.json
+    networks:
+      - oem-internal
     restart: "always"
+    profiles:
+      - dev
 
-  web:
+  web_dev:
     build:
       context: .
-      dockerfile: open-etymology-map.Dockerfile
+      dockerfile: Dockerfile
       target: dev
     image: dsantini/open-etymology-map:dev
     ports:
       - "80:80"
     depends_on:
       - postgis_db
+    networks:
+      - oem-internal
     restart: "always"
     volumes:
       - ./web:/var/www/html
+    profiles:
+      - dev
+
+  web_prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    image: dsantini/open-etymology-map:prod
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - postgis_db
+    networks:
+      - oem-internal
+    restart: "always"
+    volumes:
+      - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini
+    profiles:
+      - prod
 
 volumes:
   db-data:
   pgadmin-data:
+
+networks:
+  oem-internal:

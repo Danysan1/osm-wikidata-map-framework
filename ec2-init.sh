@@ -1,36 +1,26 @@
 #!/bin/bash
 
-# https://aws.amazon.com/marketplace/pp/prodview-l5gv52ndg5q6i
+## https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html#install_docker
 
-sudo apt update
-sudo apt upgrade
-sudo apt install apache2 php php-pgsql php-xml php-json postgresql postgresql-postgis certbot python3-certbot-apache
+sudo yum update -y
+sudo yum install git -y
+sudo amazon-linux-extras install docker -y
+sudo service docker start
+sudo usermod -a -G docker ec2-user
 
-# https://postgis.net/install/
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
-sudo -u postgres psql -c "CREATE USER oem WITH PASSWORD '!!REDACTED!!';"
-sudo -u postgres psql -c "CREATE DATABASE oem OWNER oem;"
-sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS postgis";
-sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS fuzzystrmatch";
-sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS postgis_topology";
-sudo -u postgres psql -d oem -c "CREATE EXTENSION IF NOT EXISTS hstore";
+## https://gist.github.com/npearce/6f3c7826c7499587f00957fee62f8ee9
 
-# https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/install-LAMP.html
-# https://wiki.debian.org/it/LaMp
-sudo systemctl start apache2
-sudo systemctl enable apache2
-sudo usermod -a -G www-data admin
-sudo chown -R www-data:www-data /var/www
-sudo chmod 2775 /var/www
-find /var/www -type d -exec sudo chmod 2775 {} \;
+sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
 
-#echo '<?php echo "PHP works!"; ?>' > /var/www/html/php.php
 
-# https://certbot.eff.org/instructions?ws=apache&os=debianbuster
-# sudo vim /etc/apache2/sites-available/000-default.conf
-# sudo vim /etc/apache2/sites-available/default-ssl.conf
-# sudo a2enmod ssl
-# sudo systemctl restart apache2
-# sudo certbot certonly --apache
-# sudo certbot renew --dry-run
+## https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md
+
+git clone https://gitlab.com/dsantini/open-etymology-map.git
+cd open-etymology-map
+cp open-etymology-map.template.ini web/open-etymology-map.ini
+docker-compose --profile "prod" up
+
+## https://certbot.eff.org/instructions?ws=apache&os=debianbuster
+
+# docker-compose exec web_prod sudo certbot certonly --apache
+# docker-compose exec web_prod sudo certbot renew

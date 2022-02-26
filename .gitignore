@@ -1,3 +1,4 @@
+*.geojson
 open-etymology-map.ini
 open-etymology-map.log
 open-etymology-map-cache/
@@ -15,8 +16,7 @@ pgadmin-data
 .pgpass
 vendor/
 cache/
-/web/storage/
-*.geojson
+storage/
 
 # Created by https://www.toptal.com/developers/gitignore/api/metals,phpunit,composer,visualstudiocode,node
 # Edit at https://www.toptal.com/developers/gitignore?templates=metals,phpunit,composer,visualstudiocode,node
@@ -91,6 +91,9 @@ web_modules/
 # Optional eslint cache
 .eslintcache
 
+# Optional stylelint cache
+.stylelintcache
+
 # Microbundle cache
 .rpt2_cache/
 .rts2_cache_cjs/
@@ -106,10 +109,12 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variables file
+# dotenv environment variable files
 .env
-.env.test
-.env.production
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -131,6 +136,12 @@ dist
 
 # vuepress build output
 .vuepress/dist
+
+# vuepress v2.x temp and cache directory
+.temp
+
+# Docusaurus cache and generated files
+.docusaurus
 
 # Serverless directories
 .serverless/
@@ -154,6 +165,15 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
+### Node Patch ###
+# Serverless Webpack directories
+.webpack/
+
+# Optional stylelint cache
+
+# SvelteKit build / generate output
+.svelte-kit
+
 ### PHPUnit ###
 # Covers PHPUnit
 # Reference: https://phpunit.de/
@@ -175,14 +195,19 @@ dist
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-*.code-workspace
+!.vscode/*.code-snippets
 
 # Local History for Visual Studio Code
 .history/
+
+# Built Visual Studio Code Extensions
+*.vsix
 
 ### VisualStudioCode Patch ###
 # Ignore all local history of files
 .history
 .ionide
+
+# Support for Project snippet scope
 
 # End of https://www.toptal.com/developers/gitignore/api/metals,phpunit,composer,visualstudiocode,node
