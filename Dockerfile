@@ -40,6 +40,6 @@ RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-auto
 COPY --chown=www-data:www-data --from=npm-install "/app/node_modules/" "/var/www/html/node_modules"
 
 COPY --chown=www-data:www-data ./web /var/www/html
-RUN touch /var/www/html/open-etymology-map.log
 
 #USER www-data
+#RUN touch /var/www/html/open-etymology-map.log

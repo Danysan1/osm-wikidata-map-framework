@@ -20,6 +20,7 @@ cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
 > web/global-map.geojson
 > web/LAST_UPDATE
+> web/open-etymology-map.log
 docker-compose --profile "prod" up -d
 
 ## https://certbot.eff.org/instructions?ws=apache&os=debianbuster
@@ -28,5 +29,5 @@ docker-compose exec web_prod certbot --apache
 ## Rinnovo: docker-compose exec web_prod certbot renew
 
 
-## Update: cd open-etymology-map && git fetch && git pull && docker-compose --profile 'prod' build && docker-compose --profile 'prod' up
+## Update: cd open-etymology-map && git fetch && git pull && docker-compose --profile 'prod' build && docker-compose --profile 'prod' up -d
 ## Logs: docker-compose logs
