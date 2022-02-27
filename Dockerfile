@@ -2,10 +2,10 @@
 FROM php:8.1-apache-bullseye AS base
 WORKDIR /var/www
 
+RUN a2enmod headers ssl rewrite
+
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
-RUN a2enmod headers ssl
-
 COPY ./composer.json /var/www/composer.json
 
 # https://docs.docker.com/develop/develop-images/multistage-build/

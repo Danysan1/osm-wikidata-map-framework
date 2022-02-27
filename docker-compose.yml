@@ -14,9 +14,6 @@ services:
     networks:
       - oem-internal
     restart: "always"
-    profiles:
-      - dev
-      - prod
 
   pgadmin:
     image: dpage/pgadmin4:6.3
