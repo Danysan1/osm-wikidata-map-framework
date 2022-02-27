@@ -26,3 +26,7 @@ docker-compose --profile "prod" up -d
 
 docker-compose exec web_prod certbot --apache
 ## Rinnovo: docker-compose exec web_prod certbot renew
+
+
+## Update: cd open-etymology-map && git fetch && git pull && docker-compose --profile 'prod' build && docker-compose --profile 'prod' up
+## Logs: docker-compose logs

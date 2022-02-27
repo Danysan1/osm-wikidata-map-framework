@@ -69,7 +69,8 @@ services:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini
       - ./web/global-map.geojson:/var/www/html/global-map.geojson
       - ./web/LAST_UPDATE:/var/www/html/LAST_UPDATE
-      - apache-config:/etc/apache2/sites-available/
+      - apache-sites-available:/etc/apache2/sites-available/
+      - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/
     profiles:
       - prod
@@ -77,7 +78,8 @@ services:
 volumes:
   db-data:
   pgadmin-data:
-  apache-config:
+  apache-sites-available:
+  apache-sites-enabled:
   letsencrypt-certs:
 
 networks:
