@@ -58,19 +58,19 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 )
             FROM (
                 SELECT
-                    el_id,
-                    el_geometry AS geom,
-                    el_osm_type AS osm_type,
-                    el_osm_id AS osm_id,
-                    COALESCE(el_tags->>CONCAT('name:',:lang), el_tags->>'name') AS name,
-                    el_commons AS commons,
-                    el_wikipedia AS wikipedia,
-                    --ST_X(ST_PointOnSurface(el_geometry)) AS point_lon,
-                    --ST_Y(ST_PointOnSurface(el_geometry)) AS point_lat,
+                    el.el_id,
+                    el.el_geometry AS geom,
+                    el.el_osm_type AS osm_type,
+                    el.el_osm_id AS osm_id,
+                    COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
+                    el.el_commons AS commons,
+                    el.el_wikipedia AS wikipedia,
+                    --ST_X(ST_PointOnSurface(el.el_geometry)) AS point_lon,
+                    --ST_Y(ST_PointOnSurface(el.el_geometry)) AS point_lat,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'from_osm', et_from_osm,
-                        'from_osm_type', CASE WHEN et_from_osm THEN el_osm_type ELSE NULL END,
-                        'from_osm_id', CASE WHEN et_from_osm THEN el_osm_id ELSE NULL END,
+                        'from_osm_type', from_el.el_osm_type,
+                        'from_osm_id', from_el.el_osm_id,
                         'from_wikidata', et_from_wikidata,
                         'from_wikidata_cod', from_wd.wd_wikidata_cod,
                         'from_wikidata_prop', et_from_wikidata_prop_cod,
@@ -110,7 +110,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies
-                FROM oem.element
+                FROM oem.element AS el
                 JOIN oem.etymology ON et_el_id = el_id
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 LEFT JOIN oem.wikidata_text AS wdt
@@ -122,8 +122,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
-                WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-                GROUP BY el_id
+                LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_osm_el_id
+                WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+                GROUP BY el.el_id
             ) AS ele";
     }
 }
