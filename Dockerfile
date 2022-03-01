@@ -2,10 +2,10 @@
 FROM php:8.1-apache-bullseye AS base
 WORKDIR /var/www
 
+RUN a2enmod headers ssl rewrite
+
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
-RUN a2enmod headers ssl
-
 COPY ./composer.json /var/www/composer.json
 
 # https://docs.docker.com/develop/develop-images/multistage-build/
@@ -40,6 +40,6 @@ RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-auto
 COPY --chown=www-data:www-data --from=npm-install "/app/node_modules/" "/var/www/html/node_modules"
 
 COPY --chown=www-data:www-data ./web /var/www/html
-RUN touch /var/www/html/open-etymology-map.log
 
 #USER www-data
+#RUN touch /var/www/html/open-etymology-map.log

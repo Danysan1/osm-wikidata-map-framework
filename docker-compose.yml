@@ -14,9 +14,6 @@ services:
     networks:
       - oem-internal
     restart: "always"
-    profiles:
-      - dev
-      - prod
 
   pgadmin:
     image: dpage/pgadmin4:6.3
@@ -70,9 +67,11 @@ services:
     restart: "always"
     volumes:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini
+      - ./web/open-etymology-map.log:/var/www/html/open-etymology-map.log
       - ./web/global-map.geojson:/var/www/html/global-map.geojson
       - ./web/LAST_UPDATE:/var/www/html/LAST_UPDATE
-      - apache-config:/etc/apache2/sites-available/
+      - apache-sites-available:/etc/apache2/sites-available/
+      - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/
     profiles:
       - prod
@@ -80,7 +79,8 @@ services:
 volumes:
   db-data:
   pgadmin-data:
-  apache-config:
+  apache-sites-available:
+  apache-sites-enabled:
   letsencrypt-certs:
 
 networks:
