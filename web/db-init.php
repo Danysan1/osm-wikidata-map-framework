@@ -113,18 +113,26 @@ function logProgress(string $message): void
 function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
 {
     $filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
-    if (is_file($filteredFilePath)) {
+    if (is_file($filteredTmpFile)) {
         logProgress('Data already filtered from elements without etymology');
     } else {
         logProgress('Filtering OSM data from elements without etymology...');
         /**
          * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
          */
-        execAndCheck(
-            "osmium tags-filter --verbose --remove-tags --overwrite --output=- '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata' | \
-            osmium tags-filter --verbose --invert-match --overwrite --output='$filteredFilePath' - 'man_made=flagpole'"
-        );
+        execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata'");
         logProgress('Filtered OSM data from elements without etymology');
+    }
+
+    if (is_file($filteredFilePath)) {
+        logProgress('Data already filtered from non-interesting elements');
+    } else {
+        logProgress('Filtering OSM data from non-interesting elements...');
+        /**
+         * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
+         */
+        execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
+        logProgress('Filtered OSM data from non-interesting elements');
     }
 }
 
