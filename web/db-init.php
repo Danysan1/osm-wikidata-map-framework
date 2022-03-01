@@ -52,6 +52,7 @@ if (empty($sourceFilePath)) {
 }
 $workDir = dirname($sourceFilePath);
 $sourceFileName = basename($sourceFilePath);
+$sourceFileHash = hash_file('sha1', $sourceFilePath);
 echo "Working on file $sourceFileName in directory $workDir" . PHP_EOL;
 
 if ($keep_temp_tables)
@@ -120,7 +121,7 @@ function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
         /**
          * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
          */
-        execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata'");
+        execAndCheck("osmium tags-filter --verbose --remove-tags --input-format=pbf --output-format=pbf --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata'");
         logProgress('Filtered OSM data from elements without etymology');
     }
 
@@ -131,7 +132,7 @@ function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
         /**
          * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
          */
-        execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
+        execAndCheck("osmium tags-filter --verbose --invert-match --input-format=pbf --output-format=pbf --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
         logProgress('Filtered OSM data from non-interesting elements');
     }
 }
@@ -462,7 +463,7 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
 {
     loadWikidataRelatedEntities(
         "ew_from_wikidata",
-        "named after",
+        "named_after",
         "wdt:P138 wdt:P825 wdt:P547",
         "",
         $dbh,
@@ -474,7 +475,7 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
 {
     loadWikidataRelatedEntities(
         "ew_from_name_etymology OR ew_from_subject",
-        "consists of",
+        "consists_of",
         "wdt:P527",
         "wdt:P31 wd:Q14073567",
         $dbh,
@@ -542,7 +543,7 @@ if (!is_file("osmium.json")) {
 }
 
 $filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
-$cacheFilePath = tempnam(sys_get_temp_dir(), 'osmium_');
+$cacheFilePath = sys_get_temp_dir() . "/osmium_$sourceFileHash";
 
 $txtFilePath = "$workDir/$sourceFileName.txt";
 if (is_file($txtFilePath)) {
