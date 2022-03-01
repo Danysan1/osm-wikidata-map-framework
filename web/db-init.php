@@ -249,7 +249,9 @@ function setupSchema(PDO $dbh): void
             wdp_id SERIAL NOT NULL PRIMARY KEY,
             wdp_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
             wdp_picture VARCHAR NOT NULL,
-            wdp_attribution VARCHAR
+            wdp_attribution VARCHAR,
+            wdp_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            wdp_full_download_date TIMESTAMP
         )"
     );
     $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
@@ -276,7 +278,7 @@ function setupSchema(PDO $dbh): void
             wdt_birth_place VARCHAR,
             wdt_death_place VARCHAR,
             wdt_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            wdt_full_download_date TIMESTAMP DEFAULT NULL,
+            wdt_full_download_date TIMESTAMP,
             CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
         )"
     );

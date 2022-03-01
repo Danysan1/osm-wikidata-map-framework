@@ -203,7 +203,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     foreach ($attributions as $attribution) {
                         $stInsertAttribution = $this->getDB()->prepare(
                             "UPDATE oem.wikidata_picture
-                        SET wdp_attribution = ?
+                        SET wdp_attribution = ?, wdp_full_download_date = NOW()
                         WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = ?"
                         );
                         $stInsertAttribution->execute([
