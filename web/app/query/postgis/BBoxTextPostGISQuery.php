@@ -66,14 +66,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
      */
     protected function downloadMissingText()
     {
-        $queryParams = [
-            "min_lon" => $this->getBBox()->getMinLon(),
-            "max_lon" => $this->getBBox()->getMaxLon(),
-            "min_lat" => $this->getBBox()->getMinLat(),
-            "max_lat" => $this->getBBox()->getMaxLat(),
-            "lang" => $this->getLanguage(),
-        ];
-
         $sthMissingWikidata = $this->getDB()->prepare(
             "SELECT wd.wd_wikidata_cod
             FROM oem.element AS el
@@ -84,7 +76,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
             AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)"
         );
-        $sthMissingWikidata->execute($queryParams);
+        $sthMissingWikidata->bindValue("min_lon", $this->getBBox()->getMinLon(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("max_lon", $this->getBBox()->getMaxLon(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("min_lat", $this->getBBox()->getMinLat(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("max_lat", $this->getBBox()->getMaxLat(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("lang", $this->language, PDO::PARAM_STR);
+        //$sthMissingWikidata->debugDumpParams();
+        $sthMissingWikidata->execute();
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("missing-wikidata-query");
 
@@ -118,11 +116,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE LEFT(value->'instanceID'->>'value', 31) = 'http://www.wikidata.org/entity/'
                 AND wd_id IS NULL"
             );
-            $stInsertGender->execute(["result" => $wikidataResult->getJSON()]);
+            $stInsertGender->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertGender->debugDumpParams();
+            $stInsertGender->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender");
 
-            $stInsertGenderText = $this->getDB()->prepare(
+            $stInsertGenderText = $this->getDB()->prepare( // TODO fix slowness
                 "INSERT INTO oem.wikidata_text (wdt_wd_id, wdt_language, wdt_name)
                 SELECT DISTINCT wd.wd_id, :lang::VARCHAR, value->'gender'->>'value'
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
@@ -138,7 +138,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 WHERE wdt.wdt_id IS NULL"
             );
-            $stInsertGenderText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            $stInsertGenderText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stInsertGenderText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertGenderText->debugDumpParams();
+            $stInsertGenderText->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender-text");
 
@@ -165,7 +168,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE wikidata.wd_full_download_date IS NULL
                 AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
-            $stInsertWikidata->execute(["result" => $wikidataResult->getJSON()]);
+            $stInsertWikidata->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertWikidata->debugDumpParams();
+            $stInsertWikidata->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-wikidata");
 
@@ -186,7 +191,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     AND wdp.wdp_id IS NULL
                     RETURNING CONCAT('File:',wdp_picture) AS picture"
                 );
-                $stInsertPicture->execute(["result" => $wikidataResult->getJSON()]);
+                $stInsertPicture->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+                //$stInsertPicture->debugDumpParams();
+                $stInsertPicture->execute();
                 if ($this->hasServerTiming())
                     $this->getServerTiming()->add("wikidata-picture-insert");
 
@@ -203,15 +210,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     foreach ($attributions as $attribution) {
                         $stInsertAttribution = $this->getDB()->prepare(
                             "UPDATE oem.wikidata_picture
-                        SET wdp_attribution = ?, wdp_full_download_date = NOW()
-                        WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = ?"
+                            SET wdp_attribution = :attribution, wdp_full_download_date = NOW()
+                            WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = :title"
                         );
-                        $stInsertAttribution->execute([
-                            $attribution["attribution"], urlencode($attribution["picture"])
-                        ]);
-                        /*error_log(json_encode([
-                        $attribution["picture"], urlencode($attribution["picture"]), $attribution["attribution"]
-                    ]));*/
+                        $stInsertAttribution->bindValue("attribution", $attribution["attribution"], PDO::PARAM_STR);
+                        $stInsertAttribution->bindValue("title", urlencode($attribution["picture"]), PDO::PARAM_STR);
+                        //$stInsertAttribution->debugDumpParams();
+                        $stInsertAttribution->execute();
                     }
                     if ($this->hasServerTiming())
                         $this->getServerTiming()->add("commons-attribution-insert");
@@ -240,7 +245,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE wdt.wdt_full_download_date IS NULL
                 AND wikidata_text.wdt_id = wdt.wdt_id"
             );
-            $stUpdateText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            $stUpdateText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stUpdateText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stUpdateText->debugDumpParams();
+            $stUpdateText->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-insert");
 
@@ -279,7 +287,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
                 WHERE wdt.wdt_id IS NULL"
             );
-            $stInsertText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            $stInsertText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stInsertText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertText->debugDumpParams();
+            $stInsertText->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-insert");
         }
