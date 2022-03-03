@@ -122,18 +122,30 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender");
 
-            $stInsertGenderText = $this->getDB()->prepare( // TODO fix slowness
+            $stInsertGenderText = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata_text (wdt_wd_id, wdt_language, wdt_name)
-                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, value->'gender'->>'value'
-                FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
-                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WITH gender AS (
+                        SELECT DISTINCT
+                            value->'gender'->>'value' AS text,
+                            REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
+                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
+                    ),
+                    instance AS (
+                        SELECT DISTINCT
+                            value->'instance'->>'value' AS text,
+                            REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
+                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
+                    )
+                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, gender.text
+                FROM gender
+                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = gender.cod
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 WHERE wdt.wdt_id IS NULL
                 UNION
-                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, value->'instance'->>'value'
-                FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
-                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, instance.text
+                FROM instance
+                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = instance.cod
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 WHERE wdt.wdt_id IS NULL"
@@ -226,19 +238,25 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             }
 
             $stUpdateText = $this->getDB()->prepare(
+                // "WITH response AS (
+                //         SELECT value, REPLACE(value->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
+                //         FROM json_array_elements((:result::JSON)->'results'->'bindings') AS input
+                //     )
                 "UPDATE oem.wikidata_text
                 SET wdt_full_download_date = CURRENT_TIMESTAMP,
-                    wdt_name = response->'name'->>'value',
-                    wdt_description = response->'description'->>'value',
-                    wdt_wikipedia_url = response->'wikipedia'->>'value',
-                    wdt_occupations = response->'occupations'->>'value',
-                    wdt_citizenship = response->'citizenship'->>'value',
-                    wdt_prizes = response->'prizes'->>'value',
-                    wdt_event_place = response->'event_place'->>'value',
-                    wdt_birth_place = response->'birth_place'->>'value',
-                    wdt_death_place = response->'death_place'->>'value'
+                    wdt_name = response.value->'name'->>'value',
+                    wdt_description = response.value->'description'->>'value',
+                    wdt_wikipedia_url = response.value->'wikipedia'->>'value',
+                    wdt_occupations = response.value->'occupations'->>'value',
+                    wdt_citizenship = response.value->'citizenship'->>'value',
+                    wdt_prizes = response.value->'prizes'->>'value',
+                    wdt_event_place = response.value->'event_place'->>'value',
+                    wdt_birth_place = response.value->'birth_place'->>'value',
+                    wdt_death_place = response.value->'death_place'->>'value'
+                --FROM response
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 JOIN oem.wikidata AS wd
+                    --ON wd.wd_wikidata_cod = response.cod
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang

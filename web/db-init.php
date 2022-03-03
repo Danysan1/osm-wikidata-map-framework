@@ -223,6 +223,7 @@ function setupSchema(PDO $dbh): void
         )"
     );
     $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON oem.wikidata (wd_id) WITH (fillfactor='100')");
+    $dbh->exec("CREATE UNIQUE INDEX wikidata_cod_idx ON oem.wikidata (wd_wikidata_cod) WITH (fillfactor='100')");
     $dbh->exec(
         "CREATE TABLE oem.etymology (
             --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
