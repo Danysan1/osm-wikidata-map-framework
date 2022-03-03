@@ -464,7 +464,7 @@ class EtymologyColorControl {
 
     updateChart(event) {
         const colorScheme = colorSchemes[this._ctrlDropDown.value];
-        console.info("updateChart", { event, colorScheme });
+        //console.info("updateChart", { event, colorScheme });
 
         let data = {
             labels: [],
@@ -767,7 +767,7 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
         ready = e.isSourceLoaded;
-    if (wikidataSourceEvent || overpassSourceEvent || ready) {
+    /*if (wikidataSourceEvent || overpassSourceEvent || ready) {
         console.info('sourcedata event', {
             type: e.dataType,
             source: e.sourceId,
@@ -776,7 +776,7 @@ function mapSourceDataHandler(e) {
             ready,
             e
         });
-    }
+    }*/
 
     if (ready) {
         if (wikidataSourceEvent || overpassSourceEvent) {
