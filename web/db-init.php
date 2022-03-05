@@ -12,6 +12,8 @@ if (php_sapi_name() != "cli") {
     die("Only runnable through CLI");
 }
 
+define("MAX_RECURSION_DEPTH", 10);
+
 $output = [];
 $retval = null;
 $use_osmium_export = FALSE;
@@ -112,7 +114,7 @@ echo 'Started at ' . date('c') . PHP_EOL;
 
 function logProgress(string $message): void
 {
-    echo "$message \t|--------------------------------------------------" . PHP_EOL;
+    echo "-----\t$message\t--------------------------------------------------" . PHP_EOL;
 }
 
 function filterInputData(string $sourceFilePath, string $sourceFileName, string $filteredFilePath, bool $cleanup): void
@@ -128,7 +130,7 @@ function filterInputData(string $sourceFilePath, string $sourceFileName, string 
         /**
          * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
          */
-        execAndCheck("osmium tags-filter --verbose --remove-tags --input-format=pbf --output-format=pbf --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata'");
+        execAndCheck("osmium tags-filter --verbose --remove-tags --input-format=pbf --output-format=pbf --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'highway,wikidata,subject:wikidata,name:etymology:wikidata'");
         logProgress('Filtered OSM data from elements without etymology');
     }
 
@@ -236,8 +238,9 @@ function setupSchema(PDO $dbh): void
             --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
             et_el_id BIGINT NOT NULL,
             et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+            et_from_el_id BIGINT,
+            et_propagated BOOLEAN,
             et_from_osm BOOLEAN,
-            et_from_osm_el_id BIGINT,
             et_from_name_etymology BOOLEAN,
             et_from_name_etymology_consists BOOLEAN,
             et_from_subject BOOLEAN,
@@ -376,6 +379,7 @@ function convertElementWikidataCods(PDO $dbh): void
 
 function loadWikidataEntities(PDO $dbh): void
 {
+    logProgress('Loading Wikidata etymology entities...');
     $n_wd = $dbh->exec(
         "INSERT INTO oem.wikidata (wd_wikidata_cod)
         SELECT DISTINCT ew_wikidata_cod
@@ -474,6 +478,7 @@ function loadWikidataRelatedEntities(
 
 function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): void
 {
+    logProgress('Loading Wikidata "named after" entities...');
     loadWikidataRelatedEntities(
         "ew_from_wikidata",
         "named_after",
@@ -486,6 +491,7 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
 
 function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
 {
+    logProgress('Loading Wikidata "consists of" entities...');
     loadWikidataRelatedEntities(
         "ew_from_name_etymology OR ew_from_subject",
         "consists_of",
@@ -498,12 +504,14 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
 
 function convertEtymologies(PDO $dbh): void
 {
+    logProgress('Converting etymologies...');
     $n_ety = $dbh->exec(
         "INSERT INTO oem.etymology (
             et_el_id,
             et_wd_id,
+            et_from_el_id,
+            et_propagated,
             et_from_osm,
-            et_from_osm_el_id,
             et_from_wikidata,
             et_from_name_etymology,
             et_from_name_etymology_consists,
@@ -517,8 +525,9 @@ function convertEtymologies(PDO $dbh): void
         ) SELECT
             ew_el_id,
             wd_id,
+            MIN(ew_el_id) AS from_el_id,
+            FALSE,
             BOOL_OR(wna_from_prop_cod IS NULL) AS from_osm,
-            MIN(CASE WHEN wna_from_prop_cod IS NULL THEN ew_el_id ELSE NULL END) AS from_osm_el_id,
             BOOL_OR(wna_from_prop_cod IS NOT NULL) AS from_wikidata,
             BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NULL) AS from_name_etymology,
             BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527') AS from_name_etymology_consists,
@@ -544,6 +553,41 @@ function convertEtymologies(PDO $dbh): void
         GROUP BY ew_el_id, wd_id"
     );
     logProgress("Converted $n_ety etymologies");
+}
+
+function propagateEtymologies(PDO $dbh, int $depth = 0): int
+{
+    if ($depth >= MAX_RECURSION_DEPTH) {
+        logProgress("Reached max recursion depth, stopping propagating etymologies");
+        return 0;
+    } else {
+        logProgress("Propagating etymologies at recursion depth $depth...");
+        $n_propagations = $dbh->exec(
+            "INSERT INTO oem.etymology (
+                et_el_id, et_wd_id, et_from_el_id, et_propagated, et_from_osm, et_from_wikidata, et_from_name_etymology, et_from_name_etymology_consists, et_from_subject, et_from_subject_consists, et_from_wikidata_named_after, et_from_wikidata_dedicated_to, et_from_wikidata_commemorates, et_from_wikidata_wd_id, et_from_wikidata_prop_cod
+            ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
+                new_el.osm_id, old_et.et_wd_id, old_et.et_from_el_id, TRUE, old_et.et_from_osm, old_et.et_from_wikidata, old_et.et_from_name_etymology, old_et.et_from_name_etymology_consists, old_et.et_from_subject, old_et.et_from_subject_consists, old_et.et_from_wikidata_named_after, old_et.et_from_wikidata_dedicated_to, old_et.et_from_wikidata_commemorates, old_et.et_from_wikidata_wd_id, old_et.et_from_wikidata_prop_cod
+            FROM oem.etymology AS old_et
+            JOIN oem.osmdata AS old_el
+                ON old_et.et_el_id = old_el.osm_id
+                AND old_el.osm_tags ? 'name'
+            JOIN oem.osmdata AS new_el
+                ON old_el.osm_id < new_el.osm_id
+                AND new_el.osm_tags ? 'name'
+                AND old_el.osm_tags->'name' = new_el.osm_tags->'name'
+                AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
+            LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
+            WHERE new_et IS NULL"
+        );
+        logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
+
+        if ($n_propagations > 0) // Recursion breaking
+            $n_sub_propagations = propagateEtymologies($dbh, $depth + 1);
+        else
+            $n_sub_propagations = 0;
+
+        return $n_propagations + $n_sub_propagations;
+    }
 }
 
 
@@ -696,21 +740,17 @@ if ($use_db) {
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.wikidata)")->fetchColumn()) {
                 logProgress('Wikidata entities already loaded');
             } else {
-                logProgress('Loading Wikidata etymology entities...');
                 loadWikidataEntities($dbh);
 
                 $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-                logProgress('Loading Wikidata "consists of" entities...');
                 loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
 
-                logProgress('Loading Wikidata "named after" entities...');
                 loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
             }
 
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.etymology)")->fetchColumn()) {
                 logProgress('Etymologies already loaded');
             } else {
-                logProgress('Converting etymologies...');
                 convertEtymologies($dbh);
 
                 if (!$keep_temp_tables) {
@@ -718,6 +758,8 @@ if ($use_db) {
                     logProgress('Removed element_wikidata_cods temporary table');
                 }
             }
+
+            propagateEtymologies($dbh);
 
             echo 'Conversion complete at ' . date('c') . PHP_EOL;
         }
@@ -755,7 +797,7 @@ if ($use_db) {
                 AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
             );
             $n_cleaned = $n_tot - $n_remaining;
-            logProgress("Cleaned up $n_cleaned elements without etymology ($n_remaining remaining)");
+            logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
 
             $matches = [];
             if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFilePath, $matches) && count($matches) >= 4)

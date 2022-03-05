@@ -122,7 +122,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
-                LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_osm_el_id
+                LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el.el_id
             ) AS ele";

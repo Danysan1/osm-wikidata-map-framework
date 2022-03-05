@@ -1549,11 +1549,12 @@ function etymologyToDomElement(ety) {
     }
 
     if (ety.from_osm) {
-        etyDomElement.querySelector('.etymology_src').innerText = "OpenStreetMap";
-        etyDomElement.querySelector('.etymology_src').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        etyDomElement.querySelector('.etymology_src_osm').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        etyDomElement.querySelector('.etymology_src_wd_wrapper').style.display = 'none';
     } else if (ety.from_wikidata) {
-        etyDomElement.querySelector('.etymology_src').innerText = "Wikidata";
-        etyDomElement.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
+        etyDomElement.querySelector('.etymology_src_osm').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        etyDomElement.querySelector('.etymology_src_wd_wrapper').style.display = 'inline';
+        etyDomElement.querySelector('.etymology_src_wd').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
     } else {
         etyDomElement.querySelector('.etymology_src_wrapper').style.display = 'none';
     }
