@@ -386,7 +386,7 @@ function loadWikidataEntities(PDO $dbh): void
         FROM oem.element_wikidata_cods
         LEFT JOIN oem.wikidata ON wd_wikidata_cod = ew_wikidata_cod
         WHERE (ew_from_name_etymology OR ew_from_subject)
-        AND wd_id IS NULL"
+        AND wikidata IS NULL"
     );
     logProgress("Loaded $n_wd Wikidata entities");
 }
@@ -449,13 +449,13 @@ function loadWikidataRelatedEntities(
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
             LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
             WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wd_id IS NULL
+            AND wikidata IS NULL
             UNION
             SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
             LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
             WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wd_id IS NULL"
+            AND wikidata IS NULL"
         );
         $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
         $sth_wd->execute();
