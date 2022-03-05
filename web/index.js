@@ -464,7 +464,7 @@ class EtymologyColorControl {
 
     updateChart(event) {
         const colorScheme = colorSchemes[this._ctrlDropDown.value];
-        console.info("updateChart", { event, colorScheme });
+        //console.info("updateChart", { event, colorScheme });
 
         let data = {
             labels: [],
@@ -767,7 +767,7 @@ function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
         ready = e.isSourceLoaded;
-    if (wikidataSourceEvent || overpassSourceEvent || ready) {
+    /*if (wikidataSourceEvent || overpassSourceEvent || ready) {
         console.info('sourcedata event', {
             type: e.dataType,
             source: e.sourceId,
@@ -776,7 +776,7 @@ function mapSourceDataHandler(e) {
             ready,
             e
         });
-    }
+    }*/
 
     if (ready) {
         if (wikidataSourceEvent || overpassSourceEvent) {
@@ -1549,11 +1549,12 @@ function etymologyToDomElement(ety) {
     }
 
     if (ety.from_osm) {
-        etyDomElement.querySelector('.etymology_src').innerText = "OpenStreetMap";
-        etyDomElement.querySelector('.etymology_src').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        etyDomElement.querySelector('.etymology_src_osm').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        etyDomElement.querySelector('.etymology_src_wd_wrapper').style.display = 'none';
     } else if (ety.from_wikidata) {
-        etyDomElement.querySelector('.etymology_src').innerText = "Wikidata";
-        etyDomElement.querySelector('.etymology_src').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
+        etyDomElement.querySelector('.etymology_src_osm').href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        etyDomElement.querySelector('.etymology_src_wd_wrapper').style.display = 'inline';
+        etyDomElement.querySelector('.etymology_src_wd').href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
     } else {
         etyDomElement.querySelector('.etymology_src_wrapper').style.display = 'none';
     }

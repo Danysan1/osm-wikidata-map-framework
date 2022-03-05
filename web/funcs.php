@@ -1,7 +1,8 @@
 <?php
+
 declare(strict_types=1);
-require_once(__DIR__."/../vendor/autoload.php");
-require_once(__DIR__."/app/Configuration.php");
+require_once(__DIR__ . "/../vendor/autoload.php");
+require_once(__DIR__ . "/app/Configuration.php");
 
 use \App\Configuration;
 
@@ -9,29 +10,34 @@ use \App\Configuration;
  * @param Throwable $t
  * @return void
  */
-function handleException(Throwable $t) {
+function handleException(Throwable $t)
+{
 	error_log(
-		$t->getMessage().PHP_EOL.
-		$t->getTraceAsString()
+		$t->getMessage() . PHP_EOL .
+			$t->getTraceAsString()
 	);
 	if (function_exists('\Sentry\captureException')) \Sentry\captureException($t);
 	http_response_code(500);
 	//die('{"success":false, "error":"An internal error occurred"}');
-	die(json_encode(["success" => false, "error"=>$t->getMessage()]));
+	die(json_encode(["success" => false, "error" => $t->getMessage()]));
 }
 
 /**
  * @param Configuration $conf
  * @return void
  */
-function preparePage(Configuration $conf) {
-	ini_set("error_log", (string)$conf->get("log-file-path"));
+function preparePage(Configuration $conf)
+{
+	if ($conf->has('log-file-path'))
+		ini_set("error_log", (string)$conf->get("log-file-path"));
+
 	if ($conf->has('sentry-php-dsn')) {
 		\Sentry\init([
 			'dsn' => (string)$conf->get('sentry-php-dsn'),
 			'environment' => (string)$conf->get('sentry-php-env'),
 		]);
 	}
+
 	set_exception_handler('handleException');
 	ini_set('session.cookie_httponly', 'true');
 	ini_set('session.cookie_secure', 'true');
@@ -43,24 +49,25 @@ function preparePage(Configuration $conf) {
  * @param Configuration $conf
  * @return void
  */
-function prepareHTML(Configuration $conf) {
+function prepareHTML(Configuration $conf)
+{
 	preparePage($conf);
-	header( "Content-Type: text/html; charset=utf-8" );
+	header("Content-Type: text/html; charset=utf-8");
 	$sentryJsDomain = $conf->has('sentry-js-domain') ? (string)$conf->get('sentry-js-domain') : "";
-	$reportUri = $conf->has('sentry-js-uri') ? "report-uri ".(string)$conf->get("sentry-js-uri")."; " : "";
+	$reportUri = $conf->has('sentry-js-uri') ? "report-uri " . (string)$conf->get("sentry-js-uri") . "; " : "";
 	header(
-		"Content-Security-Policy: ".
-			"default-src 'self'; ".
-			"worker-src blob: ; ".
-			"child-src blob: ; ".
-			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://api.mapbox.com; ".
-			"font-src 'self'; ".
-			"style-src 'self' https://fonts.googleapis.com; ".
-			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; ".
-			"frame-ancestors 'none'; ".
-			"object-src 'none'; ".
-			"connect-src 'self' $sentryJsDomain https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; ".
-			$reportUri.
+		"Content-Security-Policy: " .
+			"default-src 'self'; " .
+			"worker-src blob: ; " .
+			"child-src blob: ; " .
+			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://api.mapbox.com; " .
+			"font-src 'self'; " .
+			"style-src 'self' https://fonts.googleapis.com; " .
+			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; " .
+			"frame-ancestors 'none'; " .
+			"object-src 'none'; " .
+			"connect-src 'self' $sentryJsDomain https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; " .
+			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
 	);
@@ -70,18 +77,20 @@ function prepareHTML(Configuration $conf) {
  * @param Configuration $conf
  * @return void
  */
-function prepareJSON(Configuration $conf) {
+function prepareJSON(Configuration $conf)
+{
 	preparePage($conf);
-	header( "Content-Type: application/json; charset=utf-8" );
+	header("Content-Type: application/json; charset=utf-8");
 }
 
 /**
  * @param Configuration $conf
  * @return void
  */
-function prepareJS(Configuration $conf) {
+function prepareJS(Configuration $conf)
+{
 	preparePage($conf);
-	header( "Content-Type: application/javascript; charset=utf-8" );
+	header("Content-Type: application/javascript; charset=utf-8");
 }
 
 /**
@@ -94,9 +103,10 @@ function prepareJS(Configuration $conf) {
  * @return mixed
  * @psalm-suppress MixedAssignment
  */
-function getFilteredParamOrError($paramName, $filter = FILTER_DEFAULT) {
+function getFilteredParamOrError($paramName, $filter = FILTER_DEFAULT)
+{
 	$paramValue = filter_input(INPUT_GET, $paramName, $filter);
-	if($paramValue===FALSE || $paramValue===NULL) {
+	if ($paramValue === FALSE || $paramValue === NULL) {
 		http_response_code(400);
 		die(json_encode(["error" => "Missing or bad parameter: $paramName"]));
 	}
@@ -114,11 +124,11 @@ function getFilteredParamOrError($paramName, $filter = FILTER_DEFAULT) {
  * @return mixed
  * @psalm-suppress MixedAssignment
  */
-function getFilteredParamOrDefault($paramName, $filter=FILTER_DEFAULT, $defaultValue=NULL) {
+function getFilteredParamOrDefault($paramName, $filter = FILTER_DEFAULT, $defaultValue = NULL)
+{
 	$paramValue = filter_input(INPUT_GET, $paramName, $filter);
-	if($paramValue===FALSE || $paramValue===NULL) {
+	if ($paramValue === FALSE || $paramValue === NULL) {
 		$paramValue = $defaultValue;
 	}
 	return $paramValue;
 }
-

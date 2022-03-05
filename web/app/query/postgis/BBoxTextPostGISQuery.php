@@ -66,16 +66,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
      */
     protected function downloadMissingText()
     {
-        $queryParams = [
-            "min_lon" => $this->getBBox()->getMinLon(),
-            "max_lon" => $this->getBBox()->getMaxLon(),
-            "min_lat" => $this->getBBox()->getMinLat(),
-            "max_lat" => $this->getBBox()->getMaxLat(),
-            "lang" => $this->getLanguage(),
-        ];
-
         $sthMissingWikidata = $this->getDB()->prepare(
-            "SELECT wd.wd_wikidata_cod
+            "SELECT DISTINCT wd.wd_wikidata_cod
             FROM oem.element AS el
             JOIN oem.etymology AS et ON et.et_el_id = el.el_id
             JOIN oem.wikidata AS wd ON et.et_wd_id = wd.wd_id
@@ -84,7 +76,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
             AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)"
         );
-        $sthMissingWikidata->execute($queryParams);
+        $sthMissingWikidata->bindValue("min_lon", $this->getBBox()->getMinLon(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("max_lon", $this->getBBox()->getMaxLon(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("min_lat", $this->getBBox()->getMinLat(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("max_lat", $this->getBBox()->getMaxLat(), PDO::PARAM_STR);
+        $sthMissingWikidata->bindValue("lang", $this->language, PDO::PARAM_STR);
+        //$sthMissingWikidata->debugDumpParams();
+        $sthMissingWikidata->execute();
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("missing-wikidata-query");
 
@@ -102,7 +100,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-download");
 
-            //error_log("wikidataResult=$wikidataResult");
+            //error_log("wikidataResult: " . $wikidataResult->getJSON());
 
             $stInsertGender = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata (wd_wikidata_cod)
@@ -110,35 +108,52 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 FROM json_array_elements((:result::JSON)->'results'->'bindings')
                 LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE LEFT(value->'genderID'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wd_id IS NULL
+                AND wikidata IS NULL
                 UNION
                 SELECT DISTINCT REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 FROM json_array_elements((:result::JSON)->'results'->'bindings')
                 LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE LEFT(value->'instanceID'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wd_id IS NULL"
+                AND wikidata IS NULL"
             );
-            $stInsertGender->execute(["result" => $wikidataResult->getJSON()]);
+            $stInsertGender->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertGender->debugDumpParams();
+            $stInsertGender->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender");
 
             $stInsertGenderText = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata_text (wdt_wd_id, wdt_language, wdt_name)
-                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, value->'gender'->>'value'
-                FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
-                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WITH gender AS (
+                        SELECT DISTINCT
+                            value->'gender'->>'value' AS text,
+                            REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
+                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
+                    ),
+                    instance AS (
+                        SELECT DISTINCT
+                            value->'instance'->>'value' AS text,
+                            REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
+                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
+                    )
+                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, gender.text
+                FROM gender
+                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = gender.cod
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
-                WHERE wdt.wdt_id IS NULL
+                WHERE wdt IS NULL
                 UNION
-                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, value->'instance'->>'value'
-                FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
-                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, instance.text
+                FROM instance
+                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = instance.cod
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
-                WHERE wdt.wdt_id IS NULL"
+                WHERE wdt IS NULL"
             );
-            $stInsertGenderText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            $stInsertGenderText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stInsertGenderText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertGenderText->debugDumpParams();
+            $stInsertGenderText->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-gender-text");
 
@@ -165,7 +180,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE wikidata.wd_full_download_date IS NULL
                 AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
-            $stInsertWikidata->execute(["result" => $wikidataResult->getJSON()]);
+            $stInsertWikidata->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertWikidata->debugDumpParams();
+            $stInsertWikidata->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-insert-wikidata");
 
@@ -183,10 +200,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     LEFT JOIN oem.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
                     WHERE pic.picture IS NOT NULL
                     AND pic.picture != ''
-                    AND wdp.wdp_id IS NULL
+                    AND wdp IS NULL
                     RETURNING CONCAT('File:',wdp_picture) AS picture"
                 );
-                $stInsertPicture->execute(["result" => $wikidataResult->getJSON()]);
+                $stInsertPicture->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+                //$stInsertPicture->debugDumpParams();
+                $stInsertPicture->execute();
                 if ($this->hasServerTiming())
                     $this->getServerTiming()->add("wikidata-picture-insert");
 
@@ -203,15 +222,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     foreach ($attributions as $attribution) {
                         $stInsertAttribution = $this->getDB()->prepare(
                             "UPDATE oem.wikidata_picture
-                        SET wdp_attribution = ?
-                        WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = ?"
+                            SET wdp_attribution = :attribution, wdp_full_download_date = NOW()
+                            WHERE CONCAT('File%3A',REPLACE(wdp_picture,'%20','+')) = :title"
                         );
-                        $stInsertAttribution->execute([
-                            $attribution["attribution"], urlencode($attribution["picture"])
-                        ]);
-                        /*error_log(json_encode([
-                        $attribution["picture"], urlencode($attribution["picture"]), $attribution["attribution"]
-                    ]));*/
+                        $stInsertAttribution->bindValue("attribution", $attribution["attribution"], PDO::PARAM_STR);
+                        $stInsertAttribution->bindValue("title", urlencode($attribution["picture"]), PDO::PARAM_STR);
+                        //$stInsertAttribution->debugDumpParams();
+                        $stInsertAttribution->execute();
                     }
                     if ($this->hasServerTiming())
                         $this->getServerTiming()->add("commons-attribution-insert");
@@ -223,26 +240,28 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             $stUpdateText = $this->getDB()->prepare(
                 "UPDATE oem.wikidata_text
                 SET wdt_full_download_date = CURRENT_TIMESTAMP,
-                    wdt_name = response->'name'->>'value',
-                    wdt_description = response->'description'->>'value',
-                    wdt_wikipedia_url = response->'wikipedia'->>'value',
-                    wdt_occupations = response->'occupations'->>'value',
-                    wdt_citizenship = response->'citizenship'->>'value',
-                    wdt_prizes = response->'prizes'->>'value',
-                    wdt_event_place = response->'event_place'->>'value',
-                    wdt_birth_place = response->'birth_place'->>'value',
-                    wdt_death_place = response->'death_place'->>'value'
+                    wdt_name = response.value->'name'->>'value',
+                    wdt_description = response.value->'description'->>'value',
+                    wdt_wikipedia_url = response.value->'wikipedia'->>'value',
+                    wdt_occupations = response.value->'occupations'->>'value',
+                    wdt_citizenship = response.value->'citizenship'->>'value',
+                    wdt_prizes = response.value->'prizes'->>'value',
+                    wdt_event_place = response.value->'event_place'->>'value',
+                    wdt_birth_place = response.value->'birth_place'->>'value',
+                    wdt_death_place = response.value->'death_place'->>'value'
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 JOIN oem.wikidata AS wd
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
-                LEFT JOIN oem.wikidata_text AS wdt
-                    ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
-                WHERE wdt.wdt_full_download_date IS NULL
-                AND wikidata_text.wdt_id = wdt.wdt_id"
+                WHERE wdt_full_download_date IS NULL
+                AND wdt_wd_id = wd_id
+                AND wdt_language = :lang"
             );
-            $stUpdateText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            $stUpdateText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stUpdateText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stUpdateText->debugDumpParams();
+            $stUpdateText->execute();
             if ($this->hasServerTiming())
-                $this->getServerTiming()->add("wikidata-text-insert");
+                $this->getServerTiming()->add("wikidata-text-update");
 
             $stInsertText = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata_text (
@@ -277,9 +296,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
-                WHERE wdt.wdt_id IS NULL"
+                WHERE wdt IS NULL"
             );
-            $stInsertText->execute(["lang" => $this->language, "result" => $wikidataResult->getJSON()]);
+            $stInsertText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stInsertText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            //$stInsertText->debugDumpParams();
+            $stInsertText->execute();
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-insert");
         }

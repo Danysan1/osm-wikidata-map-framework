@@ -12,6 +12,8 @@ if (php_sapi_name() != "cli") {
     die("Only runnable through CLI");
 }
 
+define("MAX_RECURSION_DEPTH", 10);
+
 $output = [];
 $retval = null;
 $use_osmium_export = FALSE;
@@ -20,6 +22,7 @@ $convert_to_geojson = FALSE;
 $convert_to_pg = FALSE;
 $convert_to_txt = FALSE;
 $keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $argv);
+$cleanup = in_array("--cleanup", $argv) || in_array("-c", $argv);
 $reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
 
 exec("which osmium", $output, $retval);
@@ -52,10 +55,14 @@ if (empty($sourceFilePath)) {
 }
 $workDir = dirname($sourceFilePath);
 $sourceFileName = basename($sourceFilePath);
+$sourceFileHash = hash_file('sha1', $sourceFilePath);
 echo "Working on file $sourceFileName in directory $workDir" . PHP_EOL;
 
 if ($keep_temp_tables)
     echo 'Keeping temporary tables' . PHP_EOL;
+
+if ($cleanup)
+    echo 'Doing a cleanup of temporary files' . PHP_EOL;
 
 if ($reset)
     echo 'Doing a hard reset of the DB' . PHP_EOL;
@@ -107,12 +114,15 @@ echo 'Started at ' . date('c') . PHP_EOL;
 
 function logProgress(string $message): void
 {
-    echo "$message \t|--------------------------------------------------" . PHP_EOL;
+    echo "-----\t$message\t--------------------------------------------------" . PHP_EOL;
 }
 
-function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
+function filterInputData(string $sourceFilePath, string $sourceFileName, string $filteredFilePath, bool $cleanup): void
 {
     $filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
+    if (is_file($filteredTmpFile) && $cleanup) {
+        unlink($filteredTmpFile);
+    }
     if (is_file($filteredTmpFile)) {
         logProgress('Data already filtered from elements without etymology');
     } else {
@@ -120,7 +130,7 @@ function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
         /**
          * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
          */
-        execAndCheck("osmium tags-filter --verbose --remove-tags --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'wikidata,subject:wikidata,name:etymology:wikidata'");
+        execAndCheck("osmium tags-filter --verbose --remove-tags --input-format=pbf --output-format=pbf --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'highway,wikidata,subject:wikidata,name:etymology:wikidata'");
         logProgress('Filtered OSM data from elements without etymology');
     }
 
@@ -131,7 +141,7 @@ function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
         /**
          * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
          */
-        execAndCheck("osmium tags-filter --verbose --invert-match --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
+        execAndCheck("osmium tags-filter --verbose --invert-match --input-format=pbf --output-format=pbf --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
         logProgress('Filtered OSM data from non-interesting elements');
     }
 }
@@ -222,11 +232,14 @@ function setupSchema(PDO $dbh): void
         )"
     );
     $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON oem.wikidata (wd_id) WITH (fillfactor='100')");
+    $dbh->exec("CREATE UNIQUE INDEX wikidata_cod_idx ON oem.wikidata (wd_wikidata_cod) WITH (fillfactor='100')");
     $dbh->exec(
         "CREATE TABLE oem.etymology (
             --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
             et_el_id BIGINT NOT NULL,
             et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+            et_from_el_id BIGINT,
+            et_propagated BOOLEAN,
             et_from_osm BOOLEAN,
             et_from_name_etymology BOOLEAN,
             et_from_name_etymology_consists BOOLEAN,
@@ -247,7 +260,9 @@ function setupSchema(PDO $dbh): void
             wdp_id SERIAL NOT NULL PRIMARY KEY,
             wdp_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
             wdp_picture VARCHAR NOT NULL,
-            wdp_attribution VARCHAR
+            wdp_attribution VARCHAR,
+            wdp_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            wdp_full_download_date TIMESTAMP
         )"
     );
     $dbh->exec("CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100')");
@@ -274,7 +289,7 @@ function setupSchema(PDO $dbh): void
             wdt_birth_place VARCHAR,
             wdt_death_place VARCHAR,
             wdt_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            wdt_full_download_date TIMESTAMP DEFAULT NULL,
+            wdt_full_download_date TIMESTAMP,
             CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
         )"
     );
@@ -346,28 +361,32 @@ function convertElementWikidataCods(PDO $dbh): void
         "INSERT INTO oem.element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_from_name_etymology, ew_from_subject, ew_from_wikidata)
         SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE, FALSE, TRUE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
-        WHERE TRIM(wikidata_cod) ~* '^Q\d+$'
+        WHERE osm_tags ? 'wikidata'
+        AND TRIM(wikidata_cod) ~* '^Q\d+$'
         UNION
         SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
-        WHERE TRIM(subject_wikidata_cod) ~* '^Q\d+$'
+        WHERE osm_tags ? 'subject:wikidata'
+        AND TRIM(subject_wikidata_cod) ~* '^Q\d+$'
         UNION
         SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE, FALSE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
-        WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
+        WHERE osm_tags ? 'name:etymology:wikidata'
+        AND TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
     );
     logProgress("Converted $n_wikidata_cods wikidata codes");
 }
 
 function loadWikidataEntities(PDO $dbh): void
 {
+    logProgress('Loading Wikidata etymology entities...');
     $n_wd = $dbh->exec(
         "INSERT INTO oem.wikidata (wd_wikidata_cod)
         SELECT DISTINCT ew_wikidata_cod
         FROM oem.element_wikidata_cods
         LEFT JOIN oem.wikidata ON wd_wikidata_cod = ew_wikidata_cod
         WHERE (ew_from_name_etymology OR ew_from_subject)
-        AND wd_id IS NULL"
+        AND wikidata IS NULL"
     );
     logProgress("Loaded $n_wd Wikidata entities");
 }
@@ -430,13 +449,13 @@ function loadWikidataRelatedEntities(
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
             LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
             WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wd_id IS NULL
+            AND wikidata IS NULL
             UNION
             SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
             LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
             WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wd_id IS NULL"
+            AND wikidata IS NULL"
         );
         $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
         $sth_wd->execute();
@@ -459,9 +478,10 @@ function loadWikidataRelatedEntities(
 
 function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): void
 {
+    logProgress('Loading Wikidata "named after" entities...');
     loadWikidataRelatedEntities(
         "ew_from_wikidata",
-        "named after",
+        "named_after",
         "wdt:P138 wdt:P825 wdt:P547",
         "",
         $dbh,
@@ -471,9 +491,10 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
 
 function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
 {
+    logProgress('Loading Wikidata "consists of" entities...');
     loadWikidataRelatedEntities(
         "ew_from_name_etymology OR ew_from_subject",
-        "consists of",
+        "consists_of",
         "wdt:P527",
         "wdt:P31 wd:Q14073567",
         $dbh,
@@ -483,10 +504,13 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
 
 function convertEtymologies(PDO $dbh): void
 {
+    logProgress('Converting etymologies...');
     $n_ety = $dbh->exec(
         "INSERT INTO oem.etymology (
             et_el_id,
             et_wd_id,
+            et_from_el_id,
+            et_propagated,
             et_from_osm,
             et_from_wikidata,
             et_from_name_etymology,
@@ -501,6 +525,8 @@ function convertEtymologies(PDO $dbh): void
         ) SELECT
             ew_el_id,
             wd_id,
+            MIN(ew_el_id) AS from_el_id,
+            FALSE,
             BOOL_OR(wna_from_prop_cod IS NULL) AS from_osm,
             BOOL_OR(wna_from_prop_cod IS NOT NULL) AS from_wikidata,
             BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NULL) AS from_name_etymology,
@@ -529,6 +555,41 @@ function convertEtymologies(PDO $dbh): void
     logProgress("Converted $n_ety etymologies");
 }
 
+function propagateEtymologies(PDO $dbh, int $depth = 0): int
+{
+    if ($depth >= MAX_RECURSION_DEPTH) {
+        logProgress("Reached max recursion depth, stopping propagating etymologies");
+        return 0;
+    } else {
+        logProgress("Propagating etymologies at recursion depth $depth...");
+        $n_propagations = $dbh->exec(
+            "INSERT INTO oem.etymology (
+                et_el_id, et_wd_id, et_from_el_id, et_propagated, et_from_osm, et_from_wikidata, et_from_name_etymology, et_from_name_etymology_consists, et_from_subject, et_from_subject_consists, et_from_wikidata_named_after, et_from_wikidata_dedicated_to, et_from_wikidata_commemorates, et_from_wikidata_wd_id, et_from_wikidata_prop_cod
+            ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
+                new_el.osm_id, old_et.et_wd_id, old_et.et_from_el_id, TRUE, old_et.et_from_osm, old_et.et_from_wikidata, old_et.et_from_name_etymology, old_et.et_from_name_etymology_consists, old_et.et_from_subject, old_et.et_from_subject_consists, old_et.et_from_wikidata_named_after, old_et.et_from_wikidata_dedicated_to, old_et.et_from_wikidata_commemorates, old_et.et_from_wikidata_wd_id, old_et.et_from_wikidata_prop_cod
+            FROM oem.etymology AS old_et
+            JOIN oem.osmdata AS old_el
+                ON old_et.et_el_id = old_el.osm_id
+                AND old_el.osm_tags ? 'name'
+            JOIN oem.osmdata AS new_el
+                ON old_el.osm_id < new_el.osm_id
+                AND new_el.osm_tags ? 'name'
+                AND old_el.osm_tags->'name' = new_el.osm_tags->'name'
+                AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
+            LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
+            WHERE new_et IS NULL"
+        );
+        logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
+
+        if ($n_propagations > 0) // Recursion breaking
+            $n_sub_propagations = propagateEtymologies($dbh, $depth + 1);
+        else
+            $n_sub_propagations = 0;
+
+        return $n_propagations + $n_sub_propagations;
+    }
+}
+
 
 
 
@@ -539,13 +600,19 @@ if (!is_file("osmium.json")) {
 }
 
 $filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
-$cacheFilePath = tempnam(sys_get_temp_dir(), 'osmium_');
+$cacheFilePath = sys_get_temp_dir() . "/osmium_$sourceFileHash";
+
+if (is_file($filteredFilePath) && $cleanup)
+    unlink($filteredFilePath);
 
 $txtFilePath = "$workDir/$sourceFileName.txt";
+if (is_file($txtFilePath) && $cleanup) {
+    unlink($txtFilePath);
+}
 if (is_file($txtFilePath)) {
     logProgress('Data already exported to text');
 } elseif ($convert_to_txt) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
     logProgress('Exporting OSM data to text...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -555,10 +622,13 @@ if (is_file($txtFilePath)) {
 }
 
 $geojsonFilePath = "$workDir/$sourceFileName.geojson";
+if (is_file($geojsonFilePath) && $cleanup) {
+    unlink($geojsonFilePath);
+}
 if (is_file($geojsonFilePath)) {
     logProgress('Data already exported to geojson');
 } elseif ($convert_to_geojson) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
     logProgress('Exporting OSM data to geojson...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -568,10 +638,13 @@ if (is_file($geojsonFilePath)) {
 }
 
 $pgFilePath = "$workDir/$sourceFileName.pg";
+if (is_file($pgFilePath) && $cleanup) {
+    unlink($pgFilePath);
+}
 if (is_file($pgFilePath)) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($convert_to_pg) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
     logProgress('Exporting OSM data to PostGIS tsv...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -667,21 +740,17 @@ if ($use_db) {
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.wikidata)")->fetchColumn()) {
                 logProgress('Wikidata entities already loaded');
             } else {
-                logProgress('Loading Wikidata etymology entities...');
                 loadWikidataEntities($dbh);
 
                 $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-                logProgress('Loading Wikidata "consists of" entities...');
                 loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
 
-                logProgress('Loading Wikidata "named after" entities...');
                 loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
             }
 
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.etymology)")->fetchColumn()) {
                 logProgress('Etymologies already loaded');
             } else {
-                logProgress('Converting etymologies...');
                 convertEtymologies($dbh);
 
                 if (!$keep_temp_tables) {
@@ -689,6 +758,8 @@ if ($use_db) {
                     logProgress('Removed element_wikidata_cods temporary table');
                 }
             }
+
+            propagateEtymologies($dbh);
 
             echo 'Conversion complete at ' . date('c') . PHP_EOL;
         }
@@ -726,7 +797,7 @@ if ($use_db) {
                 AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
             );
             $n_cleaned = $n_tot - $n_remaining;
-            logProgress("Cleaned up $n_cleaned elements without etymology ($n_remaining remaining)");
+            logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
 
             $matches = [];
             if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFilePath, $matches) && count($matches) >= 4)
@@ -761,6 +832,9 @@ if ($use_db) {
         }
 
         $backupFilePath = "$workDir/$sourceFileName.backup";
+        if (is_file($backupFilePath) && $cleanup || $reset) {
+            unlink($backupFilePath);
+        }
         if (is_file($backupFilePath)) {
             logProgress('Backup file already generated');
         } else {
