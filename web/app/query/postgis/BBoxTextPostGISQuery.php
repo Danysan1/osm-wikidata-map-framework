@@ -100,7 +100,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-download");
 
-            error_log("wikidataResult: " . $wikidataResult->getJSON());
+            //error_log("wikidataResult: " . $wikidataResult->getJSON());
 
             $stInsertGender = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata (wd_wikidata_cod)
