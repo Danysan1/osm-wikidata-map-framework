@@ -20,6 +20,7 @@ $convert_to_geojson = FALSE;
 $convert_to_pg = FALSE;
 $convert_to_txt = FALSE;
 $keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $argv);
+$cleanup = in_array("--cleanup", $argv) || in_array("-c", $argv);
 $reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
 
 exec("which osmium", $output, $retval);
@@ -57,6 +58,9 @@ echo "Working on file $sourceFileName in directory $workDir" . PHP_EOL;
 
 if ($keep_temp_tables)
     echo 'Keeping temporary tables' . PHP_EOL;
+
+if ($cleanup)
+    echo 'Doing a cleanup of temporary files' . PHP_EOL;
 
 if ($reset)
     echo 'Doing a hard reset of the DB' . PHP_EOL;
@@ -111,9 +115,12 @@ function logProgress(string $message): void
     echo "$message \t|--------------------------------------------------" . PHP_EOL;
 }
 
-function filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath)
+function filterInputData(string $sourceFilePath, string $sourceFileName, string $filteredFilePath, bool $cleanup): void
 {
     $filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
+    if (is_file($filteredTmpFile) && $cleanup) {
+        unlink($filteredTmpFile);
+    }
     if (is_file($filteredTmpFile)) {
         logProgress('Data already filtered from elements without etymology');
     } else {
@@ -351,15 +358,18 @@ function convertElementWikidataCods(PDO $dbh): void
         "INSERT INTO oem.element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_from_name_etymology, ew_from_subject, ew_from_wikidata)
         SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE, FALSE, TRUE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
-        WHERE TRIM(wikidata_cod) ~* '^Q\d+$'
+        WHERE osm_tags ? 'wikidata'
+        AND TRIM(wikidata_cod) ~* '^Q\d+$'
         UNION
         SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
-        WHERE TRIM(subject_wikidata_cod) ~* '^Q\d+$'
+        WHERE osm_tags ? 'subject:wikidata'
+        AND TRIM(subject_wikidata_cod) ~* '^Q\d+$'
         UNION
         SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE, FALSE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
-        WHERE TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
+        WHERE osm_tags ? 'name:etymology:wikidata'
+        AND TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
     );
     logProgress("Converted $n_wikidata_cods wikidata codes");
 }
@@ -548,11 +558,17 @@ if (!is_file("osmium.json")) {
 $filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
 $cacheFilePath = sys_get_temp_dir() . "/osmium_$sourceFileHash";
 
+if (is_file($filteredFilePath) && $cleanup)
+    unlink($filteredFilePath);
+
 $txtFilePath = "$workDir/$sourceFileName.txt";
+if (is_file($txtFilePath) && $cleanup) {
+    unlink($txtFilePath);
+}
 if (is_file($txtFilePath)) {
     logProgress('Data already exported to text');
 } elseif ($convert_to_txt) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
     logProgress('Exporting OSM data to text...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -562,10 +578,13 @@ if (is_file($txtFilePath)) {
 }
 
 $geojsonFilePath = "$workDir/$sourceFileName.geojson";
+if (is_file($geojsonFilePath) && $cleanup) {
+    unlink($geojsonFilePath);
+}
 if (is_file($geojsonFilePath)) {
     logProgress('Data already exported to geojson');
 } elseif ($convert_to_geojson) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
     logProgress('Exporting OSM data to geojson...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -575,10 +594,13 @@ if (is_file($geojsonFilePath)) {
 }
 
 $pgFilePath = "$workDir/$sourceFileName.pg";
+if (is_file($pgFilePath) && $cleanup) {
+    unlink($pgFilePath);
+}
 if (is_file($pgFilePath)) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($convert_to_pg) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
     logProgress('Exporting OSM data to PostGIS tsv...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -768,6 +790,9 @@ if ($use_db) {
         }
 
         $backupFilePath = "$workDir/$sourceFileName.backup";
+        if (is_file($backupFilePath) && $cleanup || $reset) {
+            unlink($backupFilePath);
+        }
         if (is_file($backupFilePath)) {
             logProgress('Backup file already generated');
         } else {
