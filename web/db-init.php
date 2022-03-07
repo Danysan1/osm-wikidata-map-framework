@@ -53,10 +53,17 @@ if (empty($sourceFilePath)) {
     echo "ERROR: The file you passed as first argument does not exist: " . $sourceFilePath . PHP_EOL;
     exit(1);
 }
+
+//file_put_contents("db-init.log", '');
+function logProgress(string $message): void
+{
+    echo "|\t$message\t--------------------------------------------------" . PHP_EOL;
+    //file_put_contents("db-init.log", $message . PHP_EOL, FILE_APPEND);
+}
+
 $workDir = dirname($sourceFilePath);
 $sourceFileName = basename($sourceFilePath);
-$sourceFileHash = hash_file('sha1', $sourceFilePath);
-echo "Working on file $sourceFileName in directory $workDir" . PHP_EOL;
+logProgress("Working on file $sourceFileName in directory $workDir");
 
 if ($keep_temp_tables)
     echo 'Keeping temporary tables' . PHP_EOL;
@@ -110,12 +117,7 @@ function execAndCheck(string $command): array
     return $exOutput;
 }
 
-echo 'Started at ' . date('c') . PHP_EOL;
-
-function logProgress(string $message): void
-{
-    echo "-----\t$message\t--------------------------------------------------" . PHP_EOL;
-}
+logProgress('Started at ' . date('c'));
 
 function filterInputData(string $sourceFilePath, string $sourceFileName, string $filteredFilePath, bool $cleanup): void
 {
@@ -600,7 +602,8 @@ if (!is_file("osmium.json")) {
 }
 
 $filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
-$cacheFilePath = sys_get_temp_dir() . "/osmium_$sourceFileHash";
+$osmiumCachePath = sys_get_temp_dir() . "/osmium_${sourceFileName}_" . filesize($sourceFilePath);
+$osmiumCache = "sparse_file_array,$osmiumCachePath";
 
 if (is_file($filteredFilePath) && $cleanup)
     unlink($filteredFilePath);
@@ -617,7 +620,7 @@ if (is_file($txtFilePath)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$txtFilePath' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFilePath '$filteredFilePath'");
+    execAndCheck("osmium export --verbose --overwrite -o '$txtFilePath' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
     logProgress('Exported OSM data to text');
 }
 
@@ -633,7 +636,7 @@ if (is_file($geojsonFilePath)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFilePath' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFilePath '$filteredFilePath'");
+    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFilePath' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
     logProgress('Exported OSM data to geojson');
 }
 
@@ -649,7 +652,7 @@ if (is_file($pgFilePath)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$pgFilePath' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=sparse_file_array,$cacheFilePath '$filteredFilePath'");
+    execAndCheck("osmium export --verbose --overwrite -o '$pgFilePath' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
     logProgress('Exported OSM data to PostGIS tsv');
 }
 
