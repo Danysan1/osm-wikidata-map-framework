@@ -24,6 +24,7 @@ $convert_to_txt = FALSE;
 $keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $argv);
 $cleanup = in_array("--cleanup", $argv) || in_array("-c", $argv);
 $reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
+$propagate = in_array("--propagate", $argv) || in_array("-p", $argv);
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -57,8 +58,9 @@ if (empty($sourceFilePath)) {
 //file_put_contents("db-init.log", '');
 function logProgress(string $message): void
 {
-    echo "|\t$message\t--------------------------------------------------" . PHP_EOL;
-    //file_put_contents("db-init.log", $message . PHP_EOL, FILE_APPEND);
+    $msg = "||\t$message" . PHP_EOL;
+    echo $msg;
+    //file_put_contents("db-init.log", $msg, FILE_APPEND);
 }
 
 $workDir = dirname($sourceFilePath);
@@ -74,6 +76,9 @@ if ($cleanup)
 if ($reset)
     echo 'Doing a hard reset of the DB' . PHP_EOL;
 
+if ($reset)
+    echo 'Propagating etymology to nearby highways' . PHP_EOL;
+
 if (!empty($argv[2]) && $argv[2] == "txt") {
     echo 'Using osmium-export to txt' . PHP_EOL;
     $use_osmium_export = TRUE;
@@ -83,7 +88,7 @@ if (!empty($argv[2]) && $argv[2] == "txt") {
     $use_osmium_export = TRUE;
     $convert_to_geojson = TRUE;
 } elseif (!empty($argv[2]) && $argv[2] == "pg") {
-    echo 'Using osmium-export to pg' . PHP_EOL;
+    echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
     $use_osmium_export = TRUE;
     $convert_to_pg = TRUE;
 } elseif (!empty($argv[2]) && $argv[2] == "osm2pgsql") {
@@ -107,9 +112,13 @@ function execAndCheck(string $command): array
     $exOutput = null;
     echo "Executing: $command" . PHP_EOL;
     exec($command, $exOutput, $exRetval);
-    echo implode(PHP_EOL, array_map(function ($str) {
+
+    $msg = implode(PHP_EOL, array_map(function ($str) {
         return empty($str) ? '' : "    $str";
     }, $exOutput));
+    echo $msg;
+    //file_put_contents("db-init.log", $msg, FILE_APPEND);
+
     if ($exRetval !== 0) {
         echo 'ERROR: command execution failed' . PHP_EOL;
         exit(1);
@@ -119,31 +128,48 @@ function execAndCheck(string $command): array
 
 logProgress('Started at ' . date('c'));
 
-function filterInputData(string $sourceFilePath, string $sourceFileName, string $filteredFilePath, bool $cleanup): void
-{
-    $filteredTmpFile = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
-    if (is_file($filteredTmpFile) && $cleanup) {
-        unlink($filteredTmpFile);
+/**
+ * @see https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
+ */
+function filterInputData(
+    string $sourceFilePath,
+    string $sourceFileName,
+    string $filteredFilePath,
+    bool $cleanup,
+    bool $propagate
+): void {
+    $allowedTags = $propagate ? 'highway,' : '';
+    $allowedTags .= 'wikidata,subject:wikidata,name:etymology:wikidata';
+
+    $filteredWithNameFilePath = sys_get_temp_dir() . "/filtered_with_flags_with_name_$sourceFileName";
+    if (is_file($filteredWithNameFilePath) && $cleanup) {
+        unlink($filteredWithNameFilePath);
     }
-    if (is_file($filteredTmpFile)) {
-        logProgress('Data already filtered from elements without etymology');
+    if (is_file($filteredWithNameFilePath)) {
+        logProgress('Data already filtered from elements without name');
     } else {
-        logProgress('Filtering OSM data from elements without etymology...');
-        /**
-         * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
-         */
-        execAndCheck("osmium tags-filter --verbose --remove-tags --input-format=pbf --output-format=pbf --overwrite -o '$filteredTmpFile' '$sourceFilePath' 'highway,wikidata,subject:wikidata,name:etymology:wikidata'");
-        logProgress('Filtered OSM data from elements without etymology');
+        logProgress('Filtering OSM data from elements without name...');
+        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf --overwrite -o '$filteredWithNameFilePath' '$sourceFilePath' 'name'");
+        logProgress('Filtered OSM data from elements without name');
+    }
+
+    $filteredWithFlagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
+    if (is_file($filteredWithFlagsFilePath) && $cleanup) {
+        unlink($filteredWithFlagsFilePath);
+    }
+    if (is_file($filteredWithFlagsFilePath)) {
+        logProgress('Data already filtered from elements without potential etymology');
+    } else {
+        logProgress('Filtering OSM data from elements without potential etymology...');
+        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf --remove-tags --overwrite -o '$filteredWithFlagsFilePath' '$filteredWithNameFilePath' '$allowedTags'");
+        logProgress('Filtered OSM data from elements without potential etymology');
     }
 
     if (is_file($filteredFilePath)) {
         logProgress('Data already filtered from non-interesting elements');
     } else {
         logProgress('Filtering OSM data from non-interesting elements...');
-        /**
-         * @link https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
-         */
-        execAndCheck("osmium tags-filter --verbose --invert-match --input-format=pbf --output-format=pbf --overwrite -o '$filteredFilePath' '$filteredTmpFile' 'man_made=flagpole'");
+        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf --invert-match --overwrite -o '$filteredFilePath' '$filteredWithFlagsFilePath' 'man_made=flagpole'");
         logProgress('Filtered OSM data from non-interesting elements');
     }
 }
@@ -608,6 +634,7 @@ $osmiumCache = "sparse_file_array,$osmiumCachePath";
 if (is_file($filteredFilePath) && $cleanup)
     unlink($filteredFilePath);
 
+//$txtFilePath = sys_get_temp_dir() . "/$sourceFileName.txt";
 $txtFilePath = "$workDir/$sourceFileName.txt";
 if (is_file($txtFilePath) && $cleanup) {
     unlink($txtFilePath);
@@ -615,7 +642,7 @@ if (is_file($txtFilePath) && $cleanup) {
 if (is_file($txtFilePath)) {
     logProgress('Data already exported to text');
 } elseif ($convert_to_txt) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate);
     logProgress('Exporting OSM data to text...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -624,6 +651,7 @@ if (is_file($txtFilePath)) {
     logProgress('Exported OSM data to text');
 }
 
+//$geojsonFilePath = sys_get_temp_dir() . "/$sourceFileName.geojson";
 $geojsonFilePath = "$workDir/$sourceFileName.geojson";
 if (is_file($geojsonFilePath) && $cleanup) {
     unlink($geojsonFilePath);
@@ -631,7 +659,7 @@ if (is_file($geojsonFilePath) && $cleanup) {
 if (is_file($geojsonFilePath)) {
     logProgress('Data already exported to geojson');
 } elseif ($convert_to_geojson) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate);
     logProgress('Exporting OSM data to geojson...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -640,14 +668,15 @@ if (is_file($geojsonFilePath)) {
     logProgress('Exported OSM data to geojson');
 }
 
-$pgFilePath = "$workDir/$sourceFileName.pg";
+$pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
+//$pgFilePath = "$workDir/$sourceFileName.pg";
 if (is_file($pgFilePath) && $cleanup) {
     unlink($pgFilePath);
 }
 if (is_file($pgFilePath)) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($convert_to_pg) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate);
     logProgress('Exporting OSM data to PostGIS tsv...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -762,7 +791,9 @@ if ($use_db) {
                 }
             }
 
-            propagateEtymologies($dbh);
+            if ($propagate) {
+                propagateEtymologies($dbh);
+            }
 
             echo 'Conversion complete at ' . date('c') . PHP_EOL;
         }
