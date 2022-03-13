@@ -129,49 +129,64 @@ function execAndCheck(string $command): array
 logProgress('Started at ' . date('c'));
 
 /**
+ * Run osmium tags-filter with the given parameters
+ * 
+ * @param string $sourceFilePath
+ * @param string $destinationFilePath
+ * @param string|array<string> $tags
+ * @param bool $cleanup
+ * @param string $extraArgs
+ * 
  * @see https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
  */
+function runOsmiumTagsFilter(
+    string $sourceFilePath,
+    string $destinationFilePath,
+    string|array $tags,
+    bool $cleanup = false,
+    string $extraArgs = ''
+): void {
+    if (is_file($destinationFilePath) && $cleanup) {
+        unlink($destinationFilePath);
+    }
+
+    if (is_array($tags)) {
+        $quoted_tags = "'" . implode("' '", $tags) . "'";
+    } else {
+        $quoted_tags = "'$tags'";
+    }
+
+    if (is_file($destinationFilePath)) {
+        logProgress("Data already filtered in $destinationFilePath");
+    } else {
+        logProgress("Filtering OSM data in $destinationFilePath...");
+        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf $extraArgs -o '$destinationFilePath' '$sourceFilePath' $quoted_tags");
+        $sourceSizeMB = filesize($sourceFilePath) / 1000000;
+        $destinationSizeMB = filesize($destinationFilePath) / 1000000;
+        logProgress("Filtered OSM data in $destinationFilePath ($sourceSizeMB MB => $destinationSizeMB MB)");
+    }
+}
+
 function filterInputData(
     string $sourceFilePath,
     string $sourceFileName,
     string $filteredFilePath,
-    bool $cleanup,
-    bool $propagate
+    bool $cleanup = false,
+    bool $propagate = false
 ): void {
-    $allowedTags = $propagate ? 'highway,' : '';
-    $allowedTags .= 'wikidata,subject:wikidata,name:etymology:wikidata';
+    $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
 
-    $filteredWithNameFilePath = sys_get_temp_dir() . "/filtered_with_flags_with_name_$sourceFileName";
-    if (is_file($filteredWithNameFilePath) && $cleanup) {
-        unlink($filteredWithNameFilePath);
-    }
-    if (is_file($filteredWithNameFilePath)) {
-        logProgress('Data already filtered from elements without name');
-    } else {
-        logProgress('Filtering OSM data from elements without name...');
-        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf --overwrite -o '$filteredWithNameFilePath' '$sourceFilePath' 'name'");
-        logProgress('Filtered OSM data from elements without name');
-    }
+    $allowedTags = $propagate ? ['w/highway=residential'] : [];
+    $allowedTags[] = 'wikidata';
+    $allowedTags[] = 'name:etymology:wikidata';
+    $allowedTags[] = 'subject:wikidata';
 
-    $filteredWithFlagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_$sourceFileName";
-    if (is_file($filteredWithFlagsFilePath) && $cleanup) {
-        unlink($filteredWithFlagsFilePath);
-    }
-    if (is_file($filteredWithFlagsFilePath)) {
-        logProgress('Data already filtered from elements without potential etymology');
-    } else {
-        logProgress('Filtering OSM data from elements without potential etymology...');
-        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf --remove-tags --overwrite -o '$filteredWithFlagsFilePath' '$filteredWithNameFilePath' '$allowedTags'");
-        logProgress('Filtered OSM data from elements without potential etymology');
-    }
+    $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
+    runOsmiumTagsFilter($sourceFilePath, $filteredWithFlagsTagsFilePath, $allowedTags, $cleanup,  '--remove-tags');
 
-    if (is_file($filteredFilePath)) {
-        logProgress('Data already filtered from non-interesting elements');
-    } else {
-        logProgress('Filtering OSM data from non-interesting elements...');
-        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf --invert-match --overwrite -o '$filteredFilePath' '$filteredWithFlagsFilePath' 'man_made=flagpole'");
-        logProgress('Filtered OSM data from non-interesting elements');
-    }
+    runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
+
+    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, 'man_made=flagpole', $cleanup, '--invert-match');
 }
 
 function isSchemaAlreadySetup(PDO $dbh): bool
