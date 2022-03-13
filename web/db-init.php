@@ -167,6 +167,11 @@ function runOsmiumTagsFilter(
     }
 }
 
+function runOsmiumFileInfo(string $filePath)
+{
+    execAndCheck("osmium fileinfo --extended '$filePath'");
+}
+
 function filterInputData(
     string $sourceFilePath,
     string $sourceFileName,
@@ -187,6 +192,8 @@ function filterInputData(
     runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
 
     runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, 'man_made=flagpole', $cleanup, '--invert-match');
+
+    //runOsmiumFileInfo($filteredFilePath);
 }
 
 function isSchemaAlreadySetup(PDO $dbh): bool
