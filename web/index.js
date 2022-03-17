@@ -1274,8 +1274,11 @@ function prepareGlobalLayers(map) {
         map.addSource('global_source', {
             type: 'geojson',
             data: './global-map.geojson',
+            //type: 'vector',
+            //tiles: ['http://localhost/global-map.mvt'],
             cluster: true,
             //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
+            //maxzoom: minZoomLevel,
             clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
             clusterProperties: {
                 "el_num": ["+", [
@@ -1291,6 +1294,7 @@ function prepareGlobalLayers(map) {
         map.addLayer({
             id: 'global_layer_cluster',
             source: 'global_source',
+            //"source-layer": 'Point',
             type: 'circle',
             maxzoom: minZoomLevel,
             filter: ['has', "el_num"],
@@ -1339,6 +1343,7 @@ function prepareGlobalLayers(map) {
             id: 'global_layer_count',
             type: 'symbol',
             source: 'global_source',
+            //"source-layer": 'Point',
             maxzoom: minZoomLevel,
             filter: ['has', "el_num"],
             layout: {
