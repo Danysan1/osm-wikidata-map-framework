@@ -42,7 +42,7 @@ class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSO
 
     public function send(): QueryResult
     {
-        $res = $this->sendAndRequireResult();
+        $res = parent::send();
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
     }
 

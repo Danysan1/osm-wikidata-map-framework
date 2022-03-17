@@ -23,7 +23,10 @@ abstract class CurlQuery extends BaseQuery
 
         $post = $method == "POST";
         $postData = $post ? $requestQuery : null;
-        //error_log(get_class($this) . " cURL : $method $url");
+        /*error_log(
+            get_class($this) . " CurlQuery : $method $url"
+                . PHP_EOL . json_encode($query)
+        );*/
 
         $this->curlOptions = [
             CURLOPT_URL => $url,

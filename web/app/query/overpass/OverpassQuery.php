@@ -22,7 +22,7 @@ class OverpassQuery extends JSONCurlQuery
 {
     public function __construct(string $query, string $endpointURL)
     {
-        parent::__construct($query, $endpointURL, "POST");
+        parent::__construct(["data" => $query], $endpointURL, "POST");
     }
 
     protected function sendAndRequireResult(): QueryResult
