@@ -38,7 +38,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    image: dsantini/open-etymology-map:dev
+    image: registry.gitlab.com/dsantini/open-etymology-map/dev
     ports:
       - "80:80"
     depends_on:
@@ -47,7 +47,7 @@ services:
       - oem-internal
     restart: "always"
     volumes:
-      - ./web:/var/www/html
+      - ./web:/var/www/html:cached
     profiles:
       - dev
 
@@ -56,7 +56,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: prod
-    image: dsantini/open-etymology-map:prod
+    image: registry.gitlab.com/dsantini/open-etymology-map
     ports:
       - "80:80"
       - "443:443"
@@ -66,10 +66,10 @@ services:
       - oem-internal
     restart: "always"
     volumes:
-      - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini
+      - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini:cached
       - ./web/open-etymology-map.log:/var/www/html/open-etymology-map.log
-      - ./web/global-map.geojson:/var/www/html/global-map.geojson
-      - ./web/LAST_UPDATE:/var/www/html/LAST_UPDATE
+      - ./web/global-map.geojson:/var/www/html/global-map.geojson:cached
+      - ./web/LAST_UPDATE:/var/www/html/LAST_UPDATE:cached
       - apache-sites-available:/etc/apache2/sites-available/
       - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/

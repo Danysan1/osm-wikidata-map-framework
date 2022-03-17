@@ -1,4 +1,7 @@
 .git/
+*.geojson
+*.gz
+*.mvt
 open-etymology-map.ini
 open-etymology-map.log
 open-etymology-map-cache/
