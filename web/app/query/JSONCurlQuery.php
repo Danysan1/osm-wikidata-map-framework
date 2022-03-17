@@ -3,10 +3,12 @@
 namespace App\Query;
 
 require_once(__DIR__ . "/JSONQuery.php");
+require_once(__DIR__ . "/CurlQuery.php");
 require_once(__DIR__ . "/../result/JSONQueryResult.php");
 require_once(__DIR__ . "/../result/JSONRemoteQueryResult.php");
 
 use App\Query\JSONQuery;
+use App\Query\CurlQuery;
 use App\Result\JSONQueryResult;
 use App\Result\QueryResult;
 use App\Result\JSONRemoteQueryResult;
