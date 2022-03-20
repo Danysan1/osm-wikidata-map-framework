@@ -40,17 +40,9 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
         );
     }
 
-    public function send(): QueryResult
+    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
         $res = $this->sendAndRequireResult();
         return new OverpassCenterQueryResult($res->isSuccessful(), $res->getArray());
-    }
-
-    public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
-    {
-        $out = $this->send();
-        if (!$out instanceof GeoJSONQueryResult)
-            throw new \Exception("sendAndGetGeoJSONResult(): can't get GeoJSON result");
-        return $out;
     }
 }

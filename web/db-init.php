@@ -349,15 +349,15 @@ function setupSchema(PDO $dbh): void
         "CREATE VIEW oem.v_global_map AS
         SELECT
             ST_SetSRID( ST_Point(
-                    ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2),
-                    ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)
+                    ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1),
+                    ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)
                 ), 4326) AS geom,
             COUNT(DISTINCT COALESCE(el_tags->>'name', el_id::TEXT)) AS el_num
         FROM oem.etymology
         JOIN oem.element ON et_el_id = el_id
         GROUP BY
-            ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,2),
-            ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,2)"
+            ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1),
+            ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)"
     );
     logProgress('DB schema prepared');
 }

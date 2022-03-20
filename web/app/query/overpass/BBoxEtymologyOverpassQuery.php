@@ -40,25 +40,14 @@ class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSO
         );
     }
 
-    public function send(): QueryResult
-    {
-        $res = parent::send();
-        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
-    }
-
     public function sendAndGetJSONResult(): JSONQueryResult
     {
-        $out = $this->send();
-        if (!$out instanceof JSONQueryResult)
-            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
-        return $out;
+        return $this->sendAndGetGeoJSONResult();
     }
 
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
-        $out = $this->send();
-        if (!$out instanceof GeoJSONQueryResult)
-            throw new \Exception("sendAndGetGeoJSONResult(): can't get GeoJSON result");
-        return $out;
+        $res = $this->sendAndRequireResult();
+        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
     }
 }
