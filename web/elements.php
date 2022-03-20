@@ -36,9 +36,14 @@ $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
 //$onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
+
 $enableDB = $conf->getBool("db-enable");
-if ($enableDB)
+if ($enableDB) {
+    error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);
+} else {
+    error_log("elements.php NOT using DB");
+}
 
 if ($from == "bbox") {
     $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;

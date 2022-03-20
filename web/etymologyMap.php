@@ -35,10 +35,14 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
-$enableDB = $conf->getBool("db-enable");
 
-if ($enableDB)
+$enableDB = $conf->getBool("db-enable");
+if ($enableDB) {
+    error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
+} else {
+    error_log("etymologyMap.php NOT using DB");
+}
 
 // "en-US" => "en"
 $langMatches = [];
