@@ -30,6 +30,7 @@ class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxJSONQuery implements BBoxGe
     public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
     {
         parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
+        error_log("CSVCachedBBoxGeoJSONQuery base query: " . get_class($baseQuery));
     }
 
     protected function getResultFromFilePath(string $fileRelativePath): QueryResult
@@ -63,7 +64,8 @@ class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxJSONQuery implements BBoxGe
     {
         $ret = $this->send();
         if (!$ret instanceof GeoJSONQueryResult) {
-            throw new \Exception("Internal error: Result is not a GeoJSONQueryResult");
+            error_log("CSVCachedBBoxGeoJSONQuery: Result is not a GeoJSONQueryResult but " . get_class($ret));
+            throw new \Exception("Result is not a GeoJSONQueryResult");
         }
         return $ret;
     }

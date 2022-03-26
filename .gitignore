@@ -17,7 +17,6 @@ pgadmin-data
 *.tmp.*
 .pgpass
 vendor/
-cache/
 storage/
 
 # Created by https://www.toptal.com/developers/gitignore/api/metals,phpunit,composer,visualstudiocode,node

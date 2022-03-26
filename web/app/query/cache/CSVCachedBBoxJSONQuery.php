@@ -55,7 +55,8 @@ class CSVCachedBBoxJSONQuery extends CSVCachedBBoxQuery implements BBoxJSONQuery
     {
         $ret = $this->send();
         if (!$ret instanceof JSONQueryResult) {
-            throw new \Exception("Internal error: Result is not a JSONQueryResult");
+            error_log("CSVCachedBBoxJSONQuery: Result is not a JSONQueryResult but " . get_class($ret));
+            throw new \Exception("Result is not a JSONQueryResult");
         }
         return $ret;
     }

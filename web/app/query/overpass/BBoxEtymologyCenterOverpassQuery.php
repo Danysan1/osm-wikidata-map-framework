@@ -11,27 +11,34 @@ require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\BoundingBox;
+use App\Query\BaseQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\Overpass\OverpassCenterQueryResult;
 use App\Result\QueryResult;
 use \App\Result\GeoJSONQueryResult;
+use App\Result\JSONQueryResult;
 
 /**
  * OverpassQL query that retrieves only the centroid and the id of any item in a bounding box which has an etymology.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSONQuery
+class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
 {
+    /**
+     * @var BBoxOverpassQuery $baseQuery
+     */
+    private $baseQuery;
+
     /**
      * @param BoundingBox $bbox
      * @param OverpassConfig $config
      */
     public function __construct($bbox, $config)
     {
-        parent::__construct(
+        $this->baseQuery = new BBoxOverpassQuery(
             //['name:etymology:wikidata', 'subject:wikidata'],
             'name:etymology:wikidata',
             $bbox,
@@ -40,9 +47,29 @@ class BBoxEtymologyCenterOverpassQuery extends BBoxOverpassQuery implements BBox
         );
     }
 
+    public function send(): QueryResult
+    {
+        return $this->sendAndGetGeoJSONResult();
+    }
+
+    public function sendAndGetJSONResult(): JSONQueryResult
+    {
+        return $this->sendAndGetGeoJSONResult();
+    }
+
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
-        $res = $this->sendAndRequireResult();
+        $res = $this->baseQuery->send();
         return new OverpassCenterQueryResult($res->isSuccessful(), $res->getArray());
+    }
+
+    public function getBBox(): BoundingBox
+    {
+        return $this->baseQuery->getBBox();
+    }
+
+    public function getQuery(): string
+    {
+        return $this->baseQuery->getQuery();
     }
 }

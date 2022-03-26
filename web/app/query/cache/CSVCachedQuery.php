@@ -130,10 +130,13 @@ abstract class CSVCachedQuery implements Query
                 $this->serverTiming->add("cache-search");
         }
 
-        if ($result == null) {
+        if ($result !== null) {
+            error_log("CachedQuery: cache hit for " . $this->baseQuery);
+        } else {
             // Cache miss, send query
-            //error_log("CachedQuery: cache miss for " . $this->baseQuery);
+            error_log("CachedQuery: cache miss for " . $this->baseQuery);
             $result = $this->baseQuery->send();
+            error_log("CachedQuery: received " . get_class($result));
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-missed-query");
 

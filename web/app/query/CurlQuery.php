@@ -2,13 +2,13 @@
 
 namespace App\Query;
 
-require_once(__DIR__ . "/BaseQuery.php");
+require_once(__DIR__ . "/BaseRemoteQuery.php");
 require_once(__DIR__ . "/../result/QueryResult.php");
 
-use App\Query\BaseQuery;
+use App\Query\BaseRemoteQuery;
 use App\Result\QueryResult;
 
-abstract class CurlQuery extends BaseQuery
+abstract class CurlQuery extends BaseRemoteQuery
 {
     private $curlOptions;
 

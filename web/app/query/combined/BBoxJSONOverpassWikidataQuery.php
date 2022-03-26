@@ -75,7 +75,8 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
     {
         $ret = $this->send();
         if (!$ret instanceof JSONQueryResult) {
-            throw new \Exception("Internal error: Result is not a JSONQueryResult");
+            error_log("BBoxJSONOverpassWikidataQuery: Result is not a JSONQueryResult but " . get_class($ret));
+            throw new \Exception("Result is not a JSONQueryResult");
         }
         return $ret;
     }
