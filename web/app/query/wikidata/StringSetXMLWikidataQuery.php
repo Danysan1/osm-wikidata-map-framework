@@ -58,6 +58,7 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
         $language = $langMatches[1];
 
         $query = $this->createQuery($wikidataValues, $language);
+        //file_put_contents("StringSetXMLWikidataQuery.rq", $query);
         parent::__construct($query, $endpointURL);
 
         $this->wikidataIDList = $wikidataIDList;

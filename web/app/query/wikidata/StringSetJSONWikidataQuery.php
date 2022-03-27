@@ -58,7 +58,7 @@ abstract class StringSetJSONWikidataQuery extends JSONWikidataQuery implements S
         $language = $langMatches[1];
 
         $query = $this->createQuery($wikidataValues, $language);
-        //error_log("StringSetJSONWikidataQuery query=$query");
+        //file_put_contents("StringSetJSONWikidataQuery.rq", $query);
         parent::__construct($query, $endpointURL);
 
         $this->wikidataIDList = $wikidataIDList;

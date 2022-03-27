@@ -13,6 +13,10 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - oem-internal
+    # logging:
+    #   driver: awslogs
+    #   options:
+    #     awslogs-region: us-east-1
     restart: "always"
 
   pgadmin:

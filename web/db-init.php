@@ -1,11 +1,11 @@
 <?php
 require_once("./app/IniFileConfiguration.php");
 require_once("./app/PostGIS_PDO.php");
-require_once("./app/query/wikidata/JSONWikidataQuery.php");
+require_once("./app/query/wikidata/RelatedEntitiesWikidataQuery.php");
 
 use App\IniFileConfiguration;
 use App\PostGIS_PDO;
-use \App\Query\Wikidata\JSONWikidataQuery;
+use \App\Query\Wikidata\RelatedEntitiesWikidataQuery;
 
 if (php_sapi_name() != "cli") {
     http_response_code(400);
@@ -459,7 +459,7 @@ function loadWikidataEntities(PDO $dbh): void
 function loadWikidataRelatedEntities(
     string $wikidataCodsFilter,
     string $relationName,
-    string $relationProps,
+    array $relationProps,
     string $elementFilter,
     PDO $dbh,
     string $wikidataEndpointURL
@@ -474,37 +474,20 @@ function loadWikidataRelatedEntities(
     )->fetchColumn();
     logProgress("Counted $n_todo Wikidata codes to check");
 
-    if (!empty($elementFilter))
-        $elementFilter = "; $elementFilter";
-
-    $pageSize = 15000;
+    $pageSize = 20000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
         logProgress("Downloading Wikidata \"$relationName\" data (starting from $offset)...");
-        $wikidataCodsToFetch = $dbh->query(
-            "SELECT STRING_AGG('wd:'||ew_wikidata_cod, ' ') FROM (
-                SELECT DISTINCT ew_wikidata_cod
-                FROM oem.element_wikidata_cods
-                WHERE $wikidataCodsFilter
-                ORDER BY ew_wikidata_cod
-                LIMIT $pageSize
-                OFFSET $offset
-            ) AS x"
-        )->fetchColumn();
-        $sparqlQuery =
-            "SELECT ?element ?prop ?related
-            WHERE {
-                VALUES ?element { $wikidataCodsToFetch }.
-                VALUES ?prop { $relationProps }.
-                {
-                    ?element ?prop ?related $elementFilter.
-                } UNION {
-                    ?element owl:sameAs [
-                        ?prop ?related $elementFilter
-                    ].
-                }
-            }";
-        file_put_contents($wikidataRqFile, $sparqlQuery);
-        $jsonResult = (new JSONWikidataQuery($sparqlQuery, $wikidataEndpointURL))->sendAndGetJSONResult()->getJSON();
+        $wikidataCodsResult = $dbh->query(
+            "SELECT DISTINCT ew_wikidata_cod
+            FROM oem.element_wikidata_cods
+            WHERE $wikidataCodsFilter
+            ORDER BY ew_wikidata_cod
+            LIMIT $pageSize
+            OFFSET $offset"
+        )->fetchAll();
+        $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
+        $wdQuery = new RelatedEntitiesWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
+        $jsonResult = $wdQuery->sendAndGetJSONResult()->getJSON();
         file_put_contents($wikidataJSONFile, $jsonResult);
 
         logProgress("Loading Wikidata \"$relationName\" data...");
@@ -528,7 +511,7 @@ function loadWikidataRelatedEntities(
 
         $sth_wna = $dbh->prepare(
             "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
-            SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/direct/', '')
+            SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')
             FROM json_array_elements((:response::JSON)->'results'->'bindings')
             JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
             JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
@@ -547,7 +530,7 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
     loadWikidataRelatedEntities(
         "ew_from_wikidata",
         "named_after",
-        "wdt:P138 wdt:P825 wdt:P547",
+        ["P138", "P825", "P547"], // named after/dedicated to/commemorates  -  https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
         "",
         $dbh,
         $wikidataEndpointURL
@@ -560,8 +543,8 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
     loadWikidataRelatedEntities(
         "ew_from_name_etymology OR ew_from_subject",
         "consists_of",
-        "wdt:P527",
-        "wdt:P31 wd:Q14073567",
+        ["P527"], // has part or parts
+        "wdt:P31 wd:Q14073567", // sibling duo
         $dbh,
         $wikidataEndpointURL
     );
