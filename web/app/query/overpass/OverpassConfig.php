@@ -8,6 +8,7 @@ namespace App\Query\Overpass;
 interface OverpassConfig
 {
     public function getEndpoint(): string;
+    public function getMaxElements(): int|null;
     public function shouldFetchNodes(): bool;
     public function shouldFetchWays(): bool;
     public function shouldFetchRelations(): bool;

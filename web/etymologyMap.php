@@ -35,6 +35,7 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
+$maxElements = $conf->has("max-elements") ? (int)$conf->get("max-elements") : null;
 
 $enableDB = $conf->getBool("db-enable");
 if ($enableDB) {
@@ -79,7 +80,9 @@ if (!empty($db)) {
         $safeLanguage,
         $db,
         $wikidataEndpointURL,
-        $serverTiming
+        $serverTiming,
+        true,
+        $maxElements
     );
 } else {
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory(

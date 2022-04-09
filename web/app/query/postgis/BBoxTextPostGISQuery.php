@@ -37,18 +37,38 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     private $fetchAttribution;
 
     /**
+     * @var int|null $maxElements
+     */
+    private $maxElements;
+
+    /**
      * @param BoundingBox $bbox
      * @param string $language
      * @param PDO $db
      * @param string $wikidataEndpointURL
      * @param ServerTiming|null $serverTiming
+     * @param bool $fetchAttribution
+     * @param int|null $maxElements
      */
-    public function __construct($bbox, $language, $db, $wikidataEndpointURL, $serverTiming = null, $fetchAttribution = true)
-    {
+    public function __construct(
+        BoundingBox $bbox,
+        string $language,
+        PDO $db,
+        string $wikidataEndpointURL,
+        ?ServerTiming $serverTiming = null,
+        ?bool $fetchAttribution = true,
+        ?int $maxElements = null
+    ) {
         parent::__construct($bbox, $db, $serverTiming);
+
+        if($maxElements!==null && $maxElements<=0) {
+            throw new Exception("maxElements must be > 0");
+        }
+
         $this->language = $language;
         $this->wikidataEndpointURL = $wikidataEndpointURL;
         $this->fetchAttribution = $fetchAttribution;
+        $this->maxElements = $maxElements;
     }
 
     public function getLanguage(): string
@@ -61,11 +81,22 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         return $this->wikidataEndpointURL;
     }
 
+    protected function getMaxElements(): int|null
+    {
+        return $this->maxElements;
+    }
+
+    protected function getLimitClause(): string
+    {
+        return $this->maxElements === null ? ' ' : " LIMIT $this->maxElements ";
+    }
+
     /**
      * @return void
      */
     protected function downloadMissingText()
     {
+        $limitClause = $this->getLimitClause();
         $sthMissingWikidata = $this->getDB()->prepare(
             "SELECT DISTINCT wd.wd_wikidata_cod
             FROM oem.element AS el
@@ -74,7 +105,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             LEFT JOIN oem.wikidata_text AS wdt
                 ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
             WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-            AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)"
+            AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)
+            $limitClause"
         );
         $sthMissingWikidata->bindValue("min_lon", $this->getBBox()->getMinLon(), PDO::PARAM_STR);
         $sthMissingWikidata->bindValue("max_lon", $this->getBBox()->getMaxLon(), PDO::PARAM_STR);

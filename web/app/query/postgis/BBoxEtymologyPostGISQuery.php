@@ -51,6 +51,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
 
     public function getQuery(): string
     {
+        $limitClause = $this->getLimitClause();
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
@@ -125,6 +126,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el.el_id
+                $limitClause
             ) AS ele";
     }
 }
