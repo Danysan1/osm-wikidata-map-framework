@@ -1,6 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
-# kind: StatefulSet
+kind: StatefulSet
 metadata:
   name: oem-db
   labels:
@@ -9,9 +8,8 @@ spec:
   selector:
     matchLabels:
       app: oem-db
-  # serviceName: <ServiceName>
+  serviceName: oem-db-service
   replicas: 1
-  # replicas: 2 # > 1 => StatefulSet
   template:
     metadata:
       labels:
