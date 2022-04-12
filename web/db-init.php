@@ -711,12 +711,12 @@ if ($use_db) {
         $geoJsonGlobalMapFilePath = __DIR__ . '/global-map.geojson';
         //$mvtGlobalMapFilePath = __DIR__ . '/global-map.mvt';
 
-        $conf = new IniFileConfiguration();
-        $host = (string)$conf->get("db-host");
-        $port = (int)$conf->get("db-port");
-        $dbname = (string)$conf->get("db-database");
-        $user = (string)$conf->get("db-user");
-        $password = (string)$conf->get("db-password");
+        $conf = new IniEnvConfiguration();
+        $host = (string)$conf->get("db_host");
+        $port = (int)$conf->get("db_port");
+        $dbname = (string)$conf->get("db_database");
+        $user = (string)$conf->get("db_user");
+        $password = (string)$conf->get("db_password");
 
         $tries = 0;
         do {

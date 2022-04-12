@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+# kind: StatefulSet
+metadata:
+  name: oem-db
+  labels:
+    app: oem-db
+spec:
+  selector:
+    matchLabels:
+      app: oem-db
+  # serviceName: <ServiceName>
+  replicas: 1
+  # replicas: 2 # > 1 => StatefulSet
+  template:
+    metadata:
+      labels:
+        app: oem-db
+    spec:
+      containers:
+      - name: oem-db
+        #image: postgis/postgis:13-3.2-alpine #arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
+        image: odidev/postgis:13-3.1-alpine
+        resources:
+          limits:
+            memory: "300Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 5432
+          name: postgres
+        env:
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: oem-secret
+              key: db_user
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: oem-secret
+              key: db_password
+        - name: POSTGRES_DB
+          valueFrom:
+            configMapKeyRef:
+              name: oem-config
+              key: db_database
+        volumeMounts:
+        - name: oem-db-data
+          mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: oem-db-data
+          persistentVolumeClaim:
+            claimName: oem-db-volume-claim

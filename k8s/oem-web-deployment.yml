@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: oem-web
+  name: oem-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oem-web
+  template:
+    metadata:
+      labels:
+        app: oem-web
+    spec:
+      containers:
+      - env:
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              key: db_user
+              name: oem-secret
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: db_password
+              name: oem-secret
+        - name: DB_HOST
+          valueFrom:
+            configMapKeyRef:
+              key: db_host
+              name: oem-config
+        - name: DB_DATABASE
+          valueFrom:
+            configMapKeyRef:
+              key: db_database
+              name: oem-config
+        image: "registry.gitlab.com/dsantini/open-etymology-map:v2-4-0"
+        name: oem-web
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        volumes:
+        - name: ini-config-file
+          mountPath:
+            valueFrom:
+            configMapKeyRef:
+              key: config_file
+              name: oem-config
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
