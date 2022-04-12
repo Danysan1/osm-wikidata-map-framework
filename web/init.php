@@ -1,10 +1,10 @@
 <?php
-require_once("./app/IniFileConfiguration.php");
+require_once("./app/IniEnvConfiguration.php");
 require_once("./funcs.php");
 
-use \App\IniFileConfiguration;
+use \App\IniEnvConfiguration;
 
-$conf = new IniFileConfiguration();
+$conf = new IniEnvConfiguration();
 prepareJS($conf);
 
 ?>

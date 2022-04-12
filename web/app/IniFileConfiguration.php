@@ -6,13 +6,10 @@ use Exception;
 
 require_once(__DIR__ . "/Configuration.php");
 
-/**
- * @author Daniele Santini <daniele@dsantini.it>
- */
 class IniFileConfiguration implements Configuration
 {
 	/**
-	 * @var array<mixed>
+	 * @var array<string,mixed>
 	 */
 	private $config;
 

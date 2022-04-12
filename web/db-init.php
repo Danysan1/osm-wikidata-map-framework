@@ -1,9 +1,9 @@
 <?php
-require_once("./app/IniFileConfiguration.php");
+require_once("./app/IniEnvConfiguration.php");
 require_once("./app/PostGIS_PDO.php");
 require_once("./app/query/wikidata/RelatedEntitiesWikidataQuery.php");
 
-use App\IniFileConfiguration;
+use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
 use \App\Query\Wikidata\RelatedEntitiesWikidataQuery;
 

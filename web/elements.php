@@ -5,7 +5,7 @@ use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once("./app/IniFileConfiguration.php");
+require_once("./app/IniEnvConfiguration.php");
 require_once("./app/BaseBoundingBox.php");
 require_once("./app/PostGIS_PDO.php");
 require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
@@ -17,7 +17,7 @@ require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
-use \App\IniFileConfiguration;
+use \App\IniEnvConfiguration;
 use \App\BaseBoundingBox;
 use App\PostGIS_PDO;
 use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
@@ -26,7 +26,7 @@ use App\Query\Overpass\CenterEtymologyOverpassQuery;
 use App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
 use App\Query\Overpass\RoundRobinOverpassConfig;
 
-$conf = new IniFileConfiguration();
+$conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
 prepareJSON($conf);

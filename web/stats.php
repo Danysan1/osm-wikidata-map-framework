@@ -5,7 +5,7 @@ use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once(__DIR__ . "/app/IniFileConfiguration.php");
+require_once(__DIR__ . "/app/IniEnvConfiguration.php");
 require_once(__DIR__ . "/app/BaseBoundingBox.php");
 require_once(__DIR__ . "/app/PostGIS_PDO.php");
 require_once(__DIR__ . "/app/query/postgis/BBoxGenderStatsPostGISQuery.php");
@@ -18,7 +18,7 @@ require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
 require_once(__DIR__ . "/funcs.php");
 $serverTiming->add("0_include");
 
-use \App\IniFileConfiguration;
+use \App\IniEnvConfiguration;
 use \App\BaseBoundingBox;
 use \App\PostGIS_PDO;
 use \App\Query\Cache\CSVCachedBBoxJSONQuery;
@@ -29,7 +29,7 @@ use \App\Query\Wikidata\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 
-$conf = new IniFileConfiguration();
+$conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
 prepareJSON($conf);
