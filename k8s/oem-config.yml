@@ -1,0 +1,79 @@
+apiVersion: v1
+data:
+  db_database: oem
+  db_host: oem-db-service
+  db_port: "5432"
+  open-etymology-map.ini: |
+    ; APIs
+    overpass-endpoints[] = "https://lz4.overpass-api.de/api/interpreter" ; Required, URL of Overpass API endpoint (https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances) (FixedEndpointOverpassConfig)
+    overpass-endpoints[] = "https://z.overpass-api.de/api/interpreter"
+    overpass-endpoints[] = "https://overpass.openstreetmap.ru/api/interpreter"
+    overpass-endpoints[] = "https://overpass.openstreetmap.fr/api/interpreter"
+    overpass-endpoints[] = "https://overpass.kumi.systems/api/interpreter"
+    wikidata-endpoint = "https://query.wikidata.org/sparql" ; Required, URL of Wikidata SPARQL endpoint (https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service#Interfacing)
+
+    ; Logs
+    ;log-file-path = "/var/www/html/open-etymology-map.log" ; Optional, path to log file
+
+    ; Cache
+    cache-file-base-path = "/var/www/html/open-etymology-map-cache/" ; Required, base path for cache files
+    cache-file-base-url = "open-etymology-map-cache/" ; Required, base URL for cache files
+    cache-timeout-hours = 730 ; Required >=0, cache timeout in hours
+    redirect-to-cache-file = false ; Required, true to HTTP redirect the user directly to cache file
+
+    ; Mapbox GL JS
+    mapbox-gl-token = "" ; Required, Mapbox GL access token ( see https://account.mapbox.com/access-tokens/ & https://docs.mapbox.com/help/getting-started/access-tokens/ )
+
+    ; Map behavior
+    elements-bbox-max-area = 5 ; Required >0, maximum area of bounding box degree square for elements queries
+    wikidata-bbox-max-area = 0.5 ; Required >0, maximum area of bounding box degree square for etymology queries
+    threshold-zoom-level = 13 ; Required >0, zoom level at which to switch from clustered result to individual elements
+    min-zoom-level = 11 ; Required >0, minimum zoom level to fetch any data (below this zoom the global clustered data will be shown)
+    bbox-margin = 0.002 ; Required >=0, Margin to add to bounding box before fetching data, in degrees
+    max-elements = 2500 ; Optional >0, maximum number of elements to fetch beyond the threshold zoom level
+
+    ; Map elements
+    fetch-nodes = true ; Required, true to fetch nodes
+    fetch-ways = true ; Required, true to fetch ways
+    fetch-relations = false ; Required, true to fetch relations
+
+    ; Map defaults
+    default-center-lat = 45 ; Required, default latitude for map center
+    default-center-lon = 10 ; Required, default longitude for map center
+    default-zoom = 2 ; Required >0, default zoom level for map center
+
+    default-language = "en-US" ; Required, default language for map ({two letter language code}-{two letter country code}) (https://www.fincher.org/Utilities/CountryLanguageList.shtml)
+    default-background-style = "streets" ; Required, default background style for map (https://docs.mapbox.com/api/maps/styles/)
+    default-color-scheme = "blue" ; Required, default color scheme for map
+
+    ; Database connection
+    db-enable = false ; Enable usage of a PostgreSQL+PostGIS database (initialized with db-init.php) instead of using Overpass
+    ;db_host = "" ; Host of the DBMS
+    ;db_port = "" ; Port to connect to the DBMS
+    ;db_user = "" ; User to connect to the DBMS
+    ;db_password = "" ; Password to connect to the DBMS
+    ;db_database = "" ; Database to use int the DBMS
+
+    ; Sentry
+    sentry-js-env = "" ; Optional, Sentry JS environment
+    sentry-js-dsn = "" ; Optional, Sentry JS DSN
+    sentry-js-domain = "" ; Optional, Sentry JS domain
+    sentry-js-uri = "" ; Optional, Sentry JS report URI
+
+    sentry-php-env = "" ; Optional, Sentry PHP environment 
+    sentry-php-dsn = "" ; Optional, Sentry PHP DSN
+
+    ; Google Analytics
+    google-analytics-id = "" ; Optional, Google Analytics GTAG ID
+
+    ; Other defaults
+    default-bbox-min-lat = 37.783 ; Optional, default minimum latitude for bounding box
+    default-bbox-min-lon = -122.431 ; Optional, default minimum longitude for bounding box
+    default-bbox-max-lat = 37.795 ; Optional, default maximum latitude for bounding box
+    default-bbox-max-lon = -122.398 ; Optional, default maximum longitude for bounding box
+    default-radius = 100 ; Optional >0, default radius for map center
+
+    report-problem-url = "https://gitlab.com/dsantini/open-etymology-map/-/issues" ; Optional, URL to report problems
+kind: ConfigMap
+metadata:
+  name: oem-config

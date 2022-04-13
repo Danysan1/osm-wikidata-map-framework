@@ -11,11 +11,11 @@ class PostGIS_PDO extends PDO
 {
     public function __construct(Configuration $conf)
     {
-        $host = (string)$conf->get("db-host");
-        $port = (int)$conf->get("db-port");
-        $dbname = (string)$conf->get("db-database");
-        $user = (string)$conf->get("db-user");
-        $password = (string)$conf->get("db-password");
+        $host = (string)$conf->get("db_host");
+        $port = (int)$conf->get("db_port");
+        $dbname = (string)$conf->get("db_database");
+        $user = (string)$conf->get("db_user");
+        $password = (string)$conf->get("db_password");
         // Test $db = \pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
         parent::__construct(
             "pgsql:host=$host;port=$port;dbname=$dbname",

@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: oem-web
+  name: oem-web
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: oem-web
+  template:
+    metadata:
+      labels:
+        app: oem-web
+    spec:
+      containers:
+      - env:
+        - name: db_user
+          valueFrom:
+            secretKeyRef:
+              key: db_user
+              name: oem-secret
+        - name: db_password
+          valueFrom:
+            secretKeyRef:
+              key: db_password
+              name: oem-secret
+        - name: db_host
+          valueFrom:
+            configMapKeyRef:
+              key: db_host
+              name: oem-config
+        - name: db_database
+          valueFrom:
+            configMapKeyRef:
+              key: db_database
+              name: oem-config
+        - name: db_port
+          valueFrom:
+            configMapKeyRef:
+              key: db_port
+              name: oem-config
+        - name: config_file
+          value: /etc/config/open-etymology-map.ini
+        image: "registry.gitlab.com/dsantini/open-etymology-map:v2-5-0"
+        name: oem-web
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        - containerPort: 443
+          name: https
+          protocol: TCP
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        volumeMounts:
+          - name: oem-config-file
+            mountPath: /etc/config
+            readOnly: true
+      volumes:
+      - name: oem-config-file
+        configMap:
+          name: oem-config
+          items:
+          - key: open-etymology-map.ini
+            path: open-etymology-map.ini
+

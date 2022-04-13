@@ -6,13 +6,10 @@ use Exception;
 
 require_once(__DIR__ . "/Configuration.php");
 
-/**
- * @author Daniele Santini <daniele@dsantini.it>
- */
 class IniFileConfiguration implements Configuration
 {
 	/**
-	 * @var array<mixed>
+	 * @var array<string,mixed>
 	 */
 	private $config;
 
@@ -23,6 +20,7 @@ class IniFileConfiguration implements Configuration
 	{
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config)) {
+			error_log("'$iniFilePath' not found or empty");
 			throw new Exception("Configuration file not found");
 		}
 		//echo json_encode($this->config);

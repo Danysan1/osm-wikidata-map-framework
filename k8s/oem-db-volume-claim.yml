@@ -1,0 +1,14 @@
+# https://www.sumologic.com/blog/kubernetes-deploy-postgres/
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: oem-db-volume-claim
+  labels:
+    app: oem-db
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
