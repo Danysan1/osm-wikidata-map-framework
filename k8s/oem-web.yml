@@ -16,27 +16,34 @@ spec:
     spec:
       containers:
       - env:
-        - name: DB_USER
+        - name: db_user
           valueFrom:
             secretKeyRef:
               key: db_user
               name: oem-secret
-        - name: DB_PASSWORD
+        - name: db_password
           valueFrom:
             secretKeyRef:
               key: db_password
               name: oem-secret
-        - name: DB_HOST
+        - name: db_host
           valueFrom:
             configMapKeyRef:
               key: db_host
               name: oem-config
-        - name: DB_DATABASE
+        - name: db_database
           valueFrom:
             configMapKeyRef:
               key: db_database
               name: oem-config
-        image: "registry.gitlab.com/dsantini/open-etymology-map:v2-4-0"
+        - name: db_port
+          valueFrom:
+            configMapKeyRef:
+              key: db_port
+              name: oem-config
+        - name: config_file
+          value: /etc/config/open-etymology-map.ini
+        image: "registry.gitlab.com/dsantini/open-etymology-map:v2-5-0"
         name: oem-web
         ports:
         - containerPort: 80
@@ -45,14 +52,19 @@ spec:
         - containerPort: 443
           name: https
           protocol: TCP
-        volumes:
-        - name: ini-config-file
-          mountPath:
-            valueFrom:
-            configMapKeyRef:
-              key: config_file
-              name: oem-config
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        volumeMounts:
+          - name: oem-config-file
+            mountPath: /etc/config
+            readOnly: true
+      volumes:
+      - name: oem-config-file
+        configMap:
+          name: oem-config
+          items:
+          - key: open-etymology-map.ini
+            path: open-etymology-map.ini
+

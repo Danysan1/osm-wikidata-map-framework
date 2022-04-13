@@ -1,3 +1,4 @@
+# https://www.sumologic.com/blog/kubernetes-deploy-postgres/
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -11,3 +12,5 @@ spec:
     storage: 10Gi
   accessModes:
     - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
