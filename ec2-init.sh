@@ -30,5 +30,5 @@ docker-compose --profile "prod" up -d
 docker-compose exec web_prod certbot --apache
 ## Rinnovo: docker-compose exec web_prod certbot renew
 
-echo '0 * * * * cd open-etymology-map && git fetch && git pull && docker-compose --profile 'prod' build && docker-compose --profile 'prod' pull && docker-compose --profile 'prod' up -d' | crontab -
+echo '0 * * * * ./open-etymology-map/ec2-update.sh' | crontab -
 ## Logs: docker-compose logs
