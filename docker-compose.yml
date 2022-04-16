@@ -18,6 +18,9 @@ services:
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     restart: "always"
+    profiles:
+      - dev
+      - prod
 
   pgadmin:
     image: dpage/pgadmin4:6.8

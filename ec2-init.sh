@@ -33,3 +33,4 @@ docker-compose exec web_prod certbot --apache
 chmod u+x ec2-update.sh
 echo '0 * * * * ./open-etymology-map/ec2-update.sh' | crontab -
 ## Logs: docker-compose logs
+
