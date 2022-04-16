@@ -39,10 +39,10 @@ $overpassConfig = new RoundRobinOverpassConfig($conf);
 
 $enableDB = $conf->getBool("db-enable");
 if ($enableDB) {
-    error_log("elements.php using DB");
+    //error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
-    error_log("elements.php NOT using DB");
+    //error_log("elements.php NOT using DB");
 }
 
 if ($from == "bbox") {

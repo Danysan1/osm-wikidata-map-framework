@@ -39,10 +39,10 @@ $maxElements = $conf->has("max-elements") ? (int)$conf->get("max-elements") : nu
 
 $enableDB = $conf->getBool("db-enable");
 if ($enableDB) {
-    error_log("etymologyMap.php using DB");
+    //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
-    error_log("etymologyMap.php NOT using DB");
+    //error_log("etymologyMap.php NOT using DB");
 }
 
 // "en-US" => "en"
