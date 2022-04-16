@@ -13,10 +13,10 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - oem-internal
-    # logging:
-    #   driver: awslogs
-    #   options:
-    #     awslogs-region: us-east-1
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     restart: "always"
 
   pgadmin:
@@ -68,6 +68,10 @@ services:
       - postgis_db
     networks:
       - oem-internal
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     restart: "always"
     volumes:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini:cached
@@ -77,6 +81,16 @@ services:
       - apache-sites-available:/etc/apache2/sites-available/
       - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/
+    profiles:
+      - prod
+
+  promtail:
+    image: grafana/promtail:main
+    volumes:
+    - ./promtail:/etc/promtail
+    - /var/log:/var/log
+    - /var/lib/docker/containers:/var/lib/docker/containers
+    command: -config.file=/etc/promtail/config.yaml
     profiles:
       - prod
 
