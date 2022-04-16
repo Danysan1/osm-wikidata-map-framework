@@ -1,5 +1,5 @@
 #!/bin/bash
-cd open-etymology-map
+cd $(dirname "$0")
 git fetch
 git pull
 docker-compose --profile 'prod' pull
