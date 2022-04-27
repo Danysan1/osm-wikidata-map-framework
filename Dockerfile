@@ -2,7 +2,10 @@
 FROM php:8.1-apache-bullseye AS base
 WORKDIR /var/www
 
-RUN a2enmod headers ssl rewrite deflate allowmethods
+RUN a2enmod headers ssl rewrite deflate
+
+COPY ./apache-only-get.conf /etc/apache2/conf-available/only-get.conf
+RUN a2enconf only-get.conf
 
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
