@@ -153,7 +153,7 @@ Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/
 
 #### Production deployment with Docker
 
-The latest version can be deployed through Docker using the image `registry.gitlab.com/openetymologymap/open-etymology-map` whose available tags are listed [here](https://gitlab.com/openetymologymap/open-etymology-map/container_registry/2165364).
+The latest version can be deployed through Docker using the image `registry.gitlab.com/openetymologymap/open-etymology-map` whose available tags are listed [here](https://gitlab.com/openetymologymap/open-etymology-map/container_registry/3032190).
 
 ```sh
 docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/open-etymology-map:latest
