@@ -14,9 +14,9 @@ sudo curl -L https://github.com/docker/compose/releases/latest/download/docker-c
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose version
 
-## https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md
+## https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md
 
-git clone https://gitlab.com/dsantini/open-etymology-map.git
+git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
 > web/global-map.geojson

@@ -530,7 +530,7 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
     loadWikidataRelatedEntities(
         "ew_from_wikidata",
         "named_after",
-        ["P138", "P825", "P547"], // named after/dedicated to/commemorates  -  https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
+        ["P138", "P825", "P547"], // named after/dedicated to/commemorates  -  https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
         "",
         $dbh,
         $wikidataEndpointURL

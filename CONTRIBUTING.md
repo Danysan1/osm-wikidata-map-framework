@@ -124,7 +124,7 @@ In order to display the etymology of an element you need to create one of these 
 
 ## How to contribute to Open Etymology Map
 
-Any suggestion to improve this documentation page is really appreciated, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects. You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/dsantini/open-etymology-map/-/issues/new) describing your suggestion.
+Any suggestion to improve this documentation page is really appreciated, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects. You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/openetymologymap/open-etymology-map/-/issues/new) describing your suggestion.
 
 You can find below some information useful to contribute to the Open Etymology Map codebase.
 
@@ -153,10 +153,10 @@ Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/
 
 #### Production deployment with Docker
 
-The latest version can be deployed through Docker using the image `registry.gitlab.com/dsantini/open-etymology-map` whose available tags are listed [here](https://gitlab.com/dsantini/open-etymology-map/container_registry/2165364).
+The latest version can be deployed through Docker using the image `registry.gitlab.com/openetymologymap/open-etymology-map` whose available tags are listed [here](https://gitlab.com/openetymologymap/open-etymology-map/container_registry/2165364).
 
 ```sh
-docker run --rm -d  -p 80:80/tcp registry.gitlab.com/dsantini/open-etymology-map:latest
+docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/open-etymology-map:latest
 ```
 
 This image can be built with:
@@ -168,7 +168,7 @@ docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod"
 A full installation complete with DB can be deployed with docker-compose:
 
 ```sh
-git clone https://gitlab.com/dsantini/open-etymology-map.git
+git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
 docker-compose --profile "prod" up -d
@@ -270,7 +270,7 @@ If you intend to use the DB you will need to initialize it first:
 4. using command line, move to the [web/](web/) folder (`/var/www/html/` if you are attached to the local `docker-compose` development instance) and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
 5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
 
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/dsantini/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/dsantini/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/openetymologymap/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/openetymologymap/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
 

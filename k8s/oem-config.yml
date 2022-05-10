@@ -73,7 +73,7 @@ data:
     default-bbox-max-lon = -122.398 ; Optional, default maximum longitude for bounding box
     default-radius = 100 ; Optional >0, default radius for map center
 
-    report-problem-url = "https://gitlab.com/dsantini/open-etymology-map/-/issues" ; Optional, URL to report problems
+    report-problem-url = "https://gitlab.com/openetymologymap/open-etymology-map/-/issues" ; Optional, URL to report problems
 kind: ConfigMap
 metadata:
   name: oem-config

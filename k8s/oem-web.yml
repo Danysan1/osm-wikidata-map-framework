@@ -43,7 +43,7 @@ spec:
               name: oem-config
         - name: config_file
           value: /etc/config/open-etymology-map.ini
-        image: "registry.gitlab.com/dsantini/open-etymology-map:v2-5-0"
+        image: "registry.gitlab.com/openetymologymap/open-etymology-map:v2-5-0"
         name: oem-web
         ports:
         - containerPort: 80

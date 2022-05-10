@@ -5,38 +5,38 @@
         "name": "Open Etymology Map",
         "description": "Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.",
         "project_url": "https://etymology.dsantini.it/",
-        "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/README.md",
+        "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/README.md",
         "contact_name": "Daniele Santini",
         "contact_email": "danysan95@gmail.com"
     },
     "tags": [{
             "key": "name",
             "object_types": ["node", "way", "relation", "area"],
-            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
             "description": "The value of 'name' is used to display the object's name alongside its etymology"
         },
         {
             "key": "name:etymology:wikidata",
             "object_types": ["node", "way", "relation", "area"],
-            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
             "description": "The value of 'name:etymology:wikidata' is used to gather etymology information from Wikidata"
         },
         {
             "key": "subject:wikidata",
             "object_types": ["node", "way", "relation", "area"],
-            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
             "description": "The value of 'subject:wikidata' is used to gather etymology information from Wikidata"
         },
         {
             "key": "wikidata",
             "object_types": ["node", "way", "relation", "area"],
-            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
             "description": "The value of 'wikidata' is used to gather etymology information from the 'named after' property of  Wikidata"
         },
         {
             "key": "wikipedia",
             "object_types": ["node", "way", "relation", "area"],
-            "doc_url": "https://gitlab.com/dsantini/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
             "description": "The value of 'wikipedia' is used to show the link to the object's wikipedia page alongside the etymology of its name"
         }
     ]
