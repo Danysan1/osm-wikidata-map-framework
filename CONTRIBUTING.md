@@ -130,7 +130,7 @@ You can find below some information useful to contribute to the Open Etymology M
 
 ### Deployment
 
-The default production instance is https://etymology.dsantini.it and the development instance is https://etymology-test.dsantini.it .
+The production instance is https://etymology.dsantini.it .
 During development you can run a local instance of Open Etymology Map using the [instructions you will find below](#local-development-with-docker).
 
 #### Configuration
