@@ -133,6 +133,8 @@ You can find below some information useful to contribute to the Open Etymology M
 The production instance is https://etymology.dsantini.it .
 During development you can run a local instance of Open Etymology Map using the [instructions you will find below](#local-development-with-docker).
 
+https://dsantini.grafana.net/d/JzOIz98nz/statistics?orgId=1&viewPanel=10
+
 #### Configuration
 
 In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`.
