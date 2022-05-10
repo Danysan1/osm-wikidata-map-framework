@@ -51,10 +51,10 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/<?= $mapboxGlJS; ?>">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./index.js">
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
-    <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
+    <link rel="preload" as="style" type="text/css" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
     <link rel="preload" as="style" type="text/css" href="./style.css" />
     <!--<link rel="preload" as="fetch" type="application/json" href="./global-map.geojson" crossorigin="anonymous" />-->
 
@@ -80,11 +80,11 @@ if (!$conf->has("mapbox-gl-token")) {
 
     <link rel="stylesheet" href="./style.css" type="text/css" />
     <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
+    <link rel="stylesheet" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
     <script defer src='./node_modules/mapbox-gl/dist/<?= $mapboxGlJS; ?>' type="application/javascript"></script>
     <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
-    <script defer src="./node_modules/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
+    <script defer src="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
     <script defer src="./index.js" type="application/javascript"></script>
     <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>

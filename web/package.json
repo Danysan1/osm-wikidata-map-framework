@@ -2,11 +2,11 @@
     "name": "open-etymology-map",
     "version": "1.0.0",
     "dependencies": {
+        "@mapbox/mapbox-gl-geocoder": "^2.0",
         "@mapbox/mapbox-gl-language": "^1.0.0",
         "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
         "@sentry/browser": "^6.15",
         "chart.js": "^3.6.0",
-        "mapbox-gl": "^2.6.0",
-        "mapbox-gl-geocoder": "^2.0"
+        "mapbox-gl": "^2.8.2"
     }
 }
