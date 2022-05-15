@@ -179,9 +179,9 @@ function runOsmiumTagsFilter(
     }
 }
 
-function runOsmiumFileInfo(string $filePath)
+function runOsmiumFileInfo(string $filePath): array
 {
-    execAndCheck("osmium fileinfo --extended '$filePath'");
+    return execAndCheck("osmium fileinfo --extended '$filePath'");
 }
 
 function filterInputData(
@@ -210,7 +210,13 @@ function filterInputData(
 
 function isSchemaAlreadySetup(PDO $dbh): bool
 {
-    return $dbh->query("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='wikidata_text')")->fetchColumn();
+    $out = $dbh->query(
+        "SELECT EXISTS (
+            SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='wikidata_text'
+        )"
+    )->fetchColumn();
+    assert(is_bool($out));
+    return $out;
 }
 
 function setupSchema(PDO $dbh): void
@@ -376,9 +382,13 @@ function setupSchema(PDO $dbh): void
 
 function isOsmDataTemporaryTableAbsent(PDO $dbh): bool
 {
-    return $dbh->query(
-        "SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata')"
+    $out = $dbh->query(
+        "SELECT NOT EXISTS (
+            SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='osmdata'
+        )"
     )->fetchColumn();
+    assert(is_bool($out));
+    return $out;
 }
 
 function loadOsmDataFromTSV(PDO $dbh, string $pgFilePath): void
@@ -386,6 +396,7 @@ function loadOsmDataFromTSV(PDO $dbh, string $pgFilePath): void
     /** @psalm-suppress UndefinedMethod */
     $dbh->pgsqlCopyFromFile("oem.osmdata", $pgFilePath, "\t", "\\\\N", 'osm_id,osm_geometry,osm_osm_type,osm_osm_id,osm_tags');
     $n_osmdata = $dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
+    assert(is_int($n_osmdata));
     logProgress("Loaded $n_osmdata OSM elements into DB");
 }
 
@@ -393,8 +404,11 @@ function loadOsmDataWithOsm2pgsql(PDO $dbh, string $host, int $port, string $dbn
 {
     execAndCheck("PGPASSWORD='$password' osm2pgsql --host='$host' --port='$port' --database='$dbname' --user='$user' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '$filteredFilePath'");
     $n_point = $dbh->query("SELECT COUNT(*) FROM planet_osm_point")->fetchColumn();
+    assert(is_int($n_point));
     $n_line = $dbh->query("SELECT COUNT(*) FROM planet_osm_line")->fetchColumn();
+    assert(is_int($n_line));
     $n_polygon = $dbh->query("SELECT COUNT(*) FROM planet_osm_polygon")->fetchColumn();
+    assert(is_int($n_polygon));
     logProgress("Data loaded into DB ($n_point points, $n_line lines, $n_polygon polygons)");
 
     logProgress('Converting elements...');
@@ -427,9 +441,13 @@ function loadOsmDataWithOsm2pgsql(PDO $dbh, string $host, int $port, string $dbn
 
 function isElementWikidataTemporaryTableAbsent(PDO $dbh): bool
 {
-    return $dbh->query(
-        "SELECT NOT EXISTS (SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='element_wikidata_cods')"
+    $out = $dbh->query(
+        "SELECT NOT EXISTS (
+            SELECT FROM information_schema.tables WHERE table_schema='oem' AND table_name='element_wikidata_cods'
+        )"
     )->fetchColumn();
+    assert(is_bool($out));
+    return $out;
 }
 
 function convertElementWikidataCods(PDO $dbh): void
@@ -484,6 +502,7 @@ function loadWikidataRelatedEntities(
         FROM oem.element_wikidata_cods
         WHERE $wikidataCodsFilter"
     )->fetchColumn();
+    assert(is_int($n_todo));
     logProgress("Counted $n_todo Wikidata codes to check");
 
     $pageSize = 20000;
@@ -748,6 +767,9 @@ if ($use_db) {
                 }
             }
         } while ($failure);
+
+        if (empty($dbh))
+            throw new Exception("Database connection initialization failed");
 
         $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis");
         $dbh->exec("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch");
