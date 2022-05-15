@@ -12,6 +12,18 @@ if (php_sapi_name() != "cli") {
     die("Only runnable through CLI");
 }
 
+if (in_array("--help", $argv) || in_array("-h", $argv)) {
+    echo
+    "Usage: php db-init.php SOURCE_FILE [OPTIONS]" . PHP_EOL .
+        "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
+        "\tOPTIONS: an optional combination of one or more of these flags:" . PHP_EOL .
+        "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating" . PHP_EOL .
+        "\t\t--cleanup / -c : Delete temporary files before elaborating" . PHP_EOL .
+        "\t\t--hard-reset / -r : Do a hard reset (delete ordinary tables) before elaborating" . PHP_EOL .
+        "\t\t--propagate / -p : Propagate etymologies to nearby highways with same name" . PHP_EOL;
+    exit(0);
+}
+
 define("MAX_RECURSION_DEPTH", 10);
 
 $output = [];
@@ -74,7 +86,7 @@ if ($cleanup)
     echo 'Doing a cleanup of temporary files' . PHP_EOL;
 
 if ($reset)
-    echo 'Doing a hard reset of the DB' . PHP_EOL;
+    echo 'Doing a hard reset' . PHP_EOL;
 
 if ($reset)
     echo 'Propagating etymology to nearby highways' . PHP_EOL;
