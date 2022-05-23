@@ -518,7 +518,12 @@ function loadWikidataRelatedEntities(
         )->fetchAll();
         $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
         $wdQuery = new RelatedEntitiesWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
-        $jsonResult = $wdQuery->sendAndGetJSONResult()->getJSON();
+        try{
+            $jsonResult = $wdQuery->sendAndGetJSONResult()->getJSON();
+        } catch (Exception $e) {
+            echo 'Retrying to fetch query...';
+            $jsonResult = $wdQuery->sendAndGetJSONResult()->getJSON();
+        }
         file_put_contents($wikidataJSONFile, $jsonResult);
 
         logProgress("Loading Wikidata \"$relationName\" data...");
