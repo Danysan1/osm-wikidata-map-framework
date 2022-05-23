@@ -36,6 +36,7 @@ $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
 $cacheFileBasePath = (string)$conf->get("cache-file-base-path");
 $maxElements = $conf->has("max-elements") ? (int)$conf->get("max-elements") : null;
+$fetchAttribution = $conf->getBool("fetch-attribution");
 
 $enableDB = $conf->getBool("db-enable");
 if ($enableDB) {
@@ -74,14 +75,14 @@ if ($bboxArea > $maxArea) {
     die('{"error":"The requested area is too large. Please use a smaller area."};');
 }
 
-if (!empty($db)) {
+if (!empty($db) && $db instanceof PDO) {
     $query = new BBoxEtymologyPostGISQuery(
         $bbox,
         $safeLanguage,
         $db,
         $wikidataEndpointURL,
         $serverTiming,
-        true,
+        $fetchAttribution,
         $maxElements
     );
 } else {
