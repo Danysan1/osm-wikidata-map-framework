@@ -184,9 +184,9 @@ function getFragmentParams() {
 function setFragmentParams(lon, lat, zoom, colorScheme) {
     let p = getFragmentParams();
 
-    if (lon !== undefined) p.lon = lon;
-    if (lat !== undefined) p.lat = lat;
-    if (zoom !== undefined) p.zoom = zoom;
+    if (lon !== undefined) p.lon = lon.toFixed(3);
+    if (lat !== undefined) p.lat = lat.toFixed(3);
+    if (zoom !== undefined) p.zoom = zoom.toFixed(1);
     if (colorScheme !== undefined) p.colorScheme = colorScheme;
 
     const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
@@ -482,19 +482,19 @@ class EtymologyColorControl {
             const map = event.target,
                 bounds = map.getBounds(),
                 southWest = bounds.getSouthWest(),
-                minLat = southWest.lat, // Math.round(southWest.lat * 1000) / 1000,
-                minLon = southWest.lng, // Math.round(southWest.lng * 1000) / 1000,
+                minLat = southWest.lat,
+                minLon = southWest.lng,
                 northEast = bounds.getNorthEast(),
-                maxLat = northEast.lat, // Math.round(northEast.lat * 1000) / 1000,
-                maxLon = northEast.lng, // Math.round(northEast.lng * 1000) / 1000,
+                maxLat = northEast.lat,
+                maxLon = northEast.lng,
                 language = document.documentElement.lang,
                 queryParams = {
                     from: "bbox",
                     to: colorScheme.urlCode,
-                    minLat,
-                    minLon,
-                    maxLat,
-                    maxLon,
+                    minLat: minLat.toFixed(4),
+                    minLon: minLon.toFixed(4),
+                    maxLat: maxLat.toFixed(4),
+                    maxLon: maxLon.toFixed(4),
                     language,
                 },
                 queryString = new URLSearchParams(queryParams).toString(),
@@ -822,20 +822,20 @@ function updateDataSource(event) {
     const map = event.target,
         bounds = map.getBounds(),
         southWest = bounds.getSouthWest(),
-        minLat = southWest.lat, // Math.round(southWest.lat * 1000) / 1000,
-        minLon = southWest.lng, // Math.round(southWest.lng * 1000) / 1000,
+        minLat = southWest.lat,
+        minLon = southWest.lng,
         northEast = bounds.getNorthEast(),
-        maxLat = northEast.lat, // Math.round(northEast.lat * 1000) / 1000,
-        maxLon = northEast.lng, // Math.round(northEast.lng * 1000) / 1000,
+        maxLat = northEast.lat,
+        maxLon = northEast.lng,
         zoomLevel = map.getZoom(),
         language = document.documentElement.lang,
         queryParams = {
             from: "bbox",
             to: "geojson",
-            minLat,
-            minLon,
-            maxLat,
-            maxLon,
+            minLat: minLat.toFixed(3),
+            minLon: minLon.toFixed(3),
+            maxLat: maxLat.toFixed(3),
+            maxLon: maxLon.toFixed(3),
             language,
         };
     //console.info("updateDataSource", { queryParams, zoomLevel, thresholdZoomLevel });
@@ -1179,9 +1179,9 @@ function prepareElementsLayers(map, elements_url) {
 function mapMoveEndHandler(e) {
     updateDataSource(e);
     const map = e.target,
-        lat = Math.round(map.getCenter().lat * 10000) / 10000,
-        lon = Math.round(map.getCenter().lng * 10000) / 10000,
-        zoom = Math.round(map.getZoom() * 10) / 10;
+        lat = map.getCenter().lat,
+        lon = map.getCenter().lng,
+        zoom = map.getZoom();
     console.info("mapMoveEndHandler", { e, lat, lon, zoom });
     setFragmentParams(lon, lat, zoom, undefined);
 
