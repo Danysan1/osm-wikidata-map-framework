@@ -56,7 +56,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         PDO $db,
         string $wikidataEndpointURL,
         ?ServerTiming $serverTiming = null,
-        ?bool $fetchAttribution = true,
+        bool $fetchAttribution = true,
         ?int $maxElements = null
     ) {
         parent::__construct($bbox, $db, $serverTiming);
