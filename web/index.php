@@ -99,7 +99,9 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
     <link rel="canonical" href="https://etymology.dsantini.it/" />
-    <link rel="icon" type="image/x-icon" sizes="16x16" href="../favicon.ico">
+    <link type="image/png" sizes="16x16" rel="icon" href="./icons8-quest-16.png">
+    <link type="image/png" sizes="32x32" rel="icon" href="./icons8-quest-32.png">
+    <link type="image/png" sizes="96x96" rel="icon" href="./icons8-quest-96.png">
 </head>
 
 <body>
@@ -117,6 +119,7 @@ if (!$conf->has("mapbox-gl-token")) {
                     is_file('LAST_UPDATE') ? 'Last update: ' . htmlspecialchars(file_get_contents('LAST_UPDATE')) : false,
                     $conf->has("report-problem-url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report-problem-url") . '">Report a problem</a>' : false,
                     '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
+                    '<a href="https://icons8.com/icon/32958/quest">Quest</a> icon by <a href="https://icons8.com">Icons8</a>'
                 ]); ?>
             </p>
             <h3>Click anywhere on the map to explore.</h3>
