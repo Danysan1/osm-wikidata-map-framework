@@ -66,7 +66,7 @@ function prepareHTML(Configuration $conf)
 			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $sentryJsDomain https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net; " .
+			"connect-src 'self' $sentryJsDomain https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
