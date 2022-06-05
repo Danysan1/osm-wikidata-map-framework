@@ -5,4 +5,4 @@ git pull
 /usr/local/bin/docker-compose --profile 'prod' pull
 /usr/local/bin/docker-compose --profile 'prod' build
 /usr/local/bin/docker-compose --profile 'prod' up -d
-
+/usr/bin/docker image prune -f
