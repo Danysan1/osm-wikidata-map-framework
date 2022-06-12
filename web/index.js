@@ -1627,7 +1627,8 @@ function initPage(e) {
         if (typeof Sentry != 'undefined')
             Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
     } else {
-        initMapPreview();
+        if (enable_map_static_preview)
+            initMapPreview();
         initMap();
         //setCulture(); //! Map style likely still loading, setLayoutProperty() will cause an error
     }
