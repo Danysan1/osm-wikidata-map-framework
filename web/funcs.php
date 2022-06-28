@@ -53,20 +53,20 @@ function prepareHTML(Configuration $conf)
 {
 	preparePage($conf);
 	header("Content-Type: text/html; charset=utf-8");
-	$sentryJsDomain = $conf->has('sentry-js-domain') ? (string)$conf->get('sentry-js-domain') : "";
 	$reportUri = $conf->has('sentry-js-uri') ? "report-uri " . (string)$conf->get("sentry-js-uri") . "; " : "";
+	$googleAnalyticsURLs = 'https://www.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de';
 	header(
 		"Content-Security-Policy: " .
 			"default-src 'self'; " .
 			"worker-src blob: ; " .
 			"child-src blob: ; " .
-			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org https://www.google-analytics.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://www.google.com https://api.mapbox.com; " .
+			"img-src 'self' data: blob: https://api.mapbox.com https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsURLs; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
 			"script-src 'self' https://www.googletagmanager.com/gtag/js https://www.google-analytics.com; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $sentryJsDomain https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com https://www.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com; " .
+			"connect-src 'self' https://*.ingest.sentry.io https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com $googleAnalyticsURLs; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

@@ -57,8 +57,7 @@ data:
     ; Sentry
     sentry-js-env = "" ; Optional, Sentry JS environment
     sentry-js-dsn = "" ; Optional, Sentry JS DSN
-    sentry-js-domain = "" ; Optional, Sentry JS domain
-    sentry-js-uri = "" ; Optional, Sentry JS report URI
+    sentry-js-uri = "" ; Optional, Sentry JS Content Security Policy report URI
 
     sentry-php-env = "" ; Optional, Sentry PHP environment 
     sentry-php-dsn = "" ; Optional, Sentry PHP DSN
