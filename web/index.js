@@ -159,6 +159,22 @@ const backgroundStyles = {
     };
 
 /**
+ * 
+ * @param {string} message 
+ * @param {string} level 
+ * @param {object} extra 
+ */
+function logErrorMessage(message, level = "error", extra = undefined) {
+    console.error(message, extra);
+    if (typeof Sentry != 'undefined') {
+        if (extra instanceof Error)
+            Sentry.captureException(extra, { level, extra: message });
+        else
+            Sentry.captureMessage(message, { level, extra });
+    }
+}
+
+/**
  * Gets the parameters passed through the fragment
  * 
  * @returns {object} Parameters passed through the fragment
@@ -348,9 +364,7 @@ class BackgroundStyleControl {
             setCulture();
             //updateDataSource(event);
         } else {
-            console.error("Invalid selected background style", event.target.value);
-            if (typeof Sentry != 'undefined')
-                Sentry.captureMessage("Invalid selected background style");
+            logErrorMessage("Invalid selected background style", "error", { style: event.target.value });
         }
     }
 
@@ -440,9 +454,7 @@ class EtymologyColorControl {
         if (colorSchemeObj) {
             color = colorSchemeObj.color;
         } else {
-            console.error("Invalid selected color scheme", colorScheme);
-            if (typeof Sentry != 'undefined')
-                Sentry.captureMessage("Invalid selected color scheme", { level: 'error', extra: { colorScheme } });
+            logErrorMessage("Invalid selected color scheme", "error", { colorScheme });
             color = '#3bb2d0';
         }
         console.info("EtymologyColorControl dropDown click", { event, colorSchemeObj, color });
@@ -571,8 +583,7 @@ class EtymologyColorControl {
             this._chartObject.update();
         } else if (typeof Chart == "undefined" || !Chart) {
             alert('There was an error while loading Chart.js (the library needed to create the chart)');
-            if (typeof Sentry != 'undefined')
-                Sentry.captureMessage("Undefined Chart", { level: "error" });
+            logErrorMessage("Undefined Chart (chart.js error)");
         } else {
             //this._legend.className = 'legend';
             this._chartElement = document.createElement('canvas');
@@ -689,9 +700,7 @@ function initMap() {
     if (backgroundStyleObj) {
         backgroundStyle = backgroundStyleObj.style;
     } else {
-        console.error("Invalid default background style", defaultBackgroundStyle);
-        if (typeof Sentry != 'undefined')
-            Sentry.captureMessage("Invalid default background style");
+        logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
         backgroundStyle = "mapbox://styles/mapbox/streets-v11";
     }
 
@@ -721,9 +730,7 @@ function initMap() {
             defaultLanguage: document.documentElement.lang.substring(0, 2)
         }));
     } catch (err) {
-        console.warn("Failed setting up mapbox-gl-language", err);
-        if (typeof Sentry != 'undefined')
-            Sentry.captureException(err);
+        logErrorMessage("Failed setting up mapbox-gl-language", "warn", err);
     }
 }
 
@@ -809,9 +816,7 @@ function mapErrorHandler(err) {
         showSnackbar("A map error occurred");
         errorMessage = "Map error: " + err.sourceId + " - " + err.error.message
     }
-    if (typeof Sentry != 'undefined')
-        Sentry.captureMessage(errorMessage, { level: "error", extra: err });
-    console.error(errorMessage, err);
+    logErrorMessage(errorMessage, "error", err);
 }
 
 /**
@@ -1442,9 +1447,7 @@ function featureToDomElement(feature) {
         try {
             etymologies_container.appendChild(etymologyToDomElement(ety))
         } catch (e) {
-            console.error(e);
-            if (typeof Sentry != 'undefined')
-                Sentry.captureException(e);
+            logErrorMessage("Failed adding", "error", e);
         }
     });
     return detail_container;
@@ -1620,12 +1623,10 @@ function initPage(e) {
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (typeof mapboxgl == "undefined" || !mapboxgl) {
         alert('There was an error while loading Mapbox GL JS (the library needed to create the map)');
-        if (typeof Sentry != 'undefined')
-            Sentry.captureMessage("Undefined mapboxgl", { level: "error" });
+        logErrorMessage("Undefined mapboxgl");
     } else if (!mapboxgl.supported()) {
         alert('Your browser does not support Mapbox GL');
-        if (typeof Sentry != 'undefined')
-            Sentry.captureMessage("Device/Browser does not support Mapbox GL", { level: "error" });
+        logErrorMessage("Device/Browser does not support Mapbox GL");
     } else {
         if (enable_map_static_preview)
             initMapPreview();
