@@ -1,8 +1,7 @@
 #!/bin/bash
+
 cd $(dirname "$0")
-git fetch
-git pull
+/usr/bin/git fetch
+/usr/bin/git pull
 /usr/local/bin/docker-compose --profile 'prod' pull
-/usr/local/bin/docker-compose --profile 'prod' build
-/usr/local/bin/docker-compose --profile 'prod' up -d
-/usr/bin/docker image prune -f
+/usr/local/bin/docker-compose --profile 'prod' up --build --detach
