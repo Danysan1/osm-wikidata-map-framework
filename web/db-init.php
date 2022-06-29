@@ -366,16 +366,11 @@ function setupSchema(PDO $dbh): void
     $dbh->exec(
         "CREATE VIEW oem.v_global_map AS
         SELECT
-            ST_SetSRID( ST_Point(
-                    ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1),
-                    ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)
-                ), 4326) AS geom,
-            COUNT(DISTINCT COALESCE(el_tags->>'name', el_id::TEXT)) AS el_num
+            ST_ReducePrecision(ST_Centroid(el_geometry), 0.2) AS geom,
+            COUNT(DISTINCT COALESCE(el_tags->>'name', el_id::TEXT)) AS num
         FROM oem.etymology
         JOIN oem.element ON et_el_id = el_id
-        GROUP BY
-            ROUND(ST_X(ST_Centroid(el_geometry))::NUMERIC,1),
-            ROUND(ST_Y(ST_Centroid(el_geometry))::NUMERIC,1)"
+        GROUP BY geom"
     );
     logProgress('DB schema prepared');
 }
@@ -745,7 +740,6 @@ if (is_file($pgFilePath)) {
 if ($use_db) {
     try {
         $geoJsonGlobalMapFilePath = __DIR__ . '/global-map.geojson';
-        //$mvtGlobalMapFilePath = __DIR__ . '/global-map.mvt';
 
         $conf = new IniEnvConfiguration();
         $host = (string)$conf->get("db_host");
@@ -793,8 +787,6 @@ if ($use_db) {
             $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
             if (is_file($geoJsonGlobalMapFilePath))
                 unlink($geoJsonGlobalMapFilePath);
-            // if (is_file($mvtGlobalMapFilePath))
-            //    unlink($mvtGlobalMapFilePath);
         }
 
         if (isSchemaAlreadySetup($dbh)) {
@@ -919,24 +911,6 @@ if ($use_db) {
                 FROM oem.v_global_map"
             );
             file_put_contents($geoJsonGlobalMapFilePath, (string)$sth_geojson_global_map->fetchColumn());
-
-            // // gzipped GeoJSON
-            // execAndCheck("gzip -9 -f -k '$geoJsonGlobalMapFilePath'");
-
-            // // Mapbox Vector Tile
-            // $sth_mvt_global_map = $dbh->query(
-            //     "SELECT ST_AsMVT(point.*)
-            //     FROM (
-            //         SELECT ST_AsMVTGeom(
-            //                 geom,
-            //                 ST_TileEnvelope(0, 0, 0, ST_MakeEnvelope(-180, -90, 180, 90, 4326) )
-            //                 --ST_MakeBox2D(ST_Point(0, 0), ST_Point(4096, 4096))
-            //             ) AS geom,
-            //             JSONB_BUILD_OBJECT('el_num', el_num) AS properties
-            //         FROM oem.v_global_map
-            //     ) as point"
-            // );
-            // file_put_contents($mvtGlobalMapFilePath, $sth_mvt_global_map->fetchColumn());
 
             logProgress("Generated global map: $geoJsonGlobalMapFilePath");
         }
