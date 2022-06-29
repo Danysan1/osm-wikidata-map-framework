@@ -479,6 +479,11 @@ class EtymologyColorControl {
     }
 
     updateChart(event) {
+        if (!this._ctrlDropDown) {
+            logErrorMessage("updateChart: dropodown non inizializzata");
+            return;
+        }
+
         const colorScheme = colorSchemes[this._ctrlDropDown.value];
         //console.info("updateChart", { event, colorScheme });
 
