@@ -320,7 +320,8 @@ function setupSchema(PDO $dbh): void
             et_from_wikidata_named_after BOOLEAN,
             et_from_wikidata_dedicated_to BOOLEAN,
             et_from_wikidata_commemorates BOOLEAN,
-            et_from_suspect_origin BOOLEAN,
+            et_from_bad_not_consists BOOLEAN,
+            et_from_bad_consists BOOLEAN,
             et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id),
             et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$'),
             CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
@@ -606,7 +607,8 @@ function convertEtymologies(PDO $dbh): void
             et_from_wikidata_named_after,
             et_from_wikidata_dedicated_to,
             et_from_wikidata_commemorates,
-            et_from_suspect_origin,
+            et_from_bad_not_consists,
+            et_from_bad_consists,
             et_from_wikidata_wd_id,
             et_from_wikidata_prop_cod
         ) SELECT
@@ -616,13 +618,14 @@ function convertEtymologies(PDO $dbh): void
             BOOL_OR(wna_from_prop_cod IS NULL) AS from_osm, -- derived directly from OSM
             BOOL_OR(wna_from_prop_cod IS NOT NULL) AS from_wikidata, -- derived through Wikidata
             BOOL_OR(wna_from_prop_cod IS NULL AND ew_from_name_etymology) AS from_name_etymology, -- derived directly from OSM ('name:etymology')
-            BOOL_OR(wna_from_prop_cod='P527' AND ew_from_name_etymology) AS from_name_etymology_consists, -- derived through OSM ('name:etymology') and then Wikidata ('consists')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527' AND ew_from_name_etymology) AS from_name_etymology_consists, -- derived through OSM ('name:etymology') and then Wikidata ('consists')
             BOOL_OR(wna_from_prop_cod IS NULL AND ew_from_subject) AS from_subject, -- derived directly from OSM ('subject')
-            BOOL_OR(wna_from_prop_cod='P527' AND ew_from_subject) AS from_subject_consists, -- derived through OSM ('subject') and then Wikidata ('consists')
-            BOOL_OR(wna_from_prop_cod='P138' AND ew_from_wikidata) AS from_wikidata_named_after, -- derived through OSM ('wikidata') and then Wikidata ('named after')
-            BOOL_OR(wna_from_prop_cod='P825' AND ew_from_wikidata) AS from_wikidata_dedicated_to, -- derived through OSM ('wikidata') and then Wikidata ('dedicated to')
-            BOOL_OR(wna_from_prop_cod='P547' AND ew_from_wikidata) AS from_wikidata_commemorates, -- derived through OSM ('wikidata') and then Wikidata ('commemorates')
-            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod!='P527' AND (ew_from_subject OR ew_from_name_etymology)) AS from_suspect_origin, -- derived through OSM ('subject'/'name:etymology') and then Wikidata (not 'consists')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527' AND ew_from_subject) AS from_subject_consists, -- derived through OSM ('subject') and then Wikidata ('consists')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P138' AND ew_from_wikidata) AS from_wikidata_named_after, -- derived through OSM ('wikidata') and then Wikidata ('named after')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P825' AND ew_from_wikidata) AS from_wikidata_dedicated_to, -- derived through OSM ('wikidata') and then Wikidata ('dedicated to')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P547' AND ew_from_wikidata) AS from_wikidata_commemorates, -- derived through OSM ('wikidata') and then Wikidata ('commemorates')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod!='P527' AND NOT ew_from_wikidata) AS from_bad_not_consists, -- wrong etymology, derived through OSM ('subject'/'name:etymology') and then Wikidata (not 'consists')
+            BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527' AND ew_from_wikidata) AS from_bad_consists, -- wrong etymology, derived through OSM ('wikidata') and then Wikidata ('consists')
             MIN(from_wd_id) AS from_wikidata_wd_id,
             MIN(wna_from_prop_cod) AS from_wikidata_prop_cod
         FROM (
