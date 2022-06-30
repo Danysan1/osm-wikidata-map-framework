@@ -42,7 +42,7 @@ if (!$conf->has("mapbox-gl-token")) {
 
 <head>
     <?php if ($useSentry) { ?>
-        <link rel="preload" as="script" type="application/javascript" href="./node_modules/@sentry/browser/build/bundle.min.js">
+        <link rel="preload" as="script" type="application/javascript" href="https://browser.sentry-cdn.com/7.3.1/bundle.tracing.min.js">
     <?php
     }
 
@@ -63,7 +63,11 @@ if (!$conf->has("mapbox-gl-token")) {
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <?php if ($useSentry) { ?>
-        <script src="./node_modules/@sentry/browser/build/bundle.min.js" type="application/javascript"></script>
+        <script
+            src="https://browser.sentry-cdn.com/7.3.1/bundle.tracing.min.js"
+            integrity="sha384-iptjDHZXu0VPs27rpz7gMPerGBSnwZdj2zsbnT5m5bjmcNk8tjHmzD/GJn8UjaO7"
+            crossorigin="anonymous"
+        ></script>
     <?php
     }
 

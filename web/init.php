@@ -15,6 +15,8 @@ if ($conf->has("sentry-js-dsn")) {
 Sentry.init({
   dsn: <?=json_encode((string)$conf->get("sentry-js-dsn"));?>,
   environment: <?=json_encode((string)$conf->get("sentry-js-env"));?>,
+  integrations: [new Sentry.BrowserTracing()],
+  tracesSampleRate: 0.3,
 });
 <?php
 }
