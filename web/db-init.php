@@ -308,7 +308,7 @@ function setupSchema(PDO $dbh): void
             et_el_id BIGINT NOT NULL,
             et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
             et_from_el_id BIGINT,
-            et_propagated BOOLEAN,
+            et_recursion_depth INT DEFAULT 0,
             et_from_osm BOOLEAN,
             et_from_name_etymology BOOLEAN,
             et_from_name_etymology_consists BOOLEAN,
@@ -589,7 +589,6 @@ function convertEtymologies(PDO $dbh): void
             et_el_id,
             et_wd_id,
             et_from_el_id,
-            et_propagated,
             et_from_osm,
             et_from_wikidata,
             et_from_name_etymology,
@@ -605,7 +604,6 @@ function convertEtymologies(PDO $dbh): void
             ew_el_id,
             wd_id,
             MIN(ew_el_id) AS from_el_id,
-            FALSE,
             BOOL_OR(wna_from_prop_cod IS NULL) AS from_osm,
             BOOL_OR(wna_from_prop_cod IS NOT NULL) AS from_wikidata,
             BOOL_OR(ew_from_name_etymology AND wna_from_prop_cod IS NULL) AS from_name_etymology,
@@ -634,18 +632,46 @@ function convertEtymologies(PDO $dbh): void
     logProgress("Converted $n_ety etymologies");
 }
 
-function propagateEtymologies(PDO $dbh, int $depth = 0): int
+function propagateEtymologies(PDO $dbh, int $depth = 1): int
 {
     if ($depth >= MAX_RECURSION_DEPTH) {
         logProgress("Reached max recursion depth, stopping propagating etymologies");
         return 0;
     } else {
         logProgress("Propagating etymologies at recursion depth $depth...");
-        $n_propagations = $dbh->exec(
+        $propagation = $dbh->prepare(
             "INSERT INTO oem.etymology (
-                et_el_id, et_wd_id, et_from_el_id, et_propagated, et_from_osm, et_from_wikidata, et_from_name_etymology, et_from_name_etymology_consists, et_from_subject, et_from_subject_consists, et_from_wikidata_named_after, et_from_wikidata_dedicated_to, et_from_wikidata_commemorates, et_from_wikidata_wd_id, et_from_wikidata_prop_cod
+                et_el_id,
+                et_wd_id,
+                et_from_el_id,
+                et_recursion_depth,
+                et_from_osm,
+                et_from_wikidata,
+                et_from_name_etymology,
+                et_from_name_etymology_consists,
+                et_from_subject,
+                et_from_subject_consists,
+                et_from_wikidata_named_after,
+                et_from_wikidata_dedicated_to,
+                et_from_wikidata_commemorates,
+                et_from_wikidata_wd_id,
+                et_from_wikidata_prop_cod
             ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
-                new_el.osm_id, old_et.et_wd_id, old_et.et_from_el_id, TRUE, old_et.et_from_osm, old_et.et_from_wikidata, old_et.et_from_name_etymology, old_et.et_from_name_etymology_consists, old_et.et_from_subject, old_et.et_from_subject_consists, old_et.et_from_wikidata_named_after, old_et.et_from_wikidata_dedicated_to, old_et.et_from_wikidata_commemorates, old_et.et_from_wikidata_wd_id, old_et.et_from_wikidata_prop_cod
+                new_el.osm_id,
+                old_et.et_wd_id,
+                old_et.et_from_el_id,
+                :depth,
+                old_et.et_from_osm,
+                old_et.et_from_wikidata,
+                old_et.et_from_name_etymology,
+                old_et.et_from_name_etymology_consists,
+                old_et.et_from_subject,
+                old_et.et_from_subject_consists,
+                old_et.et_from_wikidata_named_after,
+                old_et.et_from_wikidata_dedicated_to,
+                old_et.et_from_wikidata_commemorates,
+                old_et.et_from_wikidata_wd_id,
+                old_et.et_from_wikidata_prop_cod
             FROM oem.etymology AS old_et
             JOIN oem.osmdata AS old_el
                 ON old_et.et_el_id = old_el.osm_id
@@ -656,8 +682,11 @@ function propagateEtymologies(PDO $dbh, int $depth = 0): int
                 AND old_el.osm_tags->'name' = new_el.osm_tags->'name'
                 AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
             LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
-            WHERE new_et IS NULL"
+            WHERE old_et.et_recursion_depth = :depth-1
+            AND new_et IS NULL"
         );
+        $propagation->execute(["depth"=>$depth]);
+        $n_propagations = $propagation->rowCount();
         logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
 
         if ($n_propagations > 0) // Recursion breaking
