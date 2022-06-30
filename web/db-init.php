@@ -1,11 +1,13 @@
 <?php
 require_once("./app/IniEnvConfiguration.php");
 require_once("./app/PostGIS_PDO.php");
-require_once("./app/query/wikidata/RelatedEntitiesWikidataQuery.php");
+require_once("./app/query/wikidata/RelatedEntitiesCheckWikidataQuery.php");
+require_once("./app/query/wikidata/RelatedEntitiesDetailsWikidataQuery.php");
 
 use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
-use \App\Query\Wikidata\RelatedEntitiesWikidataQuery;
+use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
+use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
 if (php_sapi_name() != "cli") {
     http_response_code(400);
@@ -489,8 +491,7 @@ function loadWikidataRelatedEntities(
     PDO $dbh,
     string $wikidataEndpointURL
 ): void {
-    $wikidataRqFile = sys_get_temp_dir() . "/wikidata_$relationName.tmp.rq";
-    $wikidataJSONFile = sys_get_temp_dir() . "/wikidata_$relationName.tmp.json";
+    $wikidataJSONFile = "wikidata_$relationName.tmp.json";
 
     $n_todo = $dbh->query(
         "SELECT COUNT(DISTINCT ew_wikidata_cod)
@@ -500,7 +501,7 @@ function loadWikidataRelatedEntities(
     assert(is_int($n_todo));
     logProgress("Counted $n_todo Wikidata codes to check");
 
-    $pageSize = 20000;
+    $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
         logProgress("Downloading Wikidata \"$relationName\" data (starting from $offset)...");
         $wikidataCodsResult = $dbh->query(
@@ -512,12 +513,18 @@ function loadWikidataRelatedEntities(
             OFFSET $offset"
         )->fetchAll();
         $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
-        $wdQuery = new RelatedEntitiesWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
+        
+        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
+        $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
+        $n_wikidata_cods = count($wikidataCods);
+        logProgress("Fetching details for $n_wikidata_cods elements out of $pageSize...");
+
+        $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
         try{
-            $jsonResult = $wdQuery->sendAndGetJSONResult()->getJSON();
+            $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
         } catch (Exception $e) {
             echo 'Retrying to fetch query...';
-            $jsonResult = $wdQuery->sendAndGetJSONResult()->getJSON();
+            $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
         }
         file_put_contents($wikidataJSONFile, $jsonResult);
 
