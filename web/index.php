@@ -42,7 +42,13 @@ if (!$conf->has("mapbox-gl-token")) {
 
 <head>
     <?php if ($useSentry) { ?>
-        <link rel="preload" as="script" type="application/javascript" href="https://browser.sentry-cdn.com/7.3.1/bundle.tracing.min.js">
+        <link
+            rel="preload"
+            as="script"
+            type="application/javascript"
+            href="https://browser.sentry-cdn.com/7.3.1/bundle.tracing.min.js"
+            integrity="sha384-iptjDHZXu0VPs27rpz7gMPerGBSnwZdj2zsbnT5m5bjmcNk8tjHmzD/GJn8UjaO7"
+            crossorigin="anonymous" />
     <?php
     }
 
