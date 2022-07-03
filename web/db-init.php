@@ -667,6 +667,8 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
                 et_from_wikidata_named_after,
                 et_from_wikidata_dedicated_to,
                 et_from_wikidata_commemorates,
+                et_from_bad_not_consists,
+                et_from_bad_consists,
                 et_from_wikidata_wd_id,
                 et_from_wikidata_prop_cod
             ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
@@ -683,6 +685,8 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
                 old_et.et_from_wikidata_named_after,
                 old_et.et_from_wikidata_dedicated_to,
                 old_et.et_from_wikidata_commemorates,
+                old_et.et_from_bad_not_consists,
+                old_et.et_from_bad_consists,
                 old_et.et_from_wikidata_wd_id,
                 old_et.et_from_wikidata_prop_cod
             FROM oem.etymology AS old_et
