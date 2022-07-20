@@ -629,16 +629,31 @@ function convertEtymologies(PDO $dbh): void
             MIN(from_wd_id) AS from_wikidata_wd_id,
             MIN(wna_from_prop_cod) AS from_wikidata_prop_cod
         FROM (
-            SELECT DISTINCT ew_el_id, wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata, NULL::BIGINT AS from_wd_id, NULL::VARCHAR AS wna_from_prop_cod
+            SELECT DISTINCT
+                ew_el_id,
+                wd_id,
+                ew_from_name_etymology,
+                ew_from_subject,
+                ew_from_wikidata,
+                NULL::BIGINT AS from_wd_id,
+                NULL::VARCHAR AS wna_from_prop_cod
             FROM oem.element_wikidata_cods
             JOIN oem.wikidata ON ew_wikidata_cod = wd_wikidata_cod
             WHERE ew_from_name_etymology OR ew_from_subject
             UNION
-            SELECT DISTINCT ew.ew_el_id, nawd.wd_id, ew_from_name_etymology, ew_from_subject, ew_from_wikidata, wd.wd_id AS from_wd_id, wna_from_prop_cod
+            SELECT DISTINCT
+                ew.ew_el_id,
+                nawd.wd_id,
+                ew_from_name_etymology,
+                ew_from_subject,
+                ew_from_wikidata,
+                wd.wd_id AS from_wd_id,
+                wna_from_prop_cod
             FROM oem.element_wikidata_cods AS ew
             JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
             JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
             JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
+            WHERE ew_from_wikidata
         ) AS x
         GROUP BY ew_el_id, wd_id"
     );
