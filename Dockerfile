@@ -17,11 +17,12 @@ FROM base AS dev
 # https://gist.github.com/ben-albon/3c33628662dcd4120bf4
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 RUN apt-get update && \
-	apt-get install -y libpq-dev libzip-dev zip git osmium-tool osm2pgsql && \
+	apt-get install -y libpq-dev libzip-dev zip git osmium-tool osm2pgsql npm && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install
+RUN npm install -g npm
 WORKDIR /var/www/html
 
 FROM node:17-alpine AS npm-install
