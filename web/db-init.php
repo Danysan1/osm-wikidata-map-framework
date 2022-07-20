@@ -649,7 +649,7 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
 {
     if ($depth >= MAX_RECURSION_DEPTH) {
         logProgress("Reached max recursion depth, stopping propagating etymologies");
-        return 0;
+        return 0; // Recursion breaking because max recursion depth has been reached
     } else {
         logProgress("Propagating etymologies at recursion depth $depth...");
         $propagation = $dbh->prepare(
@@ -675,7 +675,7 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
                 new_el.osm_id,
                 old_et.et_wd_id,
                 old_et.et_from_el_id,
-                :depth,
+                :depth AS recursion_depth,
                 old_et.et_from_osm,
                 old_et.et_from_wikidata,
                 old_et.et_from_name_etymology,
@@ -706,10 +706,10 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
         $n_propagations = $propagation->rowCount();
         logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
 
-        if ($n_propagations > 0) // Recursion breaking
-            $n_sub_propagations = propagateEtymologies($dbh, $depth + 1);
+        if ($n_propagations > 0)
+            $n_sub_propagations = propagateEtymologies($dbh, $depth + 1); // Recursive call
         else
-            $n_sub_propagations = 0;
+            $n_sub_propagations = 0; // Recursion breaking because propagations are complete
 
         return $n_propagations + $n_sub_propagations;
     }
