@@ -874,10 +874,11 @@ if ($use_db) {
             } else {
                 loadWikidataEntities($dbh);
 
+                echo 'Download of wikidata relations started at ' . date('c') . PHP_EOL;
                 $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
                 loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
-
                 loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+                echo 'Download of wikidata relations ended at ' . date('c') . PHP_EOL;
             }
 
             if ($dbh->query("SELECT EXISTS (SELECT FROM oem.etymology)")->fetchColumn()) {
@@ -892,7 +893,9 @@ if ($use_db) {
             }
 
             if ($propagate) {
+                echo 'Propagation of etymologies started at ' . date('c') . PHP_EOL;
                 propagateEtymologies($dbh);
+                echo 'Propagation of etymologies ended at ' . date('c') . PHP_EOL;
             }
 
             echo 'Conversion complete at ' . date('c') . PHP_EOL;
