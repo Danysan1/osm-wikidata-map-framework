@@ -161,7 +161,7 @@ const backgroundStyles = {
 /**
  * 
  * @param {string} message 
- * @param {string} level 
+ * @param {string} level Log level (default "error")
  * @param {object} extra 
  */
 function logErrorMessage(message, level = "error", extra = undefined) {
@@ -759,7 +759,7 @@ function hashChangeHandler(e, map) {
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
         currZoom = map.getZoom();
-    console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
+    //console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
 
     // Check if the position has changed in order to avoid unnecessary map movements
     if (Math.abs(currLat - position.lat) > 0.001 ||
@@ -851,16 +851,25 @@ function updateDataSource(event) {
             maxLat: maxLat.toFixed(3),
             maxLon: maxLon.toFixed(3),
             language,
-        };
-    //console.info("updateDataSource", { queryParams, zoomLevel, thresholdZoomLevel });
-    //console.trace("updateDataSource");
+        },
+        enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
+        enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
+        enableGlobalLayers = zoomLevel < minZoomLevel;
+    /*console.info("updateDataSource", {
+        queryParams,
+        zoomLevel,
+        minZoomLevel,
+        thresholdZoomLevel,
+        enableWikidataLayers,
+        enableElementLayers,
+        enableGlobalLayers
+    });*/
 
-    //kendo.ui.progress($("#map"), true);
-    if (zoomLevel >= thresholdZoomLevel) {
+    if (enableWikidataLayers) {
         const queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
 
-        prepareWikidataLayers(map, wikidata_url);
+        prepareWikidataLayers(map, wikidata_url, thresholdZoomLevel);
         const wikidata_source = map.getSource("wikidata_source");
         console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
 
@@ -870,17 +879,17 @@ function updateDataSource(event) {
         } else {
             console.error("updateDataSource: missing wikidata_source");
         }
-    } else if (zoomLevel < minZoomLevel) {
-        prepareGlobalLayers(map);
+    } else if (enableGlobalLayers) {
+        prepareGlobalLayers(map, minZoomLevel);
 
         //showSnackbar("Please zoom more to see data", "orange");
-    } else {
+    } else if (enableElementLayers) {
         //queryParams.onlySkeleton = false;
         queryParams.onlyCenter = true;
         const queryString = new URLSearchParams(queryParams).toString(),
             elements_url = './elements.php?' + queryString;
 
-        prepareElementsLayers(map, elements_url);
+        prepareElementsLayers(map, elements_url, minZoomLevel, thresholdZoomLevel);
         const elements_source = map.getSource("elements_source");
         console.info("Overpass dataSource update", { queryParams, elements_url, elements_source });
 
@@ -890,6 +899,13 @@ function updateDataSource(event) {
         } else {
             console.error("updateDataSource: missing elements_source");
         }
+    } else {
+        console.error("No layer was enabled", {
+            queryParams,
+            zoomLevel,
+            minZoomLevel,
+            thresholdZoomLevel,
+        });
     }
 }
 
@@ -904,6 +920,7 @@ let isColorSchemeDropdownInitialized = false;
  * 
  * @param {mapboxgl.Map} map
  * @param {string} wikidata_url
+ * @param {number} minZoom
  * 
  * @see initWikidataLayer
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
@@ -911,7 +928,7 @@ let isColorSchemeDropdownInitialized = false;
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
  */
-function prepareWikidataLayers(map, wikidata_url) {
+function prepareWikidataLayers(map, wikidata_url, minZoom) {
     if (!map.getSource("wikidata_source")) {
         map.addSource('wikidata_source', {
             type: 'geojson',
@@ -927,7 +944,7 @@ function prepareWikidataLayers(map, wikidata_url) {
             'source': 'wikidata_source',
             'type': 'circle',
             "filter": ["==", ["geometry-type"], "Point"],
-            "minzoom": thresholdZoomLevel,
+            "minzoom": minZoom,
             'paint': {
                 'circle-radius': 8,
                 'circle-stroke-width': 2,
@@ -944,7 +961,7 @@ function prepareWikidataLayers(map, wikidata_url) {
             'source': 'wikidata_source',
             'type': 'line',
             "filter": ["==", ["geometry-type"], "LineString"],
-            "minzoom": thresholdZoomLevel,
+            "minzoom": minZoom,
             'paint': {
                 'line-color': colorSchemes[defaultColorScheme].color,
                 'line-opacity': 0.5,
@@ -960,7 +977,7 @@ function prepareWikidataLayers(map, wikidata_url) {
             'source': 'wikidata_source',
             'type': 'line',
             "filter": ["==", ["geometry-type"], "Polygon"],
-            "minzoom": thresholdZoomLevel,
+            "minzoom": minZoom,
             'paint': {
                 'line-color': colorSchemes[defaultColorScheme].color,
                 'line-opacity': 0.5,
@@ -977,7 +994,7 @@ function prepareWikidataLayers(map, wikidata_url) {
             'source': 'wikidata_source',
             'type': 'fill',
             "filter": ["==", ["geometry-type"], "Polygon"],
-            "minzoom": thresholdZoomLevel,
+            "minzoom": minZoom,
             'paint': {
                 'fill-color': colorSchemes[defaultColorScheme].color,
                 'fill-opacity': 0.5,
@@ -1066,6 +1083,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
             '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
             '#f28cb1' // count > maxThreshold => Pink circle
         ],
+        'circle-opacity': 0.75,
         'circle-radius': [
             'interpolate', ['linear'],
             ['get', field],
@@ -1081,85 +1099,126 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
  * 
  * @param {mapboxgl.Map} map
  * @param {string} elements_url
+ * @param {number} minZoom
+ * @param {number} maxZoom
+ * 
+ * @see prepareClusteredLayers
+ */
+function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
+    prepareClusteredLayers(
+        map,
+        'elements',
+        elements_url,
+        minZoom,
+        maxZoom
+    );
+}
+
+/**
+ * Initializes a generic clustered lset of layers:
+ * - a source from the GeoJSON data in sourceDataURL with the 'cluster' option to true.
+ * - a layer to show the clusters
+ * - a layer to show the count labels on top of the clusters
+ * - a layer for single points
+ * 
+ * @param {mapboxgl.Map} map
+ * @param {string} prefix the prefix for the name of each layer
+ * @param {string} sourceDataURL
+ * @param {number?} minZoom
+ * @param {number?} maxZoom
+ * @param {*?} clusterProperties GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option.
+ * @param {string?} countFieldName Selects the property to be used as count
+ * @param {string?} countShowFieldName Selects the property to be shown as count
+ * 
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
- * Add a new source from our GeoJSON data and set the 'cluster' option to true.
- * GL-JS will add the point_count property to your source data.
- * //@see https://docs.mapbox.com/mapbox-gl-js/example/heatmap-layer/
+ * @see https://github.com/mapbox/mapbox-gl-js/issues/2898
  */
-function prepareElementsLayers(map, elements_url) {
-    if (!map.getSource("elements_source")) {
-        map.addSource('elements_source', {
+ function prepareClusteredLayers(
+    map,
+    prefix,
+    sourceDataURL,
+    minZoom = undefined,
+    maxZoom = undefined,
+    clusterProperties = undefined,
+    countFieldName = 'point_count',
+    countShowFieldName = 'point_count_abbreviated'
+) {
+    const sourceName = prefix+'_source',
+        clusterLayerName = prefix+'_layer_cluster',
+        countLayerName = prefix+'_layer_count',
+        pointLayerName = prefix+'_layer_point';
+    if (!map.getSource(sourceName)) {
+        map.addSource(sourceName, {
             type: 'geojson',
             //buffer: 512,
-            data: elements_url,
+            data: sourceDataURL,
             cluster: true,
-            //clusterMaxZoom: thresholdZoomLevel, // Max zoom to cluster points on
-            //clusterMaxZoom: minZoomLevel, // Min zoom to cluster points on
+            maxzoom: maxZoom,
+            //clusterMaxZoom: maxZoom, // Max zoom to cluster points on
             clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
+            clusterProperties: clusterProperties,
+            clusterMinPoints: 1
         });
+        console.info("prepareClusteredLayers "+sourceName, {maxZoom, source: map.getSource(sourceName)});
     }
 
-    if (!map.getLayer("elements_layer_cluster")) {
+    if (!map.getLayer(clusterLayerName)) {
         map.addLayer({
-            id: 'elements_layer_cluster',
-            source: 'elements_source',
+            id: clusterLayerName,
+            source: sourceName,
             type: 'circle',
-            maxzoom: thresholdZoomLevel,
-            minzoom: minZoomLevel,
-            filter: ['has', 'point_count'],
-            paint: clusterPaintFromField('point_count'),
+            maxzoom: maxZoom,
+            minzoom: minZoom,
+            filter: ['has', countFieldName],
+            paint: clusterPaintFromField(countFieldName),
         });
+        
+
+        // inspect a cluster on click
+        map.on('click', clusterLayerName, (e) => {
+            const features = map.queryRenderedFeatures(e.point, {
+                    layers: [clusterLayerName]
+                }),
+                clusterId = features[0].properties.cluster_id,
+                center = features[0].geometry.coordinates;
+            console.info('Click '+clusterLayerName, features, clusterId, center);
+            map.getSource(sourceName).getClusterExpansionZoom(
+                clusterId, (err, zoom) => easeToClusterCenter(map, err, zoom, maxZoom + 0.5, center)
+            );
+        });
+
+        map.on('mouseenter', clusterLayerName, () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', clusterLayerName, () => map.getCanvas().style.cursor = '');
+
+        console.info("prepareClusteredLayers "+clusterLayerName, {minZoom, maxZoom, layer: map.getLayer(clusterLayerName)});
     }
 
-    if (!map.getLayer("elements_layer_count")) {
+    if (!map.getLayer(countLayerName)) {
         map.addLayer({
-            id: 'elements_layer_count',
+            id: countLayerName,
             type: 'symbol',
-            source: 'elements_source',
-            maxzoom: thresholdZoomLevel,
-            minzoom: minZoomLevel,
-            filter: ['has', 'point_count'],
+            source: sourceName,
+            maxzoom: maxZoom,
+            minzoom: minZoom,
+            filter: ['has', countShowFieldName],
             layout: {
-                'text-field': '{point_count_abbreviated}',
+                'text-field': '{'+countShowFieldName+'}',
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12
             }
         });
-
-        // inspect a cluster on click
-        map.on('click', 'elements_layer_cluster', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                    layers: ['elements_layer_cluster']
-                }),
-                clusterId = features[0].properties.cluster_id,
-                center = features[0].geometry.coordinates;
-            console.info('Click elements_layer_cluster', features, clusterId, center);
-            map.getSource('elements_source').getClusterExpansionZoom(
-                clusterId,
-                (err, zoom) => {
-                    if (err) return;
-
-                    map.easeTo({
-                        center: center,
-                        zoom: zoom
-                    });
-                }
-            );
-        });
-
-        map.on('mouseenter', 'elements_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'elements_layer_cluster', () => map.getCanvas().style.cursor = '');
+        console.info("prepareClusteredLayers "+countLayerName, {minZoom, maxZoom, layer: map.getLayer(countLayerName)});
     }
 
-    if (!map.getLayer("elements_layer_point")) {
+    if (!map.getLayer(pointLayerName)) {
         map.addLayer({
-            id: 'elements_layer_point',
+            id: pointLayerName,
             type: 'circle',
-            source: 'elements_source',
-            maxzoom: thresholdZoomLevel,
-            minzoom: minZoomLevel,
-            filter: ['!', ['has', 'point_count']],
+            source: sourceName,
+            maxzoom: maxZoom,
+            minzoom: minZoom,
+            filter: ['!', ['has', countFieldName]],
             paint: {
                 'circle-color': '#11b4da',
                 'circle-radius': 10,
@@ -1168,20 +1227,51 @@ function prepareElementsLayers(map, elements_url) {
             }
         });
 
-        map.on('click', 'elements_layer_point', (e) => {
+        map.on('click', pointLayerName, (e) => {
             const features = map.queryRenderedFeatures(e.point, {
-                    layers: ['elements_layer_point']
+                    layers: [pointLayerName]
                 }),
                 center = features[0].geometry.coordinates;
-            console.info('Click elements_layer_point', features, center);
+            console.info('Click '+pointLayerName, features, center);
             map.easeTo({
                 center: center,
-                zoom: thresholdZoomLevel + 0.1
+                zoom: maxZoom + 0.5
             });
         });
 
-        map.on('mouseenter', 'elements_layer_point', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'elements_layer_point', () => map.getCanvas().style.cursor = '');
+        map.on('mouseenter', pointLayerName, () => map.getCanvas().style.cursor = 'pointer');
+        map.on('mouseleave', pointLayerName, () => map.getCanvas().style.cursor = '');
+        
+        console.info("prepareClusteredLayers "+pointLayerName, {minZoom, maxZoom, layer: map.getLayer(pointLayerName)});
+    }
+}
+
+/**
+ * Callback for getClusterExpansionZoom which eases the map to the cluster center at the calculated zoom
+ * 
+ * @param {mapboxgl.Map} map
+ * @param {*} err 
+ * @param {number} zoom
+ * @param {number} defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
+ * @param {mapboxgl.LngLatLike} center
+ * 
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#getclusterexpansionzoom
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/properties/#cameraoptions
+ */
+ function easeToClusterCenter(map, err, zoom, defaultZoom, center) {
+    if (err) {
+        logErrorMessage("easeToClusterCenter: Not easing because of an error", "error", err);
+    } else {
+        if (!zoom) {
+            zoom = defaultZoom
+            console.warn("easeToClusterCenter: Empty zoom, using default");
+        }
+        //console.info("easeToClusterCenter", {zoom, center});
+        map.easeTo({
+            center: center,
+            zoom: zoom
+        });
     }
 }
 
@@ -1280,93 +1370,21 @@ function mapLoadedHandler(e) {
  * Initializes the low-zoom-level clustered layer.
  * 
  * @param {mapboxgl.Map} map
+ * @param {number} maxZoom
  * 
- * @see prepareElementsLayers
+ * @see prepareClusteredLayers
  */
-function prepareGlobalLayers(map) {
-    if (!map.getSource("global_source")) {
-        map.addSource('global_source', {
-            type: 'geojson',
-            data: './global-map.geojson',
-            //type: 'vector',
-            //tiles: ['http://localhost/global-map.mvt'],
-            cluster: true,
-            //clusterMaxZoom: minZoomLevel, // Max zoom to cluster points on
-            //maxzoom: minZoomLevel,
-            clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
-            clusterProperties: {
-                "el_num": ["+", [
-                    "coalesce", ["get", "el_num"],
-                    ["get", "num"]
-                ]]
-            },
-            clusterMinPoints: 1,
-        });
-    }
-
-    if (!map.getLayer("global_layer_cluster")) {
-        map.addLayer({
-            id: 'global_layer_cluster',
-            source: 'global_source',
-            //"source-layer": 'Point',
-            type: 'circle',
-            maxzoom: minZoomLevel,
-            filter: ['has', "el_num"],
-            paint: clusterPaintFromField("el_num"),
-        });
-
-        // inspect a cluster on click
-        map.on('click', 'global_layer_cluster', (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                    layers: ['global_layer_cluster']
-                }),
-                clusterId = features[0].properties.cluster_id,
-                center = features[0].geometry.coordinates;
-            if (clusterId == null) {
-                console.warn("clusterId is null");
-            } else {
-                console.info('Click global_layer_cluster', features, clusterId, center);
-            }
-            map.getSource('global_source').getClusterExpansionZoom(
-                clusterId,
-                (err, zoom) => {
-                    if (err) {
-                        console.error("Not easing because of an error: ", err);
-                    } else {
-                        if (!zoom) {
-                            zoom = minZoomLevel + 0.1
-                            console.warn("Empty zoom, using default", zoom, center, clusterId);
-                        } else {
-                            console.info("Easing to cluster coordinates", center, zoom, clusterId);
-                        }
-                        map.easeTo({
-                            center: center,
-                            zoom: zoom
-                        });
-                    }
-                }
-            );
-        });
-
-        map.on('mouseenter', 'global_layer_cluster', () => map.getCanvas().style.cursor = 'pointer');
-        map.on('mouseleave', 'global_layer_cluster', () => map.getCanvas().style.cursor = '');
-    }
-
-    if (!map.getLayer("global_layer_count")) {
-        map.addLayer({
-            id: 'global_layer_count',
-            type: 'symbol',
-            source: 'global_source',
-            //"source-layer": 'Point',
-            maxzoom: minZoomLevel,
-            filter: ['has', "el_num"],
-            layout: {
-                'text-field': '{el_num}',
-                'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
-                'text-size': 12
-            }
-        });
-    }
+function prepareGlobalLayers(map, maxZoom) {
+    prepareClusteredLayers(
+        map,
+        'global',
+        './global-map.geojson',
+        0,
+        maxZoom,
+        { "el_num": ["+", ["get", "num"]] },
+        'el_num',
+        'el_num'
+    );
 }
 
 /**
