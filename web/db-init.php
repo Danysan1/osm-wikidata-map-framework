@@ -903,7 +903,8 @@ if ($use_db) {
 
                 if (!$keep_temp_tables) {
                     $dbh->exec("DROP TABLE oem.element_wikidata_cods");
-                    logProgress('Removed element_wikidata_cods temporary table');
+                    $dbh->exec("DROP TABLE oem.wikidata_named_after");
+                    logProgress('Removed temporary tables');
                 }
             }
 
