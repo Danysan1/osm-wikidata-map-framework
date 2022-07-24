@@ -1083,7 +1083,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
             '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
             '#f28cb1' // count > maxThreshold => Pink circle
         ],
-        'circle-opacity': 0.75,
+        'circle-opacity': 0.7,
         'circle-radius': [
             'interpolate', ['linear'],
             ['get', field],
@@ -1220,10 +1220,11 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
             minzoom: minZoom,
             filter: ['!', ['has', countFieldName]],
             paint: {
-                'circle-color': '#11b4da',
-                'circle-radius': 10,
-                'circle-stroke-width': 1,
-                'circle-stroke-color': '#fff'
+                'circle-color': '#51bbd6',
+                'circle-opacity': 0.7,
+                'circle-radius': 15,
+                //'circle-stroke-width': 1,
+                //'circle-stroke-color': '#fff'
             }
         });
 
