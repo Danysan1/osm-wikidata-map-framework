@@ -7,150 +7,18 @@ const backgroundStyles = {
         hybrid: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-streets-v11' },
         outdoors: { text: 'Outdoors', style: 'mapbox://styles/mapbox/outdoors-v11' },
     },
-    genderColorMap = [
-        // https://www.wikidata.org/wiki/Property:P21
-        // https://meyerweb.com/eric/tools/color-blend/#3BB2D0:E55E5E:3:hex
-        ["Female", "Female", "#e55e5e", "Q6581072"],
-        ["Transgender female", "Transgender female", "#BB737B", "Q1052281"],
-        ["Intersex", "Intersex", "#908897", "Q1097630"],
-        ["Transgender male", "Transgender male", "#669DB4", "Q2449503"],
-        ["Male", "Male", "#3bb2d0", "Q6581097"],
-        ["Other", "Other", "#223b53", null],
-    ],
-    typeColorMap = [
-        ["People", "human", "#3bb2d0", "Q5"],
-        ["People", "human who may be fictional", "#3bb2d0", "Q21070568"],
-        ["People", "sibling duo", "#3bb2d0", "Q14073567"],
-        ["People", "sibling group", "#3bb2d0", "Q16979650"],
-        ["People", "human biblical figure", "#3bb2d0", "Q20643955"],
-        ["People", "military unit", "#3bb2d0", "Q176799"],
-        ["People", "noble family", "#3bb2d0", "Q13417114"],
-        ["People", "lord", "#3bb2d0", "Q12826225"],
-        ["Buildings", "castle", "#fbb03b", "Q23413"],
-        ["Buildings", "château", "#fbb03b", "Q751876"],
-        ["Buildings", "real property", "#fbb03b", "Q684740"],
-        ["Buildings", "architectural structure", "#fbb03b", "Q811979"],
-        ["Buildings", "cultural heritage ensemble", "#fbb03b", "Q1516079"],
-        ["Buildings", "museum", "#fbb03b", "Q33506"],
-        ["Buildings", "church", "#fbb03b", "Q16970"],
-        ["Buildings", "seminary", "#fbb03b", "Q233324"],
-        ["Buildings", "abbey", "#fbb03b", "Q160742"],
-        ["Buildings", "benedictine abbey", "#fbb03b", "Q817056"],
-        ["Buildings", "basilica", "#fbb03b", "Q163687"],
-        ["Buildings", "minor basilica", "#fbb03b", "Q120560"],
-        ["Buildings", "monastery", "#fbb03b", "Q44613"],
-        ["Buildings", "mission complex", "#fbb03b", "Q1564373"],
-        ["Buildings", "statue", "#fbb03b", "Q179700"],
-        ["Buildings", "colossal statue", "#fbb03b", "Q1779653"],
-        ["Buildings", "university", "#fbb03b", "Q3918"],
-        ["Buildings", "fort", "#fbb03b", "Q1785071"],
-        ["Buildings", "route nationale", "#fbb03b", "Q1426271"],
-        ["Buildings", "route départementale", "#fbb03b", "Q19796778"],
-        ["Buildings", "villa", "#fbb03b", "Q3950"],
-        ["Historic events", "battle", "#e55e5e", "Q178561"],
-        ["Historic events", "siege", "#e55e5e", "Q188055"],
-        ["Historic events", "massacre", "#e55e5e", "Q3199915"],
-        ["Historic events", "armistice", "#e55e5e", "Q107706"],
-        ["Historic events", "mass murder", "#e55e5e", "Q750215"],
-        ["Historic events", "bomb attack", "#e55e5e", "Q891854"],
-        ["Historic events", "aircraft hijacking", "#e55e5e", "Q898712"],
-        ["Historic events", "suicide attack", "#e55e5e", "Q217327"],
-        ["Historic events", "war crime", "#e55e5e", "Q135010"],
-        ["Historic events", "invasion", "#e55e5e", "Q467011"],
-        ["Historic events", "resistance movement", "#e55e5e", "Q138796"],
-        ["Historic events", "terrorist attack", "#e55e5e", "Q2223653"],
-        ["Historic events", "Demonstration", "#e55e5e", "Q175331"],
-        ["Historic events", "calendar day of a given year", "#e55e5e", "Q47150325"],
-        ["Historic events", "student protest", "#e55e5e", "Q1679887"],
-        ["Human settlements", "city", "#fed976", "Q515"],
-        ["Human settlements", "big city", "#fed976", "Q1549591"],
-        ["Human settlements", "global city", "#fed976", "Q208511"],
-        ["Human settlements", "urban area", "#fed976", "Q702492"],
-        ["Human settlements", "chef-lieu", "#fed976", "Q956214"],
-        ["Human settlements", "million city", "#fed976", "Q1637706"],
-        ["Human settlements", "comune of Italy", "#fed976", "Q747074"],
-        ["Human settlements", "commune of France", "#fed976", "Q484170"],
-        ["Human settlements", "urban municipality of Germany", "#fed976", "Q42744322"],
-        ["Human settlements", "town in Croatia", "#fed976", "Q15105893"],
-        ["Human settlements", "port settlement", "#fed976", "Q2264924"],
-        ["Human settlements", "ancient city", "#fed976", "Q15661340"],
-        ["Human settlements", "border town", "#fed976", "Q902814"],
-        ["Human settlements", "capital", "#fed976", "Q5119"],
-        ["Human settlements", "roman city", "#fed976", "Q2202509"],
-        ["Human settlements", "town", "#fed976", "Q3957"],
-        ["Human settlements", "human settlement", "#fed976", "Q486972"],
-        ["Human settlements", "spa-town", "#fed976", "Q4946461"],
-        ["Human settlements", "religious site", "#fed976", "Q15135589"],
-        ["Human settlements", "municipality seat", "#fed976", "Q15303838"],
-        ["Human settlements", "neighborhood", "#fed976", "Q123705"],
-        ["Human settlements", "residence park", "#fed976", "Q7315416"],
-        ["Human settlements", "hamlet", "#fed976", "Q5084"],
-        ["Human settlements", "lieu-dit", "#fed976", "Q181307"],
-        ["Human settlements", "municipality of Aragon", "#fed976", "Q61763947"],
-        ["Human settlements", "municipality of Belgium", "#fed976", "Q493522"],
-        ["Human settlements", "municipal district", "#fed976", "Q2198484"],
-        ["Locations", "area", "#51318C", "Q1414991"],
-        ["Locations", "historical region", "#51318C", "Q1620908"],
-        ["Locations", "U.S. state", "#51318C", "Q35657"],
-        ["Locations", "nation within the UK", "#51318C", "Q3336843"],
-        ["Locations", "region of France", "#51318C", "Q36784"],
-        ["Locations", "country", "#51318C", "Q6256"],
-        ["Locations", "historical unrecognized state", "#51318C", "Q99541706"],
-        ["Locations", "continent", "#51318C", "Q5107"],
-        ["Locations", "land", "#51318C", "Q11081619"],
-        ["Locations", "island", "#51318C", "Q23442"],
-        ["Locations", "hill", "#51318C", "Q54050"],
-        ["Locations", "tourist attraction", "#51318C", "Q570116"],
-        ["Locations", "square", "#51318C", "Q174782"],
-        ["Locations", "municipality of Germany", "#51318C", "Q262166"],
-        ["Locations", "street", "#51318C", "Q79007"],
-        ["Locations", "principal meridian", "#51318C", "Q7245083"],
-        ["Locations", "meridian", "#51318C", "Q32099"],
-        ["Locations", "circle of latitude", "#51318C", "Q146591"],
-        ["Locations", "geographic region", "#51318C", "Q82794"],
-        ["Nature", "mountain", "#348C31", "Q8502"],
-        ["Nature", "mountain range", "#348C31", "Q46831"],
-        ["Nature", "alpine group", "#348C31", "Q3777462"],
-        ["Nature", "volcano", "#348C31", "Q8072"],
-        ["Nature", "stratovolcano", "#348C31", "Q169358"],
-        ["Nature", "forest", "#348C31", "Q4421"],
-        ["Nature", "watercourse", "#348C31", "Q355304"],
-        ["Nature", "river", "#348C31", "Q4022"],
-        ["Nature", "National Park of the United States", "#348C31", "Q34918903"],
-        ["Nature", "park", "#348C31", "Q22698"],
-        ["Nature", "main stream", "#348C31", "Q573344"],
-        ["Nature", "stream", "#348C31", "Q47521"],
-        ["Nature", "canal", "#348C31", "Q12284"],
-        ["Nature", "sea", "#348C31", "Q165"],
-        ["Nature", "strait", "#348C31", "Q37901"],
-        ["Other", "Other", "#223b53", null],
-    ],
     colorSchemes = {
         blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
         gender: {
-            colorMap: genderColorMap,
+            colorField: 'gender_color',
             text: 'By gender',
-            color: genderColorMap.reduce(
-                function(array, x) {
-                    if (x[3])
-                        array.push(x[3]);
-                    array.push(x[2]);
-                    return array;
-                }, ['match', ['get', 'genderID', ['at', 0, ['get', 'etymologies']]]]
-            ),
+            color: ["coalesce", ['get', 'gender_color'], "#223b53"],
             urlCode: "genderStats",
         },
         type: {
-            colorMap: typeColorMap,
+            colorField: 'type_color',
             text: 'By type',
-            color: typeColorMap.reduce(
-                function(array, x) {
-                    if (x[3])
-                        array.push(x[3]);
-                    array.push(x[2]);
-                    return array;
-                }, ['match', ['get', 'instanceID', ['at', 0, ['get', 'etymologies']]]]
-            ),
+            color: ["coalesce", ['get', 'type_color'], "#223b53"],
             urlCode: "typeStats",
         },
         black: { text: 'Uniform black', color: '#223b53', legend: null },
@@ -235,20 +103,6 @@ console.info("start", {
     default_center_lat,
     default_zoom
 });
-
-/**
- * @param {object} colorscheme
- * @return {array}
- * @see https://stackoverflow.com/a/14438954/2347196
- * @see https://codeburst.io/javascript-array-distinct-5edc93501dc4
- */
-function colorSchemeToLegend(colorScheme) {
-    if (!colorScheme.colorMap)
-        throw new Error("colorSchemeToLegend: colorMap is not defined");
-    const colorMap = colorScheme.colorMap,
-        distinctLabels = [...(new Set(colorMap.map(color => color[0])))];
-    return distinctLabels.map(label => [colorMap.find(row => row[0] == label)[2], label]);
-}
 
 let colorControl;
 
@@ -527,10 +381,7 @@ class EtymologyColorControl {
                 if (readyState == XMLHttpRequest.DONE) {
                     if (status == 200) {
                         JSON.parse(xhr.responseText).forEach(row => {
-                            const colorMapItem = colorScheme.colorMap.find(x => x[3] == row.id),
-                                color = colorMapItem ? colorMapItem[2] : '#223b53';
-                            //console.info("updateChart row", { xhr, row, colorScheme, colorMapItem, color });
-                            data.datasets[0].backgroundColor.push(color);
+                            data.datasets[0].backgroundColor.push(row.color);
                             data.labels.push(row["name"]);
                             data.datasets[0].data.push(row["count"]);
                         });
@@ -539,16 +390,15 @@ class EtymologyColorControl {
                         console.info("XHR aborted", { xhr, readyState, status, e });
                     } else {
                         console.error("XHR error", { xhr, readyState, status, e });
-                        this.createChartFromLegend(colorSchemeToLegend(colorScheme));
+                        //if (event.type && event.type == 'change')
+                        //    this._ctrlDropDown.className = 'hiddenElement';
+                        this.removeChart();
                     }
                 }
             }
             xhr.open('GET', stats_url, true);
             xhr.send();
             this._chartXHR = xhr;
-        } else if (colorScheme && colorScheme.colorMap) {
-            console.info("updateChart fallback: legend", { colorScheme });
-            this.createChartFromLegend(colorSchemeToLegend(colorScheme));
         } else {
             if (event.type && event.type == 'change')
                 this._ctrlDropDown.className = 'hiddenElement';

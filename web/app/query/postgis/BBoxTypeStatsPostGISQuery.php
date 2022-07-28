@@ -46,10 +46,17 @@ class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSON
             "SELECT COALESCE(JSON_AGG(JSON_BUILD_OBJECT(
                     'count', count,
                     'id', wd_wikidata_cod,
+                    'descr', wd_type_descr,
+                    'color', wd_type_color,
                     'name', wdt_name
                 )), '[]'::JSON)
             FROM (
-                SELECT COUNT(DISTINCT wd.wd_id) AS count, instance.wd_wikidata_cod, instance_text.wdt_name
+                SELECT
+                    COUNT(DISTINCT wd.wd_id) AS count,
+                    instance.wd_wikidata_cod,
+                    instance.wd_type_descr,
+                    instance.wd_type_color,
+                    instance_text.wdt_name
                 FROM oem.element
                 JOIN oem.etymology ON et_el_id = el_id
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id

@@ -299,7 +299,11 @@ function setupSchema(PDO $dbh): void
             wd_gender_id INT REFERENCES oem.wikidata(wd_id),
             wd_instance_id INT REFERENCES oem.wikidata(wd_id),
             wd_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            wd_full_download_date TIMESTAMP DEFAULT NULL
+            wd_full_download_date TIMESTAMP DEFAULT NULL,
+            wd_gender_descr VARCHAR,
+            wd_gender_color VARCHAR,
+            wd_type_descr VARCHAR,
+            wd_type_color VARCHAR
         )"
     );
     $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON oem.wikidata (wd_id) WITH (fillfactor='100')");
@@ -474,6 +478,13 @@ function convertElementWikidataCods(PDO $dbh): void
 function loadWikidataEntities(PDO $dbh): void
 {
     logProgress('Loading Wikidata etymology entities...');
+
+    /** @psalm-suppress UndefinedMethod */
+    $dbh->pgsqlCopyFromFile("oem.wikidata", "wikidata_init.csv", ",", "\\\\N", 'wd_wikidata_cod,wd_gender_descr,wd_gender_color,wd_type_descr,wd_type_color');
+    $n_wd = $dbh->query("SELECT COUNT(*) FROM oem.wikidata")->fetchColumn();
+    assert(is_int($n_wd));
+    logProgress("Loaded $n_wd Wikidata entities from CSV");
+
     $n_wd = $dbh->exec(
         "INSERT INTO oem.wikidata (wd_wikidata_cod)
         SELECT DISTINCT ew_wikidata_cod
@@ -482,7 +493,7 @@ function loadWikidataEntities(PDO $dbh): void
         WHERE (ew_from_name_etymology OR ew_from_subject)
         AND wikidata IS NULL"
     );
-    logProgress("Loaded $n_wd Wikidata entities");
+    logProgress("Loaded $n_wd Wikidata entities from element_wikidata_cods");
 }
 
 function loadWikidataRelatedEntities(

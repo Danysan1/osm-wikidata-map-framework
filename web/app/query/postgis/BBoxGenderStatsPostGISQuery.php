@@ -46,10 +46,17 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
             "SELECT COALESCE(JSON_AGG(JSON_BUILD_OBJECT(
                     'count', count,
                     'id', wd_wikidata_cod,
+                    'descr', wd_gender_descr,
+                    'color', wd_gender_color,
                     'name', wdt_name
                 )), '[]'::JSON)
             FROM (
-                SELECT COUNT(DISTINCT wd.wd_id) AS count, gender.wd_wikidata_cod, gender_text.wdt_name
+                SELECT
+                    COUNT(DISTINCT wd.wd_id) AS count,
+                    gender.wd_wikidata_cod,
+                    gender.wd_gender_descr,
+                    gender.wd_gender_color,
+                    gender_text.wdt_name
                 FROM oem.element
                 JOIN oem.etymology ON et_el_id = el_id
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
