@@ -374,7 +374,7 @@ function setupSchema(PDO $dbh): void
     $dbh->exec(
         "CREATE VIEW oem.v_global_map AS
         SELECT
-            ST_ReducePrecision(ST_Centroid(el_geometry), 0.2) AS geom,
+            ST_ReducePrecision(ST_Centroid(el_geometry), 0.1) AS geom,
             COUNT(DISTINCT COALESCE(el_tags->>'name', el_id::TEXT)) AS num
         FROM oem.etymology
         JOIN oem.element ON et_el_id = el_id
