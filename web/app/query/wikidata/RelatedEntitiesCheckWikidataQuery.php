@@ -9,14 +9,23 @@ use Exception;
 
 class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
 {
+    /**
+     * @param array<string> $wikidataCods List of wikidata cods for entities to check
+     * @param array<string> $relationProps List of wikidata cods for properties to check
+     * @param null|string $elementFilter 
+     * @param null|array<string> $instanceOfCods 
+     * @param string $endpointURL
+     */
     public function __construct(
         array $wikidataCods,
         array $relationProps,
-        string|null $elementFilter,
+        ?string $elementFilter,
+        ?array $instanceOfCods,
         string $endpointURL
     ) {
         $wikidataCodsToCheck = self::getWikidataCodsToCheck($wikidataCods);
         $relationDirectPropsToCheck = self::getDirectPropsToCheck($relationProps);
+        $fullInstanceOfFilter = self::getFullInstanceOfFilter($instanceOfCods);
         $fullElementFilter = self::getFullElementFilter($elementFilter);
 
         $sparqlQuery =
@@ -24,6 +33,7 @@ class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
             WHERE {
                 VALUES ?element { $wikidataCodsToCheck }.
                 VALUES ?prop { $relationDirectPropsToCheck }.
+                $fullInstanceOfFilter
                 $fullElementFilter
                 {
                     ?element ?prop [].

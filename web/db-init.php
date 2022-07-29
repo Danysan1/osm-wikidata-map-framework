@@ -496,11 +496,19 @@ function loadWikidataEntities(PDO $dbh): void
     logProgress("Loaded $n_wd Wikidata entities from element_wikidata_cods");
 }
 
+/**
+ * @param string $wikidataCodsFilter
+ * @param string $relationName
+ * @param array<string> $relationProps List of wikidata cods for properties to check
+ * @param null|array<string> $instanceOfCods List of Wikidata cods for classes that entities must be instance of
+ * @param PDO $dbh
+ * @param string $wikidataEndpointURL
+ */
 function loadWikidataRelatedEntities(
     string $wikidataCodsFilter,
     string $relationName,
     array $relationProps,
-    string $elementFilter,
+    ?array $instanceOfCods,
     PDO $dbh,
     string $wikidataEndpointURL
 ): void {
@@ -527,12 +535,12 @@ function loadWikidataRelatedEntities(
         )->fetchAll();
         $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
         
-        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
+        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
         $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         $n_wikidata_cods = count($wikidataCods);
         logProgress("Fetching details for $n_wikidata_cods elements out of $pageSize...");
 
-        $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, $elementFilter, $wikidataEndpointURL);
+        $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
         try{
             $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
         } catch (Exception $e) {
@@ -582,7 +590,7 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
         "ew_from_wikidata",
         "named_after",
         ["P138", "P825", "P547"], // named after/dedicated to/commemorates  -  https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-        "",
+        null,
         $dbh,
         $wikidataEndpointURL
     );
@@ -595,7 +603,7 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
         "ew_from_name_etymology OR ew_from_subject",
         "consists_of",
         ["P527"], // has part or parts
-        "wdt:P31 wd:Q14073567", // sibling duo
+        ["Q14073567", "Q10648343", "Q16334295"], // sibling duo, duo, group of humans
         $dbh,
         $wikidataEndpointURL
     );
@@ -664,7 +672,25 @@ function convertEtymologies(PDO $dbh): void
             JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
             JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
             JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
-            WHERE ew_from_wikidata
+            WHERE wna_from_prop_cod IS NOT NULL
+            AND wna_from_prop_cod='P527'
+            AND (ew_from_name_etymology OR ew_from_subject)
+            UNION
+            SELECT DISTINCT
+                ew.ew_el_id,
+                nawd.wd_id,
+                ew_from_name_etymology,
+                ew_from_subject,
+                ew_from_wikidata,
+                wd.wd_id AS from_wd_id,
+                wna_from_prop_cod
+            FROM oem.element_wikidata_cods AS ew
+            JOIN oem.wikidata AS wd ON ew.ew_wikidata_cod = wd.wd_wikidata_cod
+            JOIN oem.wikidata_named_after AS wna ON wd.wd_id = wna.wna_wd_id
+            JOIN oem.wikidata AS nawd ON wna.wna_named_after_wd_id = nawd.wd_id
+            WHERE wna_from_prop_cod IS NOT NULL
+            AND wna_from_prop_cod!='P527'
+            AND ew_from_wikidata
         ) AS x
         GROUP BY ew_el_id, wd_id"
     );
