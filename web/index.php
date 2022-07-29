@@ -124,9 +124,9 @@ if (!$conf->has("mapbox-gl-token")) {
 
             <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
+            <?=is_file('LAST_UPDATE') ? '<p>Last data update: '.htmlspecialchars(file_get_contents('LAST_UPDATE')).'</p>' : '';?></p>
             <p>
                 <?= implode(" | ", [
-                    is_file('LAST_UPDATE') ? 'Last update: ' . htmlspecialchars(file_get_contents('LAST_UPDATE')) : false,
                     $conf->has("report-problem-url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report-problem-url") . '">Report a problem</a>' : false,
                     '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
                     '<a href="https://icons8.com/icon/32958/quest">Quest</a> icon by <a href="https://icons8.com">Icons8</a>'
