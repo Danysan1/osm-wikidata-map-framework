@@ -741,6 +741,59 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
     }
 }
 
+function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void {
+    $matches = [];
+    if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFilePath, $matches) && count($matches) >= 4)
+        $lastUpdate = '20' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
+    else
+        $lastUpdate = date('Y-m-d');
+    
+    $dbh->exec(
+        "CREATE OR REPLACE FUNCTION oem.last_data_update()
+            RETURNS character varying
+            LANGUAGE 'sql'
+        AS \$BODY$
+        SELECT '$lastUpdate';
+        \$BODY$;"
+    );
+
+    logProgress("Saved last data update date ($lastUpdate)");
+}
+
+function cleanupElementsWithoutEtymology(PDO $dbh): void {
+    logProgress('Cleaning up elements without etymology...');
+    $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
+    /*$n_cleaned = $dbh->exec(
+        "DELETE FROM oem.osmdata WHERE osm_id NOT IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
+    );
+    $n_remaining = $n_tot - $n_cleaned;
+    $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
+    // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without; https://stackoverflow.com/a/7088514/2347196
+    $n_remaining = $dbh->exec(
+        "INSERT INTO oem.element (
+            el_id,
+            el_geometry,
+            el_osm_type,
+            el_osm_id,
+            el_tags,
+            el_commons,
+            el_wikipedia
+        ) SELECT 
+            osm_id,
+            osm_geometry,
+            osm_osm_type,
+            osm_osm_id,
+            osm_tags,
+            SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
+            SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
+        FROM oem.osmdata
+        WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
+        AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
+    );
+    $n_cleaned = $n_tot - $n_remaining;
+    logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
+}
+
 
 
 
@@ -931,46 +984,12 @@ if ($use_db) {
         if (isOsmDataTemporaryTableAbsent($dbh)) {
             logProgress('Temporary tables already deleted, not cleaning up elements');
         } else {
-            logProgress('Cleaning up elements without etymology...');
-            $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
-            /*$n_cleaned = $dbh->exec(
-                "DELETE FROM oem.osmdata WHERE osm_id NOT IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
-            );
-            $n_remaining = $n_tot - $n_cleaned;
-            $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
-            // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without; https://stackoverflow.com/a/7088514/2347196
-            $n_remaining = $dbh->exec(
-                "INSERT INTO oem.element (
-                    el_id,
-                    el_geometry,
-                    el_osm_type,
-                    el_osm_id,
-                    el_tags,
-                    el_commons,
-                    el_wikipedia
-                ) SELECT 
-                    osm_id,
-                    osm_geometry,
-                    osm_osm_type,
-                    osm_osm_id,
-                    osm_tags,
-                    SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
-                    SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
-                FROM oem.osmdata
-                WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
-                AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
-            );
-            $n_cleaned = $n_tot - $n_remaining;
-            logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
-
-            $matches = [];
-            if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFilePath, $matches) && count($matches) >= 4)
-                $lastUpdate = '20' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
-            else
-                $lastUpdate = date('Y-m-d');
-            file_put_contents('LAST_UPDATE', $lastUpdate);
+            cleanupElementsWithoutEtymology($dbh);
+            
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
+
+            saveLastDataUpdate($sourceFilePath, $dbh);
         }
 
         if (is_file($geoJsonGlobalMapFilePath)) {

@@ -1,11 +1,25 @@
 <?php
 require_once("./app/IniEnvConfiguration.php");
+require_once("./app/PostGIS_PDO.php");
 require_once("./funcs.php");
 
 use \App\IniEnvConfiguration;
+use App\PostGIS_PDO;
 
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
+
+$lastUpdateString = '';
+$enableDB = $conf->getBool("db-enable");
+if($enableDB) {
+    try {
+        $dbh = new PostGIS_PDO($conf);
+        $lastUpdate = $dbh->query("SELECT oem.last_data_update()")->fetchColumn();
+        $lastUpdateString = empty($lastUpdate) ? '' : "<p>Last data update: $lastUpdate</p>";
+    } catch(Exception $e) {
+        error_log("Error fetching last update: ".$e->getMessage());
+    }
+}
 
 $langMatches = [];
 if (
@@ -124,7 +138,7 @@ if (!$conf->has("mapbox-gl-token")) {
 
             <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
-            <?=is_file('LAST_UPDATE') ? '<p>Last data update: '.htmlspecialchars(file_get_contents('LAST_UPDATE')).'</p>' : '';?></p>
+            <?=$lastUpdateString;?>
             <p>
                 <?= implode(" | ", [
                     $conf->has("report-problem-url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report-problem-url") . '">Report a problem</a>' : false,

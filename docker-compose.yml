@@ -80,7 +80,6 @@ services:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini:cached
       - ./web/open-etymology-map.log:/var/www/html/open-etymology-map.log
       - ./web/global-map.geojson:/var/www/html/global-map.geojson:cached
-      - ./web/LAST_UPDATE:/var/www/html/LAST_UPDATE:cached
       - apache-sites-available:/etc/apache2/sites-available/
       - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/
