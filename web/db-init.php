@@ -536,7 +536,12 @@ function loadWikidataRelatedEntities(
         $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
         
         $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-        $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
+        try{
+            $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
+        } catch (Exception $e) {
+            echo 'Fetch failed. Retrying to fetch...';
+            $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
+        }
         $n_wikidata_cods = count($wikidataCods);
         logProgress("Fetching details for $n_wikidata_cods elements out of $pageSize...");
 
@@ -544,7 +549,7 @@ function loadWikidataRelatedEntities(
         try{
             $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
         } catch (Exception $e) {
-            echo 'Retrying to fetch query...';
+            echo 'Fetch failed. Retrying to fetch...';
             $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
         }
         file_put_contents($wikidataJSONFile, $jsonResult);
