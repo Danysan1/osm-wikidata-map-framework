@@ -1037,7 +1037,7 @@ if ($use_db) {
         }
 
         $backupFilePath = "$workDir/$sourceFileName.backup";
-        if (is_file($backupFilePath) && $cleanup || $reset) {
+        if (is_file($backupFilePath) && ($cleanup || $reset)) {
             unlink($backupFilePath);
         }
         if (is_file($backupFilePath)) {
