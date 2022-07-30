@@ -21,41 +21,44 @@ Q41710,,,People,#3bb2d0
 Q62796544,,,People,#3bb2d0
 Q16334295,,,People,#3bb2d0
 Q10648343,,,People,#3bb2d0
-Q16560,,,Building,#fbb03b
-Q41176,,,Building,#fbb03b
-Q23413,,,Building,#fbb03b
-Q751876,,,Building,#fbb03b
-Q684740,,,Building,#fbb03b
-Q811979,,,Building,#fbb03b
-Q1516079,,,Building,#fbb03b
-Q33506,,,Building,#fbb03b
-Q16970,,,Building,#fbb03b
-Q233324,,,Building,#fbb03b
-Q160742,,,Building,#fbb03b
-Q817056,,,Building,#fbb03b
-Q163687,,,Building,#fbb03b
-Q120560,,,Building,#fbb03b
-Q44613,,,Building,#fbb03b
-Q1564373,,,Building,#fbb03b
-Q179700,,,Building,#fbb03b
-Q1779653,,,Building,#fbb03b
-Q3918,,,Building,#fbb03b
-Q1785071,,,Building,#fbb03b
-Q1426271,,,Building,#fbb03b
-Q19796778,,,Building,#fbb03b
-Q3950,,,Building,#fbb03b
-Q24354,,,Building,#fbb03b
-Q14752696,,,Building,#fbb03b
-Q82117,,,Building,#fbb03b
-Q11303,,,Building,#fbb03b
-Q1088552,,,Building,#fbb03b
-Q34442,,,Building,#fbb03b
-Q2977,,,Building,#fbb03b
-Q19899465,,,Building,#fbb03b
-Q317557,,,Building,#fbb03b
-Q44782,,,Building,#fbb03b
-Q7493941,,,Building,#fbb03b
-Q1223230,,,Building,#fbb03b
+Q15632617,,,People,#3bb2d0
+Q16560,,,Buildings,#fbb03b
+Q41176,,,Buildings,#fbb03b
+Q23413,,,Buildings,#fbb03b
+Q751876,,,Buildings,#fbb03b
+Q684740,,,Buildings,#fbb03b
+Q811979,,,Buildings,#fbb03b
+Q1516079,,,Buildings,#fbb03b
+Q33506,,,Buildings,#fbb03b
+Q16970,,,Buildings,#fbb03b
+Q233324,,,Buildings,#fbb03b
+Q160742,,,Buildings,#fbb03b
+Q817056,,,Buildings,#fbb03b
+Q163687,,,Buildings,#fbb03b
+Q120560,,,Buildings,#fbb03b
+Q44613,,,Buildings,#fbb03b
+Q1564373,,,Buildings,#fbb03b
+Q179700,,,Buildings,#fbb03b
+Q1779653,,,Buildings,#fbb03b
+Q3918,,,Buildings,#fbb03b
+Q1785071,,,Buildings,#fbb03b
+Q1426271,,,Buildings,#fbb03b
+Q19796778,,,Buildings,#fbb03b
+Q3950,,,Buildings,#fbb03b
+Q24354,,,Buildings,#fbb03b
+Q14752696,,,Buildings,#fbb03b
+Q82117,,,Buildings,#fbb03b
+Q11303,,,Buildings,#fbb03b
+Q1088552,,,Buildings,#fbb03b
+Q34442,,,Buildings,#fbb03b
+Q2977,,,Buildings,#fbb03b
+Q19899465,,,Buildings,#fbb03b
+Q317557,,,Buildings,#fbb03b
+Q44782,,,Buildings,#fbb03b
+Q7493941,,,Buildings,#fbb03b
+Q1223230,,,Buildings,#fbb03b
+Q83620,,,Buildings,#fbb03b
+Q11146030,,,Buildings,#fbb03b
 Q178561,,,Events,#e55e5e
 Q188055,,,Events,#e55e5e
 Q3199915,,,Events,#e55e5e
@@ -75,6 +78,11 @@ Q43109,,,Events,#e55e5e
 Q57598,,,Events,#e55e5e
 Q1401497,,,Events,#e55e5e
 Q131569,,,Events,#e55e5e
+Q2558684,,,Events,#e55e5e
+Q1197685,,,Events,#e55e5e
+Q1062856,,,Events,#e55e5e
+Q11514315,,,Events,#e55e5e
+Q103495,,,Events,#e55e5e
 Q515,,,Human settlements,#fed976
 Q1549591,,,Human settlements,#fed976
 Q208511,,,Human settlements,#fed976
@@ -104,6 +112,8 @@ Q493522,,,Human settlements,#fed976
 Q2198484,,,Human settlements,#fed976
 Q18511725,,,Human settlements,#fed976
 Q1134686,,,Human settlements,#fed976
+Q1093829,,,Human settlements,#fed976
+Q62049,,,Human settlements,#fed976
 Q1414991,,,Locations,#51318C
 Q1620908,,,Locations,#51318C
 Q35657,,,Locations,#51318C
@@ -125,6 +135,11 @@ Q146591,,,Locations,#51318C
 Q82794,,,Locations,#51318C
 Q14524493,,,Locations,#51318C
 Q13691,,,Locations,#51318C
+Q3624078,,,Locations,#51318C
+Q5255892,,,Locations,#51318C
+Q1520223,,,Locations,#51318C
+Q512187,,,Locations,#51318C
+Q1088391,,,Locations,#51318C
 Q8502,,,Nature,#348C31
 Q46831,,,Nature,#348C31
 Q3777462,,,Nature,#348C31
@@ -145,3 +160,5 @@ Q23397,,,Nature,#348C31
 Q42527,,,Nature,#348C31
 Q37813,,,Nature,#348C31
 Q170321,,,Nature,#348C31
+Q10884,,,Nature,#348C31
+Q16521,,,Nature,#348C31
