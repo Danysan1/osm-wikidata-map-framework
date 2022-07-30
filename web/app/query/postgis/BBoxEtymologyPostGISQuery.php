@@ -66,16 +66,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
                     el.el_commons AS commons,
                     el.el_wikipedia AS wikipedia,
-                    MAX(gender_text.wdt_name) AS gender,
-                    MAX(gender.wd_wikidata_cod) AS gender_id,
-                    MAX(gender.wd_gender_color) AS gender_color,
-                    MAX(gender.wd_gender_descr) AS gender_descr,
-                    MAX(instance_text.wdt_name) AS type,
-                    MAX(instance.wd_wikidata_cod) AS type_id,
-                    MAX(instance.wd_type_color) AS type_color,
-                    MAX(instance.wd_type_descr) AS type_descr,
-                    --ST_X(ST_PointOnSurface(el.el_geometry)) AS point_lon,
-                    --ST_Y(ST_PointOnSurface(el.el_geometry)) AS point_lat,
+                    MIN(gender.wd_gender_color) AS gender_color,
+                    MIN(instance.wd_type_color) AS type_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'from_osm', et_from_osm,
                         'from_osm_type', from_el.el_osm_type,
@@ -98,6 +90,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'event_date', EXTRACT(epoch FROM wd.wd_event_date),
                         'event_date_precision', wd.wd_event_date_precision,
                         'event_place', wdt.wdt_event_place,
+                        'gender', gender_text.wdt_name,
                         'name', wdt.wdt_name,
                         'occupations', wdt.wdt_occupations,
                         'pictures', (
@@ -124,8 +117,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
-                LEFT JOIN oem.wikidata_text AS instance_text
-                    ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
