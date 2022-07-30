@@ -603,7 +603,7 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
         "ew_from_name_etymology OR ew_from_subject",
         "consists_of",
         ["P527"], // has part or parts
-        ["Q14073567", "Q10648343", "Q16334295"], // sibling duo, duo, group of humans
+        ["Q14073567", "Q10648343", "Q16334295", "Q219160"], // sibling duo, duo, group of humans, couple
         $dbh,
         $wikidataEndpointURL
     );
