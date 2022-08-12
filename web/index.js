@@ -540,7 +540,7 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
  * 
  * @returns {FragmentParams}
  */
-function getPositionFromFragment() {
+function getCorrectFragmentParams() {
     let p = getFragmentParams();
     if (p.lat < -90 || p.lat > 90) {
         console.error("Invalid latitude", p.lat);
@@ -548,14 +548,14 @@ function getPositionFromFragment() {
     }
 
     if (p.lon === undefined || p.lat === undefined || p.zoom === undefined) {
-        console.info("getPositionFromFragment: using default position", { p, default_center_lon, default_center_lat, default_zoom });
+        console.info("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
         p.lon = default_center_lon;
         p.lat = default_center_lat;
         p.zoom = default_zoom;
     }
 
     if(p.colorScheme === undefined) {
-        console.info("getPositionFromFragment: using default color scheme", { p, default_color_scheme });
+        console.info("getCorrectFragmentParams: using default color scheme", { p, default_color_scheme });
         p.colorScheme = defaultColorScheme;
     }
 
@@ -572,7 +572,7 @@ function getPositionFromFragment() {
 function initMapPreview() {
     try {
         console.info("initMapPreview: Initializing the map preview");
-        const startPosition = getPositionFromFragment(),
+        const startPosition = getCorrectFragmentParams(),
             lon = startPosition.lon,
             lat = startPosition.lat,
             zoom = startPosition.zoom,
@@ -600,9 +600,9 @@ function initMapPreview() {
  */
 function initMap() {
     mapboxgl.accessToken = mapbox_gl_token;
-    const startPosition = getPositionFromFragment(),
+    const startParams = getCorrectFragmentParams(),
         backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
-    console.info("Initializing the map", { startPosition, backgroundStyleObj });
+    console.info("Initializing the map", { startParams, backgroundStyleObj });
     let map, backgroundStyle;
     if (backgroundStyleObj) {
         backgroundStyle = backgroundStyleObj.style;
@@ -621,15 +621,15 @@ function initMap() {
     map = new mapboxgl.Map({
         container: 'map',
         style: backgroundStyle,
-        center: [startPosition.lon, startPosition.lat], // starting position [lon, lat]
-        zoom: startPosition.zoom, // starting zoom
+        center: [startParams.lon, startParams.lat], // starting position [lon, lat]
+        zoom: startParams.zoom, // starting zoom
     });
     openIntroWindow(map);
 
     map.on('load', mapLoadedHandler);
     map.on('styledata', mapStyleDataHandler);
 
-    setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, startPosition.colorScheme);
+    setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
     window.addEventListener('hashchange', (e) => hashChangeHandler(e, map), false);
 
     try {
@@ -658,7 +658,7 @@ function mapStyleDataHandler(e) {
  * @returns {void}
  */
 function hashChangeHandler(e, map) {
-    const newParams = getPositionFromFragment(),
+    const newParams = getCorrectFragmentParams(),
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
         currZoom = map.getZoom(),
