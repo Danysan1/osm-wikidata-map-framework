@@ -92,22 +92,11 @@ function setFragmentParams(lon, lat, zoom, colorScheme) {
     return fragment;
 }
 
-let startColorScheme = getFragmentParams().colorScheme;
-if (startColorScheme) {
-    const validColorSchemes = Object.keys(colorSchemes);
-    if (!validColorSchemes.includes(startColorScheme)) {
-        startColorScheme = defaultColorScheme;
-        console.warn("Not using invalid color scheme from parameters", { startColorScheme, validColorSchemes, defaultColorScheme });
-    }
-} else {
-    startColorScheme = defaultColorScheme;
-}
 console.info("start", {
     thresholdZoomLevel,
     minZoomLevel,
     defaultBackgroundStyle,
     defaultColorScheme,
-    startColorScheme,
     default_center_lon,
     default_center_lat,
     default_zoom
@@ -288,11 +277,12 @@ class EtymologyColorControl {
             const option = document.createElement('option');
             option.innerText = scheme.text;
             option.value = value;
-            if (value === startColorScheme) {
+            if (value === getCorrectFragmentParams().colorScheme) {
                 option.selected = true;
             }
             this._ctrlDropDown.appendChild(option);
         }
+        this._ctrlDropDown.dispatchEvent(new Event("change"))
 
         //setFragmentParams(undefined, undefined, undefined, defaultColorScheme); //! Creates a bug when using geo-localization or location search
 
@@ -537,8 +527,16 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 }
 
 /**
+ * @typedef {Object} CorrectFragmentParams
+ * @property {number} lon
+ * @property {number} lat
+ * @property {number} zoom
+ * @property {string} colorScheme
+ */
+
+/**
  * 
- * @returns {FragmentParams}
+ * @returns {CorrectFragmentParams}
  */
 function getCorrectFragmentParams() {
     let p = getFragmentParams();
@@ -817,8 +815,6 @@ function updateDataSource(event) {
     }
 }
 
-let isColorSchemeDropdownInitialized = false;
-
 /**
  * Initializes the high-zoom-level complete (un-clustered) layer.
  * 
@@ -912,11 +908,10 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
         initWikidataLayer(map, "wikidata_layer_polygon_fill");
     }
 
-    if (!isColorSchemeDropdownInitialized) {
+    if (!map.currentEtymologyColorControl) {
         colorControl = new EtymologyColorControl();
         map.currentEtymologyColorControl = colorControl;
         setTimeout(() => map.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
-        isColorSchemeDropdownInitialized = true;
     }
 }
 
