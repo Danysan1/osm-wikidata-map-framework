@@ -43,9 +43,17 @@ function logErrorMessage(message, level = "error", extra = undefined) {
 }
 
 /**
+ * @typedef {Object} FragmentParams
+ * @property {number?} lon
+ * @property {number?} lat
+ * @property {number?} zoom
+ * @property {string?} colorScheme
+ */
+
+/**
  * Gets the parameters passed through the fragment
  * 
- * @returns {object} Parameters passed through the fragment
+ * @returns {FragmentParams} Parameters passed through the fragment
  */
 function getFragmentParams() {
     const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
@@ -70,7 +78,8 @@ function getFragmentParams() {
  * @returns {string} The fragment actually set
  */
 function setFragmentParams(lon, lat, zoom, colorScheme) {
-    let p = getFragmentParams();
+    const currentParams = getFragmentParams()
+    let p = currentParams;
 
     if (lon !== undefined) p.lon = lon.toFixed(3);
     if (lat !== undefined) p.lat = lat.toFixed(3);
@@ -79,7 +88,7 @@ function setFragmentParams(lon, lat, zoom, colorScheme) {
 
     const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
     window.location.hash = fragment;
-    //console.info("setFragmentParams", p, fragment);
+    console.info("setFragmentParams", currentParams, p, fragment);
     return fragment;
 }
 
@@ -300,6 +309,34 @@ class EtymologyColorControl {
         this._ctrlDropDown.className = 'visibleDropDown';
     }
 
+    /**
+     * @returns {string} The current color scheme
+     */
+    getColorScheme() {
+        return this._ctrlDropDown?.value;
+    }
+
+    /**
+     * @param {string} colorScheme 
+     * @returns {void}
+     */
+    setColorScheme(colorScheme) {
+        console.info("EtymologyColorControl setColorScheme", {colorScheme});
+        this._ctrlDropDown.options.forEach(option => {
+            if (option.value === colorScheme) {
+                option.selected = true;
+                this._ctrlDropDown.dispatchEvent(new Event("change"));
+                return;
+            }
+        });
+        console.error("EtymologyColorControl setColorScheme: invalid color scheme", {colorScheme});
+    }
+
+    /**
+     * 
+     * @param {Event} event
+     * @returns {void}
+     */
     dropDownClickHandler(event) {
         const colorScheme = event.target.value,
             colorSchemeObj = colorSchemes[colorScheme];
@@ -311,7 +348,7 @@ class EtymologyColorControl {
             logErrorMessage("Invalid selected color scheme", "error", { colorScheme });
             color = '#3bb2d0';
         }
-        console.info("EtymologyColorControl dropDown click", { event, colorSchemeObj, color });
+        console.info("EtymologyColorControl dropDown click", { event, colorScheme, colorSchemeObj, color });
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -332,31 +369,37 @@ class EtymologyColorControl {
         //updateDataSource(event);
     }
 
+    /**
+     * @param {Event} event
+     * @returns {void}
+     */
     updateChart(event) {
         if (!this._ctrlDropDown) {
-            logErrorMessage("updateChart: dropodown non inizializzata");
+            logErrorMessage("EtymologyColorControl updateChart: dropodown not inizialized");
             return;
         }
 
-        const colorScheme = colorSchemes[this._ctrlDropDown.value];
+        const colorScheme = colorSchemes[this._ctrlDropDown.value],
+            map = event.target, 
+            bounds = map.getBounds ? map.getBounds() : null;
         //console.info("updateChart", { event, colorScheme });
 
-        let data = {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [],
-            }]
-        };
+        if (!bounds) {
+            //console.warn("EtymologyColorControl updateChart: missing bounds");
+        } else if (colorScheme && colorScheme.urlCode) {
+            let data = {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [],
+                }]
+            };
 
-        if (colorScheme && colorScheme.urlCode) {
             console.info("updateChart main: URL code", { colorScheme });
             if (this._chartXHR)
                 this._chartXHR.abort();
 
-            const map = event.target,
-                bounds = map.getBounds(),
-                southWest = bounds.getSouthWest(),
+            const southWest = bounds.getSouthWest(),
                 minLat = southWest.lat,
                 minLon = southWest.lng,
                 northEast = bounds.getNorthEast(),
@@ -493,6 +536,10 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
     return x;
 }
 
+/**
+ * 
+ * @returns {FragmentParams}
+ */
 function getPositionFromFragment() {
     let p = getFragmentParams();
     if (p.lat < -90 || p.lat > 90) {
@@ -501,10 +548,15 @@ function getPositionFromFragment() {
     }
 
     if (p.lon === undefined || p.lat === undefined || p.zoom === undefined) {
-        console.info("Using default position", { p, default_center_lon, default_center_lat, default_zoom });
+        console.info("getPositionFromFragment: using default position", { p, default_center_lon, default_center_lat, default_zoom });
         p.lon = default_center_lon;
         p.lat = default_center_lat;
         p.zoom = default_zoom;
+    }
+
+    if(p.colorScheme === undefined) {
+        console.info("getPositionFromFragment: using default color scheme", { p, default_color_scheme });
+        p.colorScheme = defaultColorScheme;
     }
 
     return p;
@@ -577,7 +629,7 @@ function initMap() {
     map.on('load', mapLoadedHandler);
     map.on('styledata', mapStyleDataHandler);
 
-    setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, defaultColorScheme);
+    setFragmentParams(startPosition.lon, startPosition.lat, startPosition.zoom, startPosition.colorScheme);
     window.addEventListener('hashchange', (e) => hashChangeHandler(e, map), false);
 
     try {
@@ -603,23 +655,29 @@ function mapStyleDataHandler(e) {
  * 
  * @param {HashChangeEvent} e The event to handle 
  * @param {mapboxgl.Map} map 
+ * @returns {void}
  */
 function hashChangeHandler(e, map) {
-    const position = getPositionFromFragment(),
+    const newParams = getPositionFromFragment(),
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
-        currZoom = map.getZoom();
-    //console.info("hashChangeHandler", { position, currLat, currLon, currZoom, e });
+        currZoom = map.getZoom(),
+        currColorScheme = map.currentEtymologyColorControl?.getColorScheme();
+    //console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme, e });
 
     // Check if the position has changed in order to avoid unnecessary map movements
-    if (Math.abs(currLat - position.lat) > 0.001 ||
-        Math.abs(currLon - position.lon) > 0.001 ||
-        Math.abs(currZoom - position.zoom) > 0.1) {
+    if (Math.abs(currLat - newParams.lat) > 0.001 ||
+        Math.abs(currLon - newParams.lon) > 0.001 ||
+        Math.abs(currZoom - newParams.zoom) > 0.1
+    ) {
         map.flyTo({
-            center: [position.lon, position.lat],
-            zoom: position.zoom,
+            center: [newParams.lon, newParams.lat],
+            zoom: newParams.zoom,
         });
     }
+
+    if(currColorScheme != newParams.colorScheme)
+        map.currentEtymologyColorControl?.setColorScheme(map, newParams.colorScheme);
 }
 
 /**
@@ -856,6 +914,7 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
 
     if (!isColorSchemeDropdownInitialized) {
         colorControl = new EtymologyColorControl();
+        map.currentEtymologyColorControl = colorControl;
         setTimeout(() => map.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
         isColorSchemeDropdownInitialized = true;
     }
