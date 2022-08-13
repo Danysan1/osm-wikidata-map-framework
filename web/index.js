@@ -1337,6 +1337,9 @@ function featureToDomElement(feature) {
         //template_container = document.createDocumentFragment(),
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
         element_commons_button = detail_container.querySelector('.element_commons_button'),
+        element_osm_button = detail_container.querySelector('.element_osm_button'),
+        element_mapcomplete_button = detail_container.querySelector('.element_mapcomplete_button'),
+        element_location_button = detail_container.querySelector('.element_location_button'),
         etymologies_container = detail_container.querySelector('.etymologies_container'),
         osm_full_id = feature.properties.osm_type + '/' + feature.properties.osm_id,
         mapcomplete_url = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id,
@@ -1354,30 +1357,45 @@ function featureToDomElement(feature) {
         detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
     }
 
-    if (feature.properties.wikipedia) {
+    if (!element_wikipedia_button) {
+        console.warn("Missing element_wikipedia_button");
+    } else if (feature.properties.wikipedia) {
         element_wikipedia_button.href = 'https://www.wikipedia.org/wiki/' + feature.properties.wikipedia;
         element_wikipedia_button.style.display = 'inline-flex';
     } else {
         element_wikipedia_button.style.display = 'none';
     }
 
-    if (feature.properties.commons) {
+    if (!element_commons_button) {
+        console.warn("Missing element_commons_button");
+    } else if (feature.properties.commons) {
         element_commons_button.href = 'https://commons.wikimedia.org/wiki/' + feature.properties.commons;
         element_commons_button.style.display = 'inline-flex';
     } else {
         element_commons_button.style.display = 'none';
     }
 
-    detail_container.querySelector('.osm_button').href = osm_url;
-    
-    detail_container.querySelector('.mapcomplete_button').href = mapcomplete_url;
-
-    let coord = feature.geometry.coordinates;
-    while (Array.isArray(coord) && Array.isArray(coord[0])) {
-        coord = coord[0];
+    if (!element_osm_button) {
+        console.warn("Missing element_osm_button");
+    } else {
+        element_osm_button.href = osm_url;
     }
-    detail_container.querySelector('.element_location_button').href = "#" + coord[0] + "," + coord[1] + ",18";
+    
+    if (!element_mapcomplete_button) {
+        console.warn("Missing element_mapcomplete_button");
+    } else {
+        element_mapcomplete_button.href = mapcomplete_url;
+    }
 
+    if(!element_location_button) {
+        console.warn("Missing element_location_button");
+    } else {
+        let coord = feature.geometry.coordinates;
+        while (Array.isArray(coord) && Array.isArray(coord[0])) {
+            coord = coord[0];
+        }
+        element_location_button.href = "#" + coord[0] + "," + coord[1] + ",18";
+    }
 
     etymologies.filter(x => x != null).forEach(function(ety) {
         try {

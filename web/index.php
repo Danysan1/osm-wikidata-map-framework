@@ -166,11 +166,11 @@ if (!$conf->has("mapbox-gl-token")) {
                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                 <span class="button_text"> Commons</span>
             </a>
-            <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 osm_button">
+            <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_osm_button">
                 <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
                 <span class="button_text"> OpenStreetMap</span>
             </a>
-            <a title="Element on MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 mapcomplete_button">
+            <a title="Element on MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_mapcomplete_button">
                 <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                 <span class="button_text"> Mapcomplete</span>
             </a>
@@ -182,7 +182,10 @@ if (!$conf->has("mapbox-gl-token")) {
             <div class="etymologies_container grid grid-auto">
 
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element"><span class="button_img">⚠️</span> Report a problem in this element</a>
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element">
+                <span class="button_img">⚠️</span>
+                <span>&nbsp;Report a problem in this element</span>
+            </a>
         </div>
     </template>
 
