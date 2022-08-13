@@ -166,6 +166,10 @@ if (!$conf->has("mapbox-gl-token")) {
                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                 <span class="button_text"> Commons</span>
             </a>
+            <a title="Element on Wikidata" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikidata_button" style="display:none">
+                <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
+                <span class="button_text"> Wikidata</span>
+            </a>
             <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_osm_button">
                 <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
                 <span class="button_text"> OpenStreetMap</span>
@@ -198,10 +202,22 @@ if (!$conf->has("mapbox-gl-token")) {
                         <h3 class="etymology_description"></h3>
                     </div>
                     <div class="info column">
-                        <a title="Subject on Wikipedia" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" style="display:none"><img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo"><span class="button_text"> Wikipedia</span></a>
-                        <a title="Subject on Wikimedia Commons" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" style="display:none"><img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo"><span class="button_text"> Commons</span></a>
-                        <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self"><span class="button_img">📍</span><span class="button_text"> Location</span></a>
-                        <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button"><img class="button_img" src="img/wikidata.svg" alt="Wikidata logo"><span class="button_text"> Wikidata</span></a>
+                        <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" style="display:none">
+                            <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
+                            <span class="button_text"> Wikipedia</span>
+                        </a>
+                        <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" style="display:none">
+                            <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
+                            <span class="button_text"> Commons</span>
+                        </a>
+                        <a title="Subject on Wikidata" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button">
+                            <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
+                            <span class="button_text"> Wikidata</span>
+                        </a>
+                        <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self">
+                            <span class="button_img">📍</span>
+                            <span class="button_text"> Location</span>
+                        </a>
 
                         <p class="start_end_date"></p>
                         <p class="event_place"></p>

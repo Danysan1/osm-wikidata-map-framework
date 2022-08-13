@@ -1338,7 +1338,7 @@ function featureToDomElement(feature) {
     const etymologies = JSON.parse(feature.properties.etymologies),
         detail_template = document.getElementById('detail_template'),
         detail_container = detail_template.content.cloneNode(true),
-        //template_container = document.createDocumentFragment(),
+        element_wikidata_button = detail_container.querySelector('.element_wikidata_button'),
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
         element_commons_button = detail_container.querySelector('.element_commons_button'),
         element_osm_button = detail_container.querySelector('.element_osm_button'),
@@ -1359,6 +1359,15 @@ function featureToDomElement(feature) {
 
     if (feature.properties.name) {
         detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    }
+
+    if (!element_wikidata_button) {
+        console.warn("Missing element_wikidata_button");
+    } else if (feature.properties.wikidata) {
+        element_wikidata_button.href = 'https://www.wikidata.org/wiki/' + feature.properties.wikidata;
+        element_wikidata_button.style.display = 'inline-flex';
+    } else {
+        element_wikidata_button.style.display = 'none';
     }
 
     if (!element_wikipedia_button) {
@@ -1404,18 +1413,25 @@ function featureToDomElement(feature) {
     etymologies.filter(x => x != null).forEach(function(ety) {
         try {
             etymologies_container.appendChild(etymologyToDomElement(ety))
-        } catch (e) {
-            logErrorMessage("Failed adding", "error", e);
+        } catch (err) {
+            logErrorMessage("Failed adding etymology", "error", {ety, err});
         }
     });
 
     if (feature.properties.text_etymology) {
-        etymologies_container.appendChild(etymologyToDomElement({
-            description: feature.properties.text_etymology,
-            from_osm: true,
-            from_osm_type: feature.properties.osm_type,
-            from_osm_id: feature.properties.osm_id
-        }));
+        const textEtymologyAlreadyShownByWikidata = etymologies.some(
+            ety => ety?.name?.toLowerCase() == feature.properties.text_etymology.toLowerCase()
+        );
+        if(textEtymologyAlreadyShownByWikidata) {
+            console.info("featureToDomElement: ignoring text etymology because already shown");
+        } else {
+            etymologies_container.appendChild(etymologyToDomElement({
+                description: feature.properties.text_etymology,
+                from_osm: true,
+                from_osm_type: feature.properties.osm_type,
+                from_osm_id: feature.properties.osm_id
+            }));
+        }
     }
 
     return detail_container;

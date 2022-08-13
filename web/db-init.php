@@ -268,21 +268,6 @@ function setupSchema(PDO $dbh): void
         )"
     );
     $dbh->exec(
-        "CREATE TABLE oem.element (
-            el_id BIGSERIAL NOT NULL PRIMARY KEY,
-            el_geometry GEOMETRY NOT NULL,
-            el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
-            el_osm_id BIGINT NOT NULL,
-            el_tags JSONB,
-            el_text_etymology VARCHAR,
-            el_commons VARCHAR,
-            el_wikipedia VARCHAR
-            --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
-        )"
-    );
-    $dbh->exec("CREATE UNIQUE INDEX element_id_idx ON oem.element (el_id) WITH (fillfactor='100')");
-    $dbh->exec("CREATE INDEX element_geometry_idx ON oem.element USING GIST (el_geometry) WITH (fillfactor='100')");
-    $dbh->exec(
         "CREATE TABLE oem.element_wikidata_cods (
             --ew_id BIGSERIAL NOT NULL PRIMARY KEY,
             ew_el_id BIGINT NOT NULL,
@@ -320,6 +305,22 @@ function setupSchema(PDO $dbh): void
     );
     $dbh->exec("CREATE UNIQUE INDEX wikidata_id_idx ON oem.wikidata (wd_id) WITH (fillfactor='100')");
     $dbh->exec("CREATE UNIQUE INDEX wikidata_cod_idx ON oem.wikidata (wd_wikidata_cod) WITH (fillfactor='100')");
+    $dbh->exec(
+        "CREATE TABLE oem.element (
+            el_id BIGINT NOT NULL PRIMARY KEY,
+            el_geometry GEOMETRY NOT NULL,
+            el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
+            el_osm_id BIGINT NOT NULL,
+            el_tags JSONB,
+            el_text_etymology VARCHAR,
+            el_wd_id BIGINT REFERENCES oem.wikidata(wd_id),
+            el_commons VARCHAR,
+            el_wikipedia VARCHAR
+            --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
+        )"
+    );
+    $dbh->exec("CREATE UNIQUE INDEX element_id_idx ON oem.element (el_id) WITH (fillfactor='100')");
+    $dbh->exec("CREATE INDEX element_geometry_idx ON oem.element USING GIST (el_geometry) WITH (fillfactor='100')");
     $dbh->exec(
         "CREATE TABLE oem.etymology (
             --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
@@ -824,6 +825,7 @@ function cleanupElementsWithoutEtymology(PDO $dbh): void {
             el_osm_id,
             el_tags,
             el_text_etymology,
+            el_wd_id,
             el_commons,
             el_wikipedia
         ) SELECT 
@@ -833,9 +835,11 @@ function cleanupElementsWithoutEtymology(PDO $dbh): void {
             osm_osm_id,
             osm_tags,
             osm_tags->>'name:etymology',
+            wikidata.wd_id,
             SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
             SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
         FROM oem.osmdata
+        LEFT JOIN oem.wikidata ON wd_wikidata_cod = SUBSTRING(osm_tags->>'wikidata' FROM '^([^;]+)')
         WHERE osm_tags ? 'name:etymology'
         OR osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
         AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
@@ -846,6 +850,15 @@ function cleanupElementsWithoutEtymology(PDO $dbh): void {
 
 
 
+/******************************************************************************************
+ * 
+ * 
+ * END OF FUNCTION DEFINITION
+ * 
+ * START OF EXCECUTION
+ * 
+ * 
+ ******************************************************************************************/
 
 
 if (!is_file("osmium.json")) {
