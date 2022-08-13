@@ -1338,7 +1338,9 @@ function featureToDomElement(feature) {
         element_wikipedia_button = detail_container.querySelector('.element_wikipedia_button'),
         element_commons_button = detail_container.querySelector('.element_commons_button'),
         etymologies_container = detail_container.querySelector('.etymologies_container'),
-        OSM_URL = 'https://www.openstreetmap.org/' + feature.properties.osm_type + '/' + feature.properties.osm_id;
+        osm_full_id = feature.properties.osm_type + '/' + feature.properties.osm_id,
+        mapcomplete_url = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id,
+        osm_url = 'https://www.openstreetmap.org/' + osm_full_id;
     //template_container.appendChild(detail_container);
     console.info("featureToDomElement", {
         el_id: feature.properties.el_id,
@@ -1366,8 +1368,9 @@ function featureToDomElement(feature) {
         element_commons_button.style.display = 'none';
     }
 
-    detail_container.querySelector('.osm_button').href = OSM_URL;
-    //detail_container.querySelector('.ety_error_button').href = 'https://www.openstreetmap.org/note/new#layers=N&map=18/' + feature.properties.point_lat + '/' + feature.properties.point_lon;
+    detail_container.querySelector('.osm_button').href = osm_url;
+    
+    detail_container.querySelector('.mapcomplete_button').href = mapcomplete_url;
 
     let coord = feature.geometry.coordinates;
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
