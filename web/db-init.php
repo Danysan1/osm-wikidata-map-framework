@@ -235,17 +235,27 @@ function setupSchema(PDO $dbh): void
     $dbh->exec('DROP FUNCTION IF EXISTS translateTimestamp');
     $dbh->exec('DROP VIEW IF EXISTS oem.v_global_map');
     $dbh->exec(
-        "CREATE FUNCTION translateTimestamp(IN text TEXT)
-            RETURNS timestamp without time zone
-            LANGUAGE 'sql' AS \$BODY$
-        SELECT CASE
-            WHEN $1 IS NULL THEN NULL
-            WHEN LEFT($1,1)!='-' AND SPLIT_PART($1,'-',1)::BIGINT>294276 THEN NULL -- https://www.postgresql.org/docs/9.1/datatype-datetime.html#DATATYPE-DATETIME-TABLE
-            WHEN LEFT($1,1)='-' AND SPLIT_PART(SUBSTRING($1,2),'-',1)::BIGINT>4713 THEN NULL
-            WHEN LEFT($1,1)='-' THEN CONCAT(SUBSTRING($1,2),' BC')::TIMESTAMP
-            ELSE $1::TIMESTAMP
+        "CREATE FUNCTION translateTimestamp(IN txt TEXT, OUT ts TIMESTAMP) AS $$
+        DECLARE
+            nonZeroTxt TEXT := REPLACE(REPLACE(txt, '0000-', '0001-'), '-00-00', '-01-01');
+        BEGIN
+            ts := CASE
+                WHEN nonZeroTxt IS NULL THEN NULL
+                WHEN LEFT(nonZeroTxt,1)!='-' AND SPLIT_PART(nonZeroTxt,'-',1)::BIGINT>294276 THEN NULL -- Timestamp after 294276 AD, not supported
+                WHEN LEFT(nonZeroTxt,1)='-' AND SPLIT_PART(SUBSTRING(nonZeroTxt,2),'-',1)::BIGINT>4713 THEN NULL -- Timestamp before 4713 BC, not supported
+                WHEN LEFT(nonZeroTxt,1)='-' THEN CONCAT(SUBSTRING(nonZeroTxt,2),' BC')::TIMESTAMP -- BC timestamp
+                ELSE nonZeroTxt::TIMESTAMP -- AD timestamp
+            END;
         END;
-        \$BODY$;"
+        $$ LANGUAGE plpgsql;"
+    );
+    $dbh->exec(
+        "COMMENT ON FUNCTION oem.translatetimestamp(text) IS '
+        Takes as input an ISO 8601 timestamp string and returns a TIMESTAMP, unless the string is not representable (e.g. it overflows).
+        Documentation:
+        - https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-TABLE
+        - https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT
+        ';"
     );
     $dbh->exec(
         "CREATE TABLE oem.osmdata (
@@ -524,7 +534,7 @@ function loadWikidataRelatedEntities(
 
     $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
-        logProgress("Downloading Wikidata \"$relationName\" data ($pageSize starting from $offset out of $n_todo)...");
+        logProgress("Checking Wikidata \"$relationName\" data ($pageSize starting from $offset out of $n_todo)...");
         $wikidataCodsResult = $dbh->query(
             "SELECT DISTINCT ew_wikidata_cod
             FROM oem.element_wikidata_cods
@@ -539,52 +549,56 @@ function loadWikidataRelatedEntities(
         try{
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         } catch (Exception $e) {
-            echo 'Fetch failed. Retrying to fetch...';
+            echo 'Check failed. Retrying to fetch...';
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         }
         $n_wikidata_cods = count($wikidataCods);
-        logProgress("Fetching details for $n_wikidata_cods elements out of $pageSize...");
 
-        $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-        try{
-            $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
-        } catch (Exception $e) {
-            echo 'Fetch failed. Retrying to fetch...';
-            $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
+        if ($n_wikidata_cods == 0) {
+            logProgress("No elements found to fetch details for");
+        } else {
+            logProgress("Fetching details for $n_wikidata_cods elements out of $pageSize...");
+            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
+            try{
+                $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
+            } catch (Exception $e) {
+                echo 'Fetch failed. Retrying to fetch...';
+                $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
+            }
+            file_put_contents($wikidataJSONFile, $jsonResult);
+
+            logProgress("Loading Wikidata \"$relationName\" data...");
+            $sth_wd = $dbh->prepare(
+                "INSERT INTO oem.wikidata (wd_wikidata_cod)
+                SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+                FROM json_array_elements((:response::JSON)->'results'->'bindings')
+                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
+                AND wikidata IS NULL
+                UNION
+                SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+                FROM json_array_elements((:response::JSON)->'results'->'bindings')
+                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
+                AND wikidata IS NULL"
+            );
+            $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+            $sth_wd->execute();
+            $n_wd = $sth_wd->rowCount();
+
+            $sth_wna = $dbh->prepare(
+                "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
+                SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')
+                FROM json_array_elements((:response::JSON)->'results'->'bindings')
+                JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+                JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'"
+            );
+            $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+            $sth_wna->execute();
+            $n_wna = $sth_wna->rowCount();
+            logProgress("Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" associations");
         }
-        file_put_contents($wikidataJSONFile, $jsonResult);
-
-        logProgress("Loading Wikidata \"$relationName\" data...");
-        $sth_wd = $dbh->prepare(
-            "INSERT INTO oem.wikidata (wd_wikidata_cod)
-            SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wikidata IS NULL
-            UNION
-            SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-            FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
-            AND wikidata IS NULL"
-        );
-        $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-        $sth_wd->execute();
-        $n_wd = $sth_wd->rowCount();
-
-        $sth_wna = $dbh->prepare(
-            "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
-            SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')
-            FROM json_array_elements((:response::JSON)->'results'->'bindings')
-            JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-            JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'"
-        );
-        $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-        $sth_wna->execute();
-        $n_wna = $sth_wna->rowCount();
-        logProgress("Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" associations");
     }
 }
 
@@ -938,6 +952,7 @@ if ($use_db) {
         }
 
         if ($reset) {
+            logProgress('Resetting DB schema');
             $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
         }
 

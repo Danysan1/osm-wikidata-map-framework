@@ -18,6 +18,7 @@ abstract class WikidataQuery extends CurlQuery
 
     public function __construct(string $query, string $format, string $endpointURL)
     {
+        //file_put_contents('WikidataQuery.tmp.rq', $query);
         parent::__construct(
             ["format" => $format, "query" => self::getMinifiedQuery($query)],
             $endpointURL,
