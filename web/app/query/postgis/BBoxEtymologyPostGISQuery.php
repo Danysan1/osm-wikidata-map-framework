@@ -64,6 +64,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_osm_type AS osm_type,
                     el.el_osm_id AS osm_id,
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
+                    el.el_text_etymology AS text_etymology,
                     el.el_commons AS commons,
                     el.el_wikipedia AS wikipedia,
                     MIN(gender.wd_gender_color) AS gender_color,
@@ -109,8 +110,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies
                 FROM oem.element AS el
-                JOIN oem.etymology ON et_el_id = el_id
-                JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
+                LEFT JOIN oem.etymology ON et_el_id = el_id
+                LEFT JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
@@ -119,7 +120,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
-                WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+                WHERE (el.el_text_etymology IS NOT NULL OR wd.wd_id IS NOT NULL)
+                AND el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el.el_id
                 $limitClause
             ) AS ele";

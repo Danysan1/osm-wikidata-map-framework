@@ -198,6 +198,7 @@ function filterInputData(
     $allowedTags = $propagate ? ['w/highway=residential'] : [];
     $allowedTags[] = 'wikidata';
     $allowedTags[] = 'name:etymology:wikidata';
+    $allowedTags[] = 'name:etymology';
     $allowedTags[] = 'subject:wikidata';
 
     $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
@@ -273,6 +274,7 @@ function setupSchema(PDO $dbh): void
             el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
             el_osm_id BIGINT NOT NULL,
             el_tags JSONB,
+            el_text_etymology VARCHAR,
             el_commons VARCHAR,
             el_wikipedia VARCHAR
             --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
@@ -821,6 +823,7 @@ function cleanupElementsWithoutEtymology(PDO $dbh): void {
             el_osm_type,
             el_osm_id,
             el_tags,
+            el_text_etymology,
             el_commons,
             el_wikipedia
         ) SELECT 
@@ -829,10 +832,12 @@ function cleanupElementsWithoutEtymology(PDO $dbh): void {
             osm_osm_type,
             osm_osm_id,
             osm_tags,
+            osm_tags->>'name:etymology',
             SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
             SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
         FROM oem.osmdata
-        WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
+        WHERE osm_tags ? 'name:etymology'
+        OR osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
         AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
     );
     $n_cleaned = $n_tot - $n_remaining;

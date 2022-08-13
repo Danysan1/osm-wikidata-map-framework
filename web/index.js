@@ -1408,13 +1408,25 @@ function featureToDomElement(feature) {
             logErrorMessage("Failed adding", "error", e);
         }
     });
+
+    if (feature.properties.text_etymology) {
+        etymologies_container.appendChild(etymologyToDomElement({
+            description: feature.properties.text_etymology,
+            from_osm: true,
+            from_osm_type: feature.properties.osm_type,
+            from_osm_id: feature.properties.osm_id
+        }));
+    }
+
     return detail_container;
 }
 
 function etymologyToDomElement(ety) {
     const etymology_template = document.getElementById('etymology_template'),
         etyDomElement = etymology_template.content.cloneNode(true),
+        etymology_name = etyDomElement.querySelector('.etymology_name'),
         etymology_description = etyDomElement.querySelector('.etymology_description'),
+        wikidata_button = etyDomElement.querySelector('.wikidata_button'),
         wikipedia_button = etyDomElement.querySelector('.wikipedia_button'),
         commons_button = etyDomElement.querySelector('.commons_button'),
         location_button = etyDomElement.querySelector('.subject_location_button'),
@@ -1426,15 +1438,26 @@ function etymologyToDomElement(ety) {
         prizes = etyDomElement.querySelector('.prizes'),
         pictures = etyDomElement.querySelector('.pictures');
 
-    etyDomElement.querySelector('.etymology_name').innerText = ety.name;
+    if (ety.name) {
+        etymology_name.innerText = ety.name;
+        etymology_name.style.display = 'block';
+    } else {
+        etymology_name.style.display = 'none';
+    }
 
     if (ety.description) {
         etymology_description.innerText = ety.description;
+        etymology_description.style.display = 'block';
     } else {
         etymology_description.style.display = 'none';
     }
 
-    etyDomElement.querySelector('.wikidata_button').href = 'https://www.wikidata.org/wiki/' + ety.wikidata;
+    if (ety.wikidata) {
+        wikidata_button.href = 'https://www.wikidata.org/wiki/' + ety.wikidata
+        wikidata_button.style.display = 'inline-flex';
+    } else {
+        wikidata_button.style.display = 'none';
+    }
 
     if (ety.wikipedia) {
         wikipedia_button.href = ety.wikipedia;
@@ -1481,6 +1504,7 @@ function etymologyToDomElement(ety) {
     } else {
         start_end_date.style.display = 'none';
     }
+
     if (ety.event_place) {
         event_place.innerText = '📍 ' + ety.event_place;
     } else {
@@ -1492,16 +1516,19 @@ function etymologyToDomElement(ety) {
     } else {
         citizenship.style.display = 'none';
     }
+
     if (ety.gender) {
         gender.innerText = '⚧️ ' + ety.gender;
     } else {
         gender.style.display = 'none';
     }
+
     if (ety.occupations) {
         occupations.innerText = '🛠️ ' + ety.occupations;
     } else {
         occupations.style.display = 'none';
     }
+
     if (ety.prizes) {
         prizes.innerText = '🏆 ' + ety.prizes;
     } else {
