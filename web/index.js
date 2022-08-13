@@ -312,14 +312,18 @@ class EtymologyColorControl {
      */
     setColorScheme(colorScheme) {
         console.info("EtymologyColorControl setColorScheme", {colorScheme});
-        this._ctrlDropDown.options.forEach(option => {
-            if (option.value === colorScheme) {
-                option.selected = true;
-                this._ctrlDropDown.dispatchEvent(new Event("change"));
-                return;
-            }
-        });
-        console.error("EtymologyColorControl setColorScheme: invalid color scheme", {colorScheme});
+        if (!this._ctrlDropDown) {
+            console.warn("setColorScheme: dropdown not yet initialized");
+        } else {
+            this._ctrlDropDown.options.forEach(option => {
+                if (option.value === colorScheme) {
+                    option.selected = true;
+                    this._ctrlDropDown.dispatchEvent(new Event("change"));
+                    return;
+                }
+            });
+            console.error("EtymologyColorControl setColorScheme: invalid color scheme", {colorScheme});
+        }
     }
 
     /**
