@@ -553,7 +553,7 @@ function getCorrectFragmentParams() {
     }
 
     if(p.colorScheme === undefined) {
-        console.info("getCorrectFragmentParams: using default color scheme", { p, default_color_scheme });
+        console.info("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
         p.colorScheme = defaultColorScheme;
     }
 
