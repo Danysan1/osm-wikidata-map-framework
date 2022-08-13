@@ -28,7 +28,7 @@ use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
-prepareJSON($conf);
+prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default-language'));

@@ -9,7 +9,6 @@ GET {{baseUrl}}/elements.php
     &maxLat=41.229
     &maxLon=-72.709
     &language=it-IT
-    &format=geojson
     &onlyCenter=true
 
 #####
@@ -23,7 +22,6 @@ GET {{baseUrl}}/elements.php
     &maxLat=38.133
     &maxLon=-120.82
     &language=it-IT
-    &format=geojson
     &onlyCenter=true
 
 #####
@@ -37,7 +35,6 @@ GET {{baseUrl}}/elements.php
     &maxLat=52.907
     &maxLon=14.743
     &language=it-IT
-    &format=geojson
     &onlyCenter=true
 
 #####
@@ -51,7 +48,6 @@ GET {{baseUrl}}/elements.php
     &maxLat=51.653
     &maxLon=8.481
     &language=en-EN
-    &format=geojson
     &onlyCenter=true
 
 #####
@@ -65,5 +61,4 @@ GET {{baseUrl}}/elements.php
     &maxLat=51.349
     &maxLon=5.096
     &language=en-EN
-    &format=geojson
     &onlyCenter=true

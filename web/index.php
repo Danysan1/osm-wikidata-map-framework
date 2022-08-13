@@ -76,7 +76,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
     <link rel="preload" as="style" type="text/css" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
     <link rel="preload" as="style" type="text/css" href="./style.css" />
-    <!--<link rel="preload" as="fetch" type="application/json" href="./global-map.geojson" crossorigin="anonymous" />-->
+    <link rel="preload" as="fetch" type="application/geo+json" href="./global-map.php" crossorigin="anonymous" />
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

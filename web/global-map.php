@@ -1,0 +1,20 @@
+<?php
+require_once(__DIR__ . "/app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/app/PostGIS_PDO.php");
+require_once(__DIR__ . "/funcs.php");
+
+use \App\IniEnvConfiguration;
+use \App\PostGIS_PDO;
+
+$conf = new IniEnvConfiguration();
+
+prepareGeoJSON($conf);
+
+$db = new PostGIS_PDO($conf);
+echo $db->query(
+    "SELECT JSON_BUILD_OBJECT(
+        'type', 'FeatureCollection',
+        'features', JSON_AGG(ST_AsGeoJSON(v_global_map.*)::json)
+    )
+    FROM oem.v_global_map"
+)->fetchColumn();

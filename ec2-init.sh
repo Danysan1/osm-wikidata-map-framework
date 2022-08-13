@@ -19,7 +19,6 @@ docker-compose version
 git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
-> web/global-map.geojson
 > web/open-etymology-map.log
 docker-compose --profile "prod" pull
 docker-compose --profile "prod" up -d

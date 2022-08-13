@@ -98,6 +98,16 @@ function prepareJSON(Configuration $conf)
  * @param Configuration $conf
  * @return void
  */
+function prepareGeoJSON(Configuration $conf)
+{
+	preparePage($conf);
+	header("Content-Type: application/geo+json; charset=utf-8");
+}
+
+/**
+ * @param Configuration $conf
+ * @return void
+ */
 function prepareJS(Configuration $conf)
 {
 	preparePage($conf);

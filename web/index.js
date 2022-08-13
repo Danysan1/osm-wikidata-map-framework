@@ -749,20 +749,10 @@ function updateDataSource(event) {
         maxLon = northEast.lng,
         zoomLevel = map.getZoom(),
         language = document.documentElement.lang,
-        queryParams = {
-            from: "bbox",
-            to: "geojson",
-            minLat: minLat.toFixed(3),
-            minLon: minLon.toFixed(3),
-            maxLat: maxLat.toFixed(3),
-            maxLon: maxLon.toFixed(3),
-            language,
-        },
         enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
         enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
         enableGlobalLayers = zoomLevel < minZoomLevel;
     /*console.info("updateDataSource", {
-        queryParams,
         zoomLevel,
         minZoomLevel,
         thresholdZoomLevel,
@@ -772,7 +762,15 @@ function updateDataSource(event) {
     });*/
 
     if (enableWikidataLayers) {
-        const queryString = new URLSearchParams(queryParams).toString(),
+        const queryParams = {
+                from: "bbox",
+                minLat: minLat.toFixed(3),
+                minLon: minLon.toFixed(3),
+                maxLat: maxLat.toFixed(3),
+                maxLon: maxLon.toFixed(3),
+                language,
+            },
+            queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
 
         prepareWikidataLayers(map, wikidata_url, thresholdZoomLevel);
@@ -790,9 +788,16 @@ function updateDataSource(event) {
 
         //showSnackbar("Please zoom more to see data", "orange");
     } else if (enableElementLayers) {
-        //queryParams.onlySkeleton = false;
-        queryParams.onlyCenter = true;
-        const queryString = new URLSearchParams(queryParams).toString(),
+        const queryParams = {
+                from: "bbox",
+                onlyCenter: true,
+                minLat: Math.floor(minLat),
+                minLon: Math.floor(minLon),
+                maxLat: Math.ceil(maxLat),
+                maxLon: Math.ceil(maxLon),
+                language,
+            },
+            queryString = new URLSearchParams(queryParams).toString(),
             elements_url = './elements.php?' + queryString;
 
         prepareElementsLayers(map, elements_url, minZoomLevel, thresholdZoomLevel);
@@ -1283,7 +1288,7 @@ function prepareGlobalLayers(map, maxZoom) {
     prepareClusteredLayers(
         map,
         'global',
-        './global-map.geojson',
+        './global-map.php',
         0,
         maxZoom,
         { "el_num": ["+", ["get", "num"]] },

@@ -895,8 +895,6 @@ if (is_file($pgFilePath)) {
 
 if ($use_db) {
     try {
-        $geoJsonGlobalMapFilePath = __DIR__ . '/global-map.geojson';
-
         $conf = new IniEnvConfiguration();
         $host = (string)$conf->get("db_host");
         $port = (int)$conf->get("db_port");
@@ -941,8 +939,6 @@ if ($use_db) {
 
         if ($reset) {
             $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
-            if (is_file($geoJsonGlobalMapFilePath))
-                unlink($geoJsonGlobalMapFilePath);
         }
 
         if (isSchemaAlreadySetup($dbh)) {
@@ -1021,24 +1017,6 @@ if ($use_db) {
                 $dbh->exec('DROP TABLE oem.osmdata');
 
             saveLastDataUpdate($sourceFilePath, $dbh);
-        }
-
-        if (is_file($geoJsonGlobalMapFilePath)) {
-            logProgress('Global map already generated');
-        } else {
-            logProgress('Generating global map...');
-
-            // GeoJSON
-            $sth_geojson_global_map = $dbh->query(
-                "SELECT JSON_BUILD_OBJECT(
-                    'type', 'FeatureCollection',
-                    'features', JSON_AGG(ST_AsGeoJSON(v_global_map.*)::json)
-                )
-                FROM oem.v_global_map"
-            );
-            file_put_contents($geoJsonGlobalMapFilePath, (string)$sth_geojson_global_map->fetchColumn());
-
-            logProgress("Generated global map: $geoJsonGlobalMapFilePath");
         }
 
         $backupFilePath = "$workDir/$sourceFileName.backup";

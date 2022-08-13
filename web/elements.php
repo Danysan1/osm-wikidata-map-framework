@@ -29,7 +29,7 @@ use App\Query\Overpass\RoundRobinOverpassConfig;
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
-prepareJSON($conf);
+prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
 $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
