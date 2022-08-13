@@ -399,10 +399,10 @@ class EtymologyColorControl {
                 queryParams = {
                     from: "bbox",
                     to: colorScheme.urlCode,
-                    minLat: minLat.toFixed(4),
-                    minLon: minLon.toFixed(4),
-                    maxLat: maxLat.toFixed(4),
-                    maxLon: maxLon.toFixed(4),
+                    minLat: Math.floor(minLat*1000)/1000, // 0.1234 => 0.124 
+                    minLon: Math.floor(minLon*1000)/1000,
+                    maxLat: Math.ceil(maxLat*1000)/1000, // 0.1234 => 0.123
+                    maxLon: Math.ceil(maxLon*1000)/1000,
                     language,
                 },
                 queryString = new URLSearchParams(queryParams).toString(),
@@ -764,10 +764,10 @@ function updateDataSource(event) {
     if (enableWikidataLayers) {
         const queryParams = {
                 from: "bbox",
-                minLat: minLat.toFixed(3),
-                minLon: minLon.toFixed(3),
-                maxLat: maxLat.toFixed(3),
-                maxLon: maxLon.toFixed(3),
+                minLat: Math.floor(minLat*1000)/1000, // 0.1234 => 0.124 
+                minLon: Math.floor(minLon*1000)/1000,
+                maxLat: Math.ceil(maxLat*1000)/1000, // 0.1234 => 0.123
+                maxLon: Math.ceil(maxLon*1000)/1000,
                 language,
             },
             queryString = new URLSearchParams(queryParams).toString(),
@@ -791,10 +791,10 @@ function updateDataSource(event) {
         const queryParams = {
                 from: "bbox",
                 onlyCenter: true,
-                minLat: Math.floor(minLat),
-                minLon: Math.floor(minLon),
-                maxLat: Math.ceil(maxLat),
-                maxLon: Math.ceil(maxLon),
+                minLat: Math.floor(minLat*10)/10, // 0.1234 => 0.2
+                minLon: Math.floor(minLon*10)/10,
+                maxLat: Math.ceil(maxLat*10)/10, // 0.1234 => 0.1
+                maxLon: Math.ceil(maxLon*10)/10,
                 language,
             },
             queryString = new URLSearchParams(queryParams).toString(),
