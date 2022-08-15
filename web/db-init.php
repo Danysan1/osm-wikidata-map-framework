@@ -538,7 +538,8 @@ function loadWikidataRelatedEntities(
 
     $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
-        logProgress("Checking Wikidata \"$relationName\" data ($pageSize starting from $offset out of $n_todo)...");
+        $truePageSize = min($pageSize, $n_todo-$offset);
+        logProgress("Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)...");
         $wikidataCodsResult = $dbh->query(
             "SELECT DISTINCT ew_wikidata_cod
             FROM oem.element_wikidata_cods
@@ -561,7 +562,7 @@ function loadWikidataRelatedEntities(
         if ($n_wikidata_cods == 0) {
             logProgress("No elements found to fetch details for");
         } else {
-            logProgress("Fetching details for $n_wikidata_cods elements out of $pageSize...");
+            logProgress("Fetching details for $n_wikidata_cods elements out of $truePageSize...");
             $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
             try{
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
