@@ -297,6 +297,7 @@ function setupSchema(PDO $dbh): void
             wd_instance_id INT REFERENCES oem.wikidata(wd_id),
             wd_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
             wd_full_download_date TIMESTAMP DEFAULT NULL,
+            wd_notes VARCHAR,
             wd_gender_descr VARCHAR,
             wd_gender_color VARCHAR,
             wd_type_descr VARCHAR,
@@ -493,7 +494,7 @@ function loadWikidataEntities(PDO $dbh): void
     logProgress('Loading Wikidata etymology entities...');
 
     /** @psalm-suppress UndefinedMethod */
-    $dbh->pgsqlCopyFromFile("oem.wikidata", "wikidata_init.csv", ",", "\\\\N", 'wd_wikidata_cod,wd_gender_descr,wd_gender_color,wd_type_descr,wd_type_color');
+    $dbh->pgsqlCopyFromFile("oem.wikidata", "wikidata_init.csv", ",", "\\\\N", 'wd_wikidata_cod,wd_notes,wd_gender_descr,wd_gender_color,wd_type_descr,wd_type_color');
     $n_wd = $dbh->query("SELECT COUNT(*) FROM oem.wikidata")->fetchColumn();
     assert(is_int($n_wd));
     logProgress("Loaded $n_wd Wikidata entities from CSV");

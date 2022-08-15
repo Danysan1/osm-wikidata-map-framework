@@ -1,198 +1,224 @@
-Q6581072,Male,#e55e5e,,
-Q1052281,Transgender male,#BB737B,,
-Q1097630,Intersex,#908897,,
-Q2449503,Transgender female,#669DB4,,
-Q6581097,Female,#3bb2d0,,
-Q5,,,People,#3bb2d0
-Q21070568,,,People,#3bb2d0
-Q14073567,,,People,#3bb2d0
-Q16979650,,,People,#3bb2d0
-Q20643955,,,People,#3bb2d0
-Q176799,,,People,#3bb2d0
-Q13417114,,,People,#3bb2d0
-Q12826225,,,People,#3bb2d0
-Q178342,,,People,#3bb2d0
-Q235113,,,People,#3bb2d0
-Q1509831,,,People,#3bb2d0
-Q43229,,,People,#3bb2d0
-Q2634521,,,People,#3bb2d0
-Q33829,,,People,#3bb2d0
-Q41710,,,People,#3bb2d0
-Q62796544,,,People,#3bb2d0
-Q16334295,,,People,#3bb2d0
-Q10648343,,,People,#3bb2d0
-Q15632617,,,People,#3bb2d0
-Q43412,,,People,#3bb2d0
-Q8436,,,People,#3bb2d0
-Q1292111,,,People,#3bb2d0
-Q164950,,,People,#3bb2d0
-Q16560,,,Buildings,#fbb03b
-Q41176,,,Buildings,#fbb03b
-Q23413,,,Buildings,#fbb03b
-Q751876,,,Buildings,#fbb03b
-Q684740,,,Buildings,#fbb03b
-Q811979,,,Buildings,#fbb03b
-Q1516079,,,Buildings,#fbb03b
-Q33506,,,Buildings,#fbb03b
-Q16970,,,Buildings,#fbb03b
-Q233324,,,Buildings,#fbb03b
-Q160742,,,Buildings,#fbb03b
-Q817056,,,Buildings,#fbb03b
-Q163687,,,Buildings,#fbb03b
-Q120560,,,Buildings,#fbb03b
-Q44613,,,Buildings,#fbb03b
-Q1564373,,,Buildings,#fbb03b
-Q179700,,,Buildings,#fbb03b
-Q1779653,,,Buildings,#fbb03b
-Q3918,,,Buildings,#fbb03b
-Q1785071,,,Buildings,#fbb03b
-Q1426271,,,Buildings,#fbb03b
-Q19796778,,,Buildings,#fbb03b
-Q3950,,,Buildings,#fbb03b
-Q24354,,,Buildings,#fbb03b
-Q14752696,,,Buildings,#fbb03b
-Q82117,,,Buildings,#fbb03b
-Q11303,,,Buildings,#fbb03b
-Q1088552,,,Buildings,#fbb03b
-Q34442,,,Buildings,#fbb03b
-Q2977,,,Buildings,#fbb03b
-Q19899465,,,Buildings,#fbb03b
-Q317557,,,Buildings,#fbb03b
-Q44782,,,Buildings,#fbb03b
-Q7493941,,,Buildings,#fbb03b
-Q1223230,,,Buildings,#fbb03b
-Q83620,,,Buildings,#fbb03b
-Q11146030,,,Buildings,#fbb03b
-Q15848826,,,Buildings,#fbb03b
-Q143912,,,Buildings,#fbb03b
-Q2087181,,,Buildings,#fbb03b
-Q489357,,,Buildings,#fbb03b
-Q1076486,,,Buildings,#fbb03b
-Q483110,,,Buildings,#fbb03b
-Q19860854,,,Buildings,#fbb03b
-Q1436181,,,Buildings,#fbb03b
-Q178561,,,Events,#e55e5e
-Q188055,,,Events,#e55e5e
-Q3199915,,,Events,#e55e5e
-Q107706,,,Events,#e55e5e
-Q750215,,,Events,#e55e5e
-Q891854,,,Events,#e55e5e
-Q898712,,,Events,#e55e5e
-Q217327,,,Events,#e55e5e
-Q135010,,,Events,#e55e5e
-Q467011,,,Events,#e55e5e
-Q138796,,,Events,#e55e5e
-Q2223653,,,Events,#e55e5e
-Q175331,,,Events,#e55e5e
-Q47150325,,,Events,#e55e5e
-Q1679887,,,Events,#e55e5e
-Q43109,,,Events,#e55e5e
-Q57598,,,Events,#e55e5e
-Q1401497,,,Events,#e55e5e
-Q131569,,,Events,#e55e5e
-Q2558684,,,Events,#e55e5e
-Q1197685,,,Events,#e55e5e
-Q1062856,,,Events,#e55e5e
-Q11514315,,,Events,#e55e5e
-Q103495,,,Events,#e55e5e
-Q124734,,,Events,#e55e5e
-Q515,,,Human settlements,#fed976
-Q1549591,,,Human settlements,#fed976
-Q208511,,,Human settlements,#fed976
-Q702492,,,Human settlements,#fed976
-Q956214,,,Human settlements,#fed976
-Q1637706,,,Human settlements,#fed976
-Q747074,,,Human settlements,#fed976
-Q484170,,,Human settlements,#fed976
-Q42744322,,,Human settlements,#fed976
-Q15105893,,,Human settlements,#fed976
-Q2264924,,,Human settlements,#fed976
-Q15661340,,,Human settlements,#fed976
-Q902814,,,Human settlements,#fed976
-Q5119,,,Human settlements,#fed976
-Q2202509,,,Human settlements,#fed976
-Q3957,,,Human settlements,#fed976
-Q486972,,,Human settlements,#fed976
-Q4946461,,,Human settlements,#fed976
-Q15135589,,,Human settlements,#fed976
-Q15303838,,,Human settlements,#fed976
-Q123705,,,Human settlements,#fed976
-Q7315416,,,Human settlements,#fed976
-Q5084,,,Human settlements,#fed976
-Q181307,,,Human settlements,#fed976
-Q61763947,,,Human settlements,#fed976
-Q493522,,,Human settlements,#fed976
-Q2198484,,,Human settlements,#fed976
-Q18511725,,,Human settlements,#fed976
-Q1134686,,,Human settlements,#fed976
-Q1093829,,,Human settlements,#fed976
-Q62049,,,Human settlements,#fed976
-Q131263,,,Human settlements,#fed976
-Q15632166,,,Human settlements,#fed976
-Q2983893,,,Human settlements,#fed976
-Q1414991,,,Locations,#51318C
-Q1620908,,,Locations,#51318C
-Q35657,,,Locations,#51318C
-Q3336843,,,Locations,#51318C
-Q36784,,,Locations,#51318C
-Q6256,,,Locations,#51318C
-Q99541706,,,Locations,#51318C
-Q5107,,,Locations,#51318C
-Q11081619,,,Locations,#51318C
-Q23442,,,Locations,#51318C
-Q54050,,,Locations,#51318C
-Q570116,,,Locations,#51318C
-Q174782,,,Locations,#51318C
-Q262166,,,Locations,#51318C
-Q79007,,,Locations,#51318C
-Q7245083,,,Locations,#51318C
-Q32099,,,Locations,#51318C
-Q146591,,,Locations,#51318C
-Q82794,,,Locations,#51318C
-Q14524493,,,Locations,#51318C
-Q13691,,,Locations,#51318C
-Q3624078,,,Locations,#51318C
-Q5255892,,,Locations,#51318C
-Q1520223,,,Locations,#51318C
-Q512187,,,Locations,#51318C
-Q1088391,,,Locations,#51318C
-Q51576574,,,Locations,#51318C
-Q7270,,,Locations,#51318C
-Q3455524,,,Locations,#51318C
-Q16110,,,Locations,#51318C
-Q253019,,,Locations,#51318C
-Q134626,,,Locations,#51318C
-Q387917,,,Locations,#51318C
-Q34876,,,Locations,#51318C
-Q532,,,Locations,#51318C
-Q839954,,,Locations,#51318C
-Q22746,,,Locations,#51318C
-Q52103661,,,Locations,#51318C
-Q15982170,,,Locations,#51318C
-Q3024240,,,Locations,#51318C
-Q8502,,,Nature,#348C31
-Q46831,,,Nature,#348C31
-Q3777462,,,Nature,#348C31
-Q8072,,,Nature,#348C31
-Q169358,,,Nature,#348C31
-Q4421,,,Nature,#348C31
-Q355304,,,Nature,#348C31
-Q4022,,,Nature,#348C31
-Q34918903,,,Nature,#348C31
-Q22698,,,Nature,#348C31
-Q573344,,,Nature,#348C31
-Q47521,,,Nature,#348C31
-Q12284,,,Nature,#348C31
-Q165,,,Nature,#348C31
-Q37901,,,Nature,#348C31
-Q162602,,,Nature,#348C31
-Q23397,,,Nature,#348C31
-Q42527,,,Nature,#348C31
-Q37813,,,Nature,#348C31
-Q170321,,,Nature,#348C31
-Q10884,,,Nature,#348C31
-Q16521,,,Nature,#348C31
-Q193110,,,Nature,#348C31
-Q2624046,,,Nature,#348C31
-Q1401902,,,Nature,#348C31
-Q55983715,,,Nature,#348C31
+Q6581072,female,Female,#e55e5e,,
+Q1052281,transgender female,Transgender female,#BB737B,,
+Q1097630,intersex,Intersex,#908897,,
+Q2449503,transgender male,Transgender male,#669DB4,,
+Q6581097,male,Male,#3bb2d0,,
+Q178561,battle,,,Events,#ff3333
+Q188055,siege,,,Events,#ff3333
+Q3199915,massacre,,,Events,#ff3333
+Q107706,armistice,,,Events,#ff3333
+Q750215,mass murder,,,Events,#ff3333
+Q891854,bomb attack,,,Events,#ff3333
+Q898712,aircraft hijacking,,,Events,#ff3333
+Q217327,suicide attack,,,Events,#ff3333
+Q135010,war crime,,,Events,#ff3333
+Q467011,invasion,,,Events,#ff3333
+Q138796,resistance movement,,,Events,#ff3333
+Q2223653,terrorist attack,,,Events,#ff3333
+Q175331,Demonstration,,,Events,#ff3333
+Q47150325,calendar day of a given year,,,Events,#ff3333
+Q1679887,student protest,,,Events,#ff3333
+Q43109,referendum,,,Events,#ff3333
+Q57598,national day,,,Events,#ff3333
+Q131569,treaty,,,Events,#ff3333
+Q2558684,world day,,,Events,#ff3333
+Q1197685,public holiday,,,Events,#ff3333
+Q1062856,anniversary,,,Events,#ff3333
+Q11514315,historical period,,,Events,#ff3333
+Q103495,world war,,,Events,#ff3333
+Q13418847,historical event,,,Events,#ff3333
+Q198,war,,,Events,#ff3333
+Q25917154,car bombing,,,Events,#ff3333
+Q124734,rebellion,,,Events,#ff3333
+Q16560,palace,,,Buildings,#ffdd33
+Q41176,building,,,Buildings,#ffdd33
+Q23413,castle,,,Buildings,#ffdd33
+Q751876,château,,,Buildings,#ffdd33
+Q684740,real property,,,Buildings,#ffdd33
+Q811979,architectural structure,,,Buildings,#ffdd33
+Q1516079,cultural heritage ensemble,,,Buildings,#ffdd33
+Q33506,museum,,,Buildings,#ffdd33
+Q16970,church,,,Buildings,#ffdd33
+Q233324,seminary,,,Buildings,#ffdd33
+Q160742,abbey,,,Buildings,#ffdd33
+Q817056,benedictine abbey,,,Buildings,#ffdd33
+Q163687,basilica,,,Buildings,#ffdd33
+Q120560,minor basilica,,,Buildings,#ffdd33
+Q44613,monastery,,,Buildings,#ffdd33
+Q1564373,mission complex,,,Buildings,#ffdd33
+Q179700,statue,,,Buildings,#ffdd33
+Q1779653,colossal statue,,,Buildings,#ffdd33
+Q3918,university,,,Buildings,#ffdd33
+Q1785071,fort,,,Buildings,#ffdd33
+Q1426271,route nationale,,,Buildings,#ffdd33
+Q19796778,route départementale,,,Buildings,#ffdd33
+Q3950,villa,,,Buildings,#ffdd33
+Q24354,theater,,,Buildings,#ffdd33
+Q14752696,ancient Roman structure,,,Buildings,#ffdd33
+Q82117,city gate,,,Buildings,#ffdd33
+Q11303,skyscraper,,,Buildings,#ffdd33
+Q1088552,Catholic church building,,,Buildings,#ffdd33
+Q34442,road,,,Buildings,#ffdd33
+Q2977,cathedral,,,Buildings,#ffdd33
+Q19899465,former church,,,Buildings,#ffdd33
+Q317557,parish church,,,Buildings,#ffdd33
+Q44782,port,,,Buildings,#ffdd33
+Q7493941,shelter,,,Buildings,#ffdd33
+Q1223230,Roman bridge,,,Buildings,#ffdd33
+Q83620,thoroughfare,,,Buildings,#ffdd33
+Q15848826,city palace,,,Buildings,#ffdd33
+Q143912,triumphal arch,,,Buildings,#ffdd33
+Q2087181,house museum,,,Buildings,#ffdd33
+Q489357,farmhouse,,,Buildings,#ffdd33
+Q1076486,sports venue,,,Buildings,#ffdd33
+Q483110,stadium,,,Buildings,#ffdd33
+Q19860854,destroyed building or structure,,,Buildings,#ffdd33
+Q245016,military base,,,Buildings,#ffdd33
+Q1497375,architectural ensemble,,,Buildings,#ffdd33
+Q18247357,group of structures or buildings,,,Buildings,#ffdd33
+Q158555,cable-stayed bridge,,,Buildings,#ffdd33
+Q12280,bridge,,,Buildings,#ffdd33
+Q1436181,maison de plaisance,,,Buildings,#ffdd33
+Q595452,baseball venue,,,Buildings,#ffdd33
+Q8502,mountain,,,Nature,#77ff33
+Q46831,mountain range,,,Nature,#77ff33
+Q3777462,alpine group,,,Nature,#77ff33
+Q8072,volcano,,,Nature,#77ff33
+Q169358,stratovolcano,,,Nature,#77ff33
+Q4421,forest,,,Nature,#77ff33
+Q355304,watercourse,,,Nature,#77ff33
+Q4022,river,,,Nature,#77ff33
+Q34918903,National Park of the United States,,,Nature,#77ff33
+Q22698,park,,,Nature,#77ff33
+Q573344,main stream,,,Nature,#77ff33
+Q47521,stream,,,Nature,#77ff33
+Q12284,canal,,,Nature,#77ff33
+Q165,sea,,,Nature,#77ff33
+Q37901,strait,,,Nature,#77ff33
+Q162602,river island,,,Nature,#77ff33
+Q23397,lake,,,Nature,#77ff33
+Q42527,spice,,,Nature,#77ff33
+Q37813,ecosystem,,,Nature,#77ff33
+Q170321,wetland,,,Nature,#77ff33
+Q10884,tree,,,Nature,#77ff33
+Q16521,taxon,,,Nature,#77ff33
+Q193110,floodplain,,,Nature,#77ff33
+Q2624046,mountain chain,,,Nature,#77ff33
+Q34038,waterfall,,,Nature,#77ff33
+Q55983715,organisms known by a particular common name,,,Nature,#77ff33
+Q9430,ocean,,,Nature,#77ff33
+Q15324,body of water,,,Nature,#77ff33
+Q35145263,natural geographic object,,,Nature,#77ff33
+Q358976,excavation lake,,,Nature,#77ff33
+Q1414991,area,,,Locations,#33ffbb
+Q1620908,historical region,,,Locations,#33ffbb
+Q35657,U.S. state,,,Locations,#33ffbb
+Q3336843,nation within the UK,,,Locations,#33ffbb
+Q36784,region of France,,,Locations,#33ffbb
+Q6256,country,,,Locations,#33ffbb
+Q99541706,historical unrecognized state,,,Locations,#33ffbb
+Q5107,continent,,,Locations,#33ffbb
+Q11081619,land,,,Locations,#33ffbb
+Q23442,island,,,Locations,#33ffbb
+Q54050,hill,,,Locations,#33ffbb
+Q570116,tourist attraction,,,Locations,#33ffbb
+Q174782,square,,,Locations,#33ffbb
+Q262166,municipality of Germany,,,Locations,#33ffbb
+Q79007,street,,,Locations,#33ffbb
+Q7245083,principal meridian,,,Locations,#33ffbb
+Q32099,meridian,,,Locations,#33ffbb
+Q146591,circle of latitude,,,Locations,#33ffbb
+Q82794,geographic region,,,Locations,#33ffbb
+Q14524493,terrain,,,Locations,#33ffbb
+Q13691,artificial island,,,Locations,#33ffbb
+Q3624078,sovereign state,,,Locations,#33ffbb
+Q5255892,democratic republic,,,Locations,#33ffbb
+Q1520223,constitutional republic,,,Locations,#33ffbb
+Q512187,federal republic,,,Locations,#33ffbb
+Q1088391,rump state,,,Locations,#33ffbb
+Q51576574,Mediterranean country,,,Locations,#33ffbb
+Q7270,republic,,,Locations,#33ffbb
+Q3455524,administrative region,,,Locations,#33ffbb
+Q16110,region of Italy,,,Locations,#33ffbb
+Q253019,Ortsteil,,,Locations,#33ffbb
+Q134626,district capital,,,Locations,#33ffbb
+Q387917,administrative territorial entity of Germany,,,Locations,#33ffbb
+Q34876,province,,,Locations,#33ffbb
+Q532,village,,,Locations,#33ffbb
+Q839954,archaeological site,,,Locations,#33ffbb
+Q22746,urban park,,,Locations,#33ffbb
+Q52103661,former island,,,Locations,#33ffbb
+Q15982170,leisure park,,,Locations,#33ffbb
+Q7543083,avenue,,,Locations,#33ffbb
+Q960648,point of interest,,,Locations,#33ffbb
+Q2221906,geographic location,,,Locations,#33ffbb
+Q3024240,historical country,,,Locations,#33ffbb
+Q5,human,,,People,#3399ff
+Q21070568,human who may be fictional,,,People,#3399ff
+Q14073567,sibling duo,,,People,#3399ff
+Q16979650,sibling group,,,People,#3399ff
+Q20643955,human biblical figure,,,People,#3399ff
+Q176799,military unit,,,People,#3399ff
+Q13417114,noble family,,,People,#3399ff
+Q12826225,lord,,,People,#3399ff
+Q178342,archangel,,,People,#3399ff
+Q235113,angel,,,People,#3399ff
+Q1509831,title of Virgin Mary,,,People,#3399ff
+Q2634521,title of Jesus,,,People,#3399ff
+Q33829,human population,,,People,#3399ff
+Q41710,ethnic group,,,People,#3399ff
+Q62796544,Italian noble family,,,People,#3399ff
+Q16334295,group of humans,,,People,#3399ff
+Q10648343,duo,,,People,#3399ff
+Q15632617,fictional human,,,People,#3399ff
+Q43412,apostle,,,People,#3399ff
+Q8436,family,,,People,#3399ff
+Q1292111,family of artists,,,People,#3399ff
+Q164950,dynasty,,,People,#3399ff
+Q205985,goddess,,,People,#3399ff
+Q11688446,Roman deity,,,People,#3399ff
+Q22988604,mythological Greek character,,,People,#3399ff
+Q515,city,,,Human settlements,#7733ff
+Q1549591,big city,,,Human settlements,#7733ff
+Q208511,global city,,,Human settlements,#7733ff
+Q702492,urban area,,,Human settlements,#7733ff
+Q956214,chef-lieu,,,Human settlements,#7733ff
+Q1637706,million city,,,Human settlements,#7733ff
+Q747074,comune of Italy,,,Human settlements,#7733ff
+Q484170,commune of France,,,Human settlements,#7733ff
+Q42744322,urban municipality of Germany,,,Human settlements,#7733ff
+Q15105893,town in Croatia,,,Human settlements,#7733ff
+Q2264924,port settlement,,,Human settlements,#7733ff
+Q15661340,ancient city,,,Human settlements,#7733ff
+Q902814,border town,,,Human settlements,#7733ff
+Q5119,capital,,,Human settlements,#7733ff
+Q2202509,roman city,,,Human settlements,#7733ff
+Q3957,town,,,Human settlements,#7733ff
+Q486972,human settlement,,,Human settlements,#7733ff
+Q4946461,spa-town,,,Human settlements,#7733ff
+Q15135589,religious site,,,Human settlements,#7733ff
+Q15303838,municipality seat,,,Human settlements,#7733ff
+Q123705,neighborhood,,,Human settlements,#7733ff
+Q7315416,residence park,,,Human settlements,#7733ff
+Q5084,hamlet,,,Human settlements,#7733ff
+Q181307,lieu-dit,,,Human settlements,#7733ff
+Q61763947,municipality of Aragon,,,Human settlements,#7733ff
+Q493522,municipality of Belgium,,,Human settlements,#7733ff
+Q2198484,municipal district,,,Human settlements,#7733ff
+Q18511725,market town,,,Human settlements,#7733ff
+Q1134686,frazione,,,Human settlements,#7733ff
+Q1093829,city of the United States,,,Human settlements,#7733ff
+Q62049,county seat,,,Human settlements,#7733ff
+Q131263,barracks,,,Human settlements,#7733ff
+Q15632166,city part of Cologne,,,Human settlements,#7733ff
+Q707813,Hanseatic city,,,Human settlements,#7733ff
+Q35034452,locality of Berlin,,,Human settlements,#7733ff
+Q70208,municipality of Switzerland,,,Human settlements,#7733ff
+Q1852178,locality of Düsseldorf,,,Human settlements,#7733ff
+Q2039348,municipality of the Netherlands,,,Human settlements,#7733ff
+Q2983893,quarter,,,Human settlements,#7733ff
+Q43229,organization,,,Organization,#ff33dd
+Q4830453,business,,,Organization,#ff33dd
+Q6881511,enterprise,,,Organization,#ff33dd
+Q134161,joint-stock company,,,Organization,#ff33dd
+Q891723,public company,,,Organization,#ff33dd
