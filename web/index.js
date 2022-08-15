@@ -312,7 +312,7 @@ class EtymologyColorControl {
      */
     setColorScheme(colorScheme) {
         console.info("EtymologyColorControl setColorScheme", {colorScheme});
-        if (!this._ctrlDropDown) {
+        if (!this._ctrlDropDown || !this._ctrlDropDown.options) {
             console.warn("setColorScheme: dropdown not yet initialized");
         } else {
             this._ctrlDropDown.options.forEach(option => {
