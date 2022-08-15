@@ -80,6 +80,8 @@ Q158555,cable-stayed bridge,,,Buildings,#ffdd33
 Q12280,bridge,,,Buildings,#ffdd33
 Q1436181,maison de plaisance,,,Buildings,#ffdd33
 Q595452,baseball venue,,,Buildings,#ffdd33
+Q1440300,observation tower,,,Buildings,#ffdd33
+Q12518,tower,,,Buildings,#ffdd33
 Q8502,mountain,,,Nature,#77ff33
 Q46831,mountain range,,,Nature,#77ff33
 Q3777462,alpine group,,,Nature,#77ff33
@@ -110,6 +112,7 @@ Q9430,ocean,,,Nature,#77ff33
 Q15324,body of water,,,Nature,#77ff33
 Q35145263,natural geographic object,,,Nature,#77ff33
 Q358976,excavation lake,,,Nature,#77ff33
+Q337567,still waters,,,Nature,#77ff33
 Q1414991,area,,,Locations,#33ffbb
 Q1620908,historical region,,,Locations,#33ffbb
 Q35657,U.S. state,,,Locations,#33ffbb
@@ -153,6 +156,7 @@ Q7543083,avenue,,,Locations,#33ffbb
 Q960648,point of interest,,,Locations,#33ffbb
 Q2221906,geographic location,,,Locations,#33ffbb
 Q3024240,historical country,,,Locations,#33ffbb
+Q23718,cardinal direction,,,Locations,#33ffbb
 Q5,human,,,People,#3399ff
 Q21070568,human who may be fictional,,,People,#3399ff
 Q14073567,sibling duo,,,People,#3399ff
@@ -178,6 +182,7 @@ Q164950,dynasty,,,People,#3399ff
 Q205985,goddess,,,People,#3399ff
 Q11688446,Roman deity,,,People,#3399ff
 Q22988604,mythological Greek character,,,People,#3399ff
+Q15632617,fictional human,,,People,#3399ff
 Q515,city,,,Human settlements,#7733ff
 Q1549591,big city,,,Human settlements,#7733ff
 Q208511,global city,,,Human settlements,#7733ff
@@ -217,8 +222,11 @@ Q70208,municipality of Switzerland,,,Human settlements,#7733ff
 Q1852178,locality of Düsseldorf,,,Human settlements,#7733ff
 Q2039348,municipality of the Netherlands,,,Human settlements,#7733ff
 Q2983893,quarter,,,Human settlements,#7733ff
+Q3558970,village of Poland,,,Human settlements,#7733ff
 Q43229,organization,,,Organization,#ff33dd
 Q4830453,business,,,Organization,#ff33dd
 Q6881511,enterprise,,,Organization,#ff33dd
 Q134161,joint-stock company,,,Organization,#ff33dd
 Q891723,public company,,,Organization,#ff33dd
+Q786820,automobile manufacturer,,,Organization,#ff33dd
+Q936518,aerospace manufacturer,,,Organization,#ff33dd
