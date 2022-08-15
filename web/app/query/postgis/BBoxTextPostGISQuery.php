@@ -191,7 +191,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
             $stInsertWikidata = $this->getDB()->prepare(
                 "UPDATE oem.wikidata 
-                SET wd_position = ST_GeomFromText(response->'wkt_coords'->>'value'),
+                SET wd_position = ST_GeomFromText(response->'wkt_coords'->>'value', 4326),
                     wd_event_date = translateTimestamp(response->'event_date'->>'value'),
                     wd_event_date_precision = (response->'event_date_precision'->>'value')::INT,
                     wd_start_date = translateTimestamp(response->'start_date'->>'value'),
