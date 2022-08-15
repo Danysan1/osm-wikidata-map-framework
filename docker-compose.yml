@@ -20,7 +20,7 @@ services:
     restart: "always"
     profiles:
       - dev
-      - prod
+      - prod_with_db
 
   pgadmin:
     image: dpage/pgadmin4:6.12
@@ -84,6 +84,7 @@ services:
       - letsencrypt-certs:/etc/letsencrypt/
     profiles:
       - prod
+      - prod_with_db
 
   promtail:
     image: grafana/promtail:main
@@ -94,6 +95,7 @@ services:
     command: -config.file=/etc/promtail/config.yaml
     profiles:
       - prod
+      - prod_with_db
 
 volumes:
   db-data:
