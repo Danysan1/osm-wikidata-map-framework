@@ -23,7 +23,7 @@ services:
       - prod
 
   pgadmin:
-    image: dpage/pgadmin4:6.8
+    image: dpage/pgadmin4:6.12
     ports:
       - "8080:80"
     depends_on:
