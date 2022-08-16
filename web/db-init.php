@@ -318,7 +318,7 @@ function setupSchema(PDO $dbh): void
             el_osm_id BIGINT NOT NULL,
             el_tags JSONB,
             el_text_etymology VARCHAR,
-            el_wd_id BIGINT REFERENCES oem.wikidata(wd_id),
+            el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
             el_commons VARCHAR,
             el_wikipedia VARCHAR
             --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
@@ -479,16 +479,19 @@ function convertElementWikidataCods(PDO $dbh): void
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
         WHERE osm_tags ? 'wikidata'
         AND TRIM(wikidata_cod) ~* '^Q\d+$'
+        AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown
         UNION
         SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
         WHERE osm_tags ? 'subject:wikidata'
         AND TRIM(subject_wikidata_cod) ~* '^Q\d+$'
+        AND ST_Area(osm_geometry) < 0.01
         UNION
         SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE, FALSE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
         WHERE osm_tags ? 'name:etymology:wikidata'
-        AND TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
+        AND TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'
+        AND ST_Area(osm_geometry) < 0.01"
     );
     logProgress("Converted $n_wikidata_cods wikidata codes");
 }
@@ -816,10 +819,12 @@ function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void
     logProgress("Saved last data update date ($lastUpdate)");
 }
 
-function moveElementsWithEtymology(PDO $dbh): void
+function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false): void
 {
     logProgress('Cleaning up elements without etymology...');
     $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
+    $orTextEtymologyIsPresent = $load_text_etymology ? "OR osm_tags ? 'name:etymology'" : "";
+    $textEtymology = $load_text_etymology ? "osm_tags->>'name:etymology'" : "NULL";
     $n_remaining = $dbh->exec(
         "INSERT INTO oem.element (
             el_id,
@@ -828,7 +833,7 @@ function moveElementsWithEtymology(PDO $dbh): void
             el_osm_id,
             el_tags,
             el_text_etymology,
-            el_wd_id,
+            el_wikidata_cod,
             el_commons,
             el_wikipedia
         ) SELECT 
@@ -837,18 +842,24 @@ function moveElementsWithEtymology(PDO $dbh): void
             osm_osm_type,
             osm_osm_id,
             osm_tags,
-            osm_tags->>'name:etymology',
-            wikidata.wd_id,
+            $textEtymology,
+            SUBSTRING(osm_tags->>'wikidata' FROM '^([^;]+)'),
             SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
             SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
         FROM oem.osmdata
-        LEFT JOIN oem.wikidata ON wd_wikidata_cod = SUBSTRING(osm_tags->>'wikidata' FROM '^([^;]+)')
-        WHERE osm_tags ? 'name:etymology'
-        OR osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
-        AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown"
+        WHERE (
+            osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
+            $orTextEtymologyIsPresent
+        )"
     );
     $n_cleaned = $n_tot - $n_remaining;
     logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
+    $dbh->exec(
+        "ALTER TABLE oem.etymology 
+        ADD CONSTRAINT etymology_et_el_id_fkey 
+        FOREIGN KEY (et_el_id) 
+        REFERENCES oem.element (el_id)"
+    );
 }
 
 
