@@ -19,10 +19,11 @@ if (in_array("--help", $argv) || in_array("-h", $argv)) {
     "Usage: php db-init.php SOURCE_FILE [OPTIONS]" . PHP_EOL .
         "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
         "\tOPTIONS: an optional combination of one or more of these flags:" . PHP_EOL .
-        "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating" . PHP_EOL .
-        "\t\t--cleanup / -c : Delete temporary files before elaborating" . PHP_EOL .
-        "\t\t--hard-reset / -r : Do a hard reset (delete ordinary tables) before elaborating" . PHP_EOL .
-        "\t\t--propagate / -p : Propagate etymologies to nearby highways with same name" . PHP_EOL;
+        "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
+        "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
+        "\t\t--hard-reset / -r : Do a hard reset (delete ordinary tables) before elaborating (disabled by default)" . PHP_EOL .
+        "\t\t--load-text-etymology / -t : Load textual etymologies (name:etymology tags) (disabled by default as it increases by a lot the execution time and file size)" . PHP_EOL .
+        "\t\t--propagate / -p : Propagate etymologies to nearby homonymous highways (disabled by default, it increases the execution time)" . PHP_EOL;
     exit(0);
 }
 
@@ -90,7 +91,7 @@ echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before
 
 echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
 
-echo 'name:etymology values will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
+echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
 
 if (!empty($argv[2]) && $argv[2] == "txt") {
     echo 'Using osmium-export to txt' . PHP_EOL;
