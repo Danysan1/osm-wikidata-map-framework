@@ -541,7 +541,7 @@ function loadWikidataRelatedEntities(
 
     $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
-        $truePageSize = min($pageSize, $n_todo-$offset);
+        $truePageSize = min($pageSize, $n_todo - $offset);
         logProgress("Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)...");
         $wikidataCodsResult = $dbh->query(
             "SELECT DISTINCT ew_wikidata_cod
@@ -552,9 +552,9 @@ function loadWikidataRelatedEntities(
             OFFSET $offset"
         )->fetchAll();
         $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
-        
+
         $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-        try{
+        try {
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         } catch (Exception $e) {
             echo 'Check failed. Retrying to fetch...';
@@ -567,7 +567,7 @@ function loadWikidataRelatedEntities(
         } else {
             logProgress("Fetching details for $n_wikidata_cods elements out of $truePageSize...");
             $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-            try{
+            try {
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             } catch (Exception $e) {
                 echo 'Fetch failed. Retrying to fetch...';
@@ -781,7 +781,7 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
             WHERE old_et.et_recursion_depth = (:depth - 1)
             AND new_et IS NULL"
         );
-        $propagation->execute(["depth"=>$depth]);
+        $propagation->execute(["depth" => $depth]);
         $n_propagations = $propagation->rowCount();
         logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
 
@@ -794,13 +794,14 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
     }
 }
 
-function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void {
+function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void
+{
     $matches = [];
     if (preg_match('/-(\d{2})(\d{2})(\d{2})\./', $sourceFilePath, $matches) && count($matches) >= 4)
         $lastUpdate = '20' . $matches[1] . '-' . $matches[2] . '-' . $matches[3];
     else
         $lastUpdate = date('Y-m-d');
-    
+
     $dbh->exec(
         "CREATE OR REPLACE FUNCTION oem.last_data_update()
             RETURNS character varying
@@ -813,7 +814,8 @@ function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void {
     logProgress("Saved last data update date ($lastUpdate)");
 }
 
-function cleanupElementsWithoutEtymology(PDO $dbh): void {
+function cleanupElementsWithoutEtymology(PDO $dbh): void
+{
     logProgress('Cleaning up elements without etymology...');
     $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
     /*$n_cleaned = $dbh->exec(
@@ -1050,7 +1052,7 @@ if ($use_db) {
             logProgress('Temporary tables already deleted, not cleaning up elements');
         } else {
             cleanupElementsWithoutEtymology($dbh);
-            
+
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
 
