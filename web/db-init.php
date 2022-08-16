@@ -39,6 +39,7 @@ $keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $arg
 $cleanup = in_array("--cleanup", $argv) || in_array("-c", $argv);
 $reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
 $propagate = in_array("--propagate", $argv) || in_array("-p", $argv);
+$load_text_etymology = in_array("--load-text-etymology", $argv) || in_array("-t", $argv);
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -81,17 +82,15 @@ $workDir = dirname($sourceFilePath);
 $sourceFileName = basename($sourceFilePath);
 logProgress("Working on file $sourceFileName in directory $workDir");
 
-if ($keep_temp_tables)
-    echo 'Keeping temporary tables' . PHP_EOL;
+echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
 
-if ($cleanup)
-    echo 'Doing a cleanup of temporary files' . PHP_EOL;
+echo 'Temporary files will ' . ($cleanup ? '' : 'NOT ') . 'be cleaned up' . PHP_EOL;
 
-if ($reset)
-    echo 'Doing a hard reset' . PHP_EOL;
+echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before loading' . PHP_EOL;
 
-if ($reset)
-    echo 'Propagating etymology to nearby highways' . PHP_EOL;
+echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
+
+echo 'name:etymology values will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
 
 if (!empty($argv[2]) && $argv[2] == "txt") {
     echo 'Using osmium-export to txt' . PHP_EOL;
@@ -191,14 +190,18 @@ function filterInputData(
     string $sourceFileName,
     string $filteredFilePath,
     bool $cleanup = false,
-    bool $propagate = false
+    bool $propagate = false,
+    bool $load_text_etymology = false
 ): void {
     $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
 
-    $allowedTags = $propagate ? ['w/highway=residential'] : [];
+    $allowedTags = [];
+    if ($propagate)
+        $allowedTags[] = 'w/highway=residential';
     $allowedTags[] = 'wikidata';
     $allowedTags[] = 'name:etymology:wikidata';
-    $allowedTags[] = 'name:etymology';
+    if ($load_text_etymology)
+        $allowedTags[] = 'name:etymology';
     $allowedTags[] = 'subject:wikidata';
 
     $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
@@ -883,7 +886,7 @@ if (is_file($txtFilePath) && $cleanup) {
 if (is_file($txtFilePath)) {
     logProgress('Data already exported to text');
 } elseif ($convert_to_txt) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
     logProgress('Exporting OSM data to text...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -900,7 +903,7 @@ if (is_file($geojsonFilePath) && $cleanup) {
 if (is_file($geojsonFilePath)) {
     logProgress('Data already exported to geojson');
 } elseif ($convert_to_geojson) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
     logProgress('Exporting OSM data to geojson...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
@@ -917,7 +920,7 @@ if (is_file($pgFilePath) && $cleanup) {
 if (is_file($pgFilePath)) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($convert_to_pg) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate);
+    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
     logProgress('Exporting OSM data to PostGIS tsv...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
