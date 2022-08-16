@@ -816,16 +816,10 @@ function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void
     logProgress("Saved last data update date ($lastUpdate)");
 }
 
-function cleanupElementsWithoutEtymology(PDO $dbh): void
+function moveElementsWithEtymology(PDO $dbh): void
 {
     logProgress('Cleaning up elements without etymology...');
     $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
-    /*$n_cleaned = $dbh->exec(
-        "DELETE FROM oem.osmdata WHERE osm_id NOT IN (SELECT DISTINCT et_el_id FROM oem.etymology)"
-    );
-    $n_remaining = $n_tot - $n_cleaned;
-    $dbh->exec('ALTER TABLE oem.osmdata RENAME TO element');*/
-    // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without; https://stackoverflow.com/a/7088514/2347196
     $n_remaining = $dbh->exec(
         "INSERT INTO oem.element (
             el_id,
@@ -1053,7 +1047,9 @@ if ($use_db) {
         if (isOsmDataTemporaryTableAbsent($dbh)) {
             logProgress('Temporary tables already deleted, not cleaning up elements');
         } else {
-            cleanupElementsWithoutEtymology($dbh);
+            // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without
+            // https://stackoverflow.com/a/7088514/2347196
+            moveElementsWithEtymology($dbh);
 
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
