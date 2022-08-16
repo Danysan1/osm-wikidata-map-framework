@@ -495,7 +495,7 @@ function convertElementWikidataCods(PDO $dbh): void
 
 function loadWikidataEntities(PDO $dbh): void
 {
-    logProgress('Loading Wikidata etymology entities...');
+    logProgress('Loading known Wikidata entities from CSV...');
 
     /** @psalm-suppress UndefinedMethod */
     $dbh->pgsqlCopyFromFile("oem.wikidata", "wikidata_init.csv", ",", "\\\\N", 'wd_wikidata_cod,wd_notes,wd_gender_descr,wd_gender_color,wd_type_descr,wd_type_color');
@@ -503,6 +503,7 @@ function loadWikidataEntities(PDO $dbh): void
     assert(is_int($n_wd));
     logProgress("Loaded $n_wd Wikidata entities from CSV");
 
+    logProgress('Loading Wikidata etymology entities from element_wikidata_cods...');
     $n_wd = $dbh->exec(
         "INSERT INTO oem.wikidata (wd_wikidata_cod)
         SELECT DISTINCT ew_wikidata_cod
