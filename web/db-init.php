@@ -784,10 +784,10 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
             FROM oem.etymology AS old_et
             JOIN oem.osmdata AS old_el
                 ON old_et.et_el_id = old_el.osm_id
-                AND old_el.osm_tags ?? 'name' -- As of PHP 7.4.0, question marks can be escaped by doubling them. That means that the ?? string will be translated to ? when sending the query to the database.
+                AND old_el.osm_tags ?? 'highway' -- As of PHP 7.4.0, question marks can be escaped by doubling them. That means that the ?? string will be translated to ? when sending the query to the database.
             JOIN oem.osmdata AS new_el
                 ON old_el.osm_id < new_el.osm_id
-                AND new_el.osm_tags ?? 'name'
+                AND new_el.osm_tags ?? 'highway'
                 AND old_el.osm_tags->'name' = new_el.osm_tags->'name'
                 AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
             LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
