@@ -10,6 +10,11 @@ interface Configuration
 	public function has(string $key): bool;
 
 	/**
+	 * @param array<string> $keys
+	 */
+	public function hasAll(array $keys): bool;
+
+	/**
 	 * @param string $key
 	 * @return mixed
 	 */

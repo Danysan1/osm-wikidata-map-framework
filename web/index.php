@@ -9,6 +9,11 @@ use App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
+if (!$conf->has("mapbox-gl-token")) {
+    http_response_code(500);
+    die('<html><body>Missing Mapbox GL JS token from configuration</body></html>');
+}
+
 $lastUpdateString = '';
 $enableDB = $conf->getBool("db-enable");
 if($enableDB) {
@@ -41,13 +46,8 @@ if (
     $defaultCulture = "en-US";
 }
 
-$useSentry = $conf->has("sentry-js-dsn");
+$useSentry = $conf->has('sentry-js-url');
 $useGoogleAnalytics = $conf->has("google-analytics-id");
-
-if (!$conf->has("mapbox-gl-token")) {
-    http_response_code(500);
-    die('<html><body>Missing Mapbox GL JS token from configuration</body></html>');
-}
 
 ?>
 
@@ -55,45 +55,55 @@ if (!$conf->has("mapbox-gl-token")) {
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
-    <?php if ($useSentry) { ?>
+    <?php
+    if ($useSentry) { 
+        $sentryUrl = (string)$conf->get('sentry-js-url');
+    ?>
         <link
             rel="preload"
             as="script"
             type="application/javascript"
-            href="https://browser.sentry-cdn.com/7.3.1/bundle.tracing.min.js"
-            integrity="sha384-iptjDHZXu0VPs27rpz7gMPerGBSnwZdj2zsbnT5m5bjmcNk8tjHmzD/GJn8UjaO7"
+            href="<?= $sentryUrl; ?>"
             crossorigin="anonymous" />
     <?php
     }
 
-    $mapboxGlJS = $conf->has('debug') && $conf->get('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js';
+    if ($useGoogleAnalytics) { 
+        $googleAnalyticsUrl = "https://www.googletagmanager.com/gtag/js?id=".$conf->get("google-analytics-id");
+    ?>
+        <link
+            rel="preload"
+            as="script"
+            type="application/javascript"
+            href="<?= $googleAnalyticsUrl; ?>" />
+    <?php
+    }
+
+    $mapboxGlJsUrl = "./node_modules/mapbox-gl/dist/".($conf->getBool('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js');
     ?>
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/mapbox-gl/dist/<?= $mapboxGlJS; ?>">
+    <link rel="preload" as="script" type="application/javascript" href="<?= $mapboxGlJsUrl; ?>">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
     <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./index.js">
+    <link rel="preload" as="script" type="application/javascript" href="./node_modules/chart.js/dist/chart.min.js">
     <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
     <link rel="preload" as="style" type="text/css" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
     <link rel="preload" as="style" type="text/css" href="./style.css" />
-    <!--<link rel="preload" as="fetch" type="application/geo+json" href="./global-map.php" crossorigin="anonymous" />-->
+    <link rel="preload" as="fetch" type="application/geo+json" href="./global-map.php" crossorigin="anonymous" />
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
     <?php if ($useSentry) { ?>
-        <script
-            src="https://browser.sentry-cdn.com/7.3.1/bundle.tracing.min.js"
-            integrity="sha384-iptjDHZXu0VPs27rpz7gMPerGBSnwZdj2zsbnT5m5bjmcNk8tjHmzD/GJn8UjaO7"
-            crossorigin="anonymous"
-        ></script>
+        <script src="<?= $sentryUrl; ?>" crossorigin="anonymous" ></script>
     <?php
     }
 
     if ($useGoogleAnalytics) {
     ?>
-        <script async src="https://www.googletagmanager.com/gtag/js?id=<?= (string)$conf->get("google-analytics-id"); ?>"></script>
+        <script async src="<?= $googleAnalyticsUrl; ?>"></script>
     <?php
     }
     ?>
@@ -106,7 +116,7 @@ if (!$conf->has("mapbox-gl-token")) {
     <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
     <link rel="stylesheet" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
-    <script defer src='./node_modules/mapbox-gl/dist/<?= $mapboxGlJS; ?>' type="application/javascript"></script>
+    <script defer src='<?= $mapboxGlJsUrl; ?>' type="application/javascript"></script>
     <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
     <script defer src="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
 
