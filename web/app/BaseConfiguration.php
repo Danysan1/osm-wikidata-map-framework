@@ -9,9 +9,9 @@ abstract class BaseConfiguration implements Configuration
     public function hasAll(array $keys): bool
     {
         foreach ($keys as $key) {
-            if ($this->has($key))
-                return true;
+            if (!$this->has($key))
+                return false;
         }
-        return false;
+        return true;
     }
 }
