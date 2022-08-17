@@ -210,7 +210,8 @@ function filterInputData(
 
     runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
 
-    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, 'man_made=flagpole', $cleanup, '--invert-match');
+    $removedTags = ['man_made=flagpole','n/place=region','n/place=state','n/place=country','r/admin_level=2'];
+    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, $removedTags, $cleanup, '--invert-match');
 
     //runOsmiumFileInfo($filteredFilePath);
 }
@@ -460,6 +461,16 @@ function loadOsmDataWithOsm2pgsql(PDO $dbh, string $host, int $port, string $dbn
     logProgress("Converted $n_element elements");
 }
 
+function removeElementsTooBig(PDO $dbh) : void {
+    logProgress('Removing elements too big to be shown...');
+    $n_element = $dbh->exec(
+        "DELETE FROM oem.osmdata
+        WHERE ST_Area(osm_geometry) >= 0.01"
+    );
+    $n_remaining = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
+    logProgress("Removed $n_element elements, $n_remaining remain");
+}
+
 function isElementWikidataTemporaryTableAbsent(PDO $dbh): bool
 {
     $out = $dbh->query(
@@ -479,19 +490,16 @@ function convertElementWikidataCods(PDO $dbh): void
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
         WHERE osm_tags ? 'wikidata'
         AND TRIM(wikidata_cod) ~* '^Q\d+$'
-        AND ST_Area(osm_geometry) < 0.01 -- Remove elements too big to be shown
         UNION
         SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)
         WHERE osm_tags ? 'subject:wikidata'
         AND TRIM(subject_wikidata_cod) ~* '^Q\d+$'
-        AND ST_Area(osm_geometry) < 0.01
         UNION
         SELECT osm_id, UPPER(TRIM(name_etymology_wikidata_cod)), TRUE, FALSE, FALSE
         FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'name:etymology:wikidata',';') AS splitted(name_etymology_wikidata_cod)
         WHERE osm_tags ? 'name:etymology:wikidata'
-        AND TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'
-        AND ST_Area(osm_geometry) < 0.01"
+        AND TRIM(name_etymology_wikidata_cod) ~* '^Q\d+$'"
     );
     logProgress("Converted $n_wikidata_cods wikidata codes");
 }
@@ -1001,14 +1009,14 @@ if ($use_db) {
             logProgress('Elements already loaded');
         } else {
             ini_set('memory_limit', '256M');
+            logProgress('Loading OSM elements into DB...');
             if ($convert_to_pg) {
-                logProgress('Loading OSM elements into DB...');
                 loadOsmDataFromTSV($dbh, $pgFilePath);
-            } else { // use_osm2pgsql
-                logProgress('Loading data into DB...');
+            } else {
+                assert($use_osm2pgsql);
                 loadOsmDataWithOsm2pgsql($dbh, $host, $port, $dbname, $user, $password, $filteredFilePath);
             }
-
+            removeElementsTooBig($dbh);
             echo 'Loading complete at ' . date('c') . PHP_EOL;
         }
 
