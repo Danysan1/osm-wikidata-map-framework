@@ -30,6 +30,7 @@ Q13418847,historical event,,,Events,#ff3333
 Q198,war,,,Events,#ff3333
 Q25917154,car bombing,,,Events,#ff3333
 Q124734,rebellion,,,Events,#ff3333
+Q17524420,aspect of history,,,Events,#ff3333
 Q16560,palace,,,Buildings,#ffdd33
 Q41176,building,,,Buildings,#ffdd33
 Q23413,castle,,,Buildings,#ffdd33
@@ -119,6 +120,8 @@ Q15324,body of water,,,Nature,#77ff33
 Q35145263,natural geographic object,,,Nature,#77ff33
 Q358976,excavation lake,,,Nature,#77ff33
 Q337567,still waters,,,Nature,#77ff33
+Q47053,estuary,,,Nature,#77ff33
+Q39594,bay,,,Nature,#77ff33
 Q1414991,area,,,Locations,#33ffbb
 Q1620908,historical region,,,Locations,#33ffbb
 Q35657,U.S. state,,,Locations,#33ffbb
@@ -236,3 +239,4 @@ Q134161,joint-stock company,,,Organization,#ff33dd
 Q891723,public company,,,Organization,#ff33dd
 Q786820,automobile manufacturer,,,Organization,#ff33dd
 Q936518,aerospace manufacturer,,,Organization,#ff33dd
+Q22687,bank,,,Organization,#ff33dd
