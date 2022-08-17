@@ -194,8 +194,6 @@ function filterInputData(
     bool $propagate = false,
     bool $load_text_etymology = false
 ): void {
-    $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
-
     $allowedTags = [];
     if ($propagate)
         $allowedTags[] = 'w/highway=residential';
@@ -208,10 +206,11 @@ function filterInputData(
     $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
     runOsmiumTagsFilter($sourceFilePath, $filteredWithFlagsTagsFilePath, $allowedTags, $cleanup,  '--remove-tags');
 
+    $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
     runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
 
-    $removedTags = ['man_made=flagpole','n/place=region','n/place=state','n/place=country','r/admin_level=2'];
-    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, $removedTags, $cleanup, '--invert-match');
+    $unallowedTags = ['man_made=flagpole','n/place=region','n/place=state','n/place=country','n/place=continent','r/admin_level=2'];
+    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, $unallowedTags, $cleanup, '--invert-match');
 
     //runOsmiumFileInfo($filteredFilePath);
 }
