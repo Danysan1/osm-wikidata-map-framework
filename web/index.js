@@ -1623,8 +1623,8 @@ function initPage(e) {
     //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (typeof mapboxgl == "undefined" || !mapboxgl) {
-        alert('There was an error while loading Mapbox GL JS (the library needed to create the map)');
-        logErrorMessage("Undefined mapboxgl");
+        alert('There was an error while loading the library used to create the map.');
+        logErrorMessage("mapboxgl is undefined. Are the JS libraries installed (npm install)?");
     } else if (!mapboxgl.supported()) {
         alert('Your browser does not support Mapbox GL');
         logErrorMessage("Device/Browser does not support Mapbox GL");
