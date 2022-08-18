@@ -1,8 +1,12 @@
 <?php
-require_once("./app/IniEnvConfiguration.php");
-require_once("./app/PostGIS_PDO.php");
-require_once("./app/query/wikidata/RelatedEntitiesCheckWikidataQuery.php");
-require_once("./app/query/wikidata/RelatedEntitiesDetailsWikidataQuery.php");
+
+// This allows running the script directly or inside docker 
+$webFolder = __DIR__ . "/../" . (file_exists(__DIR__ . "/../web") ? "web" : "html");
+
+require_once("$webFolder/app/IniEnvConfiguration.php");
+require_once("$webFolder/app/PostGIS_PDO.php");
+require_once("$webFolder/app/query/wikidata/RelatedEntitiesCheckWikidataQuery.php");
+require_once("$webFolder/app/query/wikidata/RelatedEntitiesDetailsWikidataQuery.php");
 
 use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
@@ -62,11 +66,19 @@ if (empty($argv[1])) {
     exit(1);
 }
 
-$sourceFilePath = realpath($argv[1]);
-if (empty($sourceFilePath)) {
+// $argv[1] can be an absolute path or a relative path from the folder of db-init
+$sourceFilePathFromRelative = realpath(__DIR__ . "/" . $argv[1]);
+$sourceFilePathFromAbsolute = realpath($argv[1]);
+if (!empty($sourceFilePathFromRelative)) {
+    $sourceFilePath = $sourceFilePathFromRelative;
+} elseif (!empty($sourceFilePathFromAbsolute)) {
+    $sourceFilePath = $sourceFilePathFromAbsolute;
+} else {
     echo "ERROR: Could not deduce full path for the given file: " . $argv[1] . PHP_EOL;
     exit(1);
-} elseif (!is_file($sourceFilePath)) {
+}
+
+if (!is_file($sourceFilePath)) {
     echo "ERROR: The file you passed as first argument does not exist: " . $sourceFilePath . PHP_EOL;
     exit(1);
 }
@@ -507,8 +519,9 @@ function loadWikidataEntities(PDO $dbh): void
 {
     logProgress('Loading known Wikidata entities from CSV...');
 
+    $wikidataInitFilePath = __DIR__ . "/wikidata_init.csv";
     /** @psalm-suppress UndefinedMethod */
-    $dbh->pgsqlCopyFromFile("oem.wikidata", "wikidata_init.csv", ",", "\\\\N", 'wd_wikidata_cod,wd_notes,wd_gender_descr,wd_gender_color,wd_type_descr,wd_type_color');
+    $dbh->pgsqlCopyFromFile("oem.wikidata", $wikidataInitFilePath, ",", "\\\\N", 'wd_wikidata_cod,wd_notes,wd_gender_descr,wd_gender_color,wd_type_descr,wd_type_color');
     $n_wd = $dbh->query("SELECT COUNT(*) FROM oem.wikidata")->fetchColumn();
     assert(is_int($n_wd));
     logProgress("Loaded $n_wd Wikidata entities from CSV");
@@ -882,7 +895,8 @@ function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false):
  ******************************************************************************************/
 
 
-if (!is_file("osmium.json")) {
+$osmiumFilePath = __DIR__ . "/osmium.json";
+if (!is_file($osmiumFilePath)) {
     echo "ERROR: missing osmium.json" . PHP_EOL;
     exit(1);
 }
@@ -907,7 +921,7 @@ if (is_file($txtFilePath)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$txtFilePath' -f 'txt' --config='osmium.json' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
+    execAndCheck("osmium export --verbose --overwrite -o '$txtFilePath' -f 'txt' --config='$osmiumFilePath' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
     logProgress('Exported OSM data to text');
 }
 
@@ -924,7 +938,7 @@ if (is_file($geojsonFilePath)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFilePath' -f 'geojson' --config='osmium.json' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
+    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFilePath' -f 'geojson' --config='$osmiumFilePath' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
     logProgress('Exported OSM data to geojson');
 }
 
@@ -941,7 +955,7 @@ if (is_file($pgFilePath)) {
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
-    execAndCheck("osmium export --verbose --overwrite -o '$pgFilePath' -f 'pg' --config='osmium.json' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
+    execAndCheck("osmium export --verbose --overwrite -o '$pgFilePath' -f 'pg' --config='$osmiumFilePath' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
     logProgress('Exported OSM data to PostGIS tsv');
 }
 

@@ -23,7 +23,6 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install
 RUN npm install -g npm
-WORKDIR /var/www/html
 
 FROM node:17-alpine AS npm-install
 WORKDIR /app
