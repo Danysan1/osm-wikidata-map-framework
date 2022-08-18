@@ -1585,13 +1585,13 @@ function imageToDomElement(img) {
     if (typeof img == 'object' && typeof img.picture == 'string') {
         imgPreviewUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
         imgUrl = 'https://commons.wikimedia.org/wiki/File:' + img.picture;
-        imgAttribution = 'Image via ' + img.attribution;
-        console.info("imageToDomElement: object img", {img, imgUrl, imgPreviewUrl, imgAttribution});
+        imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
+        //console.info("imageToDomElement: object img", {img, imgUrl, imgPreviewUrl, imgAttribution});
     } else if (typeof img == 'string') {
         imgPreviewUrl = img;
         imgUrl = img;
         imgAttribution = null;
-        console.info("imageToDomElement: string img", {img, imgUrl, imgPreviewUrl, imgAttribution});
+        //console.info("imageToDomElement: string img", {img, imgUrl, imgPreviewUrl, imgAttribution});
     } else {
         imgPreviewUrl = null;
         imgUrl = null;
