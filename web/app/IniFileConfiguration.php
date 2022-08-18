@@ -2,11 +2,11 @@
 
 namespace App;
 
+require_once(__DIR__ . "/BaseConfiguration.php");
+
 use Exception;
 
-require_once(__DIR__ . "/Configuration.php");
-
-class IniFileConfiguration implements Configuration
+class IniFileConfiguration extends BaseConfiguration
 {
 	/**
 	 * @var array<string,mixed>
