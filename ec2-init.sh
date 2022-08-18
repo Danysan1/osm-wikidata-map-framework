@@ -1,5 +1,15 @@
 #!/bin/bash
 
+if [ -n "$(which docker-compose)" ]; then
+  echo "Docker Compose is already installed, init has already been done"
+  exit 1
+fi
+
+if [ -d "open-etymology-map" ]; then
+  echo "The open-etymology-map folder already exists, init has already been done"
+  exit 2
+fi
+
 ## https://docs.aws.amazon.com/AmazonECS/latest/developerguide/docker-basics.html#install_docker
 
 sudo yum update -y
