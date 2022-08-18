@@ -29,6 +29,7 @@ docker-compose version
 git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp open-etymology-map.template.ini web/open-etymology-map.ini
+cp promtail/config.template.yaml promtail/config.yaml
 > web/open-etymology-map.log
 docker-compose --profile "prod" pull
 docker-compose --profile "prod" up -d
@@ -36,9 +37,11 @@ docker-compose --profile "prod" up -d
 ## https://certbot.eff.org/instructions?ws=apache&os=debianbuster
 
 docker-compose exec web_prod certbot --apache
-## Rinnovo: docker-compose exec web_prod certbot renew
+## Future certificate renewal: docker-compose exec web_prod certbot renew
 
 chmod u+x ec2-update.sh
 echo '0 * * * * ./open-etymology-map/ec2-update.sh' | crontab -
 ## Logs: docker-compose logs
 
+echo 'Remember to fill web/open-etymology-map.ini !'
+echo 'Remember to fill promtail/config.yaml !'
