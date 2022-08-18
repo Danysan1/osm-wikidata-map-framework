@@ -1,5 +1,10 @@
 <?php
 
+if (php_sapi_name() != "cli") {
+    http_response_code(400);
+    die("Only runnable through CLI");
+}
+
 // This allows running the script directly or inside docker 
 $webFolder = __DIR__ . "/../" . (file_exists(__DIR__ . "/../web") ? "web" : "html");
 
@@ -12,11 +17,6 @@ use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
 use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
 use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
-
-if (php_sapi_name() != "cli") {
-    http_response_code(400);
-    die("Only runnable through CLI");
-}
 
 if (in_array("--help", $argv) || in_array("-h", $argv)) {
     echo
@@ -277,7 +277,7 @@ function setupSchema(PDO $dbh): void
     $dbh->exec(
         "CREATE TABLE oem.osmdata (
             osm_id BIGSERIAL NOT NULL PRIMARY KEY,
-            osm_geometry GEOMETRY NOT NULL,
+            osm_geometry GEOMETRY(Geometry,4326) NOT NULL,
             osm_osm_type VARCHAR(8) NOT NULL CHECK (osm_osm_type IN ('node','way','relation')),
             osm_osm_id BIGINT NOT NULL,
             osm_tags JSONB
@@ -297,7 +297,7 @@ function setupSchema(PDO $dbh): void
         "CREATE TABLE oem.wikidata (
             wd_id SERIAL NOT NULL PRIMARY KEY,
             wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
-            wd_position GEOMETRY,
+            wd_position GEOMETRY(Point,4326),
             wd_event_date TIMESTAMP,
             wd_event_date_precision INT,
             wd_start_date TIMESTAMP,
@@ -325,7 +325,7 @@ function setupSchema(PDO $dbh): void
     $dbh->exec(
         "CREATE TABLE oem.element (
             el_id BIGINT NOT NULL PRIMARY KEY,
-            el_geometry GEOMETRY NOT NULL,
+            el_geometry GEOMETRY(Geometry,4326) NOT NULL,
             el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
             el_osm_id BIGINT NOT NULL,
             el_tags JSONB,
@@ -963,6 +963,10 @@ if (is_file($pgFilePath)) {
 if ($use_db) {
     try {
         $conf = new IniEnvConfiguration();
+        if (!$conf->getBool("db-enable")) {
+            echo 'The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.';
+            exit(1);
+        }
         $host = (string)$conf->get("db_host");
         $port = (int)$conf->get("db_port");
         $dbname = (string)$conf->get("db_database");
