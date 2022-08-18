@@ -15,9 +15,9 @@ if ($conf->getBool("db-enable")) {
     echo $db->query(
         "SELECT JSON_BUILD_OBJECT(
             'type', 'FeatureCollection',
-            'features', JSON_AGG(ST_AsGeoJSON(v_global_map.*)::json)
+            'features', JSON_AGG(ST_AsGeoJSON(vm_global_map.*)::json)
         )
-        FROM oem.v_global_map"
+        FROM oem.vm_global_map"
     )->fetchColumn();
 } else { // The global map is not available without the DB
     echo '{"type":"FeatureCollection", "features":[]}';

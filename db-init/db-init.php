@@ -250,7 +250,7 @@ function setupSchema(PDO $dbh): void
     $dbh->exec('DROP TABLE IF EXISTS oem.element');
     $dbh->exec('DROP TABLE IF EXISTS oem.osmdata');
     $dbh->exec('DROP FUNCTION IF EXISTS oem.parseTimestamp');
-    $dbh->exec('DROP VIEW IF EXISTS oem.v_global_map');
+    $dbh->exec('DROP MATERIALIZED VIEW IF EXISTS oem.vm_global_map');
     $dbh->exec(
         "CREATE FUNCTION oem.parseTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
         DECLARE
@@ -401,8 +401,14 @@ function setupSchema(PDO $dbh): void
         )"
     );
     $dbh->exec("CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100')");
+    logProgress('DB schema prepared');
+}
+
+function setupGlobalMap(PDO $dbh): void
+{
+    logProgress('Preparing global map');
     $dbh->exec(
-        "CREATE VIEW oem.v_global_map AS
+        "CREATE MATERIALIZED VIEW oem.vm_global_map AS
         SELECT
             ST_ReducePrecision(ST_Centroid(el_geometry), 0.1) AS geom,
             COUNT(DISTINCT COALESCE(el_tags->>'name', el_id::TEXT)) AS num
@@ -410,7 +416,7 @@ function setupSchema(PDO $dbh): void
         JOIN oem.element ON et_el_id = el_id
         GROUP BY geom"
     );
-    logProgress('DB schema prepared');
+    logProgress('Global map prepared');
 }
 
 function isOsmDataTemporaryTableAbsent(PDO $dbh): bool
@@ -1090,6 +1096,7 @@ if ($use_db) {
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
 
+            setupGlobalMap($dbh);
             saveLastDataUpdate($sourceFilePath, $dbh);
         }
 
