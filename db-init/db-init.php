@@ -252,11 +252,11 @@ function setupSchema(PDO $dbh): void
     $dbh->exec('DROP FUNCTION IF EXISTS oem.translateTimestamp');
     $dbh->exec('DROP VIEW IF EXISTS oem.v_global_map');
     $dbh->exec(
-        "CREATE FUNCTION oem.translateTimestamp(IN txt TEXT, OUT ts TIMESTAMP) AS $$
+        "CREATE FUNCTION oem.translateTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
         DECLARE
             nonZeroTxt TEXT := REPLACE(REPLACE(txt, '0000-', '0001-'), '-00-00', '-01-01');
         BEGIN
-            ts := CASE
+            RETURN CASE
                 WHEN nonZeroTxt IS NULL THEN NULL
                 WHEN LEFT(nonZeroTxt,1)!='-' AND SPLIT_PART(nonZeroTxt,'-',1)::BIGINT>294276 THEN NULL -- Timestamp after 294276 AD, not supported
                 WHEN LEFT(nonZeroTxt,1)='-' AND SPLIT_PART(SUBSTRING(nonZeroTxt,2),'-',1)::BIGINT>4713 THEN NULL -- Timestamp before 4713 BC, not supported
