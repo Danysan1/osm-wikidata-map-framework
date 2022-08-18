@@ -249,10 +249,10 @@ function setupSchema(PDO $dbh): void
     $dbh->exec('DROP TABLE IF EXISTS oem.element_wikidata_cods');
     $dbh->exec('DROP TABLE IF EXISTS oem.element');
     $dbh->exec('DROP TABLE IF EXISTS oem.osmdata');
-    $dbh->exec('DROP FUNCTION IF EXISTS oem.translateTimestamp');
+    $dbh->exec('DROP FUNCTION IF EXISTS oem.parseTimestamp');
     $dbh->exec('DROP VIEW IF EXISTS oem.v_global_map');
     $dbh->exec(
-        "CREATE FUNCTION oem.translateTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
+        "CREATE FUNCTION oem.parseTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
         DECLARE
             nonZeroTxt TEXT := REPLACE(REPLACE(txt, '0000-', '0001-'), '-00-00', '-01-01');
         BEGIN
@@ -267,7 +267,7 @@ function setupSchema(PDO $dbh): void
         $$ LANGUAGE plpgsql;"
     );
     $dbh->exec(
-        "COMMENT ON FUNCTION oem.translateTimestamp(text) IS '
+        "COMMENT ON FUNCTION oem.parseTimestamp(text) IS '
         Takes as input an ISO 8601 timestamp string and returns a TIMESTAMP, unless the string is not representable (e.g. it overflows).
         Documentation:
         - https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-TABLE
