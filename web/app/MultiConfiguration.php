@@ -2,11 +2,12 @@
 
 namespace App;
 
-require_once(__DIR__ . "/BaseConfiguration.php");
+require_once(__DIR__ . "/Configuration.php");
 
 use Exception;
+use App\Configuration;
 
-class MultiConfiguration extends BaseConfiguration
+class MultiConfiguration implements Configuration
 {
 	/**
 	 * @var array<Configuration>

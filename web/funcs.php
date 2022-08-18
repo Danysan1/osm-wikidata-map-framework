@@ -74,7 +74,7 @@ function prepareHTML(Configuration $conf)
 			"img-src 'self' data: blob: https://api.mapbox.com https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
-			"script-src 'self' https://js.sentry-cdn.com https://browser.sentry-cdn.com $googleAnalyticsScriptSrcs ; " .
+			"script-src 'self' https://browser.sentry-cdn.com $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
 			"connect-src 'self' https://*.ingest.sentry.io https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com $googleAnalyticsConnectSrcs ; " .
