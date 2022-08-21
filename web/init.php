@@ -27,12 +27,11 @@ if ($conf->has("google-analytics-id")) {
 }
 ?>
 
-var mapbox_gl_token = <?=json_encode((string)$conf->get("mapbox-gl-token"));?>,
+var maptiler_key = <?=json_encode((string)$conf->get("maptiler_key"));?>,
     default_center_lat = <?=(float)$conf->get("default-center-lat");?>,
     default_center_lon = <?=(float)$conf->get("default-center-lon");?>,
     default_zoom = <?=(int)$conf->get("default-zoom");?>,
     thresholdZoomLevel = <?=(int)$conf->get("threshold-zoom-level");?>,
     defaultBackgroundStyle = <?=json_encode((string)$conf->get("default-background-style"));?>,
     defaultColorScheme = <?=json_encode((string)$conf->get("default-color-scheme"));?>,
-    enable_map_static_preview = <?=json_encode($conf->getBool("enable-map-static-preview"));?>,
     minZoomLevel = <?=(int)$conf->get("min-zoom-level");?>;

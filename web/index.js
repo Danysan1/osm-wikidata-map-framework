@@ -1,12 +1,22 @@
-/* global mapboxgl mapbox_gl_token MapboxLanguage MapboxGeocoder Sentry Chart thresholdZoomLevel minZoomLevel defaultBackgroundStyle defaultColorScheme default_center_lon default_center_lat default_zoom */
+/* global maplibregl maptiler_key MaplibreGeocoder Sentry Chart thresholdZoomLevel minZoomLevel defaultBackgroundStyle defaultColorScheme default_center_lon default_center_lat default_zoom */
+
+/**
+ * @see https://cloud.maptiler.com/maps/
+ * @param {string} styleId 
+ * @param {string} key 
+ * @returns {string}
+ */
+function maptilerStyleUrl(styleId, key) {
+    return 'https://api.maptiler.com/maps/' + styleId + '/style.json?key=' + key;
+}
+
 const backgroundStyles = {
-        streets: { text: 'Streets', style: 'mapbox://styles/mapbox/streets-v11' },
-        light: { text: 'Light', style: 'mapbox://styles/mapbox/light-v10' },
-        dark: { text: 'Dark', style: 'mapbox://styles/mapbox/dark-v10' },
-        //satellite: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-v9' }, // Not compatible with MapboxLanguage 
-        hybrid: { text: 'Satellite', style: 'mapbox://styles/mapbox/satellite-streets-v11' },
-        outdoors: { text: 'Outdoors', style: 'mapbox://styles/mapbox/outdoors-v11' },
-    },
+    streets: { text: 'Streets', style: maptilerStyleUrl('streets', maptiler_key) },
+    bright: { text: 'Bright', style: maptilerStyleUrl('bright', maptiler_key) },
+    hybrid: { text: 'Satellite', style: maptilerStyleUrl('hybrid', maptiler_key) },
+    outdoors: { text: 'Outdoors', style: maptilerStyleUrl('outdoor', maptiler_key) },
+    osm_carto: { text: 'OSM Carto', style: maptilerStyleUrl('openstreetmap', maptiler_key) },
+},
     colorSchemes = {
         blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
         gender: {
@@ -107,10 +117,10 @@ let colorControl;
 /**
  * Opens the information intro window
  * 
- * @param {mapboxgl.Map} map 
+ * @param {maplibregl.Map} map 
  */
 function openIntroWindow(map) {
-    new mapboxgl.Popup({
+    new maplibregl.Popup({
             closeButton: true,
             closeOnClick: true,
             closeOnMove: true,
@@ -132,7 +142,7 @@ document.addEventListener("DOMContentLoaded", initPage);
 class InfoControl {
     onAdd(map) {
         const container = document.createElement('div');
-        container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
+        container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl info-ctrl';
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'info-ctrl-button';
@@ -157,7 +167,7 @@ class BackgroundStyleControl {
         this._map = map;
 
         this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl background-style-ctrl';
+        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl background-style-ctrl';
 
         const table = document.createElement('table');
         this._container.appendChild(table);
@@ -239,7 +249,7 @@ class EtymologyColorControl {
         this._map = map;
 
         this._container = document.createElement('div');
-        this._container.className = 'mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl etymology-color-ctrl';
+        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl etymology-color-ctrl';
 
         const table = document.createElement('table');
         this._container.appendChild(table);
@@ -565,43 +575,10 @@ function getCorrectFragmentParams() {
 }
 
 /**
- * Initializes the static map preview
- * 
- * @see https://docs.mapbox.com/help/tutorials/improve-perceived-performance-with-static/
- * @see https://docs.mapbox.com/api/maps/static-images/
- * @see https://docs.mapbox.com/api/maps/static-images/#static-images-api-errors
- */
-function initMapPreview() {
-    try {
-        console.info("initMapPreview: Initializing the map preview");
-        const startPosition = getCorrectFragmentParams(),
-            lon = startPosition.lon,
-            lat = startPosition.lat,
-            zoom = startPosition.zoom,
-            map_static_preview = document.getElementById('map_static_preview'),
-            width = map_static_preview.clientWidth,
-            height = map_static_preview.clientHeight,
-            maxDimension = Math.max(width, height),
-            rescaleFactor = maxDimension <= 1280 ? 1 : 1280 / maxDimension,
-            trueWidth = Math.trunc(width * rescaleFactor),
-            trueHeight = Math.trunc(height * rescaleFactor),
-            //imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/-85.757,38.25,10/600x400?access_token=' + mapbox_gl_token;
-            imgURL = 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/' + lon + ',' + lat + ',' + zoom + '/' + trueWidth + 'x' + trueHeight + '?access_token=' + mapbox_gl_token;
-        console.info("Initializing the map preview", { startPosition, width, height, imgURL });
-
-        map_static_preview.src = imgURL;
-        map_static_preview.style.visibility = 'visible';
-        document.getElementById('map').style.visibility = 'hidden';
-    } catch (e) {
-        console.error("initMapPreview: failed initializing the map preview", e);
-    }
-}
-
-/**
  * Initializes the map
+ * @see https://docs.maptiler.com/maplibre-gl-js/tutorials/
  */
 function initMap() {
-    mapboxgl.accessToken = mapbox_gl_token;
     const startParams = getCorrectFragmentParams(),
         backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
     console.info("Initializing the map", { startParams, backgroundStyleObj });
@@ -610,17 +587,17 @@ function initMap() {
         backgroundStyle = backgroundStyleObj.style;
     } else {
         logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
-        backgroundStyle = "mapbox://styles/mapbox/streets-v11";
+        backgroundStyles.streets.style;
     }
 
-    // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-rtl-text/
-    mapboxgl.setRTLTextPlugin(
+    // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
+    maplibregl.setRTLTextPlugin(
         './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
         err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
         true // Lazy load the plugin
     );
 
-    map = new mapboxgl.Map({
+    map = new maplibregl.Map({
         container: 'map',
         style: backgroundStyle,
         center: [startParams.lon, startParams.lat], // starting position [lon, lat]
@@ -633,14 +610,6 @@ function initMap() {
 
     setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
     window.addEventListener('hashchange', (e) => hashChangeHandler(e, map), false);
-
-    try {
-        map.addControl(new MapboxLanguage({
-            defaultLanguage: document.documentElement.lang.substring(0, 2)
-        }));
-    } catch (err) {
-        logErrorMessage("Failed setting up mapbox-gl-language", "warn", err);
-    }
 }
 
 /**
@@ -656,7 +625,7 @@ function mapStyleDataHandler(e) {
  * Handles the change of fragment data
  * 
  * @param {HashChangeEvent} e The event to handle 
- * @param {mapboxgl.Map} map 
+ * @param {maplibregl.Map} map 
  * @returns {void}
  */
 function hashChangeHandler(e, map) {
@@ -831,7 +800,7 @@ function updateDataSource(event) {
  * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
  * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
  * 
- * @param {mapboxgl.Map} map
+ * @param {maplibregl.Map} map
  * @param {string} wikidata_url
  * @param {number} minZoom
  * 
@@ -927,7 +896,7 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
 /**
  * Completes low-level details of the high zoom Wikidata layer
  * 
- * @param {mapboxgl.Map} map
+ * @param {maplibregl.Map} map
  * @param {string} layerID 
  * 
  * @see prepareWikidataLayers
@@ -960,7 +929,7 @@ function onWikidataLayerClick(e) {
         const map = e.target,
             //popupPosition = e.lngLat,
             popupPosition = map.getBounds().getNorthWest(),
-            popup = new mapboxgl.Popup({
+            popup = new maplibregl.Popup({
                 closeButton: true,
                 closeOnClick: true,
                 closeOnMove: true,
@@ -1010,7 +979,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
 /**
  * Initializes the mid-zoom-level clustered layer.
  * 
- * @param {mapboxgl.Map} map
+ * @param {maplibregl.Map} map
  * @param {string} elements_url
  * @param {number} minZoom
  * @param {number} maxZoom
@@ -1034,7 +1003,7 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
  * - a layer to show the count labels on top of the clusters
  * - a layer for single points
  * 
- * @param {mapboxgl.Map} map
+ * @param {maplibregl.Map} map
  * @param {string} prefix the prefix for the name of each layer
  * @param {string} sourceDataURL
  * @param {number?} minZoom
@@ -1163,11 +1132,11 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
 /**
  * Callback for getClusterExpansionZoom which eases the map to the cluster center at the calculated zoom
  * 
- * @param {mapboxgl.Map} map
+ * @param {maplibregl.Map} map
  * @param {*} err 
  * @param {number} zoom
  * @param {number} defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
- * @param {mapboxgl.LngLatLike} center
+ * @param {maplibregl.LngLatLike} center
  * 
  * @see https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#getclusterexpansionzoom
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto
@@ -1213,6 +1182,61 @@ function mapMoveEndHandler(e) {
 }
 
 /**
+ * 
+ * @param {maplibregl.Map} map
+ * @see https://maplibre.org/maplibre-gl-js-docs/example/geocoder/
+ * @see https://github.com/maplibre/maplibre-gl-geocoder
+ * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
+ */
+function setupGeocoder(map) {
+    var geocoder_api = {
+        forwardGeocode: async (config) => {
+            const features = [];
+            try {
+                let request =
+                    'https://nominatim.openstreetmap.org/search?q=' +
+                    config.query +
+                    '&format=geojson&polygon_geojson=1&addressdetails=1';
+                const response = await fetch(request);
+                const geojson = await response.json();
+                for (let feature of geojson.features) {
+                    let center = [
+                        feature.bbox[0] +
+                        (feature.bbox[2] - feature.bbox[0]) / 2,
+                        feature.bbox[1] +
+                        (feature.bbox[3] - feature.bbox[1]) / 2
+                    ];
+                    let point = {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: center
+                        },
+                        place_name: feature.properties.display_name,
+                        properties: feature.properties,
+                        text: feature.properties.display_name,
+                        place_type: ['place'],
+                        center: center
+                    };
+                    features.push(point);
+                }
+            } catch (e) {
+                console.error(`Failed to forwardGeocode with error: ${e}`);
+            }
+
+            return {
+                features: features
+            };
+        }
+    };
+    map.addControl(
+        new MaplibreGeocoder(geocoder_api, {
+            maplibregl: maplibregl
+        })
+    );
+}
+
+/**
  * Handles the completion of map loading
  * 
  * @param {Event} e 
@@ -1235,26 +1259,21 @@ function mapLoadedHandler(e) {
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
     //map.on('zoomend', updateDataSource); // moveend is sufficient
 
-    // https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
-    map.addControl(new MapboxGeocoder({
-        accessToken: mapboxgl.accessToken,
-        collapsed: true,
-        mapboxgl: mapboxgl
-    }), 'top-left');
+    setupGeocoder(map, maptiler_key);
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
-    map.addControl(new mapboxgl.NavigationControl({
+    map.addControl(new maplibregl.NavigationControl({
         visualizePitch: true
     }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#attributioncontrol
-    /*map.addControl(new mapboxgl.AttributionControl({
+    /*map.addControl(new maplibregl.AttributionControl({
         customAttribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>'
     }), 'bottom-left');*/
 
     // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
     // Add geolocate control to the map.
-    map.addControl(new mapboxgl.GeolocateControl({
+    map.addControl(new maplibregl.GeolocateControl({
         positionOptions: {
             enableHighAccuracy: true
         },
@@ -1265,11 +1284,11 @@ function mapLoadedHandler(e) {
     }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#scalecontrol
-    map.addControl(new mapboxgl.ScaleControl({
+    map.addControl(new maplibregl.ScaleControl({
         maxWidth: 80,
         unit: 'metric'
     }), 'bottom-left');
-    map.addControl(new mapboxgl.FullscreenControl(), 'top-right');
+    map.addControl(new maplibregl.FullscreenControl(), 'top-right');
     map.addControl(new BackgroundStyleControl(), 'top-right');
     map.addControl(new InfoControl(), 'top-right');
 
@@ -1283,7 +1302,7 @@ function mapLoadedHandler(e) {
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
- * @param {mapboxgl.Map} map
+ * @param {maplibregl.Map} map
  * @param {number} maxZoom
  * 
  * @see prepareClusteredLayers
@@ -1304,29 +1323,29 @@ function prepareGlobalLayers(map, maxZoom) {
 /**
  * Set the application culture for i18n & l10n
  * 
+ * @param {maplibregl.Map} map
+ * @return {void}
+ * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
  */
-function setCulture() {
+function setCulture(map) {
     const culture = document.documentElement.lang,
         language = culture.substring(0, 2),
         nameProperty = [
             //'coalesce', ['get', 'name_' + language], ['get', `name`]
-            'get', 'name_' + language
+            'get', 'name:' + language
         ];
     console.info("setCulture", { culture, language, nameProperty });
 
-    /*if (!map) {
+    if (!map) {
         console.warn("Empty map, can't change map language");
     } else {
-        //Already handled by mapbox-gl-language constructor
         map.setLayoutProperty('country-label', 'text-field', nameProperty);
         map.setLayoutProperty('road-label', 'text-field', nameProperty);
         map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
         map.setLayoutProperty('poi-label', 'text-field', nameProperty);
-    }*/
-
-    //kendo.culture(culture);
+    }
 }
 
 /**
@@ -1628,7 +1647,7 @@ function imageToDomElement(img) {
 
 /*function popStateHandler(e) {
     console.info("popStateHandler", e);
-    const closeButtons = document.getElementsByClassName("mapboxgl-popup-close-button");
+    const closeButtons = document.getElementsByClassName("maplibregl-popup-close-button");
     for (const button of closeButtons) {
         button.click();
     }
@@ -1644,15 +1663,13 @@ function initPage(e) {
     //document.addEventListener('popstate', popStateHandler, false);
     //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
-    if (typeof mapboxgl == "undefined" || !mapboxgl) {
+    if (typeof maplibregl == "undefined" || !maplibregl) {
         alert('There was an error while loading the library used to create the map.');
-        logErrorMessage("mapboxgl is undefined. Are the JS libraries installed (npm install)?");
-    } else if (!mapboxgl.supported()) {
-        alert('Your browser does not support Mapbox GL');
-        logErrorMessage("Device/Browser does not support Mapbox GL");
+        logErrorMessage("maplibregl is undefined. Are the JS libraries installed (npm install)?");
+    } else if (!maplibregl.supported()) {
+        alert('Your browser does not support Maplibre GL');
+        logErrorMessage("Device/Browser does not support Maplibre GL");
     } else {
-        if (enable_map_static_preview)
-            initMapPreview();
         initMap();
         //setCulture(); //! Map style likely still loading, setLayoutProperty() will cause an error
     }

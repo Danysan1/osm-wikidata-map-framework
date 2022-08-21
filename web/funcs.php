@@ -71,13 +71,13 @@ function prepareHTML(Configuration $conf)
 			"default-src 'self'; " .
 			"worker-src blob: ; " .
 			"child-src blob: ; " .
-			"img-src 'self' data: blob: https://api.mapbox.com https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
+			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
 			"script-src 'self' https://js.sentry-cdn.com https://browser.sentry-cdn.com $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' https://*.ingest.sentry.io https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' https://*.ingest.sentry.io https://api.maptiler.com $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

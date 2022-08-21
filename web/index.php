@@ -9,9 +9,9 @@ use App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-if (!$conf->has("mapbox-gl-token")) {
+if (!$conf->has("maptiler_key")) {
     http_response_code(500);
-    die('<html><body>Missing Mapbox GL JS token from configuration</body></html>');
+    die('<html><body>Missing Maptiler key from configuration</body></html>');
 }
 
 $lastUpdateString = '';
@@ -78,17 +78,9 @@ $useGoogleAnalytics = $conf->has("google-analytics-id");
             href="<?= $googleAnalyticsUrl; ?>" />
     <?php
     }
-
-    $mapboxGlJsUrl = "./node_modules/mapbox-gl/dist/".($conf->getBool('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js');
     ?>
     <link rel="preload" as="script" type="application/javascript" href="./init.php">
-    <link rel="preload" as="script" type="application/javascript" href="<?= $mapboxGlJsUrl; ?>">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
     <link rel="preload" as="script" type="application/javascript" href="./index.js">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/chart.js/dist/chart.min.js">
-    <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
-    <link rel="preload" as="style" type="text/css" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
     <link rel="preload" as="style" type="text/css" href="./style.css" />
     <link rel="preload" as="fetch" type="application/geo+json" href="./global-map.php" crossorigin="anonymous" />
 
@@ -113,12 +105,11 @@ $useGoogleAnalytics = $conf->has("google-analytics-id");
     <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
     <link rel="stylesheet" href="./style.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
 
-    <script defer src='<?= $mapboxGlJsUrl; ?>' type="application/javascript"></script>
-    <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
-    <script defer src="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
+    <script src="./node_modules/maplibre-gl/dist/maplibre-gl.js" type="application/javascript"></script>
+    <link href="./node_modules/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" type="text/css"/>
+    <script src="./node_modules/@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.min.js" type="application/javascript"></script>
+    <link rel="stylesheet" href="./node_modules/@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css" type="text/css"/>
 
     <script defer src="./index.js" type="application/javascript"></script>
     <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
