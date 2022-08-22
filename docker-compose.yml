@@ -55,7 +55,7 @@ services:
     restart: "always"
     volumes:
       - ./web:/var/www/html:cached
-      - ./db-init:/var/www/db-init:cached
+      - ./init:/var/www/init:cached
     profiles:
       - dev
 

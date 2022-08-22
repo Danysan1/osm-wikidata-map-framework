@@ -18,19 +18,26 @@ use App\PostGIS_PDO;
 use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
 use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
+$fileArgumentIndex = false;
 $options = getopt(
     "hkcrpt",
-    ["help","keep-temp-tables","cleanup","hard-reset","propagate","load-text-etymology"]
+    ["help","keep-temp-tables","cleanup","reset","propagate","load-text-etymology","osmium-txt","osmium-geojson","osmium-pg","osm2pgsql"],
+    $fileArgumentIndex
 );
+if (empty($argv[$fileArgumentIndex])) {
+    echo "ERROR: You must pass as first non-option argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
+    exit(1);
+}
+$fileArgument = $argv[$fileArgumentIndex];
 
 if (isset($options["help"]) || isset($options["h"])) {
     echo
-    "Usage: php db-init.php SOURCE_FILE [OPTIONS]" . PHP_EOL .
+    "Usage: php db-init.php [OPTIONS] SOURCE_FILE.osm.pbf" . PHP_EOL .
         "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
         "\tOPTIONS: an optional combination of one or more of these flags:" . PHP_EOL .
         "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
         "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
-        "\t\t--hard-reset / -r : Do a hard reset (delete ordinary tables) before elaborating (disabled by default)" . PHP_EOL .
+        "\t\t--reset / -r : Do a hard reset (delete all tables) before elaborating (disabled by default)" . PHP_EOL .
         "\t\t--load-text-etymology / -t : Load textual etymologies (name:etymology tags) (disabled by default as it increases by a lot the execution time and file size)" . PHP_EOL .
         "\t\t--propagate / -p : Propagate etymologies to nearby homonymous highways (disabled by default, it increases the execution time)" . PHP_EOL;
     exit(0);
@@ -66,13 +73,47 @@ if ($retval !== 0 || empty($output)) {
     exit(1);
 }
 
-if (empty($argv[1])) {
-    echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
-    exit(1);
-} elseif (filter_var($argv[1], FILTER_VALIDATE_URL) !== false) {
-    // $argv[1] is an URL
+echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
+
+echo 'Temporary files will ' . ($cleanup ? '' : 'NOT ') . 'be cleaned up' . PHP_EOL;
+
+echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before loading' . PHP_EOL;
+
+echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
+
+echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
+
+if (isset($options["osmium-txt"])) {
+    echo 'Using osmium-export to txt' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_txt = TRUE;
+} elseif (isset($options["osmium-geojson"])) {
+    echo 'Using osmium-export to geojson' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_geojson = TRUE;
+} elseif (isset($options["osmium-pg"])) {
+    echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_pg = TRUE;
+} elseif (isset($options["osm2pgsql"])) {
+    echo 'Using osm2pgsql' . PHP_EOL;
+    exec("which osm2pgsql", $output, $retval);
+    if ($retval !== 0) {
+        echo "ERROR: osm2pgsql is not installed" . PHP_EOL;
+        exit(1);
+    }
+    $use_osm2pgsql = TRUE;
+} else {
+    echo 'Using osmium-export to pg (default)' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_pg = TRUE;
+}
+$use_db = $use_osm2pgsql || $convert_to_pg;
+
+if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
+    // $fileArgument is an URL
     // Example: php db-init.php http://download.geofabrik.de/europe/italy/isole-latest.osm.pbf
-    $url = $argv[1];
+    $url = $fileArgument;
     $fileName = basename(strtok($url,"?"));
     if(!str_ends_with($fileName, ".osm.pbf")) {
         echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
@@ -82,16 +123,16 @@ if (empty($argv[1])) {
     logProgress("Downloading $fileName");
     execAndCheck("curl -C - -o $sourceFilePath $url");
     logProgress("Download completed");
-} elseif (!empty(realpath(__DIR__ . "/" . $argv[1]))) {
-    // $argv[1] is a relative path from the folder of db-init
+} elseif (!empty(realpath(__DIR__ . "/" . $fileArgument))) {
+    // $fileArgument is a relative path from the folder of db-init
     // Example: php db-init.php isole-latest.osm.pbf
-    $sourceFilePath = realpath(__DIR__ . "/" . $argv[1]);
-} elseif (!empty(realpath($argv[1]))) {
-    // $argv[1] is an absolute path
+    $sourceFilePath = realpath(__DIR__ . "/" . $fileArgument);
+} elseif (!empty(realpath($fileArgument))) {
+    // $fileArgument is an absolute path
     // Example: php db-init.php /tmp/isole-latest.osm.pbf
-    $sourceFilePath = realpath($argv[1]);
+    $sourceFilePath = realpath($fileArgument);
 } else {
-    echo "ERROR: Could not deduce full path for the given file: " . $argv[1] . PHP_EOL;
+    echo "ERROR: Could not deduce full path for the given file: " . $fileArgument . PHP_EOL;
     exit(1);
 }
 
@@ -115,43 +156,6 @@ if(!str_ends_with($sourceFileName, ".osm.pbf")) {
     exit(1);
 }
 logProgress("Working on file $sourceFileName in directory $workDir");
-
-echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
-
-echo 'Temporary files will ' . ($cleanup ? '' : 'NOT ') . 'be cleaned up' . PHP_EOL;
-
-echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before loading' . PHP_EOL;
-
-echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
-
-echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
-
-if (!empty($argv[2]) && $argv[2] == "txt") {
-    echo 'Using osmium-export to txt' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_txt = TRUE;
-} elseif (!empty($argv[2]) && $argv[2] == "geojson") {
-    echo 'Using osmium-export to geojson' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_geojson = TRUE;
-} elseif (!empty($argv[2]) && $argv[2] == "pg") {
-    echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
-} elseif (!empty($argv[2]) && $argv[2] == "osm2pgsql") {
-    echo 'Using osm2pgsql' . PHP_EOL;
-    exec("which osm2pgsql", $output, $retval);
-    if ($retval !== 0) {
-        echo "ERROR: osm2pgsql is not installed" . PHP_EOL;
-        exit(1);
-    }
-    $use_osm2pgsql = TRUE;
-} else {
-    echo 'Using osmium-export to pg (default)' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
-}
-$use_db = $use_osm2pgsql || $convert_to_pg;
 
 function execAndCheck(string $command): array
 {
