@@ -18,7 +18,12 @@ use App\PostGIS_PDO;
 use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
 use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
-if (in_array("--help", $argv) || in_array("-h", $argv)) {
+$options = getopt(
+    "hkcrpt",
+    ["help","keep-temp-tables","cleanup","hard-reset","propagate","load-text-etymology"]
+);
+
+if (isset($options["help"]) || isset($options["h"])) {
     echo
     "Usage: php db-init.php SOURCE_FILE [OPTIONS]" . PHP_EOL .
         "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
@@ -40,11 +45,11 @@ $use_osm2pgsql = FALSE;
 $convert_to_geojson = FALSE;
 $convert_to_pg = FALSE;
 $convert_to_txt = FALSE;
-$keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $argv);
-$cleanup = in_array("--cleanup", $argv) || in_array("-c", $argv);
-$reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
-$propagate = in_array("--propagate", $argv) || in_array("-p", $argv);
-$load_text_etymology = in_array("--load-text-etymology", $argv) || in_array("-t", $argv);
+$keep_temp_tables = isset($options["keep-temp-tables"]) || isset($options["k"]);
+$cleanup = isset($options["cleanup"]) || isset($options["c"]);
+$reset = isset($options["hard-reset"]) || isset($options["r"]);
+$propagate = isset($options["propagate"]) || isset($options["p"]);
+$load_text_etymology = isset($options["load-text-etymology"]) || isset($options["t"]);
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -62,17 +67,29 @@ if ($retval !== 0 || empty($output)) {
 }
 
 if (empty($argv[1])) {
-    echo "ERROR: You must pass as first argument the name of the .pbf input extract" . PHP_EOL;
+    echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
     exit(1);
-}
-
-// $argv[1] can be an absolute path or a relative path from the folder of db-init
-$sourceFilePathFromRelative = realpath(__DIR__ . "/" . $argv[1]);
-$sourceFilePathFromAbsolute = realpath($argv[1]);
-if (!empty($sourceFilePathFromRelative)) {
-    $sourceFilePath = $sourceFilePathFromRelative;
-} elseif (!empty($sourceFilePathFromAbsolute)) {
-    $sourceFilePath = $sourceFilePathFromAbsolute;
+} elseif (filter_var($argv[1], FILTER_VALIDATE_URL) !== false) {
+    // $argv[1] is an URL
+    // Example: php db-init.php http://download.geofabrik.de/europe/italy/isole-latest.osm.pbf
+    $url = $argv[1];
+    $fileName = basename(strtok($url,"?"));
+    if(!str_ends_with($fileName, ".osm.pbf")) {
+        echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
+        exit(1);
+    }
+    $sourceFilePath = __DIR__."/".$fileName;
+    logProgress("Downloading $fileName");
+    execAndCheck("curl -C - -o $sourceFilePath $url");
+    logProgress("Download completed");
+} elseif (!empty(realpath(__DIR__ . "/" . $argv[1]))) {
+    // $argv[1] is a relative path from the folder of db-init
+    // Example: php db-init.php isole-latest.osm.pbf
+    $sourceFilePath = realpath(__DIR__ . "/" . $argv[1]);
+} elseif (!empty(realpath($argv[1]))) {
+    // $argv[1] is an absolute path
+    // Example: php db-init.php /tmp/isole-latest.osm.pbf
+    $sourceFilePath = realpath($argv[1]);
 } else {
     echo "ERROR: Could not deduce full path for the given file: " . $argv[1] . PHP_EOL;
     exit(1);
@@ -93,6 +110,10 @@ function logProgress(string $message): void
 
 $workDir = dirname($sourceFilePath);
 $sourceFileName = basename($sourceFilePath);
+if(!str_ends_with($sourceFileName, ".osm.pbf")) {
+    echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
+    exit(1);
+}
 logProgress("Working on file $sourceFileName in directory $workDir");
 
 echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
