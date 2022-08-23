@@ -223,7 +223,7 @@ class BackgroundStyleControl {
         if (backgroundStyleObj) {
             this._map.setStyle(backgroundStyleObj.style);
             this._ctrlDropDown.className = 'hiddenElement';
-            setCulture();
+            setCulture(this._map);
             //updateDataSource(event);
         } else {
             logErrorMessage("Invalid selected background style", "error", { style: event.target.value });
@@ -617,7 +617,7 @@ function initMap() {
  * @param {MapDataEvent} e The event to handle 
  */
 function mapStyleDataHandler(e) {
-    console.info("Map style data loaded", e);
+    //console.info("Map style data loaded", e);
     //setCulture();
 }
 
@@ -1248,7 +1248,7 @@ function mapLoadedHandler(e) {
     document.getElementById('map').style.visibility = 'visible';
     document.getElementById('map_static_preview').style.visibility = 'hidden';
 
-    setCulture();
+    setCulture(map);
     //openIntroWindow(map);
 
     mapMoveEndHandler(e);
@@ -1325,26 +1325,22 @@ function prepareGlobalLayers(map, maxZoom) {
  * 
  * @param {maplibregl.Map} map
  * @return {void}
+ * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
  * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
  */
 function setCulture(map) {
     const culture = document.documentElement.lang,
-        language = culture.substring(0, 2),
-        nameProperty = [
-            //'coalesce', ['get', 'name_' + language], ['get', `name`]
-            'get', 'name:' + language
-        ];
-    console.info("setCulture", { culture, language, nameProperty });
+        language = culture.split('-')[0];
 
     if (!map) {
-        console.warn("Empty map, can't change map language");
+        console.warn("setCulture: Empty map, can't change map language");
     } else {
-        map.setLayoutProperty('country-label', 'text-field', nameProperty);
-        map.setLayoutProperty('road-label', 'text-field', nameProperty);
-        map.setLayoutProperty('settlement-label', 'text-field', nameProperty);
-        map.setLayoutProperty('poi-label', 'text-field', nameProperty);
+        const symbolLayers = map.getStyle().layers.filter(layer => layer.type == 'symbol'),
+            nameLayerIds = symbolLayers.map(layer => layer.id).filter(id => map.getLayoutProperty(id, 'text-field') == '{name:latin}' || Array.isArray(map.getLayoutProperty(id, 'text-field')));
+        //console.info("setCulture", { culture, language, symbolLayers, nameLayerIds });
+        nameLayerIds.forEach(id => map.setLayoutProperty(id, 'text-field', ['coalesce', ['get', 'name:' + language], ['get', 'name']]))
     }
 }
 
