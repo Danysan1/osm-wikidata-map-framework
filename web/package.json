@@ -1,9 +1,22 @@
 {
     "name": "open-etymology-map",
     "version": "1.0.0",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "dev": "webpack --mode=development",
+        "watch": "webpack --mode=development --watch",
+        "prod": "webpack --mode=production"
+    },
     "dependencies": {
-        "@mapbox/mapbox-gl-rtl-text": "^0.2.3",
+        "@mapbox/mapbox-gl-rtl-text": "^0.2.3"
+    },
+    "devDependencies": {
+        "css-loader": "^6.7.1",
+        "mini-css-extract-plugin": "^2.6.1",
+        "webpack": "^5.74.0",
+        "webpack-cli": "^4.10.0",
         "@maplibre/maplibre-gl-geocoder": "^1.4.2",
+        "@maptiler/geocoder": "^1.1.0",
         "chart.js": "^3.6.0",
         "maplibre-gl": "^2.3.0"
     }

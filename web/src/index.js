@@ -1,521 +1,27 @@
-/* global maplibregl maptiler_key MaplibreGeocoder Sentry Chart thresholdZoomLevel minZoomLevel defaultBackgroundStyle defaultColorScheme default_center_lon default_center_lat default_zoom */
+import { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl';
+import { logErrorMessage, getCorrectFragmentParams, setFragmentParams, defaultColorScheme } from './common';
+//import { NominatimGeocoderControl } from './NominatimGeocoderControl';
+import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
+import { BackgroundStyleControl, backgroundStyles } from './BackgroundStyleControl';
+import { EtymologyColorControl, colorSchemes } from './EtymologyColorControl';
+import { InfoControl, openInfoWindow } from './InfoControl';
 
-/**
- * @see https://cloud.maptiler.com/maps/
- * @param {string} styleId 
- * @param {string} key 
- * @returns {string}
- */
-function maptilerStyleUrl(styleId, key) {
-    return 'https://api.maptiler.com/maps/' + styleId + '/style.json?key=' + key;
-}
+import 'maplibre-gl/dist/maplibre-gl.css';
+import './style.css';
 
-const backgroundStyles = {
-    streets: { text: 'Streets', style: maptilerStyleUrl('streets', maptiler_key) },
-    bright: { text: 'Bright', style: maptilerStyleUrl('bright', maptiler_key) },
-    hybrid: { text: 'Satellite', style: maptilerStyleUrl('hybrid', maptiler_key) },
-    outdoors: { text: 'Outdoors', style: maptilerStyleUrl('outdoor', maptiler_key) },
-    osm_carto: { text: 'OSM Carto', style: maptilerStyleUrl('openstreetmap', maptiler_key) },
-},
-    colorSchemes = {
-        blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
-        gender: {
-            colorField: 'gender_color',
-            text: 'By gender',
-            color: ["coalesce", ['get', 'gender_color'], "#223b53"],
-            urlCode: "genderStats",
-        },
-        type: {
-            colorField: 'type_color',
-            text: 'By type',
-            color: ["coalesce", ['get', 'type_color'], "#223b53"],
-            urlCode: "typeStats",
-        },
-        black: { text: 'Uniform black', color: '#223b53', legend: null },
-        red: { text: 'Uniform red', color: '#e55e5e', legend: null },
-        orange: { text: 'Uniform orange', color: '#fbb03b', legend: null },
-    };
+const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.content,
+    thresholdZoomLevel = parseInt(document.head.querySelector('meta[name="thresholdZoomLevel"]')?.content),
+    minZoomLevel = parseInt(document.head.querySelector('meta[name="minZoomLevel"]')?.content),
+    defaultBackgroundStyle = document.head.querySelector('meta[name="defaultBackgroundStyle"]')?.content;
 
-/**
- * 
- * @param {string} message 
- * @param {string} level Log level (default "error")
- * @param {object} extra 
- */
-function logErrorMessage(message, level = "error", extra = undefined) {
-    console.error(message, extra);
-    if (typeof Sentry != 'undefined') {
-        if (extra instanceof Error)
-            Sentry.captureException(extra, { level, extra: message });
-        else
-            Sentry.captureMessage(message, { level, extra });
-    }
-}
-
-/**
- * @typedef {Object} FragmentParams
- * @property {number?} lon
- * @property {number?} lat
- * @property {number?} zoom
- * @property {string?} colorScheme
- */
-
-/**
- * Gets the parameters passed through the fragment
- * 
- * @returns {FragmentParams} Parameters passed through the fragment
- */
-function getFragmentParams() {
-    const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
-        out = {
-            lon: (hashParams && hashParams[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : undefined,
-            lat: (hashParams && hashParams[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : undefined,
-            zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : undefined,
-            colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : undefined,
-        };
-    //console.info("getFragmentParams", hashParams, out);
-    return out;
-}
-
-/**
- * If a parameter is !== undefined it is updated in the fragment.
- * If it is === is left untouched
- * 
- * @param {number?} lon
- * @param {number?} lat
- * @param {number?} zoom
- * @param {string?} colorScheme
- * @returns {string} The fragment actually set
- */
-function setFragmentParams(lon, lat, zoom, colorScheme) {
-    const currentParams = getFragmentParams()
-    let p = currentParams;
-
-    if (lon !== undefined) p.lon = lon.toFixed(3);
-    if (lat !== undefined) p.lat = lat.toFixed(3);
-    if (zoom !== undefined) p.zoom = zoom.toFixed(1);
-    if (colorScheme !== undefined) p.colorScheme = colorScheme;
-
-    const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
-    window.location.hash = fragment;
-    console.info("setFragmentParams", currentParams, p, fragment);
-    return fragment;
-}
-
-console.info("start", {
+console.info("index start", {
     thresholdZoomLevel,
     minZoomLevel,
     defaultBackgroundStyle,
-    defaultColorScheme,
-    default_center_lon,
-    default_center_lat,
-    default_zoom
 });
-
-let colorControl;
-
-/**
- * Opens the information intro window
- * 
- * @param {maplibregl.Map} map 
- */
-function openIntroWindow(map) {
-    new maplibregl.Popup({
-            closeButton: true,
-            closeOnClick: true,
-            closeOnMove: true,
-            maxWidth: 'none',
-            className: "oem_info_popup"
-        }).setLngLat(map.getBounds().getNorthWest())
-        .setDOMContent(document.getElementById("intro").cloneNode(true))
-        .addTo(map);
-}
 
 document.addEventListener("DOMContentLoaded", initPage);
 
-/**
- * Let the user re-open the info window.
- * 
- * Control implemented as ES6 class
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
- */
-class InfoControl {
-    onAdd(map) {
-        const container = document.createElement('div');
-        container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl info-ctrl';
-
-        const ctrlBtn = document.createElement('button');
-        ctrlBtn.className = 'info-ctrl-button';
-        ctrlBtn.title = 'Info about Open Etymology Map';
-        ctrlBtn.textContent = 'ℹ️';
-        ctrlBtn.onclick = () => openIntroWindow(map);
-        container.appendChild(ctrlBtn);
-
-        return container;
-    }
-}
-
-/**
- * Let the user choose the map style.
- * 
- * Control implemented as ES6 class
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
- **/
-class BackgroundStyleControl {
-
-    onAdd(map) {
-        this._map = map;
-
-        this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl background-style-ctrl';
-
-        const table = document.createElement('table');
-        this._container.appendChild(table);
-
-        const tr = document.createElement('tr');
-        table.appendChild(tr);
-
-        const td1 = document.createElement('td'),
-            td2 = document.createElement('td');
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-
-        const ctrlBtn = document.createElement('button');
-        ctrlBtn.className = 'background-style-ctrl-button';
-        ctrlBtn.title = 'Choose background style';
-        ctrlBtn.textContent = '🌐';
-        // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
-        ctrlBtn.onclick = this.btnClickHandler.bind(this);
-        td2.appendChild(ctrlBtn);
-
-        this._ctrlDropDown = document.createElement('select');
-        this._ctrlDropDown.className = 'hiddenElement';
-        this._ctrlDropDown.title = 'Background style';
-        this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
-        td1.appendChild(this._ctrlDropDown);
-
-        for (const [name, style] of Object.entries(backgroundStyles)) {
-            const option = document.createElement('option');
-            option.innerText = style.text;
-            option.value = name;
-            if (name === defaultBackgroundStyle) {
-                option.selected = true;
-            }
-            this._ctrlDropDown.appendChild(option);
-        }
-
-        return this._container;
-    }
-
-    onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-    }
-
-    btnClickHandler(event) {
-        console.info("BackgroundStyleControl button click", event);
-        this._ctrlDropDown.className = 'visibleDropDown';
-    }
-
-    dropDownClickHandler(event) {
-        const backgroundStyleObj = backgroundStyles[event.target.value];
-        console.info("BackgroundStyleControl dropDown click", { backgroundStyleObj, event });
-        if (backgroundStyleObj) {
-            this._map.setStyle(backgroundStyleObj.style);
-            this._ctrlDropDown.className = 'hiddenElement';
-            setCulture(this._map);
-            //updateDataSource(event);
-        } else {
-            logErrorMessage("Invalid selected background style", "error", { style: event.target.value });
-        }
-    }
-
-}
-
-/**
- * Let the user choose a color scheme
- * 
- * Control implemented as ES6 class
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
- * @see https://docs.mapbox.com/mapbox-gl-js/example/data-driven-circle-colors/
- * @see https://docs.mapbox.com/mapbox-gl-js/example/color-switcher/
- * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setpaintproperty
- * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-1/
- * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-2/
- **/
-class EtymologyColorControl {
-
-    onAdd(map) {
-        this._map = map;
-
-        this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl etymology-color-ctrl';
-
-        const table = document.createElement('table');
-        this._container.appendChild(table);
-
-        const tr = document.createElement('tr');
-        table.appendChild(tr);
-
-        const td1 = document.createElement('td'),
-            td2 = document.createElement('td');
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-
-        const ctrlBtn = document.createElement('button');
-        ctrlBtn.className = 'etymology-color-ctrl-button';
-        ctrlBtn.title = 'Choose color scheme';
-        ctrlBtn.textContent = '🎨';
-        // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
-        ctrlBtn.onclick = this.btnClickHandler.bind(this);
-        /*td2.appendChild(ctrlBtn);
-        td2.className = 'button-cell';*/
-        td1.appendChild(ctrlBtn);
-        td1.className = 'button-cell';
-
-        this._ctrlDropDown = document.createElement('select');
-        //this._ctrlDropDown.className = 'hiddenElement';
-        this._ctrlDropDown.className = 'visibleDropDown';
-        this._ctrlDropDown.title = 'Color scheme';
-        this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
-        /*td1.appendChild(this._ctrlDropDown);
-        td1.className = 'dropdown-cell';*/
-        td2.appendChild(this._ctrlDropDown);
-        td2.className = 'dropdown-cell';
-
-        for (const [value, scheme] of Object.entries(colorSchemes)) {
-            const option = document.createElement('option');
-            option.innerText = scheme.text;
-            option.value = value;
-            if (value === getCorrectFragmentParams().colorScheme) {
-                option.selected = true;
-            }
-            this._ctrlDropDown.appendChild(option);
-        }
-        this._ctrlDropDown.dispatchEvent(new Event("change"))
-
-        //setFragmentParams(undefined, undefined, undefined, defaultColorScheme); //! Creates a bug when using geo-localization or location search
-
-        return this._container;
-    }
-
-    onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
-    }
-
-    btnClickHandler(event) {
-        console.info("EtymologyColorControl button click", event);
-        this._ctrlDropDown.className = 'visibleDropDown';
-    }
-
-    /**
-     * @returns {string} The current color scheme
-     */
-    getColorScheme() {
-        return this._ctrlDropDown?.value;
-    }
-
-    /**
-     * @param {string} colorScheme 
-     * @returns {void}
-     */
-    setColorScheme(colorScheme) {
-        console.info("EtymologyColorControl setColorScheme", {colorScheme});
-        if (!this._ctrlDropDown || !this._ctrlDropDown.options) {
-            console.warn("setColorScheme: dropdown not yet initialized");
-        } else {
-            this._ctrlDropDown.options.forEach(option => {
-                if (option.value === colorScheme) {
-                    option.selected = true;
-                    this._ctrlDropDown.dispatchEvent(new Event("change"));
-                    return;
-                }
-            });
-            console.error("EtymologyColorControl setColorScheme: invalid color scheme", {colorScheme});
-        }
-    }
-
-    /**
-     * 
-     * @param {Event} event
-     * @returns {void}
-     */
-    dropDownClickHandler(event) {
-        const colorScheme = event.target.value,
-            colorSchemeObj = colorSchemes[colorScheme];
-        let color;
-
-        if (colorSchemeObj) {
-            color = colorSchemeObj.color;
-        } else {
-            logErrorMessage("Invalid selected color scheme", "error", { colorScheme });
-            color = '#3bb2d0';
-        }
-        console.info("EtymologyColorControl dropDown click", { event, colorScheme, colorSchemeObj, color });
-
-        [
-            ["wikidata_layer_point", "circle-color"],
-            ["wikidata_layer_lineString", 'line-color'],
-            ["wikidata_layer_polygon_fill", 'fill-color'],
-            ["wikidata_layer_polygon_border", 'line-color'],
-        ].forEach(([layerID, property]) => {
-            if (this._map.getLayer(layerID)) {
-                this._map.setPaintProperty(layerID, property, color);
-            } else {
-                console.warn("Layer does not exist, can't set property", { layerID, property, color });
-            }
-        });
-
-        this.updateChart(event);
-
-        setFragmentParams(undefined, undefined, undefined, colorScheme);
-        //updateDataSource(event);
-    }
-
-    /**
-     * @param {Event} event
-     * @returns {void}
-     */
-    updateChart(event) {
-        if (!this._ctrlDropDown) {
-            logErrorMessage("EtymologyColorControl updateChart: dropodown not inizialized");
-            return;
-        }
-
-        const colorScheme = colorSchemes[this._ctrlDropDown.value],
-            map = event.target, 
-            bounds = map.getBounds ? map.getBounds() : null;
-        //console.info("updateChart", { event, colorScheme });
-
-        if (!bounds) {
-            //console.warn("EtymologyColorControl updateChart: missing bounds");
-        } else if (colorScheme && colorScheme.urlCode) {
-            let data = {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [],
-                }]
-            };
-
-            console.info("updateChart main: URL code", { colorScheme });
-            if (this._chartXHR)
-                this._chartXHR.abort();
-
-            const southWest = bounds.getSouthWest(),
-                minLat = southWest.lat,
-                minLon = southWest.lng,
-                northEast = bounds.getNorthEast(),
-                maxLat = northEast.lat,
-                maxLon = northEast.lng,
-                language = document.documentElement.lang,
-                queryParams = {
-                    from: "bbox",
-                    to: colorScheme.urlCode,
-                    minLat: Math.floor(minLat*1000)/1000, // 0.1234 => 0.124 
-                    minLon: Math.floor(minLon*1000)/1000,
-                    maxLat: Math.ceil(maxLat*1000)/1000, // 0.1234 => 0.123
-                    maxLon: Math.ceil(maxLon*1000)/1000,
-                    language,
-                },
-                queryString = new URLSearchParams(queryParams).toString(),
-                stats_url = './stats.php?' + queryString,
-                xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = (e) => {
-                const readyState = xhr.readyState,
-                    status = xhr.status;
-                if (readyState == XMLHttpRequest.DONE) {
-                    if (status == 200) {
-                        JSON.parse(xhr.responseText).forEach(row => {
-                            data.datasets[0].backgroundColor.push(row.color);
-                            data.labels.push(row["name"]);
-                            data.datasets[0].data.push(row["count"]);
-                        });
-                        this.setChartData(data);
-                    } else if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-                        console.info("XHR aborted", { xhr, readyState, status, e });
-                    } else {
-                        console.error("XHR error", { xhr, readyState, status, e });
-                        //if (event.type && event.type == 'change')
-                        //    this._ctrlDropDown.className = 'hiddenElement';
-                        this.removeChart();
-                    }
-                }
-            }
-            xhr.open('GET', stats_url, true);
-            xhr.send();
-            this._chartXHR = xhr;
-        } else {
-            if (event.type && event.type == 'change')
-                this._ctrlDropDown.className = 'hiddenElement';
-            this.removeChart();
-        }
-    }
-
-    createChartFromLegend(legend) {
-        let data = {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [],
-            }]
-        };
-        legend.forEach(row => {
-            data.datasets[0].backgroundColor.push(row[0]);
-            data.labels.push(row[1]);
-            data.datasets[0].data.push(0); // dummy data
-        });
-        this.setChartData(data);
-    }
-
-    setChartData(data) {
-        console.info("setChartData", {
-            container: this._container,
-            chartElement: this._chartElement,
-            chartObject: this._chartObject,
-            data
-        });
-        if (this._chartObject && this._chartElement) {
-            // https://www.chartjs.org/docs/latest/developers/updates.html
-            this._chartObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
-            this._chartObject.data.labels = data.labels;
-            this._chartObject.data.datasets[0].data = data.datasets[0].data;
-
-            this._chartObject.update();
-        } else if (typeof Chart == "undefined" || !Chart) {
-            alert('There was an error while loading Chart.js (the library needed to create the chart)');
-            logErrorMessage("Undefined Chart (chart.js error)");
-        } else {
-            //this._legend.className = 'legend';
-            this._chartElement = document.createElement('canvas');
-            this._chartElement.className = 'chart';
-            this._container.appendChild(this._chartElement);
-            const ctx = this._chartElement.getContext('2d');
-            this._chartObject = new Chart(ctx, {
-                type: "pie",
-                data: data,
-                options: {
-                    animation: {
-                        animateScale: true,
-                    }
-                }
-            });
-        }
-    }
-
-    removeChart() {
-        if (this._chartElement) {
-            try {
-                this._container.removeChild(this._chartElement);
-                this._chartElement = undefined;
-                this._chartObject = undefined;
-            } catch (error) {
-                console.warn("Error removing old chart", { error, container: this._container, chart: this._chartElement });
-            }
-        }
-    }
-}
 
 /**
  * Show an error/info snackbar
@@ -541,40 +47,6 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 }
 
 /**
- * @typedef {Object} CorrectFragmentParams
- * @property {number} lon
- * @property {number} lat
- * @property {number} zoom
- * @property {string} colorScheme
- */
-
-/**
- * 
- * @returns {CorrectFragmentParams}
- */
-function getCorrectFragmentParams() {
-    let p = getFragmentParams();
-    if (p.lat < -90 || p.lat > 90) {
-        console.error("Invalid latitude", p.lat);
-        p.lat = undefined;
-    }
-
-    if (p.lon === undefined || p.lat === undefined || p.zoom === undefined) {
-        console.info("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
-        p.lon = default_center_lon;
-        p.lat = default_center_lat;
-        p.zoom = default_zoom;
-    }
-
-    if(p.colorScheme === undefined) {
-        console.info("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
-        p.colorScheme = defaultColorScheme;
-    }
-
-    return p;
-}
-
-/**
  * Initializes the map
  * @see https://docs.maptiler.com/maplibre-gl-js/tutorials/
  */
@@ -591,19 +63,19 @@ function initMap() {
     }
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
-    maplibregl.setRTLTextPlugin(
+    setRTLTextPlugin(
         './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
         err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
         true // Lazy load the plugin
     );
 
-    map = new maplibregl.Map({
+    map = new Map({
         container: 'map',
         style: backgroundStyle,
         center: [startParams.lon, startParams.lat], // starting position [lon, lat]
         zoom: startParams.zoom, // starting zoom
     });
-    openIntroWindow(map);
+    openInfoWindow(map);
 
     map.on('load', mapLoadedHandler);
     map.on('styledata', mapStyleDataHandler);
@@ -625,7 +97,7 @@ function mapStyleDataHandler(e) {
  * Handles the change of fragment data
  * 
  * @param {HashChangeEvent} e The event to handle 
- * @param {maplibregl.Map} map 
+ * @param {Map} map 
  * @returns {void}
  */
 function hashChangeHandler(e, map) {
@@ -661,24 +133,26 @@ function hashChangeHandler(e, map) {
 function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
-        ready = e.isSourceLoaded;
-    /*if (wikidataSourceEvent || overpassSourceEvent || ready) {
+        ready = e.isSourceLoaded,
+        map = e.target;
+    if (wikidataSourceEvent || overpassSourceEvent || ready) {
         console.info('sourcedata event', {
             type: e.dataType,
             source: e.sourceId,
             wikidataSourceEvent,
             overpassSourceEvent,
             ready,
+            map,
             e
         });
-    }*/
+    }
 
     if (ready) {
         if (wikidataSourceEvent || overpassSourceEvent) {
             //kendo.ui.progress($("#map"), false);
             showSnackbar("Data loaded", "lightgreen");
-            if (wikidataSourceEvent && colorControl) {
-                colorControl.updateChart(e);
+            if (wikidataSourceEvent && map.currentEtymologyColorControl) {
+                map.currentEtymologyColorControl.updateChart(e);
             }
         } else {
             updateDataSource(e);
@@ -800,7 +274,7 @@ function updateDataSource(event) {
  * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
  * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @param {string} wikidata_url
  * @param {number} minZoom
  * 
@@ -887,16 +361,15 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
     }
 
     if (!map.currentEtymologyColorControl) {
-        colorControl = new EtymologyColorControl();
-        map.currentEtymologyColorControl = colorControl;
-        setTimeout(() => map.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+        map.currentEtymologyColorControl = new EtymologyColorControl(getCorrectFragmentParams().colorScheme);
+        setTimeout(() => map.addControl(map.currentEtymologyColorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
     }
 }
 
 /**
  * Completes low-level details of the high zoom Wikidata layer
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @param {string} layerID 
  * 
  * @see prepareWikidataLayers
@@ -929,7 +402,7 @@ function onWikidataLayerClick(e) {
         const map = e.target,
             //popupPosition = e.lngLat,
             popupPosition = map.getBounds().getNorthWest(),
-            popup = new maplibregl.Popup({
+            popup = new Popup({
                 closeButton: true,
                 closeOnClick: true,
                 closeOnMove: true,
@@ -979,7 +452,7 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
 /**
  * Initializes the mid-zoom-level clustered layer.
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @param {string} elements_url
  * @param {number} minZoom
  * @param {number} maxZoom
@@ -1003,7 +476,7 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
  * - a layer to show the count labels on top of the clusters
  * - a layer for single points
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @param {string} prefix the prefix for the name of each layer
  * @param {string} sourceDataURL
  * @param {number?} minZoom
@@ -1132,11 +605,11 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
 /**
  * Callback for getClusterExpansionZoom which eases the map to the cluster center at the calculated zoom
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @param {*} err 
  * @param {number} zoom
  * @param {number} defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
- * @param {maplibregl.LngLatLike} center
+ * @param {LngLatLike} center
  * 
  * @see https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#getclusterexpansionzoom
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto
@@ -1183,57 +656,15 @@ function mapMoveEndHandler(e) {
 
 /**
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @see https://maplibre.org/maplibre-gl-js-docs/example/geocoder/
  * @see https://github.com/maplibre/maplibre-gl-geocoder
  * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
  */
 function setupGeocoder(map) {
-    var geocoder_api = {
-        forwardGeocode: async (config) => {
-            const features = [];
-            try {
-                let request =
-                    'https://nominatim.openstreetmap.org/search?q=' +
-                    config.query +
-                    '&format=geojson&polygon_geojson=1&addressdetails=1';
-                const response = await fetch(request);
-                const geojson = await response.json();
-                for (let feature of geojson.features) {
-                    let center = [
-                        feature.bbox[0] +
-                        (feature.bbox[2] - feature.bbox[0]) / 2,
-                        feature.bbox[1] +
-                        (feature.bbox[3] - feature.bbox[1]) / 2
-                    ];
-                    let point = {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: center
-                        },
-                        place_name: feature.properties.display_name,
-                        properties: feature.properties,
-                        text: feature.properties.display_name,
-                        place_type: ['place'],
-                        center: center
-                    };
-                    features.push(point);
-                }
-            } catch (e) {
-                console.error(`Failed to forwardGeocode with error: ${e}`);
-            }
-
-            return {
-                features: features
-            };
-        }
-    };
-    map.addControl(
-        new MaplibreGeocoder(geocoder_api, {
-            maplibregl: maplibregl
-        })
-    );
+    //const control = new NominatimGeocoderControl({ maplibregl: maplibregl });
+    const control = new MaptilerGeocoderControl(maptiler_key);
+    map.addControl(control);
 }
 
 /**
@@ -1249,7 +680,7 @@ function mapLoadedHandler(e) {
     document.getElementById('map_static_preview').style.visibility = 'hidden';
 
     setCulture(map);
-    //openIntroWindow(map);
+    //openInfoWindow(map);
 
     mapMoveEndHandler(e);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
@@ -1262,18 +693,13 @@ function mapLoadedHandler(e) {
     setupGeocoder(map, maptiler_key);
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
-    map.addControl(new maplibregl.NavigationControl({
+    map.addControl(new NavigationControl({
         visualizePitch: true
     }), 'top-right');
 
-    // https://docs.mapbox.com/mapbox-gl-js/api/markers/#attributioncontrol
-    /*map.addControl(new maplibregl.AttributionControl({
-        customAttribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>'
-    }), 'bottom-left');*/
-
     // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
     // Add geolocate control to the map.
-    map.addControl(new maplibregl.GeolocateControl({
+    map.addControl(new GeolocateControl({
         positionOptions: {
             enableHighAccuracy: true
         },
@@ -1284,12 +710,12 @@ function mapLoadedHandler(e) {
     }), 'top-right');
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#scalecontrol
-    map.addControl(new maplibregl.ScaleControl({
+    map.addControl(new ScaleControl({
         maxWidth: 80,
         unit: 'metric'
     }), 'bottom-left');
-    map.addControl(new maplibregl.FullscreenControl(), 'top-right');
-    map.addControl(new BackgroundStyleControl(), 'top-right');
+    map.addControl(new FullscreenControl(), 'top-right');
+    map.addControl(new BackgroundStyleControl(defaultBackgroundStyle), 'top-right');
     map.addControl(new InfoControl(), 'top-right');
 
     map.on('sourcedata', mapSourceDataHandler);
@@ -1302,7 +728,7 @@ function mapLoadedHandler(e) {
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @param {number} maxZoom
  * 
  * @see prepareClusteredLayers
@@ -1323,7 +749,7 @@ function prepareGlobalLayers(map, maxZoom) {
 /**
  * Set the application culture for i18n & l10n
  * 
- * @param {maplibregl.Map} map
+ * @param {Map} map
  * @return {void}
  * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
  * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
@@ -1652,17 +1078,15 @@ function imageToDomElement(img) {
 /**
  * 
  * @param {Event} e The event to handle 
+ * @see https://maplibre.org/maplibre-gl-js-docs/example/check-for-support/
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
  */
 function initPage(e) {
     console.info("initPage", e);
     //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
     //document.addEventListener('popstate', popStateHandler, false);
     //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
-    // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
-    if (typeof maplibregl == "undefined" || !maplibregl) {
-        alert('There was an error while loading the library used to create the map.');
-        logErrorMessage("maplibregl is undefined. Are the JS libraries installed (npm install)?");
-    } else if (!maplibregl.supported()) {
+    if (!supported()) {
         alert('Your browser does not support Maplibre GL');
         logErrorMessage("Device/Browser does not support Maplibre GL");
     } else {

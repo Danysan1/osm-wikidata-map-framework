@@ -55,6 +55,18 @@ $useGoogleAnalytics = $conf->has("google-analytics-id");
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
+    <meta name="maptiler_key" content="<?=(string)$conf->get("maptiler_key");?>" />
+    <meta name="default_center_lat" content="<?=(float)$conf->get("default-center-lat");?>" />
+    <meta name="default_center_lon" content="<?=(float)$conf->get("default-center-lon");?>" />
+    <meta name="default_zoom" content="<?=(int)$conf->get("default-zoom");?>" />
+    <meta name="thresholdZoomLevel" content="<?=(int)$conf->get("threshold-zoom-level");?>" />
+    <meta name="minZoomLevel" content="<?=(int)$conf->get("min-zoom-level");?>" />
+    <meta name="defaultBackgroundStyle" content="<?=(string)$conf->get("default-background-style");?>" />
+    <meta name="defaultColorScheme" content="<?=(string)$conf->get("default-color-scheme");?>" />
+    <meta name="google_analytics_id" content="<?=$conf->has("google-analytics-id") ? (string)$conf->get("google-analytics-id") : '';?>" />
+    <meta name="sentry_js_url" content="<?=$conf->has("sentry_js_url") ? (string)$conf->get("sentry-js-url") : '';?>" />
+    <meta name="sentry_js_env" content="<?=$conf->has("sentry_js_env") ? (string)$conf->get("sentry-js-env") : '';?>" />
+
     <?php
     if ($useSentry) { 
         $sentryUrl = (string)$conf->get('sentry-js-url');
@@ -79,9 +91,9 @@ $useGoogleAnalytics = $conf->has("google-analytics-id");
     <?php
     }
     ?>
-    <link rel="preload" as="script" type="application/javascript" href="./init.php">
-    <link rel="preload" as="script" type="application/javascript" href="./index.js">
-    <link rel="preload" as="style" type="text/css" href="./style.css" />
+    <link rel="preload" as="script" type="application/javascript" href="./init.js">
+    <link rel="preload" as="script" type="application/javascript" href="./dist/main.js">
+    <link rel="preload" as="style" type="text/css" href="./dist/main.css" />
     <link rel="preload" as="fetch" type="application/geo+json" href="./global-map.php" crossorigin="anonymous" />
 
     <meta charset="UTF-8">
@@ -99,20 +111,14 @@ $useGoogleAnalytics = $conf->has("google-analytics-id");
     <?php
     }
     ?>
-    <script src="./init.php" type="application/javascript"></script>
+    <script defer src="./init.js" type="application/javascript"></script>
 
     <title>Open Etymology Map</title>
     <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
-    <link rel="stylesheet" href="./style.css" type="text/css" />
+    <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
-    <script src="./node_modules/maplibre-gl/dist/maplibre-gl.js" type="application/javascript"></script>
-    <link href="./node_modules/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" type="text/css"/>
-    <script src="./node_modules/@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.min.js" type="application/javascript"></script>
-    <link rel="stylesheet" href="./node_modules/@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css" type="text/css"/>
-
-    <script defer src="./index.js" type="application/javascript"></script>
-    <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
+    <script defer src="./dist/main.js" type="application/javascript"></script>
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://etymology.dsantini.it/" />
