@@ -57,7 +57,7 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
-        setTimeout(function() { x.className = x.className.replace("show", ""); }, timeout);
+        setTimeout(function () { x.className = x.className.replace("show", ""); }, timeout);
     }
     return x;
 }
@@ -135,7 +135,7 @@ function hashChangeHandler(e, map) {
         });
     }
 
-    if(currColorScheme != newParams.colorScheme)
+    if (currColorScheme != newParams.colorScheme)
         map.currentEtymologyColorControl?.setColorScheme(map, newParams.colorScheme);
 }
 
@@ -226,13 +226,13 @@ function updateDataSource(event) {
 
     if (enableWikidataLayers) {
         const queryParams = {
-                from: "bbox",
-                minLat: Math.floor(minLat*1000)/1000, // 0.1234 => 0.124 
-                minLon: Math.floor(minLon*1000)/1000,
-                maxLat: Math.ceil(maxLat*1000)/1000, // 0.1234 => 0.123
-                maxLon: Math.ceil(maxLon*1000)/1000,
-                language,
-            },
+            from: "bbox",
+            minLat: Math.floor(minLat * 1000) / 1000, // 0.1234 => 0.124 
+            minLon: Math.floor(minLon * 1000) / 1000,
+            maxLat: Math.ceil(maxLat * 1000) / 1000, // 0.1234 => 0.123
+            maxLon: Math.ceil(maxLon * 1000) / 1000,
+            language,
+        },
             queryString = new URLSearchParams(queryParams).toString(),
             wikidata_url = './etymologyMap.php?' + queryString;
 
@@ -252,14 +252,14 @@ function updateDataSource(event) {
         //showSnackbar("Please zoom more to see data", "orange");
     } else if (enableElementLayers) {
         const queryParams = {
-                from: "bbox",
-                onlyCenter: true,
-                minLat: Math.floor(minLat*10)/10, // 0.1234 => 0.2
-                minLon: Math.floor(minLon*10)/10,
-                maxLat: Math.ceil(maxLat*10)/10, // 0.1234 => 0.1
-                maxLon: Math.ceil(maxLon*10)/10,
-                language,
-            },
+            from: "bbox",
+            onlyCenter: true,
+            minLat: Math.floor(minLat * 10) / 10, // 0.1234 => 0.2
+            minLon: Math.floor(minLon * 10) / 10,
+            maxLat: Math.ceil(maxLat * 10) / 10, // 0.1234 => 0.1
+            maxLon: Math.ceil(maxLon * 10) / 10,
+            language,
+        },
             queryString = new URLSearchParams(queryParams).toString(),
             elements_url = './elements.php?' + queryString;
 
@@ -425,12 +425,12 @@ function onWikidataLayerClick(e) {
                 maxWidth: "none",
                 className: "oem_etymology_popup"
             })
-            .setLngLat(popupPosition)
-            //.setMaxWidth('95vw')
-            //.setOffset([10, 0])
-            //.setHTML(featureToHTML(e.features[0]));
-            .setHTML('<div class="detail_wrapper"></div>')
-            .addTo(map);
+                .setLngLat(popupPosition)
+                //.setMaxWidth('95vw')
+                //.setOffset([10, 0])
+                //.setHTML(featureToHTML(e.features[0]));
+                .setHTML('<div class="detail_wrapper"></div>')
+                .addTo(map);
         console.info("onWikidataLayerClick: showing etymology popup", { e, popup });
         popup.getElement().querySelector(".detail_wrapper").appendChild(featureToDomElement(e.features[0]));
         e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
@@ -505,7 +505,7 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
  * @see https://github.com/mapbox/mapbox-gl-js/issues/2898
  */
- function prepareClusteredLayers(
+function prepareClusteredLayers(
     map,
     prefix,
     sourceDataURL,
@@ -515,10 +515,10 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
     countFieldName = 'point_count',
     countShowFieldName = 'point_count_abbreviated'
 ) {
-    const sourceName = prefix+'_source',
-        clusterLayerName = prefix+'_layer_cluster',
-        countLayerName = prefix+'_layer_count',
-        pointLayerName = prefix+'_layer_point';
+    const sourceName = prefix + '_source',
+        clusterLayerName = prefix + '_layer_cluster',
+        countLayerName = prefix + '_layer_count',
+        pointLayerName = prefix + '_layer_point';
     if (!map.getSource(sourceName)) {
         map.addSource(sourceName, {
             type: 'geojson',
@@ -531,7 +531,7 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
             clusterProperties: clusterProperties,
             clusterMinPoints: 1
         });
-        console.info("prepareClusteredLayers "+sourceName, {maxZoom, source: map.getSource(sourceName)});
+        console.info("prepareClusteredLayers " + sourceName, { maxZoom, source: map.getSource(sourceName) });
     }
 
     if (!map.getLayer(clusterLayerName)) {
@@ -544,16 +544,16 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
             filter: ['has', countFieldName],
             paint: clusterPaintFromField(countFieldName),
         });
-        
+
 
         // inspect a cluster on click
         map.on('click', clusterLayerName, (e) => {
             const features = map.queryRenderedFeatures(e.point, {
-                    layers: [clusterLayerName]
-                }),
+                layers: [clusterLayerName]
+            }),
                 clusterId = features[0].properties.cluster_id,
                 center = features[0].geometry.coordinates;
-            console.info('Click '+clusterLayerName, features, clusterId, center);
+            console.info('Click ' + clusterLayerName, features, clusterId, center);
             map.getSource(sourceName).getClusterExpansionZoom(
                 clusterId, (err, zoom) => easeToClusterCenter(map, err, zoom, maxZoom + 0.5, center)
             );
@@ -562,7 +562,7 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
         map.on('mouseenter', clusterLayerName, () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', clusterLayerName, () => map.getCanvas().style.cursor = '');
 
-        console.info("prepareClusteredLayers "+clusterLayerName, {minZoom, maxZoom, layer: map.getLayer(clusterLayerName)});
+        console.info("prepareClusteredLayers " + clusterLayerName, { minZoom, maxZoom, layer: map.getLayer(clusterLayerName) });
     }
 
     if (!map.getLayer(countLayerName)) {
@@ -574,12 +574,12 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
             minzoom: minZoom,
             filter: ['has', countShowFieldName],
             layout: {
-                'text-field': '{'+countShowFieldName+'}',
+                'text-field': '{' + countShowFieldName + '}',
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12
             }
         });
-        console.info("prepareClusteredLayers "+countLayerName, {minZoom, maxZoom, layer: map.getLayer(countLayerName)});
+        console.info("prepareClusteredLayers " + countLayerName, { minZoom, maxZoom, layer: map.getLayer(countLayerName) });
     }
 
     if (!map.getLayer(pointLayerName)) {
@@ -601,10 +601,10 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
 
         map.on('click', pointLayerName, (e) => {
             const features = map.queryRenderedFeatures(e.point, {
-                    layers: [pointLayerName]
-                }),
+                layers: [pointLayerName]
+            }),
                 center = features[0].geometry.coordinates;
-            console.info('Click '+pointLayerName, features, center);
+            console.info('Click ' + pointLayerName, features, center);
             map.easeTo({
                 center: center,
                 zoom: maxZoom + 0.5
@@ -613,8 +613,8 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
 
         map.on('mouseenter', pointLayerName, () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', pointLayerName, () => map.getCanvas().style.cursor = '');
-        
-        console.info("prepareClusteredLayers "+pointLayerName, {minZoom, maxZoom, layer: map.getLayer(pointLayerName)});
+
+        console.info("prepareClusteredLayers " + pointLayerName, { minZoom, maxZoom, layer: map.getLayer(pointLayerName) });
     }
 }
 
@@ -631,7 +631,7 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto
  * @see https://docs.mapbox.com/mapbox-gl-js/api/properties/#cameraoptions
  */
- function easeToClusterCenter(map, err, zoom, defaultZoom, center) {
+function easeToClusterCenter(map, err, zoom, defaultZoom, center) {
     if (err) {
         logErrorMessage("easeToClusterCenter: Not easing because of an error", "error", err);
     } else {
@@ -850,14 +850,14 @@ function featureToDomElement(feature) {
     } else {
         element_osm_button.href = osm_url;
     }
-    
+
     if (!element_mapcomplete_button) {
         console.warn("Missing element_mapcomplete_button");
     } else {
         element_mapcomplete_button.href = mapcomplete_url;
     }
 
-    if(!element_location_button) {
+    if (!element_location_button) {
         console.warn("Missing element_location_button");
     } else {
         let coord = feature.geometry.coordinates;
@@ -867,11 +867,11 @@ function featureToDomElement(feature) {
         element_location_button.href = "#" + coord[0] + "," + coord[1] + ",18";
     }
 
-    etymologies.filter(x => x != null).forEach(function(ety) {
+    etymologies.filter(x => x != null).forEach(function (ety) {
         try {
             etymologies_container.appendChild(etymologyToDomElement(ety))
         } catch (err) {
-            logErrorMessage("Failed adding etymology", "error", {ety, err});
+            logErrorMessage("Failed adding etymology", "error", { ety, err });
         }
     });
 
@@ -879,7 +879,7 @@ function featureToDomElement(feature) {
         const textEtymologyAlreadyShownByWikidata = etymologies.some(
             ety => ety?.name?.toLowerCase() == feature.properties.text_etymology.toLowerCase()
         );
-        if(textEtymologyAlreadyShownByWikidata) {
+        if (textEtymologyAlreadyShownByWikidata) {
             console.info("featureToDomElement: ignoring text etymology because already shown");
         } else {
             etymologies_container.appendChild(etymologyToDomElement({
@@ -1009,7 +1009,7 @@ function etymologyToDomElement(ety) {
     }
 
     if (ety.pictures) {
-        ety.pictures.forEach(function(img, n) {
+        ety.pictures.forEach(function (img, n) {
             if (n < 5) {
                 pictures.appendChild(imageToDomElement(img));
             }
@@ -1037,7 +1037,7 @@ function imageToDomElement(img) {
         picture = document.createElement('img'),
         attribution = document.createElement('p'),
         imgContainer = document.createElement('div');
-    
+
     let imgUrl, imgPreviewUrl, imgAttribution;
     if (typeof img == 'object' && typeof img.picture == 'string') {
         imgPreviewUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
@@ -1053,7 +1053,7 @@ function imageToDomElement(img) {
         imgPreviewUrl = null;
         imgUrl = null;
         imgAttribution = null;
-        console.warn("imageToDomElement: bad img", {img});
+        console.warn("imageToDomElement: bad img", { img });
     }
 
     if (imgUrl && imgPreviewUrl) {
