@@ -20,19 +20,6 @@ function maptilerBackgroundStyle(id, text, maptilerId, maptilerKey) {
 }
 
 /**
- * @see https://docs.mapbox.com/api/maps/vector-tiles/
- * @see https://docs.mapbox.com/api/maps/styles/#mapbox-styles
- * @param {string} id 
- * @param {string} text 
- * @param {string} mapboxId 
- * @param {string} mapboxToken 
- * @returns {BackgroundStyle}
- */
-function mapboxBackgroundStyle(id, text, mapboxUser, mapboxId, mapboxToken) {
-    return { id: id, text: text, styleUrl: 'https://api.mapbox.com/styles/v1/' + mapboxUser + '/' + mapboxId + '/?access_token=' + mapboxToken };
-}
-
-/**
  * Let the user choose the map style.
  * 
  * Control implemented as ES6 class
@@ -57,7 +44,7 @@ class BackgroundStyleControl {
         this._map = map;
 
         this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl background-style-ctrl';
+        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl background-style-ctrl';
 
         const table = document.createElement('table');
         this._container.appendChild(table);
@@ -113,7 +100,7 @@ class BackgroundStyleControl {
         if (backgroundStyleObj) {
             this._map.setStyle(backgroundStyleObj.styleUrl);
             this._ctrlDropDown.className = 'hiddenElement';
-            setCulture(this._map);
+            //setCulture(this._map);
             //updateDataSource(event);
         } else {
             logErrorMessage("Invalid selected background style", "error", { style: event.target.value });
@@ -122,4 +109,4 @@ class BackgroundStyleControl {
 
 }
 
-export { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle };
+export { BackgroundStyleControl, maptilerBackgroundStyle };

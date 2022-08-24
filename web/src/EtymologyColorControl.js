@@ -50,7 +50,7 @@ class EtymologyColorControl {
         this._map = map;
 
         this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group custom-ctrl etymology-color-ctrl';
+        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl etymology-color-ctrl';
 
         const table = document.createElement('table');
         this._container.appendChild(table);

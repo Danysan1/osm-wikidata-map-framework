@@ -20,7 +20,7 @@ import '@maptiler/geocoder/css/geocoder.css';
     onAdd(map) {
         this._map = map;
         this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl';
+        this._container.className = 'maplibregl-ctrl mapbox-ctrl';
         const _input = document.createElement('input');
         this._container.appendChild(_input);
         const geocoder = new Geocoder({

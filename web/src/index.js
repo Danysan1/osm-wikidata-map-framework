@@ -1,8 +1,8 @@
-import { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl';
+import { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl/dist/maplibre-gl-dev';
 import { logErrorMessage, getCorrectFragmentParams, setFragmentParams, defaultColorScheme } from './common';
 //import { NominatimGeocoderControl } from './NominatimGeocoderControl';
 import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import { BackgroundStyleControl, maptilerBackgroungStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
+import { BackgroundStyleControl, maptilerBackgroundStyle } from './BackgroundStyleControl';
 import { EtymologyColorControl, colorSchemes } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
 
@@ -14,21 +14,13 @@ const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.c
     thresholdZoomLevel = parseInt(document.head.querySelector('meta[name="thresholdZoomLevel"]')?.content),
     minZoomLevel = parseInt(document.head.querySelector('meta[name="minZoomLevel"]')?.content),
     defaultBackgroundStyle = document.head.querySelector('meta[name="defaultBackgroundStyle"]')?.content,
-    backgroundStyles = [];
-if (maptiler_key) {
-    backgroundStyles.push(
-        maptilerBackgroungStyle('maplibre_streets', 'Maplibre Streets', 'streets', maptiler_key),
-        maptilerBackgroungStyle('bright', 'Bright', 'bright', maptiler_key),
-        maptilerBackgroungStyle('hybrid', 'Satellite', 'hybrid', maptiler_key),
-        maptilerBackgroungStyle('outdoors', 'Outdoors', 'outdoor', maptiler_key),
-        maptilerBackgroungStyle('osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
-    );
-}
-if (mapbox_token) {
-    backgroundStyles.push(
-        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', '', mapbox_token)
-    );
-}
+    backgroundStyles = [
+        maptilerBackgroundStyle('maplibre_streets', 'Maplibre Streets', 'streets', maptiler_key),
+        maptilerBackgroundStyle('bright', 'Bright', 'bright', maptiler_key),
+        maptilerBackgroundStyle('hybrid', 'Satellite', 'hybrid', maptiler_key),
+        maptilerBackgroundStyle('outdoors', 'Outdoors', 'outdoor', maptiler_key),
+        maptilerBackgroundStyle('osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
+    ];
 
 console.info("index start", {
     thresholdZoomLevel,
@@ -75,7 +67,7 @@ function initMap() {
         backgroundStyle = backgroundStyleObj.styleUrl;
     } else {
         logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
-        backgroundStyles[0].styleUrl;
+        backgroundStyle = backgroundStyles[0].styleUrl;
     }
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
@@ -535,7 +527,7 @@ function prepareClusteredLayers(
     }
 
     if (!map.getLayer(clusterLayerName)) {
-        map.addLayer({
+        const layerDefinition = {
             id: clusterLayerName,
             source: sourceName,
             type: 'circle',
@@ -543,7 +535,8 @@ function prepareClusteredLayers(
             minzoom: minZoom,
             filter: ['has', countFieldName],
             paint: clusterPaintFromField(countFieldName),
-        });
+        };
+        map.addLayer(layerDefinition);
 
 
         // inspect a cluster on click
@@ -562,11 +555,11 @@ function prepareClusteredLayers(
         map.on('mouseenter', clusterLayerName, () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', clusterLayerName, () => map.getCanvas().style.cursor = '');
 
-        console.info("prepareClusteredLayers " + clusterLayerName, { minZoom, maxZoom, layer: map.getLayer(clusterLayerName) });
+        console.info("prepareClusteredLayers cluster", clusterLayerName, { layerDefinition, layer: map.getLayer(clusterLayerName) });
     }
 
     if (!map.getLayer(countLayerName)) {
-        map.addLayer({
+        const layerDefinition = {
             id: countLayerName,
             type: 'symbol',
             source: sourceName,
@@ -578,12 +571,13 @@ function prepareClusteredLayers(
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12
             }
-        });
-        console.info("prepareClusteredLayers " + countLayerName, { minZoom, maxZoom, layer: map.getLayer(countLayerName) });
+        };
+        map.addLayer(layerDefinition);
+        console.info("prepareClusteredLayers count", countLayerName, { layerDefinition, layer: map.getLayer(countLayerName) });
     }
 
     if (!map.getLayer(pointLayerName)) {
-        map.addLayer({
+        const layerDefinition = {
             id: pointLayerName,
             type: 'circle',
             source: sourceName,
@@ -597,7 +591,8 @@ function prepareClusteredLayers(
                 //'circle-stroke-width': 1,
                 //'circle-stroke-color': '#fff'
             }
-        });
+        };
+        map.addLayer(layerDefinition);
 
         map.on('click', pointLayerName, (e) => {
             const features = map.queryRenderedFeatures(e.point, {
@@ -614,7 +609,7 @@ function prepareClusteredLayers(
         map.on('mouseenter', pointLayerName, () => map.getCanvas().style.cursor = 'pointer');
         map.on('mouseleave', pointLayerName, () => map.getCanvas().style.cursor = '');
 
-        console.info("prepareClusteredLayers " + pointLayerName, { minZoom, maxZoom, layer: map.getLayer(pointLayerName) });
+        console.info("prepareClusteredLayers point", pointLayerName, { layerDefinition, layer: map.getLayer(pointLayerName) });
     }
 }
 
@@ -676,11 +671,20 @@ function mapMoveEndHandler(e) {
  * @see https://maplibre.org/maplibre-gl-js-docs/example/geocoder/
  * @see https://github.com/maplibre/maplibre-gl-geocoder
  * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
  */
 function setupGeocoder(map) {
-    //const control = new NominatimGeocoderControl({ maplibregl: maplibregl });
-    const control = new MaptilerGeocoderControl(maptiler_key);
-    map.addControl(control);
+    let control;
+    if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
+        control = new MapboxGeocoder({
+            accessToken: mapbox_token,
+            collapsed: true,
+            mapboxgl: mapboxgl
+        });
+    } else if (typeof MaptilerGeocoderControl == 'function') {
+        control = new MaptilerGeocoderControl(maptiler_key);
+    }
+    map.addControl(control, 'top-left');
 }
 
 /**
@@ -779,10 +783,14 @@ function setCulture(map) {
     if (!map) {
         console.warn("setCulture: Empty map, can't change map language");
     } else {
-        const symbolLayers = map.getStyle().layers.filter(layer => layer.type == 'symbol'),
-            nameLayerIds = symbolLayers.map(layer => layer.id).filter(id => map.getLayoutProperty(id, 'text-field') == '{name:latin}' || Array.isArray(map.getLayoutProperty(id, 'text-field')));
-        //console.info("setCulture", { culture, language, symbolLayers, nameLayerIds });
-        nameLayerIds.forEach(id => map.setLayoutProperty(id, 'text-field', ['coalesce', ['get', 'name:' + language], ['get', 'name']]))
+        const symbolLayerIds = map.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
+            nameLayerIds = symbolLayerIds.filter(
+                id => map.getLayoutProperty(id, 'text-field') === '{name:latin}' || Array.isArray(map.getLayoutProperty(id, 'text-field'))
+            ),
+            nameLayerOldTextFields = nameLayerIds.map(id => map.getLayoutProperty(id, 'text-field')),
+            newTextField = ['coalesce', ['get', 'name:' + language], ['get', 'name_' + language], ['get', 'name']];
+        console.info("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
+        nameLayerIds.forEach(id => map.setLayoutProperty(id, 'text-field', newTextField));
     }
 }
 
