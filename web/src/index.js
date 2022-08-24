@@ -2,7 +2,7 @@ import { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleContr
 import { logErrorMessage, getCorrectFragmentParams, setFragmentParams, defaultColorScheme } from './common';
 //import { NominatimGeocoderControl } from './NominatimGeocoderControl';
 import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import { BackgroundStyleControl, backgroundStyles } from './BackgroundStyleControl';
+import { BackgroundStyleControl, maptilerBackgroungStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
 import { EtymologyColorControl, colorSchemes } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
 
@@ -10,9 +10,25 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import './style.css';
 
 const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.content,
+    mapbox_token = document.head.querySelector('meta[name="mapbox_token"]')?.content,
     thresholdZoomLevel = parseInt(document.head.querySelector('meta[name="thresholdZoomLevel"]')?.content),
     minZoomLevel = parseInt(document.head.querySelector('meta[name="minZoomLevel"]')?.content),
-    defaultBackgroundStyle = document.head.querySelector('meta[name="defaultBackgroundStyle"]')?.content;
+    defaultBackgroundStyle = document.head.querySelector('meta[name="defaultBackgroundStyle"]')?.content,
+    backgroundStyles = [];
+if (maptiler_key) {
+    backgroundStyles.push(
+        maptilerBackgroungStyle('maplibre_streets', 'Maplibre Streets', 'streets', maptiler_key),
+        maptilerBackgroungStyle('bright', 'Bright', 'bright', maptiler_key),
+        maptilerBackgroungStyle('hybrid', 'Satellite', 'hybrid', maptiler_key),
+        maptilerBackgroungStyle('outdoors', 'Outdoors', 'outdoor', maptiler_key),
+        maptilerBackgroungStyle('osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
+    );
+}
+if (mapbox_token) {
+    backgroundStyles.push(
+        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', '', mapbox_token)
+    );
+}
 
 console.info("index start", {
     thresholdZoomLevel,
@@ -52,14 +68,14 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
  */
 function initMap() {
     const startParams = getCorrectFragmentParams(),
-        backgroundStyleObj = backgroundStyles[defaultBackgroundStyle];
+        backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
     console.info("Initializing the map", { startParams, backgroundStyleObj });
     let map, backgroundStyle;
     if (backgroundStyleObj) {
-        backgroundStyle = backgroundStyleObj.style;
+        backgroundStyle = backgroundStyleObj.styleUrl;
     } else {
         logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
-        backgroundStyles.streets.style;
+        backgroundStyles[0].styleUrl;
     }
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
@@ -715,7 +731,7 @@ function mapLoadedHandler(e) {
         unit: 'metric'
     }), 'bottom-left');
     map.addControl(new FullscreenControl(), 'top-right');
-    map.addControl(new BackgroundStyleControl(defaultBackgroundStyle), 'top-right');
+    map.addControl(new BackgroundStyleControl(backgroundStyles, defaultBackgroundStyle), 'top-right');
     map.addControl(new InfoControl(), 'top-right');
 
     map.on('sourcedata', mapSourceDataHandler);

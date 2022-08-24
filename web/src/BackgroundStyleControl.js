@@ -1,23 +1,36 @@
 import { Map } from 'maplibre-gl';
 
 /**
- * @see https://cloud.maptiler.com/maps/
- * @param {string} styleId 
- * @param {string} key 
- * @returns {string}
+ * @typedef {Object} BackgroundStyle
+ * @property {string} id
+ * @property {string} text
+ * @property {string} styleUrl
  */
-function maptilerStyleUrl(styleId, key) {
-    return 'https://api.maptiler.com/maps/' + styleId + '/style.json?key=' + key;
+
+/**
+ * @see https://cloud.maptiler.com/maps/
+ * @param {string} id 
+ * @param {string} text 
+ * @param {string} maptilerId 
+ * @param {string} maptilerKey 
+ * @returns {BackgroundStyle}
+ */
+function maptilerBackgroundStyle(id, text, maptilerId, maptilerKey) {
+    return { id: id, text: text, styleUrl: 'https://api.maptiler.com/maps/' + maptilerId + '/style.json?key=' + maptilerKey };
 }
 
-const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.content,
-    backgroundStyles = {
-        streets: { text: 'Streets', style: maptilerStyleUrl('streets', maptiler_key) },
-        bright: { text: 'Bright', style: maptilerStyleUrl('bright', maptiler_key) },
-        hybrid: { text: 'Satellite', style: maptilerStyleUrl('hybrid', maptiler_key) },
-        outdoors: { text: 'Outdoors', style: maptilerStyleUrl('outdoor', maptiler_key) },
-        osm_carto: { text: 'OSM Carto', style: maptilerStyleUrl('openstreetmap', maptiler_key) },
-    };
+/**
+ * @see https://docs.mapbox.com/api/maps/vector-tiles/
+ * @see https://docs.mapbox.com/api/maps/styles/#mapbox-styles
+ * @param {string} id 
+ * @param {string} text 
+ * @param {string} mapboxId 
+ * @param {string} mapboxToken 
+ * @returns {BackgroundStyle}
+ */
+function mapboxBackgroundStyle(id, text, mapboxUser, mapboxId, mapboxToken) {
+    return { id: id, text: text, styleUrl: 'https://api.mapbox.com/styles/v1/' + mapboxUser + '/' + mapboxId + '/?access_token=' + mapboxToken };
+}
 
 /**
  * Let the user choose the map style.
@@ -27,11 +40,12 @@ const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.c
  **/
 class BackgroundStyleControl {
     /**
-     * 
-     * @param {string} startBackgroundStyle 
+     * @param {BackgroundStyle[]} backgroundStyles
+     * @param {string} startBackgroundStyleId 
      */
-    constructor(startBackgroundStyle) {
-        this._startBackgroundStyle = startBackgroundStyle;
+    constructor(backgroundStyles, startBackgroundStyleId) {
+        this._backgroundStyles = backgroundStyles;
+        this._startBackgroundStyleId = startBackgroundStyleId;
     }
 
     /**
@@ -70,15 +84,15 @@ class BackgroundStyleControl {
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
         td1.appendChild(this._ctrlDropDown);
 
-        for (const [name, style] of Object.entries(backgroundStyles)) {
+        this._backgroundStyles.forEach(style => {
             const option = document.createElement('option');
             option.innerText = style.text;
-            option.value = name;
-            if (name == this._startBackgroundStyle) {
+            option.value = style.id;
+            if (style.id == this._startBackgroundStyleId) {
                 option.selected = true;
             }
             this._ctrlDropDown.appendChild(option);
-        }
+        })
 
         return this._container;
     }
@@ -94,10 +108,10 @@ class BackgroundStyleControl {
     }
 
     dropDownClickHandler(event) {
-        const backgroundStyleObj = backgroundStyles[event.target.value];
+        const backgroundStyleObj = this._backgroundStyles.find(style => style.id == event.target.value);
         console.info("BackgroundStyleControl dropDown click", { backgroundStyleObj, event });
         if (backgroundStyleObj) {
-            this._map.setStyle(backgroundStyleObj.style);
+            this._map.setStyle(backgroundStyleObj.styleUrl);
             this._ctrlDropDown.className = 'hiddenElement';
             setCulture(this._map);
             //updateDataSource(event);
@@ -108,4 +122,4 @@ class BackgroundStyleControl {
 
 }
 
-export { BackgroundStyleControl, backgroundStyles };
+export { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle };

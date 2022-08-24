@@ -56,6 +56,7 @@ $useGoogleAnalytics = $conf->has("google-analytics-id");
 
 <head>
     <meta name="maptiler_key" content="<?=(string)$conf->get("maptiler_key");?>" />
+    <meta name="mapbox_token" content="<?=(string)$conf->get("mapbox_token");?>" />
     <meta name="default_center_lat" content="<?=(float)$conf->get("default-center-lat");?>" />
     <meta name="default_center_lon" content="<?=(float)$conf->get("default-center-lon");?>" />
     <meta name="default_zoom" content="<?=(int)$conf->get("default-zoom");?>" />
