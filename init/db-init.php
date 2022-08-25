@@ -24,11 +24,16 @@ $options = getopt(
     ["help","keep-temp-tables","cleanup","reset","propagate","load-text-etymology","osmium-txt","osmium-geojson","osmium-pg","osm2pgsql"],
     $fileArgumentIndex
 );
-if (empty($argv[$fileArgumentIndex])) {
+
+$conf = new IniEnvConfiguration();
+if (!empty($argv[$fileArgumentIndex])) {
+    $fileArgument = (string)$argv[$fileArgumentIndex];
+} elseif($conf->has("db_init_source_url")) {
+    $fileArgument = (string)$conf->get("db_init_source_url");
+} else {
     echo "ERROR: You must pass as first non-option argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
     exit(1);
 }
-$fileArgument = $argv[$fileArgumentIndex];
 
 if (isset($options["help"]) || isset($options["h"])) {
     echo
@@ -121,7 +126,7 @@ if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
     }
     $sourceFilePath = __DIR__."/".$fileName;
     logProgress("Downloading $fileName");
-    execAndCheck("curl -C - -o $sourceFilePath $url");
+    execAndCheck("curl -z $sourceFilePath -o $sourceFilePath $url");
     logProgress("Download completed");
 } elseif (!empty(realpath(__DIR__ . "/" . $fileArgument))) {
     // $fileArgument is a relative path from the folder of db-init
@@ -197,7 +202,15 @@ function runOsmiumTagsFilter(
     bool $cleanup = false,
     string $extraArgs = ''
 ): void {
+    if(!is_file($sourceFilePath)) {
+        throw new Exception("Can't run osmium because $sourceFilePath (the source file) is missing");
+    }
+
     if (is_file($destinationFilePath) && $cleanup) {
+        logProgress("Deleting ".basename($destinationFilePath)." as requested");
+        unlink($destinationFilePath);
+    } elseif (is_file($destinationFilePath) && filemtime($destinationFilePath) < filemtime($sourceFilePath)){
+        logProgress("Deleting ".basename($destinationFilePath)." because older than the source ".basename($sourceFilePath)." (its source)");
         unlink($destinationFilePath);
     }
 
@@ -993,11 +1006,10 @@ if (is_file($pgFilePath)) {
 
 if ($use_db) {
     try {
-        $conf = new IniEnvConfiguration();
         if (!$conf->getBool("db-enable")) {
-            echo 'The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.';
-            exit(1);
+            throw new Exception('The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.');
         }
+
         $host = (string)$conf->get("db_host");
         $port = (int)$conf->get("db_port");
         $dbname = (string)$conf->get("db_database");
@@ -1013,8 +1025,7 @@ if ($use_db) {
             } catch (Exception $e) {
                 $tries += 1;
                 if ($tries == 60) {
-                    echo "ERROR: max connection tries reached, could not connect to PostgreSQL database" . PHP_EOL;
-                    exit(1);
+                    throw new Exception("Max connection tries reached, could not connect to PostgreSQL database");
                 } else {
                     echo "Postgres is unavailable, sleeping...";
                     sleep(1);
@@ -1035,8 +1046,7 @@ if ($use_db) {
         try {
             $dbh->query("SELECT PostGIS_Version()");
         } catch (Exception $e) {
-            echo 'ERROR: PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage();
-            exit(1);
+            throw new Exception('PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage());
         }
 
         if ($reset) {
@@ -1133,8 +1143,19 @@ if ($use_db) {
             logProgress('Backup file already generated');
         } else {
             logProgress('Generating backup file...');
-            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose");
-            logProgress('Backup file generated...');
+            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose --no-owner --no-privileges --no-tablespaces");
+            logProgress('Backup file generated');
+        }
+
+        if ($conf->getBool("db_init_enable_upload")) {
+            $up_host = (string)$conf->get("db_init_upload_host");
+            $up_port = (string)$conf->get("db_init_upload_port");
+            $up_user = (string)$conf->get("db_init_upload_user");
+            $up_psw = (string)$conf->get("db_init_upload_password");
+            $up_db = (string)$conf->get("db_init_upload_database");
+            logProgress("Uploading data to DB $up_db on $up_host");
+            execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --clean --schema 'oem' --verbose '$backupFilePath'");
+            logProgress('Uploaded data to DB');
         }
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
