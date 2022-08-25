@@ -1,5 +1,10 @@
 <?php
 
+if (php_sapi_name() != "cli") {
+    http_response_code(400);
+    die("Only runnable through CLI");
+}
+
 // This allows running the script directly or inside docker 
 $webFolder = __DIR__ . "/../" . (file_exists(__DIR__ . "/../web") ? "web" : "html");
 
@@ -13,19 +18,31 @@ use App\PostGIS_PDO;
 use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
 use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
-if (php_sapi_name() != "cli") {
-    http_response_code(400);
-    die("Only runnable through CLI");
+$fileArgumentIndex = false;
+$options = getopt(
+    "hkcrpt",
+    ["help","keep-temp-tables","cleanup","reset","propagate","load-text-etymology","osmium-txt","osmium-geojson","osmium-pg","osm2pgsql"],
+    $fileArgumentIndex
+);
+
+$conf = new IniEnvConfiguration();
+if (!empty($argv[$fileArgumentIndex])) {
+    $fileArgument = (string)$argv[$fileArgumentIndex];
+} elseif($conf->has("db_init_source_url")) {
+    $fileArgument = (string)$conf->get("db_init_source_url");
+} else {
+    echo "ERROR: You must pass as first non-option argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
+    exit(1);
 }
 
-if (in_array("--help", $argv) || in_array("-h", $argv)) {
+if (isset($options["help"]) || isset($options["h"])) {
     echo
-    "Usage: php db-init.php SOURCE_FILE [OPTIONS]" . PHP_EOL .
+    "Usage: php db-init.php [OPTIONS] SOURCE_FILE.osm.pbf" . PHP_EOL .
         "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
         "\tOPTIONS: an optional combination of one or more of these flags:" . PHP_EOL .
         "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
         "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
-        "\t\t--hard-reset / -r : Do a hard reset (delete ordinary tables) before elaborating (disabled by default)" . PHP_EOL .
+        "\t\t--reset / -r : Do a hard reset (delete all tables) before elaborating (disabled by default)" . PHP_EOL .
         "\t\t--load-text-etymology / -t : Load textual etymologies (name:etymology tags) (disabled by default as it increases by a lot the execution time and file size)" . PHP_EOL .
         "\t\t--propagate / -p : Propagate etymologies to nearby homonymous highways (disabled by default, it increases the execution time)" . PHP_EOL;
     exit(0);
@@ -40,11 +57,11 @@ $use_osm2pgsql = FALSE;
 $convert_to_geojson = FALSE;
 $convert_to_pg = FALSE;
 $convert_to_txt = FALSE;
-$keep_temp_tables = in_array("--keep-temp-tables", $argv) || in_array("-k", $argv);
-$cleanup = in_array("--cleanup", $argv) || in_array("-c", $argv);
-$reset = in_array("--hard-reset", $argv) || in_array("-r", $argv);
-$propagate = in_array("--propagate", $argv) || in_array("-p", $argv);
-$load_text_etymology = in_array("--load-text-etymology", $argv) || in_array("-t", $argv);
+$keep_temp_tables = isset($options["keep-temp-tables"]) || isset($options["k"]);
+$cleanup = isset($options["cleanup"]) || isset($options["c"]);
+$reset = isset($options["hard-reset"]) || isset($options["r"]);
+$propagate = isset($options["propagate"]) || isset($options["p"]);
+$load_text_etymology = isset($options["load-text-etymology"]) || isset($options["t"]);
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -61,20 +78,66 @@ if ($retval !== 0 || empty($output)) {
     exit(1);
 }
 
-if (empty($argv[1])) {
-    echo "ERROR: You must pass as first argument the name of the .pbf input extract" . PHP_EOL;
-    exit(1);
-}
+echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
 
-// $argv[1] can be an absolute path or a relative path from the folder of db-init
-$sourceFilePathFromRelative = realpath(__DIR__ . "/" . $argv[1]);
-$sourceFilePathFromAbsolute = realpath($argv[1]);
-if (!empty($sourceFilePathFromRelative)) {
-    $sourceFilePath = $sourceFilePathFromRelative;
-} elseif (!empty($sourceFilePathFromAbsolute)) {
-    $sourceFilePath = $sourceFilePathFromAbsolute;
+echo 'Temporary files will ' . ($cleanup ? '' : 'NOT ') . 'be cleaned up' . PHP_EOL;
+
+echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before loading' . PHP_EOL;
+
+echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
+
+echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
+
+if (isset($options["osmium-txt"])) {
+    echo 'Using osmium-export to txt' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_txt = TRUE;
+} elseif (isset($options["osmium-geojson"])) {
+    echo 'Using osmium-export to geojson' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_geojson = TRUE;
+} elseif (isset($options["osmium-pg"])) {
+    echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_pg = TRUE;
+} elseif (isset($options["osm2pgsql"])) {
+    echo 'Using osm2pgsql' . PHP_EOL;
+    exec("which osm2pgsql", $output, $retval);
+    if ($retval !== 0) {
+        echo "ERROR: osm2pgsql is not installed" . PHP_EOL;
+        exit(1);
+    }
+    $use_osm2pgsql = TRUE;
 } else {
-    echo "ERROR: Could not deduce full path for the given file: " . $argv[1] . PHP_EOL;
+    echo 'Using osmium-export to pg (default)' . PHP_EOL;
+    $use_osmium_export = TRUE;
+    $convert_to_pg = TRUE;
+}
+$use_db = $use_osm2pgsql || $convert_to_pg;
+
+if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
+    // $fileArgument is an URL
+    // Example: php db-init.php http://download.geofabrik.de/europe/italy/isole-latest.osm.pbf
+    $url = $fileArgument;
+    $fileName = basename(strtok($url,"?"));
+    if(!str_ends_with($fileName, ".osm.pbf")) {
+        echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
+        exit(1);
+    }
+    $sourceFilePath = __DIR__."/".$fileName;
+    logProgress("Downloading $fileName");
+    execAndCheck("curl -z $sourceFilePath -o $sourceFilePath $url");
+    logProgress("Download completed");
+} elseif (!empty(realpath(__DIR__ . "/" . $fileArgument))) {
+    // $fileArgument is a relative path from the folder of db-init
+    // Example: php db-init.php isole-latest.osm.pbf
+    $sourceFilePath = realpath(__DIR__ . "/" . $fileArgument);
+} elseif (!empty(realpath($fileArgument))) {
+    // $fileArgument is an absolute path
+    // Example: php db-init.php /tmp/isole-latest.osm.pbf
+    $sourceFilePath = realpath($fileArgument);
+} else {
+    echo "ERROR: Could not deduce full path for the given file: " . $fileArgument . PHP_EOL;
     exit(1);
 }
 
@@ -93,44 +156,11 @@ function logProgress(string $message): void
 
 $workDir = dirname($sourceFilePath);
 $sourceFileName = basename($sourceFilePath);
-logProgress("Working on file $sourceFileName in directory $workDir");
-
-echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
-
-echo 'Temporary files will ' . ($cleanup ? '' : 'NOT ') . 'be cleaned up' . PHP_EOL;
-
-echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before loading' . PHP_EOL;
-
-echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
-
-echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
-
-if (!empty($argv[2]) && $argv[2] == "txt") {
-    echo 'Using osmium-export to txt' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_txt = TRUE;
-} elseif (!empty($argv[2]) && $argv[2] == "geojson") {
-    echo 'Using osmium-export to geojson' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_geojson = TRUE;
-} elseif (!empty($argv[2]) && $argv[2] == "pg") {
-    echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
-} elseif (!empty($argv[2]) && $argv[2] == "osm2pgsql") {
-    echo 'Using osm2pgsql' . PHP_EOL;
-    exec("which osm2pgsql", $output, $retval);
-    if ($retval !== 0) {
-        echo "ERROR: osm2pgsql is not installed" . PHP_EOL;
-        exit(1);
-    }
-    $use_osm2pgsql = TRUE;
-} else {
-    echo 'Using osmium-export to pg (default)' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
+if(!str_ends_with($sourceFileName, ".osm.pbf")) {
+    echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
+    exit(1);
 }
-$use_db = $use_osm2pgsql || $convert_to_pg;
+logProgress("Working on file $sourceFileName in directory $workDir");
 
 function execAndCheck(string $command): array
 {
@@ -172,7 +202,15 @@ function runOsmiumTagsFilter(
     bool $cleanup = false,
     string $extraArgs = ''
 ): void {
+    if(!is_file($sourceFilePath)) {
+        throw new Exception("Can't run osmium because $sourceFilePath (the source file) is missing");
+    }
+
     if (is_file($destinationFilePath) && $cleanup) {
+        logProgress("Deleting ".basename($destinationFilePath)." as requested");
+        unlink($destinationFilePath);
+    } elseif (is_file($destinationFilePath) && filemtime($destinationFilePath) < filemtime($sourceFilePath)){
+        logProgress("Deleting ".basename($destinationFilePath)." because older than the source ".basename($sourceFilePath)." (its source)");
         unlink($destinationFilePath);
     }
 
@@ -249,10 +287,10 @@ function setupSchema(PDO $dbh): void
     $dbh->exec('DROP TABLE IF EXISTS oem.element_wikidata_cods');
     $dbh->exec('DROP TABLE IF EXISTS oem.element');
     $dbh->exec('DROP TABLE IF EXISTS oem.osmdata');
-    $dbh->exec('DROP FUNCTION IF EXISTS oem.translateTimestamp');
-    $dbh->exec('DROP VIEW IF EXISTS oem.v_global_map');
+    $dbh->exec('DROP FUNCTION IF EXISTS oem.parseTimestamp');
+    $dbh->exec('DROP MATERIALIZED VIEW IF EXISTS oem.vm_global_map');
     $dbh->exec(
-        "CREATE FUNCTION oem.translateTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
+        "CREATE FUNCTION oem.parseTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
         DECLARE
             nonZeroTxt TEXT := REPLACE(REPLACE(txt, '0000-', '0001-'), '-00-00', '-01-01');
         BEGIN
@@ -267,7 +305,7 @@ function setupSchema(PDO $dbh): void
         $$ LANGUAGE plpgsql;"
     );
     $dbh->exec(
-        "COMMENT ON FUNCTION oem.translateTimestamp(text) IS '
+        "COMMENT ON FUNCTION oem.parseTimestamp(text) IS '
         Takes as input an ISO 8601 timestamp string and returns a TIMESTAMP, unless the string is not representable (e.g. it overflows).
         Documentation:
         - https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-TABLE
@@ -277,7 +315,7 @@ function setupSchema(PDO $dbh): void
     $dbh->exec(
         "CREATE TABLE oem.osmdata (
             osm_id BIGSERIAL NOT NULL PRIMARY KEY,
-            osm_geometry GEOMETRY NOT NULL,
+            osm_geometry GEOMETRY(Geometry,4326) NOT NULL,
             osm_osm_type VARCHAR(8) NOT NULL CHECK (osm_osm_type IN ('node','way','relation')),
             osm_osm_id BIGINT NOT NULL,
             osm_tags JSONB
@@ -297,7 +335,7 @@ function setupSchema(PDO $dbh): void
         "CREATE TABLE oem.wikidata (
             wd_id SERIAL NOT NULL PRIMARY KEY,
             wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
-            wd_position GEOMETRY,
+            wd_position GEOMETRY(Point,4326),
             wd_event_date TIMESTAMP,
             wd_event_date_precision INT,
             wd_start_date TIMESTAMP,
@@ -325,7 +363,7 @@ function setupSchema(PDO $dbh): void
     $dbh->exec(
         "CREATE TABLE oem.element (
             el_id BIGINT NOT NULL PRIMARY KEY,
-            el_geometry GEOMETRY NOT NULL,
+            el_geometry GEOMETRY(Geometry,4326) NOT NULL,
             el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
             el_osm_id BIGINT NOT NULL,
             el_tags JSONB,
@@ -401,8 +439,14 @@ function setupSchema(PDO $dbh): void
         )"
     );
     $dbh->exec("CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100')");
+    logProgress('DB schema prepared');
+}
+
+function setupGlobalMap(PDO $dbh): void
+{
+    logProgress('Preparing global map');
     $dbh->exec(
-        "CREATE VIEW oem.v_global_map AS
+        "CREATE MATERIALIZED VIEW oem.vm_global_map AS
         SELECT
             ST_ReducePrecision(ST_Centroid(el_geometry), 0.1) AS geom,
             COUNT(DISTINCT COALESCE(el_tags->>'name', el_id::TEXT)) AS num
@@ -410,7 +454,7 @@ function setupSchema(PDO $dbh): void
         JOIN oem.element ON et_el_id = el_id
         GROUP BY geom"
     );
-    logProgress('DB schema prepared');
+    logProgress('Global map prepared');
 }
 
 function isOsmDataTemporaryTableAbsent(PDO $dbh): bool
@@ -962,7 +1006,10 @@ if (is_file($pgFilePath)) {
 
 if ($use_db) {
     try {
-        $conf = new IniEnvConfiguration();
+        if (!$conf->getBool("db-enable")) {
+            throw new Exception('The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.');
+        }
+
         $host = (string)$conf->get("db_host");
         $port = (int)$conf->get("db_port");
         $dbname = (string)$conf->get("db_database");
@@ -978,8 +1025,7 @@ if ($use_db) {
             } catch (Exception $e) {
                 $tries += 1;
                 if ($tries == 60) {
-                    echo "ERROR: max connection tries reached, could not connect to PostgreSQL database" . PHP_EOL;
-                    exit(1);
+                    throw new Exception("Max connection tries reached, could not connect to PostgreSQL database");
                 } else {
                     echo "Postgres is unavailable, sleeping...";
                     sleep(1);
@@ -1000,8 +1046,7 @@ if ($use_db) {
         try {
             $dbh->query("SELECT PostGIS_Version()");
         } catch (Exception $e) {
-            echo 'ERROR: PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage();
-            exit(1);
+            throw new Exception('PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage());
         }
 
         if ($reset) {
@@ -1086,6 +1131,7 @@ if ($use_db) {
             if (!$keep_temp_tables)
                 $dbh->exec('DROP TABLE oem.osmdata');
 
+            setupGlobalMap($dbh);
             saveLastDataUpdate($sourceFilePath, $dbh);
         }
 
@@ -1097,8 +1143,19 @@ if ($use_db) {
             logProgress('Backup file already generated');
         } else {
             logProgress('Generating backup file...');
-            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose");
-            logProgress('Backup file generated...');
+            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose --no-owner --no-privileges --no-tablespaces");
+            logProgress('Backup file generated');
+        }
+
+        if ($conf->getBool("db_init_enable_upload")) {
+            $up_host = (string)$conf->get("db_init_upload_host");
+            $up_port = (string)$conf->get("db_init_upload_port");
+            $up_user = (string)$conf->get("db_init_upload_user");
+            $up_psw = (string)$conf->get("db_init_upload_password");
+            $up_db = (string)$conf->get("db_init_upload_database");
+            logProgress("Uploading data to DB $up_db on $up_host");
+            execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --clean --schema 'oem' --verbose '$backupFilePath'");
+            logProgress('Uploaded data to DB');
         }
     } catch (Exception $e) {
         echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;

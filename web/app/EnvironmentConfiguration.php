@@ -2,11 +2,11 @@
 
 namespace App;
 
+require_once(__DIR__ . "/BaseConfiguration.php");
+
 use Exception;
 
-require_once(__DIR__ . "/Configuration.php");
-
-class EnvironmentConfiguration implements Configuration
+class EnvironmentConfiguration extends BaseConfiguration
 {
 	public function has(string $key): bool
 	{

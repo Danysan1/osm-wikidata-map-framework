@@ -3,7 +3,6 @@
 *.mvt
 open-etymology-map.ini
 open-etymology-map.log
-open-etymology-map-cache/
 LAST_UPDATE
 
 *.pbf

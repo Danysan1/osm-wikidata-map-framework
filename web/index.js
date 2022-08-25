@@ -1580,26 +1580,48 @@ function imageToDomElement(img) {
         picture = document.createElement('img'),
         attribution = document.createElement('p'),
         imgContainer = document.createElement('div');
-
-    picture.className = 'pic-img';
-    picture.alt = "Etymology picture via Wikimedia Commons";
-    picture.src = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
-    // Link to thumbnail, example: "https://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=400px"
-
-    link.className = 'pic-link';
-    link.title = "Etymology picture via Wikimedia Commons";
-    link.href = 'https://commons.wikimedia.org/wiki/File:' + img.picture;
-    // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
-    link.appendChild(picture);
-    imgContainer.appendChild(link);
-
-    if (img.attribution) {
-        attribution.className = 'pic-attr';
-        attribution.innerHTML = 'Image via ' + img.attribution;
-        imgContainer.appendChild(attribution);
+    
+    let imgUrl, imgPreviewUrl, imgAttribution;
+    if (typeof img == 'object' && typeof img.picture == 'string') {
+        imgPreviewUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
+        imgUrl = 'https://commons.wikimedia.org/wiki/File:' + img.picture;
+        imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
+        //console.info("imageToDomElement: object img", {img, imgUrl, imgPreviewUrl, imgAttribution});
+    } else if (typeof img == 'string') {
+        imgPreviewUrl = img;
+        imgUrl = img;
+        imgAttribution = null;
+        //console.info("imageToDomElement: string img", {img, imgUrl, imgPreviewUrl, imgAttribution});
+    } else {
+        imgPreviewUrl = null;
+        imgUrl = null;
+        imgAttribution = null;
+        console.warn("imageToDomElement: bad img", {img});
     }
 
-    imgContainer.className = 'pic-container';
+    if (imgUrl && imgPreviewUrl) {
+        picture.className = 'pic-img';
+        picture.alt = "Etymology picture via Wikimedia Commons";
+        picture.src = imgPreviewUrl;
+        // Link to thumbnail, example: "https://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=400px"
+
+        link.className = 'pic-link';
+        link.title = "Etymology picture via Wikimedia Commons";
+        link.href = imgUrl;
+        // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
+        link.appendChild(picture);
+        imgContainer.appendChild(link);
+
+        if (imgAttribution) {
+            attribution.className = 'pic-attr';
+            attribution.innerHTML = imgAttribution;
+            imgContainer.appendChild(attribution);
+        }
+
+        imgContainer.className = 'pic-container';
+    } else {
+        imgContainer.style.display = 'none';
+    }
 
     return imgContainer;
 }
@@ -1623,8 +1645,8 @@ function initPage(e) {
     //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
     // https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
     if (typeof mapboxgl == "undefined" || !mapboxgl) {
-        alert('There was an error while loading Mapbox GL JS (the library needed to create the map)');
-        logErrorMessage("Undefined mapboxgl");
+        alert('There was an error while loading the library used to create the map.');
+        logErrorMessage("mapboxgl is undefined. Are the JS libraries installed (npm install)?");
     } else if (!mapboxgl.supported()) {
         alert('Your browser does not support Mapbox GL');
         logErrorMessage("Device/Browser does not support Mapbox GL");
