@@ -685,7 +685,11 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
     loadWikidataRelatedEntities(
         "ew_from_wikidata",
         "named_after",
-        ["P138", "P825", "P547"], // named after/dedicated to/commemorates  -  https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
+        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
+            "P138", // named after
+            "P825", // dedicated to
+            "P547", // commemorates
+        ],
         null,
         $dbh,
         $wikidataEndpointURL
@@ -699,7 +703,14 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
         "ew_from_name_etymology OR ew_from_subject",
         "consists_of",
         ["P527"], // has part or parts
-        ["Q14073567", "Q10648343", "Q16334295", "Q219160"], // sibling duo, duo, group of humans, couple
+        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
+            "Q14073567", // sibling duo
+            "Q10648343", // duo
+            "Q16334295", // group of humans
+            "Q219160", // couple
+            "Q3046146", // married couple
+            "Q1141470", // double act
+        ],
         $dbh,
         $wikidataEndpointURL
     );
