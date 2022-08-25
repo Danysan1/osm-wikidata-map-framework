@@ -41,57 +41,75 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 Open Etymology Map obtains the etymology data from multiple tags:
 ```plantuml
 @startuml
-map "Wikidata item Q7322" as wikia #a2d2ff {
+map "Wikidata item Q7186" as wikia #a2d2ff {
+  label => Marie Curie
+}
+map "Wikidata item Q37463" as wikib #a2d2ff {
+  label => Pierre Curie
+}
+map "Wikidata item Q11297474" as wikic #a2d2ff {
+  label => Pierre and Marie Curie
+  **P527 (has part)** => Q7186
+  **P527 (has part)** => Q37463
+}
 
+map "Wikidata item Q1548496" as wikid #a2d2ff {
+  label => Marie-Curie-Gymnasium Dresden
+  **P138 (named after)** => Q7186
 }
-map "Wikidata item Q1492" as wikib #a2d2ff {
-
+map "Wikidata item Q96391995" as wikie #a2d2ff {
+  label => Marie Curie Monument in Lublin
+  **P547 (commemorates)** => Q7186
 }
-
-map "Wikidata item Q16567" as wikic #a2d2ff {
-  P138 (named after) => Q7322
-}
-map "Wikidata item Q86518088" as wikie #a2d2ff {
-  P547 (commemorates) => Q7322
-}
-map "Wikidata item Q2288815" as wikif #a2d2ff {
-  P825 (dedicated to) => Q7322
+map "Wikidata item ..." as wikif #a2d2ff {
+  **P825 (dedicated to)** => Q7186
 }
 
 map "OSM element A" as osma #95d5b2 {
-  name:etymology:wikidata => Q7322
+  name => Marie Curie Elementary School
+  **name:etymology:wikidata** => Q7186
 }
 map "OSM element B" as osmb #95d5b2 {
-  subject:wikidata => Q7322
+  name => Marii Skłodowskiej-Curie
+  **subject:wikidata** => Q7186
 }
 map "OSM element C" as osmc #95d5b2 {
-  subject:wikidata => Q7322;Q1492
+  name => Rue Marie et Pierre Curie
+  **name:etymology:wikidata** => Q7186;Q37463
 }
 map "OSM element D" as osmd #95d5b2 {
-  wikidata => Q16567
+  name => Marie-Curie-Gymnasium
+  wikidata => Q1548496
 }
 map "OSM element E" as osme #95d5b2 {
-  wikidata => Q86518088
+  name => Pomnik Marii Curie-Skłodowskiej
+  wikidata => Q96391995
 }
 map "OSM element F" as osmf #95d5b2 {
-  wikidata => Q2288815
+  name => ...
+  wikidata => ...
+}
+map "OSM element G" as osmg #95d5b2 {
+  name => Rue Pierre et Marie Curie
+  **name:etymology:wikidata** => Q11297474
 }
 
 osma --> wikia
 osmb --> wikia
 osmc --> wikia
 osmc --> wikib
+osmg --> wikic
 
-osmd --> wikic
+osmd --> wikid
 osme --> wikie
 osmf --> wikif
 
 wikic --> wikia
+wikic --> wikib
+wikid --> wikia
 wikie --> wikia
 wikif --> wikia
 
-note left of wikia: Etymology for A, B, C, D, E and F
-note left of wikib: Etymology for C
 @enduml
 ```
 
