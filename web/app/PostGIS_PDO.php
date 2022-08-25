@@ -18,7 +18,7 @@ class PostGIS_PDO extends PDO
         $password = (string)$conf->get("db_password");
         // Test $db = \pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
         parent::__construct(
-            "pgsql:host=$host;port=$port;dbname=$dbname",
+            "pgsql:host=$host;port=$port;dbname=$dbname;options=--application_name=open_etymology_map",
             $user,
             $password,
             [
