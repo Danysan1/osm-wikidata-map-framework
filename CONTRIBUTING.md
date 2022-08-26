@@ -172,55 +172,7 @@ A local development instance can be started with Docker by running `docker-compo
 - A PostgreSQL+PostGIS DB exposed on localhost:5432
 - A PGAdmin instance exposed at http://localhost:8080
 
-```plantuml
-@startuml
-!theme plain
-
-actor Browser
-rectangle "Docker Compose - profile dev" as docker {
-  port "8080" as 8080docker
-  port "80" as 80docker
-  node postgis_db {
-    port 5432 as 5432db
-    database "PostGIS DB" as db
-  }
-  node pgadmin {
-    port "80" as 80pgAdmin
-    component pgAdmin
-  }
-  node web_dev {
-    port "80" as 80webDev
-    component Apache
-    folder "/var/www/init" as initRem
-    folder "/var/www/html" as webRem
-  }
-
-}
-cloud {
-  database "Optional production DB" as extDB
-}
-folder "init" as initLoc
-folder "web" as webLoc
-
-initRem --- initLoc : volume
-webRem --- webLoc : volume
-
-Apache --> 5432db
-Apache --> extDB
-pgAdmin --> 5432db
-
-Browser --> 80docker
-Browser --> 8080docker
-
-80docker --> 80webDev
-8080docker --> 80pgAdmin
-
-80webDev -> Apache
-5432db -> db
-80pgAdmin -> pgAdmin
-
-@enduml
-```
+[![deployment diagram](http://www.plantuml.com/plantuml/png/RPBVQiCW5CRlVOf3xaFB_a3PnMYxm1WCDhO7A4PFqp3_13N9OFJTfoQQTVGgvljzvplgSMiTDQwNWb3cj86zqQD5GmmoHrKZ48fAioyqyAHbfor22PtHnzOJZaC1r0AV33y4eDF6GR5PRzQHXCL4CyiawqfpzD2wfhK7NiUSsNr_TtlZtV7BwwXpwcXDBKBnxakUNpwXsiV4oCyvhw5SjYg5NRRkcbs04R5mB8NAmQBcb17h0yVXUeg75Gx_GdOTPIUCub4BZWQArK3DQXp7LQjQ5sl3uWFbTTV9IH5TFdyodGav4oPqp-D6bXjuwroh5HLX8hnduIVT1dwxQk_BKln5xrVDCl1TKhSWatblK9Pbyi8335hq4eat9JRv5qIcatlscCQrAFDsvXl-wo7pWujQVXINOfP9MaMG9v0SMK-J9Ca2NfudC_KDWk-UhU4_LMrHyLwANm00)](http://www.plantuml.com/plantuml/uml/RPBVQiCW5CRlVOf3xaFB_a3PnMYxm1WCDhO7A4PFqp2ZGKqo67ttgL6pZbx5VB_lV4SzResbsWwT88GogpJijPeCQgAHMIeRWL1KYdsXXYVLzSeWbD1hTMmTuJWMG0tmsV1307gbBHIRzMOTY5_CDBDCiYuLHmUDRLfpu7N8YUxxkziRvmvVNWUTKqjhQX2ATrVo_F89rJua1dxEUGtbNIjps4Nhljbv613pnv8eBMHrIPcmFd0ShwSuME7uBsJNKtR281wLuAYXM8rKhwPfMhMojQ7MBpwmk-uwsKu4bykVJMT2peG9DV2maUK6tdhRAac5dmWVcFz9ju7VjjgxiXH_qVjLiGnSbzJDooJk3SgoJ5vuW569eKFYJ955_uB8V7B77jEu5YLk9zxmNm-93ove-L5SYbacQHL0da1qP3tFboGBE3bEPkxh1TSzM_r_gjgYv4CdVW40)
 
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
