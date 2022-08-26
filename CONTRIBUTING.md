@@ -172,6 +172,55 @@ A local development instance can be started with Docker by running `docker-compo
 - A PostgreSQL+PostGIS DB exposed on localhost:5432
 - A PGAdmin instance exposed at http://localhost:8080
 
+```plantuml
+@startuml
+
+actor Browser
+rectangle "Docker Compose - profile dev" as docker {
+  port "8080" as 8080docker
+  port "80" as 80docker
+  node postgis_db {
+    port 5432 as 5432db
+    database "PostGIS DB" as db
+  }
+  node pgadmin {
+    port "80" as 80pgAdmin
+    component pgAdmin
+  }
+  node web_dev {
+    port "80" as 80webDev
+    component Apache
+    folder "/var/www/init" as initRem
+    folder "/var/www/html" as webRem
+  }
+
+}
+cloud {
+  database "Optional production DB" as extDB
+}
+folder "init" as initLoc
+folder "web" as webLoc
+
+initRem --- initLoc : volume
+webRem --- webLoc : volume
+
+Apache --> 5432db
+Apache --> extDB
+pgAdmin --> 5432db
+
+Browser --> 80docker
+Browser --> 8080docker
+
+80docker --> 80webDev
+8080docker --> 80pgAdmin
+
+80webDev -> Apache
+5432db -> db
+80pgAdmin -> pgAdmin
+
+@enduml
+```
+
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
 #### Production deployment with Docker
@@ -197,6 +246,96 @@ cp open-etymology-map.template.ini web/open-etymology-map.ini
 docker-compose --profile "prod" up -d
 ```
 
+```plantuml
+@startuml
+
+actor Browser
+rectangle "Docker Compose - profile prod_with_local_db" as docker {
+  port "80" as 80docker
+  node postgis_db {
+    port 5432 as 5432db
+    database "PostGIS DB" as db
+  }
+  node promtail {
+    component promtail as promInst
+    folder "/etc/promtail" as promRem
+    folder "/var/log" as logRem
+    folder "/var/lib/docker/containers" as contRem
+  }
+  node web_prod {
+    port "80" as 80webProd
+    component Apache
+    file "/var/www/html/open-etymology-map.ini" as iniRem
+  }
+}
+cloud Grafana
+file "web/open-etymology-map.ini" as iniLoc
+folder "promtail" as promLoc
+folder "/var/log" as logLoc
+folder "/var/lib/docker/containers" as contLoc
+
+iniRem --- iniLoc : volume
+promRem --- promLoc : volume
+logRem --- logLoc : volume
+contRem --- contLoc : volume
+
+Apache --> 5432db
+
+Browser --> 80docker
+
+80docker --> 80webProd
+
+80webProd --> Apache
+5432db --> db
+Grafana <-- promInst
+
+@enduml
+```
+
+```plantuml
+@startuml
+
+actor Browser
+rectangle "Docker Compose - profile prod" as docker {
+  port "80" as 80docker
+  node promtail {
+    component promtail as promInst
+    folder "/etc/promtail" as promRem
+    folder "/var/log" as logRem
+    folder "/var/lib/docker/containers" as contRem
+  }
+  node web_prod {
+    port "80" as 80webProd
+    component Apache
+    file "/var/www/html/open-etymology-map.ini" as iniRem
+  }
+}
+cloud Grafana
+cloud {
+  database "PostGIS DB" as db
+}
+file "web/open-etymology-map.ini" as iniLoc
+folder "promtail" as promLoc
+folder "/var/log" as logLoc
+folder "/var/lib/docker/containers" as contLoc
+
+iniRem --- iniLoc : volume
+promRem --- promLoc : volume
+logRem --- logLoc : volume
+contRem --- contLoc : volume
+
+Apache --> db
+
+Browser --> 80docker
+
+80docker --> 80webProd
+
+80webProd --> Apache
+Grafana <-- promInst
+
+@enduml
+```
+
 ### Structure
 
 #### Front-end
@@ -213,6 +352,8 @@ At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.te
 #### Back-end (v2, using PostGIS DB)
 
 ```plantuml
+@startuml
+
 actor user as "User"
 file pbf as "OSM pbf planet file"
 component osmium
@@ -222,8 +363,8 @@ frame oem as "Open Etymology Map v2" {
     node fe as "Front-end"
     node be as "Back-end" {
         component globalMap as "global-map.php"
-        component etymologyMap as "etymologyMap.php"
         component elements as "elements.php"
+        component etymologyMap as "etymologyMap.php"
         component stats as "stats.php"
         component index as "index.php"
         package App {
@@ -283,6 +424,8 @@ db -0)- init
 osmium <.. init
 pbf <-- init
 JSONWikidataQuery <-- init
+
+@enduml
 ```
 
 [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
