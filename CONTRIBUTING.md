@@ -41,13 +41,14 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 Open Etymology Map obtains the etymology data from multiple tags:
 ```plantuml
 @startuml
-map "Wikidata item Q7186" as wikia #a2d2ff {
+
+map "Wikidata item Q7186" as wikia #ffa2a2 {
   label => Marie Curie
 }
-map "Wikidata item Q37463" as wikib #a2d2ff {
+map "Wikidata item Q37463" as wikib #ffa2a2 {
   label => Pierre Curie
 }
-map "Wikidata item Q11297474" as wikic #a2d2ff {
+map "Wikidata item Q11297474" as wikic #ffa2a2 {
   label => Pierre and Marie Curie
   **P527 (has part)** => Q7186
   **P527 (has part)** => Q37463
@@ -96,19 +97,24 @@ map "OSM element G" as osmg #95d5b2 {
 
 osma --> wikia
 osmb --> wikia
-osmc --> wikia
-osmc --> wikib
-osmg --> wikic
+wikia <-- osmc
+wikib <-- osmc
+wikic <-- osmg
 
 osmd --> wikid
 osme --> wikie
-osmf --> wikif
+wikif <-- osmf
 
-wikic --> wikia
-wikic --> wikib
+wikia <-- wikic
+wikib <-- wikic
 wikid --> wikia
 wikie --> wikia
-wikif --> wikia
+wikia <-- wikif
+
+note left of wikia: Etymology for OSM elements A, B, C, D, E, F and G
+note right of wikib: Etymology for OSM elements C and G
+note right of wikic: Etymology for OSM element G
+
 
 @enduml
 ```
@@ -204,7 +210,7 @@ At low zoom level ([`threshold-zoom-level`](open-etymology-map.template.ini) > z
 
 At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
 
-#### New back-end (v2, using PostGIS)
+#### Back-end (v2, using PostGIS DB)
 
 ```plantuml
 actor user as "User"
