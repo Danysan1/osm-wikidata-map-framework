@@ -50,8 +50,8 @@ map "Wikidata item Q37463" as wikib #ffa2a2 {
 }
 map "Wikidata item Q11297474" as wikic #ffa2a2 {
   label => Pierre and Marie Curie
-  **P527 (has part)** => Q7186
-  **P527 (has part)** => Q37463
+  P31 (instance of) => Q3046146 (married couple)
+  **P527 (has part)** => Q7186;Q37463
 }
 
 map "Wikidata item Q1548496" as wikid #a2d2ff {
@@ -80,15 +80,15 @@ map "OSM element C" as osmc #95d5b2 {
 }
 map "OSM element D" as osmd #95d5b2 {
   name => Marie-Curie-Gymnasium
-  wikidata => Q1548496
+  **wikidata** => Q1548496
 }
 map "OSM element E" as osme #95d5b2 {
   name => Pomnik Marii Curie-Skłodowskiej
-  wikidata => Q96391995
+  **wikidata** => Q96391995
 }
 map "OSM element F" as osmf #95d5b2 {
   name => ...
-  wikidata => ...
+  **wikidata** => ...
 }
 map "OSM element G" as osmg #95d5b2 {
   name => Rue Pierre et Marie Curie
@@ -101,15 +101,15 @@ wikia <-- osmc
 wikib <-- osmc
 wikic <-- osmg
 
-osmd --> wikid
+wikid <-- osmd
 osme --> wikie
-wikif <-- osmf
+osmf --> wikif
 
 wikia <-- wikic
 wikib <-- wikic
-wikid --> wikia
+wikia <-- wikid
 wikie --> wikia
-wikia <-- wikif
+wikif --> wikia
 
 note left of wikia: Etymology for OSM elements A, B, C, D, E, F and G
 note right of wikib: Etymology for OSM elements C and G
@@ -219,39 +219,49 @@ component osmium
 frame oem as "Open Etymology Map v2" {
     database db as "PostgreSQL DB"
     component init as "db-init.php"
-    node "Front-end" {
-        component index as "index.php"
-    }
-    node "Back-end" {
+    node fe as "Front-end"
+    node be as "Back-end" {
+        component globalMap as "global-map.php"
         component etymologyMap as "etymologyMap.php"
         component elements as "elements.php"
         component stats as "stats.php"
-        package "App\Query\PostGIS" {
-            card BBoxEtymologyPostGISQuery
-            card BBoxGenderStatsPostGISQuery
-            card BBoxTypeStatsPostGISQuery
-            card BBoxEtymologyCenterPostGISQuery
-            card BBoxTextPostGISQuery
-            card PostGISQuery
-        }
-        package "App\Query\Wikidata" {
-            card EtymologyIDListJSONWikidataQuery
-            card JSONWikidataQuery
-            card WikidataQuery
+        component index as "index.php"
+        package App {
+            card PostGIS_PDO
+            package Query {
+                package PostGIS {
+                    card BBoxEtymologyPostGISQuery
+                    card BBoxGenderStatsPostGISQuery
+                    card BBoxTypeStatsPostGISQuery
+                    card BBoxEtymologyCenterPostGISQuery
+                    card BBoxTextPostGISQuery
+                    card PostGISQuery
+                }
+                package Wikidata {
+                    card EtymologyIDListJSONWikidataQuery
+                    card JSONWikidataQuery
+                    card WikidataQuery
+                }
+            }
         }
     }
 }
 agent wikidata as "Wikidata SPARQL API"
 
-user --> index
-index -(0- etymologyMap
-index -(0- elements
-index -(0- stats
+index <--> fe
 
-etymologyMap --> BBoxEtymologyPostGISQuery
-stats --> BBoxGenderStatsPostGISQuery
-stats --> BBoxTypeStatsPostGISQuery
-elements --> BBoxEtymologyCenterPostGISQuery
+user --> fe
+
+fe -(0- globalMap
+fe -(0- etymologyMap
+fe -(0- elements
+fe -(0- stats
+
+
+etymologyMap ..> BBoxEtymologyPostGISQuery
+stats ..> BBoxGenderStatsPostGISQuery
+stats ..> BBoxTypeStatsPostGISQuery
+elements ..> BBoxEtymologyCenterPostGISQuery
 
 BBoxTextPostGISQuery --|> PostGISQuery
 BBoxEtymologyPostGISQuery --|> BBoxTextPostGISQuery
@@ -262,15 +272,17 @@ BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
 JSONWikidataQuery --|> WikidataQuery
 
-PostGISQuery -(0- db
-BBoxTextPostGISQuery --> EtymologyIDListJSONWikidataQuery
+globalMap ..> PostGIS_PDO
+PostGISQuery ..> PostGIS_PDO
+PostGIS_PDO -(0- db
+BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
 
 WikidataQuery -(0- wikidata
 
-init -(0- db
-init ..> osmium
-init --> pbf
-init --> JSONWikidataQuery
+db -0)- init
+osmium <.. init
+pbf <-- init
+JSONWikidataQuery <-- init
 ```
 
 [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
