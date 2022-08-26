@@ -174,6 +174,7 @@ A local development instance can be started with Docker by running `docker-compo
 
 ```plantuml
 @startuml
+!theme plain
 
 actor Browser
 rectangle "Docker Compose - profile dev" as docker {
@@ -246,95 +247,9 @@ cp open-etymology-map.template.ini web/open-etymology-map.ini
 docker-compose --profile "prod" up -d
 ```
 
-```plantuml
-@startuml
+[![deployment diagram](http://www.plantuml.com/plantuml/png/bLDDQnin4BthLmnxtsxe1uHIIfe6GY27qFm0CokDxILQpIB9NaB9V--ifBLAZ2azc97dlNbwCxEw2H5zF8nMeOxiuTRp7CWhpUF4Zbo4P_97yl1R0Kpi8pJNLmrWWEihm_f5g02UT4ItimJDNSh1pwKy4BGmUTuEWaWqctc8-urbZNPZ-gIIDB8wW6D387LnDmGXb6ovzyldJn-b8aNJ5yHWn1w3NFmaPVSFpt1tctKpu-qlNSzZnC6UL4yjLWX3EZ-u40jfozQGXwQZgBkLrwp4NpI-vntHTvPtYIBn4cFekznwfzc9fYCVKitoLuhUkv-ftomZBExFTY7uay1dhVsOKE-ffDCYie5vdhjz76t74xcMukl8ulQr7N7wCBWXgKgiJl8lAyXb_wXxPArgosTpI_35cINqV-Qr5BmfRVbWuDxZ5XscETKnFFBB89GbmBUshLjMkKbe9PbzmrSuiZsCf1RIYXNN5HIV1IkMAxHOMh5Yhu8gRqJ0x-kdhCgZMtBrMQbyAkcwONKw9g0iE4kbZ2ZUa3Fofly0)](http://www.plantuml.com/plantuml/uml/bLDDQnin4BthLmnxtsxe1uHIIfe6GY27qFm0CokDxILQpIB9NaB9V--ifBLAZ2azc97dlNbwCxEw2H5zF8nMeOxiuTRp7CWhpUF4Zbo4P_97yl1R0Kpi8pJNLmrWWEihm_f5g02UT4ItimJDNSh1pwKy4BGmUTuEWaWqctc8-urbZNPZ-gIIDB8wW6D387LnDmGXb6ovzyldJn-b8aNJ5yHWn1w3NFmaPVSFpt1tctKpu-qlNSzZnC6UL4yjLWX3EZ-u40jfozQGXwQZgBkLrwp4NpI-vntHTvPtYIBn4cFekznwfzc9fYCVKitoLuhUkv-ftomZBExFTY7uay1dhVsOKE-ffDCYie5vdhjz76t74xcMukl8ulQr7N7wCBWXgKgiJl8lAyXb_wXxPArgosTpI_35cINqV-Qr5BmfRVbWuDxZ5XscETKnFFBB89GbmBUshLjMkKbe9PbzmrSuiZsCf1RIYXNN5HIV1IkMAxHOMh5Yhu8gRqJ0x-kdhCgZMtBrMQbyAkcwONKw9g0iE4kbZ2ZUa3Fofly0)
 
-actor Browser
-rectangle "Docker Compose - profile prod_with_local_db" as docker {
-  port "80" as 80docker
-  node postgis_db {
-    port 5432 as 5432db
-    database "PostGIS DB" as db
-  }
-  node promtail {
-    component promtail as promInst
-    folder "/etc/promtail" as promRem
-    folder "/var/log" as logRem
-    folder "/var/lib/docker/containers" as contRem
-  }
-  node web_prod {
-    port "80" as 80webProd
-    component Apache
-    file "/var/www/html/open-etymology-map.ini" as iniRem
-  }
-}
-cloud Grafana
-file "web/open-etymology-map.ini" as iniLoc
-folder "promtail" as promLoc
-folder "/var/log" as logLoc
-folder "/var/lib/docker/containers" as contLoc
-
-iniRem --- iniLoc : volume
-promRem --- promLoc : volume
-logRem --- logLoc : volume
-contRem --- contLoc : volume
-
-Apache --> 5432db
-
-Browser --> 80docker
-
-80docker --> 80webProd
-
-80webProd --> Apache
-5432db --> db
-Grafana <-- promInst
-
-@enduml
-```
-
-```plantuml
-@startuml
-
-actor Browser
-rectangle "Docker Compose - profile prod" as docker {
-  port "80" as 80docker
-  node promtail {
-    component promtail as promInst
-    folder "/etc/promtail" as promRem
-    folder "/var/log" as logRem
-    folder "/var/lib/docker/containers" as contRem
-  }
-  node web_prod {
-    port "80" as 80webProd
-    component Apache
-    file "/var/www/html/open-etymology-map.ini" as iniRem
-  }
-}
-cloud Grafana
-cloud {
-  database "PostGIS DB" as db
-}
-file "web/open-etymology-map.ini" as iniLoc
-folder "promtail" as promLoc
-folder "/var/log" as logLoc
-folder "/var/lib/docker/containers" as contLoc
-
-iniRem --- iniLoc : volume
-promRem --- promLoc : volume
-logRem --- logLoc : volume
-contRem --- contLoc : volume
-
-Apache --> db
-
-Browser --> 80docker
-
-80docker --> 80webProd
-
-80webProd --> Apache
-Grafana <-- promInst
-
-@enduml
-```
+[![deployment diagram](http://www.plantuml.com/plantuml/png/bLF1Yjim5BphAnw-kzxZqaFPRXT288VGV42HvPV4HD8paXmJIlwzUh9KGKCeUmYItyp8CnFvpGVfmcoqK6GcicW37D1TqS5l0J2H2z2ylZGWFRo-3AGkwEBSeGhIdZH2yv5cy8Fb7g65oT5nrCZha7IiokS1M1eIP88STPu1r9SNY8MytreVCkb8Ua07JOT1TONN5E9FDF_ohj9rcaw94jTdZB7lLekT8XlFjEXyql1Z4Tsh-mNxNnmkktzeAUBx23z4-pv9TSOyvegoWMLPkdCmkgC9ROlXPYYwlRL6Jbz6EwPJurgTyA-S45_s7zsEbAYH7tfZ-7bdZ7wgBnRSXT8q3x1nyYYjJ3tL6dPq6ID5ga0EtXqj7bqMC76GGVRInsXxyc6pFS37-tgD-gWIQn7GjctE1b_XIdesA3XDnago2iOi6SknAiIsCrOYL52i_ng3tzY2o8uXFjSlGfHT7fSh8Fvk6IWteDphEEDfAkGDxJ0R_GS0)](http://www.plantuml.com/plantuml/uml/bLF1gjim4BphAnRVNRzZwA6aQI04SWZD1nHPtYGcajP8Same-VTgRQc2Xb3U8KZUcP5d9lBQ1-d2QBHGP0QoQ0ESqDtHmMy1C90BKAq-Af0ULXyTgHkwE7UeWhGNZL1jvndyOBb7g65mTEuryjhDEbQbym0iTJDaWknrcW6KbsU8XRpVMnyIwKowGmTLWq4rcLTbuayq__BkqZMQBZCbhkyOVTii5Xj5DfvfqVbPmuzPz2pk9sn_SRZa_gMbY1yZ_1Bj-o3L5TEOAqe6fcbghi7eXWQqDOQ7eUZsKHivVEbjFvyQr-A4V_c4-BB_w0waH8dyqXl3xpjZz5DziU0fbAQnWvsJPsdbt5EfuK2tFbAa2kHWusZow9A0YPqCifK-HZkI3xlz2RQRvHgrKIMM8g2kwvGDliATz6XGS9g4vMG5Z5aIbc8LY6qdB4See5Z-DGQ_iGMH74DyBb-4oBiqpbT0_Dqoa6z0ljTnnbCk1CGQRJSQ_GS0)
 
 ### Structure
 
