@@ -280,6 +280,7 @@ BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
 JSONWikidataQuery --|> WikidataQuery
 
+init ..> PostGIS_PDO
 globalMap ..> PostGIS_PDO
 PostGISQuery ..> PostGIS_PDO
 PostGIS_PDO -(0- db
@@ -287,7 +288,6 @@ BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
 
 WikidataQuery -(0- wikidata
 
-db -0)- init
 osmium <.. init
 pbf <-- init
 JSONWikidataQuery <-- init
