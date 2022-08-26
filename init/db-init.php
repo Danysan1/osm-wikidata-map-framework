@@ -20,8 +20,18 @@ use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
 $fileArgumentIndex = false;
 $options = getopt(
-    "hkcrpt",
-    ["help","keep-temp-tables","cleanup","reset","propagate","load-text-etymology","osmium-txt","osmium-geojson","osmium-pg","osm2pgsql"],
+    "hkcrptn",
+    [
+        "help",
+        "keep-temp-tables",
+        "cleanup",
+        "reset",
+        "propagate",
+        "load-text-etymology",
+        "no-upload",
+        "osmium-export",
+        "osm2pgsql"
+    ],
     $fileArgumentIndex
 );
 
@@ -43,8 +53,11 @@ if (isset($options["help"]) || isset($options["h"])) {
         "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
         "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
         "\t\t--reset / -r : Do a hard reset (delete all tables) before elaborating (disabled by default)" . PHP_EOL .
+        "\t\t--propagate / -p : Propagate etymologies to nearby homonymous highways (disabled by default, it increases the execution time)" . PHP_EOL .
         "\t\t--load-text-etymology / -t : Load textual etymologies (name:etymology tags) (disabled by default as it increases by a lot the execution time and file size)" . PHP_EOL .
-        "\t\t--propagate / -p : Propagate etymologies to nearby homonymous highways (disabled by default, it increases the execution time)" . PHP_EOL;
+        "\t\t--no-upload / -n : Don't upload the data to the destination DB (data is uploaded by default)" . PHP_EOL .
+        "\t\t--osmium-export : Use osmium-export to load the data into the local DB (enableb by default)" . PHP_EOL .
+        "\t\t--osm2pgsql : Use osmpggsql to load the data into the local DB" . PHP_EOL;
     exit(0);
 }
 
@@ -52,16 +65,17 @@ define("MAX_RECURSION_DEPTH", 10);
 
 $output = [];
 $retval = null;
-$use_osmium_export = FALSE;
-$use_osm2pgsql = FALSE;
-$convert_to_geojson = FALSE;
-$convert_to_pg = FALSE;
-$convert_to_txt = FALSE;
 $keep_temp_tables = isset($options["keep-temp-tables"]) || isset($options["k"]);
 $cleanup = isset($options["cleanup"]) || isset($options["c"]);
 $reset = isset($options["hard-reset"]) || isset($options["r"]);
 $propagate = isset($options["propagate"]) || isset($options["p"]);
 $load_text_etymology = isset($options["load-text-etymology"]) || isset($options["t"]);
+$no_upload = isset($options["no-upload"]) || isset($options["n"]);
+$use_osmium_export = isset($options["osmium-export"]);
+$use_osm2pgsql = isset($options["osm2pgsql"]);
+
+$enable_upload = $conf->getBool("db_init_enable_upload");
+$upload_to_db = $enable_upload && !$no_upload;
 
 exec("which osmium", $output, $retval);
 if ($retval !== 0) {
@@ -88,32 +102,21 @@ echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby
 
 echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
 
-if (isset($options["osmium-txt"])) {
-    echo 'Using osmium-export to txt' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_txt = TRUE;
-} elseif (isset($options["osmium-geojson"])) {
-    echo 'Using osmium-export to geojson' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_geojson = TRUE;
-} elseif (isset($options["osmium-pg"])) {
+echo 'Elaborated etymologies will ' . ($upload_to_db ? '' : 'NOT ') . 'be loaded into the destination DB' . PHP_EOL;
+
+if ($use_osmium_export) {
     echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
-    $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
-} elseif (isset($options["osm2pgsql"])) {
+} elseif ($use_osm2pgsql) {
     echo 'Using osm2pgsql' . PHP_EOL;
     exec("which osm2pgsql", $output, $retval);
     if ($retval !== 0) {
         echo "ERROR: osm2pgsql is not installed" . PHP_EOL;
         exit(1);
     }
-    $use_osm2pgsql = TRUE;
 } else {
-    echo 'Using osmium-export to pg (default)' . PHP_EOL;
+    echo 'Using osmium-export to PostGIS tsv (default)' . PHP_EOL;
     $use_osmium_export = TRUE;
-    $convert_to_pg = TRUE;
 }
-$use_db = $use_osm2pgsql || $convert_to_pg;
 
 if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
     // $fileArgument is an URL
@@ -963,40 +966,6 @@ $osmiumCache = "sparse_file_array,$osmiumCachePath";
 if (is_file($filteredFilePath) && $cleanup)
     unlink($filteredFilePath);
 
-//$txtFilePath = sys_get_temp_dir() . "/$sourceFileName.txt";
-$txtFilePath = "$workDir/$sourceFileName.txt";
-if (is_file($txtFilePath) && $cleanup) {
-    unlink($txtFilePath);
-}
-if (is_file($txtFilePath)) {
-    logProgress('Data already exported to text');
-} elseif ($convert_to_txt) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
-    logProgress('Exporting OSM data to text...');
-    /**
-     * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
-     */
-    execAndCheck("osmium export --verbose --overwrite -o '$txtFilePath' -f 'txt' --config='$osmiumFilePath' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
-    logProgress('Exported OSM data to text');
-}
-
-//$geojsonFilePath = sys_get_temp_dir() . "/$sourceFileName.geojson";
-$geojsonFilePath = "$workDir/$sourceFileName.geojson";
-if (is_file($geojsonFilePath) && $cleanup) {
-    unlink($geojsonFilePath);
-}
-if (is_file($geojsonFilePath)) {
-    logProgress('Data already exported to geojson');
-} elseif ($convert_to_geojson) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
-    logProgress('Exporting OSM data to geojson...');
-    /**
-     * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
-     */
-    execAndCheck("osmium export --verbose --overwrite -o '$geojsonFilePath' -f 'geojson' --config='$osmiumFilePath' --add-unique-id='counter' --index-type=$osmiumCache '$filteredFilePath'");
-    logProgress('Exported OSM data to geojson');
-}
-
 $pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
 //$pgFilePath = "$workDir/$sourceFileName.pg";
 if (is_file($pgFilePath) && $cleanup) {
@@ -1004,7 +973,7 @@ if (is_file($pgFilePath) && $cleanup) {
 }
 if (is_file($pgFilePath)) {
     logProgress('Data already exported to PostGIS tsv');
-} elseif ($convert_to_pg) {
+} elseif ($use_osmium_export) {
     filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
     logProgress('Exporting OSM data to PostGIS tsv...');
     /**
@@ -1014,163 +983,160 @@ if (is_file($pgFilePath)) {
     logProgress('Exported OSM data to PostGIS tsv');
 }
 
-
-if ($use_db) {
-    try {
-        if (!$conf->getBool("db-enable")) {
-            throw new Exception('The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.');
-        }
-
-        $host = (string)$conf->get("db_host");
-        $port = (int)$conf->get("db_port");
-        $dbname = (string)$conf->get("db_database");
-        $user = (string)$conf->get("db_user");
-        $password = (string)$conf->get("db_password");
-
-        $tries = 0;
-        do {
-            try {
-                $dbh = new PostGIS_PDO($conf);
-                $dbh->query('SELECT version()');
-                $failure = false;
-            } catch (Exception $e) {
-                $tries += 1;
-                if ($tries == 60) {
-                    throw new Exception("Max connection tries reached, could not connect to PostgreSQL database");
-                } else {
-                    echo "Postgres is unavailable, sleeping...";
-                    sleep(1);
-                    $failure = true;
-                }
-            }
-        } while ($failure);
-
-        if (empty($dbh))
-            throw new Exception("Database connection initialization failed");
-
-        $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis");
-        $dbh->exec("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch");
-        //$dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder");
-        $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_topology");
-        $dbh->exec("CREATE EXTENSION IF NOT EXISTS hstore");
-
-        try {
-            $dbh->query("SELECT PostGIS_Version()");
-        } catch (Exception $e) {
-            throw new Exception('PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage());
-        }
-
-        if ($reset) {
-            logProgress('Resetting DB schema');
-            $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
-        }
-
-        if (isSchemaAlreadySetup($dbh)) {
-            logProgress('DB schema already prepared');
-        } else {
-            logProgress('Preparing DB schema...');
-            setupSchema($dbh);
-        }
-
-        if (isOsmDataTemporaryTableAbsent($dbh)) {
-            logProgress('Temporary tables already deleted, not loading elements');
-        } elseif ($dbh->query("SELECT EXISTS (SELECT FROM oem.osmdata)")->fetchColumn()) {
-            logProgress('Elements already loaded');
-        } else {
-            ini_set('memory_limit', '256M');
-            logProgress('Loading OSM elements into DB...');
-            if ($convert_to_pg) {
-                loadOsmDataFromTSV($dbh, $pgFilePath);
-            } else {
-                assert($use_osm2pgsql);
-                loadOsmDataWithOsm2pgsql($dbh, $host, $port, $dbname, $user, $password, $filteredFilePath);
-            }
-            removeElementsTooBig($dbh);
-            echo 'Loading complete at ' . date('c') . PHP_EOL;
-        }
-
-        if (isElementWikidataTemporaryTableAbsent($dbh)) {
-            logProgress('Temporary tables already deleted, not loading wikidata entities end etymologies');
-        } else {
-            if ($dbh->query("SELECT EXISTS (SELECT FROM oem.element_wikidata_cods)")->fetchColumn()) {
-                logProgress('Wikidata codes already converted');
-            } else {
-                logProgress('Converting wikidata codes...');
-                convertElementWikidataCods($dbh);
-            }
-
-            if ($dbh->query("SELECT EXISTS (SELECT FROM oem.wikidata)")->fetchColumn()) {
-                logProgress('Wikidata entities already loaded');
-            } else {
-                loadWikidataEntities($dbh);
-
-                echo 'Download of wikidata relations started at ' . date('c') . PHP_EOL;
-                $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-                loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
-                loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
-                echo 'Download of wikidata relations ended at ' . date('c') . PHP_EOL;
-            }
-
-            if ($dbh->query("SELECT EXISTS (SELECT FROM oem.etymology)")->fetchColumn()) {
-                logProgress('Etymologies already loaded');
-            } else {
-                convertEtymologies($dbh);
-
-                if (!$keep_temp_tables) {
-                    $dbh->exec("DROP TABLE oem.element_wikidata_cods");
-                    $dbh->exec("DROP TABLE oem.wikidata_named_after");
-                    logProgress('Removed temporary tables');
-                }
-            }
-
-            if ($propagate) {
-                echo 'Propagation of etymologies started at ' . date('c') . PHP_EOL;
-                propagateEtymologies($dbh);
-                echo 'Propagation of etymologies ended at ' . date('c') . PHP_EOL;
-            }
-
-            echo 'Conversion complete at ' . date('c') . PHP_EOL;
-        }
-
-        if (isOsmDataTemporaryTableAbsent($dbh)) {
-            logProgress('Temporary tables already deleted, not cleaning up elements');
-        } else {
-            // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without
-            // https://stackoverflow.com/a/7088514/2347196
-            moveElementsWithEtymology($dbh);
-
-            if (!$keep_temp_tables)
-                $dbh->exec('DROP TABLE oem.osmdata');
-
-            setupGlobalMap($dbh);
-            saveLastDataUpdate($sourceFilePath, $dbh);
-        }
-
-        $backupFilePath = "$workDir/$sourceFileName.backup";
-        if (is_file($backupFilePath) && ($cleanup || $reset)) {
-            unlink($backupFilePath);
-        }
-        if (is_file($backupFilePath)) {
-            logProgress('Backup file already generated');
-        } else {
-            logProgress('Generating backup file...');
-            execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose --no-owner --no-privileges --no-tablespaces");
-            logProgress('Backup file generated');
-        }
-
-        if ($conf->getBool("db_init_enable_upload")) {
-            $up_host = (string)$conf->get("db_init_upload_host");
-            $up_port = (string)$conf->get("db_init_upload_port");
-            $up_user = (string)$conf->get("db_init_upload_user");
-            $up_psw = (string)$conf->get("db_init_upload_password");
-            $up_db = (string)$conf->get("db_init_upload_database");
-            logProgress("Uploading data to DB $up_db on $up_host");
-            execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --clean --schema 'oem' --verbose '$backupFilePath'");
-            logProgress('Uploaded data to DB');
-        }
-    } catch (Exception $e) {
-        echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
+try {
+    if (!$conf->getBool("db-enable")) {
+        throw new Exception('The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.');
     }
 
-    echo 'Finished at ' . date('c') . PHP_EOL;
+    $host = (string)$conf->get("db_host");
+    $port = (int)$conf->get("db_port");
+    $dbname = (string)$conf->get("db_database");
+    $user = (string)$conf->get("db_user");
+    $password = (string)$conf->get("db_password");
+
+    $tries = 0;
+    do {
+        try {
+            $dbh = new PostGIS_PDO($conf);
+            $dbh->query('SELECT version()');
+            $failure = false;
+        } catch (Exception $e) {
+            $tries += 1;
+            if ($tries == 60) {
+                throw new Exception("Max connection tries reached, could not connect to PostgreSQL database");
+            } else {
+                echo "Postgres is unavailable, sleeping...";
+                sleep(1);
+                $failure = true;
+            }
+        }
+    } while ($failure);
+
+    if (empty($dbh))
+        throw new Exception("Database connection initialization failed");
+
+    $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis");
+    $dbh->exec("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch");
+    //$dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder");
+    $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_topology");
+    $dbh->exec("CREATE EXTENSION IF NOT EXISTS hstore");
+
+    try {
+        $dbh->query("SELECT PostGIS_Version()");
+    } catch (Exception $e) {
+        throw new Exception('PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage());
+    }
+
+    if ($reset) {
+        logProgress('Resetting DB schema');
+        $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
+    }
+
+    if (isSchemaAlreadySetup($dbh)) {
+        logProgress('DB schema already prepared');
+    } else {
+        logProgress('Preparing DB schema...');
+        setupSchema($dbh);
+    }
+
+    if (isOsmDataTemporaryTableAbsent($dbh)) {
+        logProgress('Temporary tables already deleted, not loading elements');
+    } elseif ($dbh->query("SELECT EXISTS (SELECT FROM oem.osmdata)")->fetchColumn()) {
+        logProgress('Elements already loaded');
+    } else {
+        ini_set('memory_limit', '256M');
+        logProgress('Loading OSM elements into DB...');
+        if ($use_osmium_export) {
+            loadOsmDataFromTSV($dbh, $pgFilePath);
+        } else {
+            assert($use_osm2pgsql);
+            loadOsmDataWithOsm2pgsql($dbh, $host, $port, $dbname, $user, $password, $filteredFilePath);
+        }
+        removeElementsTooBig($dbh);
+        echo 'Loading complete at ' . date('c') . PHP_EOL;
+    }
+
+    if (isElementWikidataTemporaryTableAbsent($dbh)) {
+        logProgress('Temporary tables already deleted, not loading wikidata entities end etymologies');
+    } else {
+        if ($dbh->query("SELECT EXISTS (SELECT FROM oem.element_wikidata_cods)")->fetchColumn()) {
+            logProgress('Wikidata codes already converted');
+        } else {
+            logProgress('Converting wikidata codes...');
+            convertElementWikidataCods($dbh);
+        }
+
+        if ($dbh->query("SELECT EXISTS (SELECT FROM oem.wikidata)")->fetchColumn()) {
+            logProgress('Wikidata entities already loaded');
+        } else {
+            loadWikidataEntities($dbh);
+
+            echo 'Download of wikidata relations started at ' . date('c') . PHP_EOL;
+            $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
+            loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
+            loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+            echo 'Download of wikidata relations ended at ' . date('c') . PHP_EOL;
+        }
+
+        if ($dbh->query("SELECT EXISTS (SELECT FROM oem.etymology)")->fetchColumn()) {
+            logProgress('Etymologies already loaded');
+        } else {
+            convertEtymologies($dbh);
+
+            if (!$keep_temp_tables) {
+                $dbh->exec("DROP TABLE oem.element_wikidata_cods");
+                $dbh->exec("DROP TABLE oem.wikidata_named_after");
+                logProgress('Removed temporary tables');
+            }
+        }
+
+        if ($propagate) {
+            echo 'Propagation of etymologies started at ' . date('c') . PHP_EOL;
+            propagateEtymologies($dbh);
+            echo 'Propagation of etymologies ended at ' . date('c') . PHP_EOL;
+        }
+
+        echo 'Conversion complete at ' . date('c') . PHP_EOL;
+    }
+
+    if (isOsmDataTemporaryTableAbsent($dbh)) {
+        logProgress('Temporary tables already deleted, not cleaning up elements');
+    } else {
+        // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without
+        // https://stackoverflow.com/a/7088514/2347196
+        moveElementsWithEtymology($dbh);
+
+        if (!$keep_temp_tables)
+            $dbh->exec('DROP TABLE oem.osmdata');
+
+        setupGlobalMap($dbh);
+        saveLastDataUpdate($sourceFilePath, $dbh);
+    }
+
+    $backupFilePath = "$workDir/$sourceFileName.backup";
+    if (is_file($backupFilePath) && ($cleanup || $reset)) {
+        unlink($backupFilePath);
+    }
+    if (is_file($backupFilePath)) {
+        logProgress('Backup file already generated');
+    } else {
+        logProgress('Generating backup file...');
+        execAndCheck("PGPASSWORD='$password' pg_dump --file='$backupFilePath' --host='$host' --port='$port' --dbname='$dbname' --username='$user' --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema='oem' --verbose --no-owner --no-privileges --no-tablespaces");
+        logProgress('Backup file generated');
+    }
+
+    if ($upload_to_db) {
+        $up_host = (string)$conf->get("db_init_upload_host");
+        $up_port = (string)$conf->get("db_init_upload_port");
+        $up_user = (string)$conf->get("db_init_upload_user");
+        $up_psw = (string)$conf->get("db_init_upload_password");
+        $up_db = (string)$conf->get("db_init_upload_database");
+        logProgress("Uploading data to DB $up_db on $up_host");
+        execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --clean --schema 'oem' --verbose '$backupFilePath'");
+        logProgress('Uploaded data to DB');
+    }
+} catch (Exception $e) {
+    echo "ERROR:" . PHP_EOL . $e->getMessage() . PHP_EOL;
 }
+
+echo 'Finished at ' . date('c') . PHP_EOL;
