@@ -114,8 +114,6 @@ class BackgroundStyleControl {
         if (backgroundStyleObj) {
             this._map.setStyle(backgroundStyleObj.styleUrl);
             this._ctrlDropDown.className = 'hiddenElement';
-            //setCulture(this._map);
-            //updateDataSource(event);
         } else {
             logErrorMessage("Invalid selected background style", "error", { style: event.target.value });
         }

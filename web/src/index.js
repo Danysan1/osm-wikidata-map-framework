@@ -154,10 +154,12 @@ function initMap() {
 /**
  * 
  * @param {MapDataEvent} e The event to handle 
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
  */
 function mapStyleDataHandler(e) {
     //console.info("Map style data loaded", e);
-    //setCulture();
+    //setCulture(e.sender); //! Not here, this event is executed too often
 }
 
 /**
@@ -202,27 +204,17 @@ function mapSourceDataHandler(e) {
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
         ready = e.isSourceLoaded,
         map = e.target;
-    if (wikidataSourceEvent || overpassSourceEvent || ready) {
-        console.info('sourcedata event', {
-            type: e.dataType,
-            source: e.sourceId,
-            wikidataSourceEvent,
-            overpassSourceEvent,
-            ready,
-            map,
-            e
-        });
-    }
 
     if (ready) {
         if (wikidataSourceEvent || overpassSourceEvent) {
-            //kendo.ui.progress($("#map"), false);
+            //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent && map.currentEtymologyColorControl) {
                 map.currentEtymologyColorControl.updateChart(e);
             }
         } else {
-            updateDataSource(e);
+            //console.info("mapSourceDataHandler: ready event", { e, source:e.sourceId });
+            //updateDataSource(e);
         }
     }
 }
@@ -754,6 +746,19 @@ function setupGeocoder(map) {
 }
 
 /**
+ * Handles the change of base map
+ * 
+ * @param {Event} e 
+ * @see https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+ * @see https://github.com/mapbox/mapbox-gl-js/issues/3979
+ */
+function mapStyleLoadHandler(e) {
+    console.info("mapStyleLoadHandler", e);
+    setCulture(e.target);
+    updateDataSource(e);
+}
+
+/**
  * Handles the completion of map loading
  * 
  * @param {Event} e 
@@ -766,6 +771,7 @@ function mapLoadedHandler(e) {
     document.getElementById('map_static_preview').style.visibility = 'hidden';
 
     setCulture(map);
+    map.on("style.load", mapStyleLoadHandler)
     //openInfoWindow(map);
 
     mapMoveEndHandler(e);
@@ -833,6 +839,31 @@ function prepareGlobalLayers(map, maxZoom) {
 }
 
 /**
+ * Checks if any element in the array or in it sub-arrays is a string that starts with "name"
+ * 
+ * @param {array} arr 
+ * @returns {boolean}
+ */
+function someStartWithName(arr) {
+    return arr.some(
+        x => (typeof x === 'string' && x.startsWith('name')) || (Array.isArray(x) && someStartWithName(x))
+    );
+}
+
+/**
+ * Checks if a map symbol layer is also a name layer
+ * 
+ * @param {string} layerId 
+ * @param {Map} map
+ * @returns {boolean}
+ */
+function isNameSymbolLayer(layerId, map) {
+    const textField = map.getLayoutProperty(layerId, 'text-field'),
+        isSimpleName = textField === '{name:latin}';
+    return isSimpleName || (Array.isArray(textField) && someStartWithName(textField))
+}
+
+/**
  * Set the application culture for i18n & l10n
  * 
  * @param {Map} map
@@ -850,9 +881,7 @@ function setCulture(map) {
         console.warn("setCulture: Empty map, can't change map language");
     } else {
         const symbolLayerIds = map.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
-            nameLayerIds = symbolLayerIds.filter(
-                id => map.getLayoutProperty(id, 'text-field') === '{name:latin}' || Array.isArray(map.getLayoutProperty(id, 'text-field'))
-            ),
+            nameLayerIds = symbolLayerIds.filter(id => isNameSymbolLayer(id,map)),
             nameLayerOldTextFields = nameLayerIds.map(id => map.getLayoutProperty(id, 'text-field')),
             newTextField = ['coalesce', ['get', 'name:' + language], ['get', 'name_' + language], ['get', 'name']];
         console.info("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
