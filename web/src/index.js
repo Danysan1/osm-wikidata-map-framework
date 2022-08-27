@@ -3,7 +3,7 @@ const sentry_js_dsn = document.head.querySelector('meta[name="sentry_js_dsn"]')?
     sentry_js_env = document.head.querySelector('meta[name="sentry_js_env"]')?.content;
 
 if (sentry_js_dsn && sentry_js_env) {
-    console.info("Initializing Sentry", {sentry_js_dsn, sentry_js_env});
+    console.info("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
     Sentry.init({
         dsn: sentry_js_dsn,
         environment: sentry_js_env
@@ -15,25 +15,25 @@ const google_analytics_id = document.head.querySelector('meta[name="google_analy
     matomo_id = document.head.querySelector('meta[name="matomo_id"]')?.content;
 
 if (google_analytics_id) {
-    console.info("Initializing Google Analytics", {google_analytics_id});
+    console.info("Initializing Google Analytics", { google_analytics_id });
     window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
+    function gtag() { window.dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', google_analytics_id);
 }
 
 if (matomo_domain && matomo_id) {
-    console.info("Initializing Matomo", {matomo_domain, matomo_id});
+    console.info("Initializing Matomo", { matomo_domain, matomo_id });
     var _paq = window._paq = window._paq || [];
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
     _paq.push(['trackPageView']);
     _paq.push(['enableLinkTracking']);
-    (function() {
-    var u=`https://${matomo_domain}/`;
-    _paq.push(['setTrackerUrl', u+'matomo.php']);
-    _paq.push(['setSiteId', matomo_id]);
-    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
-    g.async=true; g.src=`//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode.insertBefore(g,s);
+    (function () {
+        var u = `https://${matomo_domain}/`;
+        _paq.push(['setTrackerUrl', u + 'matomo.php']);
+        _paq.push(['setSiteId', matomo_id]);
+        var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
+        g.async = true; g.src = `//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode.insertBefore(g, s);
     })();
 }
 
@@ -66,7 +66,7 @@ const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.c
         mapboxBackgroundStyle('mapbox_dark', 'Dark', 'mapbox', 'dark-v10', mapbox_token)
     ];
 
-if(maptiler_key) {
+if (maptiler_key) {
     backgroundStyles.push(
         maptilerBackgroundStyle('maptiler_streets', 'Streets (Maptiler)', 'streets', maptiler_key),
         maptilerBackgroundStyle('maptiler_bright', 'Bright', 'bright', maptiler_key),
@@ -118,7 +118,7 @@ function initMap() {
         backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
     console.info("Initializing the map", { startParams, backgroundStyleObj });
 
-    if(typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
+    if (typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
         mapboxgl.accessToken = mapbox_token;
     }
 
@@ -319,7 +319,6 @@ function updateDataSource(event) {
         }
     } else {
         console.error("No layer was enabled", {
-            queryParams,
             zoomLevel,
             minZoomLevel,
             thresholdZoomLevel,
@@ -738,10 +737,10 @@ function setupGeocoder(map) {
     } else if (typeof maplibregl == 'object' && typeof NominatimGeocoderControl == 'function') {
         control = new NominatimGeocoderControl({ maplibregl: maplibregl });
     } else {
-        console.warn("No geocoding plugin available", {mapboxgl, MapboxGeocoder, mapbox_token});
+        console.warn("No geocoding plugin available", { mapboxgl, MapboxGeocoder, mapbox_token });
     }
 
-    if(control) {
+    if (control) {
         map.addControl(control, 'top-left');
     }
 }
@@ -882,7 +881,7 @@ function setCulture(map) {
         console.warn("setCulture: Empty map, can't change map language");
     } else {
         const symbolLayerIds = map.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
-            nameLayerIds = symbolLayerIds.filter(id => isNameSymbolLayer(id,map)),
+            nameLayerIds = symbolLayerIds.filter(id => isNameSymbolLayer(id, map)),
             nameLayerOldTextFields = nameLayerIds.map(id => map.getLayoutProperty(id, 'text-field')),
             newTextField = ['coalesce', ['get', 'name:' + language], ['get', 'name_' + language], ['get', 'name']];
         console.info("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
