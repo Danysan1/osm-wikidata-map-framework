@@ -971,10 +971,12 @@ $pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
 if (is_file($pgFilePath) && $cleanup) {
     unlink($pgFilePath);
 }
-if (is_file($pgFilePath)) {
+
+filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
+
+if (is_file($pgFilePath) && (filemtime($pgFilePath) > filemtime($sourceFilePath))) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($use_osmium_export) {
-    filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
     logProgress('Exporting OSM data to PostGIS tsv...');
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
