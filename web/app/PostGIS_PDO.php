@@ -9,14 +9,20 @@ use \App\Configuration;
 
 class PostGIS_PDO extends PDO
 {
-    public function __construct(Configuration $conf)
-    {
-        $host = (string)$conf->get("db_host");
-        $port = (int)$conf->get("db_port");
-        $dbname = (string)$conf->get("db_database");
-        $user = (string)$conf->get("db_user");
-        $password = (string)$conf->get("db_password");
-        // Test $db = \pg_connect("host=$host port=$port dbname=$dbname user=$user password=$password");
+    public function __construct(
+        Configuration $conf,
+        ?string $host = null,
+        ?int $port = null,
+        ?string $dbname = null,
+        ?string $user = null,
+        ?string $password = null
+    ) {
+        $host = $host ?: (string)$conf->get("db_host");
+        $port = $port ?: (int)$conf->get("db_port");
+        $dbname = $dbname ?: (string)$conf->get("db_database");
+        $user = $user ?: (string)$conf->get("db_user");
+        $password = $password ?: (string)$conf->get("db_password");
+        
         parent::__construct(
             "pgsql:host=$host;port=$port;dbname=$dbname;options=--application_name=open_etymology_map",
             $user,

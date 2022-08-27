@@ -281,7 +281,7 @@ function isSchemaAlreadySetup(PDO $dbh): bool
 
 function setupSchema(PDO $dbh): void
 {
-    $dbh->exec("CREATE SCHEMA IF NOT EXISTS oem AUTHORIZATION oem");
+    $dbh->exec("CREATE SCHEMA IF NOT EXISTS oem");
     $dbh->exec('DROP TABLE IF EXISTS oem.wikidata_text');
     $dbh->exec('DROP TABLE IF EXISTS oem.wikidata_picture');
     $dbh->exec('DROP TABLE IF EXISTS oem.etymology');
@@ -1127,12 +1127,16 @@ try {
 
     if ($upload_to_db) {
         $up_host = (string)$conf->get("db_init_upload_host");
-        $up_port = (string)$conf->get("db_init_upload_port");
+        $up_port = (int)$conf->get("db_init_upload_port");
         $up_user = (string)$conf->get("db_init_upload_user");
         $up_psw = (string)$conf->get("db_init_upload_password");
         $up_db = (string)$conf->get("db_init_upload_database");
+        
         logProgress("Uploading data to DB $up_db on $up_host");
-        execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --clean --schema 'oem' --verbose '$backupFilePath'");
+        $up_dbh = new PostGIS_PDO($conf, $up_host, $up_port, $up_db, $up_user, $up_psw);
+        $up_dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
+        $up_dbh->exec("CREATE SCHEMA oem");
+        execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --schema 'oem' --verbose '$backupFilePath'");
         logProgress('Uploaded data to DB');
     }
 } catch (Exception $e) {
