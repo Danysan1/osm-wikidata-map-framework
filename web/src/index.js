@@ -1,9 +1,18 @@
 import * as Sentry from "@sentry/browser";
+const sentry_js_dsn = document.head.querySelector('meta[name="sentry_js_dsn"]')?.content,
+    sentry_js_env = document.head.querySelector('meta[name="sentry_js_env"]')?.content;
+
+if (sentry_js_dsn && sentry_js_env) {
+    console.info("Initializing Sentry", {sentry_js_dsn, sentry_js_env});
+    Sentry.init({
+        dsn: sentry_js_dsn,
+        environment: sentry_js_env
+    });
+}
+
 const google_analytics_id = document.head.querySelector('meta[name="google_analytics_id"]')?.content,
     matomo_domain = document.head.querySelector('meta[name="matomo_domain"]')?.content,
-    matomo_id = document.head.querySelector('meta[name="matomo_id"]')?.content,
-    sentry_js_dsn = document.head.querySelector('meta[name="sentry_js_dsn"]')?.content,
-    sentry_js_env = document.head.querySelector('meta[name="sentry_js_env"]')?.content;
+    matomo_id = document.head.querySelector('meta[name="matomo_id"]')?.content;
 
 if (google_analytics_id) {
     console.info("Initializing Google Analytics", {google_analytics_id});
@@ -26,14 +35,6 @@ if (matomo_domain && matomo_id) {
     var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
     g.async=true; g.src=`//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode.insertBefore(g,s);
     })();
-}
-
-if (sentry_js_dsn && sentry_js_env) {
-    console.info("Initializing Sentry", {sentry_js_dsn, sentry_js_env});
-    Sentry.init({
-        dsn: sentry_js_dsn,
-        environment: sentry_js_env
-    });
 }
 
 //import maplibregl, { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl';
@@ -73,11 +74,6 @@ if(maptiler_key) {
         maptilerBackgroundStyle('maptiler_osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
     );
 }
-
-Sentry.init({
-    dsn: "https://28f991751fe343deac6db449dd66ccec@o517418.ingest.sentry.io/5886531",
-    
-});
 
 console.info("index start", {
     thresholdZoomLevel,
