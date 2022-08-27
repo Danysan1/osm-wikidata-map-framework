@@ -41,7 +41,8 @@ import mapboxgl, { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, 
 
 //import { NominatimGeocoderControl } from './NominatimGeocoderControl';
 //import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import { MapboxGeocoder } from '@mapbox/mapbox-gl-geocoder';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -743,18 +744,16 @@ function setupGeocoder(map) {
             collapsed: true,
             mapboxgl: mapboxgl
         });
-        console.info("setupGeocoder: using MapboxGeocoder", control);
-        map.addControl(control, 'top-left');
     } else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
         control = new MaptilerGeocoderControl(maptiler_key);
-        console.info("setupGeocoder: using MaptilerGeocoderControl", control);
-        map.addControl(control, 'top-left');
     } else if (typeof maplibregl == 'object' && typeof NominatimGeocoderControl == 'function') {
         control = new NominatimGeocoderControl({ maplibregl: maplibregl });
-        console.info("setupGeocoder: using NominatimGeocoderControl", control);
-        map.addControl(control, 'top-left');
     } else {
-        console.warn("No geocoding plugin available");
+        console.warn("No geocoding plugin available", {mapboxgl, MapboxGeocoder, mapbox_token});
+    }
+
+    if(control) {
+        map.addControl(control, 'top-left');
     }
 }
 

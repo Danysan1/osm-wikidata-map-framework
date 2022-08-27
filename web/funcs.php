@@ -83,8 +83,8 @@ function prepareHTML(Configuration $conf)
 	$matomoConnectSrcs = '';
 	$matomoScriptSrcs = '';
 	if($conf->has('matomo-domain')) {
-		$matomoConnectSrcs = '';
-		$matomoScriptSrcs = '';
+		$matomoConnectSrcs = 'https://'.$conf->get('matomo-domain');
+		$matomoScriptSrcs = 'https://cdn.matomo.cloud/';
 	}
 
 	header(
@@ -95,10 +95,10 @@ function prepareHTML(Configuration $conf)
 			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
-			"script-src 'self' $sentryScriptSrcs $googleAnalyticsScriptSrcs ; " .
+			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $sentryConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $sentryConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $matomoConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
