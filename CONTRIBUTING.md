@@ -41,57 +41,81 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 Open Etymology Map obtains the etymology data from multiple tags:
 ```plantuml
 @startuml
-map "Wikidata item Q7322" as wikia #a2d2ff {
 
+map "Wikidata item Q7186" as wikia #ffa2a2 {
+  label => Marie Curie
 }
-map "Wikidata item Q1492" as wikib #a2d2ff {
+map "Wikidata item Q37463" as wikib #ffa2a2 {
+  label => Pierre Curie
+}
+map "Wikidata item Q11297474" as wikic #ffa2a2 {
+  label => Pierre and Marie Curie
+  P31 (instance of) => Q3046146 (married couple)
+  **P527 (has part)** => Q7186;Q37463
+}
 
+map "Wikidata item Q1548496" as wikid #a2d2ff {
+  label => Marie-Curie-Gymnasium Dresden
+  **P138 (named after)** => Q7186
 }
-
-map "Wikidata item Q16567" as wikic #a2d2ff {
-  P138 (named after) => Q7322
+map "Wikidata item Q96391995" as wikie #a2d2ff {
+  label => Marie Curie Monument in Lublin
+  **P547 (commemorates)** => Q7186
 }
-map "Wikidata item Q86518088" as wikie #a2d2ff {
-  P547 (commemorates) => Q7322
-}
-map "Wikidata item Q2288815" as wikif #a2d2ff {
-  P825 (dedicated to) => Q7322
+map "Wikidata item ..." as wikif #a2d2ff {
+  **P825 (dedicated to)** => Q7186
 }
 
 map "OSM element A" as osma #95d5b2 {
-  name:etymology:wikidata => Q7322
+  name => Marie Curie Elementary School
+  **name:etymology:wikidata** => Q7186
 }
 map "OSM element B" as osmb #95d5b2 {
-  subject:wikidata => Q7322
+  name => Marii Skłodowskiej-Curie
+  **subject:wikidata** => Q7186
 }
 map "OSM element C" as osmc #95d5b2 {
-  subject:wikidata => Q7322;Q1492
+  name => Rue Marie et Pierre Curie
+  **name:etymology:wikidata** => Q7186;Q37463
 }
 map "OSM element D" as osmd #95d5b2 {
-  wikidata => Q16567
+  name => Marie-Curie-Gymnasium
+  **wikidata** => Q1548496
 }
 map "OSM element E" as osme #95d5b2 {
-  wikidata => Q86518088
+  name => Pomnik Marii Curie-Skłodowskiej
+  **wikidata** => Q96391995
 }
 map "OSM element F" as osmf #95d5b2 {
-  wikidata => Q2288815
+  name => ...
+  **wikidata** => ...
+}
+map "OSM element G" as osmg #95d5b2 {
+  name => Rue Pierre et Marie Curie
+  **name:etymology:wikidata** => Q11297474
 }
 
 osma --> wikia
 osmb --> wikia
-osmc --> wikia
-osmc --> wikib
+wikia <-- osmc
+wikib <-- osmc
+wikic <-- osmg
 
-osmd --> wikic
+wikid <-- osmd
 osme --> wikie
 osmf --> wikif
 
-wikic --> wikia
+wikia <-- wikic
+wikib <-- wikic
+wikia <-- wikid
 wikie --> wikia
 wikif --> wikia
 
-note left of wikia: Etymology for A, B, C, D, E and F
-note left of wikib: Etymology for C
+note left of wikia: Etymology for OSM elements A, B, C, D, E, F and G
+note right of wikib: Etymology for OSM elements C and G
+note right of wikic: Etymology for OSM element G
+
+
 @enduml
 ```
 
@@ -148,6 +172,8 @@ A local development instance can be started with Docker by running `docker-compo
 - A PostgreSQL+PostGIS DB exposed on localhost:5432
 - A PGAdmin instance exposed at http://localhost:8080
 
+[![deployment diagram](http://www.plantuml.com/plantuml/png/RPBVQiCW5CRlVOf3xaFB_a3PnMYxm1WCDhO7A4PFqp3_13N9OFJTfoQQTVGgvljzvplgSMiTDQwNWb3cj86zqQD5GmmoHrKZ48fAioyqyAHbfor22PtHnzOJZaC1r0AV33y4eDF6GR5PRzQHXCL4CyiawqfpzD2wfhK7NiUSsNr_TtlZtV7BwwXpwcXDBKBnxakUNpwXsiV4oCyvhw5SjYg5NRRkcbs04R5mB8NAmQBcb17h0yVXUeg75Gx_GdOTPIUCub4BZWQArK3DQXp7LQjQ5sl3uWFbTTV9IH5TFdyodGav4oPqp-D6bXjuwroh5HLX8hnduIVT1dwxQk_BKln5xrVDCl1TKhSWatblK9Pbyi8335hq4eat9JRv5qIcatlscCQrAFDsvXl-wo7pWujQVXINOfP9MaMG9v0SMK-J9Ca2NfudC_KDWk-UhU4_LMrHyLwANm00)](http://www.plantuml.com/plantuml/uml/RPBVQiCW5CRlVOf3xaFB_a3PnMYxm1WCDhO7A4PFqp2ZGKqo67ttgL6pZbx5VB_lV4SzResbsWwT88GogpJijPeCQgAHMIeRWL1KYdsXXYVLzSeWbD1hTMmTuJWMG0tmsV1307gbBHIRzMOTY5_CDBDCiYuLHmUDRLfpu7N8YUxxkziRvmvVNWUTKqjhQX2ATrVo_F89rJua1dxEUGtbNIjps4Nhljbv613pnv8eBMHrIPcmFd0ShwSuME7uBsJNKtR281wLuAYXM8rKhwPfMhMojQ7MBpwmk-uwsKu4bykVJMT2peG9DV2maUK6tdhRAac5dmWVcFz9ju7VjjgxiXH_qVjLiGnSbzJDooJk3SgoJ5vuW569eKFYJ955_uB8V7B77jEu5YLk9zxmNm-93ove-L5SYbacQHL0da1qP3tFboGBE3bEPkxh1TSzM_r_gjgYv4CdVW40)
+
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
 #### Production deployment with Docker
@@ -173,6 +199,10 @@ cp open-etymology-map.template.ini web/open-etymology-map.ini
 docker-compose --profile "prod" up -d
 ```
 
+[![deployment diagram](http://www.plantuml.com/plantuml/png/bLDDQnin4BthLmnxtsxe1uHIIfe6GY27qFm0CokDxILQpIB9NaB9V--ifBLAZ2azc97dlNbwCxEw2H5zF8nMeOxiuTRp7CWhpUF4Zbo4P_97yl1R0Kpi8pJNLmrWWEihm_f5g02UT4ItimJDNSh1pwKy4BGmUTuEWaWqctc8-urbZNPZ-gIIDB8wW6D387LnDmGXb6ovzyldJn-b8aNJ5yHWn1w3NFmaPVSFpt1tctKpu-qlNSzZnC6UL4yjLWX3EZ-u40jfozQGXwQZgBkLrwp4NpI-vntHTvPtYIBn4cFekznwfzc9fYCVKitoLuhUkv-ftomZBExFTY7uay1dhVsOKE-ffDCYie5vdhjz76t74xcMukl8ulQr7N7wCBWXgKgiJl8lAyXb_wXxPArgosTpI_35cINqV-Qr5BmfRVbWuDxZ5XscETKnFFBB89GbmBUshLjMkKbe9PbzmrSuiZsCf1RIYXNN5HIV1IkMAxHOMh5Yhu8gRqJ0x-kdhCgZMtBrMQbyAkcwONKw9g0iE4kbZ2ZUa3Fofly0)](http://www.plantuml.com/plantuml/uml/bLDDQnin4BthLmnxtsxe1uHIIfe6GY27qFm0CokDxILQpIB9NaB9V--ifBLAZ2azc97dlNbwCxEw2H5zF8nMeOxiuTRp7CWhpUF4Zbo4P_97yl1R0Kpi8pJNLmrWWEihm_f5g02UT4ItimJDNSh1pwKy4BGmUTuEWaWqctc8-urbZNPZ-gIIDB8wW6D387LnDmGXb6ovzyldJn-b8aNJ5yHWn1w3NFmaPVSFpt1tctKpu-qlNSzZnC6UL4yjLWX3EZ-u40jfozQGXwQZgBkLrwp4NpI-vntHTvPtYIBn4cFekznwfzc9fYCVKitoLuhUkv-ftomZBExFTY7uay1dhVsOKE-ffDCYie5vdhjz76t74xcMukl8ulQr7N7wCBWXgKgiJl8lAyXb_wXxPArgosTpI_35cINqV-Qr5BmfRVbWuDxZ5XscETKnFFBB89GbmBUshLjMkKbe9PbzmrSuiZsCf1RIYXNN5HIV1IkMAxHOMh5Yhu8gRqJ0x-kdhCgZMtBrMQbyAkcwONKw9g0iE4kbZ2ZUa3Fofly0)
+
+[![deployment diagram](http://www.plantuml.com/plantuml/png/bLF1Yjim5BphAnw-kzxZqaFPRXT288VGV42HvPV4HD8paXmJIlwzUh9KGKCeUmYItyp8CnFvpGVfmcoqK6GcicW37D1TqS5l0J2H2z2ylZGWFRo-3AGkwEBSeGhIdZH2yv5cy8Fb7g65oT5nrCZha7IiokS1M1eIP88STPu1r9SNY8MytreVCkb8Ua07JOT1TONN5E9FDF_ohj9rcaw94jTdZB7lLekT8XlFjEXyql1Z4Tsh-mNxNnmkktzeAUBx23z4-pv9TSOyvegoWMLPkdCmkgC9ROlXPYYwlRL6Jbz6EwPJurgTyA-S45_s7zsEbAYH7tfZ-7bdZ7wgBnRSXT8q3x1nyYYjJ3tL6dPq6ID5ga0EtXqj7bqMC76GGVRInsXxyc6pFS37-tgD-gWIQn7GjctE1b_XIdesA3XDnago2iOi6SknAiIsCrOYL52i_ng3tzY2o8uXFjSlGfHT7fSh8Fvk6IWteDphEEDfAkGDxJ0R_GS0)](http://www.plantuml.com/plantuml/uml/bLF1gjim4BphAnRVNRzZwA6aQI04SWZD1nHPtYGcajP8Same-VTgRQc2Xb3U8KZUcP5d9lBQ1-d2QBHGP0QoQ0ESqDtHmMy1C90BKAq-Af0ULXyTgHkwE7UeWhGNZL1jvndyOBb7g65mTEuryjhDEbQbym0iTJDaWknrcW6KbsU8XRpVMnyIwKowGmTLWq4rcLTbuayq__BkqZMQBZCbhkyOVTii5Xj5DfvfqVbPmuzPz2pk9sn_SRZa_gMbY1yZ_1Bj-o3L5TEOAqe6fcbghi7eXWQqDOQ7eUZsKHivVEbjFvyQr-A4V_c4-BB_w0waH8dyqXl3xpjZz5DziU0fbAQnWvsJPsdbt5EfuK2tFbAa2kHWusZow9A0YPqCifK-HZkI3xlz2RQRvHgrKIMM8g2kwvGDliATz6XGS9g4vMG5Z5aIbc8LY6qdB4See5Z-DGQ_iGMH74DyBb-4oBiqpbT0_Dqoa6z0ljTnnbCk1CGQRJSQ_GS0)
+
 ### Structure
 
 #### Front-end
@@ -186,48 +216,60 @@ At low zoom level ([`threshold-zoom-level`](open-etymology-map.template.ini) > z
 
 At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
 
-#### New back-end (v2, using PostGIS)
+#### Back-end (v2, using PostGIS DB)
 
 ```plantuml
+@startuml
+
 actor user as "User"
 file pbf as "OSM pbf planet file"
 component osmium
 frame oem as "Open Etymology Map v2" {
     database db as "PostgreSQL DB"
     component init as "db-init.php"
-    node "Front-end" {
-        component index as "index.php"
-    }
-    node "Back-end" {
-        component etymologyMap as "etymologyMap.php"
+    node fe as "Front-end"
+    node be as "Back-end" {
+        component globalMap as "global-map.php"
         component elements as "elements.php"
+        component etymologyMap as "etymologyMap.php"
         component stats as "stats.php"
-        package "App\Query\PostGIS" {
-            card BBoxEtymologyPostGISQuery
-            card BBoxGenderStatsPostGISQuery
-            card BBoxTypeStatsPostGISQuery
-            card BBoxEtymologyCenterPostGISQuery
-            card BBoxTextPostGISQuery
-            card PostGISQuery
-        }
-        package "App\Query\Wikidata" {
-            card EtymologyIDListJSONWikidataQuery
-            card JSONWikidataQuery
-            card WikidataQuery
+        component index as "index.php"
+        package App {
+            card PostGIS_PDO
+            package Query {
+                package PostGIS {
+                    card BBoxEtymologyPostGISQuery
+                    card BBoxGenderStatsPostGISQuery
+                    card BBoxTypeStatsPostGISQuery
+                    card BBoxEtymologyCenterPostGISQuery
+                    card BBoxTextPostGISQuery
+                    card PostGISQuery
+                }
+                package Wikidata {
+                    card EtymologyIDListJSONWikidataQuery
+                    card JSONWikidataQuery
+                    card WikidataQuery
+                }
+            }
         }
     }
 }
 agent wikidata as "Wikidata SPARQL API"
 
-user --> index
-index -(0- etymologyMap
-index -(0- elements
-index -(0- stats
+index <--> fe
 
-etymologyMap --> BBoxEtymologyPostGISQuery
-stats --> BBoxGenderStatsPostGISQuery
-stats --> BBoxTypeStatsPostGISQuery
-elements --> BBoxEtymologyCenterPostGISQuery
+user --> fe
+
+fe -(0- globalMap
+fe -(0- etymologyMap
+fe -(0- elements
+fe -(0- stats
+
+
+etymologyMap ..> BBoxEtymologyPostGISQuery
+stats ..> BBoxGenderStatsPostGISQuery
+stats ..> BBoxTypeStatsPostGISQuery
+elements ..> BBoxEtymologyCenterPostGISQuery
 
 BBoxTextPostGISQuery --|> PostGISQuery
 BBoxEtymologyPostGISQuery --|> BBoxTextPostGISQuery
@@ -238,18 +280,22 @@ BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
 JSONWikidataQuery --|> WikidataQuery
 
-PostGISQuery -(0- db
-BBoxTextPostGISQuery --> EtymologyIDListJSONWikidataQuery
+init ..> PostGIS_PDO
+globalMap ..> PostGIS_PDO
+PostGISQuery ..> PostGIS_PDO
+PostGIS_PDO -(0- db
+BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
 
 WikidataQuery -(0- wikidata
 
-init -(0- db
-init ..> osmium
-init --> pbf
-init --> JSONWikidataQuery
+osmium <.. init
+pbf <-- init
+JSONWikidataQuery <-- init
+
+@enduml
 ```
 
-[db-init.php](db-init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+[db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 This script starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
 
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db-enable = true`:
@@ -265,11 +311,11 @@ If you intend to use the DB you will need to initialize it first:
    - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web_dev`](docker-compose.yml) service
    - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
 2. initialize `open-etymology-map.ini` as shown [above](#configuration)
-3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data (depending on which area you want to show on the map) and place it into the [db-init](db-init/) folder.
+3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data (depending on which area you want to show on the map) and place it into the [init](init/) folder.
 4. using command line run the DB initialization
-   - to run it into the Docker development instance from Windows, run `.\db-init.bat .\db-init\YOUR_PBF_FILE_NAME.pbf`
-   - to run it into the Docker development instance from Linux, run `./db-init.sh ./db-init/YOUR_PBF_FILE_NAME.pbf`
-   - to run it locally, move into the [db-init/](db-init/) folder and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
+   - to run it into the Docker development instance from Windows, run `.\db-init.bat .\init\YOUR_PBF_FILE_NAME.pbf`
+   - to run it into the Docker development instance from Linux, run `./db-init.sh ./init/YOUR_PBF_FILE_NAME.pbf`
+   - to run it locally, move into the [init/](init/) folder and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
 5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
 
 IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/openetymologymap/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/openetymologymap/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
