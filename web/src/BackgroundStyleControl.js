@@ -1,4 +1,5 @@
-import { Map } from 'maplibre-gl';
+//import { Map } from 'maplibre-gl';
+import { Map } from 'mapbox-gl';
 
 /**
  * @typedef {Object} BackgroundStyle
@@ -17,6 +18,19 @@ import { Map } from 'maplibre-gl';
  */
 function maptilerBackgroundStyle(id, text, maptilerId, maptilerKey) {
     return { id: id, text: text, styleUrl: 'https://api.maptiler.com/maps/' + maptilerId + '/style.json?key=' + maptilerKey };
+}
+
+/**
+ * @see https://docs.mapbox.com/api/maps/vector-tiles/
+ * @see https://docs.mapbox.com/api/maps/styles/#mapbox-styles
+ * @param {string} id 
+ * @param {string} text 
+ * @param {string} mapboxId 
+ * @param {string} mapboxToken 
+ * @returns {BackgroundStyle}
+ */
+function mapboxBackgroundStyle(id, text, mapboxUser, mapboxId, mapboxToken) {
+    return { id: id, text: text, styleUrl: 'https://api.mapbox.com/styles/v1/' + mapboxUser + '/' + mapboxId + '/?access_token=' + mapboxToken };
 }
 
 /**
@@ -109,4 +123,4 @@ class BackgroundStyleControl {
 
 }
 
-export { BackgroundStyleControl, maptilerBackgroundStyle };
+export { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle };

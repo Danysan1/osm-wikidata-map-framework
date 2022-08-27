@@ -1,6 +1,10 @@
-import { Map } from 'maplibre-gl';
-import { Chart } from 'chart.js';
+//import { Map } from 'maplibre-gl';
+import { Map } from 'mapbox-gl';
+
+import { Chart, ArcElement, PieController } from 'chart.js';
 import { logErrorMessage, setFragmentParams } from './common';
+
+Chart.register(ArcElement, PieController);
 
 const colorSchemes = {
     blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },

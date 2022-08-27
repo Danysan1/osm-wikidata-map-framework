@@ -1,4 +1,5 @@
-import { Map, Popup } from 'maplibre-gl';
+//import { Map, Popup } from 'maplibre-gl';
+import { Map, Popup } from 'mapbox-gl';
 
 /**
  * Opens the information intro window
@@ -26,7 +27,7 @@ import { Map, Popup } from 'maplibre-gl';
  class InfoControl {
     onAdd(map) {
         const container = document.createElement('div');
-        container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapbox-ctrl mapbox-ctrl-group custom-ctrl info-ctrl';
+        container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'info-ctrl-button';

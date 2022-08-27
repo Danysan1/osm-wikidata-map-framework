@@ -59,11 +59,32 @@ function prepareHTML(Configuration $conf)
 		$reportUri = "report-uri " . (string)$conf->get("sentry-js-uri") . "; ";
 	}
 
+	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+
+	$maptilerConnectSrcs = '';
+	if($conf->has("maptiler-key")) {
+		$maptilerConnectSrcs = 'https://api.maptiler.com';
+	}
+
 	$googleAnalyticsConnectSrcs = '';
 	$googleAnalyticsScriptSrcs = '';
 	if($conf->has('google-analytics-id')) {
 		$googleAnalyticsConnectSrcs = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
 		$googleAnalyticsScriptSrcs = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
+	}
+
+	$sentryConnectSrcs = '';
+	$sentryScriptSrcs = '';
+	if($conf->has('sentry-js-dsn')) {
+		$sentryConnectSrcs = 'https://*.ingest.sentry.io';
+		$sentryScriptSrcs = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
+	}
+	
+	$matomoConnectSrcs = '';
+	$matomoScriptSrcs = '';
+	if($conf->has('matomo-domain')) {
+		$matomoConnectSrcs = '';
+		$matomoScriptSrcs = '';
 	}
 
 	header(
@@ -74,10 +95,10 @@ function prepareHTML(Configuration $conf)
 			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
-			"script-src 'self' https://js.sentry-cdn.com https://browser.sentry-cdn.com $googleAnalyticsScriptSrcs ; " .
+			"script-src 'self' $sentryScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' https://*.ingest.sentry.io https://api.maptiler.com $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $sentryConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

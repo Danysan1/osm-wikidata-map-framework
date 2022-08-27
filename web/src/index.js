@@ -1,12 +1,56 @@
-import { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl/dist/maplibre-gl-dev';
-import { logErrorMessage, getCorrectFragmentParams, setFragmentParams, defaultColorScheme } from './common';
+import * as Sentry from "@sentry/browser";
+const google_analytics_id = document.head.querySelector('meta[name="google_analytics_id"]')?.content,
+    matomo_domain = document.head.querySelector('meta[name="matomo_domain"]')?.content,
+    matomo_id = document.head.querySelector('meta[name="matomo_id"]')?.content,
+    sentry_js_dsn = document.head.querySelector('meta[name="sentry_js_dsn"]')?.content,
+    sentry_js_env = document.head.querySelector('meta[name="sentry_js_env"]')?.content;
+
+if (google_analytics_id) {
+    console.info("Initializing Google Analytics", {google_analytics_id});
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', google_analytics_id);
+}
+
+if (matomo_domain && matomo_id) {
+    console.info("Initializing Matomo", {matomo_domain, matomo_id});
+    var _paq = window._paq = window._paq || [];
+    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
+    _paq.push(['trackPageView']);
+    _paq.push(['enableLinkTracking']);
+    (function() {
+    var u=`https://${matomo_domain}/`;
+    _paq.push(['setTrackerUrl', u+'matomo.php']);
+    _paq.push(['setSiteId', matomo_id]);
+    var d=document, g=d.createElement('script'), s=d.getElementsByTagName('script')[0];
+    g.async=true; g.src=`//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode.insertBefore(g,s);
+    })();
+}
+
+if (sentry_js_dsn && sentry_js_env) {
+    console.info("Initializing Sentry", {sentry_js_dsn, sentry_js_env});
+    Sentry.init({
+        dsn: sentry_js_dsn,
+        environment: sentry_js_env
+    });
+}
+
+//import maplibregl, { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl';
+import mapboxgl, { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'mapbox-gl';
+
 //import { NominatimGeocoderControl } from './NominatimGeocoderControl';
-import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import { BackgroundStyleControl, maptilerBackgroundStyle } from './BackgroundStyleControl';
+//import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
+import { MapboxGeocoder } from '@mapbox/mapbox-gl-geocoder';
+
+//import 'maplibre-gl/dist/maplibre-gl.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+import { logErrorMessage, getCorrectFragmentParams, setFragmentParams, defaultColorScheme } from './common';
+import { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
 import { EtymologyColorControl, colorSchemes } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
 
-import 'maplibre-gl/dist/maplibre-gl.css';
 import './style.css';
 
 const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.content,
@@ -15,12 +59,24 @@ const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.c
     minZoomLevel = parseInt(document.head.querySelector('meta[name="minZoomLevel"]')?.content),
     defaultBackgroundStyle = document.head.querySelector('meta[name="defaultBackgroundStyle"]')?.content,
     backgroundStyles = [
-        maptilerBackgroundStyle('maplibre_streets', 'Maplibre Streets', 'streets', maptiler_key),
-        maptilerBackgroundStyle('bright', 'Bright', 'bright', maptiler_key),
-        maptilerBackgroundStyle('hybrid', 'Satellite', 'hybrid', maptiler_key),
-        maptilerBackgroundStyle('outdoors', 'Outdoors', 'outdoor', maptiler_key),
-        maptilerBackgroundStyle('osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
+        mapboxBackgroundStyle('mapbox_streets', 'Streets (Mapbox)', 'mapbox', 'streets-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_dark', 'Dark', 'mapbox', 'dark-v10', mapbox_token)
     ];
+
+if(maptiler_key) {
+    backgroundStyles.push(
+        maptilerBackgroundStyle('maptiler_streets', 'Streets (Maptiler)', 'streets', maptiler_key),
+        maptilerBackgroundStyle('maptiler_bright', 'Bright', 'bright', maptiler_key),
+        maptilerBackgroundStyle('maptiler_hybrid', 'Satellite', 'hybrid', maptiler_key),
+        maptilerBackgroundStyle('maptiler_outdoors', 'Outdoors', 'outdoor', maptiler_key),
+        maptilerBackgroundStyle('maptiler_osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
+    );
+}
+
+Sentry.init({
+    dsn: "https://28f991751fe343deac6db449dd66ccec@o517418.ingest.sentry.io/5886531",
+    
+});
 
 console.info("index start", {
     thresholdZoomLevel,
@@ -57,11 +113,17 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
 /**
  * Initializes the map
  * @see https://docs.maptiler.com/maplibre-gl-js/tutorials/
+ * @see https://docs.mapbox.com/help/tutorials/?product=Mapbox+GL+JS
  */
 function initMap() {
     const startParams = getCorrectFragmentParams(),
         backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
     console.info("Initializing the map", { startParams, backgroundStyleObj });
+
+    if(typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
+        mapboxgl.accessToken = mapbox_token;
+    }
+
     let map, backgroundStyle;
     if (backgroundStyleObj) {
         backgroundStyle = backgroundStyleObj.styleUrl;
@@ -681,10 +743,19 @@ function setupGeocoder(map) {
             collapsed: true,
             mapboxgl: mapboxgl
         });
-    } else if (typeof MaptilerGeocoderControl == 'function') {
+        console.info("setupGeocoder: using MapboxGeocoder", control);
+        map.addControl(control, 'top-left');
+    } else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
         control = new MaptilerGeocoderControl(maptiler_key);
+        console.info("setupGeocoder: using MaptilerGeocoderControl", control);
+        map.addControl(control, 'top-left');
+    } else if (typeof maplibregl == 'object' && typeof NominatimGeocoderControl == 'function') {
+        control = new NominatimGeocoderControl({ maplibregl: maplibregl });
+        console.info("setupGeocoder: using NominatimGeocoderControl", control);
+        map.addControl(control, 'top-left');
+    } else {
+        console.warn("No geocoding plugin available");
     }
-    map.addControl(control, 'top-left');
 }
 
 /**
@@ -1091,14 +1162,6 @@ function imageToDomElement(img) {
     return imgContainer;
 }
 
-/*function popStateHandler(e) {
-    console.info("popStateHandler", e);
-    const closeButtons = document.getElementsByClassName("maplibregl-popup-close-button");
-    for (const button of closeButtons) {
-        button.click();
-    }
-}*/
-
 /**
  * 
  * @param {Event} e The event to handle 
@@ -1108,11 +1171,10 @@ function imageToDomElement(img) {
 function initPage(e) {
     console.info("initPage", e);
     //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
-    //document.addEventListener('popstate', popStateHandler, false);
     //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized
     if (!supported()) {
-        alert('Your browser does not support Maplibre GL');
-        logErrorMessage("Device/Browser does not support Maplibre GL");
+        alert('Your browser is not supported');
+        logErrorMessage("Device/Browser does not support Maplibre/Mapbox GL JS");
     } else {
         initMap();
         //setCulture(); //! Map style likely still loading, setLayoutProperty() will cause an error

@@ -11,7 +11,7 @@ For example https://etymology.dsantini.it/?lang=es-ES#11.7135,44.3414,15.1 passe
 - [OpenStreetMap](https://www.openstreetmap.org/about) and its [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) and [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tags
 - [Wikidata](https://www.wikidata.org/wiki/Wikidata:Introduction) and its [SPARQL Query Service](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service)
 - [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API)
-- [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/)
+- [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs)
 
 For more details see [CONTRIBUTING.md](CONTRIBUTING.md).
 
