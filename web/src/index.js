@@ -194,7 +194,7 @@ function mapSourceDataHandler(e) {
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
         sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || overpassSourceEvent),
         map = e.target;
-    //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, overpassSourceEvent, e});
+    console.info("mapSourceDataHandler", { sourceDataLoaded, wikidataSourceEvent, overpassSourceEvent, e });
 
     if (sourceDataLoaded) {
         //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
