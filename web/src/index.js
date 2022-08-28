@@ -179,7 +179,7 @@ function hashChangeHandler(e, map) {
     }
 
     if (currColorScheme != newParams.colorScheme)
-        map.currentEtymologyColorControl?.setColorScheme(map, newParams.colorScheme);
+        map.currentEtymologyColorControl?.setColorScheme(newParams.colorScheme);
 }
 
 /**
