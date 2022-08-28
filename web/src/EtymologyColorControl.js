@@ -141,13 +141,13 @@ class EtymologyColorControl {
         if (!this._ctrlDropDown || !this._ctrlDropDown.options) {
             console.warn("setColorScheme: dropdown not yet initialized");
         } else {
-            this._ctrlDropDown.options.forEach(option => {
+            Array.prototype.forEach(option => {
                 if (option.value === colorScheme) {
                     option.selected = true;
                     this._ctrlDropDown.dispatchEvent(new Event("change"));
                     return;
                 }
-            });
+            }, this._ctrlDropDown.options);
             console.error("EtymologyColorControl setColorScheme: invalid color scheme", { colorScheme });
         }
     }
@@ -285,6 +285,11 @@ class EtymologyColorControl {
         this.setChartData(data);
     }
 
+    /**
+     * 
+     * @param {object} data 
+     * @see https://www.chartjs.org/docs/latest/general/data-structures.html
+     */
     setChartData(data) {
         console.info("setChartData", {
             container: this._container,
@@ -299,29 +304,36 @@ class EtymologyColorControl {
             this._chartObject.data.datasets[0].data = data.datasets[0].data;
 
             this._chartObject.update();
-        } else if (typeof chart == "undefined" || !chart) {
-            console.info("Loading chart.js");
-            import('chart.js').then(({ Chart, ArcElement, PieController }) => {
-                chart = Chart;
-                Chart.register(ArcElement, PieController);
-            });
         } else {
-            //this._legend.className = 'legend';
-            this._chartElement = document.createElement('canvas');
-            this._chartElement.className = 'chart';
-            this._container.appendChild(this._chartElement);
-            const ctx = this._chartElement.getContext('2d');
-
-            this._chartObject = new chart(ctx, {
-                type: "pie",
-                data: data,
-                options: {
-                    animation: {
-                        animateScale: true,
-                    }
-                }
-            });
+            if (typeof chart == "function") {
+                this.initChart(data);
+            } else {
+                console.info("Loading chart.js and initializing the chart");
+                // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
+                import('chart.js').then(({ Chart, ArcElement, PieController, Tooltip, Legend }) => {
+                    chart = Chart;
+                    Chart.register(ArcElement, PieController, Tooltip, Legend);
+                    this.initChart(data);
+                });
+            }
         }
+    }
+
+    initChart(data) {
+        this._chartElement = document.createElement('canvas');
+        this._chartElement.className = 'chart';
+        this._container.appendChild(this._chartElement);
+        const ctx = this._chartElement.getContext('2d');
+
+        this._chartObject = new chart(ctx, {
+            type: "pie",
+            data: data,
+            options: {
+                animation: {
+                    animateScale: true,
+                }
+            }
+        });
     }
 
     removeChart() {
