@@ -1,5 +1,5 @@
-//import { Map, Popup } from 'maplibre-gl';
-import { Map, Popup } from 'mapbox-gl';
+//import { Popup } from 'maplibre-gl';
+import { Popup } from 'mapbox-gl';
 
 /**
  * Opens the information intro window

@@ -192,19 +192,15 @@ function hashChangeHandler(e, map) {
 function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
-        ready = e.isSourceLoaded,
+        sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || overpassSourceEvent),
         map = e.target;
+    //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, overpassSourceEvent, e});
 
-    if (ready) {
-        if (wikidataSourceEvent || overpassSourceEvent) {
-            //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
-            showSnackbar("Data loaded", "lightgreen");
-            if (wikidataSourceEvent && map.currentEtymologyColorControl) {
-                map.currentEtymologyColorControl.updateChart(e);
-            }
-        } else {
-            //console.info("mapSourceDataHandler: ready event", { e, source:e.sourceId });
-            //updateDataSource(e);
+    if (sourceDataLoaded) {
+        //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
+        showSnackbar("Data loaded", "lightgreen");
+        if (wikidataSourceEvent && map.currentEtymologyColorControl) {
+            map.currentEtymologyColorControl.updateChart(e);
         }
     }
 }
@@ -298,7 +294,7 @@ function updateDataSource(event) {
 
         prepareElementsLayers(map, elements_url, minZoomLevel, thresholdZoomLevel);
         const elements_source = map.getSource("elements_source");
-        console.info("Overpass dataSource update", { queryParams, elements_url, elements_source });
+        console.info("Elements dataSource update", { queryParams, elements_url, elements_source });
 
         //showSnackbar("Fetching data...", "lightblue");
         if (elements_source) {
@@ -689,12 +685,12 @@ function easeToClusterCenter(map, err, zoom, defaultZoom, center) {
  * @param {DragEvent} e The event to handle 
  */
 function mapMoveEndHandler(e) {
-    updateDataSource(e);
     const map = e.target,
         lat = map.getCenter().lat,
         lon = map.getCenter().lng,
         zoom = map.getZoom();
     console.info("mapMoveEndHandler", { e, lat, lon, zoom });
+    updateDataSource(e);
     setFragmentParams(lon, lat, zoom, undefined);
 
     const colorSchemeContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
@@ -717,17 +713,17 @@ function mapMoveEndHandler(e) {
 function setupGeocoder(map) {
     let control;
     if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
+        console.info("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
         control = new MapboxGeocoder({
             accessToken: mapbox_token,
             collapsed: true,
             mapboxgl: mapboxgl
         });
     } else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
+        console.info("Using MaptilerGeocoderControl", { maplibregl, MaptilerGeocoderControl, maptiler_key });
         control = new MaptilerGeocoderControl(maptiler_key);
-    } else if (typeof maplibregl == 'object' && typeof NominatimGeocoderControl == 'function') {
-        control = new NominatimGeocoderControl({ maplibregl: maplibregl });
     } else {
-        console.warn("No geocoding plugin available", { mapboxgl, MapboxGeocoder, mapbox_token });
+        console.warn("No geocoding plugin available");
     }
 
     if (control) {
