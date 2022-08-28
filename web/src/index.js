@@ -1,12 +1,10 @@
-//import maplibregl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'maplibre-gl';
-import mapboxgl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'mapbox-gl';
-
-//import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-
-//import 'maplibre-gl/dist/maplibre-gl.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import maplibregl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'maplibre-gl';
+import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
+import 'maplibre-gl/dist/maplibre-gl.css';
+//import mapboxgl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'mapbox-gl';
+//import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+//import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+//import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage, initSentry } from './sentry';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
@@ -194,7 +192,7 @@ function mapSourceDataHandler(e) {
         overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
         sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || overpassSourceEvent),
         map = e.target;
-    //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, overpassSourceEvent, e});
+    console.info("mapSourceDataHandler", { sourceDataLoaded, wikidataSourceEvent, overpassSourceEvent, e });
 
     if (sourceDataLoaded) {
         //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
