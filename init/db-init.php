@@ -247,6 +247,7 @@ function filterInputData(
     bool $propagate = false,
     bool $load_text_etymology = false
 ): void {
+    // Keep only elements that have a tag that could lead to an etymology
     $allowedTags = [];
     if ($propagate)
         $allowedTags[] = 'w/highway=residential';
@@ -255,14 +256,24 @@ function filterInputData(
     if ($load_text_etymology)
         $allowedTags[] = 'name:etymology';
     $allowedTags[] = 'subject:wikidata';
-
     $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
     runOsmiumTagsFilter($sourceFilePath, $filteredWithFlagsTagsFilePath, $allowedTags, $cleanup,  '--remove-tags');
 
+    // Keep only elements that have a name
     $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
     runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
 
-    $unallowedTags = ['man_made=flagpole','n/place=region','n/place=state','n/place=country','n/place=continent','r/admin_level=2'];
+    // Remove elements not interesting or too big
+    $unallowedTags = [
+        'man_made=flagpole',
+        'n/place=region',
+        'n/place=state',
+        'n/place=country',
+        'n/place=continent',
+        'r/admin_level=4',
+        'r/admin_level=3',
+        'r/admin_level=2'
+    ];
     runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, $unallowedTags, $cleanup, '--invert-match');
 
     //runOsmiumFileInfo($filteredFilePath);
