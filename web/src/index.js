@@ -191,10 +191,10 @@ function hashChangeHandler(e, map) {
  */
 function mapSourceDataHandler(e) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
-        overpassSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
-        sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || overpassSourceEvent),
+        elementsSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
+        sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent),
         map = e.target;
-    //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, overpassSourceEvent, e});
+    //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e});
 
     if (sourceDataLoaded) {
         //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
@@ -229,8 +229,6 @@ function mapErrorHandler(err) {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
  */
 function updateDataSource(event) {
-    // https://stackoverflow.com/questions/48592137/bounding-box-in-mapbox-js
-    // https://leafletjs.com/reference-1.7.1.html#map-getbounds
     const map = event.target,
         bounds = map.getBounds(),
         southWest = bounds.getSouthWest(),
@@ -331,12 +329,14 @@ function updateDataSource(event) {
 function prepareWikidataLayers(map, wikidata_url, minZoom) {
     const colorSchemeColor = getCurrentColorScheme().color;
     if (!map.getSource("wikidata_source")) {
-        map.addSource('wikidata_source', {
+        const sourceConfig = {
             type: 'geojson',
             buffer: 512,
             data: wikidata_url,
             attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
-        });
+        };
+        map.addSource('wikidata_source', sourceConfig);
+        console.info("prepareWikidataLayers: added wikidata_source", sourceConfig, map.getSource('wikidata_source'));
     }
 
     if (!map.getLayer("wikidata_layer_point")) {
@@ -549,7 +549,7 @@ function prepareClusteredLayers(
         countLayerName = prefix + '_layer_count',
         pointLayerName = prefix + '_layer_point';
     if (!map.getSource(sourceName)) {
-        map.addSource(sourceName, {
+        const sourceConfig = {
             type: 'geojson',
             //buffer: 512,
             data: sourceDataURL,
@@ -559,8 +559,9 @@ function prepareClusteredLayers(
             clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
             clusterProperties: clusterProperties,
             clusterMinPoints: 1
-        });
-        console.info("prepareClusteredLayers " + sourceName, { maxZoom, source: map.getSource(sourceName) });
+        };
+        map.addSource(sourceName, sourceConfig);
+        console.info("prepareClusteredLayers: added ", sourceName, sourceConfig, map.getSource(sourceName));
     }
 
     if (!map.getLayer(clusterLayerName)) {
