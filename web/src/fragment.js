@@ -11,22 +11,6 @@ console.info("common start", {
 });
 
 /**
- * 
- * @param {string} message 
- * @param {string} level Log level (default "error")
- * @param {object} extra 
- */
-function logErrorMessage(message, level = "error", extra = undefined) {
-    console.error(message, extra);
-    if (typeof Sentry != 'undefined') {
-        if (extra instanceof Error)
-            Sentry.captureException(extra, { level, extra: message });
-        else
-            Sentry.captureMessage(message, { level, extra });
-    }
-}
-
-/**
  * @typedef {Object} FragmentParams
  * @property {number?} lon
  * @property {number?} lat
@@ -110,4 +94,4 @@ function getCorrectFragmentParams() {
     return p;
 }
 
-export { logErrorMessage, getFragmentParams, getCorrectFragmentParams, setFragmentParams, defaultColorScheme };
+export { getFragmentParams, getCorrectFragmentParams, setFragmentParams };

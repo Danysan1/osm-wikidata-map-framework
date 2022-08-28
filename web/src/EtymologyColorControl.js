@@ -1,29 +1,40 @@
-//import { Map } from 'maplibre-gl';
-import { Map } from 'mapbox-gl';
+import { logErrorMessage } from './sentry';
+import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 
-import { Chart, ArcElement, PieController } from 'chart.js';
-import { logErrorMessage, setFragmentParams } from './common';
+let chart;
 
-Chart.register(ArcElement, PieController);
+/**
+ * @typedef {Object} ColorScheme
+ * @property {string} id
+ * @property {string} text
+ * @property {string|string[]|string[][]} color
+ * @property {?string} colorField
+ * @property {?string} urlCode
+ */
 
-const colorSchemes = {
-    blue: { text: 'Uniform blue', color: '#3bb2d0', legend: null },
-    gender: {
+/**
+ * @var {ColorScheme[]} colorSchemes
+ */
+const colorSchemes = [
+    { id: "blue", text: 'Uniform blue', color: '#3bb2d0' },
+    {
+        id: "gender",
         colorField: 'gender_color',
         text: 'By gender',
         color: ["coalesce", ['get', 'gender_color'], "#223b53"],
         urlCode: "genderStats",
     },
-    type: {
+    {
+        id: "type",
         colorField: 'type_color',
         text: 'By type',
         color: ["coalesce", ['get', 'type_color'], "#223b53"],
         urlCode: "typeStats",
     },
-    black: { text: 'Uniform black', color: '#223b53', legend: null },
-    red: { text: 'Uniform red', color: '#e55e5e', legend: null },
-    orange: { text: 'Uniform orange', color: '#fbb03b', legend: null },
-};
+    { id: "black", text: 'Uniform black', color: '#223b53' },
+    { id: "red", text: 'Uniform red', color: '#e55e5e' },
+    { id: "orange", text: 'Uniform orange', color: '#fbb03b' },
+];
 
 /**
  * Let the user choose a color scheme
@@ -88,15 +99,15 @@ class EtymologyColorControl {
         td2.appendChild(this._ctrlDropDown);
         td2.className = 'dropdown-cell';
 
-        for (const [value, scheme] of Object.entries(colorSchemes)) {
+        colorSchemes.forEach(scheme => {
             const option = document.createElement('option');
             option.innerText = scheme.text;
-            option.value = value;
-            if (value == this._startColorScheme) {
+            option.value = scheme.id;
+            if (scheme.id == this._startColorScheme) {
                 option.selected = true;
             }
             this._ctrlDropDown.appendChild(option);
-        }
+        });
         this._ctrlDropDown.dispatchEvent(new Event("change"))
 
         //setFragmentParams(undefined, undefined, undefined, this._startColorScheme); //! Creates a bug when using geo-localization or location search
@@ -148,7 +159,7 @@ class EtymologyColorControl {
      */
     dropDownClickHandler(event) {
         const colorScheme = event.target.value,
-            colorSchemeObj = colorSchemes[colorScheme];
+            colorSchemeObj = colorSchemes.find(scheme => scheme.id == colorScheme);
         let color;
 
         if (colorSchemeObj) {
@@ -188,7 +199,7 @@ class EtymologyColorControl {
             return;
         }
 
-        const colorScheme = colorSchemes[this._ctrlDropDown.value],
+        const colorScheme = colorSchemes.find(scheme => scheme.id == this._ctrlDropDown.value),
             map = event.target,
             bounds = map.getBounds ? map.getBounds() : null;
         //console.info("updateChart", { event, colorScheme });
@@ -288,16 +299,20 @@ class EtymologyColorControl {
             this._chartObject.data.datasets[0].data = data.datasets[0].data;
 
             this._chartObject.update();
-        } else if (typeof Chart == "undefined" || !Chart) {
-            alert('There was an error while loading Chart.js (the library needed to create the chart)');
-            logErrorMessage("Undefined Chart (chart.js error)");
+        } else if (typeof chart == "undefined" || !chart) {
+            console.info("Loading chart.js");
+            import('chart.js').then(({ Chart, ArcElement, PieController }) => {
+                chart = Chart;
+                Chart.register(ArcElement, PieController);
+            });
         } else {
             //this._legend.className = 'legend';
             this._chartElement = document.createElement('canvas');
             this._chartElement.className = 'chart';
             this._container.appendChild(this._chartElement);
             const ctx = this._chartElement.getContext('2d');
-            this._chartObject = new Chart(ctx, {
+
+            this._chartObject = new chart(ctx, {
                 type: "pie",
                 data: data,
                 options: {
@@ -322,4 +337,11 @@ class EtymologyColorControl {
     }
 }
 
-export { EtymologyColorControl, colorSchemes };
+/**
+ * @return {ColorScheme}
+ */
+function getCurrentColorScheme() {
+    return colorSchemes.find(scheme => scheme.id == getCorrectFragmentParams().colorScheme);
+}
+
+export { EtymologyColorControl, getCurrentColorScheme };

@@ -27,9 +27,9 @@ RUN npm install -g npm
 FROM node:17-alpine AS npm-install
 WORKDIR /app
 COPY ./web /app
-RUN npm install
-RUN npm run prod
-RUN npm install --production
+RUN npm install && \
+	npm run prod && \
+	npm install --production
 
 
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/

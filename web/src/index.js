@@ -1,14 +1,22 @@
-import * as Sentry from "@sentry/browser";
-const sentry_js_dsn = document.head.querySelector('meta[name="sentry_js_dsn"]')?.content,
-    sentry_js_env = document.head.querySelector('meta[name="sentry_js_env"]')?.content;
+//import maplibregl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'maplibre-gl';
+import mapboxgl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'mapbox-gl';
 
-if (sentry_js_dsn && sentry_js_env) {
-    console.info("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
-    Sentry.init({
-        dsn: sentry_js_dsn,
-        environment: sentry_js_env
-    });
-}
+//import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+
+//import 'maplibre-gl/dist/maplibre-gl.css';
+import 'mapbox-gl/dist/mapbox-gl.css';
+
+import { logErrorMessage, initSentry } from './sentry';
+import { getCorrectFragmentParams, setFragmentParams } from './fragment';
+import { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
+import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
+import { InfoControl, openInfoWindow } from './InfoControl';
+import { featureToDomElement } from "./FeatureElement";
+import './style.css';
+
+initSentry();
 
 const google_analytics_id = document.head.querySelector('meta[name="google_analytics_id"]')?.content,
     matomo_domain = document.head.querySelector('meta[name="matomo_domain"]')?.content,
@@ -36,25 +44,6 @@ if (matomo_domain && matomo_id) {
         g.async = true; g.src = `//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode.insertBefore(g, s);
     })();
 }
-
-//import maplibregl, { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'maplibre-gl';
-import mapboxgl, { Map, Popup, LngLatLike, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, supported, setRTLTextPlugin } from 'mapbox-gl';
-
-//import { NominatimGeocoderControl } from './NominatimGeocoderControl';
-//import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-
-//import 'maplibre-gl/dist/maplibre-gl.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
-
-import { logErrorMessage, getCorrectFragmentParams, setFragmentParams, defaultColorScheme } from './common';
-import { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
-import { EtymologyColorControl, colorSchemes } from './EtymologyColorControl';
-import { InfoControl, openInfoWindow } from './InfoControl';
-import { featureToDomElement } from "./FeatureElement";
-
-import './style.css';
 
 const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.content,
     mapbox_token = document.head.querySelector('meta[name="mapbox_token"]')?.content,
@@ -344,6 +333,7 @@ function updateDataSource(event) {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
  */
 function prepareWikidataLayers(map, wikidata_url, minZoom) {
+    const colorSchemeColor = getCurrentColorScheme().color;
     if (!map.getSource("wikidata_source")) {
         map.addSource('wikidata_source', {
             type: 'geojson',
@@ -363,7 +353,7 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
             'paint': {
                 'circle-radius': 8,
                 'circle-stroke-width': 2,
-                'circle-color': colorSchemes[defaultColorScheme].color,
+                'circle-color': colorSchemeColor,
                 'circle-stroke-color': 'white'
             }
         });
@@ -378,7 +368,7 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
             "filter": ["==", ["geometry-type"], "LineString"],
             "minzoom": minZoom,
             'paint': {
-                'line-color': colorSchemes[defaultColorScheme].color,
+                'line-color': colorSchemeColor,
                 'line-opacity': 0.5,
                 'line-width': 12
             }
@@ -394,7 +384,7 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
             "filter": ["==", ["geometry-type"], "Polygon"],
             "minzoom": minZoom,
             'paint': {
-                'line-color': colorSchemes[defaultColorScheme].color,
+                'line-color': colorSchemeColor,
                 'line-opacity': 0.5,
                 'line-width': 8,
                 'line-offset': -3.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
@@ -411,7 +401,7 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
             "filter": ["==", ["geometry-type"], "Polygon"],
             "minzoom": minZoom,
             'paint': {
-                'fill-color': colorSchemes[defaultColorScheme].color,
+                'fill-color': colorSchemeColor,
                 'fill-opacity': 0.5,
                 'fill-outline-color': "rgba(0, 0, 0, 0)",
             }

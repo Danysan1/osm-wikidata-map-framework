@@ -1,5 +1,4 @@
-//import { Map } from 'maplibre-gl';
-import { Map } from 'mapbox-gl';
+import { logErrorMessage } from './sentry';
 
 /**
  * @typedef {Object} BackgroundStyle
