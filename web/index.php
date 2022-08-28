@@ -9,9 +9,9 @@ use App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-if (!$conf->has("mapbox-gl-token")) {
+if (!$conf->has("mapbox-token")) {
     http_response_code(500);
-    die('<html><body>Missing Mapbox GL JS token from configuration</body></html>');
+    die('<html><body>Missing Mapbox token from configuration</body></html>');
 }
 
 $lastUpdateString = '';
@@ -46,82 +46,39 @@ if (
     $defaultCulture = "en-US";
 }
 
-$useSentry = $conf->has('sentry-js-url');
-$useGoogleAnalytics = $conf->has("google-analytics-id");
-
 ?>
 
 <!DOCTYPE html>
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
-    <?php
-    if ($useSentry) { 
-        $sentryUrl = (string)$conf->get('sentry-js-url');
-    ?>
-        <link
-            rel="preload"
-            as="script"
-            type="application/javascript"
-            href="<?= $sentryUrl; ?>"
-            crossorigin="anonymous" />
-    <?php
-    }
-
-    if ($useGoogleAnalytics) { 
-        $googleAnalyticsUrl = "https://www.googletagmanager.com/gtag/js?id=".$conf->get("google-analytics-id");
-    ?>
-        <link
-            rel="preload"
-            as="script"
-            type="application/javascript"
-            href="<?= $googleAnalyticsUrl; ?>" />
-    <?php
-    }
-
-    $mapboxGlJsUrl = "./node_modules/mapbox-gl/dist/".($conf->getBool('debug') ? 'mapbox-gl-dev.js' : 'mapbox-gl.js');
-    ?>
-    <link rel="preload" as="script" type="application/javascript" href="./init.php">
-    <link rel="preload" as="script" type="application/javascript" href="<?= $mapboxGlJsUrl; ?>">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-language/index.js">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js">
-    <link rel="preload" as="script" type="application/javascript" href="./index.js">
-    <link rel="preload" as="script" type="application/javascript" href="./node_modules/chart.js/dist/chart.min.js">
-    <link rel="preload" as="style" type="text/css" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" />
-    <link rel="preload" as="style" type="text/css" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" />
-    <link rel="preload" as="style" type="text/css" href="./style.css" />
-    <link rel="preload" as="fetch" type="application/geo+json" href="./global-map.php" crossorigin="anonymous" />
+    <meta name="mapbox_token" content="<?=(string)$conf->get("mapbox-token");?>" />
+    <?php if($conf->has("maptiler-key")) { ?><meta name="maptiler_key" content="<?=(string)$conf->get("maptiler-key");?>" /><?php } ?>
+    <meta name="default_center_lat" content="<?=(float)$conf->get("default-center-lat");?>" />
+    <meta name="default_center_lon" content="<?=(float)$conf->get("default-center-lon");?>" />
+    <meta name="default_zoom" content="<?=(int)$conf->get("default-zoom");?>" />
+    <meta name="thresholdZoomLevel" content="<?=(int)$conf->get("threshold-zoom-level");?>" />
+    <meta name="minZoomLevel" content="<?=(int)$conf->get("min-zoom-level");?>" />
+    <meta name="defaultBackgroundStyle" content="<?=(string)$conf->get("default-background-style");?>" />
+    <meta name="defaultColorScheme" content="<?=(string)$conf->get("default-color-scheme");?>" />
+    <?php if($conf->has("google-analytics-id")) { ?><meta name="google_analytics_id" content="<?=$conf->get("google-analytics-id");?>" /><?php } ?>
+    <?php if($conf->has("matomo-domain")) { ?><meta name="matomo_domain" content="<?=$conf->get("matomo-domain");?>" /><?php } ?>
+    <?php if($conf->has("matomo-id")) { ?><meta name="matomo_id" content="<?=$conf->get("matomo-id");?>" /><?php } ?>
+    <?php if($conf->has("sentry-js-dsn")) { ?><meta name="sentry_js_dsn" content="<?=$conf->get("sentry-js-dsn");?>" /><?php } ?>
+    <?php if($conf->has("sentry-js-env")) { ?><meta name="sentry_js_env" content="<?=$conf->get("sentry-js-env");?>" /><?php } ?>
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <?php if ($useSentry) { ?>
-        <script src="<?= $sentryUrl; ?>" crossorigin="anonymous" ></script>
-    <?php
-    }
-
-    if ($useGoogleAnalytics) {
-    ?>
-        <script async src="<?= $googleAnalyticsUrl; ?>"></script>
-    <?php
-    }
-    ?>
-    <script src="./init.php" type="application/javascript"></script>
-
     <title>Open Etymology Map</title>
     <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
-    <link rel="stylesheet" href="./style.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/mapbox-gl/dist/mapbox-gl.css" type="text/css" />
-    <link rel="stylesheet" href="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css" type="text/css">
-
-    <script defer src='<?= $mapboxGlJsUrl; ?>' type="application/javascript"></script>
-    <script src='./node_modules/@mapbox/mapbox-gl-language/index.js' type="application/javascript"></script>
-    <script defer src="./node_modules/@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.min.js" type="application/javascript"></script>
-
-    <script defer src="./index.js" type="application/javascript"></script>
-    <script defer src="./node_modules/chart.js/dist/chart.min.js" type="application/javascript"></script>
+    <?php if ($conf->has("google-analytics-id")) { ?>
+        <script defer src="<?="https://www.googletagmanager.com/gtag/js?id=".$conf->get("google-analytics-id");?>"></script>
+    <?php } ?>
+    <script defer src="./dist/main.js" type="application/javascript"></script>
+    <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://etymology.dsantini.it/" />

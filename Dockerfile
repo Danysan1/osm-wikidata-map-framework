@@ -26,8 +26,11 @@ RUN npm install -g npm
 
 FROM node:17-alpine AS npm-install
 WORKDIR /app
-COPY "./web/package*.json" ./
-RUN npm install --force --production
+COPY ./web /app
+RUN npm install && \
+	npm run prod && \
+	npm install --production
+
 
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
@@ -40,9 +43,7 @@ RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
 
-COPY --chown=www-data:www-data --from=npm-install "/app/node_modules/" "/var/www/html/node_modules"
-
-COPY --chown=www-data:www-data ./web /var/www/html
+COPY --chown=www-data:www-data --from=npm-install /app /var/www/html
 
 #USER www-data
 #RUN touch /var/www/html/open-etymology-map.log

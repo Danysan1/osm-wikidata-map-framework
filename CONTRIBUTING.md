@@ -2,8 +2,8 @@
 
 ## How to contribute to the background map
 
-The background map is provided by Mapbox, which is itself based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
-You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/). Keep in mind that Mapbox doesn't update the map every month so if you edit something on OpenStreetMap it may take some time to appear in the map. If you need to report a problem directly to Mapbox you can follow the [instructions on their site](https://docs.mapbox.com/help/troubleshooting/reporting-a-problem/).
+The background maps are provided by Mapbox and Maptiler, which are based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
+You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/). Keep in mind that they doen't update the map immediately so if you edit something on OpenStreetMap it may take some time to appear in the map.
 
 ## How to report a problem in the etymology of an element
 
@@ -161,7 +161,7 @@ During development you can run a local instance of Open Etymology Map using the 
 
 In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`.
 
-A template for this config file can be found in [`open-etymology-map.template.ini`](open-etymology-map.template.ini). When copying the template `.ini` you must set `mapbox-gl-token`, while other options should already be ok as a starting point.
+A template for this config file can be found in [`open-etymology-map.template.ini`](open-etymology-map.template.ini). When copying the template `.ini` you must set `mapbox-token`, while other options should already be ok as a starting point.
 
 If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 
@@ -208,7 +208,7 @@ docker-compose --profile "prod" up -d
 #### Front-end
 
 The front-end is composed by [index.php](web/index.php), [style.css](web/style.css) and [index.js](web/index.js).
-The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) and the charts are created using [chart.js](https://www.chartjs.org/).
+The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) (a tentative implementation with its FOSS fork, [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/), is WIP with no ETA) and the charts are created using [chart.js](https://www.chartjs.org/).
 
 At very low zoom level (zoom < [`min-zoom-level`](open-etymology-map.template.ini)), clustered element count is shown from [`global-map.php`](https://etymology.dsantini.it/global-map.php).
 

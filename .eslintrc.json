@@ -1,0 +1,14 @@
+{
+    "root": true,
+    "parserOptions": {
+        "sourceType": "module",
+        "ecmaVersion": "latest"
+    },
+    "env": {
+        "browser": true,
+        "node": false
+    },
+    "extends": [
+        "eslint:recommended"
+    ]
+}

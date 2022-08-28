@@ -59,6 +59,13 @@ function prepareHTML(Configuration $conf)
 		$reportUri = "report-uri " . (string)$conf->get("sentry-js-uri") . "; ";
 	}
 
+	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+
+	$maptilerConnectSrcs = '';
+	if($conf->has("maptiler-key")) {
+		$maptilerConnectSrcs = 'https://api.maptiler.com';
+	}
+
 	$googleAnalyticsConnectSrcs = '';
 	$googleAnalyticsScriptSrcs = '';
 	if($conf->has('google-analytics-id')) {
@@ -66,18 +73,32 @@ function prepareHTML(Configuration $conf)
 		$googleAnalyticsScriptSrcs = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
 	}
 
+	$sentryConnectSrcs = '';
+	$sentryScriptSrcs = '';
+	if($conf->has('sentry-js-dsn')) {
+		$sentryConnectSrcs = 'https://*.ingest.sentry.io';
+		$sentryScriptSrcs = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
+	}
+	
+	$matomoConnectSrcs = '';
+	$matomoScriptSrcs = '';
+	if($conf->has('matomo-domain')) {
+		$matomoConnectSrcs = 'https://'.$conf->get('matomo-domain');
+		$matomoScriptSrcs = 'https://cdn.matomo.cloud/';
+	}
+
 	header(
 		"Content-Security-Policy: " .
 			"default-src 'self'; " .
 			"worker-src blob: ; " .
 			"child-src blob: ; " .
-			"img-src 'self' data: blob: https://api.mapbox.com https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
+			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
-			"script-src 'self' https://js.sentry-cdn.com https://browser.sentry-cdn.com $googleAnalyticsScriptSrcs ; " .
+			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' https://*.ingest.sentry.io https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $sentryConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $matomoConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
