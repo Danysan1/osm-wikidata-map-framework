@@ -1117,7 +1117,7 @@ try {
     } else {
         // It's faster to copy elements with etymology in another table rather than to delete the majority of elements without
         // https://stackoverflow.com/a/7088514/2347196
-        moveElementsWithEtymology($dbh);
+        moveElementsWithEtymology($dbh, $load_text_etymology);
 
         if (!$keep_temp_tables)
             $dbh->exec('DROP TABLE oem.osmdata');
