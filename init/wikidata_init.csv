@@ -32,6 +32,9 @@ Q25917154,car bombing,,,Events,#ff3333
 Q124734,rebellion,,,Events,#ff3333
 Q17524420,aspect of history,,,Events,#ff3333
 Q10931,revolution,,,Events,#ff3333
+Q3827292,nonviolent revolution,,,Events,#ff3333
+Q45382,coup d'état,,,Events,#ff3333
+Q180684,conflict,,,Events,#ff3333
 Q16560,palace,,,Buildings,#ffdd33
 Q41176,building,,,Buildings,#ffdd33
 Q23413,castle,,,Buildings,#ffdd33
@@ -127,6 +130,11 @@ Q1437299,creek,,,Nature,#77ff33
 Q3965305,Alpine subsection,,,Nature,#77ff33
 Q39816,valley,,,Nature,#77ff33
 Q40080,beach,,,Nature,#77ff33
+Q12089225,mineral species,,,Nature,#77ff33
+Q429795,mineral variety,,,Nature,#77ff33
+Q1493054,type of wood,,,Nature,#77ff33
+Q310890,monotypic taxon,,,Nature,#77ff33
+Q838625,terrace,,,Nature,#77ff33
 Q1414991,area,,,Locations,#33ffbb
 Q1620908,historical region,,,Locations,#33ffbb
 Q35657,U.S. state,,,Locations,#33ffbb
