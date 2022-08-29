@@ -92,10 +92,11 @@ export function featureToDomElement(feature) {
     });
 
     const text_etymology = feature.properties.text_etymology;
-    if (text_etymology && text_etymology != 'null') {
-        const textEtymologyAlreadyShownByWikidata = etymologies.some(
-            ety => ety?.name?.toLowerCase() == text_etymology.toLowerCase()
-        );
+    if (text_etymology && typeof text_etymology == 'string' && text_etymology != 'null') {
+        const textEtymologyAlreadyShownByWikidata = etymologies.some(etymology => {
+            const etymologyName = etymology?.name?.toLowerCase();
+            return typeof etymologyName == 'string' && etymologyName.includes(text_etymology.trim().toLowerCase());
+        });
         if (textEtymologyAlreadyShownByWikidata) {
             console.info("featureToDomElement: ignoring text etymology because already shown");
         } else {
