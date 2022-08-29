@@ -27,8 +27,12 @@ export function featureToDomElement(feature) {
         etymologies_container
     });
 
-    if (feature.properties.name) {
+    if (feature.properties.name && feature.properties.name != 'null') {
         detail_container.querySelector('.element_name').innerText = '📍 ' + feature.properties.name;
+    }
+
+    if (feature.properties.alt_name && feature.properties.alt_name != 'null') {
+        detail_container.querySelector('.element_alt_name').innerText = '("' + feature.properties.alt_name + '")';
     }
 
     const wikidata = feature.properties.wikidata;

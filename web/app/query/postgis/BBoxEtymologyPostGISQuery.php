@@ -64,6 +64,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_osm_type AS osm_type,
                     el.el_osm_id AS osm_id,
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
+                    el.el_tags->>'alt_name' AS alt_name,
                     el.el_text_etymology AS text_etymology,
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,

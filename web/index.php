@@ -125,6 +125,7 @@ if (
     <template id="detail_template">
         <div class="detail_container">
             <h3 class="element_name"></h3>
+            <p class="element_alt_name"></p>
             <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none">
                 <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                 <span class="button_text"> Wikipedia</span>
