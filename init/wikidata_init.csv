@@ -31,6 +31,7 @@ Q198,war,,,Events,#ff3333
 Q25917154,car bombing,,,Events,#ff3333
 Q124734,rebellion,,,Events,#ff3333
 Q17524420,aspect of history,,,Events,#ff3333
+Q10931,revolution,,,Events,#ff3333
 Q16560,palace,,,Buildings,#ffdd33
 Q41176,building,,,Buildings,#ffdd33
 Q23413,castle,,,Buildings,#ffdd33
@@ -125,6 +126,7 @@ Q39594,bay,,,Nature,#77ff33
 Q1437299,creek,,,Nature,#77ff33
 Q3965305,Alpine subsection,,,Nature,#77ff33
 Q39816,valley,,,Nature,#77ff33
+Q40080,beach,,,Nature,#77ff33
 Q1414991,area,,,Locations,#33ffbb
 Q1620908,historical region,,,Locations,#33ffbb
 Q35657,U.S. state,,,Locations,#33ffbb
@@ -170,6 +172,8 @@ Q2221906,geographic location,,,Locations,#33ffbb
 Q3024240,historical country,,,Locations,#33ffbb
 Q23718,cardinal direction,,,Locations,#33ffbb
 Q133056,mountain pass,,,Locations,#33ffbb
+Q113489728,OECD country,,,Locations,#33ffbb
+Q6266,nation,,,Locations,#33ffbb
 Q5,human,,,People,#3399ff
 Q21070568,human who may be fictional,,,People,#3399ff
 Q14073567,sibling duo,,,People,#3399ff
