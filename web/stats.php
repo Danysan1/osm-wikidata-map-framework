@@ -54,7 +54,6 @@ if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty(
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
 $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
 $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
 $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);

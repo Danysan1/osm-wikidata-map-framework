@@ -55,18 +55,12 @@ if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty(
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
 $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
 $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
 $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
 $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
 
-$bbox = new BaseBoundingBox(
-    $minLat - $bboxMargin,
-    $minLon - $bboxMargin,
-    $maxLat + $bboxMargin,
-    $maxLon + $bboxMargin
-);
+$bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
 $bboxArea = $bbox->getArea();
 //error_log("BBox area: $bboxArea");
 $maxArea = (float)$conf->get("wikidata-bbox-max-area");

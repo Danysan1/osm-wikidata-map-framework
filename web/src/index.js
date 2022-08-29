@@ -551,7 +551,7 @@ function prepareClusteredLayers(
     if (!map.getSource(sourceName)) {
         const sourceConfig = {
             type: 'geojson',
-            //buffer: 512,
+            buffer: 256,
             data: sourceDataURL,
             cluster: true,
             maxzoom: maxZoom,

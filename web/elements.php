@@ -46,11 +46,10 @@ if ($enableDB) {
 }
 
 if ($from == "bbox") {
-    $bboxMargin = $conf->has("bbox-margin") ? (float)$conf->get("bbox-margin") : 0;
-    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT) - $bboxMargin;
-    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT) - $bboxMargin;
-    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT) + $bboxMargin;
-    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT) + $bboxMargin;
+    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
+    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
+    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
+    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
     $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
