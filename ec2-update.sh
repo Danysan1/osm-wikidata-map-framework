@@ -4,5 +4,8 @@ cd $(dirname "$0")
 /usr/bin/git fetch
 /usr/bin/git pull
 /usr/local/bin/docker-compose --profile 'prod' pull
-/usr/local/bin/docker-compose --profile 'prod' up --build --detach --always-recreate-deps
-/usr/local/bin/docker-compose --profile 'prod' push  # Upload arm builds, not buildable with CI
+if [ '--build' == "$1" ]; then
+    /usr/local/bin/docker-compose --profile 'prod' build
+    /usr/local/bin/docker-compose --profile 'prod' push
+fi
+/usr/local/bin/docker-compose --profile 'prod' up --detach --always-recreate-deps
