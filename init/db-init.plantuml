@@ -1,0 +1,130 @@
+@startuml db-init diagram
+
+file "open-etymology-map.ini" as conf
+card "Get config and parameters" as param #90ee90
+cloud "OSM extract mirror" as mirror
+file X.osm.pbf
+card Download #ffffe0
+mirror <.> Download
+conf .> param
+param -down-> Download
+Download .> X.osm.pbf
+
+note as xsize
+  Size: 50MB ~ 70GB
+end note
+xsize .. X.osm.pbf
+
+card "osmium tags-filter" as filter1 #90ee90
+file filtered_with_flags_tags_X.osm.pbf as file1
+X.osm.pbf .> filter1
+Download -down-> filter1
+filter1 .> file1
+
+card "osmium tags-filter" as filter2 #90ee90
+file filtered_with_flags_tags_X.osm.pbf as file2
+file1 .> filter2
+filter1 -down-> filter2
+filter2 .> file2
+
+card "osmium tags-filter" as filter3 #90ee90
+file filtered_with_flags_name_tags_X.osm.pbf as file3
+file2 .> filter3
+filter2 -down-> filter3
+filter3 .> file3
+
+card "osmium tags-filter" as filter4 #90ee90
+file filtered_X.osm.pbf as file4
+file3 .> filter4
+filter3 -down-> filter4
+filter4 .> file4
+
+note as 4size
+  Size: 4MB ~ 10GB
+end note
+4size .. file4
+
+card "osmium export" as export #90ee90
+file X.osm.pbf.pg as tsv
+file4 .> export
+filter4 -down-> export
+export .> tsv
+
+note as tsvsize
+  Size: 40MB ~ 170MB
+end note
+tsvsize .. tsv
+
+database "Local DB" as db
+card "Setup DB schema" as setup #90ee90
+setup .left.> db
+export -down-> setup
+
+card "pgSQL COPY" as copy #90ee90
+tsv .> copy
+setup -down-> copy
+copy .left.> db
+
+card "Remove elements too big" as toobig #90ee90
+toobig <.left.> db
+copy -down-> toobig
+
+card "Convert wikidata codes" as wdcod #90ee90
+wdcod <.left.> db
+toobig -down-> wdcod
+
+card "Load and convert wikidata entities" as wdent #90ee90
+file "wikidata-init.csv" as csv
+csv .> wdent
+wdent <.left.> db
+wdcod -down-> wdent
+
+card "Load wikidata 'consists of' entities" as wdcoent #90ee90
+cloud "Wikidata Query Service" as wd
+wd <.> wdcoent
+wdcoent <.left.> db
+wdent -down-> wdcoent
+
+card "Load wikidata 'named after' entities" as wdnaent #90ee90
+wd <.> wdnaent
+wdnaent <.left.> db
+wdcoent -down-> wdnaent
+
+card "Convert etymologies" as ety #90ee90
+ety <.left.> db
+wdnaent -down-> ety
+
+card "Propagate etymologies" as propagate #ffffe0
+propagate <.left.> db
+ety -down-> propagate
+
+card "Remove elements without etymology" as temp #90ee90
+temp <.left.> db
+propagate -down-> temp
+
+card "Setup global map" as global #90ee90
+global <.left.> db
+temp -down-> global
+
+card "Save update date" as date #90ee90
+date <.left.> db
+global -down-> date
+
+file X.osm.pbf.backup as backup
+card pg_dump #90ee90
+db .> pg_dump
+pg_dump .> backup
+date -down-> pg_dump
+
+note as busize
+  Size: 100KB ~ 170MB
+end note
+busize .. backup
+
+database "Destination DB" as destdb
+card pg_restore #ffffe0
+backup .> pg_restore
+pg_restore .> destdb
+pg_dump -down-> pg_restore
+
+@enduml
