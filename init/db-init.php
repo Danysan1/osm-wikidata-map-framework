@@ -38,6 +38,9 @@ $options = getopt(
 $conf = new IniEnvConfiguration();
 if (!empty($argv[$fileArgumentIndex])) {
     $fileArgument = (string)$argv[$fileArgumentIndex];
+    if (str_starts_with($fileArgument, './init/') || str_starts_with($fileArgument, '.\\init\\')) {
+        $fileArgument = substr($fileArgument, 7);
+    }
 } elseif($conf->has("db_init_source_url")) {
     $fileArgument = (string)$conf->get("db_init_source_url");
 } else {
