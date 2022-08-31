@@ -101,12 +101,15 @@ export function featureToDomElement(feature) {
             const etymologyName = etymology?.name?.toLowerCase();
             return typeof etymologyName == 'string' && etymologyName.includes(text_etymology.trim().toLowerCase());
         });
-        if (textEtymologyAlreadyShownByWikidata) {
+        let ety_descr = feature.properties.text_etymology_descr;
+        ety_descr = ety_descr && typeof ety_descr == 'string' && ety_descr != 'null' ? ety_descr : null;
+        if (!ety_descr && textEtymologyAlreadyShownByWikidata) {
             console.info("featureToDomElement: ignoring text etymology because already shown");
         } else {
-            console.info("featureToDomElement: showing text etymology: ", { feature, text_etymology });
+            console.info("featureToDomElement: showing text etymology: ", { feature, text_etymology, ety_descr });
             etymologies_container.appendChild(etymologyToDomElement({
-                description: text_etymology,
+                name: text_etymology,
+                description: ety_descr,
                 from_osm: true,
                 from_osm_type: feature.properties.osm_type,
                 from_osm_id: feature.properties.osm_id

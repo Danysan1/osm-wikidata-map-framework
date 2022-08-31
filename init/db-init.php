@@ -381,7 +381,7 @@ function setupSchema(PDO $dbh): void
             el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
             el_osm_id BIGINT NOT NULL,
             el_tags JSONB,
-            el_text_etymology VARCHAR,
+            el_has_text_etymology BOOLEAN DEFAULT FALSE,
             el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
             el_commons VARCHAR,
             el_wikipedia VARCHAR
@@ -912,8 +912,8 @@ function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false):
 {
     logProgress('Cleaning up elements without etymology...');
     $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
-    $orTextEtymologyIsPresent = $load_text_etymology ? "OR osm_tags ? 'name:etymology'" : "";
-    $textEtymology = $load_text_etymology ? "osm_tags->>'name:etymology'" : "NULL";
+    $orHasTextEtymology = $load_text_etymology ? "OR osm_tags ? 'name:etymology'" : "";
+    $hasTextEtymology = $load_text_etymology ? "osm_tags ? 'name:etymology'" : "FALSE";
     $n_remaining = $dbh->exec(
         "INSERT INTO oem.element (
             el_id,
@@ -921,7 +921,7 @@ function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false):
             el_osm_type,
             el_osm_id,
             el_tags,
-            el_text_etymology,
+            el_has_text_etymology,
             el_wikidata_cod,
             el_commons,
             el_wikipedia
@@ -931,14 +931,14 @@ function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false):
             osm_osm_type,
             osm_osm_id,
             osm_tags,
-            $textEtymology,
+            $hasTextEtymology,
             SUBSTRING(osm_tags->>'wikidata' FROM '^([^;]+)'),
             SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
             SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
         FROM oem.osmdata
         WHERE (
             osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology)
-            $orTextEtymologyIsPresent
+            $orHasTextEtymology
         )"
     );
     $n_cleaned = $n_tot - $n_remaining;

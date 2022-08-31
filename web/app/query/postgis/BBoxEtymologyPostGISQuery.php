@@ -65,7 +65,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_osm_id AS osm_id,
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
-                    el.el_text_etymology AS text_etymology,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'name:etymology' ELSE NULL END AS text_etymology,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'name:etymology:description' ELSE NULL END AS text_etymology_descr,
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
@@ -122,7 +123,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
-                WHERE (el.el_text_etymology IS NOT NULL OR wd.wd_id IS NOT NULL)
+                WHERE (el.el_has_text_etymology OR wd.wd_id IS NOT NULL)
                 AND el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el.el_id
                 $limitClause

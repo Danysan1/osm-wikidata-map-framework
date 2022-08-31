@@ -101,6 +101,7 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
  * Initializes the map
  * @see https://docs.maptiler.com/maplibre-gl-js/tutorials/
  * @see https://docs.mapbox.com/help/tutorials/?product=Mapbox+GL+JS
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/disable-rotation/
  */
 function initMap() {
     const startParams = getCorrectFragmentParams(),
@@ -136,6 +137,9 @@ function initMap() {
 
     map.on('load', mapLoadedHandler);
     map.on('styledata', mapStyleDataHandler);
+
+    //map.dragRotate.disable(); // disable map rotation using right click + drag
+    //map.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
 
     setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
     window.addEventListener('hashchange', (e) => hashChangeHandler(e, map), false);
