@@ -57,6 +57,8 @@ tsvsize .. tsv
 
 database "Local DB" as db
 card "Setup DB schema" as setup #90ee90
+file "schema.sql" as sqlschema
+sqlschema .> setup
 setup .left.> db
 export -down-> setup
 
@@ -69,12 +71,16 @@ card "Remove elements too big" as toobig #90ee90
 toobig <.left.> db
 copy -down-> toobig
 
-card "Convert wikidata codes" as wdcod #90ee90
+card "Convert element wikidata codes" as wdcod #90ee90
+file "convert-element-wikidata-cods.sql" as sqlwdcod
+sqlwdcod .> wdcod
 wdcod <.left.> db
 toobig -down-> wdcod
 
 card "Load and convert wikidata entities" as wdent #90ee90
 file "wikidata-init.csv" as csv
+file "convert-wikidata-entities.sql" sqlwdent
+sqlwdent .> wdent
 csv .> wdent
 wdent <.left.> db
 wdcod -down-> wdent
@@ -91,18 +97,26 @@ wdnaent <.left.> db
 wdcoent -down-> wdnaent
 
 card "Convert etymologies" as ety #90ee90
+file "convert-etymologies.sql" as sqlety
+sqlety .> ety
 ety <.left.> db
 wdnaent -down-> ety
 
 card "Propagate etymologies" as propagate #ffffe0
+file "propagate-etymologies.sql" as sqlpropagate
+sqlpropagate .> propagate
 propagate <.left.> db
 ety -down-> propagate
 
 card "Remove elements without etymology" as temp #90ee90
+file "move-elements-with-etymology.sql" as sqltemp
+sqltemp .> temp
 temp <.left.> db
 propagate -down-> temp
 
 card "Setup global map" as global #90ee90
+file "global-map.sql" as sqlglobal
+sqlglobal .> global
 global <.left.> db
 temp -down-> global
 
