@@ -358,7 +358,13 @@ class EtymologyColorControl {
  * @return {ColorScheme}
  */
 function getCurrentColorScheme() {
-    return colorSchemes.find(scheme => scheme.id == getCorrectFragmentParams().colorScheme);
+    let colorSchemeId = getCorrectFragmentParams().colorScheme,
+        colorScheme = colorSchemes.find(scheme => scheme.id == colorSchemeId);
+    if (!colorScheme) {
+        colorScheme = colorSchemes[0];
+        console.warn("getCurrentColorScheme: error getting color scheme, using fallback", {colorSchemeId, colorScheme});
+    }
+    return colorScheme;
 }
 
 export { EtymologyColorControl, getCurrentColorScheme };
