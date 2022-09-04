@@ -54,6 +54,7 @@ class EtymologyColorControl {
      */
     constructor(startColorScheme) {
         this._startColorScheme = startColorScheme;
+        this._chartInitInProgress = false;
     }
 
     /**
@@ -293,22 +294,25 @@ class EtymologyColorControl {
     setChartData(data) {
         console.info("setChartData", {
             container: this._container,
-            chartElement: this._chartElement,
-            chartObject: this._chartObject,
+            chartDomElement: this._chartDomElement,
+            chartJsObject: this._chartJsObject,
             data
         });
-        if (this._chartObject && this._chartElement) {
+        if (this._chartJsObject && this._chartDomElement) {
             // https://www.chartjs.org/docs/latest/developers/updates.html
-            this._chartObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
-            this._chartObject.data.labels = data.labels;
-            this._chartObject.data.datasets[0].data = data.datasets[0].data;
+            this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
+            this._chartJsObject.data.labels = data.labels;
+            this._chartJsObject.data.datasets[0].data = data.datasets[0].data;
 
-            this._chartObject.update();
+            this._chartJsObject.update();
+        } else if (this._chartInitInProgress) {
+            console.info("setChartData: chart already loading");
         } else {
+            this._chartInitInProgress = true;
             if (typeof chart == "function") {
                 this.initChart(data);
             } else {
-                console.info("Loading chart.js and initializing the chart");
+                console.info("setChartData: Loading chart.js and initializing the chart");
                 // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
                 import('chart.js').then(({ Chart, ArcElement, PieController, Tooltip, Legend }) => {
                     chart = Chart;
@@ -320,12 +324,12 @@ class EtymologyColorControl {
     }
 
     initChart(data) {
-        this._chartElement = document.createElement('canvas');
-        this._chartElement.className = 'chart';
-        this._container.appendChild(this._chartElement);
-        const ctx = this._chartElement.getContext('2d');
+        this._chartDomElement = document.createElement('canvas');
+        this._chartDomElement.className = 'chart';
+        this._container.appendChild(this._chartDomElement);
+        const ctx = this._chartDomElement.getContext('2d');
 
-        this._chartObject = new chart(ctx, {
+        this._chartJsObject = new chart(ctx, {
             type: "pie",
             data: data,
             options: {
@@ -334,16 +338,17 @@ class EtymologyColorControl {
                 }
             }
         });
+        this._chartInitInProgress = false;
     }
 
     removeChart() {
-        if (this._chartElement) {
+        if (this._chartDomElement) {
             try {
-                this._container.removeChild(this._chartElement);
-                this._chartElement = undefined;
-                this._chartObject = undefined;
+                this._container.removeChild(this._chartDomElement);
+                this._chartDomElement = undefined;
+                this._chartJsObject = undefined;
             } catch (error) {
-                console.warn("Error removing old chart", { error, container: this._container, chart: this._chartElement });
+                console.warn("Error removing old chart", { error, container: this._container, chart: this._chartDomElement });
             }
         }
     }
