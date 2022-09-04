@@ -296,14 +296,14 @@ function isSchemaAlreadySetup(PDO $dbh): bool
 function setupSchema(PDO $dbh): void
 {
     logProgress('Preparing DB schema...');
-    $dbh->exec(file_get_contents(__DIR__."/schema.sql"));
+    $dbh->exec(file_get_contents(__DIR__."/sql/schema.sql"));
     logProgress('DB schema prepared');
 }
 
 function setupGlobalMap(PDO $dbh): void
 {
     logProgress('Preparing global map');
-    $dbh->exec(file_get_contents(__DIR__."/global-map.sql"));
+    $dbh->exec(file_get_contents(__DIR__."/sql/global-map.sql"));
     logProgress('Global map prepared');
 }
 
@@ -389,7 +389,7 @@ function isElementWikidataTemporaryTableAbsent(PDO $dbh): bool
 
 function convertElementWikidataCods(PDO $dbh): void
 {
-    $n_wikidata_cods = $dbh->exec(file_get_contents(__DIR__."/convert-element-wikidata-cods.sql"));
+    $n_wikidata_cods = $dbh->exec(file_get_contents(__DIR__."/sql/convert-element-wikidata-cods.sql"));
     logProgress("Converted $n_wikidata_cods wikidata codes");
 }
 
@@ -404,7 +404,7 @@ function loadWikidataEntities(PDO $dbh): void
     logProgress("Loaded $n_wd Wikidata entities from CSV");
 
     logProgress('Converting Wikidata entities from element_wikidata_cods...');
-    $n_wd = $dbh->exec(file_get_contents(__DIR__."/convert-wikidata-entities.sql"));
+    $n_wd = $dbh->exec(file_get_contents(__DIR__."/sql/convert-wikidata-entities.sql"));
     logProgress("Converted $n_wd Wikidata entities from element_wikidata_cods");
 }
 
@@ -545,7 +545,7 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
 function convertEtymologies(PDO $dbh): void
 {
     logProgress('Converting etymologies...');
-    $n_ety = $dbh->exec(file_get_contents(__DIR__."/convert-etymologies.sql"));
+    $n_ety = $dbh->exec(file_get_contents(__DIR__."/sql/convert-etymologies.sql"));
     logProgress("Converted $n_ety etymologies");
 }
 
@@ -556,7 +556,7 @@ function propagateEtymologies(PDO $dbh, int $depth = 1): int
         return 0; // Recursion breaking because max recursion depth has been reached
     } else {
         logProgress("Propagating etymologies at recursion depth $depth...");
-        $propagation = $dbh->prepare(file_get_contents(__DIR__."/propagate-etymologies.sql"));
+        $propagation = $dbh->prepare(file_get_contents(__DIR__."/sql/propagate-etymologies.sql"));
         $propagation->execute(["depth" => $depth]);
         $n_propagations = $propagation->rowCount();
         logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
@@ -594,22 +594,22 @@ function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false):
 {
     if($load_text_etymology) {
         logProgress('Checking elements with text etymology...');
-        $n_text_ety = $dbh->exec(file_get_contents(__DIR__."/check-text-etymology.sql"));
+        $n_text_ety = $dbh->exec(file_get_contents(__DIR__."/sql/check-text-etymology.sql"));
         logProgress("Found $n_text_ety elements with text etymology");
     }
     
     logProgress('Checking elements with Wikidata etymology...');
-    $n_wd_ety = $dbh->exec(file_get_contents(__DIR__."/check-wd-etymology.sql"));
+    $n_wd_ety = $dbh->exec(file_get_contents(__DIR__."/sql/check-wd-etymology.sql"));
     logProgress("Found $n_wd_ety elements with Wikidata etymology");
 
     logProgress('Cleaning up elements without etymology...');
     $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
-    $n_remaining = $dbh->exec(file_get_contents(__DIR__."/move-elements-with-etymology.sql"));
+    $n_remaining = $dbh->exec(file_get_contents(__DIR__."/sql/move-elements-with-etymology.sql"));
     $n_cleaned = $n_tot - $n_remaining;
     logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
 
     logProgress('Making sure all etymologies reference an existing element...');
-    $dbh->exec(file_get_contents(__DIR__."/setup-etymology-foreign-key.sql"));
+    $dbh->exec(file_get_contents(__DIR__."/sql/setup-etymology-foreign-key.sql"));
     logProgress('All etymologies reference an existing element');
 }
 
