@@ -1,0 +1,46 @@
+@startuml dev_deployment
+
+actor Browser
+rectangle "Docker Compose - profile 'dev'" as docker {
+  port "8080" as 8080docker
+  port "80" as 80docker
+  node postgis_db {
+    port 5432 as 5432db
+    database "PostGIS DB" as db
+  }
+  node pgadmin {
+    port "80" as 80pgAdmin
+    component pgAdmin
+  }
+  node web_dev {
+    port "80" as 80webDev
+    component Apache
+    folder "/var/www/init" as initRem
+    folder "/var/www/html" as webRem
+  }
+
+}
+cloud {
+  database "Optional production DB" as extDB
+}
+folder "init" as initLoc
+folder "web" as webLoc
+
+initRem --- initLoc : volume
+webRem --- webLoc : volume
+
+Apache --> 5432db
+Apache --> extDB
+pgAdmin --> 5432db
+
+Browser --> 80docker
+Browser --> 8080docker
+
+80docker --> 80webDev
+8080docker --> 80pgAdmin
+
+80webDev -> Apache
+5432db -> db
+80pgAdmin -> pgAdmin
+
+@enduml

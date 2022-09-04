@@ -1,0 +1,47 @@
+@startuml prod_with_local_db_deployment
+
+actor Browser
+component Server {
+  port "80" as 80docker
+  rectangle "Docker Compose - profile 'prod_with_local_db'" as docker {
+    node postgis_db {
+      port 5432 as 5432db
+      database "PostGIS DB" as db
+    }
+    node promtail {
+      component promtail as promInst
+      folder "/etc/promtail" as promRem
+      folder "/var/log" as logRem
+      folder "/var/lib/docker/containers" as contRem
+    }
+    node web_prod {
+      port "80" as 80webProd
+      component Apache
+      file "/var/www/html/open-etymology-map.ini" as iniRem
+    }
+  }
+  file "web/open-etymology-map.ini" as iniLoc
+  folder "promtail" as promLoc
+  folder "/var/log" as logLoc
+  folder "/var/lib/docker/containers" as contLoc
+}
+cloud Grafana {
+  component Loki
+}
+Loki <-- promInst
+
+iniRem --- iniLoc : volume
+promRem --- promLoc : volume
+logRem --- logLoc : volume
+contRem --- contLoc : volume
+
+Apache --> 5432db
+
+Browser --> 80docker
+
+80docker --> 80webProd
+
+80webProd --> Apache
+5432db --> db
+
+@enduml

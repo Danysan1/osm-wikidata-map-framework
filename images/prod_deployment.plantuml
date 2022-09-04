@@ -1,0 +1,45 @@
+@startuml prod_deployment
+
+component Server {
+  port "80" as 80docker
+  rectangle "Docker Compose - profile 'prod'" as docker {
+    node promtail {
+      component promtail as promInst
+      folder "/etc/promtail" as promRem
+      folder "/var/log" as logRem
+      folder "/var/lib/docker/containers" as contRem
+    }
+    node web_prod {
+      port "80" as 80webProd
+      component Apache
+      file "/var/www/html/open-etymology-map.ini" as iniRem
+    }
+  }
+  file "web/open-etymology-map.ini" as iniLoc
+  folder "promtail" as promLoc
+  folder "/var/log" as logLoc
+  folder "/var/lib/docker/containers" as contLoc
+}
+cloud Grafana {
+  component Loki
+}
+actor Browser
+cloud {
+  database "PostGIS DB" as db
+}
+
+iniRem --- iniLoc : volume
+promRem --- promLoc : volume
+logRem --- logLoc : volume
+contRem --- contLoc : volume
+
+Apache ---> db
+
+Browser --> 80docker
+
+80docker --> 80webProd
+
+80webProd --> Apache
+promInst ----> Loki
+
+@enduml

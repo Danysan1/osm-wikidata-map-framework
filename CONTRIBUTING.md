@@ -172,7 +172,7 @@ A local development instance can be started with Docker by running `docker-compo
 - A PostgreSQL+PostGIS DB exposed on localhost:5432
 - A PGAdmin instance exposed at http://localhost:8080
 
-[![deployment diagram](http://www.plantuml.com/plantuml/png/RPBVQiCW5CRlVOf3xaFB_a3PnMYxm1WCDhO7A4PFqp3_13N9OFJTfoQQTVGgvljzvplgSMiTDQwNWb3cj86zqQD5GmmoHrKZ48fAioyqyAHbfor22PtHnzOJZaC1r0AV33y4eDF6GR5PRzQHXCL4CyiawqfpzD2wfhK7NiUSsNr_TtlZtV7BwwXpwcXDBKBnxakUNpwXsiV4oCyvhw5SjYg5NRRkcbs04R5mB8NAmQBcb17h0yVXUeg75Gx_GdOTPIUCub4BZWQArK3DQXp7LQjQ5sl3uWFbTTV9IH5TFdyodGav4oPqp-D6bXjuwroh5HLX8hnduIVT1dwxQk_BKln5xrVDCl1TKhSWatblK9Pbyi8335hq4eat9JRv5qIcatlscCQrAFDsvXl-wo7pWujQVXINOfP9MaMG9v0SMK-J9Ca2NfudC_KDWk-UhU4_LMrHyLwANm00)](http://www.plantuml.com/plantuml/uml/RPBVQiCW5CRlVOf3xaFB_a3PnMYxm1WCDhO7A4PFqp2ZGKqo67ttgL6pZbx5VB_lV4SzResbsWwT88GogpJijPeCQgAHMIeRWL1KYdsXXYVLzSeWbD1hTMmTuJWMG0tmsV1307gbBHIRzMOTY5_CDBDCiYuLHmUDRLfpu7N8YUxxkziRvmvVNWUTKqjhQX2ATrVo_F89rJua1dxEUGtbNIjps4Nhljbv613pnv8eBMHrIPcmFd0ShwSuME7uBsJNKtR281wLuAYXM8rKhwPfMhMojQ7MBpwmk-uwsKu4bykVJMT2peG9DV2maUK6tdhRAac5dmWVcFz9ju7VjjgxiXH_qVjLiGnSbzJDooJk3SgoJ5vuW569eKFYJ955_uB8V7B77jEu5YLk9zxmNm-93ove-L5SYbacQHL0da1qP3tFboGBE3bEPkxh1TSzM_r_gjgYv4CdVW40)
+![deployment diagram](images/dev_deployment.svg)
 
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
@@ -199,9 +199,9 @@ cp open-etymology-map.template.ini web/open-etymology-map.ini
 docker-compose --profile "prod" up -d
 ```
 
-[![deployment diagram](http://www.plantuml.com/plantuml/png/bLDDQnin4BthLmnxtsxe1uHIIfe6GY27qFm0CokDxILQpIB9NaB9V--ifBLAZ2azc97dlNbwCxEw2H5zF8nMeOxiuTRp7CWhpUF4Zbo4P_97yl1R0Kpi8pJNLmrWWEihm_f5g02UT4ItimJDNSh1pwKy4BGmUTuEWaWqctc8-urbZNPZ-gIIDB8wW6D387LnDmGXb6ovzyldJn-b8aNJ5yHWn1w3NFmaPVSFpt1tctKpu-qlNSzZnC6UL4yjLWX3EZ-u40jfozQGXwQZgBkLrwp4NpI-vntHTvPtYIBn4cFekznwfzc9fYCVKitoLuhUkv-ftomZBExFTY7uay1dhVsOKE-ffDCYie5vdhjz76t74xcMukl8ulQr7N7wCBWXgKgiJl8lAyXb_wXxPArgosTpI_35cINqV-Qr5BmfRVbWuDxZ5XscETKnFFBB89GbmBUshLjMkKbe9PbzmrSuiZsCf1RIYXNN5HIV1IkMAxHOMh5Yhu8gRqJ0x-kdhCgZMtBrMQbyAkcwONKw9g0iE4kbZ2ZUa3Fofly0)](http://www.plantuml.com/plantuml/uml/bLDDQnin4BthLmnxtsxe1uHIIfe6GY27qFm0CokDxILQpIB9NaB9V--ifBLAZ2azc97dlNbwCxEw2H5zF8nMeOxiuTRp7CWhpUF4Zbo4P_97yl1R0Kpi8pJNLmrWWEihm_f5g02UT4ItimJDNSh1pwKy4BGmUTuEWaWqctc8-urbZNPZ-gIIDB8wW6D387LnDmGXb6ovzyldJn-b8aNJ5yHWn1w3NFmaPVSFpt1tctKpu-qlNSzZnC6UL4yjLWX3EZ-u40jfozQGXwQZgBkLrwp4NpI-vntHTvPtYIBn4cFekznwfzc9fYCVKitoLuhUkv-ftomZBExFTY7uay1dhVsOKE-ffDCYie5vdhjz76t74xcMukl8ulQr7N7wCBWXgKgiJl8lAyXb_wXxPArgosTpI_35cINqV-Qr5BmfRVbWuDxZ5XscETKnFFBB89GbmBUshLjMkKbe9PbzmrSuiZsCf1RIYXNN5HIV1IkMAxHOMh5Yhu8gRqJ0x-kdhCgZMtBrMQbyAkcwONKw9g0iE4kbZ2ZUa3Fofly0)
+![deployment diagram](images/prod_with_local_db_deployment.svg)
 
-[![deployment diagram](http://www.plantuml.com/plantuml/png/bLF1Yjim5BphAnw-kzxZqaFPRXT288VGV42HvPV4HD8paXmJIlwzUh9KGKCeUmYItyp8CnFvpGVfmcoqK6GcicW37D1TqS5l0J2H2z2ylZGWFRo-3AGkwEBSeGhIdZH2yv5cy8Fb7g65oT5nrCZha7IiokS1M1eIP88STPu1r9SNY8MytreVCkb8Ua07JOT1TONN5E9FDF_ohj9rcaw94jTdZB7lLekT8XlFjEXyql1Z4Tsh-mNxNnmkktzeAUBx23z4-pv9TSOyvegoWMLPkdCmkgC9ROlXPYYwlRL6Jbz6EwPJurgTyA-S45_s7zsEbAYH7tfZ-7bdZ7wgBnRSXT8q3x1nyYYjJ3tL6dPq6ID5ga0EtXqj7bqMC76GGVRInsXxyc6pFS37-tgD-gWIQn7GjctE1b_XIdesA3XDnago2iOi6SknAiIsCrOYL52i_ng3tzY2o8uXFjSlGfHT7fSh8Fvk6IWteDphEEDfAkGDxJ0R_GS0)](http://www.plantuml.com/plantuml/uml/bLF1gjim4BphAnRVNRzZwA6aQI04SWZD1nHPtYGcajP8Same-VTgRQc2Xb3U8KZUcP5d9lBQ1-d2QBHGP0QoQ0ESqDtHmMy1C90BKAq-Af0ULXyTgHkwE7UeWhGNZL1jvndyOBb7g65mTEuryjhDEbQbym0iTJDaWknrcW6KbsU8XRpVMnyIwKowGmTLWq4rcLTbuayq__BkqZMQBZCbhkyOVTii5Xj5DfvfqVbPmuzPz2pk9sn_SRZa_gMbY1yZ_1Bj-o3L5TEOAqe6fcbghi7eXWQqDOQ7eUZsKHivVEbjFvyQr-A4V_c4-BB_w0waH8dyqXl3xpjZz5DziU0fbAQnWvsJPsdbt5EfuK2tFbAa2kHWusZow9A0YPqCifK-HZkI3xlz2RQRvHgrKIMM8g2kwvGDliATz6XGS9g4vMG5Z5aIbc8LY6qdB4See5Z-DGQ_iGMH74DyBb-4oBiqpbT0_Dqoa6z0ljTnnbCk1CGQRJSQ_GS0)
+![deployment diagram](images/prod_deployment.svg)
 
 ### Structure
 
@@ -308,7 +308,7 @@ Once the DB is initialized, this is the data gathering process in [etymologyMap.
 
 If you intend to use the DB you will need to initialize it first:
 1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
-   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) and attach a shell to the [`web_dev`](docker-compose.yml) service
+   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) (this is the suggested usage)
    - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
 2. initialize `open-etymology-map.ini` as shown [above](#configuration)
 3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data (depending on which area you want to show on the map) and place it into the [init](init/) folder.
@@ -321,6 +321,8 @@ If you intend to use the DB you will need to initialize it first:
 IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/openetymologymap/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/openetymologymap/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
+
+![diagram](images/db-init.svg)
 
 #### Old back-end (v1, using Overpass)
 
