@@ -38,8 +38,8 @@ $options = getopt(
 $conf = new IniEnvConfiguration();
 if (!empty($argv[$fileArgumentIndex])) {
     $fileArgument = (string)$argv[$fileArgumentIndex];
-    if (str_starts_with($fileArgument, './init/') || str_starts_with($fileArgument, '.\\init\\')) {
-        $fileArgument = substr($fileArgument, 7);
+    if (str_starts_with($fileArgument, './init/pbf/') || str_starts_with($fileArgument, '.\\init\\pbf\\')) {
+        $fileArgument = substr($fileArgument, 11);
     }
 } elseif($conf->has("db_init_source_url")) {
     $fileArgument = (string)$conf->get("db_init_source_url");
@@ -130,14 +130,14 @@ if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
         echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
         exit(1);
     }
-    $sourceFilePath = __DIR__."/".$fileName;
+    $sourceFilePath = __DIR__ . "/pbf/" . $fileName;
     logProgress("Downloading $fileName");
     execAndCheck("curl -z $sourceFilePath -o $sourceFilePath $url");
     logProgress("Download completed");
-} elseif (!empty(realpath(__DIR__ . "/" . $fileArgument))) {
+} elseif (!empty(realpath(__DIR__ . "/pbf/" . $fileArgument))) {
     // $fileArgument is a relative path from the folder of db-init
     // Example: php db-init.php isole-latest.osm.pbf
-    $sourceFilePath = realpath(__DIR__ . "/" . $fileArgument);
+    $sourceFilePath = realpath(__DIR__ . "/pbf/" . $fileArgument);
 } elseif (!empty(realpath($fileArgument))) {
     // $fileArgument is an absolute path
     // Example: php db-init.php /tmp/isole-latest.osm.pbf
@@ -609,7 +609,7 @@ function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false):
     logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
 
     logProgress('Making sure all etymologies reference an existing element...');
-    $dbh->exec(file_get_contents(__DIR__."/sql/setup-etymology-foreign-key.sql"));
+    $dbh->exec(file_get_contents(__DIR__."/sql/etymology-foreign-key.sql"));
     logProgress('All etymologies reference an existing element');
 }
 

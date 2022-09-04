@@ -1,10 +1,10 @@
 @startuml db-init diagram
 
 file "open-etymology-map.ini" as conf
-card "Get config and parameters" as param #90ee90
+card "Get config and parameters" as param #LightGreen
 cloud "OSM extract mirror" as mirror
 file X.osm.pbf
-card Download #ffffe0
+card Download #LightYellow
 mirror <.> Download
 conf .> param
 param -down-> Download
@@ -13,132 +13,138 @@ Download .> X.osm.pbf
 note as xsize
   Size: 50MB ~ 70GB
 end note
-xsize .. X.osm.pbf
+X.osm.pbf .. xsize
 
-card "osmium tags-filter" as filter1 #90ee90
+card "osmium tags-filter" as filter1 #LightGreen
 file filtered_with_flags_tags_X.osm.pbf as file1
 X.osm.pbf .> filter1
 Download -down-> filter1
 filter1 .> file1
 
-card "osmium tags-filter" as filter2 #90ee90
+card "osmium tags-filter" as filter2 #LightGreen
 file filtered_with_flags_tags_X.osm.pbf as file2
 file1 .> filter2
 filter1 -down-> filter2
 filter2 .> file2
 
-card "osmium tags-filter" as filter3 #90ee90
+card "osmium tags-filter" as filter3 #LightGreen
 file filtered_with_flags_name_tags_X.osm.pbf as file3
 file2 .> filter3
 filter2 -down-> filter3
 filter3 .> file3
 
-card "osmium tags-filter" as filter4 #90ee90
+card "osmium tags-filter" as filter4 #LightGreen
 file filtered_X.osm.pbf as file4
 file3 .> filter4
 filter3 -down-> filter4
 filter4 .> file4
 
 note as 4size
-  Size: 4MB ~ 10GB
+  Size: 4MB ~ 6GB
 end note
 4size .. file4
 
-card "osmium export" as export #90ee90
+card "osmium export" as export #LightGreen
 file X.osm.pbf.pg as tsv
 file4 .> export
 filter4 -down-> export
 export .> tsv
 
 note as tsvsize
-  Size: 40MB ~ 170MB
+  Size: 40MB ~ 22GB
 end note
 tsvsize .. tsv
 
-database "Local DB" as db
-card "Setup DB schema" as setup #90ee90
+database "Local DB" as db #LightBlue
+card "Setup DB schema" as setup #LightGreen
 file "schema.sql" as sqlschema
 sqlschema .> setup
-setup .left.> db
+setup .left.> db #Blue
 export -down-> setup
 
-card "pgSQL COPY" as copy #90ee90
+card "pgSQL COPY" as copy #LightGreen
 tsv .> copy
 setup -down-> copy
-copy .left.> db
+copy .left.> db #Blue
 
-card "Remove elements too big" as toobig #90ee90
-toobig <.left.> db
+card "Remove elements too big" as toobig #LightGreen
+toobig <.left.> db #Blue
 copy -down-> toobig
 
-card "Convert element wikidata codes" as wdcod #90ee90
+card "Convert element wikidata codes" as wdcod #LightGreen
 file "convert-element-wikidata-cods.sql" as sqlwdcod
 sqlwdcod .> wdcod
-wdcod <.left.> db
+wdcod <.left.> db #Blue
 toobig -down-> wdcod
 
-card "Load and convert wikidata entities" as wdent #90ee90
+card "Load and convert wikidata entities" as wdent #LightGreen
 file "wikidata-init.csv" as csv
-file "convert-wikidata-entities.sql" sqlwdent
-sqlwdent .> wdent
+file "convert-wikidata-entities.sql" as sqlwdent
+wdent <. sqlwdent
 csv .> wdent
-wdent <.left.> db
+wdent <.left.> db #Blue
 wdcod -down-> wdent
 
-card "Load wikidata 'consists of' entities" as wdcoent #90ee90
+card "Load wikidata 'consists of' entities" as wdcoent #LightGreen
 cloud "Wikidata Query Service" as wd
 wd <.> wdcoent
-wdcoent <.left.> db
+wdcoent <.left.> db #Blue
 wdent -down-> wdcoent
 
-card "Load wikidata 'named after' entities" as wdnaent #90ee90
+card "Load wikidata 'named after' entities" as wdnaent #LightGreen
 wd <.> wdnaent
-wdnaent <.left.> db
+wdnaent <.left.> db #Blue
 wdcoent -down-> wdnaent
 
-card "Convert etymologies" as ety #90ee90
+card "Convert etymologies" as ety #LightGreen
 file "convert-etymologies.sql" as sqlety
 sqlety .> ety
-ety <.left.> db
+ety <.left.> db #Blue
 wdnaent -down-> ety
 
-card "Propagate etymologies" as propagate #ffffe0
+card "Propagate etymologies" as propagate #LightYellow
 file "propagate-etymologies.sql" as sqlpropagate
 sqlpropagate .> propagate
-propagate <.left.> db
+propagate <.left.> db #Blue
 ety -down-> propagate
 
-card "Remove elements without etymology" as temp #90ee90
+card "Remove elements without etymology" as temp #LightGreen
+file "check-wd-etymology.sql" as sqlwd
+file "check-text-etymology.sql" as sqltext
 file "move-elements-with-etymology.sql" as sqltemp
-sqltemp .> temp
-temp <.left.> db
+file "etymology-foreign-key.sql" as sqlfk
+sqlwd .> temp
+sqltext .> temp
+temp <. sqltemp
+temp <. sqlfk
+temp <.left.> db #Blue
 propagate -down-> temp
 
-card "Setup global map" as global #90ee90
+card "Setup global map" as global #LightGreen
 file "global-map.sql" as sqlglobal
 sqlglobal .> global
-global <.left.> db
+global <.left.> db #Blue
 temp -down-> global
 
-card "Save update date" as date #90ee90
-date <.left.> db
+card "Save update date" as date #LightGreen
+date <.left.> db #Blue
 global -down-> date
 
 file X.osm.pbf.backup as backup
-card pg_dump #90ee90
-db .> pg_dump
+card pg_dump #LightGreen
+db .> pg_dump #Blue
 pg_dump .> backup
 date -down-> pg_dump
 
 note as busize
-  Size: 100KB ~ 170MB
+  Size: 70KB ~ 170MB
 end note
 busize .. backup
 
-database "Destination DB" as destdb
-card pg_restore #ffffe0
+database "Destination DB" as destdb #LightCoral
+card pg_restore #LightYellow
 backup .> pg_restore
-pg_restore .> destdb
+pg_restore .> destdb #Coral
 pg_dump -down-> pg_restore
 
 @enduml
