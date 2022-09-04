@@ -592,19 +592,25 @@ function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void
 
 function moveElementsWithEtymology(PDO $dbh, bool $load_text_etymology = false): void
 {
+    if($load_text_etymology) {
+        logProgress('Checking elements with text etymology...');
+        $n_text_ety = $dbh->exec(file_get_contents(__DIR__."/check-text-etymology.sql"));
+        logProgress("Found $n_text_ety elements with text etymology");
+    }
+    
+    logProgress('Checking elements with Wikidata etymology...');
+    $n_wd_ety = $dbh->exec(file_get_contents(__DIR__."/check-wd-etymology.sql"));
+    logProgress("Found $n_wd_ety elements with Wikidata etymology");
+
     logProgress('Cleaning up elements without etymology...');
     $n_tot = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
-    $stm = $dbh->prepare(file_get_contents(__DIR__."/move-elements-with-etymology.sql"));
-    $stm->execute([ "load_text_etymology" => $load_text_etymology ]);
-    $n_remaining = $stm->rowCount();
+    $n_remaining = $dbh->exec(file_get_contents(__DIR__."/move-elements-with-etymology.sql"));
     $n_cleaned = $n_tot - $n_remaining;
     logProgress("Started with $n_tot elements, $n_cleaned cleaned up (no etymology), $n_remaining remaining");
-    $dbh->exec(
-        "ALTER TABLE oem.etymology 
-        ADD CONSTRAINT etymology_et_el_id_fkey 
-        FOREIGN KEY (et_el_id) 
-        REFERENCES oem.element (el_id)"
-    );
+
+    logProgress('Making sure all etymologies reference an existing element...');
+    $dbh->exec(file_get_contents(__DIR__."/setup-etymology-foreign-key.sql"));
+    logProgress('All etymologies reference an existing element');
 }
 
 
