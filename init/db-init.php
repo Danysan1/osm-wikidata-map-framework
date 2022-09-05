@@ -780,8 +780,15 @@ try {
         // https://stackoverflow.com/a/7088514/2347196
         moveElementsWithEtymology($dbh, $load_text_etymology);
 
-        if (!$keep_temp_tables)
+        if (!$keep_temp_tables) {
             $dbh->exec('DROP TABLE oem.osmdata');
+            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_line');
+            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_point');
+            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_polygon');
+            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_rels');
+            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_roads');
+            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_ways');
+        }
 
         setupGlobalMap($dbh);
         saveLastDataUpdate($sourceFilePath, $dbh);
