@@ -21,4 +21,6 @@ interface Configuration
 	public function get(string $key);
 
 	public function getBool(string $key): bool;
+
+	function getMetaTag(string $key, ?bool $optional = false) : string;
 }

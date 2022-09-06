@@ -1,7 +1,9 @@
-const default_center_lat = parseFloat(document.head.querySelector('meta[name="default_center_lat"]')?.content),
-    default_center_lon = parseFloat(document.head.querySelector('meta[name="default_center_lon"]')?.content),
-    default_zoom = parseInt(document.head.querySelector('meta[name="default_zoom"]')?.content),
-    defaultColorScheme = document.head.querySelector('meta[name="defaultColorScheme"]')?.content;
+import { getConfig } from "./config";
+
+const default_center_lat = parseFloat(getConfig("default-center-lat")),
+    default_center_lon = parseFloat(getConfig("default-center-lon")),
+    default_zoom = parseInt(getConfig("default-zoom")),
+    defaultColorScheme = getConfig("default-color-scheme");
 
 console.info("common start", {
     default_center_lon,

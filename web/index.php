@@ -52,20 +52,20 @@ if (
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
-    <meta name="mapbox_token" content="<?=(string)$conf->get("mapbox-token");?>" />
-    <?php if($conf->has("maptiler-key")) { ?><meta name="maptiler_key" content="<?=(string)$conf->get("maptiler-key");?>" /><?php } ?>
-    <meta name="default_center_lat" content="<?=(float)$conf->get("default-center-lat");?>" />
-    <meta name="default_center_lon" content="<?=(float)$conf->get("default-center-lon");?>" />
-    <meta name="default_zoom" content="<?=(int)$conf->get("default-zoom");?>" />
-    <meta name="thresholdZoomLevel" content="<?=(int)$conf->get("threshold-zoom-level");?>" />
-    <meta name="minZoomLevel" content="<?=(int)$conf->get("min-zoom-level");?>" />
-    <meta name="defaultBackgroundStyle" content="<?=(string)$conf->get("default-background-style");?>" />
-    <meta name="defaultColorScheme" content="<?=(string)$conf->get("default-color-scheme");?>" />
-    <?php if($conf->has("google-analytics-id")) { ?><meta name="google_analytics_id" content="<?=$conf->get("google-analytics-id");?>" /><?php } ?>
-    <?php if($conf->has("matomo-domain")) { ?><meta name="matomo_domain" content="<?=$conf->get("matomo-domain");?>" /><?php } ?>
-    <?php if($conf->has("matomo-id")) { ?><meta name="matomo_id" content="<?=$conf->get("matomo-id");?>" /><?php } ?>
-    <?php if($conf->has("sentry-js-dsn")) { ?><meta name="sentry_js_dsn" content="<?=$conf->get("sentry-js-dsn");?>" /><?php } ?>
-    <?php if($conf->has("sentry-js-env")) { ?><meta name="sentry_js_env" content="<?=$conf->get("sentry-js-env");?>" /><?php } ?>
+    <?=$conf->getMetaTag("mapbox-token");?>
+    <?=$conf->getMetaTag("maptiler-key", true);?>
+    <?=$conf->getMetaTag("default-center-lat");?>
+    <?=$conf->getMetaTag("default-center-lon");?>
+    <?=$conf->getMetaTag("default-zoom");?>
+    <?=$conf->getMetaTag("threshold-zoom-level");?>
+    <?=$conf->getMetaTag("min-zoom-level");?>
+    <?=$conf->getMetaTag("default-background-style");?>
+    <?=$conf->getMetaTag("default-color-scheme");?>
+    <?=$conf->getMetaTag("google-analytics-id", true);?>
+    <?=$conf->getMetaTag("matomo-domain", true);?>
+    <?=$conf->getMetaTag("matomo-id", true);?>
+    <?=$conf->getMetaTag("sentry-js-dsn", true);?>
+    <?=$conf->getMetaTag("sentry-js-env", true);?>
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

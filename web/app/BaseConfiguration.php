@@ -14,4 +14,11 @@ abstract class BaseConfiguration implements Configuration
         }
         return true;
     }
+
+    function getMetaTag(string $key, ?bool $optional = false) : string {
+        if ($optional && !$this->has($key))
+            return "";
+        else
+            return '<meta name="config_'.$key.'" content="'.htmlspecialchars($this->get($key)).'" />';
+    }
 }

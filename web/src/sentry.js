@@ -1,8 +1,10 @@
+import { getConfig } from "./config";
+
 let sentry;
 
 function initSentry() {
-    const sentry_js_dsn = document.head.querySelector('meta[name="sentry_js_dsn"]')?.content,
-        sentry_js_env = document.head.querySelector('meta[name="sentry_js_env"]')?.content;
+    const sentry_js_dsn = getConfig("sentry_js_dsn"),
+        sentry_js_env = getConfig("sentry_js_env");
     if (sentry_js_dsn && sentry_js_env) {
         console.info("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
         import("@sentry/browser").then(Sentry => {

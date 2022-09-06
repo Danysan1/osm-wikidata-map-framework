@@ -14,18 +14,19 @@ import { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle 
 import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
 import { featureToDomElement } from "./FeatureElement";
+import { getConfig } from './config';
 import './style.css';
 
 initSentry();
 
-const google_analytics_id = document.head.querySelector('meta[name="google_analytics_id"]')?.content,
-    matomo_domain = document.head.querySelector('meta[name="matomo_domain"]')?.content,
-    matomo_id = document.head.querySelector('meta[name="matomo_id"]')?.content;
+const google_analytics_id = getConfig("google_analytics_id"),
+    matomo_domain = getConfig("matomo_domain"),
+    matomo_id = getConfig("matomo_id");
 
+function gtag() { window.dataLayer.push(arguments); }
 if (google_analytics_id) {
     console.info("Initializing Google Analytics", { google_analytics_id });
     window.dataLayer = window.dataLayer || [];
-    function gtag() { window.dataLayer.push(arguments); }
     gtag('js', new Date());
     gtag('config', google_analytics_id);
 }
@@ -45,11 +46,11 @@ if (matomo_domain && matomo_id) {
     })();
 }
 
-const maptiler_key = document.head.querySelector('meta[name="maptiler_key"]')?.content,
-    mapbox_token = document.head.querySelector('meta[name="mapbox_token"]')?.content,
-    thresholdZoomLevel = parseInt(document.head.querySelector('meta[name="thresholdZoomLevel"]')?.content),
-    minZoomLevel = parseInt(document.head.querySelector('meta[name="minZoomLevel"]')?.content),
-    defaultBackgroundStyle = document.head.querySelector('meta[name="defaultBackgroundStyle"]')?.content,
+const maptiler_key = getConfig("maptiler-key"),
+    mapbox_token = getConfig("mapbox-token"),
+    thresholdZoomLevel = parseInt(getConfig("threshold-zoom-level")),
+    minZoomLevel = parseInt(getConfig("min-zoom-level")),
+    defaultBackgroundStyle = getConfig("default-background-style"),
     backgroundStyles = [
         mapboxBackgroundStyle('mapbox_streets', 'Streets (Mapbox)', 'mapbox', 'streets-v11', mapbox_token),
         mapboxBackgroundStyle('mapbox_dark', 'Dark', 'mapbox', 'dark-v10', mapbox_token)
