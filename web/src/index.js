@@ -269,19 +269,8 @@ function updateDataSource(event) {
             wikidata_url = './etymologyMap.php?' + queryString;
 
         prepareWikidataLayers(map, wikidata_url, thresholdZoomLevel);
-        const wikidata_source = map.getSource("wikidata_source");
-        console.info("Wikidata dataSource update", { queryParams, wikidata_url, wikidata_source });
-
-        //showSnackbar("Fetching data...", "lightblue");
-        if (wikidata_source) {
-            wikidata_source.setData(wikidata_url);
-        } else {
-            console.error("updateDataSource: missing wikidata_source");
-        }
     } else if (enableGlobalLayers) {
         prepareGlobalLayers(map, minZoomLevel);
-
-        //showSnackbar("Please zoom more to see data", "orange");
     } else if (enableElementLayers) {
         const queryParams = {
             from: "bbox",
@@ -296,15 +285,6 @@ function updateDataSource(event) {
             elements_url = './elements.php?' + queryString;
 
         prepareElementsLayers(map, elements_url, minZoomLevel, thresholdZoomLevel);
-        const elements_source = map.getSource("elements_source");
-        console.info("Elements dataSource update", { queryParams, elements_url, elements_source });
-
-        //showSnackbar("Fetching data...", "lightblue");
-        if (elements_source) {
-            elements_source.setData(elements_url);
-        } else {
-            console.error("updateDataSource: missing elements_source");
-        }
     } else {
         console.error("No layer was enabled", {
             zoomLevel,
@@ -333,7 +313,13 @@ function updateDataSource(event) {
  */
 function prepareWikidataLayers(map, wikidata_url, minZoom) {
     const colorSchemeColor = getCurrentColorScheme().color;
-    if (!map.getSource("wikidata_source")) {
+    let sourceObject = map.getSource("wikidata_source");
+    if (sourceObject && sourceObject._data != wikidata_url) {
+        console.info("prepareClusteredLayers: updating wikidata_source", {
+            sourceObject, wikidata_url, oldWikidataURL: sourceObject._data
+        });
+        sourceObject.setData(wikidata_url);
+    } else if (!sourceObject) {
         const sourceConfig = {
             type: 'geojson',
             buffer: 512,
@@ -341,7 +327,8 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
             attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
         };
         map.addSource('wikidata_source', sourceConfig);
-        console.info("prepareWikidataLayers: added wikidata_source", sourceConfig, map.getSource('wikidata_source'));
+        sourceObject = map.getSource("wikidata_source");
+        console.info("prepareWikidataLayers: added wikidata_source", {sourceConfig, sourceObject});
     }
 
     if (!map.getLayer("wikidata_layer_point")) {
@@ -553,7 +540,13 @@ function prepareClusteredLayers(
         clusterLayerName = prefix + '_layer_cluster',
         countLayerName = prefix + '_layer_count',
         pointLayerName = prefix + '_layer_point';
-    if (!map.getSource(sourceName)) {
+    let sourceObject = map.getSource(sourceName);
+    if (sourceObject && sourceObject._data != sourceDataURL) {
+        console.info("prepareClusteredLayers: updating source", {
+            sourceName, sourceObject, sourceDataURL, oldSourceDataURL: sourceObject._data
+        });
+        sourceObject.setData(sourceDataURL);
+    } else if (!sourceObject) {
         const sourceConfig = {
             type: 'geojson',
             buffer: 256,
@@ -566,7 +559,11 @@ function prepareClusteredLayers(
             clusterMinPoints: 1
         };
         map.addSource(sourceName, sourceConfig);
-        console.info("prepareClusteredLayers: added ", sourceName, sourceConfig, map.getSource(sourceName));
+        sourceObject = map.getSource(sourceName);
+        if (sourceObject)
+            console.info("prepareClusteredLayers: added source ", {sourceName, sourceConfig, sourceObject});
+        else
+            throw new Error("Failed adding source", {sourceName, sourceConfig, sourceObject});
     }
 
     if (!map.getLayer(clusterLayerName)) {
@@ -590,7 +587,7 @@ function prepareClusteredLayers(
                 clusterId = features[0].properties.cluster_id,
                 center = features[0].geometry.coordinates;
             console.info('Click ' + clusterLayerName, features, clusterId, center);
-            map.getSource(sourceName).getClusterExpansionZoom(
+            sourceObject.getClusterExpansionZoom(
                 clusterId, (err, zoom) => easeToClusterCenter(map, err, zoom, maxZoom + 0.5, center)
             );
         });
