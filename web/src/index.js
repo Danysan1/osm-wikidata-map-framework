@@ -828,14 +828,14 @@ function prepareGlobalLayers(map, maxZoom) {
 }
 
 /**
- * Checks if any element in the array or in it sub-arrays is a string that starts with "name"
+ * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
  * 
- * @param {array} arr 
+ * @param {mixed} arr 
  * @returns {boolean}
  */
-function someStartWithName(arr) {
-    return arr.some(
-        x => (typeof x === 'string' && x.startsWith('name')) || (Array.isArray(x) && someStartWithName(x))
+function someArrayItemStartWithName(arr) {
+    return Array.isArray(arr) && arr.some(
+        x => (typeof x === 'string' && x.startsWith('name')) || someArrayItemStartWithName(x)
     );
 }
 
@@ -849,7 +849,7 @@ function someStartWithName(arr) {
 function isNameSymbolLayer(layerId, map) {
     const textField = map.getLayoutProperty(layerId, 'text-field'),
         isSimpleName = textField === '{name:latin}';
-    return isSimpleName || (Array.isArray(textField) && someStartWithName(textField))
+    return isSimpleName || someArrayItemStartWithName(textField);
 }
 
 /**
