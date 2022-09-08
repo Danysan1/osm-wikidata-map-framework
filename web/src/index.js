@@ -432,13 +432,22 @@ function initWikidataLayer(map, layerID) {
     map.on('mouseleave', layerID, () => map.getCanvas().style.cursor = '');
 }
 
+/**
+ * Handle the click on an item of the wikidata layer
+ * 
+ * @param {MapMouseEvent} e 
+ * @see https://stackoverflow.com/a/50502455/2347196
+ * @see https://maplibre.org/maplibre-gl-js-docs/example/popup-on-click/
+ * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
+ */
 function onWikidataLayerClick(e) {
     if (e.popupAlreadyShown) {
         console.info("onWikidataLayerClick: etymology popup already shown", e);
     } else {
         const map = e.target,
             //popupPosition = e.lngLat,
-            popupPosition = map.getBounds().getNorthWest(),
+            //popupPosition = map.getBounds().getNorthWest(),
+            popupPosition = map.unproject([0,0]),
             popup = new Popup({
                 closeButton: true,
                 closeOnClick: true,
