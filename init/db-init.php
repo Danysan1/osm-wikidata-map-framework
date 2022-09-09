@@ -531,11 +531,13 @@ function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): 
         ["P527"], // has part or parts
         [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
             "Q14073567", // sibling duo
+            "Q16979650", // sibling group
             "Q10648343", // duo
             "Q16334295", // group of humans
             "Q219160", // couple
             "Q3046146", // married couple
             "Q1141470", // double act
+            "Q14756018", // twins
         ],
         $dbh,
         $wikidataEndpointURL
