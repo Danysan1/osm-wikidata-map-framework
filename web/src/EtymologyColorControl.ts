@@ -167,7 +167,7 @@ class EtymologyColorControl implements IControl {
     dropDownClickHandler(event: Event) {
         const dropDown = event.target;
         if (!(dropDown instanceof HTMLSelectElement))
-            throw new Error("Bad dropdown");
+            throw new Error("dropDownClickHandler: bad dropdown");
         const colorScheme = dropDown.value,
             colorSchemeObj = colorSchemes.find(scheme => scheme.id == colorScheme);
         let color: string | Expression;
@@ -201,19 +201,18 @@ class EtymologyColorControl implements IControl {
 
     updateChart(event: Event) {
         if (!this._ctrlDropDown) {
-            logErrorMessage("EtymologyColorControl updateChart: dropodown not inizialized");
+            console.error("updateChart: dropodown not inizialized", { event });
             return;
         } else {
             const dropdown = this._ctrlDropDown,
                 colorScheme = colorSchemes.find(scheme => scheme.id == dropdown.value),
-                map = event.target as unknown as Map,
-                bounds = map.getBounds ? map.getBounds() : null;
+                bounds = this._map?.getBounds();
             //console.info("updateChart", { event, colorScheme });
 
             if (!bounds) {
-                //console.warn("EtymologyColorControl updateChart: missing bounds");
+                console.error("updateChart: missing bounds", { event });
             } else if (colorScheme && colorScheme.urlCode) {
-                console.info("updateChart main: URL code", { colorScheme });
+                console.info("updateChart main: colorScheme is ok", { event, colorScheme });
                 if (this._chartXHR)
                     this._chartXHR.abort();
 
@@ -268,6 +267,7 @@ class EtymologyColorControl implements IControl {
                 xhr.send();
                 this._chartXHR = xhr;
             } else {
+                console.info("updateChart main: no colorScheme, removing", { event, colorScheme });
                 if (event.type && event.type == 'change')
                     this._ctrlDropDown.className = 'hiddenElement';
                 this.removeChart();
@@ -310,7 +310,7 @@ class EtymologyColorControl implements IControl {
         else
             throw new Error("Missing container");
         const ctx = this._chartDomElement.getContext('2d');
-        if(!ctx)
+        if (!ctx)
             throw new Error("Missing context");
 
         Chart.register(ArcElement, PieController, Tooltip, Legend);

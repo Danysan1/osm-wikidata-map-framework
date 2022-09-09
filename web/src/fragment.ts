@@ -89,4 +89,4 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
     return p as CorrectFragmentParams;
 }
 
-export { getFragmentParams, getCorrectFragmentParams, setFragmentParams };
+export { CorrectFragmentParams, getFragmentParams, getCorrectFragmentParams, setFragmentParams };

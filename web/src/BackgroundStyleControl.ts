@@ -108,9 +108,10 @@ class BackgroundStyleControl {
     }
 
     dropDownChangeHandler(event: Event) {
-        if (!(event.target instanceof HTMLSelectElement))
-            throw new Error("Bad event target");
-        const backgroundStyleId = event.target.value,
+        const dropDown = event.target;
+        if (!(dropDown instanceof HTMLSelectElement))
+            throw new Error("dropDownChangeHandler: bad dropdown");
+        const backgroundStyleId = dropDown.value,
             backgroundStyleObj = this._backgroundStyles.find(style => style.id === backgroundStyleId);
         console.info("BackgroundStyleControl dropDown click", { backgroundStyleObj, event });
         if (backgroundStyleObj) {
