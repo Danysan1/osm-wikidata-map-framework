@@ -24,7 +24,7 @@ const thresholdZoomLevel_raw = getConfig("threshold-zoom-level"),
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private currentEtymologyColorControl: EtymologyColorControl | null;
-    private startBackgroundStyleUrl: string;
+    private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
 
     constructor(
@@ -33,23 +33,20 @@ export class EtymologyMap extends Map {
         startParams: CorrectFragmentParams,
         geocoderControl: IControl | null
     ) {
-        const backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
-        let startBackgroundStyleUrl;
-        if (backgroundStyleObj) {
-            startBackgroundStyleUrl = backgroundStyleObj.styleUrl;
-        } else {
+        let backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
+        if (!backgroundStyleObj) {
             logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
-            startBackgroundStyleUrl = backgroundStyles[0].styleUrl;
+            backgroundStyleObj = backgroundStyles[0];
         }
 
         super({
             container: containerId,
-            style: startBackgroundStyleUrl,
+            style: backgroundStyleObj.styleUrl,
             center: [startParams.lon, startParams.lat], // starting position [lon, lat]
             zoom: startParams.zoom, // starting zoom
         });
+        this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
-        this.startBackgroundStyleUrl = startBackgroundStyleUrl;
         this.currentEtymologyColorControl = null;
         this.geocoderControl = geocoderControl;
 
@@ -693,7 +690,7 @@ export class EtymologyMap extends Map {
             unit: 'metric'
         }), 'bottom-left');
         this.addControl(new FullscreenControl(), 'top-right');
-        this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyleUrl), 'top-right');
+        this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
         this.addControl(new InfoControl(), 'top-right');
 
         this.on('sourcedata', this.mapSourceDataHandler);

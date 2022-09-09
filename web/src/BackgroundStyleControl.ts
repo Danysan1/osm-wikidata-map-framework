@@ -39,11 +39,11 @@ function mapboxBackgroundStyle(id: string, text: string, mapboxUser: string, map
 class BackgroundStyleControl {
     private _backgroundStyles: BackgroundStyle[];
     private _startBackgroundStyleId: string;
-    private _map: Map|null;
-    private _container: HTMLDivElement|null;
-    private _ctrlDropDown: HTMLSelectElement|null;
-    
-    constructor(backgroundStyles:BackgroundStyle[], startBackgroundStyleId:string) {
+    private _map: Map | null;
+    private _container: HTMLDivElement | null;
+    private _ctrlDropDown: HTMLSelectElement | null;
+
+    constructor(backgroundStyles: BackgroundStyle[], startBackgroundStyleId: string) {
         this._backgroundStyles = backgroundStyles;
         this._startBackgroundStyleId = startBackgroundStyleId;
 
