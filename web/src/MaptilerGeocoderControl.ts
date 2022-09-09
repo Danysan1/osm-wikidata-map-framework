@@ -1,5 +1,5 @@
-import { Geocoder } from '@maptiler/geocoder';
-import '@maptiler/geocoder/css/geocoder.css';
+/* import { Geocoder } from '@maptiler/geocoder';
+import '@maptiler/geocoder/css/geocoder.css'; */
 
 /**
  * Let the user search locations by name
@@ -8,12 +8,12 @@ import '@maptiler/geocoder/css/geocoder.css';
  * Control implemented as ES6 class
  * @see https://docs.maptiler.com/maplibre-gl-js/geocoder-component/
  */
- export class MaptilerGeocoderControl {
+/* export class MaptilerGeocoderControl { */
     /**
      * 
      * @param {string} maptiler_key 
      */
-    constructor(maptiler_key){
+/*     constructor(maptiler_key) {
         this._maptiler_key = maptiler_key;
     }
 
@@ -27,7 +27,7 @@ import '@maptiler/geocoder/css/geocoder.css';
             input: _input,
             key: this._maptiler_key
         });
-        geocoder.on('select', function(item) {
+        geocoder.on('select', function (item) {
             map.fitBounds(item.bbox);
         });
         return this._container;
@@ -37,4 +37,4 @@ import '@maptiler/geocoder/css/geocoder.css';
         this._container.parentNode.removeChild(this._container);
         this._map = undefined;
     }
- }
+} */

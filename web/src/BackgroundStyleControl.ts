@@ -1,35 +1,33 @@
 import { logErrorMessage } from './sentry';
+import { Map } from 'mapbox-gl';
 
-/**
- * @typedef {Object} BackgroundStyle
- * @property {string} id
- * @property {string} text
- * @property {string} styleUrl
- */
+interface BackgroundStyle {
+    id: string;
+    text: string;
+    styleUrl: string;
+}
 
 /**
  * @see https://cloud.maptiler.com/maps/
- * @param {string} id 
- * @param {string} text 
- * @param {string} maptilerId 
- * @param {string} maptilerKey 
- * @returns {BackgroundStyle}
  */
-function maptilerBackgroundStyle(id, text, maptilerId, maptilerKey) {
-    return { id: id, text: text, styleUrl: 'https://api.maptiler.com/maps/' + maptilerId + '/style.json?key=' + maptilerKey };
+function maptilerBackgroundStyle(id: string, text: string, maptilerId: string, maptilerKey: string): BackgroundStyle {
+    return {
+        id: id,
+        text: text,
+        styleUrl: 'https://api.maptiler.com/maps/' + maptilerId + '/style.json?key=' + maptilerKey
+    };
 }
 
 /**
  * @see https://docs.mapbox.com/api/maps/vector-tiles/
  * @see https://docs.mapbox.com/api/maps/styles/#mapbox-styles
- * @param {string} id 
- * @param {string} text 
- * @param {string} mapboxId 
- * @param {string} mapboxToken 
- * @returns {BackgroundStyle}
  */
-function mapboxBackgroundStyle(id, text, mapboxUser, mapboxId, mapboxToken) {
-    return { id: id, text: text, styleUrl: 'https://api.mapbox.com/styles/v1/' + mapboxUser + '/' + mapboxId + '/?access_token=' + mapboxToken };
+function mapboxBackgroundStyle(id: string, text: string, mapboxUser: string, mapboxId: string, mapboxToken: string): BackgroundStyle {
+    return {
+        id: id,
+        text: text,
+        styleUrl: 'https://api.mapbox.com/styles/v1/' + mapboxUser + '/' + mapboxId + '/?access_token=' + mapboxToken
+    };
 }
 
 /**
@@ -39,21 +37,22 @@ function mapboxBackgroundStyle(id, text, mapboxUser, mapboxId, mapboxToken) {
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
 class BackgroundStyleControl {
-    /**
-     * @param {BackgroundStyle[]} backgroundStyles
-     * @param {string} startBackgroundStyleId 
-     */
-    constructor(backgroundStyles, startBackgroundStyleId) {
+    private _backgroundStyles: BackgroundStyle[];
+    private _startBackgroundStyleId: string;
+    private _map: Map|null;
+    private _container: HTMLDivElement|null;
+    private _ctrlDropDown: HTMLSelectElement|null;
+    
+    constructor(backgroundStyles:BackgroundStyle[], startBackgroundStyleId:string) {
         this._backgroundStyles = backgroundStyles;
         this._startBackgroundStyleId = startBackgroundStyleId;
+
+        this._map = null;
+        this._container = null;
+        this._ctrlDropDown = null;
     }
 
-    /**
-     * 
-     * @param {Map} map 
-     * @returns {HTMLElement}
-     */
-    onAdd(map) {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
 
         this._container = document.createElement('div');
@@ -81,7 +80,7 @@ class BackgroundStyleControl {
         this._ctrlDropDown = document.createElement('select');
         this._ctrlDropDown.className = 'hiddenElement';
         this._ctrlDropDown.title = 'Background style';
-        this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
+        this._ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
         td1.appendChild(this._ctrlDropDown);
 
         this._backgroundStyles.forEach(style => {
@@ -91,33 +90,38 @@ class BackgroundStyleControl {
             if (style.id == this._startBackgroundStyleId) {
                 option.selected = true;
             }
-            this._ctrlDropDown.appendChild(option);
+            this._ctrlDropDown?.appendChild(option);
         })
 
         return this._container;
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
+        this._container?.parentNode?.removeChild(this._container);
+        this._map = null;
     }
 
-    btnClickHandler(event) {
+    btnClickHandler(event: MouseEvent) {
         console.info("BackgroundStyleControl button click", event);
-        this._ctrlDropDown.className = 'visibleDropDown';
+        if (this._ctrlDropDown)
+            this._ctrlDropDown.className = 'visibleDropDown';
     }
 
-    dropDownClickHandler(event) {
-        const backgroundStyleObj = this._backgroundStyles.find(style => style.id == event.target.value);
+    dropDownChangeHandler(event: Event) {
+        if (!(event.target instanceof HTMLSelectElement))
+            throw new Error("Bad event target");
+        const backgroundStyleId = event.target.value,
+            backgroundStyleObj = this._backgroundStyles.find(style => style.id === backgroundStyleId);
         console.info("BackgroundStyleControl dropDown click", { backgroundStyleObj, event });
         if (backgroundStyleObj) {
-            this._map.setStyle(backgroundStyleObj.styleUrl);
-            this._ctrlDropDown.className = 'hiddenElement';
+            this._map?.setStyle(backgroundStyleObj.styleUrl);
+            if (this._ctrlDropDown)
+                this._ctrlDropDown.className = 'hiddenElement';
         } else {
-            logErrorMessage("Invalid selected background style", "error", { style: event.target.value });
+            logErrorMessage("Invalid selected background style", "error", { backgroundStyleId });
         }
     }
 
 }
 
-export { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle };
+export { BackgroundStyle, BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle };

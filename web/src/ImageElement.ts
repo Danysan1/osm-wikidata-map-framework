@@ -1,9 +1,12 @@
-/**
- * 
- * @param {object} img 
- * @return {HTMLElement}
- */
-export function imageToDomElement(img) {
+
+interface DetailedImage {
+    picture: string,
+    attribution: string|null,
+}
+
+type ImageResponse = string | DetailedImage;
+
+function imageToDomElement(img: ImageResponse): HTMLDivElement {
     const link = document.createElement('a'),
         picture = document.createElement('img'),
         attribution = document.createElement('p'),
@@ -53,3 +56,5 @@ export function imageToDomElement(img) {
 
     return imgContainer;
 }
+
+export { ImageResponse, imageToDomElement }

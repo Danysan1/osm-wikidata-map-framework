@@ -98,7 +98,6 @@ if (
 <body>
     <div id="map_container">
         <div id='map'></div>
-        <img id="map_static_preview"></img>
         <div id="intro">
             <h1>Open Etymology Map</h1>
             <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>

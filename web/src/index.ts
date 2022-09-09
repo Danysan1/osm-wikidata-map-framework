@@ -1,5 +1,5 @@
 //import maplibregl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'maplibre-gl';
-import mapboxgl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'mapbox-gl';
+import mapboxgl, { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature, CirclePaint } from 'mapbox-gl';
 
 //import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -10,7 +10,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage, initSentry } from './sentry';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
-import { BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
+import { BackgroundStyle, BackgroundStyleControl, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
 import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
 import { featureToDomElement } from "./FeatureElement";
@@ -23,17 +23,17 @@ const google_analytics_id = getConfig("google_analytics_id"),
     matomo_domain = getConfig("matomo_domain"),
     matomo_id = getConfig("matomo_id");
 
-function gtag() { window.dataLayer.push(arguments); }
+const gtag: Gtag.Gtag = function () { (window as any).dataLayer.push(arguments); }
 if (google_analytics_id) {
     console.info("Initializing Google Analytics", { google_analytics_id });
-    window.dataLayer = window.dataLayer || [];
+    (window as any).dataLayer = (window as any).dataLayer || [];
     gtag('js', new Date());
     gtag('config', google_analytics_id);
 }
 
 if (matomo_domain && matomo_id) {
     console.info("Initializing Matomo", { matomo_domain, matomo_id });
-    var _paq = window._paq = window._paq || [];
+    var _paq = (window as any)._paq = (window as any)._paq || [];
     /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
     _paq.push(['trackPageView']);
     _paq.push(['enableLinkTracking']);
@@ -42,19 +42,26 @@ if (matomo_domain && matomo_id) {
         _paq.push(['setTrackerUrl', u + 'matomo.php']);
         _paq.push(['setSiteId', matomo_id]);
         var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
-        g.async = true; g.src = `//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode.insertBefore(g, s);
+        g.async = true; g.src = `//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode?.insertBefore(g, s);
     })();
 }
 
 const maptiler_key = getConfig("maptiler-key"),
     mapbox_token = getConfig("mapbox-token"),
-    thresholdZoomLevel = parseInt(getConfig("threshold-zoom-level")),
-    minZoomLevel = parseInt(getConfig("min-zoom-level")),
-    defaultBackgroundStyle = getConfig("default-background-style"),
-    backgroundStyles = [
+    thresholdZoomLevel_raw = getConfig("threshold-zoom-level"),
+    minZoomLevel_raw = getConfig("min-zoom-level"),
+    thresholdZoomLevel = thresholdZoomLevel_raw ? parseInt(thresholdZoomLevel_raw) : 14,
+    minZoomLevel = minZoomLevel_raw ? parseInt(minZoomLevel_raw) : 9,
+    defaultBackgroundStyle_raw = getConfig("default-background-style"),
+    defaultBackgroundStyle = defaultBackgroundStyle_raw ? defaultBackgroundStyle_raw : 'mapbox_streets',
+    backgroundStyles: BackgroundStyle[] = [];
+
+if (mapbox_token) {
+    backgroundStyles.push(
         mapboxBackgroundStyle('mapbox_streets', 'Streets (Mapbox)', 'mapbox', 'streets-v11', mapbox_token),
         mapboxBackgroundStyle('mapbox_dark', 'Dark', 'mapbox', 'dark-v10', mapbox_token)
-    ];
+    );
+}
 
 if (maptiler_key) {
     backgroundStyles.push(
@@ -83,13 +90,13 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @param {number} timeout The timeout in milliseconds
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
-function showSnackbar(message, color = "lightcoral", timeout = 3000) {
+function showSnackbar(message: string, color: string = "lightcoral", timeout: number = 3000) {
     const x = document.createElement("div");
     document.body.appendChild(x);
     //const x = document.getElementById("snackbar");
     x.className = "snackbar show";
     x.innerText = message;
-    x.style = "background-color:" + color;
+    x.style.backgroundColor = color;
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
@@ -106,19 +113,21 @@ function showSnackbar(message, color = "lightcoral", timeout = 3000) {
  */
 function initMap() {
     const startParams = getCorrectFragmentParams(),
-        backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
+        backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle),
+        startLon = startParams.lon ? startParams.lon : 0,
+        startLat = startParams.lat ? startParams.lat : 0;
     console.info("Initializing the map", { startParams, backgroundStyleObj });
 
     if (typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
         mapboxgl.accessToken = mapbox_token;
     }
 
-    let map, backgroundStyle;
+    let map: Map, backgroundStyleUrl: string;
     if (backgroundStyleObj) {
-        backgroundStyle = backgroundStyleObj.styleUrl;
+        backgroundStyleUrl = backgroundStyleObj.styleUrl;
     } else {
         logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
-        backgroundStyle = backgroundStyles[0].styleUrl;
+        backgroundStyleUrl = backgroundStyles[0].styleUrl;
     }
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
@@ -130,8 +139,8 @@ function initMap() {
 
     map = new Map({
         container: 'map',
-        style: backgroundStyle,
-        center: [startParams.lon, startParams.lat], // starting position [lon, lat]
+        style: backgroundStyleUrl,
+        center: [startLon, startLat], // starting position [lon, lat]
         zoom: startParams.zoom, // starting zoom
     });
     openInfoWindow(map);
@@ -148,28 +157,24 @@ function initMap() {
 
 /**
  * 
- * @param {MapDataEvent} e The event to handle 
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
  * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
  */
-function mapStyleDataHandler(e) {
+function mapStyleDataHandler(e: MapDataEvent) {
     //console.info("Map style data loaded", e);
     //setCulture(e.sender); //! Not here, this event is executed too often
 }
 
 /**
- * Handles the change of fragment data
- * 
- * @param {HashChangeEvent} e The event to handle 
- * @param {Map} map 
- * @returns {void}
+ * Handles the change of the URL fragment
  */
-function hashChangeHandler(e, map) {
+function hashChangeHandler(e: HashChangeEvent, map: Map) {
     const newParams = getCorrectFragmentParams(),
         currLat = map.getCenter().lat,
         currLon = map.getCenter().lng,
         currZoom = map.getZoom(),
-        currColorScheme = map.currentEtymologyColorControl?.getColorScheme();
+        colorControl = (map as any).currentEtymologyColorControl as EtymologyColorControl | null,
+        currColorScheme = colorControl?.getColorScheme();
     //console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme, e });
 
     // Check if the position has changed in order to avoid unnecessary map movements
@@ -184,38 +189,37 @@ function hashChangeHandler(e, map) {
     }
 
     if (currColorScheme != newParams.colorScheme)
-        map.currentEtymologyColorControl?.setColorScheme(newParams.colorScheme);
+        colorControl?.setColorScheme(newParams.colorScheme);
 }
 
 /**
  * Event listener that fires when one of the map's sources loads or changes.
  * 
- * @param {MapDataEvent} e The event to handle
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
  * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
  */
-function mapSourceDataHandler(e) {
+function mapSourceDataHandler(e: MapDataEvent) {
     const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
         elementsSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
-        sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent),
+        sourceDataLoaded = (e as any).isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent),
         map = e.target;
     //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e});
 
     if (sourceDataLoaded) {
         //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
         showSnackbar("Data loaded", "lightgreen");
-        if (wikidataSourceEvent && map.currentEtymologyColorControl) {
-            map.currentEtymologyColorControl.updateChart(e);
+        if (wikidataSourceEvent) {
+            const colorControl = (map as any).currentEtymologyColorControl as EtymologyColorControl | null;
+            colorControl?.updateChart(e as any);
         }
     }
 }
 
 /**
  * 
- * @param {any} err 
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
  */
-function mapErrorHandler(err) {
+function mapErrorHandler(err: any) {
     let errorMessage;
     if (["elements_source", "wikidata_source"].includes(err.sourceId) && err.error.status > 200) {
         showSnackbar("An error occurred while fetching the data");
@@ -229,13 +233,11 @@ function mapErrorHandler(err) {
 
 /**
  * 
- * @param {Event} event 
  * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
  */
-function updateDataSource(event) {
-    const map = event.target,
-        bounds = map.getBounds(),
+function updateDataSource(map: Map) {
+    const bounds = map.getBounds(),
         southWest = bounds.getSouthWest(),
         minLat = southWest.lat,
         minLon = southWest.lng,
@@ -259,10 +261,10 @@ function updateDataSource(event) {
     if (enableWikidataLayers) {
         const queryParams = {
             from: "bbox",
-            minLat: Math.floor(minLat * 1000) / 1000, // 0.1234 => 0.124 
-            minLon: Math.floor(minLon * 1000) / 1000,
-            maxLat: Math.ceil(maxLat * 1000) / 1000, // 0.1234 => 0.123
-            maxLon: Math.ceil(maxLon * 1000) / 1000,
+            minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
+            minLon: (Math.floor(minLon * 1000) / 1000).toString(),
+            maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
+            maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
             language,
         },
             queryString = new URLSearchParams(queryParams).toString(),
@@ -274,11 +276,11 @@ function updateDataSource(event) {
     } else if (enableElementLayers) {
         const queryParams = {
             from: "bbox",
-            onlyCenter: true,
-            minLat: Math.floor(minLat * 10) / 10, // 0.1234 => 0.2
-            minLon: Math.floor(minLon * 10) / 10,
-            maxLat: Math.ceil(maxLat * 10) / 10, // 0.1234 => 0.1
-            maxLon: Math.ceil(maxLon * 10) / 10,
+            onlyCenter: "1",
+            minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.1234 => 0.2
+            minLon: (Math.floor(minLon * 10) / 10).toString(),
+            maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.1234 => 0.1
+            maxLon: (Math.ceil(maxLon * 10) / 10).toString(),
             language,
         },
             queryString = new URLSearchParams(queryParams).toString(),
@@ -301,35 +303,25 @@ function updateDataSource(event) {
  * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
  * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
  * 
- * @param {Map} map
- * @param {string} wikidata_url
- * @param {number} minZoom
- * 
  * @see initWikidataLayer
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson-attribution
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
  * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
  */
-function prepareWikidataLayers(map, wikidata_url, minZoom) {
+function prepareWikidataLayers(map: Map, wikidata_url: string, minZoom: number) {
     const colorSchemeColor = getCurrentColorScheme().color;
-    let sourceObject = map.getSource("wikidata_source");
-    if (sourceObject && sourceObject._data != wikidata_url) {
-        console.info("prepareClusteredLayers: updating wikidata_source", {
-            sourceObject, wikidata_url, oldWikidataURL: sourceObject._data
-        });
-        sourceObject.setData(wikidata_url);
-    } else if (!sourceObject) {
-        const sourceConfig = {
+    let sourceObject = addGeoJSONSource(
+        map,
+        "wikidata_source",
+        {
             type: 'geojson',
             buffer: 512,
             data: wikidata_url,
             attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
-        };
-        map.addSource('wikidata_source', sourceConfig);
-        sourceObject = map.getSource("wikidata_source");
-        console.info("prepareWikidataLayers: added wikidata_source", {sourceConfig, sourceObject});
-    }
+        },
+        wikidata_url
+    );
 
     if (!map.getLayer("wikidata_layer_point")) {
         map.addLayer({
@@ -397,24 +389,21 @@ function prepareWikidataLayers(map, wikidata_url, minZoom) {
         initWikidataLayer(map, "wikidata_layer_polygon_fill");
     }
 
-    if (!map.currentEtymologyColorControl) {
-        map.currentEtymologyColorControl = new EtymologyColorControl(getCorrectFragmentParams().colorScheme);
-        setTimeout(() => map.addControl(map.currentEtymologyColorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+    if (!(map as any).currentEtymologyColorControl) {
+        (map as any).currentEtymologyColorControl = new EtymologyColorControl(getCorrectFragmentParams().colorScheme);
+        setTimeout(() => map.addControl((map as any).currentEtymologyColorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
     }
 }
 
 /**
  * Completes low-level details of the high zoom Wikidata layer
  * 
- * @param {Map} map
- * @param {string} layerID 
- * 
  * @see prepareWikidataLayers
  * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
  */
-function initWikidataLayer(map, layerID) {
+function initWikidataLayer(map: Map, layerID: string) {
     // When a click event occurs on a feature in the states layer,
     // open a popup at the location of the click, with description
     // HTML from the click event's properties.
@@ -435,19 +424,19 @@ function initWikidataLayer(map, layerID) {
 /**
  * Handle the click on an item of the wikidata layer
  * 
- * @param {MapMouseEvent} e 
  * @see https://stackoverflow.com/a/50502455/2347196
  * @see https://maplibre.org/maplibre-gl-js-docs/example/popup-on-click/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
  */
-function onWikidataLayerClick(e) {
-    if (e.popupAlreadyShown) {
+function onWikidataLayerClick(e: MapMouseEvent) {
+    if ((e as any).popupAlreadyShown) {
         console.info("onWikidataLayerClick: etymology popup already shown", e);
     } else {
         const map = e.target,
+            feature = (e as any).features[0] as MapboxGeoJSONFeature,
             //popupPosition = e.lngLat,
             //popupPosition = map.getBounds().getNorthWest(),
-            popupPosition = map.unproject([0,0]),
+            popupPosition = map.unproject([0, 0]),
             popup = new Popup({
                 closeButton: true,
                 closeOnClick: true,
@@ -459,22 +448,24 @@ function onWikidataLayerClick(e) {
                 //.setMaxWidth('95vw')
                 //.setOffset([10, 0])
                 //.setHTML(featureToHTML(e.features[0]));
-                .setHTML('<div class="detail_wrapper"></div>')
-                .addTo(map);
-        console.info("onWikidataLayerClick: showing etymology popup", { e, popup });
-        popup.getElement().querySelector(".detail_wrapper").appendChild(featureToDomElement(e.features[0]));
-        e.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
+                .setHTML('<div class="detail_wrapper"><span class="element_loading"></span></div>')
+                .addTo(map),
+            detail_wrapper = popup.getElement().querySelector(".detail_wrapper");
+        console.info("onWikidataLayerClick: showing etymology popup", { e, popup, detail_wrapper });
+        if (!detail_wrapper)
+            throw new Error("Failed adding the popup");
+        const element_loading = document.createElement("span");
+        element_loading.innerText = "Loading...";
+        detail_wrapper.appendChild(element_loading);
+        if (!feature)
+            throw new Error("No feature available");
+        detail_wrapper.appendChild(featureToDomElement(feature));
+        element_loading.style.display = 'none';
+        (e as any).popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
     }
 }
 
-/**
- * 
- * @param {string} field 
- * @param {int} minThreshold 
- * @param {int} maxThreshold 
- * @returns {object} 
- */
-function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000) {
+function clusterPaintFromField(field: string, minThreshold: number = 1000, maxThreshold: number = 10000): CirclePaint {
     return {
         // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
         // with three steps to implement three types of circles:
@@ -498,14 +489,9 @@ function clusterPaintFromField(field, minThreshold = 1000, maxThreshold = 10000)
 /**
  * Initializes the mid-zoom-level clustered layer.
  * 
- * @param {Map} map
- * @param {string} elements_url
- * @param {number} minZoom
- * @param {number} maxZoom
- * 
  * @see prepareClusteredLayers
  */
-function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
+function prepareElementsLayers(map: Map, elements_url: string, minZoom: number, maxZoom: number) {
     prepareClusteredLayers(
         map,
         'elements',
@@ -513,6 +499,28 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
         minZoom,
         maxZoom
     );
+}
+
+function addGeoJSONSource(map: Map, id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
+    let sourceObject = map.getSource(id) as GeoJSONSource|null,
+        oldSourceDataURL = (!!sourceObject && typeof (sourceObject as any)._data === 'string') ? (sourceObject as any)._data : null,
+        sourceUrlChanged = oldSourceDataURL != sourceDataURL;
+    if (!!sourceObject && sourceUrlChanged) {
+        console.info("prepareClusteredLayers: updating source", {
+            id, sourceObject, sourceDataURL, oldSourceDataURL
+        });
+        sourceObject.setData(sourceDataURL);
+    } else if (!sourceObject) {
+        map.addSource(id, config);
+        sourceObject = map.getSource(id) as GeoJSONSource;
+        if (sourceObject)
+            console.info("addGeoJSONSource success ", { id, config, sourceObject });
+        else {
+            console.error("addGeoJSONSource failed", { id, config, sourceObject })
+            throw new Error("Failed adding source");
+        }
+    }
+    return sourceObject;
 }
 
 /**
@@ -536,27 +544,23 @@ function prepareElementsLayers(map, elements_url, minZoom, maxZoom) {
  * @see https://github.com/mapbox/mapbox-gl-js/issues/2898
  */
 function prepareClusteredLayers(
-    map,
-    prefix,
-    sourceDataURL,
-    minZoom = undefined,
-    maxZoom = undefined,
-    clusterProperties = undefined,
-    countFieldName = 'point_count',
-    countShowFieldName = 'point_count_abbreviated'
+    map: Map,
+    prefix: string,
+    sourceDataURL: string,
+    minZoom: number | undefined = undefined,
+    maxZoom: number | undefined = undefined,
+    clusterProperties: any = undefined,
+    countFieldName: string | undefined = 'point_count',
+    countShowFieldName: string | undefined = 'point_count_abbreviated'
 ) {
     const sourceName = prefix + '_source',
         clusterLayerName = prefix + '_layer_cluster',
         countLayerName = prefix + '_layer_count',
         pointLayerName = prefix + '_layer_point';
-    let sourceObject = map.getSource(sourceName);
-    if (sourceObject && sourceObject._data != sourceDataURL) {
-        console.info("prepareClusteredLayers: updating source", {
-            sourceName, sourceObject, sourceDataURL, oldSourceDataURL: sourceObject._data
-        });
-        sourceObject.setData(sourceDataURL);
-    } else if (!sourceObject) {
-        const sourceConfig = {
+    let sourceObject = addGeoJSONSource(
+        map,
+        sourceName,
+        {
             type: 'geojson',
             buffer: 256,
             data: sourceDataURL,
@@ -566,14 +570,9 @@ function prepareClusteredLayers(
             clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
             clusterProperties: clusterProperties,
             clusterMinPoints: 1
-        };
-        map.addSource(sourceName, sourceConfig);
-        sourceObject = map.getSource(sourceName);
-        if (sourceObject)
-            console.info("prepareClusteredLayers: added source ", {sourceName, sourceConfig, sourceObject});
-        else
-            throw new Error("Failed adding source", {sourceName, sourceConfig, sourceObject});
-    }
+        },
+        sourceDataURL
+    );
 
     if (!map.getLayer(clusterLayerName)) {
         const layerDefinition = {
@@ -584,20 +583,18 @@ function prepareClusteredLayers(
             minzoom: minZoom,
             filter: ['has', countFieldName],
             paint: clusterPaintFromField(countFieldName),
-        };
+        } as CircleLayer;
         map.addLayer(layerDefinition);
 
 
         // inspect a cluster on click
         map.on('click', clusterLayerName, (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: [clusterLayerName]
-            }),
-                clusterId = features[0].properties.cluster_id,
-                center = features[0].geometry.coordinates;
-            console.info('Click ' + clusterLayerName, features, clusterId, center);
+            const feature = getClickedClusterFeature(map, pointLayerName, e),
+                clusterId = getClusterFeatureId(feature),
+                center = getClusterFeatureCenter(feature),
+                defaultZoom = maxZoom ? maxZoom + 0.5 : 9;
             sourceObject.getClusterExpansionZoom(
-                clusterId, (err, zoom) => easeToClusterCenter(map, err, zoom, maxZoom + 0.5, center)
+                clusterId, (err, zoom) => easeToClusterCenter(map, err, zoom, defaultZoom, center)
             );
         });
 
@@ -620,7 +617,7 @@ function prepareClusteredLayers(
                 'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                 'text-size': 12
             }
-        };
+        } as SymbolLayer;
         map.addLayer(layerDefinition);
         console.info("prepareClusteredLayers count", countLayerName, { layerDefinition, layer: map.getLayer(countLayerName) });
     }
@@ -640,18 +637,15 @@ function prepareClusteredLayers(
                 //'circle-stroke-width': 1,
                 //'circle-stroke-color': '#fff'
             }
-        };
+        } as CircleLayer;
         map.addLayer(layerDefinition);
 
         map.on('click', pointLayerName, (e) => {
-            const features = map.queryRenderedFeatures(e.point, {
-                layers: [pointLayerName]
-            }),
-                center = features[0].geometry.coordinates;
-            console.info('Click ' + pointLayerName, features, center);
+            const feature = getClickedClusterFeature(map, pointLayerName, e),
+                center = getClusterFeatureCenter(feature);
             map.easeTo({
                 center: center,
-                zoom: maxZoom + 0.5
+                zoom: maxZoom ? maxZoom + 0.5 : 9
             });
         });
 
@@ -662,20 +656,35 @@ function prepareClusteredLayers(
     }
 }
 
+function getClickedClusterFeature(map: Map, layerId: string, event: MapMouseEvent): MapboxGeoJSONFeature {
+    const features = map.queryRenderedFeatures(event.point, { layers: [layerId] }),
+        feature = features[0];
+    if (!feature)
+        throw new Error("No feature found in cluster click");
+    return feature;
+}
+
+function getClusterFeatureId(feature: MapboxGeoJSONFeature): number {
+    const clusterId = feature.properties?.cluster_id;
+    if (typeof clusterId != 'number')
+        throw new Error("No valid cluster ID found");
+    return clusterId;
+}
+
+function getClusterFeatureCenter(feature: MapboxGeoJSONFeature): LngLatLike {
+    return (feature.geometry as any).coordinates as LngLatLike;
+}
+
 /**
  * Callback for getClusterExpansionZoom which eases the map to the cluster center at the calculated zoom
- * 
- * @param {Map} map
- * @param {*} err 
- * @param {number} zoom
+
  * @param {number} defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
- * @param {LngLatLike} center
  * 
  * @see https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#getclusterexpansionzoom
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto
  * @see https://docs.mapbox.com/mapbox-gl-js/api/properties/#cameraoptions
  */
-function easeToClusterCenter(map, err, zoom, defaultZoom, center) {
+function easeToClusterCenter(map: Map, err: any, zoom: number, defaultZoom: number, center: LngLatLike) {
     if (err) {
         logErrorMessage("easeToClusterCenter: Not easing because of an error", "error", err);
     } else {
@@ -693,16 +702,19 @@ function easeToClusterCenter(map, err, zoom, defaultZoom, center) {
 
 /**
  * Handles the dragging of a map
- * 
- * @param {DragEvent} e The event to handle 
  */
-function mapMoveEndHandler(e) {
-    const map = e.target,
-        lat = map.getCenter().lat,
+function mapMoveEndHandler(e: DragEvent) {
+    const map = e.target as unknown as Map;
+    updateDataForMapPosition(map);
+
+}
+
+function updateDataForMapPosition(map: Map) {
+    const lat = map.getCenter().lat,
         lon = map.getCenter().lng,
         zoom = map.getZoom();
-    console.info("mapMoveEndHandler", { e, lat, lon, zoom });
-    updateDataSource(e);
+    console.info("mapMoveEndHandler", { lat, lon, zoom });
+    updateDataSource(map);
     setFragmentParams(lon, lat, zoom, undefined);
 
     const colorSchemeContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
@@ -716,13 +728,12 @@ function mapMoveEndHandler(e) {
 
 /**
  * 
- * @param {Map} map
  * @see https://maplibre.org/maplibre-gl-js-docs/example/geocoder/
  * @see https://github.com/maplibre/maplibre-gl-geocoder
  * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
  * @see https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
  */
-function setupGeocoder(map) {
+function setupGeocoder(map: Map) {
     let control;
     if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
         console.info("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
@@ -731,10 +742,10 @@ function setupGeocoder(map) {
             collapsed: true,
             mapboxgl: mapboxgl
         });
-    } else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
+    } /*else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
         console.info("Using MaptilerGeocoderControl", { maplibregl, MaptilerGeocoderControl, maptiler_key });
         control = new MaptilerGeocoderControl(maptiler_key);
-    } else {
+    }*/ else {
         console.warn("No geocoding plugin available");
     }
 
@@ -746,33 +757,28 @@ function setupGeocoder(map) {
 /**
  * Handles the change of base map
  * 
- * @param {Event} e 
  * @see https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
  * @see https://github.com/mapbox/mapbox-gl-js/issues/3979
  */
-function mapStyleLoadHandler(e) {
+function mapStyleLoadHandler(e: Event) {
     console.info("mapStyleLoadHandler", e);
-    setCulture(e.target);
-    updateDataSource(e);
+    const map = e.target as unknown as Map;
+    setCulture(map);
+    updateDataSource(map);
 }
 
 /**
  * Handles the completion of map loading
- * 
- * @param {Event} e 
  */
-function mapLoadedHandler(e) {
+function mapLoadedHandler(e: Event) {
     console.info("mapLoadedHandler", e);
-    const map = e.target;
-
-    document.getElementById('map').style.visibility = 'visible';
-    document.getElementById('map_static_preview').style.visibility = 'hidden';
+    const map = e.target as unknown as Map;
 
     setCulture(map);
     map.on("style.load", mapStyleLoadHandler)
     //openInfoWindow(map);
 
-    mapMoveEndHandler(e);
+    updateDataForMapPosition(map);
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
     //map.on('idle', updateDataSource); //! Called continuously, avoid
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
@@ -780,7 +786,7 @@ function mapLoadedHandler(e) {
     // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
     //map.on('zoomend', updateDataSource); // moveend is sufficient
 
-    setupGeocoder(map, maptiler_key);
+    setupGeocoder(map);
 
     // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
     map.addControl(new NavigationControl({
@@ -818,12 +824,9 @@ function mapLoadedHandler(e) {
 /**
  * Initializes the low-zoom-level clustered layer.
  * 
- * @param {Map} map
- * @param {number} maxZoom
- * 
  * @see prepareClusteredLayers
  */
-function prepareGlobalLayers(map, maxZoom) {
+function prepareGlobalLayers(map: Map, maxZoom: number): void {
     prepareClusteredLayers(
         map,
         'global',
@@ -838,11 +841,8 @@ function prepareGlobalLayers(map, maxZoom) {
 
 /**
  * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
- * 
- * @param {mixed} arr 
- * @returns {boolean}
  */
-function someArrayItemStartWithName(arr) {
+function someArrayItemStartWithName(arr: any): boolean {
     return Array.isArray(arr) && arr.some(
         x => (typeof x === 'string' && x.startsWith('name')) || someArrayItemStartWithName(x)
     );
@@ -850,12 +850,8 @@ function someArrayItemStartWithName(arr) {
 
 /**
  * Checks if a map symbol layer is also a name layer
- * 
- * @param {string} layerId 
- * @param {Map} map
- * @returns {boolean}
  */
-function isNameSymbolLayer(layerId, map) {
+function isNameSymbolLayer(layerId: string, map: Map): boolean {
     const textField = map.getLayoutProperty(layerId, 'text-field'),
         isSimpleName = textField === '{name:latin}';
     return isSimpleName || someArrayItemStartWithName(textField);
@@ -864,14 +860,12 @@ function isNameSymbolLayer(layerId, map) {
 /**
  * Set the application culture for i18n & l10n
  * 
- * @param {Map} map
- * @return {void}
  * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
  * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
  */
-function setCulture(map) {
+function setCulture(map: Map) {
     const culture = document.documentElement.lang,
         language = culture.split('-')[0];
 
@@ -889,11 +883,10 @@ function setCulture(map) {
 
 /**
  * 
- * @param {Event} e The event to handle 
  * @see https://maplibre.org/maplibre-gl-js-docs/example/check-for-support/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
  */
-function initPage(e) {
+function initPage(e: Event) {
     console.info("initPage", e);
     //document.addEventListener('deviceready', () => window.addEventListener('backbutton', backButtonHandler, false));
     //setCulture(); //! Map hasn't yet loaded, setLayoutProperty() won't work and labels won't be localized

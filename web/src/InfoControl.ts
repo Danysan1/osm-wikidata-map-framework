@@ -1,20 +1,23 @@
 //import { Popup } from 'maplibre-gl';
-import { Popup } from 'mapbox-gl';
+import { IControl, Map, Popup } from 'mapbox-gl';
 
 /**
  * Opens the information intro window
  * 
  * @param {Map} map 
  */
- function openInfoWindow(map) {
+function openInfoWindow(map: Map) {
+    const content = document.getElementById("intro")?.cloneNode(true);
+    if (!content)
+        throw new Error("Failed cloning info popup content");
     new Popup({
-            closeButton: true,
-            closeOnClick: true,
-            closeOnMove: true,
-            maxWidth: 'none',
-            className: "oem_info_popup"
-        }).setLngLat(map.getBounds().getNorthWest())
-        .setDOMContent(document.getElementById("intro").cloneNode(true))
+        closeButton: true,
+        closeOnClick: true,
+        closeOnMove: true,
+        maxWidth: 'none',
+        className: "oem_info_popup"
+    }).setLngLat(map.getBounds().getNorthWest())
+        .setDOMContent(content)
         .addTo(map);
 }
 
@@ -24,8 +27,8 @@ import { Popup } from 'mapbox-gl';
  * Control implemented as ES6 class
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  */
- class InfoControl {
-    onAdd(map) {
+class InfoControl implements IControl {
+    onAdd(map: Map) {
         const container = document.createElement('div');
         container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
 
@@ -38,6 +41,10 @@ import { Popup } from 'mapbox-gl';
 
         return container;
     }
+
+    onRemove(map: Map): void {
+        //
+    }
 }
 
-export {openInfoWindow, InfoControl};
+export { openInfoWindow, InfoControl };

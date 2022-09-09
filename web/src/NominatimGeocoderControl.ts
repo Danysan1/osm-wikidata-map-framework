@@ -1,5 +1,5 @@
-import MaplibreGeocoder from '@maplibre/maplibre-gl-geocoder';
-import '@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css';
+/* import MaplibreGeocoder from '@maplibre/maplibre-gl-geocoder';
+import '@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css'; */
 
 /**
  * Let the user search locations by name
@@ -8,14 +8,14 @@ import '@maplibre/maplibre-gl-geocoder/dist/maplibre-gl-geocoder.css';
  * Control implemented as ES6 class
  * @see https://maplibre.org/maplibre-gl-js-docs/example/geocoder/
  */
-export class NominatimGeocoderControl extends MaplibreGeocoder {
+/* export class NominatimGeocoderControl extends MaplibreGeocoder { */
     /**
      * 
      * @param {object} maplibreGeocoderOptions 
      * @see https://github.com/maplibre/maplibre-gl-geocoder
      * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
      */
-    constructor(maplibreGeocoderOptions) {
+/*     constructor(maplibreGeocoderOptions) {
         super({ forwardGeocode: this.nominatimForwardGeocode }, maplibreGeocoderOptions)
     }
 
@@ -57,4 +57,4 @@ export class NominatimGeocoderControl extends MaplibreGeocoder {
             features: features
         };
     }
-}
+} */

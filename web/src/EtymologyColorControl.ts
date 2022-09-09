@@ -1,22 +1,21 @@
+import { IControl, Expression, Map } from 'mapbox-gl';
+
+// https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
+import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
+
 import { logErrorMessage } from './sentry';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 
-let chart;
+interface ColorScheme {
+    id: string;
+    text: string;
+    color: string | Expression;
+    colorField: string | null;
+    urlCode: string | null;
+}
 
-/**
- * @typedef {Object} ColorScheme
- * @property {string} id
- * @property {string} text
- * @property {string|string[]|string[][]} color
- * @property {?string} colorField
- * @property {?string} urlCode
- */
-
-/**
- * @var {ColorScheme[]} colorSchemes
- */
-const colorSchemes = [
-    { id: "blue", text: 'Uniform blue', color: '#3bb2d0' },
+const colorSchemes: ColorScheme[] = [
+    { id: "blue", text: 'Uniform blue', color: '#3bb2d0', colorField: null, urlCode: null },
     {
         id: "gender",
         colorField: 'gender_color',
@@ -31,10 +30,16 @@ const colorSchemes = [
         color: ["coalesce", ['get', 'type_color'], "#223b53"],
         urlCode: "typeStats",
     },
-    { id: "black", text: 'Uniform black', color: '#223b53' },
-    { id: "red", text: 'Uniform red', color: '#e55e5e' },
-    { id: "orange", text: 'Uniform orange', color: '#fbb03b' },
+    { id: "black", text: 'Uniform black', color: '#223b53', colorField: null, urlCode: null },
+    { id: "red", text: 'Uniform red', color: '#e55e5e', colorField: null, urlCode: null },
+    { id: "orange", text: 'Uniform orange', color: '#fbb03b', colorField: null, urlCode: null },
 ];
+
+interface EtymologyStat {
+    color: string;
+    name: string;
+    count: number;
+}
 
 /**
  * Let the user choose a color scheme
@@ -47,22 +52,28 @@ const colorSchemes = [
  * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-1/
  * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-2/
  **/
-class EtymologyColorControl {
-    /**
-     * 
-     * @param {string} startColorScheme 
-     */
-    constructor(startColorScheme) {
+class EtymologyColorControl implements IControl {
+    private _startColorScheme: string;
+    private _chartInitInProgress: boolean;
+    private _map: Map | null;
+    private _container: HTMLDivElement | null;
+    private _ctrlDropDown: HTMLSelectElement | null;
+    private _chartXHR: XMLHttpRequest | null;
+    private _chartDomElement: HTMLCanvasElement | null;
+    private _chartJsObject: Chart | null;
+
+    constructor(startColorScheme: string) {
         this._startColorScheme = startColorScheme;
         this._chartInitInProgress = false;
+        this._map = null;
+        this._container = null;
+        this._ctrlDropDown = null;
+        this._chartXHR = null;
+        this._chartDomElement = null;
+        this._chartJsObject = null;
     }
 
-    /**
-     * 
-     * @param {Map} map 
-     * @returns {HTMLElement}
-     */
-    onAdd(map) {
+    onAdd(map: Map): HTMLElement {
         this._map = map;
 
         this._container = document.createElement('div');
@@ -107,7 +118,7 @@ class EtymologyColorControl {
             if (scheme.id == this._startColorScheme) {
                 option.selected = true;
             }
-            this._ctrlDropDown.appendChild(option);
+            this._ctrlDropDown?.appendChild(option);
         });
         this._ctrlDropDown.dispatchEvent(new Event("change"))
 
@@ -117,27 +128,27 @@ class EtymologyColorControl {
     }
 
     onRemove() {
-        this._container.parentNode.removeChild(this._container);
-        this._map = undefined;
+        this._container?.parentNode?.removeChild(this._container);
+        this._map = null;
     }
 
-    btnClickHandler(event) {
+    btnClickHandler(event: MouseEvent) {
         console.info("EtymologyColorControl button click", event);
-        this._ctrlDropDown.className = 'visibleDropDown';
+        if (this._ctrlDropDown)
+            this._ctrlDropDown.className = 'visibleDropDown';
     }
 
     /**
      * @returns {string} The current color scheme
      */
-    getColorScheme() {
-        return this._ctrlDropDown?.value;
+    getColorScheme(): string {
+        const colorScheme = this._ctrlDropDown?.value;
+        if (typeof colorScheme != 'string')
+            throw new Error("Bad dropdown or dropdown value");
+        return colorScheme;
     }
 
-    /**
-     * @param {string} colorScheme 
-     * @returns {void}
-     */
-    setColorScheme(colorScheme) {
+    setColorScheme(colorScheme: string) {
         console.info("EtymologyColorControl setColorScheme", { colorScheme });
         if (!this._ctrlDropDown || !this._ctrlDropDown.options) {
             console.warn("setColorScheme: dropdown not yet initialized");
@@ -145,7 +156,7 @@ class EtymologyColorControl {
             Array.prototype.forEach(option => {
                 if (option.value === colorScheme) {
                     option.selected = true;
-                    this._ctrlDropDown.dispatchEvent(new Event("change"));
+                    this._ctrlDropDown?.dispatchEvent(new Event("change"));
                     return;
                 }
             }, this._ctrlDropDown.options);
@@ -153,15 +164,13 @@ class EtymologyColorControl {
         }
     }
 
-    /**
-     * 
-     * @param {Event} event
-     * @returns {void}
-     */
-    dropDownClickHandler(event) {
-        const colorScheme = event.target.value,
+    dropDownClickHandler(event: Event) {
+        const dropDown = event.target;
+        if (!(dropDown instanceof HTMLSelectElement))
+            throw new Error("Bad dropdown");
+        const colorScheme = dropDown.value,
             colorSchemeObj = colorSchemes.find(scheme => scheme.id == colorScheme);
-        let color;
+        let color: string | Expression;
 
         if (colorSchemeObj) {
             color = colorSchemeObj.color;
@@ -177,7 +186,7 @@ class EtymologyColorControl {
             ["wikidata_layer_polygon_fill", 'fill-color'],
             ["wikidata_layer_polygon_border", 'line-color'],
         ].forEach(([layerID, property]) => {
-            if (this._map.getLayer(layerID)) {
+            if (this._map?.getLayer(layerID)) {
                 this._map.setPaintProperty(layerID, property, color);
             } else {
                 console.warn("Layer does not exist, can't set property", { layerID, property, color });
@@ -190,108 +199,87 @@ class EtymologyColorControl {
         //updateDataSource(event);
     }
 
-    /**
-     * @param {Event} event
-     * @returns {void}
-     */
-    updateChart(event) {
+    updateChart(event: Event) {
         if (!this._ctrlDropDown) {
             logErrorMessage("EtymologyColorControl updateChart: dropodown not inizialized");
             return;
-        }
+        } else {
+            const dropdown = this._ctrlDropDown,
+                colorScheme = colorSchemes.find(scheme => scheme.id == dropdown.value),
+                map = event.target as unknown as Map,
+                bounds = map.getBounds ? map.getBounds() : null;
+            //console.info("updateChart", { event, colorScheme });
 
-        const colorScheme = colorSchemes.find(scheme => scheme.id == this._ctrlDropDown.value),
-            map = event.target,
-            bounds = map.getBounds ? map.getBounds() : null;
-        //console.info("updateChart", { event, colorScheme });
+            if (!bounds) {
+                //console.warn("EtymologyColorControl updateChart: missing bounds");
+            } else if (colorScheme && colorScheme.urlCode) {
+                console.info("updateChart main: URL code", { colorScheme });
+                if (this._chartXHR)
+                    this._chartXHR.abort();
 
-        if (!bounds) {
-            //console.warn("EtymologyColorControl updateChart: missing bounds");
-        } else if (colorScheme && colorScheme.urlCode) {
-            let data = {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [],
-                }]
-            };
-
-            console.info("updateChart main: URL code", { colorScheme });
-            if (this._chartXHR)
-                this._chartXHR.abort();
-
-            const southWest = bounds.getSouthWest(),
-                minLat = southWest.lat,
-                minLon = southWest.lng,
-                northEast = bounds.getNorthEast(),
-                maxLat = northEast.lat,
-                maxLon = northEast.lng,
-                language = document.documentElement.lang,
-                queryParams = {
-                    from: "bbox",
-                    to: colorScheme.urlCode,
-                    minLat: Math.floor(minLat * 1000) / 1000, // 0.1234 => 0.124 
-                    minLon: Math.floor(minLon * 1000) / 1000,
-                    maxLat: Math.ceil(maxLat * 1000) / 1000, // 0.1234 => 0.123
-                    maxLon: Math.ceil(maxLon * 1000) / 1000,
-                    language,
-                },
-                queryString = new URLSearchParams(queryParams).toString(),
-                stats_url = './stats.php?' + queryString,
-                xhr = new XMLHttpRequest();
-            xhr.onreadystatechange = (e) => {
-                const readyState = xhr.readyState,
-                    status = xhr.status;
-                if (readyState == XMLHttpRequest.DONE) {
-                    if (status == 200) {
-                        JSON.parse(xhr.responseText).forEach(row => {
-                            data.datasets[0].backgroundColor.push(row.color);
-                            data.labels.push(row["name"]);
-                            data.datasets[0].data.push(row["count"]);
-                        });
-                        this.setChartData(data);
-                    } else if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-                        console.info("XHR aborted", { xhr, readyState, status, e });
-                    } else {
-                        console.error("XHR error", { xhr, readyState, status, e });
-                        //if (event.type && event.type == 'change')
-                        //    this._ctrlDropDown.className = 'hiddenElement';
-                        this.removeChart();
+                const southWest = bounds.getSouthWest(),
+                    minLat = southWest.lat,
+                    minLon = southWest.lng,
+                    northEast = bounds.getNorthEast(),
+                    maxLat = northEast.lat,
+                    maxLon = northEast.lng,
+                    language = document.documentElement.lang,
+                    queryParams = {
+                        from: "bbox",
+                        to: colorScheme.urlCode,
+                        minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
+                        minLon: (Math.floor(minLon * 1000) / 1000).toString(),
+                        maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
+                        maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
+                        language,
+                    },
+                    queryString = new URLSearchParams(queryParams).toString(),
+                    stats_url = './stats.php?' + queryString,
+                    xhr = new XMLHttpRequest();
+                xhr.onreadystatechange = (e) => {
+                    const readyState = xhr.readyState,
+                        status = xhr.status,
+                        data = {
+                            labels: [],
+                            datasets: [{
+                                data: [],
+                                backgroundColor: [],
+                            }]
+                        } as ChartData<"pie">;
+                    if (readyState == XMLHttpRequest.DONE) {
+                        if (status == 200) {
+                            JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
+                                (data.datasets[0].backgroundColor as string[]).push(row.color);
+                                data.labels?.push(row["name"]);
+                                data.datasets[0].data.push(row["count"]);
+                            });
+                            this.setChartData(data);
+                        } else if (readyState == XMLHttpRequest.UNSENT || status == 0) {
+                            console.info("XHR aborted", { xhr, readyState, status, e });
+                        } else {
+                            console.error("XHR error", { xhr, readyState, status, e });
+                            //if (event.type && event.type == 'change')
+                            //    this._ctrlDropDown.className = 'hiddenElement';
+                            this.removeChart();
+                        }
                     }
                 }
+                xhr.open('GET', stats_url, true);
+                xhr.send();
+                this._chartXHR = xhr;
+            } else {
+                if (event.type && event.type == 'change')
+                    this._ctrlDropDown.className = 'hiddenElement';
+                this.removeChart();
             }
-            xhr.open('GET', stats_url, true);
-            xhr.send();
-            this._chartXHR = xhr;
-        } else {
-            if (event.type && event.type == 'change')
-                this._ctrlDropDown.className = 'hiddenElement';
-            this.removeChart();
         }
-    }
-
-    createChartFromLegend(legend) {
-        let data = {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [],
-            }]
-        };
-        legend.forEach(row => {
-            data.datasets[0].backgroundColor.push(row[0]);
-            data.labels.push(row[1]);
-            data.datasets[0].data.push(0); // dummy data
-        });
-        this.setChartData(data);
     }
 
     /**
      * 
-     * @param {object} data 
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
-    setChartData(data) {
+    setChartData(data: ChartData<"pie">) {
         console.info("setChartData", {
             container: this._container,
             chartDomElement: this._chartDomElement,
@@ -309,34 +297,31 @@ class EtymologyColorControl {
             console.info("setChartData: chart already loading");
         } else {
             this._chartInitInProgress = true;
-            if (typeof chart == "function") {
-                this.initChart(data);
-            } else {
-                console.info("setChartData: Loading chart.js and initializing the chart");
-                // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
-                import('chart.js').then(({ Chart, ArcElement, PieController, Tooltip, Legend }) => {
-                    chart = Chart;
-                    Chart.register(ArcElement, PieController, Tooltip, Legend);
-                    this.initChart(data);
-                });
-            }
+            console.info("setChartData: Loading chart.js and initializing the chart");
+            this.initChart(data);
         }
     }
 
-    initChart(data) {
+    initChart(data: ChartData<"pie">) {
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
-        this._container.appendChild(this._chartDomElement);
+        if (this._container)
+            this._container.appendChild(this._chartDomElement);
+        else
+            throw new Error("Missing container");
         const ctx = this._chartDomElement.getContext('2d');
+        if(!ctx)
+            throw new Error("Missing context");
 
-        this._chartJsObject = new chart(ctx, {
+        Chart.register(ArcElement, PieController, Tooltip, Legend);
+        this._chartJsObject = new Chart(ctx, {
             type: "pie",
             data: data,
-            options: {
+            /*options: {
                 animation: {
                     animateScale: true,
                 }
-            }
+            }*/
         });
         this._chartInitInProgress = false;
     }
@@ -344,9 +329,9 @@ class EtymologyColorControl {
     removeChart() {
         if (this._chartDomElement) {
             try {
-                this._container.removeChild(this._chartDomElement);
-                this._chartDomElement = undefined;
-                this._chartJsObject = undefined;
+                this._container?.removeChild(this._chartDomElement);
+                this._chartDomElement = null;
+                this._chartJsObject = null;
             } catch (error) {
                 console.warn("Error removing old chart", { error, container: this._container, chart: this._chartDomElement });
             }
@@ -362,7 +347,7 @@ function getCurrentColorScheme() {
         colorScheme = colorSchemes.find(scheme => scheme.id == colorSchemeId);
     if (!colorScheme) {
         colorScheme = colorSchemes[0];
-        console.warn("getCurrentColorScheme: error getting color scheme, using fallback", {colorSchemeId, colorScheme});
+        console.warn("getCurrentColorScheme: error getting color scheme, using fallback", { colorSchemeId, colorScheme });
     }
     return colorScheme;
 }
