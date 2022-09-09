@@ -1,4 +1,4 @@
-import { logErrorMessage } from './sentry';
+import { logErrorMessage } from './monitoring';
 import { Map } from 'mapbox-gl';
 
 interface BackgroundStyle {

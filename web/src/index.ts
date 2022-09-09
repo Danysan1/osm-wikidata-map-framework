@@ -8,40 +8,15 @@ import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { EtymologyMap } from './EtymologyMap';
-import { logErrorMessage, initSentry } from './sentry';
+import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { getCorrectFragmentParams } from './fragment';
 import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
 import { getConfig } from './config';
 import './style.css';
 
 initSentry();
-
-const google_analytics_id = getConfig("google_analytics_id"),
-    matomo_domain = getConfig("matomo_domain"),
-    matomo_id = getConfig("matomo_id");
-
-const gtag: Gtag.Gtag = function () { (window as any).dataLayer.push(arguments); }
-if (google_analytics_id) {
-    console.info("Initializing Google Analytics", { google_analytics_id });
-    (window as any).dataLayer = (window as any).dataLayer || [];
-    gtag('js', new Date());
-    gtag('config', google_analytics_id);
-}
-
-if (matomo_domain && matomo_id) {
-    console.info("Initializing Matomo", { matomo_domain, matomo_id });
-    var _paq = (window as any)._paq = (window as any)._paq || [];
-    /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
-    _paq.push(['trackPageView']);
-    _paq.push(['enableLinkTracking']);
-    (function () {
-        var u = `https://${matomo_domain}/`;
-        _paq.push(['setTrackerUrl', u + 'matomo.php']);
-        _paq.push(['setSiteId', matomo_id]);
-        var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
-        g.async = true; g.src = `//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode?.insertBefore(g, s);
-    })();
-}
+initGoogleAnalytics();
+initMatomo();
 
 const maptiler_key = getConfig("maptiler-key"),
     mapbox_token = getConfig("mapbox-token"),
@@ -115,8 +90,8 @@ function initMap() {
  */
 function initPage(e: Event) {
     if (!supported()) {
-        alert('Your browser is not supported');
         logErrorMessage("Device/Browser does not support Maplibre/Mapbox GL JS");
+        alert('Your browser is not supported');
     } else {
         initMap();
     }

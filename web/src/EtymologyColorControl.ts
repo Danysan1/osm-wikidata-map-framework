@@ -3,7 +3,7 @@ import { IControl, Expression, Map } from 'mapbox-gl';
 // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 
-import { logErrorMessage } from './sentry';
+import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 
 interface ColorScheme {

@@ -8,13 +8,6 @@ const default_center_lat_raw = getConfig("default-center-lat"),
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
     defaultColorScheme = getConfig("default-color-scheme");
 
-console.info("common start", {
-    default_center_lon,
-    default_center_lat,
-    default_zoom,
-    defaultColorScheme,
-});
-
 interface FragmentParams {
     lon: number | null;
     lat: number | null;

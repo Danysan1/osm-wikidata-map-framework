@@ -4,7 +4,7 @@ import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, Fullscre
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
 
-import { logErrorMessage } from './sentry';
+import { logErrorMessage } from './monitoring';
 import { CorrectFragmentParams, getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { BackgroundStyle, BackgroundStyleControl } from './BackgroundStyleControl';
 import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
