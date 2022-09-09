@@ -17,15 +17,15 @@ function initSentry() {
     }
 }
 
-function logErrorMessage(message: string, level: string = "error", extra: object | undefined = undefined) {
+function logErrorMessage(message: string, level: SeverityLevel = "error", extra: object | undefined = undefined) {
     if (extra instanceof Error) {
         captureException(extra, {
-            level: (level as SeverityLevel),
+            level: level,
             extra: ({ message } as Extras)
         });
     } else {
         captureMessage(message, {
-            level: (level as SeverityLevel),
+            level: level,
             extra: (extra as Extras)
         });
     }

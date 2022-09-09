@@ -42,8 +42,8 @@ interface Etymology {
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
  */
 function formatDate(date: string | Date, precision: number | null): string {
-    let dateObject: Date,
-        options: Intl.DateTimeFormatOptions = {};
+    let dateObject: Date;
+    const options: Intl.DateTimeFormatOptions = {};
 
     if (date instanceof Date)
         dateObject = date;

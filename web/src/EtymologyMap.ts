@@ -216,7 +216,7 @@ export class EtymologyMap extends Map {
      */
     prepareWikidataLayers(wikidata_url: string, minZoom: number) {
         const colorSchemeColor = getCurrentColorScheme().color;
-        let sourceObject = this.addGeoJSONSource(
+        this.addGeoJSONSource(
             "wikidata_source",
             {
                 type: 'geojson',
@@ -372,7 +372,7 @@ export class EtymologyMap extends Map {
         }
     }
 
-    static clusterPaintFromField(field: string, minThreshold: number = 1000, maxThreshold: number = 10000): CirclePaint {
+    static clusterPaintFromField(field: string, minThreshold = 1000, maxThreshold = 10000): CirclePaint {
         return {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
             // with three steps to implement three types of circles:
@@ -408,8 +408,8 @@ export class EtymologyMap extends Map {
     }
 
     addGeoJSONSource(id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
-        let sourceObject = this.getSource(id) as GeoJSONSource | null,
-            oldSourceDataURL = (!!sourceObject && typeof (sourceObject as any)._data === 'string') ? (sourceObject as any)._data : null,
+        let sourceObject = this.getSource(id) as GeoJSONSource | null;
+        const oldSourceDataURL = (!!sourceObject && typeof (sourceObject as any)._data === 'string') ? (sourceObject as any)._data : null,
             sourceUrlChanged = oldSourceDataURL != sourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
             console.info("prepareClusteredLayers: updating source", {
@@ -457,22 +457,22 @@ export class EtymologyMap extends Map {
         const sourceName = prefix + '_source',
             clusterLayerName = prefix + '_layer_cluster',
             countLayerName = prefix + '_layer_count',
-            pointLayerName = prefix + '_layer_point';
-        let sourceObject = this.addGeoJSONSource(
-            sourceName,
-            {
-                type: 'geojson',
-                buffer: 256,
-                data: sourceDataURL,
-                cluster: true,
-                maxzoom: maxZoom,
-                //clusterMaxZoom: maxZoom, // Max zoom to cluster points on
-                clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
-                clusterProperties: clusterProperties,
-                clusterMinPoints: 1
-            },
-            sourceDataURL
-        );
+            pointLayerName = prefix + '_layer_point',
+            sourceObject = this.addGeoJSONSource(
+                sourceName,
+                {
+                    type: 'geojson',
+                    buffer: 256,
+                    data: sourceDataURL,
+                    cluster: true,
+                    maxzoom: maxZoom,
+                    //clusterMaxZoom: maxZoom, // Max zoom to cluster points on
+                    clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
+                    clusterProperties: clusterProperties,
+                    clusterMinPoints: 1
+                },
+                sourceDataURL
+            );
 
         if (!this.getLayer(clusterLayerName)) {
             const layerDefinition = {

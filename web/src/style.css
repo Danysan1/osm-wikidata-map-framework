@@ -40,6 +40,7 @@ div.mapboxgl-popup.oem_info_popup {
 
 div.maplibregl-popup-content,
 div.mapboxgl-popup-content {
+    width: -moz-fit-content;
     width: fit-content;
     /*width: 50em;*/
     max-width: 100%;
@@ -317,8 +318,8 @@ button.mapboxgl-popup-close-button:hover {
     /*position: relative;*/
     text-decoration: none;
     transition: all 250ms;
-    user-select: none;
     -webkit-user-select: none;
+    user-select: none;
     touch-action: manipulation;
     vertical-align: baseline;
     width: auto;

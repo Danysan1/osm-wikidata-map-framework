@@ -39,8 +39,8 @@ function getFragmentParams(): FragmentParams {
  * @returns {string} The fragment actually set
  */
 function setFragmentParams(lon: number | undefined, lat: number | undefined, zoom: number | undefined, colorScheme: string | undefined): string {
-    const currentParams = getFragmentParams()
-    let p = currentParams;
+    const currentParams = getFragmentParams(),
+        p = currentParams;
 
     if (typeof lon == 'number') p.lon = parseFloat(lon.toFixed(3));
     if (typeof lat == 'number') p.lat = parseFloat(lat.toFixed(3));
@@ -61,7 +61,7 @@ interface CorrectFragmentParams {
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {
-    let p = getFragmentParams();
+    const p = getFragmentParams();
     if ((p.lat !== null && p.lat < -90) || (p.lat !== null && p.lat > 90)) {
         console.error("Invalid latitude", p.lat);
         p.lat = null;

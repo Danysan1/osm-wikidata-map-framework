@@ -343,8 +343,8 @@ class EtymologyColorControl implements IControl {
  * @return {ColorScheme}
  */
 function getCurrentColorScheme() {
-    let colorSchemeId = getCorrectFragmentParams().colorScheme,
-        colorScheme = colorSchemes.find(scheme => scheme.id == colorSchemeId);
+    const colorSchemeId = getCorrectFragmentParams().colorScheme;
+    let colorScheme = colorSchemes.find(scheme => scheme.id == colorSchemeId);
     if (!colorScheme) {
         colorScheme = colorSchemes[0];
         console.warn("getCurrentColorScheme: error getting color scheme, using fallback", { colorSchemeId, colorScheme });

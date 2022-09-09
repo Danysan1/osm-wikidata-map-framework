@@ -6,7 +6,7 @@
  * @param {number} timeout The timeout in milliseconds
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
-export function showSnackbar(message: string, color: string = "lightcoral", timeout: number = 3000) {
+export function showSnackbar(message: string, color = "lightcoral", timeout = 3000) {
     const x = document.createElement("div");
     document.body.appendChild(x);
     //const x = document.getElementById("snackbar");
