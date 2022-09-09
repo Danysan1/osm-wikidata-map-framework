@@ -1,12 +1,47 @@
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 
+interface Etymology {
+    birth_date: string | null;
+    birth_date_precision: number | null;
+    birth_place: string | null;
+    citizenship: string | null;
+    commons: string | null;
+    death_date: string | null;
+    death_date_precision: number | null;
+    death_place: string | null;
+    description: string | null;
+    end_date: string | null;
+    end_date_precision: number | null;
+    et_id: number | null;
+    event_date: string | null;
+    event_date_precision: number | null;
+    event_place: string | null;
+    from_osm: boolean;
+    from_osm_id: number;
+    from_osm_type: string;
+    from_wikidata: boolean;
+    from_wikidata_cod: string | null;
+    from_wikidata_prop: string | null;
+    gender: string | null;
+    name: string | null;
+    occupations: string | null;
+    pictures: ImageResponse[] | null;
+    prizes: string | null;
+    start_date: string | null;
+    start_date_precision: number | null;
+    wd_id: string | null;
+    wikidata: string | null;
+    wikipedia: string | null;
+    wkt_coords: string | null;
+}
+
 /**
  * 
  * @param {number} precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
  */
-function formatDate(date: string|Date, precision:number): string {
+function formatDate(date: string | Date, precision: number | null): string {
     let dateObject: Date,
         options: Intl.DateTimeFormatOptions = {};
 
@@ -37,37 +72,41 @@ function formatDate(date: string|Date, precision:number): string {
     return out;
 }
 
-export function etymologyToDomElement(ety: any): HTMLElement {
+function etymologyToDomElement(ety: Etymology): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
-    if(!(etymology_template instanceof HTMLTemplateElement))
+    if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
     const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement,
-        etymology_name = etyDomElement.querySelector('.etymology_name') as HTMLElement,
-        etymology_description = etyDomElement.querySelector('.etymology_description') as HTMLElement,
-        wikidata_button = etyDomElement.querySelector('a.wikidata_button') as HTMLAnchorElement,
-        wikipedia_button = etyDomElement.querySelector('a.wikipedia_button') as HTMLAnchorElement,
-        commons_button = etyDomElement.querySelector('a.commons_button') as HTMLAnchorElement,
-        location_button = etyDomElement.querySelector('a.subject_location_button') as HTMLAnchorElement,
-        start_end_date = etyDomElement.querySelector('.start_end_date') as HTMLElement,
-        event_place = etyDomElement.querySelector('.event_place') as HTMLElement,
-        citizenship = etyDomElement.querySelector('.citizenship') as HTMLElement,
-        gender = etyDomElement.querySelector('.gender') as HTMLElement,
-        occupations = etyDomElement.querySelector('.occupations') as HTMLElement,
-        prizes = etyDomElement.querySelector('.prizes') as HTMLElement,
-        pictures = etyDomElement.querySelector('.pictures') as HTMLElement,
-        src_osm = etyDomElement.querySelector('a.etymology_src_osm') as HTMLAnchorElement,
-        src_wd = etyDomElement.querySelector('a.etymology_src_wd') as HTMLAnchorElement,
-        src_wd_wrapper = etyDomElement.querySelector('.etymology_src_wd_wrapper') as HTMLElement,
-        src_wrapper = etyDomElement.querySelector('.etymology_src_wrapper') as HTMLElement;
+        etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name'),
+        etymology_description = etyDomElement.querySelector<HTMLElement>('.etymology_description'),
+        wikidata_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikidata_button'),
+        wikipedia_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikipedia_button'),
+        commons_button = etyDomElement.querySelector<HTMLAnchorElement>('.commons_button'),
+        location_button = etyDomElement.querySelector<HTMLAnchorElement>('.subject_location_button'),
+        start_end_date = etyDomElement.querySelector<HTMLElement>('.start_end_date'),
+        event_place = etyDomElement.querySelector<HTMLElement>('.event_place'),
+        citizenship = etyDomElement.querySelector<HTMLElement>('.citizenship'),
+        gender = etyDomElement.querySelector<HTMLElement>('.gender'),
+        occupations = etyDomElement.querySelector<HTMLElement>('.occupations'),
+        prizes = etyDomElement.querySelector<HTMLElement>('.prizes'),
+        pictures = etyDomElement.querySelector<HTMLDivElement>('.pictures'),
+        src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
+        src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
+        src_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_wd_wrapper'),
+        src_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_wrapper');
 
-    if (ety.name) {
+    if (!etymology_name) {
+        console.warn("Missing etymology_name");
+    } else if (ety.name) {
         etymology_name.innerText = ety.name;
         etymology_name.style.display = 'block';
     } else {
         etymology_name.style.display = 'none';
     }
 
-    if (ety.description) {
+    if (!etymology_description) {
+        console.warn("Missing etymology_description");
+    } else if (ety.description) {
         etymology_description.innerText = ety.description;
         etymology_description.style.display = 'block';
     } else {
@@ -115,7 +154,9 @@ export function etymologyToDomElement(ety: any): HTMLElement {
         }
     }
 
-    if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
+    if (!start_end_date) {
+        console.warn("Missing start_end_date");
+    } else if (ety.birth_date || ety.birth_place || ety.death_date || ety.death_place) {
         const birth_date = ety.birth_date ? formatDate(ety.birth_date, ety.birth_date_precision) : "?",
             birth_place = ety.birth_place ? ety.birth_place : "?",
             death_date = ety.death_date ? formatDate(ety.death_date, ety.death_date_precision) : "?",
@@ -132,37 +173,49 @@ export function etymologyToDomElement(ety: any): HTMLElement {
         start_end_date.style.display = 'none';
     }
 
-    if (ety.event_place) {
+    if (!event_place) {
+        console.warn("Missing event_place");
+    } else if (ety.event_place) {
         event_place.innerText = '📍 ' + ety.event_place;
     } else {
         event_place.style.display = 'none';
     }
 
-    if (ety.citizenship) {
+    if (!citizenship) {
+        console.warn("Missing citizenship");
+    } else if (ety.citizenship) {
         citizenship.innerText = '🌍 ' + ety.citizenship;
     } else {
         citizenship.style.display = 'none';
     }
 
-    if (ety.gender) {
+    if (!gender) {
+        console.warn("Missing gender");
+    } else if (ety.gender) {
         gender.innerText = '⚧️ ' + ety.gender;
     } else {
         gender.style.display = 'none';
     }
 
-    if (ety.occupations) {
+    if (!occupations) {
+        console.warn("Missing occupations");
+    } else if (ety.occupations) {
         occupations.innerText = '🛠️ ' + ety.occupations;
     } else {
         occupations.style.display = 'none';
     }
 
-    if (ety.prizes) {
+    if (!prizes) {
+        console.warn("Missing prizes");
+    } else if (ety.prizes) {
         prizes.innerText = '🏆 ' + ety.prizes;
     } else {
         prizes.style.display = 'none';
     }
 
-    if (ety.pictures) {
+    if (!pictures) {
+        console.warn("Missing pictures");
+    } else if (ety.pictures) {
         ety.pictures.forEach(function (img: ImageResponse, n: number) {
             if (n < 5) {
                 pictures.appendChild(imageToDomElement(img));
@@ -172,18 +225,20 @@ export function etymologyToDomElement(ety: any): HTMLElement {
         pictures.style.display = 'none';
     }
 
-    if (ety.from_osm) {
+    if (src_osm && src_wd_wrapper && ety.from_osm) {
         src_osm.href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
         src_wd_wrapper.style.display = 'none';
-    } else if (ety.from_wikidata) {
+    } else if (src_osm && src_wd && src_wd_wrapper && ety.from_wikidata) {
         src_osm.href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
         src_wd_wrapper.style.display = 'inline';
         src_wd.href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
     } else if (!src_wrapper) {
-        console.warn("Missing src_wrapper", {ety, src_osm, src_wd, src_wd_wrapper, src_wrapper});
+        console.warn("Missing src_wrapper", { ety, src_osm, src_wd, src_wd_wrapper, src_wrapper });
     } else {
         src_wrapper.style.display = 'none';
     }
 
     return etyDomElement;
 }
+
+export { Etymology, etymologyToDomElement }

@@ -450,16 +450,19 @@ function onWikidataLayerClick(e: MapMouseEvent) {
                 //.setHTML(featureToHTML(e.features[0]));
                 .setHTML('<div class="detail_wrapper"><span class="element_loading"></span></div>')
                 .addTo(map),
-            detail_wrapper = popup.getElement().querySelector(".detail_wrapper");
+            detail_wrapper = popup.getElement().querySelector<HTMLDivElement>(".detail_wrapper");
         console.info("onWikidataLayerClick: showing etymology popup", { e, popup, detail_wrapper });
         if (!detail_wrapper)
             throw new Error("Failed adding the popup");
+
         const element_loading = document.createElement("span");
         element_loading.innerText = "Loading...";
         detail_wrapper.appendChild(element_loading);
+
         if (!feature)
             throw new Error("No feature available");
         detail_wrapper.appendChild(featureToDomElement(feature));
+
         element_loading.style.display = 'none';
         (e as any).popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
     }
@@ -502,7 +505,7 @@ function prepareElementsLayers(map: Map, elements_url: string, minZoom: number, 
 }
 
 function addGeoJSONSource(map: Map, id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
-    let sourceObject = map.getSource(id) as GeoJSONSource|null,
+    let sourceObject = map.getSource(id) as GeoJSONSource | null,
         oldSourceDataURL = (!!sourceObject && typeof (sourceObject as any)._data === 'string') ? (sourceObject as any)._data : null,
         sourceUrlChanged = oldSourceDataURL != sourceDataURL;
     if (!!sourceObject && sourceUrlChanged) {
