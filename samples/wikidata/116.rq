@@ -1,3 +1,5 @@
+# php sample.php wikidata 116
+
 SELECT ?wikidata
     (SAMPLE(?local_name) AS ?local_name)
     (SAMPLE(?en_name) AS ?en_name)

@@ -1,0 +1,7 @@
+# php sample.php wikidata 170
+
+SELECT ?voice (lang(?label) AS ?lang) ?label 
+WHERE {
+  VALUES ?voice { wd:Q31464082 } 
+  ?voice rdfs:label ?label
+}

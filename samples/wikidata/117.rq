@@ -1,3 +1,5 @@
+# php sample.php wikidata 117
+
 SELECT ?wikidata
     (SAMPLE(?name) AS ?name)
     (SAMPLE(?description) AS ?description)

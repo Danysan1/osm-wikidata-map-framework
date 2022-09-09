@@ -1,0 +1,604 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<sparql xmlns='http://www.w3.org/2005/sparql-results#'>
+	<head>
+		<variable name='voice'/>
+		<variable name='lang'/>
+		<variable name='label'/>
+	</head>
+	<results>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='he'>מקור</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>he</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ar'>مصدر</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ar</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ms'>sumber</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ms</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='nn'>kjelde</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>nn</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='sq'>burim</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>sq</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='be-tarask'>крыніца</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>be-tarask</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='br'>mammenn</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>br</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='nb'>kilde</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>nb</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ru'>источник</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ru</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='fr'>source</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>fr</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='sv'>källa</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>sv</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='hu'>forrás</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>hu</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='zh-hans'>来源</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>zh-hans</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ast'>fonte</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ast</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ba'>сығанаҡ</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ba</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='be'>крыніца</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>be</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='bs'>izvor</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>bs</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ca'>origen</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ca</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='de'>Herkunft</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>de</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='el'>πηγή</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>el</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='en'>source</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>en</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='eo'>fonto</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>eo</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='es'>fuente</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>es</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='et'>allikas</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>et</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='fi'>lähde</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>fi</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ga'>foinse</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ga</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='gl'>fonte</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>gl</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='hsb'>žórło</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>hsb</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='id'>sumber</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>id</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='it'>sorgente</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>it</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ku-latn'>çavkanî</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ku-latn</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='lb'>Quell</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>lb</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='lv'>avots</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>lv</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='mk'>извор</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>mk</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ms-arab'>سومبر</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ms-arab</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='nl'>bron</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>nl</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='pl'>źródło</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>pl</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='pt'>fonte</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>pt</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='sr'>извор</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>sr</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='th'>แหล่งที่มา</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>th</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='tr'>menşe</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>tr</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='tt'>чыганак</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>tt</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='tt-cyrl'>чыганак</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>tt-cyrl</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='tt-latn'>çığanaq</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>tt-latn</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='uk'>джерело</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>uk</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='vi'>nguồn</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>vi</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='zh-hant'>來源</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>zh-hant</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ja'>起源</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ja</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ha'>asali</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ha</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='pt-br'>fonte</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>pt-br</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='ro'>sursă</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>ro</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='sk'>zdroj</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>sk</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='vec'>orìzane</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>vec</literal>
+			</binding>
+		</result>
+		<result>
+			<binding name='voice'>
+				<uri>http://www.wikidata.org/entity/Q31464082</uri>
+			</binding>
+			<binding name='label'>
+				<literal xml:lang='zh'>來源</literal>
+			</binding>
+			<binding name='lang'>
+				<literal>zh</literal>
+			</binding>
+		</result>
+	</results>
+</sparql>

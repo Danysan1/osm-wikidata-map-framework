@@ -1,3 +1,5 @@
+# php sample.php wikidata 120
+
 SELECT ?death_date ?death_date_precision 
 {
 	VALUES ?person { wd:Q309637 }
