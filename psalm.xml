@@ -8,6 +8,7 @@
 >
     <projectFiles>
         <file name="sample.php" />
+        <file name="init/db-init.php" />
         <directory name="web" />
         <file name="vendor/autoload.php" />
         <file name="vendor/composer/autoload_classmap.php" />
@@ -22,6 +23,7 @@
         <file name="vendor/composer/platform_check.php" />
         <ignoreFiles>
             <directory name="vendor" />
+            <directory name="web/node_modules" />
         </ignoreFiles>
     </projectFiles>
     <!--<issueHandlers>
