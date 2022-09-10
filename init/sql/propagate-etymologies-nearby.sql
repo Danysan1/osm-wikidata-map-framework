@@ -37,7 +37,8 @@ JOIN oem.osmdata AS old_el
 JOIN oem.osmdata AS new_el
     ON old_el.osm_id < new_el.osm_id
     AND new_el.osm_tags ?? 'highway'
-    AND old_el.osm_tags->'name' = new_el.osm_tags->'name'
+    AND new_el.osm_tags ?? 'name'
+    AND LOWER(old_el.osm_tags->'name') = LOWER(new_el.osm_tags->'name')
     AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
 LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
 WHERE old_et.et_recursion_depth = (:depth::INT - 1)

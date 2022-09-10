@@ -372,7 +372,7 @@ export class EtymologyMap extends Map {
         }
     }
 
-    static clusterPaintFromField(field: string, minThreshold = 1000, maxThreshold = 10000): CirclePaint {
+    static clusterPaintFromField(field: string, minThreshold = 3000, maxThreshold = 30000): CirclePaint {
         return {
             // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
             // with three steps to implement three types of circles:

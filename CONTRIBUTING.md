@@ -324,6 +324,14 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 ![diagram](images/db-init.svg)
 
+###### Propagation
+
+If launched with the `--propagate-nearby` or `--propagate-global` flag the database initializaion also loads all ways with `highway=residential` or `highway=unclassified`.
+
+With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with the existing etymology](init\sql\propagate-etymologies-nearby.sql)).
+
+With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](init\sql\propagate-etymologies-global.sql)).
+
 #### Old back-end (v1, using Overpass)
 
 ```plantuml
@@ -418,180 +426,6 @@ Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1
       7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
-The output of [etymologyMap.php](web/etymologyMap.php) is similar to ...
+The output of [etymologyMap.php](web/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [FeatureProperties](web/src/FeatureElement.ts#L4), [Etymology](web/src/EtymologyElement.ts#L3) and [ImageResponse](web/src/ImageElement.ts#L7).
 
-```json
-{
-    "type": "FeatureCollection",
-    "features": [
-        ...
-        {
-            "type": "Feature",
-            "geometry": {
-                "type": "MultiPolygon",
-                "coordinates": [
-                    [
-                        [
-                            [
-                                11.7055068,
-                                44.3590565
-                            ],
-                            [
-                                11.705888,
-                                44.3589083
-                            ],
-                            [
-                                11.7061427,
-                                44.3592435
-                            ],
-                            [
-                                11.7057615,
-                                44.3593916
-                            ],
-                            [
-                                11.7055068,
-                                44.3590565
-                            ]
-                        ]
-                    ]
-                ]
-            },
-            "properties": {
-                "el_id": 32835,
-                "osm_type": "way",
-                "osm_id": 32464519,
-                "name": "Area verde Rita Levi Montalcini",
-                "wikipedia": null,
-                "etymologies": [
-                    {
-                        "from_name_etymology": true,
-                        "from_subject": false,
-                        "from_wikidata": false,
-                        "from_wikidata_cod": null,
-                        "from_wikidata_prop": null,
-                        "wd_id": 13284,
-                        "birth_date": -1915401600.000000,
-                        "birth_date_precision": 11,
-                        "birth_place": "Turin",
-                        "citizenship": "United States of America, Italy, Kingdom of Italy",
-                        "commons": "Rita Levi-Montalcini",
-                        "death_date": 1356825600.000000,
-                        "death_date_precision": 11,
-                        "death_place": "Rome",
-                        "description": "Italian neurologist",
-                        "end_date": null,
-                        "end_date_precision": null,
-                        "event_date": null,
-                        "event_date_precision": null,
-                        "event_place": "",
-                        "gender": "female",
-                        "genderID": "Q6581072",
-                        "instance": "human",
-                        "instanceID": "Q5",
-                        "name": "Rita Levi-Montalcini",
-                        "occupations": "scientist, physician, politician, neurologist, biochemist, neuroscientist",
-                        "pictures": [
-                            "http://commons.wikimedia.org/wiki/Special:FilePath/Rita%20Levi%20Montalcini.jpg"
-                        ],
-                        "prizes": "Nobel Prize in Physiology or Medicine",
-                        "start_date": null,
-                        "start_date_precision": null,
-                        "wikidata": "Q185007",
-                        "wikipedia": "https://en.wikipedia.org/wiki/Rita_Levi-Montalcini",
-                        "wkt_coords": null
-                    }
-                ]
-            }
-        },
-        ...
-        {
-            "type": "Feature",
-            "geometry": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        11.7022988,
-                        44.3617264
-                    ],
-                    [
-                        11.7026241,
-                        44.3616139
-                    ],
-                    [
-                        11.702713,
-                        44.3615783
-                    ],
-                    [
-                        11.7033379,
-                        44.3613377
-                    ]
-                ]
-            },
-            "properties": {
-                "el_id": 28362,
-                "osm_type": "way",
-                "osm_id": 22877448,
-                "name": "Via Caduti di Cefalonia",
-                "wikipedia": null,
-                "etymologies": [
-                    {
-                        "from_name_etymology": true,
-                        "from_subject": false,
-                        "from_wikidata": false,
-                        "from_wikidata_cod": null,
-                        "from_wikidata_prop": null,
-                        "wd_id": 13677,
-                        "birth_date": null,
-                        "birth_date_precision": null,
-                        "birth_place": null,
-                        "citizenship": "",
-                        "commons": "Massacre of the Acqui Division",
-                        "death_date": null,
-                        "death_date_precision": null,
-                        "death_place": null,
-                        "description": "crimine di guerra tedesco",
-                        "end_date": -828921600.000000,
-                        "end_date_precision": 11,
-                        "event_date": -828921600.000000,
-                        "event_date_precision": 11,
-                        "event_place": "Cefalonia",
-                        "gender": null,
-                        "genderID": null,
-                        "instance": "crimine di guerra",
-                        "instanceID": "Q135010",
-                        "name": "eccidio di Cefalonia",
-                        "occupations": "",
-                        "pictures": [
-                            "http://commons.wikimedia.org/wiki/Special:FilePath/Argostoli%20mnimeio%20Italon.JPG"
-                        ],
-                        "prizes": "",
-                        "start_date": -829353600.000000,
-                        "start_date_precision": 11,
-                        "wikidata": "Q537576",
-                        "wikipedia": "https://it.wikipedia.org/wiki/Eccidio_di_Cefalonia",
-                        "wkt_coords": "POINT(20.59 38.25)"
-                    }
-                ]
-            }
-        },
-        ...
-    ]
-}
-```
-
-The output of [stats.php](web/stats.php) is similar to...
-
-```json
-[
-    {
-        "count": 30,
-        "id": "Q6581097",
-        "name": "male"
-    },
-    {
-        "count": 4,
-        "id": "Q6581072",
-        "name": "female"
-    }
-]
-```
+The content of the output of [stats.php](web/stats.php) is defined in the [EtymologyStat](web/src/EtymologyColorControl.ts#L38) interface.
