@@ -143,34 +143,8 @@ export function featureToDomElement(feature: MapboxGeoJSONFeature) {
                     from_osm: true,
                     from_osm_type: properties.osm_type,
                     from_osm_id: properties.osm_id,
-                    birth_date: null,
-                    birth_date_precision: null,
-                    birth_place: null,
-                    citizenship: null,
-                    commons: null,
-                    death_date: null,
-                    death_date_precision: null,
-                    death_place: null,
-                    end_date: null,
-                    end_date_precision: null,
-                    et_id: null,
-                    event_date: null,
-                    event_date_precision: null,
-                    event_place: null,
                     from_wikidata: false,
-                    from_wikidata_cod: null,
-                    from_wikidata_prop: null,
-                    gender: null,
-                    occupations: null,
-                    pictures: null,
-                    prizes: null,
-                    start_date: null,
-                    start_date_precision: null,
-                    wd_id: null,
-                    wikidata: null,
-                    wikipedia: null,
-                    wkt_coords: null
-                }));
+                } as Etymology));
             }
         }
     }

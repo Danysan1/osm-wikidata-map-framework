@@ -201,7 +201,8 @@ if (
             <span class="etymology_src_wrapper">
                 Etymology source: 
                 <a title="Etymology OpenStreetMap source" class="etymology_src_osm">OpenStreetMap</a>
-                <span class="etymology_src_wd_wrapper">+ <a title="Etymology Wikidata source" class="etymology_src_wd">Wikidata</a></span>
+                <span class="etymology_src_wd_wrapper"> + <a title="Etymology Wikidata source" class="etymology_src_wd">Wikidata</a></span>
+                <span class="etymology_propagated"> + propagation</span>
             </span>
         </div>
     </template>

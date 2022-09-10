@@ -27,6 +27,7 @@ interface Etymology {
     occupations: string | null;
     pictures: ImageResponse[] | null;
     prizes: string | null;
+    recursion_depth: number | null;
     start_date: string | null;
     start_date_precision: number | null;
     wd_id: string | null;
@@ -93,6 +94,7 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
         src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
         src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
         src_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_wd_wrapper'),
+        propagated = etyDomElement.querySelector<HTMLElement>('.etymology_propagated'),
         src_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_wrapper');
 
     if (!etymology_name) {
@@ -236,6 +238,12 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
         console.warn("Missing src_wrapper", { ety, src_osm, src_wd, src_wd_wrapper, src_wrapper });
     } else {
         src_wrapper.style.display = 'none';
+    }
+
+    if(propagated && ety.recursion_depth) {
+        propagated.style.display = 'inline';
+    } else if(propagated) {
+        propagated.style.display = 'none';
     }
 
     return etyDomElement;
