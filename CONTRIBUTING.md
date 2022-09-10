@@ -328,9 +328,9 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 If launched with the `--propagate-nearby` or `--propagate-global` flag the database initializaion also loads all ways with `highway=residential` or `highway=unclassified`.
 
-With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with the existing etymology](init\sql\propagate-etymologies-nearby.sql)).
+With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with an existing etymology](init/sql/propagate-etymologies-nearby.sql)).
 
-With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](init\sql\propagate-etymologies-global.sql)).
+With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](init/sql/propagate-etymologies-global.sql)).
 
 #### Old back-end (v1, using Overpass)
 
