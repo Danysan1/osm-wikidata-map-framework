@@ -1,11 +1,11 @@
-INSERT INTO oem.etymology_template (ett_name, ett_wd_id, ett_from_et_id)
-SELECT osm_tags->>'name', MIN(et_wd_id), MIN(et_id)
+INSERT INTO oem.etymology_template (ett_name, ett_from_et_id)
+SELECT LOWER(osm_tags->>'name'), MIN(et_id)
 FROM oem.etymology
 JOIN oem.osmdata
     ON et_el_id = osm_id
     AND osm_tags ? 'highway'
     AND osm_tags ? 'name'
-GROUP BY osm_tags->>'name'
+GROUP BY LOWER(osm_tags->>'name')
 HAVING COUNT(DISTINCT et_wd_id) = 1;
 
 INSERT INTO oem.etymology (
@@ -45,6 +45,6 @@ JOIN oem.etymology AS old_et ON ett_from_et_id = old_et.et_id
 JOIN oem.osmdata AS new_el
     ON new_el.osm_tags ? 'highway'
     AND new_el.osm_tags ? 'name'
-    AND ett_name = new_el.osm_tags->>'name'
+    AND ett_name = LOWER(new_el.osm_tags->>'name')
 LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
 WHERE new_et IS NULL;
