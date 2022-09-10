@@ -131,7 +131,7 @@ if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
     }
     $sourceFilePath = __DIR__ . "/pbf/" . $fileName;
     logProgress("Downloading $fileName");
-    execAndCheck("curl -z $sourceFilePath -o $sourceFilePath $url");
+    execAndCheck("curl --fail -z $sourceFilePath -o $sourceFilePath $url");
     logProgress("Download completed");
 } elseif (!empty(realpath(__DIR__ . "/pbf/" . $fileArgument))) {
     // $fileArgument is a relative path from the folder of db-init
