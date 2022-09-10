@@ -109,6 +109,7 @@ CREATE UNIQUE INDEX element_id_idx ON oem.element (el_id) WITH (fillfactor='100'
 CREATE INDEX element_geometry_idx ON oem.element USING GIST (el_geometry) WITH (fillfactor='100');
 
 CREATE TABLE oem.etymology (
+    et_id SERIAL NOT NULL PRIMARY KEY,
     --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
     et_el_id BIGINT NOT NULL,
     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
@@ -123,11 +124,9 @@ CREATE TABLE oem.etymology (
     et_from_wikidata_named_after BOOLEAN,
     et_from_wikidata_dedicated_to BOOLEAN,
     et_from_wikidata_commemorates BOOLEAN,
-    et_from_bad_not_consists BOOLEAN,
-    et_from_bad_consists BOOLEAN,
     et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id),
     et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$'),
-    CONSTRAINT etymology_pkey PRIMARY KEY (et_el_id, et_wd_id)
+    CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );
 
 CREATE INDEX etymology_el_id_idx ON oem.etymology (et_el_id) WITH (fillfactor='100');
@@ -165,7 +164,15 @@ CREATE TABLE oem.wikidata_text (
     wdt_death_place VARCHAR,
     wdt_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     wdt_full_download_date TIMESTAMP,
-    CONSTRAINT wikidata_text_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
+    CONSTRAINT wdt_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
 );
 
 CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
+
+CREATE TABLE oem.etymology_template (
+    ett_id SERIAL NOT NULL PRIMARY KEY,
+    ett_name VARCHAR NOT NULL,
+    ett_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+    ett_from_et_id INT NOT NULL REFERENCES oem.etymology(et_id),
+    CONSTRAINT ett_unique_name_wikidata UNIQUE (ett_name, ett_wd_id)
+);

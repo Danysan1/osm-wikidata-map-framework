@@ -1,3 +1,13 @@
+INSERT INTO oem.etymology_template (ett_name, ett_wd_id, ett_from_et_id)
+SELECT osm_tags->>'name', MIN(et_wd_id), MIN(et_id)
+FROM oem.etymology
+JOIN oem.osmdata
+    ON et_el_id = osm_id
+    AND osm_tags ? 'highway'
+    AND osm_tags ? 'name'
+GROUP BY osm_tags->>'name'
+HAVING COUNT(DISTINCT et_wd_id) = 1;
+
 INSERT INTO oem.etymology (
     et_el_id,
     et_wd_id,
@@ -12,15 +22,13 @@ INSERT INTO oem.etymology (
     et_from_wikidata_named_after,
     et_from_wikidata_dedicated_to,
     et_from_wikidata_commemorates,
-    et_from_bad_not_consists,
-    et_from_bad_consists,
     et_from_wikidata_wd_id,
     et_from_wikidata_prop_cod
-) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
+) SELECT
     new_el.osm_id,
     old_et.et_wd_id,
     old_et.et_from_el_id,
-    :depth::INT AS recursion_depth,
+    -1,
     old_et.et_from_osm,
     old_et.et_from_wikidata,
     old_et.et_from_name_etymology,
@@ -30,19 +38,13 @@ INSERT INTO oem.etymology (
     old_et.et_from_wikidata_named_after,
     old_et.et_from_wikidata_dedicated_to,
     old_et.et_from_wikidata_commemorates,
-    old_et.et_from_bad_not_consists,
-    old_et.et_from_bad_consists,
     old_et.et_from_wikidata_wd_id,
     old_et.et_from_wikidata_prop_cod
-FROM oem.etymology AS old_et
-JOIN oem.osmdata AS old_el
-    ON old_et.et_el_id = old_el.osm_id
-    AND old_el.osm_tags ?? 'highway' -- As of PHP 7.4.0, question marks can be escaped by doubling them. That means that the ?? string will be translated to ? when sending the query to the database.
+FROM oem.etymology_template
+JOIN oem.etymology AS old_et ON ett_from_et_id = old_et.et_id
 JOIN oem.osmdata AS new_el
-    ON old_el.osm_id < new_el.osm_id
-    AND new_el.osm_tags ?? 'highway'
-    AND old_el.osm_tags->'name' = new_el.osm_tags->'name'
-    AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
+    ON new_el.osm_tags ? 'highway'
+    AND new_el.osm_tags ? 'name'
+    AND ett_name = new_el.osm_tags->>'name'
 LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
-WHERE old_et.et_recursion_depth = (:depth::INT - 1)
-AND new_et IS NULL;
+WHERE new_et IS NULL;

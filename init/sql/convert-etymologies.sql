@@ -11,8 +11,6 @@ INSERT INTO oem.etymology (
     et_from_wikidata_named_after,
     et_from_wikidata_dedicated_to,
     et_from_wikidata_commemorates,
-    et_from_bad_not_consists,
-    et_from_bad_consists,
     et_from_wikidata_wd_id,
     et_from_wikidata_prop_cod
 ) SELECT
@@ -28,8 +26,6 @@ INSERT INTO oem.etymology (
     BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P138' AND ew_from_wikidata) AS from_wikidata_named_after, -- derived through OSM ('wikidata') and then Wikidata ('named after')
     BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P825' AND ew_from_wikidata) AS from_wikidata_dedicated_to, -- derived through OSM ('wikidata') and then Wikidata ('dedicated to')
     BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P547' AND ew_from_wikidata) AS from_wikidata_commemorates, -- derived through OSM ('wikidata') and then Wikidata ('commemorates')
-    BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod!='P527' AND NOT ew_from_wikidata) AS from_bad_not_consists, -- wrong etymology, derived through OSM ('subject'/'name:etymology') and then Wikidata (not 'consists')
-    BOOL_OR(wna_from_prop_cod IS NOT NULL AND wna_from_prop_cod='P527' AND ew_from_wikidata) AS from_bad_consists, -- wrong etymology, derived through OSM ('wikidata') and then Wikidata ('consists')
     MIN(from_wd_id) AS from_wikidata_wd_id,
     MIN(wna_from_prop_cod) AS from_wikidata_prop_cod
 FROM (

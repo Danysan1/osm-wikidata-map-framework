@@ -20,13 +20,14 @@ use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
 $fileArgumentIndex = false;
 $options = getopt(
-    "hkcrptn",
+    "hkcrptng",
     [
         "help",
         "keep-temp-tables",
         "cleanup",
         "reset",
-        "propagate",
+        "propagate-nearby",
+        "propagate-global",
         "load-text-etymology",
         "no-upload",
         "osmium-export",
@@ -56,7 +57,8 @@ if (isset($options["help"]) || isset($options["h"])) {
         "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
         "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
         "\t\t--reset / -r : Do a hard reset (delete all tables) before elaborating (disabled by default)" . PHP_EOL .
-        "\t\t--propagate / -p : Propagate etymologies to nearby homonymous highways (disabled by default, it increases the execution time)" . PHP_EOL .
+        "\t\t--propagate-nearby / -p : Propagate etymologies to nearby homonymous highways (disabled by default)" . PHP_EOL .
+        "\t\t--propagate-global / -g : Propagate etymologies to all homonymous highways (disabled by default)" . PHP_EOL .
         "\t\t--load-text-etymology / -t : Load textual etymologies (name:etymology tags) (disabled by default as it increases by a lot the execution time and file size)" . PHP_EOL .
         "\t\t--no-upload / -n : Don't upload the data to the destination DB (data is uploaded by default)" . PHP_EOL .
         "\t\t--osmium-export : Use osmium-export to load the data into the local DB (enableb by default)" . PHP_EOL .
@@ -71,7 +73,8 @@ $retval = null;
 $keep_temp_tables = isset($options["keep-temp-tables"]) || isset($options["k"]);
 $cleanup = isset($options["cleanup"]) || isset($options["c"]);
 $reset = isset($options["hard-reset"]) || isset($options["r"]);
-$propagate = isset($options["propagate"]) || isset($options["p"]);
+$propagate_nearby = isset($options["propagate-nearby"]) || isset($options["p"]);
+$propagate_global = isset($options["propagate-global"]) || isset($options["g"]);
 $load_text_etymology = isset($options["load-text-etymology"]) || isset($options["t"]);
 $no_upload = isset($options["no-upload"]) || isset($options["n"]);
 $use_osmium_export = isset($options["osmium-export"]);
@@ -95,17 +98,13 @@ if ($retval !== 0 || empty($output)) {
     exit(1);
 }
 
-echo 'Temporary tables will ' . ($keep_temp_tables ? '' : 'NOT ') . 'be kept' . PHP_EOL;
-
-echo 'Temporary files will ' . ($cleanup ? '' : 'NOT ') . 'be cleaned up' . PHP_EOL;
-
-echo 'The database content will ' . ($reset ? '' : 'NOT ') . 'be resetted before loading' . PHP_EOL;
-
-echo 'Etymologies will ' . ($propagate ? '' : 'NOT ') . 'be propagated to nearby homonymous highways' . PHP_EOL;
-
-echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? '' : 'NOT ') . 'be loaded' . PHP_EOL;
-
-echo 'Elaborated etymologies will ' . ($upload_to_db ? '' : 'NOT ') . 'be loaded into the destination DB' . PHP_EOL;
+echo 'Temporary tables will ' . ($keep_temp_tables ? 'WILL' : 'will NOT') . ' be kept' . PHP_EOL;
+echo 'Temporary files will ' . ($cleanup ? 'WILL' : 'will NOT') . ' be cleaned up' . PHP_EOL;
+echo 'The database content will ' . ($reset ? 'WILL' : 'will NOT') . ' be resetted before loading' . PHP_EOL;
+echo 'Etymologies will ' . ($propagate_nearby ? 'WILL' : 'will NOT') . ' be propagated to nearby homonymous highways' . PHP_EOL;
+echo 'Etymologies will ' . ($propagate_global ? 'WILL' : 'will NOT') . ' be propagated to all homonymous highways' . PHP_EOL;
+echo 'Textual etymologies (name:etymology tags) will ' . ($load_text_etymology ? 'WILL' : 'will NOT') . ' be loaded' . PHP_EOL;
+echo 'Elaborated etymologies ' . ($upload_to_db ? 'WILL' : 'will NOT') . ' be loaded into the destination DB' . PHP_EOL;
 
 if ($use_osmium_export) {
     echo 'Using osmium-export to PostGIS tsv' . PHP_EOL;
@@ -247,13 +246,16 @@ function filterInputData(
     string $sourceFileName,
     string $filteredFilePath,
     bool $cleanup = false,
-    bool $propagate = false,
+    bool $load_roads = false,
     bool $load_text_etymology = false
 ): void {
     // Keep only elements that have a tag that could lead to an etymology
     $allowedTags = [];
-    if ($propagate)
+    if ($load_roads) {
+        //$allowedTags[] = 'w/highway';
         $allowedTags[] = 'w/highway=residential';
+        $allowedTags[] = 'w/highway=unclassified';
+    }
     $allowedTags[] = 'wikidata';
     $allowedTags[] = 'name:etymology:wikidata';
     if ($load_text_etymology)
@@ -551,25 +553,33 @@ function convertEtymologies(PDO $dbh): void
     logProgress("Converted $n_ety etymologies");
 }
 
-function propagateEtymologies(PDO $dbh, int $depth = 1): int
+function propagateEtymologiesNearby(PDO $dbh, int $depth = 1): int
 {
     if ($depth >= MAX_RECURSION_DEPTH) {
         logProgress("Reached max recursion depth, stopping propagating etymologies");
         return 0; // Recursion breaking because max recursion depth has been reached
     } else {
         logProgress("Propagating etymologies at recursion depth $depth...");
-        $propagation = $dbh->prepare(file_get_contents(__DIR__."/sql/propagate-etymologies.sql"));
+        $propagation = $dbh->prepare(file_get_contents(__DIR__."/sql/propagate-etymologies-nearby.sql"));
         $propagation->execute(["depth" => $depth]);
         $n_propagations = $propagation->rowCount();
         logProgress("Propagated $n_propagations etymologies at recursion depth $depth");
 
         if ($n_propagations > 0)
-            $n_sub_propagations = propagateEtymologies($dbh, $depth + 1); // Recursive call
+            $n_sub_propagations = propagateEtymologiesNearby($dbh, $depth + 1); // Recursive call
         else
             $n_sub_propagations = 0; // Recursion breaking because propagations are complete
 
         return $n_propagations + $n_sub_propagations;
     }
+}
+
+function propagateEtymologiesGlobally(PDO $dbh): int
+{
+    logProgress("Propagating etymologies...");
+    $n_propagations = $dbh->exec(file_get_contents(__DIR__."/sql/propagate-etymologies-global.sql"));
+    logProgress("Propagated $n_propagations etymologies");
+    return $n_propagations;
 }
 
 function saveLastDataUpdate(string $sourceFilePath, PDO $dbh): void
@@ -647,6 +657,7 @@ if (is_file($pgFilePath) && $cleanup) {
     unlink($pgFilePath);
 }
 
+$propagate = $propagate_nearby || $propagate_global;
 filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
 
 if (is_file($pgFilePath) && (filemtime($pgFilePath) > filemtime($sourceFilePath))) {
@@ -766,10 +777,16 @@ try {
             }
         }
 
-        if ($propagate) {
-            echo 'Propagation of etymologies started at ' . date('c') . PHP_EOL;
-            propagateEtymologies($dbh);
-            echo 'Propagation of etymologies ended at ' . date('c') . PHP_EOL;
+        if ($propagate_nearby) {
+            echo 'Propagation of nearby etymologies started at ' . date('c') . PHP_EOL;
+            propagateEtymologiesNearby($dbh);
+            echo 'Propagation of nearby etymologies ended at ' . date('c') . PHP_EOL;
+        }
+
+        if ($propagate_global) {
+            echo 'Global propagation of etymologies started at ' . date('c') . PHP_EOL;
+            propagateEtymologiesGlobally($dbh);
+            echo 'Global propagation of etymologies ended at ' . date('c') . PHP_EOL;
         }
 
         echo 'Conversion complete at ' . date('c') . PHP_EOL;
@@ -790,6 +807,7 @@ try {
             $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_rels');
             $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_roads');
             $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_ways');
+            $dbh->exec('DROP TABLE IF EXISTS oem.etymology_template');
         }
 
         setupGlobalMap($dbh);
