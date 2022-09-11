@@ -172,7 +172,12 @@ A local development instance can be started with Docker by running `docker-compo
 - A PostgreSQL+PostGIS DB exposed on localhost:5432
 - A PGAdmin instance exposed at http://localhost:8080
 
+<details>
+<summary>Deployment diagram</summary>
+
 ![deployment diagram](images/dev_deployment.svg)
+
+</details>
 
 Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/docs/remote/containers) to develop directly inside the local development instance.
 
@@ -199,9 +204,15 @@ cp open-etymology-map.template.ini web/open-etymology-map.ini
 docker-compose --profile "prod" up -d
 ```
 
+<details>
+<summary>Deployment diagram</summary>
+
 ![deployment diagram](images/prod_with_local_db_deployment.svg)
 
 ![deployment diagram](images/prod_deployment.svg)
+
+
+</details>
 
 ### Structure
 
@@ -217,6 +228,9 @@ At low zoom level ([`threshold-zoom-level`](open-etymology-map.template.ini) > z
 At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
 
 #### Back-end (v2, using PostGIS DB)
+
+<details>
+<summary>Deployment diagram</summary>
 
 ```plantuml
 @startuml
@@ -295,8 +309,9 @@ JSONWikidataQuery <-- init
 @enduml
 ```
 
+</summary>
+
 [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
-This script starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
 
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db-enable = true`:
 
@@ -306,7 +321,10 @@ Once the DB is initialized, this is the data gathering process in [etymologyMap.
 
 ##### Database initialization
 
-If you intend to use the DB you will need to initialize it first:
+As mentioned above [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+This script starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
+
+To run the database initialization:
 1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
    - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) (this is the suggested usage)
    - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
@@ -322,7 +340,12 @@ IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at le
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
 
+<details>
+<summary>Database initialization steps diagram</summary>
+
 ![diagram](images/db-init.svg)
+
+</summary>
 
 ###### Propagation
 
@@ -333,6 +356,9 @@ With `--propagate-nearby` after elaborating the etymologies the system also prop
 With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](init/sql/propagate-etymologies-global.sql)).
 
 #### Old back-end (v1, using Overpass)
+
+<details>
+<summary>Deployment diagram</summary>
 
 ```plantuml
 actor user as "User"
@@ -407,6 +433,8 @@ BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
 OverpassQuery --(0- overpass
 WikidataQuery --(0- wikidata
 ```
+
+</details>
 
 Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db-enable = false`):
 
