@@ -309,7 +309,7 @@ JSONWikidataQuery <-- init
 @enduml
 ```
 
-</summary>
+</details>
 
 [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 
@@ -345,7 +345,7 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 ![diagram](images/db-init.svg)
 
-</summary>
+</details>
 
 ###### Propagation
 
