@@ -275,7 +275,7 @@ services:
       - oem-internal
       - airflow-internal
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -297,7 +297,7 @@ services:
     networks:
       - oem-internal
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
       timeout: 10s
       retries: 5
