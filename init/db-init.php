@@ -298,7 +298,7 @@ function isSchemaAlreadySetup(PDO $dbh): bool
 function setupSchema(PDO $dbh): void
 {
     logProgress('Preparing DB schema...');
-    $dbh->exec(file_get_contents(__DIR__."/sql/schema.sql"));
+    $dbh->exec(file_get_contents(__DIR__."/sql/setup-schema.sql"));
     logProgress('DB schema prepared');
 }
 
@@ -370,10 +370,7 @@ function loadOsmDataWithOsm2pgsql(PDO $dbh, string $host, int $port, string $dbn
 
 function removeElementsTooBig(PDO $dbh) : void {
     logProgress('Removing elements too big to be shown...');
-    $n_element = $dbh->exec(
-        "DELETE FROM oem.osmdata
-        WHERE ST_Area(osm_geometry) >= 0.01"
-    );
+    $n_element = $dbh->exec(file_get_contents(__DIR__."/sql/remove-elements-too-big.sql"));
     $n_remaining = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
     logProgress("Removed $n_element elements, $n_remaining remain");
 }
@@ -717,7 +714,7 @@ try {
 
     if ($reset) {
         logProgress('Resetting DB schema');
-        $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
+        $dbh->exec(file_get_contents(__DIR__."/sql/teardown-schema.sql"));
     }
 
     if (isSchemaAlreadySetup($dbh)) {
