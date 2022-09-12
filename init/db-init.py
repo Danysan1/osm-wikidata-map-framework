@@ -22,31 +22,33 @@ def read_sql_query(filename:str) -> str:
     return sql_content
 
 
-def postgres_opearator_from_file(task_id:str, filename:str) -> PostgresOperator:
+def postgres_opearator_from_file(task_id:str, filename:str, params:dict = None) -> PostgresOperator:
     return PostgresOperator(
         task_id = task_id,
-        postgres_conn_id = "{{ params.local_db_conn_id }}",
-        sql = read_sql_query(filename)
+        postgres_conn_id = "oem-local",
+        sql = read_sql_query(filename),
+        params = params
     )
 
-def do_postgres_query(conn_id:str, sql_stmt:str):
+def do_postgres_query(conn_id:str, sql_stmt:str, params:dict = None):
     """
     See https://medium.com/towards-data-science/apache-airflow-for-data-science-how-to-work-with-databases-postgres-a4dc79c04cb8
     """
     pg_hook = PostgresHook(conn_id)
     pg_conn = pg_hook.get_conn()
     cursor = pg_conn.cursor()
-    cursor.execute(sql_stmt)
+    cursor.execute(sql_stmt, params)
     return cursor.fetchall()
 
 
-def postgres_query_from_file(task_id:str, filename:str) -> PythonOperator:
+def postgres_query_from_file(task_id:str, filename:str, params:dict = None) -> PythonOperator:
     return PythonOperator(
         task_id = task_id,
         python_callable = do_postgres_query,
         params = {
-            "postgres_conn_id" : "{{ params.local_db_conn_id }}",
-            "sql_stmt" : read_sql_query(filename)
+            "postgres_conn_id" : "oem-local",
+            "sql_stmt" : read_sql_query(filename),
+            "params" : params
         }
     )
 
