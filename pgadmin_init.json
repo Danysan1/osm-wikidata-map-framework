@@ -1,11 +1,20 @@
 {
     "Servers": {
         "1": {
-            "Name": "PostGIS",
+            "Name": "Local PostGIS",
             "Group": "Servers",
             "Port": 5432,
             "Username": "oem",
-            "Host": "postgis_db",
+            "Host": "oem-postgis",
+            "SSLMode": "prefer",
+            "MaintenanceDB": "postgres"
+        },
+        "2": {
+            "Name": "Airflow Postgres",
+            "Group": "Servers",
+            "Port": 5432,
+            "Username": "airflow",
+            "Host": "postgres",
             "SSLMode": "prefer",
             "MaintenanceDB": "postgres"
         }

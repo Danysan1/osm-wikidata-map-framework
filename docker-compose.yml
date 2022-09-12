@@ -232,8 +232,8 @@ services:
     profiles:
       - dev-airflow
 
-  postgis_db:
-    #image: postgis/postgis:13-3.2-alpine #arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
+  oem-postgis:
+    #image: postgis/postgis:13-3.2-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     image: odidev/postgis:13-3.1-alpine
     ports:
       - "5432:5432"
@@ -249,6 +249,10 @@ services:
       driver: json-file
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "oem"]
+      interval: 5s
+      retries: 5
     restart: "always"
     profiles:
       - dev
@@ -260,7 +264,7 @@ services:
     ports:
       - "8000:80"
     depends_on:
-      - postgis_db
+      - oem-postgis
     environment:
       PGADMIN_DEFAULT_EMAIL: "app@app.app"
       PGADMIN_DEFAULT_PASSWORD: "app"
@@ -270,12 +274,17 @@ services:
     networks:
       - oem-internal
       - airflow-internal
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
     profiles:
       - dev
       - dev-airflow
 
-  web_dev:
+  oem-web-dev:
     build:
       context: .
       dockerfile: Dockerfile
@@ -284,9 +293,14 @@ services:
     ports:
       - "80:80"
     depends_on:
-      - postgis_db
+      - oem-postgis
     networks:
       - oem-internal
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     restart: unless-stopped
     volumes:
       - ./web:/var/www/html:cached
@@ -295,7 +309,7 @@ services:
       - dev
       - dev-airflow
 
-  web_prod:
+  oem-web-prod:
     build:
       context: .
       dockerfile: Dockerfile
@@ -310,6 +324,11 @@ services:
       driver: json-file
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
     restart: "always"
     volumes:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini:cached

@@ -4,7 +4,7 @@ actor Browser
 component Server {
   port "80" as 80docker
   rectangle "Docker Compose - profile 'prod_with_local_db'" as docker {
-    node postgis_db {
+    node "oem-postgis" {
       port 5432 as 5432db
       database "PostGIS DB" as db
     }
@@ -14,7 +14,7 @@ component Server {
       folder "/var/log" as logRem
       folder "/var/lib/docker/containers" as contRem
     }
-    node web_prod {
+    node "oem-web-prod" {
       port "80" as 80webProd
       component Apache
       file "/var/www/html/open-etymology-map.ini" as iniRem
