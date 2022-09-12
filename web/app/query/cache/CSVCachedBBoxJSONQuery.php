@@ -13,6 +13,8 @@ use \App\Query\BBoxJSONQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\JSONLocalQueryResult;
 use \App\Result\QueryResult;
+use \App\Configuration;
+use \App\ServerTiming;
 
 /**
  * A query which searches objects in a given bounding box caching the result in a file.

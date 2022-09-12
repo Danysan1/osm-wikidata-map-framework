@@ -13,6 +13,8 @@ use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
+use \App\Configuration;
+use \App\ServerTiming;
 
 /**
  * A query which searches objects in a given bounding box caching the result in a file.
