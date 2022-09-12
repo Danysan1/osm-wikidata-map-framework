@@ -347,7 +347,7 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 </details>
 
-###### Propagation
+##### Propagation
 
 If launched with the `--propagate-nearby` or `--propagate-global` flag the database initializaion also loads all ways with `highway=residential` or `highway=unclassified`.
 
