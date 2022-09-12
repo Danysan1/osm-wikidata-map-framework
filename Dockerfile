@@ -46,4 +46,3 @@ RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-auto
 COPY --chown=www-data:www-data --from=npm-install /app /var/www/html
 
 #USER www-data
-#RUN touch /var/www/html/open-etymology-map.log

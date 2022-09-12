@@ -332,7 +332,6 @@ services:
     restart: "always"
     volumes:
       - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini:cached
-      - ./web/open-etymology-map.log:/var/www/html/open-etymology-map.log
       - apache-sites-available:/etc/apache2/sites-available/
       - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/
