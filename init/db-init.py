@@ -17,7 +17,7 @@ def read_sql_query(filename:str) -> str:
     sql_file_path = os.path.join(sql_dir_path, filename)
 
     with open(sql_file_path) as sql_file:
-        sql_content = sql_file.readlines()
+        sql_content = sql_file.read()
 
     return sql_content
 
