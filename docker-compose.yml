@@ -23,7 +23,7 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
   volumes:
-    - ./init/dags:/opt/airflow/dags
+    - ./init:/opt/airflow/dags
     - ./airflow-logs:/opt/airflow/logs
     - ./airflow-plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
@@ -245,6 +245,7 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - oem-internal
+      - airflow-internal
     logging:
       driver: json-file
       options:
@@ -275,7 +276,7 @@ services:
       - oem-internal
       - airflow-internal
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
+      test: ["CMD", "curl", "--fail", "http://localhost:80"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -296,6 +297,7 @@ services:
       - oem-postgis
     networks:
       - oem-internal
+      - airflow-internal
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -325,7 +327,7 @@ services:
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
       timeout: 10s
       retries: 5
