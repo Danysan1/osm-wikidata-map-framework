@@ -794,14 +794,8 @@ try {
         moveElementsWithEtymology($dbh, $load_text_etymology);
 
         if (!$keep_temp_tables) {
-            $dbh->exec('DROP TABLE oem.osmdata');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_line');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_point');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_polygon');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_rels');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_roads');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_ways');
-            $dbh->exec('DROP TABLE IF EXISTS oem.etymology_template');
+            logProgress('Dropping temporary tables...');
+            $dbh->exec(file_get_contents(__DIR__."/sql/drop-temp-tables.sql"));
         }
 
         setupGlobalMap($dbh);

@@ -4,6 +4,8 @@ FROM oem.etymology
 JOIN oem.osmdata ON et_el_id = osm_id
 WHERE osm_tags ? 'highway'
 AND osm_tags ? 'name'
+AND NOT osm_tags->>'name' ILIKE '%th street%' -- Prevent bad propagations
+AND NOT osm_tags->>'name' ILIKE '%th ave%'
 GROUP BY LOWER(osm_tags->>'name')
 HAVING COUNT(*) > 1
 AND COUNT(DISTINCT et_wd_id) = 1;

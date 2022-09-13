@@ -165,8 +165,26 @@ def define_db_init_dag(
     task_convert_ety = postgres_operator_from_file("convert_etymologies", "convert-etymologies.sql", local_db_conn_id, dag)
     [task_load_named_after, task_load_consists_of] >> task_convert_ety
 
-    task_propagate = postgres_operator_from_file("propagate_etymologies_global", "propagate-etymologies-global.sql", local_db_conn_id, dag)
+    task_propagate = postgres_operator_from_file("propagate_etymologies_globally", "propagate-etymologies-global.sql", local_db_conn_id, dag)
     task_convert_ety >> task_propagate
+
+    task_check_text_ety = postgres_operator_from_file("check_text_etymology", "check-text-etymology.sql", local_db_conn_id, dag)
+    task_propagate >> task_check_text_ety
+
+    task_check_wd_ety = postgres_operator_from_file("check_wikidata_etymology", "check-wd-etymology.sql", local_db_conn_id, dag)
+    task_check_text_ety >> task_check_wd_ety
+
+    task_move_ele = postgres_operator_from_file("move_elements_with_etymology", "move-elements-with-etymology.sql", local_db_conn_id, dag)
+    task_check_wd_ety >> task_move_ele
+
+    task_setup_ety_fk = postgres_operator_from_file("setup_etymology_foreign_key", "etymology-foreign-key.sql", local_db_conn_id, dag)
+    task_move_ele >> task_setup_ety_fk
+
+    task_drop_temp_tables = postgres_operator_from_file("drop_temporary_tables", "drop-temp-tables.sql", local_db_conn_id, dag)
+    task_move_ele >> task_drop_temp_tables
+
+    task_global_map = postgres_operator_from_file("setup_global_map", "global-map.sql", local_db_conn_id, dag)
+    task_move_ele >> task_global_map
 
     return dag
 
