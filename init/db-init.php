@@ -703,14 +703,8 @@ try {
     if (empty($dbh))
         throw new Exception("Database connection initialization failed");
 
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis");
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch");
-    //$dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder");
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_topology");
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS hstore");
-
     try {
-        $dbh->query("SELECT PostGIS_Version()");
+        $dbh->exec(file_get_contents(__DIR__."/sql/setup-db-extensions.sql"));
     } catch (Exception $e) {
         throw new Exception('PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage());
     }

@@ -112,14 +112,30 @@ def define_db_init_dag(
             params=default_args,
         )
 
+    task_download_pbf = BashOperator(task_id="download_pbf", bash_command="date", dag=dag)
+
+    task_keep_possible_ety = BashOperator(task_id="keep_elements_with_possible_etymology", bash_command="date", dag=dag)
+    task_download_pbf >> task_keep_possible_ety
+
+    task_keep_name = BashOperator(task_id="keep_elements_with_name", bash_command="date", dag=dag)
+    task_keep_possible_ety >> task_keep_name
+
+    task_remove_non_inte = BashOperator(task_id="remove_non_interesting_elements", bash_command="date", dag=dag)
+    task_keep_name >> task_remove_non_inte
+
     pg_file_path = get_absolute_path(basename+".pg", 'pbf')
     task_export_pbf_to_pg = BashOperator(
         task_id="export_pbf_to_pg",
         bash_command='if [[ -z "$pgFilePath" ]] ; then echo \'2346\t0101000020E61000002F151BF33A7622409E0EBFF627CA4640\tnode\t506265955\t{"name":"Scuola Primaria Ada Negri","name:etymology:wikidata":"Q346250","name:language":"it"}\'; fi',
         env={ "pgFilePath": pg_file_path },
+        dag=dag,
     )
+    task_remove_non_inte >> task_export_pbf_to_pg
+
+    task_setup_db_ext = postgres_operator_from_file("setup_db_extensions", "setup-db-extensions.sql", local_db_conn_id, dag)
 
     task_teardown_schema = postgres_operator_from_file("teardown_schema", "teardown-schema.sql", local_db_conn_id, dag)
+    task_setup_db_ext >> task_teardown_schema
 
     task_setup_schema = postgres_operator_from_file("setup_schema", "setup-schema.sql", local_db_conn_id, dag)
     task_teardown_schema >> task_setup_schema
@@ -139,6 +155,18 @@ def define_db_init_dag(
 
     task_convert_wd_ent = postgres_operator_from_file("convert_wikidata_entities", "convert-wikidata-entities.sql", local_db_conn_id, dag)
     [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
+
+    task_load_named_after = BashOperator(task_id="download_named_after_wikidata_entities", bash_command="date", dag=dag)
+    task_convert_wd_ent >> task_load_named_after
+    
+    task_load_consists_of = BashOperator(task_id="download_consists_of_wikidata_entities", bash_command="date", dag=dag)
+    task_convert_wd_ent >> task_load_consists_of
+
+    task_convert_ety = postgres_operator_from_file("convert_etymologies", "convert-etymologies.sql", local_db_conn_id, dag)
+    [task_load_named_after, task_load_consists_of] >> task_convert_ety
+
+    task_propagate = postgres_operator_from_file("propagate_etymologies_global", "propagate-etymologies-global.sql", local_db_conn_id, dag)
+    task_convert_ety >> task_propagate
 
     return dag
 
