@@ -641,15 +641,18 @@ if (!is_file($osmiumFilePath)) {
     exit(1);
 }
 
-$filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
+//$filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
+$filteredFilePath = "$workDir/filtered_$sourceFileName";
+
 $osmiumCachePath = sys_get_temp_dir() . "/osmium_${sourceFileName}_" . filesize($sourceFilePath);
 $osmiumCache = "sparse_file_array,$osmiumCachePath";
 
 if (is_file($filteredFilePath) && $cleanup)
     unlink($filteredFilePath);
 
-$pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
-//$pgFilePath = "$workDir/$sourceFileName.pg";
+//$pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
+$pgFilePath = "$workDir/$sourceFileName.pg";
+
 if (is_file($pgFilePath) && $cleanup) {
     unlink($pgFilePath);
 }
