@@ -21,6 +21,8 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
+    AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
+    AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
   volumes:
     - ./init:/opt/airflow/dags
@@ -50,7 +52,7 @@ services:
     restart: always
     networks:
       - airflow-internal
-      - oem-internal
+      - oem-airflow-bridge
     profiles:
       - dev-airflow
 
@@ -125,6 +127,7 @@ services:
     restart: always
     networks:
       - airflow-internal
+      - oem-airflow-bridge
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -232,6 +235,26 @@ services:
     profiles:
       - dev-airflow
 
+  flower:
+    <<: *airflow-common
+    command: celery flower
+    profiles:
+      - dev-airflow
+    networks:
+      - airflow-internal
+    ports:
+      - 5555:5555
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
+
   oem-postgis:
     #image: postgis/postgis:13-3.2-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     image: odidev/postgis:13-3.1-alpine
@@ -245,7 +268,7 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - oem-internal
-      - airflow-internal
+      - oem-airflow-bridge
     logging:
       driver: json-file
       options:
@@ -274,9 +297,9 @@ services:
       - ./pgadmin_init.json:/pgadmin4/servers.json
     networks:
       - oem-internal
-      - airflow-internal
+      - oem-airflow-bridge
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -297,7 +320,7 @@ services:
       - oem-postgis
     networks:
       - oem-internal
-      - airflow-internal
+      - oem-airflow-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -363,3 +386,4 @@ volumes:
 networks:
   oem-internal:
   airflow-internal:
+  oem-airflow-bridge:

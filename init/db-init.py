@@ -264,7 +264,7 @@ def define_db_init_dag(
     task_setup_schema >> task_last_update
 
     task_pg_dump = BashOperator(task_id="pg_dump", bash_command="date", dag=dag)
-    [task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
+    [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
 
     task_pg_restore = BashOperator(task_id="pg_restore", bash_command="date", dag=dag)
     task_pg_dump >> task_pg_restore
