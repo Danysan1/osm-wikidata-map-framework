@@ -24,16 +24,6 @@ def read_sql_query(filename:str) -> str:
 
     return sql_content
 
-
-def postgres_operator_from_file(task_id:str, filename:str, conn_id:str, dag:DAG, params:dict = None) -> PostgresOperator:
-    return PostgresOperator(
-        task_id = task_id,
-        postgres_conn_id = conn_id,
-        sql = read_sql_query(filename),
-        params = params,
-        dag = dag,
-    )
-
 def do_postgres_query(conn_id:str, sql_stmt:str, params:dict = None):
     """
     See https://medium.com/towards-data-science/apache-airflow-for-data-science-how-to-work-with-databases-postgres-a4dc79c04cb8
@@ -132,28 +122,58 @@ def define_db_init_dag(
     )
     task_remove_non_inte >> task_export_pbf_to_pg
 
-    task_setup_db_ext = postgres_operator_from_file("setup_db_extensions", "setup-db-extensions.sql", local_db_conn_id, dag)
+    task_setup_db_ext = PostgresOperator(
+        task_id = "setup_db_extensions",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/setup-db-extensions.sql",
+        dag = dag,
+    )
 
-    task_teardown_schema = postgres_operator_from_file("teardown_schema", "teardown-schema.sql", local_db_conn_id, dag)
+    task_teardown_schema = PostgresOperator(
+        task_id = "teardown_schema",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/teardown-schema.sql",
+        dag = dag,
+    )
     task_setup_db_ext >> task_teardown_schema
 
-    task_setup_schema = postgres_operator_from_file("setup_schema", "setup-schema.sql", local_db_conn_id, dag)
+    task_setup_schema = PostgresOperator(
+        task_id = "setup_schema",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/setup-schema.sql",
+        dag = dag,
+    )
     task_teardown_schema >> task_setup_schema
 
     task_load_ele = postgres_copy_from_file("load_elements", pg_file_path, '\t', 'osmdata', ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"], local_db_conn_id, dag)
     [task_export_pbf_to_pg, task_setup_schema] >> task_load_ele
 
-    task_remove_ele_too_big = postgres_operator_from_file("remove_elements_too_big", "remove-elements-too-big.sql", local_db_conn_id, dag)
+    task_remove_ele_too_big = PostgresOperator(
+        task_id = "remove_elements_too_big",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/remove-elements-too-big.sql",
+        dag = dag,
+    )
     task_load_ele >> task_remove_ele_too_big
 
-    task_convert_ele_wd_cods = postgres_operator_from_file("convert_element_wikidata_cods", "convert-element-wikidata-cods.sql", local_db_conn_id, dag)
+    task_convert_ele_wd_cods = PostgresOperator(
+        task_id = "convert_element_wikidata_cods",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/convert-element-wikidata-cods.sql",
+        dag = dag,
+    )
     task_remove_ele_too_big >> task_convert_ele_wd_cods
 
     wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
     task_load_wd_ent = postgres_copy_from_file("load_wikidata_entities", wikidata_init_file_path, ',', 'wikidata', ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"], local_db_conn_id, dag)
     task_setup_schema >> task_load_wd_ent
 
-    task_convert_wd_ent = postgres_operator_from_file("convert_wikidata_entities", "convert-wikidata-entities.sql", local_db_conn_id, dag)
+    task_convert_wd_ent = PostgresOperator(
+        task_id = "convert_wikidata_entities",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/convert-wikidata-entities.sql",
+        dag = dag,
+    )
     [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
 
     task_load_named_after = BashOperator(task_id="download_named_after_wikidata_entities", bash_command="date", dag=dag)
@@ -162,29 +182,92 @@ def define_db_init_dag(
     task_load_consists_of = BashOperator(task_id="download_consists_of_wikidata_entities", bash_command="date", dag=dag)
     task_convert_wd_ent >> task_load_consists_of
 
-    task_convert_ety = postgres_operator_from_file("convert_etymologies", "convert-etymologies.sql", local_db_conn_id, dag)
+    task_convert_ety = PostgresOperator(
+        task_id = "convert_etymologies",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/convert-etymologies.sql",
+        dag = dag,
+    )
     [task_load_named_after, task_load_consists_of] >> task_convert_ety
 
-    task_propagate = postgres_operator_from_file("propagate_etymologies_globally", "propagate-etymologies-global.sql", local_db_conn_id, dag)
+    task_propagate = PostgresOperator(
+        task_id = "propagate_etymologies_globally",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/propagate-etymologies-global.sql",
+        dag = dag,
+    )
     task_convert_ety >> task_propagate
 
-    task_check_text_ety = postgres_operator_from_file("check_text_etymology", "check-text-etymology.sql", local_db_conn_id, dag)
+    task_check_text_ety = PostgresOperator(
+        task_id = "check_text_etymology",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/check-text-etymology.sql",
+        dag = dag,
+    )
     task_propagate >> task_check_text_ety
 
-    task_check_wd_ety = postgres_operator_from_file("check_wikidata_etymology", "check-wd-etymology.sql", local_db_conn_id, dag)
+    task_check_wd_ety = PostgresOperator(
+        task_id = "check_wikidata_etymology",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/check-wd-etymology.sql",
+        dag = dag,
+    )
     task_check_text_ety >> task_check_wd_ety
 
-    task_move_ele = postgres_operator_from_file("move_elements_with_etymology", "move-elements-with-etymology.sql", local_db_conn_id, dag)
+    task_move_ele = PostgresOperator(
+        task_id = "move_elements_with_etymology",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/move-elements-with-etymology.sql",
+        dag = dag,
+    )
     task_check_wd_ety >> task_move_ele
 
-    task_setup_ety_fk = postgres_operator_from_file("setup_etymology_foreign_key", "etymology-foreign-key.sql", local_db_conn_id, dag)
+    task_setup_ety_fk = PostgresOperator(
+        task_id = "setup_etymology_foreign_key",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/etymology-foreign-key.sql",
+        dag = dag,
+    )
     task_move_ele >> task_setup_ety_fk
 
-    task_drop_temp_tables = postgres_operator_from_file("drop_temporary_tables", "drop-temp-tables.sql", local_db_conn_id, dag)
+    task_drop_temp_tables = PostgresOperator(
+        task_id = "drop_temporary_tables",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/drop-temp-tables.sql",
+        dag = dag,
+    )
     task_move_ele >> task_drop_temp_tables
 
-    task_global_map = postgres_operator_from_file("setup_global_map", "global-map.sql", local_db_conn_id, dag)
+    task_global_map = PostgresOperator(
+        task_id = "setup_global_map",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/global-map.sql",
+        dag = dag,
+    )
     task_move_ele >> task_global_map
+
+    # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+    task_last_update = PostgresOperator(
+        task_id = "save_last_data_update",
+        postgres_conn_id = local_db_conn_id,
+        sql = """
+            CREATE OR REPLACE FUNCTION oem.last_data_update()
+                RETURNS character varying
+                LANGUAGE 'sql'
+            AS $BODY$
+            SELECT %(last_update)s;
+            $BODY$;
+            """,
+        parameters = { "last_update": datetime.now().strftime('%y-%m-%d') },
+        dag = dag,
+    )
+    task_setup_schema >> task_last_update
+
+    task_pg_dump = BashOperator(task_id="pg_dump", bash_command="date", dag=dag)
+    [task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
+
+    task_pg_restore = BashOperator(task_id="pg_restore", bash_command="date", dag=dag)
+    task_pg_dump >> task_pg_restore
 
     return dag
 
