@@ -7,6 +7,8 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+import urllib.request
+import xml.etree.ElementTree as ET
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -60,38 +62,55 @@ def do_postgres_copy(conn_id:str, filepath:str, separator:str, schema:str, table
                 cursor.execute(f'SET search_path TO {schema}')
                 cursor.copy_from(file, table, separator, columns = columns)
 
-def postgres_copy_from_file(task_id:str, filepath:str, separator:str, table:str, columns:list, conn_id:str, dag:DAG, schema:str = 'oem') -> PythonOperator:
-    return PythonOperator(
-        task_id = task_id,
-        python_callable = do_postgres_copy,
-        op_kwargs = {
-            "conn_id": conn_id,
-            "filepath": filepath,
-            "separator": separator,
-            "schema": schema,
-            "table": table,
-            "columns": columns,
-        },
-        dag = dag,
-    )
+def get_last_pbf_url(ti) -> str:
+    pbf_url = "{{ params.pbf_url }}"
+    rss_url = "{{ params.rss_url }}"
+    html_url = "{{ params.html_url }}"
+    html_prefix = "{{ params.html_prefix }}"
+    if isinstance(pbf_url, str):
+        print("Using 'pbf_url' as source URL: ", pbf_url)
+        source_url = pbf_url
+    elif isinstance(rss_url, str) and rss_url.endswith(".xml"):
+        print("Fetching the source URL from 'rss_url':", rss_url)
+        with urllib.request.urlopen(rss_url) as response:
+            xml_content = response.read()
+            tree = ET.fromstring(xml_content)
+            root = tree.getroot()
+            channel = root.find('channel')
+            item = channel.find('item')
+            link = item.find('link')
+            source_url = link.text
+    elif isinstance(html_url, str) and isinstance(html_prefix, str):
+        print("Fetching the source URL from 'html_url':", html_url)
+        source_url = ""
+    else:
+        print("Unable to get the source URL")
+    
+    if not isinstance(source_url, str) or not source_url.endswith(".osm.pbf"):
+        raise Exception("The source url must be an OSM pbf file or as RSS for one", source_url)
+    
+    # https://linuxhint.com/fetch-basename-python/
+    basename = os.path.basename(source_url)
+    source_file_path = get_absolute_path(basename, 'pbf')
+    filtered_with_flags_tags_file_path = f"/tmp/filtered_with_flags_tags_{basename}"
+    filtered_with_flags_name_tags_file_path = f"/tmp/filtered_with_flags_name_tags_{basename}"
+    filtered_file_path = f"/tmp/filtered_{basename}"
+    pg_file_path = get_absolute_path(basename+".pg", 'pbf')
+    
+    ti.xcom_push(key='source_url', value=source_url)
+    ti.xcom_push(key='basename', value=basename)
+    ti.xcom_push(key='source_file_path', value=source_file_path)
+    ti.xcom_push(key='filtered_possible_file_path', value=filtered_with_flags_tags_file_path)
+    ti.xcom_push(key='filtered_name_file_path', value=filtered_with_flags_name_tags_file_path)
+    ti.xcom_push(key='filtered_file_path', value=filtered_file_path)
+    ti.xcom_push(key='pg_file_path', value=pg_file_path)
 
 def define_db_init_dag(
-        dag_id:str, schedule_interval:str, local_db_conn_id:str, upload_db_conn_id:str, source_url:str
+        dag_id:str, schedule_interval:str, local_db_conn_id:str, upload_db_conn_id:str, default_args:dict
     ):
     """
     See https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html
     """
-
-    if not source_url.endswith(".osm.pbf"):
-        raise Exception("The source url must be an OSM pbf file")
-
-    # https://linuxhint.com/fetch-basename-python/
-    basename = os.path.basename(source_url)
-    
-    default_args = {
-        "source_url" : source_url,
-        "upload_db_conn_id" : upload_db_conn_id,
-    }
 
     dag = DAG(
             dag_id = dag_id,
@@ -102,7 +121,23 @@ def define_db_init_dag(
             params=default_args,
         )
 
-    task_download_pbf = BashOperator(task_id="download_pbf", bash_command="date", dag=dag)
+    task_get_source_url = PythonOperator(
+        task_id = "get_source_url",
+        python_callable = get_last_pbf_url,
+        do_xcom_push = True,
+        dag = dag,
+    )
+
+    task_download_pbf = BashOperator(
+        task_id = "download_pbf",
+        bash_command = 'curl --fail -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
+        env = {
+            "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
+            "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+        },
+        dag = dag,
+    )
+    task_get_source_url >> task_download_pbf
 
     task_keep_possible_ety = BashOperator(task_id="keep_elements_with_possible_etymology", bash_command="date", dag=dag)
     task_download_pbf >> task_keep_possible_ety
@@ -110,17 +145,18 @@ def define_db_init_dag(
     task_keep_name = BashOperator(task_id="keep_elements_with_name", bash_command="date", dag=dag)
     task_keep_possible_ety >> task_keep_name
 
-    task_remove_non_inte = BashOperator(task_id="remove_non_interesting_elements", bash_command="date", dag=dag)
-    task_keep_name >> task_remove_non_inte
+    task_remove_non_interesting = BashOperator(task_id="remove_non_interesting_elements", bash_command="date", dag=dag)
+    task_keep_name >> task_remove_non_interesting
 
-    pg_file_path = get_absolute_path(basename+".pg", 'pbf')
     task_export_pbf_to_pg = BashOperator(
         task_id="export_pbf_to_pg",
-        bash_command='if [[ -z "$pgFilePath" ]] ; then echo \'2346\t0101000020E61000002F151BF33A7622409E0EBFF627CA4640\tnode\t506265955\t{"name":"Scuola Primaria Ada Negri","name:etymology:wikidata":"Q346250","name:language":"it"}\'; fi',
-        env={ "pgFilePath": pg_file_path },
+        bash_command='if [[ -z "$pgFilePath" ]] ; then echo \'2346\t0101000020E61000002F151BF33A7622409E0EBFF627CA4640\tnode\t506265955\t{"name":"Scuola Primaria Ada Negri","name:etymology:wikidata":"Q346250","name:language":"it"}\' > "$pgFilePath"; fi',
+        env = {
+            "pgFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}"
+        },
         dag=dag,
     )
-    task_remove_non_inte >> task_export_pbf_to_pg
+    task_remove_non_interesting >> task_export_pbf_to_pg
 
     task_setup_db_ext = PostgresOperator(
         task_id = "setup_db_extensions",
@@ -145,7 +181,19 @@ def define_db_init_dag(
     )
     task_teardown_schema >> task_setup_schema
 
-    task_load_ele = postgres_copy_from_file("load_elements", pg_file_path, '\t', 'osmdata', ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"], local_db_conn_id, dag)
+    task_load_ele = PythonOperator(
+        task_id = "load_elements",
+        python_callable = do_postgres_copy,
+        op_kwargs = {
+            "conn_id": local_db_conn_id,
+            "filepath": "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+            "separator": '\t',
+            "schema": 'oem',
+            "table": 'osmdata',
+            "columns": ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
+        },
+        dag = dag,
+    )
     [task_export_pbf_to_pg, task_setup_schema] >> task_load_ele
 
     task_remove_ele_too_big = PostgresOperator(
@@ -165,7 +213,19 @@ def define_db_init_dag(
     task_remove_ele_too_big >> task_convert_ele_wd_cods
 
     wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
-    task_load_wd_ent = postgres_copy_from_file("load_wikidata_entities", wikidata_init_file_path, ',', 'wikidata', ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"], local_db_conn_id, dag)
+    task_load_wd_ent = PythonOperator(
+        task_id = "load_wikidata_entities",
+        python_callable = do_postgres_copy,
+        op_kwargs = {
+            "conn_id": local_db_conn_id,
+            "filepath": wikidata_init_file_path,
+            "separator": ',',
+            "schema": 'oem',
+            "table": 'wikidata',
+            "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
+        },
+        dag = dag,
+    )
     task_setup_schema >> task_load_wd_ent
 
     task_convert_wd_ent = PostgresOperator(
@@ -271,5 +331,6 @@ def define_db_init_dag(
 
     return dag
 
-planet = define_db_init_dag("db-init-planet", "@weekly", "oem-local", "oem-prod", "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf")
-nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-local", "oem-prod-no", "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf")
+planet = define_db_init_dag("db-init-planet", "@weekly", "oem-local", "oem-prod", { "rss_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml" })
+#planet = define_db_init_dag("db-init-planet", "@weekly", "oem-local", "oem-prod", { "pbf_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf" })
+nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-local", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf" })

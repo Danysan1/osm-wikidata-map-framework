@@ -52,7 +52,7 @@ services:
     restart: always
     networks:
       - airflow-internal
-      - oem-airflow-bridge
+      - pgadmin-bridge
     profiles:
       - dev-airflow
 
@@ -127,7 +127,7 @@ services:
     restart: always
     networks:
       - airflow-internal
-      - oem-airflow-bridge
+      - airflow-worker-bridge
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -268,7 +268,7 @@ services:
       - db-data:/var/lib/postgresql/data
     networks:
       - oem-internal
-      - oem-airflow-bridge
+      - airflow-worker-bridge
     logging:
       driver: json-file
       options:
@@ -297,9 +297,9 @@ services:
       - ./pgadmin_init.json:/pgadmin4/servers.json
     networks:
       - oem-internal
-      - oem-airflow-bridge
+      - pgadmin-bridge
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8000/"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/login"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -320,7 +320,7 @@ services:
       - oem-postgis
     networks:
       - oem-internal
-      - oem-airflow-bridge
+      - airflow-worker-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -386,4 +386,5 @@ volumes:
 networks:
   oem-internal:
   airflow-internal:
-  oem-airflow-bridge:
+  airflow-worker-bridge:
+  pgadmin-bridge:
