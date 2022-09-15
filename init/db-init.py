@@ -7,6 +7,10 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.models.taskinstance import TaskInstance
+from airflow.operators.python import BranchPythonOperator
+from airflow.operators.empty import EmptyOperator
+from airflow.providers.ssh.operators.ssh import SshOperator
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -14,53 +18,66 @@ def get_absolute_path(filename:str, folder:str = None) -> str:
         file_dir_path = os.path.join(file_dir_path, folder)
     return os.path.join(file_dir_path, filename)
 
-def read_sql_query(filename:str) -> str:
-    """
-    See https://airflow.apache.org/docs/apache-airflow/2.1.4/best-practices.html#dynamic-dags-with-external-configuration-from-a-structured-data-file
-    """
-    sql_file_path = get_absolute_path(filename, 'sql')
-    with open(sql_file_path) as sql_file:
-        sql_content = sql_file.read()
+class PostgresCopyOperator(PythonOperator):
+    def __init__(self, task_id:str, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list, dag:DAG) -> None:
+        super().__init__(
+            task_id = task_id,
+            python_callable = self.do_postgres_copy,
+            op_kwargs = {
+                "postgres_conn_id": postgres_conn_id,
+                "filepath": filepath,
+                "separator": separator,
+                "schema": schema,
+                "table": table,
+                "columns": columns,
+            },
+            dag = dag,
+        )
 
-    return sql_content
+    def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
+        """
+        See https://www.psycopg.org/docs/usage.html#copy
+        See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
+        See https://github.com/psycopg/psycopg2/issues/1294
+        """
+        pg_hook = PostgresHook(postgres_conn_id)
+        with pg_hook.get_conn() as pg_conn:
+            with pg_conn.cursor() as cursor:
+                with open(filepath) as file:
+                    cursor.execute(f'SET search_path TO {schema}')
+                    cursor.copy_from(file, table, separator, columns = columns)
 
-def do_postgres_query(conn_id:str, sql_stmt:str, params:dict = None):
-    """
-    See https://medium.com/towards-data-science/apache-airflow-for-data-science-how-to-work-with-databases-postgres-a4dc79c04cb8
-    """
-    pg_hook = PostgresHook(conn_id)
-    pg_conn = pg_hook.get_conn()
-    cursor = pg_conn.cursor()
-    cursor.execute(sql_stmt, params)
-    return cursor.fetchall()
+class OsmiumTagsFilterOperator(SshOperator):
+    def __init__(self, task_id:str, ssh_conn_id:str, source_path:str, dest_path:str, tags:list, dag:DAG, invert_match:bool = False, remove_tags:bool = False) -> None:
+        invert_match_str = "--invert-match" if invert_match else ""
+        remove_tags_str = "--remove-tags" if remove_tags else ""
+        super().__init__(
+            task_id = task_id,
+            ssh_conn_id = ssh_conn_id,
+            command = 'osmium tags-filter --verbose --input-format=pbf --output-format=pbf {{ invert_match_str }} {{ remove_tags }} -o "$destPath" "$sourcePath" $quoted_tags',
+            environment = {
+                "sourcePath": source_path,
+                "destPath": dest_path,
+                "quoted_tags": ' '.join(map(lambda tag: f"'{tag}'", tags))
+            },
+            dag = dag,
+        )
 
+class OsmiumExportOperator(SshOperator):
+    def __init__(self, ssh_conn_id:str, source_path:str, dest_path:str, config_path:str, dag:DAG, ti:TaskInstance) -> None:
+        super().__init__(
+            ssh_conn_id = ssh_conn_id,
+            command = 'osmium export --verbose --overwrite -o "$destPath" -f "pg" --config="$configPath" --add-unique-id="counter" --index-type=$osmiumCache --show-errors "$sourcePath"',
+            environment = {
+                "sourcePath": source_path,
+                "destPath": dest_path,
+                "configPath": config_path,
+                "osmiumCache": "sparse_file_array,/tmp/osmium_cache_{{ ti.run_id }}",
+            },
+            dag = dag,
+        )
 
-def postgres_query_from_file(task_id:str, filename:str, conn_id:str, dag:DAG, params:dict = None) -> PythonOperator:
-    return PythonOperator(
-        task_id = task_id,
-        python_callable = do_postgres_query,
-        op_kwargs = {
-            "conn_id" : conn_id,
-            "sql_stmt" : read_sql_query(filename),
-            "params" : params
-        },
-        dag = dag,
-    )
-
-def do_postgres_copy(conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list):
-    """
-    See https://www.psycopg.org/docs/usage.html#copy
-    See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
-    See https://github.com/psycopg/psycopg2/issues/1294
-    """
-    pg_hook = PostgresHook(conn_id)
-    with pg_hook.get_conn() as pg_conn:
-        with pg_conn.cursor() as cursor:
-            with open(filepath) as file:
-                cursor.execute(f'SET search_path TO {schema}')
-                cursor.copy_from(file, table, separator, columns = columns)
-
-def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti) -> str:
+def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti:TaskInstance) -> str:
     if pbf_url:
         print("Using 'pbf_url' as source URL: ", pbf_url)
         source_url = pbf_url
@@ -104,11 +121,14 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
     ti.xcom_push(key='absolute_pg_file_path', value=absolute_pg_file_path)
 
 def define_db_init_dag(
-        dag_id:str, schedule_interval:str, local_db_conn_id:str, upload_db_conn_id:str, default_args:dict
+        dag_id:str, schedule_interval:str, upload_db_conn_id:str, default_args:dict
     ):
     """
     See https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html
     """
+
+    local_db_conn_id = "oem-postgis-conn"
+    local_osmium_conn_id = "oem-web-dev-conn"
 
     dag = DAG(
             dag_id = dag_id,
@@ -143,24 +163,65 @@ def define_db_init_dag(
     )
     task_get_source_url >> task_download_pbf
 
-    task_keep_possible_ety = BashOperator(task_id="keep_elements_with_possible_etymology", bash_command="date", dag=dag)
-    task_download_pbf >> task_keep_possible_ety
-
-    task_keep_name = BashOperator(task_id="keep_elements_with_name", bash_command="date", dag=dag)
-    task_keep_possible_ety >> task_keep_name
-
-    task_remove_non_interesting = BashOperator(task_id="remove_non_interesting_elements", bash_command="date", dag=dag)
-    task_keep_name >> task_remove_non_interesting
-
-    task_export_pbf_to_pg = BashOperator(
-        task_id="export_pbf_to_pg",
-        bash_command='if [[ -z "$pgFilePath" ]] ; then echo \'2346\t0101000020E61000002F151BF33A7622409E0EBFF627CA4640\tnode\t506265955\t{"name":"Scuola Primaria Ada Negri","name:etymology:wikidata":"Q346250","name:language":"it"}\' > "$pgFilePath"; fi',
-        env = {
-            "pgFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}"
-        },
+    task_keep_possible_ety = OsmiumTagsFilterOperator(
+        task_id="keep_elements_with_possible_etymology",
+        ssh_conn_id= local_osmium_conn_id,
+        source_path= "",
+        dest_path= "",
+        tags=[
+            'w/highway=residential',
+            'w/highway=unclassified',
+            'wikidata',
+            'name:etymology:wikidata',
+            'name:etymology',
+            'subject:wikidata'
+        ],
+        remove_tags= True,
         dag=dag,
     )
-    task_remove_non_interesting >> task_export_pbf_to_pg
+    task_download_pbf >> task_keep_possible_ety
+
+    task_keep_name = OsmiumTagsFilterOperator(
+        task_id="keep_elements_with_name",
+        ssh_conn_id= local_osmium_conn_id,
+        source_path= "",
+        dest_path= "",
+        tags=['name'],
+        dag=dag,
+    )
+    task_keep_possible_ety >> task_keep_name
+
+    task_remove_non_interesting = OsmiumTagsFilterOperator(
+        task_id="remove_non_interesting_elements",
+        ssh_conn_id= local_osmium_conn_id,
+        source_path= "",
+        dest_path= "",
+        tags=[
+            'man_made=flagpole',
+            'n/place=region',
+            'n/place=state',
+            'n/place=country',
+            'n/place=continent',
+            'r/admin_level=4',
+            'r/admin_level=3',
+            'r/admin_level=2'
+        ],
+        invert_match= True,
+        dag=dag,
+    )
+    task_keep_name >> task_remove_non_interesting
+
+    task_osmium_or_osm2pgsql = BranchPythonOperator(task_id="choose_osmium_or_osm2pgsql", python_callable=lambda:"export_pbf_to_pg")
+    task_remove_non_interesting >> task_osmium_or_osm2pgsql
+
+    task_export_pbf_to_pg = OsmiumExportOperator(
+        task_id="export_pbf_to_pg",
+        ssh_conn_id= local_osmium_conn_id,
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_pg_file_path') }}",
+        config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium.json') }}"
+    )
+    task_osmium_or_osm2pgsql >> task_export_pbf_to_pg
 
     task_setup_db_ext = PostgresOperator(
         task_id = "setup_db_extensions",
@@ -185,20 +246,23 @@ def define_db_init_dag(
     )
     task_teardown_schema >> task_setup_schema
 
-    task_load_ele = PythonOperator(
-        task_id = "load_elements",
-        python_callable = do_postgres_copy,
-        op_kwargs = {
-            "conn_id": local_db_conn_id,
-            "filepath": "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
-            "separator": '\t',
-            "schema": 'oem',
-            "table": 'osmdata',
-            "columns": ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
-        },
+    task_load_ele_pg = PostgresCopyOperator(
+        task_id = "load_elements_from_pg_file",
+        postgres_conn_id = local_db_conn_id,
+        filepath = "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+        separator = '\t',
+        schema = 'oem',
+        table = 'osmdata',
+        columns = ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
         dag = dag,
     )
-    [task_export_pbf_to_pg, task_setup_schema] >> task_load_ele
+    [task_export_pbf_to_pg, task_setup_schema] >> task_load_ele_pg
+
+    task_load_ele_osm2pgsql = EmptyOperator(
+        task_id = "load_elements_with_osm2pgsql",
+        dag = dag,
+    )
+    [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_osm2pgsql
 
     task_remove_ele_too_big = PostgresOperator(
         task_id = "remove_elements_too_big",
@@ -206,7 +270,7 @@ def define_db_init_dag(
         sql = "sql/remove-elements-too-big.sql",
         dag = dag,
     )
-    task_load_ele >> task_remove_ele_too_big
+    [task_load_ele_pg, task_load_ele_osm2pgsql] >> task_remove_ele_too_big
 
     task_convert_ele_wd_cods = PostgresOperator(
         task_id = "convert_element_wikidata_cods",
@@ -217,17 +281,14 @@ def define_db_init_dag(
     task_remove_ele_too_big >> task_convert_ele_wd_cods
 
     wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
-    task_load_wd_ent = PythonOperator(
+    task_load_wd_ent = PostgresCopyOperator(
         task_id = "load_wikidata_entities",
-        python_callable = do_postgres_copy,
-        op_kwargs = {
-            "conn_id": local_db_conn_id,
-            "filepath": wikidata_init_file_path,
-            "separator": ',',
-            "schema": 'oem',
-            "table": 'wikidata',
-            "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
-        },
+        postgres_conn_id = local_db_conn_id,
+        filepath = wikidata_init_file_path,
+        separator = ',',
+        schema = 'oem',
+        table = 'wikidata',
+        columns = ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
         dag = dag,
     )
     task_setup_schema >> task_load_wd_ent
@@ -335,6 +396,6 @@ def define_db_init_dag(
 
     return dag
 
-planet = define_db_init_dag("db-init-planet", "@weekly", "oem-local", "oem-prod", { "rss_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml" })
-#planet = define_db_init_dag("db-init-planet", "@weekly", "oem-local", "oem-prod", { "pbf_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf" })
-nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-local", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf" })
+planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "rss_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml" })
+#planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "pbf_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf" })
+nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf" })
