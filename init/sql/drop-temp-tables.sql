@@ -15,5 +15,3 @@ DROP TABLE IF EXISTS oem.planet_osm_rels;
 DROP TABLE IF EXISTS oem.planet_osm_roads;
 
 DROP TABLE IF EXISTS oem.planet_osm_ways;
-
-DROP TABLE IF EXISTS oem.etymology_template;
