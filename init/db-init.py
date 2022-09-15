@@ -7,8 +7,6 @@ from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
-import urllib.request
-import xml.etree.ElementTree as ET
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -62,16 +60,14 @@ def do_postgres_copy(conn_id:str, filepath:str, separator:str, schema:str, table
                 cursor.execute(f'SET search_path TO {schema}')
                 cursor.copy_from(file, table, separator, columns = columns)
 
-def get_last_pbf_url(ti) -> str:
-    pbf_url = "{{ params.pbf_url }}"
-    rss_url = "{{ params.rss_url }}"
-    html_url = "{{ params.html_url }}"
-    html_prefix = "{{ params.html_prefix }}"
-    if isinstance(pbf_url, str):
+def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti) -> str:
+    if pbf_url:
         print("Using 'pbf_url' as source URL: ", pbf_url)
         source_url = pbf_url
-    elif isinstance(rss_url, str) and rss_url.endswith(".xml"):
+    elif rss_url and rss_url.endswith(".xml"):
         print("Fetching the source URL from 'rss_url':", rss_url)
+        import urllib.request
+        import xml.etree.ElementTree as ET
         with urllib.request.urlopen(rss_url) as response:
             xml_content = response.read()
             tree = ET.fromstring(xml_content)
@@ -80,7 +76,7 @@ def get_last_pbf_url(ti) -> str:
             item = channel.find('item')
             link = item.find('link')
             source_url = link.text
-    elif isinstance(html_url, str) and isinstance(html_prefix, str):
+    elif html_url and html_prefix:
         print("Fetching the source URL from 'html_url':", html_url)
         source_url = ""
     else:
@@ -95,7 +91,8 @@ def get_last_pbf_url(ti) -> str:
     filtered_with_flags_tags_file_path = f"/tmp/filtered_with_flags_tags_{basename}"
     filtered_with_flags_name_tags_file_path = f"/tmp/filtered_with_flags_name_tags_{basename}"
     filtered_file_path = f"/tmp/filtered_{basename}"
-    pg_file_path = get_absolute_path(basename+".pg", 'pbf')
+    relative_pg_file_path = f"pbf/{basename}.pg"
+    absolute_pg_file_path = get_absolute_path(relative_pg_file_path)
     
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='basename', value=basename)
@@ -103,7 +100,8 @@ def get_last_pbf_url(ti) -> str:
     ti.xcom_push(key='filtered_possible_file_path', value=filtered_with_flags_tags_file_path)
     ti.xcom_push(key='filtered_name_file_path', value=filtered_with_flags_name_tags_file_path)
     ti.xcom_push(key='filtered_file_path', value=filtered_file_path)
-    ti.xcom_push(key='pg_file_path', value=pg_file_path)
+    ti.xcom_push(key='relative_pg_file_path', value=relative_pg_file_path)
+    ti.xcom_push(key='absolute_pg_file_path', value=absolute_pg_file_path)
 
 def define_db_init_dag(
         dag_id:str, schedule_interval:str, local_db_conn_id:str, upload_db_conn_id:str, default_args:dict
@@ -124,6 +122,12 @@ def define_db_init_dag(
     task_get_source_url = PythonOperator(
         task_id = "get_source_url",
         python_callable = get_last_pbf_url,
+        op_kwargs = {
+            "pbf_url": "{{ params.pbf_url if 'pbf_url' in params else '' }}",
+            "rss_url": "{{ params.rss_url if 'rss_url' in params else '' }}",
+            "html_url": "{{ params.html_url if 'html_url' in params else '' }}",
+            "html_prefix": "{{ params.html_prefix if 'html_prefix' in params else '' }}",
+        },
         do_xcom_push = True,
         dag = dag,
     )
