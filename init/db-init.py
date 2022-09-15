@@ -10,7 +10,9 @@ from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.models.taskinstance import TaskInstance
 from airflow.operators.python import BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
-from airflow.providers.ssh.operators.ssh import SshOperator
+from airflow.providers.ssh.operators.ssh import SSHOperator
+from airflow.utils.trigger_rule import TriggerRule
+from airflow.utils.task_group import TaskGroup
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -19,7 +21,7 @@ def get_absolute_path(filename:str, folder:str = None) -> str:
     return os.path.join(file_dir_path, filename)
 
 class PostgresCopyOperator(PythonOperator):
-    def __init__(self, task_id:str, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list, dag:DAG) -> None:
+    def __init__(self, task_id:str, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list, **kwargs) -> None:
         super().__init__(
             task_id = task_id,
             python_callable = self.do_postgres_copy,
@@ -31,7 +33,7 @@ class PostgresCopyOperator(PythonOperator):
                 "table": table,
                 "columns": columns,
             },
-            dag = dag,
+            **kwargs
         )
 
     def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
@@ -47,34 +49,34 @@ class PostgresCopyOperator(PythonOperator):
                     cursor.execute(f'SET search_path TO {schema}')
                     cursor.copy_from(file, table, separator, columns = columns)
 
-class OsmiumTagsFilterOperator(SshOperator):
-    def __init__(self, task_id:str, ssh_conn_id:str, source_path:str, dest_path:str, tags:list, dag:DAG, invert_match:bool = False, remove_tags:bool = False) -> None:
+class OsmiumTagsFilterOperator(SSHOperator):
+    def __init__(self, task_id:str, ssh_conn_id:str, source_path:str, dest_path:str, tags:list, invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
         invert_match_str = "--invert-match" if invert_match else ""
         remove_tags_str = "--remove-tags" if remove_tags else ""
         super().__init__(
             task_id = task_id,
             ssh_conn_id = ssh_conn_id,
-            command = 'osmium tags-filter --verbose --input-format=pbf --output-format=pbf {{ invert_match_str }} {{ remove_tags }} -o "$destPath" "$sourcePath" $quoted_tags',
+            command = f'osmium tags-filter --verbose --input-format=pbf --output-format=pbf {invert_match_str} {remove_tags_str} -o "$destPath" "$sourcePath" $quoted_tags',
             environment = {
                 "sourcePath": source_path,
                 "destPath": dest_path,
                 "quoted_tags": ' '.join(map(lambda tag: f"'{tag}'", tags))
             },
-            dag = dag,
+            **kwargs
         )
 
-class OsmiumExportOperator(SshOperator):
-    def __init__(self, ssh_conn_id:str, source_path:str, dest_path:str, config_path:str, dag:DAG, ti:TaskInstance) -> None:
+class OsmiumExportOperator(SSHOperator):
+    def __init__(self, task_id:str, source_path:str, dest_path:str, config_path:str, **kwargs) -> None:
         super().__init__(
-            ssh_conn_id = ssh_conn_id,
+            task_id = task_id,
             command = 'osmium export --verbose --overwrite -o "$destPath" -f "pg" --config="$configPath" --add-unique-id="counter" --index-type=$osmiumCache --show-errors "$sourcePath"',
             environment = {
                 "sourcePath": source_path,
                 "destPath": dest_path,
                 "configPath": config_path,
-                "osmiumCache": "sparse_file_array,/tmp/osmium_cache_{{ ti.run_id }}",
+                "osmiumCache": "sparse_file_array,/tmp/osmium_cache",
             },
-            dag = dag,
+            **kwargs
         )
 
 def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti:TaskInstance) -> str:
@@ -163,6 +165,8 @@ def define_db_init_dag(
     )
     task_get_source_url >> task_download_pbf
 
+    #section_filter = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=dag)
+
     task_keep_possible_ety = OsmiumTagsFilterOperator(
         task_id="keep_elements_with_possible_etymology",
         ssh_conn_id= local_osmium_conn_id,
@@ -211,18 +215,6 @@ def define_db_init_dag(
     )
     task_keep_name >> task_remove_non_interesting
 
-    task_osmium_or_osm2pgsql = BranchPythonOperator(task_id="choose_osmium_or_osm2pgsql", python_callable=lambda:"export_pbf_to_pg")
-    task_remove_non_interesting >> task_osmium_or_osm2pgsql
-
-    task_export_pbf_to_pg = OsmiumExportOperator(
-        task_id="export_pbf_to_pg",
-        ssh_conn_id= local_osmium_conn_id,
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_pg_file_path') }}",
-        config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium.json') }}"
-    )
-    task_osmium_or_osm2pgsql >> task_export_pbf_to_pg
-
     task_setup_db_ext = PostgresOperator(
         task_id = "setup_db_extensions",
         postgres_conn_id = local_db_conn_id,
@@ -246,6 +238,25 @@ def define_db_init_dag(
     )
     task_teardown_schema >> task_setup_schema
 
+    #section_load = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=dag)
+    
+    task_osmium_or_osm2pgsql = BranchPythonOperator(
+        task_id="choose_osmium_or_osm2pgsql",
+        python_callable=lambda:"export_pbf_to_pg",
+        dag=dag,
+    )
+    task_remove_non_interesting >> task_osmium_or_osm2pgsql
+
+    task_export_pbf_to_pg = OsmiumExportOperator(
+        task_id="export_pbf_to_pg",
+        ssh_conn_id= local_osmium_conn_id,
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_pg_file_path') }}",
+        config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium.json') }}",
+        dag=dag,
+    )
+    task_osmium_or_osm2pgsql >> task_export_pbf_to_pg
+
     task_load_ele_pg = PostgresCopyOperator(
         task_id = "load_elements_from_pg_file",
         postgres_conn_id = local_db_conn_id,
@@ -264,13 +275,20 @@ def define_db_init_dag(
     )
     [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_osm2pgsql
 
+    join_load_ele = EmptyOperator(
+        task_id='join',
+        trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
+        dag = dag,
+    )
+    [task_load_ele_pg, task_load_ele_osm2pgsql] >> join_load_ele
+
     task_remove_ele_too_big = PostgresOperator(
         task_id = "remove_elements_too_big",
         postgres_conn_id = local_db_conn_id,
         sql = "sql/remove-elements-too-big.sql",
         dag = dag,
     )
-    [task_load_ele_pg, task_load_ele_osm2pgsql] >> task_remove_ele_too_big
+    join_load_ele >> task_remove_ele_too_big
 
     task_convert_ele_wd_cods = PostgresOperator(
         task_id = "convert_element_wikidata_cods",
