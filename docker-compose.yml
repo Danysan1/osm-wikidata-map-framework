@@ -262,7 +262,7 @@ services:
       - "5432:5432"
     environment:
       - POSTGRES_USER=oem
-      - POSTGRES_PASSWORD=oem
+      - POSTGRES_PASSWORD=_CHANGE_ME_
       - POSTGRES_DB=oem
     volumes:
       - db-data:/var/lib/postgresql/data
@@ -330,6 +330,7 @@ services:
     volumes:
       - ./web:/var/www/html:cached
       - ./init:/var/www/init:cached
+    user: "${AIRFLOW_UID:-50000}:0"
     profiles:
       - dev
       - dev-airflow
