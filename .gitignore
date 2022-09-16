@@ -1,3 +1,6 @@
+samples/*/*-output.json
+samples/*/*-output.xml
+
 *.geojson
 *.gz
 *.mvt

@@ -1,4 +1,5 @@
-.git/
+.git
+samples
 
 *.geojson
 *.gz
