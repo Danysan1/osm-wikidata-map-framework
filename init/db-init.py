@@ -131,21 +131,31 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
     
     # https://linuxhint.com/fetch-basename-python/
     basename = os.path.basename(source_url)
-    source_file_path = get_absolute_path(basename, 'pbf')
-    filtered_with_flags_tags_file_path = f"pbf/filtered_with_flags_tags_{basename}"
-    filtered_with_flags_name_tags_file_path = f"pbf/filtered_with_flags_name_tags_{basename}"
+    relative_source_file_path = f"pbf/{basename}"
+    absolute_source_file_path = get_absolute_path(relative_source_file_path)
+    filtered_name_file_path = f"pbf/filtered_name_{basename}"
+    filtered_possible_file_path = f"pbf/filtered_possible_{basename}"
     filtered_file_path = f"pbf/filtered_{basename}"
     relative_pg_file_path = f"pbf/{basename}.pg"
     absolute_pg_file_path = get_absolute_path(relative_pg_file_path)
+
+    import re
+    match = re.search('/-(\d{2})(\d{2})(\d{2})\./', basename)
+    if match != None:
+        last_data_update = f'20{match.group(1)}-{match.group(2)}-{match.group(3)}'
+    else:
+        last_data_update = datetime.now().strftime('%y-%m-%d')
     
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='basename', value=basename)
-    ti.xcom_push(key='source_file_path', value=source_file_path)
-    ti.xcom_push(key='filtered_possible_file_path', value=filtered_with_flags_tags_file_path)
-    ti.xcom_push(key='filtered_name_file_path', value=filtered_with_flags_name_tags_file_path)
+    ti.xcom_push(key='relative_source_file_path', value=relative_source_file_path)
+    ti.xcom_push(key='absolute_source_file_path', value=absolute_source_file_path)
+    ti.xcom_push(key='filtered_name_file_path', value=filtered_name_file_path)
+    ti.xcom_push(key='filtered_possible_file_path', value=filtered_possible_file_path)
     ti.xcom_push(key='filtered_file_path', value=filtered_file_path)
     ti.xcom_push(key='relative_pg_file_path', value=relative_pg_file_path)
     ti.xcom_push(key='absolute_pg_file_path', value=absolute_pg_file_path)
+    ti.xcom_push(key='last_data_update', value=last_data_update)
 
 def define_db_init_dag(
         dag_id:str, schedule_interval:str, upload_db_conn_id:str, default_args:dict
@@ -191,6 +201,16 @@ def define_db_init_dag(
 
     pbf_filter_group = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=dag)
 
+    task_keep_name = OsmiumTagsFilterOperator(
+        task_id = "keep_elements_with_name",
+        source_path= "",
+        dest_path= "",
+        tags=['name'],
+        dag=dag,
+        task_group=pbf_filter_group,
+    )
+    task_download_pbf >> task_keep_name
+
     task_keep_possible_ety = OsmiumTagsFilterOperator(
         task_id = "keep_elements_with_possible_etymology",
         source_path= "",
@@ -207,16 +227,7 @@ def define_db_init_dag(
         dag=dag,
         task_group=pbf_filter_group,
     )
-    task_download_pbf >> task_keep_possible_ety
-
-    task_keep_name = OsmiumTagsFilterOperator(
-        task_id = "keep_elements_with_name",
-        source_path= "",
-        dest_path= "",
-        tags=['name'],
-        dag=dag,
-    )
-    task_keep_possible_ety >> task_keep_name
+    task_keep_name >> task_keep_possible_ety
 
     task_remove_non_interesting = OsmiumTagsFilterOperator(
         task_id = "remove_non_interesting_elements",
@@ -236,7 +247,7 @@ def define_db_init_dag(
         dag=dag,
         task_group=pbf_filter_group,
     )
-    task_keep_name >> task_remove_non_interesting
+    task_keep_possible_ety >> task_remove_non_interesting
 
     task_setup_db_ext = PostgresOperator(
         task_id = "setup_db_extensions",
@@ -453,7 +464,9 @@ def define_db_init_dag(
             SELECT %(last_update)s;
             $BODY$;
             """,
-        parameters = { "last_update": datetime.now().strftime('%y-%m-%d') },
+        parameters = {
+            "last_update": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}"
+        },
         dag = dag,
     )
     task_setup_schema >> task_last_update

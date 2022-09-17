@@ -242,31 +242,30 @@ function runOsmiumFileInfo(string $filePath): array
 }
 
 function filterInputData(
-    string $sourceFilePath,
+    string $workDir,
     string $sourceFileName,
-    string $filteredFilePath,
+    string $filteredFileName,
     bool $cleanup = false,
     bool $load_roads = false,
     bool $load_text_etymology = false
 ): void {
-    // Keep only elements that have a tag that could lead to an etymology
+    // Keep only elements that have a name
+    $sourceFilePath = "$workDir/$sourceFileName";
+    $filteredNameFilePath = "$workDir/filtered_name_$sourceFileName";
+    runOsmiumTagsFilter($sourceFilePath, $filteredNameFilePath, 'name', $cleanup);
+
+    // Keep only elements that have a tag that could possibly lead to an etymology
     $allowedTags = [];
     if ($load_roads) {
-        //$allowedTags[] = 'w/highway';
-        $allowedTags[] = 'w/highway=residential';
-        $allowedTags[] = 'w/highway=unclassified';
+        $allowedTags[] = 'w/highway';
     }
     $allowedTags[] = 'wikidata';
     $allowedTags[] = 'name:etymology:wikidata';
     if ($load_text_etymology)
         $allowedTags[] = 'name:etymology';
     $allowedTags[] = 'subject:wikidata';
-    $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
-    runOsmiumTagsFilter($sourceFilePath, $filteredWithFlagsTagsFilePath, $allowedTags, $cleanup,  '--remove-tags');
-
-    // Keep only elements that have a name
-    $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
-    runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
+    $filteredPossibleFilePath = "$workDir/filtered_possible_$sourceFileName";
+    runOsmiumTagsFilter($filteredNameFilePath, $filteredPossibleFilePath, $allowedTags, $cleanup, '--remove-tags');
 
     // Remove elements not interesting or too big
     $unallowedTags = [
@@ -279,7 +278,8 @@ function filterInputData(
         'r/admin_level=3',
         'r/admin_level=2'
     ];
-    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, $unallowedTags, $cleanup, '--invert-match');
+    $filteredFilePath = "$workDir/$filteredFileName";
+    runOsmiumTagsFilter($filteredPossibleFilePath, $filteredFilePath, $unallowedTags, $cleanup, '--invert-match');
 
     //runOsmiumFileInfo($filteredFilePath);
 }
@@ -641,11 +641,8 @@ if (!is_file($osmiumFilePath)) {
     exit(1);
 }
 
-//$filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
-$filteredFilePath = "$workDir/filtered_$sourceFileName";
-
-$osmiumCachePath = sys_get_temp_dir() . "/osmium_${sourceFileName}_" . filesize($sourceFilePath);
-$osmiumCache = "sparse_file_array,$osmiumCachePath";
+$filteredFileName = "filtered_$sourceFileName";
+$filteredFilePath = "$workDir/$filteredFileName";
 
 if (is_file($filteredFilePath) && $cleanup)
     unlink($filteredFilePath);
@@ -658,12 +655,16 @@ if (is_file($pgFilePath) && $cleanup) {
 }
 
 $propagate = $propagate_nearby || $propagate_global;
-filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
+filterInputData($workDir, $sourceFileName, $filteredFileName, $cleanup, $propagate, $load_text_etymology);
 
 if (is_file($pgFilePath) && (filemtime($pgFilePath) > filemtime($sourceFilePath))) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($use_osmium_export) {
     logProgress('Exporting OSM data to PostGIS tsv...');
+
+    $osmiumCachePath = sys_get_temp_dir() . "/osmium_${sourceFileName}_" . filesize($sourceFilePath);
+    $osmiumCache = "sparse_file_array,$osmiumCachePath";
+    
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
