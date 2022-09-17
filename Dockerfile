@@ -1,3 +1,6 @@
+# https://docs.docker.com/develop/develop-images/multistage-build/
+# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
+
 # https://hub.docker.com/_/php
 FROM php:8.1-apache-bullseye AS base
 WORKDIR /var/www
@@ -13,11 +16,9 @@ COPY ./composer.json /var/www/composer.json
 
 
 
-# https://docs.docker.com/develop/develop-images/multistage-build/
 # https://docs.docker.com/engine/reference/commandline/build/
 FROM base AS dev
 # https://gist.github.com/ben-albon/3c33628662dcd4120bf4
-# https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 RUN apt-get update && \
 	apt-get install -y libpq-dev libzip-dev zip git osmium-tool osm2pgsql npm && \
 	rm -rf /var/lib/apt/lists/*

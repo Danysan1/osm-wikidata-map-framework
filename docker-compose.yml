@@ -23,11 +23,12 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-ssh}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-ssh apache-airflow-providers-docker}
   volumes:
     - ./init:/opt/airflow/dags
     - ./airflow-logs:/opt/airflow/logs
     - ./airflow-plugins:/opt/airflow/plugins
+    - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -84,6 +85,7 @@ services:
     restart: always
     networks:
       - airflow-internal
+      - airflow-worker-bridge
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -320,7 +322,6 @@ services:
       - oem-postgis
     networks:
       - oem-internal
-      - airflow-worker-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -330,7 +331,6 @@ services:
     volumes:
       - ./web:/var/www/html:cached
       - ./init:/var/www/init:cached
-    user: "${AIRFLOW_UID:-50000}:0"
     profiles:
       - dev
       - dev-airflow
