@@ -71,14 +71,14 @@ class OsmiumTagsFilterOperator(DockerOperator):
         )
 
 class OsmiumExportOperator(DockerOperator):
-    def __init__(self, task_id:str, source_path:str, dest_path:str, config_path:str = None, **kwargs) -> None:
-        cache_str = f'sparse_file_array,/tmp/osmium_{os.path.basename(source_path)}'
+    def __init__(self, task_id:str, source_path:str, dest_path:str, cache_path:str = None, config_path:str = None, **kwargs) -> None:
+        cache_str = f"--index-type='sparse_file_array,{cache_path}'" if cache_path != None else ""
         config_str = f"--config='{config_path}'" if config_path != None else ""
         super().__init__(
             task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
-            command = f"osmium export --verbose --overwrite -o '{dest_path}' -f 'pg' {config_str} --add-unique-id='counter' --index-type='{cache_str}' --show-errors '{source_path}'",
+            command = f"osmium export --verbose --overwrite -o '{dest_path}' -f 'pg' {config_str} --add-unique-id='counter' {cache_str} --show-errors '{source_path}'",
             mounts=[
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
@@ -304,6 +304,7 @@ def define_db_init_dag(
         task_id = "osmium_export_pbf_to_pg",
         source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
         dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+        cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}",
         config_path= "/workdir/osmium.json",
         dag=dag,
         task_group=db_load_group,
