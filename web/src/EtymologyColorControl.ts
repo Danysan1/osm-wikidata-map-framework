@@ -30,6 +30,13 @@ const colorSchemes: ColorScheme[] = [
         color: ["coalesce", ['get', 'type_color'], "#223b53"],
         urlCode: "typeStats",
     },
+    {
+        id: "propagation",
+        colorField: "propagation_color",
+        text: "By propagation",
+        color: ["coalesce", ['get', 'propagation_color'], "#223b53"],
+        urlCode: null
+    },
     { id: "black", text: 'Uniform black', color: '#223b53', colorField: null, urlCode: null },
     { id: "red", text: 'Uniform red', color: '#e55e5e', colorField: null, urlCode: null },
     { id: "orange", text: 'Uniform orange', color: '#fbb03b', colorField: null, urlCode: null },
