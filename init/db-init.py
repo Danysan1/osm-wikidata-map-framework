@@ -13,6 +13,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
+from docker.types import Mount
 
 # https://www.astronomer.io/guides/logging/
 #task_logger = logging.getLogger('airflow.task')
@@ -56,60 +57,54 @@ class OsmiumTagsFilterOperator(DockerOperator):
     def __init__(self, task_id:str, source_path:str, dest_path:str, tags:list, invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
         invert_match_str = "--invert-match" if invert_match else ""
         remove_tags_str = "--remove-tags" if remove_tags else ""
+        quoted_tags = ' '.join(map(lambda tag: f"'{tag}'", tags))
         super().__init__(
             task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
-            command = f'osmium tags-filter --verbose --input-format=pbf --output-format=pbf {invert_match_str} {remove_tags_str} -o "$destPath" "$sourcePath" $quoted_tags',
-            environment = {
-                "sourcePath": source_path,
-                "destPath": dest_path,
-                "quoted_tags": ' '.join(map(lambda tag: f"'{tag}'", tags))
-            },
-            volumes=[
-                "/opt/airflow/dags/pbf:/home/oem/pbf"
+            command = f"osmium tags-filter --verbose --input-format=pbf --output-format=pbf {invert_match_str} {remove_tags_str} --output='{dest_path}' --overwrite '{source_path}' {quoted_tags}",
+            mounts=[
+                Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
+            mount_tmp_dir=False,
             **kwargs
         )
 
 class OsmiumExportOperator(DockerOperator):
-    def __init__(self, task_id:str, source_path:str, dest_path:str, config_path:str, **kwargs) -> None:
+    def __init__(self, task_id:str, source_path:str, dest_path:str, config_path:str = None, **kwargs) -> None:
+        cache_str = f'sparse_file_array,/tmp/osmium_{os.path.basename(source_path)}'
+        config_str = f"--config='{config_path}'" if config_path != None else ""
         super().__init__(
             task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
-            command = 'osmium export --verbose --overwrite -o "$destPath" -f "pg" --config="$configPath" --add-unique-id="counter" --index-type=$osmiumCache --show-errors "$sourcePath"',
-            environment = {
-                "sourcePath": source_path,
-                "destPath": dest_path,
-                "configPath": config_path,
-                "osmiumCache": "sparse_file_array,/tmp/osmium_cache",
-            },
-            volumes=[
-                "/opt/airflow/dags/pbf:/home/oem/pbf"
+            command = f"osmium export --verbose --overwrite -o '{dest_path}' -f 'pg' {config_str} --add-unique-id='counter' --index-type='{cache_str}' --show-errors '{source_path}'",
+            mounts=[
+                Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
+            mount_tmp_dir=False,
             **kwargs
         )
 
 class Osm2pgsqlOperator(DockerOperator):
     def __init__(self, task_id:str, postgres_conn_id:str, source_path:str, **kwargs) -> None:
         postgres_conn = PostgresHook.get_connection(postgres_conn_id)
+        host = postgres_conn.host
+        port = postgres_conn.port
+        user = postgres_conn.login
+        db = postgres_conn.schema
         super().__init__(
             task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
-            command = 'osm2pgsql --host="$pgHost" --port="$pgPort" --database="$pgDB" --user="$pgUser" --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 "$sourcePath"',
+            command = f"osm2pgsql --host='{host}' --port='{port}' --database='{db}' --user='{user}' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '{source_path}'",
             environment = {
-                "pgHost": postgres_conn.host,
-                "pgPort": postgres_conn.port,
-                "pgUser": postgres_conn.login,
                 "PGPASSWORD": postgres_conn.password,
-                "pgDB": postgres_conn.schema,
-                "sourcePath": source_path,
             },
-            volumes=[
-                "/opt/airflow/dags/pbf:/home/oem/pbf"
+            mounts=[
+                Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
+            mount_tmp_dir=False,
             **kwargs
         )
 
@@ -119,11 +114,11 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
         source_url = pbf_url
     elif rss_url and rss_url.endswith(".xml"):
         print("Fetching the source URL from 'rss_url':", rss_url)
-        import urllib.request
-        import xml.etree.ElementTree as ET
-        with urllib.request.urlopen(rss_url) as response:
+        from urllib.request import urlopen
+        from xml.etree.ElementTree import fromstring
+        with urlopen(rss_url) as response:
             xml_content = response.read()
-            tree = ET.fromstring(xml_content)
+            tree = fromstring(xml_content)
             root = tree.getroot()
             channel = root.find('channel')
             item = channel.find('item')
@@ -140,13 +135,11 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
     
     # https://linuxhint.com/fetch-basename-python/
     basename = os.path.basename(source_url)
-    relative_source_file_path = f"pbf/{basename}"
-    absolute_source_file_path = get_absolute_path(relative_source_file_path)
-    relative_filtered_name_file_path = f"pbf/filtered_name_{basename}"
-    relative_filtered_possible_file_path = f"pbf/filtered_possible_{basename}"
-    relative_filtered_file_path = f"pbf/filtered_{basename}"
-    relative_pg_file_path = f"pbf/{basename}.pg"
-    absolute_pg_file_path = get_absolute_path(relative_pg_file_path)
+    source_file_path = f"/workdir/{basename}"
+    filtered_name_file_path = f"/workdir/filtered_name_{basename}"
+    filtered_possible_file_path = f"/workdir/filtered_possible_{basename}"
+    filtered_file_path = f"/workdir/filtered_{basename}"
+    pg_file_path = f"/workdir/{basename}.pg"
 
     import re
     match = re.search('/-(\d{2})(\d{2})(\d{2})\./', basename)
@@ -157,14 +150,16 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
     
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='basename', value=basename)
-    ti.xcom_push(key='relative_source_file_path', value=relative_source_file_path)
-    ti.xcom_push(key='absolute_source_file_path', value=absolute_source_file_path)
-    ti.xcom_push(key='relative_filtered_name_file_path', value=relative_filtered_name_file_path)
-    ti.xcom_push(key='relative_filtered_possible_file_path', value=relative_filtered_possible_file_path)
-    ti.xcom_push(key='relative_filtered_file_path', value=relative_filtered_file_path)
-    ti.xcom_push(key='relative_pg_file_path', value=relative_pg_file_path)
-    ti.xcom_push(key='absolute_pg_file_path', value=absolute_pg_file_path)
+    ti.xcom_push(key='source_file_path', value=source_file_path)
+    ti.xcom_push(key='filtered_name_file_path', value=filtered_name_file_path)
+    ti.xcom_push(key='filtered_possible_file_path', value=filtered_possible_file_path)
+    ti.xcom_push(key='filtered_file_path', value=filtered_file_path)
+    ti.xcom_push(key='pg_file_path', value=pg_file_path)
     ti.xcom_push(key='last_data_update', value=last_data_update)
+
+def do_copy_file(source_path:str, dest_path:str) -> None:
+    from shutil import copyfile
+    copyfile(source_path, dest_path)
 
 def define_db_init_dag(
         dag_id:str, schedule_interval:str, upload_db_conn_id:str, default_args:dict
@@ -199,9 +194,9 @@ def define_db_init_dag(
 
     task_download_pbf = BashOperator(
         task_id = "download_pbf",
-        bash_command = 'curl --fail -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
+        bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
         env = {
-            "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='absolute_source_file_path') }}",
+            "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
             "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
         },
         dag = dag,
@@ -212,8 +207,8 @@ def define_db_init_dag(
 
     task_keep_name = OsmiumTagsFilterOperator(
         task_id = "keep_elements_with_name",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_source_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_name_file_path') }}",
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
+        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
         tags=['name'],
         dag=dag,
         task_group=pbf_filter_group,
@@ -222,8 +217,8 @@ def define_db_init_dag(
 
     task_keep_possible_ety = OsmiumTagsFilterOperator(
         task_id = "keep_elements_with_possible_etymology",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_name_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_possible_file_path') }}",
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
+        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
         tags=[
             'w/highway',
             'wikidata',
@@ -239,8 +234,8 @@ def define_db_init_dag(
 
     task_remove_non_interesting = OsmiumTagsFilterOperator(
         task_id = "remove_non_interesting_elements",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_possible_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_file_path') }}",
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
+        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
         tags=[
             'man_made=flagpole',
             'n/place=region',
@@ -284,21 +279,36 @@ def define_db_init_dag(
     
     task_osmium_or_osm2pgsql = BranchPythonOperator(
         task_id = "choose_osmium_or_osm2pgsql",
-        python_callable=lambda:"export_pbf_to_pg",
+        python_callable=lambda task_id : f"load_osm_data.{task_id}",
+        op_kwargs = {
+            "task_id": "{{'load_elements_with_osm2pgsql' if 'use_osm2pgsql' in params and params.use_osm2pgsql else 'copy_osmium_export_config'}}"
+        },
         dag=dag,
         task_group=db_load_group,
     )
     task_remove_non_interesting >> task_osmium_or_osm2pgsql
 
-    task_export_pbf_to_pg = OsmiumExportOperator(
-        task_id = "export_pbf_to_pg",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_pg_file_path') }}",
-        config_path= "osmium.json",
+    task_copy_config = PythonOperator(
+        task_id = "copy_osmium_export_config",
+        python_callable = do_copy_file,
+        op_kwargs = {
+            "source_path": get_absolute_path("osmium.json"),
+            "dest_path": "/workdir/osmium.json",     
+        },
         dag=dag,
         task_group=db_load_group,
     )
-    task_osmium_or_osm2pgsql >> task_export_pbf_to_pg
+    task_osmium_or_osm2pgsql >> task_copy_config
+
+    task_export_to_pg = OsmiumExportOperator(
+        task_id = "osmium_export_pbf_to_pg",
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+        config_path= "/workdir/osmium.json",
+        dag=dag,
+        task_group=db_load_group,
+    )
+    task_copy_config >> task_export_to_pg
 
     task_load_ele_pg = PostgresCopyOperator(
         task_id = "load_elements_from_pg_file",
@@ -311,12 +321,12 @@ def define_db_init_dag(
         dag = dag,
         task_group=db_load_group,
     )
-    [task_export_pbf_to_pg, task_setup_schema] >> task_load_ele_pg
+    [task_export_to_pg, task_setup_schema] >> task_load_ele_pg
 
     task_load_ele_osm2pgsql = Osm2pgsqlOperator(
         task_id = "load_elements_with_osm2pgsql",
         postgres_conn_id = local_db_conn_id,
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_filtered_file_path') }}",
+        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
         dag = dag,
         task_group=db_load_group,
     )

@@ -39,8 +39,8 @@ $options = getopt(
 $conf = new IniEnvConfiguration();
 if (!empty($argv[$fileArgumentIndex])) {
     $fileArgument = (string)$argv[$fileArgumentIndex];
-    if (str_starts_with($fileArgument, './init/pbf/') || str_starts_with($fileArgument, '.\\init\\pbf\\')) {
-        $fileArgument = substr($fileArgument, 11);
+    if (!str_ends_with($fileArgument, '.pbf')) {
+        $fileArgument = "$fileArgument.osm.pbf";
     }
 } elseif($conf->has("db_init_source_url")) {
     $fileArgument = (string)$conf->get("db_init_source_url");
@@ -51,8 +51,8 @@ if (!empty($argv[$fileArgumentIndex])) {
 
 if (isset($options["help"]) || isset($options["h"])) {
     echo
-    "Usage: php db-init.php [OPTIONS] SOURCE_FILE.osm.pbf" . PHP_EOL .
-        "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
+    "Usage: php db-init.php [OPTIONS] SOURCE_FILE_URL" . PHP_EOL .
+        "\tSOURCE_FILE_URL: a .osm.pbf file URL" . PHP_EOL .
         "\tOPTIONS: an optional combination of one or more of these flags:" . PHP_EOL .
         "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
         "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
@@ -129,14 +129,14 @@ if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
         echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
         exit(1);
     }
-    $sourceFilePath = __DIR__ . "/pbf/" . $fileName;
+    $sourceFilePath = "/workdir/$fileName";
     logProgress("Downloading $fileName");
-    execAndCheck("curl --fail -z $sourceFilePath -o $sourceFilePath $url");
+    execAndCheck("curl --fail -v -z $sourceFilePath -o $sourceFilePath $url");
     logProgress("Download completed");
-} elseif (!empty(realpath(__DIR__ . "/pbf/" . $fileArgument))) {
+} elseif (!empty(realpath("/workdir/$fileArgument"))) {
     // $fileArgument is a relative path from the folder of db-init
     // Example: php db-init.php isole-latest.osm.pbf
-    $sourceFilePath = realpath(__DIR__ . "/pbf/" . $fileArgument);
+    $sourceFilePath = "/workdir/$fileArgument";
 } elseif (!empty(realpath($fileArgument))) {
     // $fileArgument is an absolute path
     // Example: php db-init.php /tmp/isole-latest.osm.pbf
@@ -229,7 +229,7 @@ function runOsmiumTagsFilter(
         logProgress("Data already filtered in $destinationFilePath");
     } else {
         logProgress("Filtering OSM data in $destinationFilePath...");
-        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf $extraArgs -o '$destinationFilePath' '$sourceFilePath' $quoted_tags");
+        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf $extraArgs --output='$destinationFilePath' --overwrite '$sourceFilePath' $quoted_tags");
         $sourceSizeMB = filesize($sourceFilePath) / 1000000;
         $destinationSizeMB = filesize($destinationFilePath) / 1000000;
         logProgress("Filtered OSM data in $destinationFilePath ($sourceSizeMB MB => $destinationSizeMB MB)");

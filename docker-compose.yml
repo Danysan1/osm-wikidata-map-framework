@@ -28,7 +28,6 @@ x-airflow-common:
     - ./init:/opt/airflow/dags
     - ./airflow-logs:/opt/airflow/logs
     - ./airflow-plugins:/opt/airflow/plugins
-    - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -130,6 +129,12 @@ services:
     networks:
       - airflow-internal
       - airflow-worker-bridge
+    volumes:
+      - ./init:/opt/airflow/dags
+      - ./airflow-logs:/opt/airflow/logs
+      - ./airflow-plugins:/opt/airflow/plugins
+      - db-init-work-dir:/workdir
+      - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -329,8 +334,9 @@ services:
       retries: 5
     restart: unless-stopped
     volumes:
-      - ./web:/var/www/html:cached
-      - ./init:/var/www/init:cached
+      - ./web:/var/www/html
+      - ./init:/var/www/init
+      - db-init-work-dir:/workdir
     profiles:
       - dev
       - dev-airflow
@@ -377,6 +383,7 @@ services:
       - prod_with_local_db
 
 volumes:
+  db-init-work-dir:
   airflow-postgres-db-volume:
   db-data:
   pgadmin-data:
