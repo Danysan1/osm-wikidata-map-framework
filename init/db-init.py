@@ -13,7 +13,6 @@ from airflow.operators.empty import EmptyOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
-import logging
 
 # https://www.astronomer.io/guides/logging/
 #task_logger = logging.getLogger('airflow.task')
@@ -190,7 +189,7 @@ def define_db_init_dag(
     )
     task_get_source_url >> task_download_pbf
 
-    #section_filter = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=dag)
+    pbf_filter_group = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=dag)
 
     task_keep_possible_ety = OsmiumTagsFilterOperator(
         task_id = "keep_elements_with_possible_etymology",
@@ -206,6 +205,7 @@ def define_db_init_dag(
         ],
         remove_tags= True,
         dag=dag,
+        task_group=pbf_filter_group,
     )
     task_download_pbf >> task_keep_possible_ety
 
@@ -234,6 +234,7 @@ def define_db_init_dag(
         ],
         invert_match= True,
         dag=dag,
+        task_group=pbf_filter_group,
     )
     task_keep_name >> task_remove_non_interesting
 
@@ -260,12 +261,13 @@ def define_db_init_dag(
     )
     task_teardown_schema >> task_setup_schema
 
-    #section_load = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=dag)
+    db_load_group = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=dag)
     
     task_osmium_or_osm2pgsql = BranchPythonOperator(
         task_id = "choose_osmium_or_osm2pgsql",
         python_callable=lambda:"export_pbf_to_pg",
         dag=dag,
+        task_group=db_load_group,
     )
     task_remove_non_interesting >> task_osmium_or_osm2pgsql
 
@@ -275,6 +277,7 @@ def define_db_init_dag(
         dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='relative_pg_file_path') }}",
         config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium.json') }}",
         dag=dag,
+        task_group=db_load_group,
     )
     task_osmium_or_osm2pgsql >> task_export_pbf_to_pg
 
@@ -287,6 +290,7 @@ def define_db_init_dag(
         table = 'osmdata',
         columns = ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
         dag = dag,
+        task_group=db_load_group,
     )
     [task_export_pbf_to_pg, task_setup_schema] >> task_load_ele_pg
 
@@ -295,6 +299,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
         dag = dag,
+        task_group=db_load_group,
     )
     [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_osm2pgsql
 
@@ -302,14 +307,18 @@ def define_db_init_dag(
         task_id = "join",
         trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
         dag = dag,
+        task_group=db_load_group,
     )
     [task_load_ele_pg, task_load_ele_osm2pgsql] >> join_load_ele
+
+    elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=dag)
 
     task_remove_ele_too_big = PostgresOperator(
         task_id = "remove_elements_too_big",
         postgres_conn_id = local_db_conn_id,
         sql = "sql/remove-elements-too-big.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     join_load_ele >> task_remove_ele_too_big
 
@@ -318,6 +327,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/convert-element-wikidata-cods.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_remove_ele_too_big >> task_convert_ele_wd_cods
 
@@ -339,20 +349,23 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/convert-wikidata-entities.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
 
     task_load_named_after = BashOperator(
         task_id = "download_named_after_wikidata_entities",
         bash_command="date",
-        dag=dag
+        dag=dag,
+        task_group=elaborate_group,
     )
     task_convert_wd_ent >> task_load_named_after
     
     task_load_consists_of = BashOperator(
         task_id = "download_consists_of_wikidata_entities",
         bash_command="date",
-        dag=dag
+        dag=dag,
+        task_group=elaborate_group,
     )
     task_convert_wd_ent >> task_load_consists_of
 
@@ -361,6 +374,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/convert-etymologies.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     [task_load_named_after, task_load_consists_of] >> task_convert_ety
 
@@ -369,6 +383,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/propagate-etymologies-global.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_convert_ety >> task_propagate
 
@@ -377,6 +392,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/check-text-etymology.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_propagate >> task_check_text_ety
 
@@ -385,6 +401,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/check-wd-etymology.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_check_text_ety >> task_check_wd_ety
 
@@ -393,6 +410,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/move-elements-with-etymology.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_check_wd_ety >> task_move_ele
 
@@ -401,6 +419,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/etymology-foreign-key.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_move_ele >> task_setup_ety_fk
 
@@ -409,6 +428,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/drop-temp-tables.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_move_ele >> task_drop_temp_tables
 
@@ -417,6 +437,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/global-map.sql",
         dag = dag,
+        task_group=elaborate_group,
     )
     task_move_ele >> task_global_map
 
