@@ -109,12 +109,15 @@ class Osm2pgsqlOperator(DockerOperator):
         )
 
 def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti:TaskInstance) -> str:
+    from urllib.request import urlopen
+    from re import search, findall
+
+    source_url = None
     if pbf_url:
         print("Using 'pbf_url' as source URL: ", pbf_url)
         source_url = pbf_url
     elif rss_url and rss_url.endswith(".xml"):
         print("Fetching the source URL from 'rss_url':", rss_url)
-        from urllib.request import urlopen
         from xml.etree.ElementTree import fromstring
         with urlopen(rss_url) as response:
             xml_content = response.read()
@@ -126,11 +129,23 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
             source_url = link.text
     elif html_url and html_prefix:
         print("Fetching the source URL from 'html_url':", html_url)
-        source_url = ""
+        with urlopen(html_url) as response:
+            html_content = response.read().decode('utf-8')
+            search_result = findall('href="([\w-]+[\d+].osm.pbf)"', html_content)
+            print("Search result:", search_result)
+
+            files = list(filter(lambda s: s.startswith(html_prefix), search_result))
+            files.sort(reverse=True)
+            print("Files found:", files)
+
+            if files != None and len(files) > 0:
+                source_url = f"{html_url}/{files[0]}"
     else:
         print("Unable to get the source URL")
     
-    if not isinstance(source_url, str) or not source_url.endswith(".osm.pbf"):
+    if isinstance(source_url, str) and source_url.endswith(".osm.pbf"):
+        print("Using URL:", source_url)
+    else:
         raise Exception("The source url must be an OSM pbf file or as RSS for one", source_url)
     
     # https://linuxhint.com/fetch-basename-python/
@@ -141,10 +156,9 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
     filtered_file_path = f"/workdir/filtered_{basename}"
     pg_file_path = f"/workdir/{basename}.pg"
 
-    import re
-    match = re.search('/-(\d{2})(\d{2})(\d{2})\./', basename)
-    if match != None:
-        last_data_update = f'20{match.group(1)}-{match.group(2)}-{match.group(3)}'
+    date_match = search('-(\d{2})(\d{2})(\d{2})\.', basename)
+    if date_match != None:
+        last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
     else:
         last_data_update = datetime.now().strftime('%y-%m-%d')
     
@@ -506,6 +520,12 @@ def define_db_init_dag(
 
     return dag
 
-planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "rss_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml" })
 #planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "pbf_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf" })
-nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf" })
+#planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "html_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/", "html_prefix": "planet" })
+planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "rss_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml" })
+
+#nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy-latest.osm.pbf" })
+italy = define_db_init_dag("db-init-italy", "@daily", "oem-prod-no", { "html_url": "http://download.geofabrik.de/europe/", "html_prefix": "italy" })
+
+#nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf" })
+nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "html_url": "http://download.geofabrik.de/europe/italy/", "html_prefix": "nord-ovest" })
