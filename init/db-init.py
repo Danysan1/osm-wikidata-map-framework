@@ -14,6 +14,7 @@ from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
 from docker.types import Mount
+from airflow.utils.edgemodifier import Label
 
 # https://www.astronomer.io/guides/logging/
 #task_logger = logging.getLogger('airflow.task')
@@ -67,6 +68,7 @@ class OsmiumTagsFilterOperator(DockerOperator):
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
             mount_tmp_dir=False,
+            auto_remove=True,
             **kwargs
         )
 
@@ -83,6 +85,7 @@ class OsmiumExportOperator(DockerOperator):
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
             mount_tmp_dir=False,
+            auto_remove=True,
             **kwargs
         )
 
@@ -105,6 +108,7 @@ class Osm2pgsqlOperator(DockerOperator):
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
             mount_tmp_dir=False,
+            auto_remove=True,
             **kwargs
         )
 
@@ -208,7 +212,7 @@ def define_db_init_dag(
 
     task_download_pbf = BashOperator(
         task_id = "download_pbf",
-        bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
+        bash_command = 'curl --fail -v -o "$sourceFilePath" "$url"',
         env = {
             "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
             "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
@@ -266,11 +270,14 @@ def define_db_init_dag(
     )
     task_keep_possible_ety >> task_remove_non_interesting
 
+    db_prepare_group = TaskGroup("prepare_db", tooltip="Prepare the DB", dag=dag)
+    
     task_setup_db_ext = PostgresOperator(
         task_id = "setup_db_extensions",
         postgres_conn_id = local_db_conn_id,
         sql = "sql/setup-db-extensions.sql",
         dag = dag,
+        task_group = db_prepare_group,
     )
 
     task_teardown_schema = PostgresOperator(
@@ -278,6 +285,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/teardown-schema.sql",
         dag = dag,
+        task_group = db_prepare_group,
     )
     task_setup_db_ext >> task_teardown_schema
 
@@ -286,6 +294,7 @@ def define_db_init_dag(
         postgres_conn_id = local_db_conn_id,
         sql = "sql/setup-schema.sql",
         dag = dag,
+        task_group = db_prepare_group,
     )
     task_teardown_schema >> task_setup_schema
 
@@ -312,13 +321,13 @@ def define_db_init_dag(
         dag=dag,
         task_group=db_load_group,
     )
-    task_osmium_or_osm2pgsql >> task_copy_config
+    task_osmium_or_osm2pgsql >> Label("Use osmium export") >> task_copy_config
 
     task_export_to_pg = OsmiumExportOperator(
         task_id = "osmium_export_pbf_to_pg",
         source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
         dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
-        cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}",
+        cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
         config_path= "/workdir/osmium.json",
         dag=dag,
         task_group=db_load_group,
@@ -345,7 +354,8 @@ def define_db_init_dag(
         dag = dag,
         task_group=db_load_group,
     )
-    [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_osm2pgsql
+    task_osmium_or_osm2pgsql >> Label("Use osm2pgsql") >> task_load_ele_osm2pgsql
+    task_setup_schema >> task_load_ele_osm2pgsql
 
     join_load_ele = EmptyOperator(
         task_id = "join",
@@ -502,7 +512,7 @@ def define_db_init_dag(
         },
         dag = dag,
     )
-    task_setup_schema >> task_last_update
+    [task_get_source_url, task_setup_schema] >> task_last_update
 
     task_pg_dump = BashOperator(
         task_id = "pg_dump",
