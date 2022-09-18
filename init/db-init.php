@@ -341,30 +341,7 @@ function loadOsmDataWithOsm2pgsql(PDO $dbh, string $host, int $port, string $dbn
     logProgress("Data loaded into DB ($n_point points, $n_line lines, $n_polygon polygons)");
 
     logProgress('Converting elements...');
-    $n_element = $dbh->exec(
-        "INSERT INTO oem.osmdata (
-            osm_osm_type,
-            osm_osm_id,
-            osm_tags,
-            osm_geometry
-        )
-        SELECT 'node', osm_id, hstore_to_jsonb(tags), way
-        FROM planet_osm_point
-        UNION
-        SELECT
-            CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
-            CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-            hstore_to_jsonb(tags),
-            way AS geom
-        FROM planet_osm_line
-        UNION
-        SELECT
-            CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
-            CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-            hstore_to_jsonb(tags),
-            way AS geom
-        FROM planet_osm_polygon"
-    );
+    $n_element = $dbh->exec(file_get_contents(__DIR__."/sql/convert-osm2pgsql-data.sql"));
     logProgress("Converted $n_element elements");
 }
 

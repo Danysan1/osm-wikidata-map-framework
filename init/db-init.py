@@ -57,11 +57,11 @@ class OsmiumTagsFilterOperator(DockerOperator):
     """
     Execute osmium tags-filter on a dedicated Docker container
 
-    See https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html
-    See https://manpages.ubuntu.com/manpages/jammy/man1/osmium-tags-filter.1.html
-    See https://hub.docker.com/r/beyanora/osmtools/tags
-    See https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/docker/index.html?highlight=dockeroperator#airflow.operators.docker.DockerOperator
-    See https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/docker.html
+    Links:
+    * [osmium tags-filter documentation](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html)
+    * [osmium tags-filter documentation](https://manpages.ubuntu.com/manpages/jammy/man1/osmium-tags-filter.1.html)
+    * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
+    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, task_id:str, source_path:str, dest_path:str, tags:list, invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
         invert_match_str = "--invert-match" if invert_match else ""
@@ -84,11 +84,11 @@ class OsmiumExportOperator(DockerOperator):
     """
     Execute osmium export on a dedicated Docker container
 
-    See https://docs.osmcode.org/osmium/latest/osmium-export.html
-    See https://manpages.ubuntu.com/manpages/jammy/man1/osmium-export.1.html
-    See https://hub.docker.com/r/beyanora/osmtools/tags
-    See https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/docker/index.html?highlight=dockeroperator#airflow.operators.docker.DockerOperator
-    See https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/docker.html
+    Links:
+    * [osmium export documentation](https://docs.osmcode.org/osmium/latest/osmium-export.html)
+    * [osmium export documentation](https://manpages.ubuntu.com/manpages/jammy/man1/osmium-export.1.html)
+    * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
+    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, task_id:str, source_path:str, dest_path:str, cache_path:str = None, config_path:str = None, **kwargs) -> None:
         cache_str = f"--index-type='sparse_file_array,{cache_path}'" if cache_path != None else ""
@@ -110,11 +110,11 @@ class Osm2pgsqlOperator(DockerOperator):
     """
     Execute osmium export on a dedicated Docker container
 
-    See https://osm2pgsql.org/doc/manual.html
-    See https://manpages.ubuntu.com/manpages/jammy/en/man1/osm2pgsql.1.html
-    See https://hub.docker.com/r/beyanora/osmtools/tags
-    See https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/docker/index.html?highlight=dockeroperator#airflow.operators.docker.DockerOperator
-    See https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/docker.html
+    Links:
+    * [osm2pgsql documentation](https://osm2pgsql.org/doc/manual.html)
+    * [osm2pgsql documentation](https://manpages.ubuntu.com/manpages/jammy/en/man1/osm2pgsql.1.html)
+    * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
+    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, task_id:str, postgres_conn_id:str, source_path:str, **kwargs) -> None:
         postgres_conn = PostgresHook.get_connection(postgres_conn_id)
@@ -133,6 +133,7 @@ class Osm2pgsqlOperator(DockerOperator):
             mounts=[
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
+            network_mode="open-etymology-map_airflow-worker-bridge", # The container needs to talk with the local DB
             mount_tmp_dir=False,
             auto_remove=True,
             **kwargs
@@ -246,6 +247,8 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
         prefix to search in the PBF filename 
     use_osm2pgsql: bool
         use osm2pgsql instead of osmium export
+
+    See https://airflow.apache.org/docs/apache-airflow/stable/index.html
     """
 
     local_db_conn_id = "oem-postgis-conn"
@@ -297,7 +300,7 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
 
     task_download_pbf = BashOperator(
         task_id = "download_pbf",
-        bash_command = 'curl --fail -v -o "$sourceFilePath" "$url"',
+        bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
         env = {
             "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
             "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
@@ -429,7 +432,9 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
 
             Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
             Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen.
-            This choice is due to the fact that both loading paths take very long on large datasets, but `osmium export` is split in two parts (conversion from PBF to PG tab-separated-values which takes most of the time and loading which is faster), so if something goes wrong in the loading or downstream it's faster to fix the problem and load again from the PG file.
+            This choice is due to the facts that
+            * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
+            * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
 
             The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
 
@@ -490,7 +495,7 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
         doc_md="""
             # Load OSM data from the PG file
 
-            Load the filtered OpenStreetMap data from the PG tab-separated-values file.
+            Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table.
         """
     )
     [task_export_to_pg, task_setup_schema] >> task_load_ele_pg
@@ -510,6 +515,23 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
     task_osmium_or_osm2pgsql >> Label("Use osm2pgsql") >> task_load_ele_osm2pgsql
     task_setup_schema >> task_load_ele_osm2pgsql
 
+    task_convert_osm2pgsql = PostgresOperator(
+        task_id = "convert_osm2pgsql_data",
+        postgres_conn_id = local_db_conn_id,
+        sql = "sql/convert-osm2pgsql-data.sql",
+        dag = dag,
+        task_group=db_load_group,
+        doc_md = """
+            # Prepare osm2pgsql data for usage
+
+            Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
+            
+            Links:
+            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+        """
+    )
+    task_load_ele_osm2pgsql >> task_convert_osm2pgsql
+
     join_load_ele = EmptyOperator(
         task_id = "join",
         trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
@@ -521,7 +543,7 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
             Dummy task for joining the path after the branching done to choose between `osmium export` and `osm2pgsql`.
         """
     )
-    [task_load_ele_pg, task_load_ele_osm2pgsql] >> join_load_ele
+    [task_load_ele_pg, task_convert_osm2pgsql] >> join_load_ele
 
     elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=dag)
 
