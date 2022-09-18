@@ -2,13 +2,12 @@ import os
 from datetime import datetime
 from airflow.models import DAG
 from airflow.operators.bash import BashOperator
-from airflow.operators.python import PythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.models import Variable
 from airflow.operators.bash import BashOperator
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.models.taskinstance import TaskInstance
-from airflow.operators.python import BranchPythonOperator
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.docker.operators.docker import DockerOperator
 from airflow.utils.trigger_rule import TriggerRule
@@ -112,15 +111,19 @@ class Osm2pgsqlOperator(DockerOperator):
             **kwargs
         )
 
-def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti:TaskInstance) -> str:
+def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     from urllib.request import urlopen
     from re import search, findall
 
+    params = context["params"]
+
     source_url = None
-    if pbf_url:
+    if "pbf_url" in params and isinstance(params["pbf_url"],str) and params["pbf_url"]!="":
+        pbf_url = params["pbf_url"]
         print("Using 'pbf_url' as source URL: ", pbf_url)
         source_url = pbf_url
-    elif rss_url and rss_url.endswith(".xml"):
+    elif "rss_url" in params and isinstance(params["rss_url"],str) and params["rss_url"].endswith(".xml"):
+        rss_url = params["rss_url"]
         print("Fetching the source URL from 'rss_url':", rss_url)
         from xml.etree.ElementTree import fromstring
         with urlopen(rss_url) as response:
@@ -131,8 +134,10 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
             item = channel.find('item')
             link = item.find('link')
             source_url = link.text
-    elif html_url and html_prefix:
-        print("Fetching the source URL from 'html_url':", html_url)
+    elif "html_url" in params and isinstance(params["html_url"],str) and params["html_url"]!="" and "html_prefix" in params and isinstance(params["html_prefix"],str) and params["html_prefix"]!="":
+        html_url = params["html_url"]
+        html_prefix = params["html_prefix"]
+        print("Fetching the source URL from 'html_url':", html_url, html_prefix)
         with urlopen(html_url) as response:
             html_content = response.read().decode('utf-8')
             search_result = findall('href="([\w-]+[\d+].osm.pbf)"', html_content)
@@ -145,7 +150,7 @@ def get_last_pbf_url(pbf_url:str, rss_url:str, html_url:str, html_prefix:str, ti
             if files != None and len(files) > 0:
                 source_url = f"{html_url}/{files[0]}"
     else:
-        print("Unable to get the source URL")
+        print("Unable to get the source URL", params)
     
     if isinstance(source_url, str) and source_url.endswith(".osm.pbf"):
         print("Using URL:", source_url)
@@ -179,11 +184,38 @@ def do_copy_file(source_path:str, dest_path:str) -> None:
     from shutil import copyfile
     copyfile(source_path, dest_path)
 
-def define_db_init_dag(
-        dag_id:str, schedule_interval:str, upload_db_conn_id:str, default_args:dict
-    ):
+def check_upload_db_conn_id(**context):
+    p = context["params"]
+    return "upload_db_conn_id" in p and isinstance(p["upload_db_conn_id"], str) and p["upload_db_conn_id"]!=""
+
+def choose_load_osm_data_task(**context):
+    p = context["params"]
+    use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
+    task_id = "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
+    return f"load_osm_data.{task_id}"
+
+def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False):
     """
-    See https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html
+    Generates the DAG for Open Etymology Map DB initialization
+
+    Parameters:
+    ----------
+    dag_id: str
+        dag_id of the generated DAG
+    schedule_interval: str
+        schedule_interval of the generated DAG
+    db_conn_id: str
+        Postgres connection ID for the production Database the DAG will upload to
+    pbf_url: str
+        URL to the PBF file
+    rss_url: str
+        URL to the RSS file listing PBF files
+    html_url: str
+        URL to the HTML file listing PBF files
+    html_prefix: str
+        prefix to search in the PBF filename 
+    use_osm2pgsql: bool
+        use osm2pgsql instead of osmium export
     """
 
     local_db_conn_id = "oem-postgis-conn"
@@ -194,20 +226,38 @@ def define_db_init_dag(
             start_date=datetime(year=2022, month=2, day=1),
             catchup=False,
             tags=['oem', 'db-init'],
-            params=default_args,
+            params={
+                "pbf_url": pbf_url,
+                "rss_url": rss_url,
+                "html_url": html_url,
+                "html_prefix": html_prefix,
+                "upload_db_conn_id": db_conn_id,
+                "use_osm2pgsql": use_osm2pgsql,
+            },
+            doc_md="""
+                # Open Etymology Map DB initialization
+
+                * downloads and and filters OSM data
+                * downloads relevant OSM data
+                * combines OSM and Wikidata data
+                * uploads the output to the production DB.
+            """
         )
 
     task_get_source_url = PythonOperator(
         task_id = "get_source_url",
         python_callable = get_last_pbf_url,
-        op_kwargs = {
-            "pbf_url": "{{ params.pbf_url if 'pbf_url' in params else '' }}",
-            "rss_url": "{{ params.rss_url if 'rss_url' in params else '' }}",
-            "html_url": "{{ params.html_url if 'html_url' in params else '' }}",
-            "html_prefix": "{{ params.html_prefix if 'html_prefix' in params else '' }}",
-        },
         do_xcom_push = True,
         dag = dag,
+        doc_md = """
+            # Get PBF file URL
+
+            Gets the PBF file URL starting from the parameters pbf_url/rss_url/html_url/html_prefix
+
+            The parameters are passed through the params object to allow customization when triggering the DAG
+
+            See https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html
+        """
     )
 
     task_download_pbf = BashOperator(
@@ -301,13 +351,15 @@ def define_db_init_dag(
     db_load_group = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=dag)
     
     task_osmium_or_osm2pgsql = BranchPythonOperator(
-        task_id = "choose_osmium_or_osm2pgsql",
-        python_callable=lambda task_id : f"load_osm_data.{task_id}",
-        op_kwargs = {
-            "task_id": "{{'load_elements_with_osm2pgsql' if 'use_osm2pgsql' in params and params.use_osm2pgsql else 'copy_osmium_export_config'}}"
-        },
+        task_id = "choose_load_osm_data_method",
+        python_callable= choose_load_osm_data_task,
         dag=dag,
         task_group=db_load_group,
+        doc_md="""
+            # Check how to load data into the DB
+
+            Check whether to load the OSM data from the filtered PBF file through osmium export or through osm2pgsql
+        """
     )
     task_remove_non_interesting >> task_osmium_or_osm2pgsql
 
@@ -511,6 +563,11 @@ def define_db_init_dag(
             "last_update": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}"
         },
         dag = dag,
+        doc_md="""
+            # Save into the DB the date of the last update
+
+            Create into the DB the function that allows to retrieve the date of the last update of the data
+        """
     )
     [task_get_source_url, task_setup_schema] >> task_last_update
 
@@ -521,21 +578,36 @@ def define_db_init_dag(
     )
     [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
 
+    task_check_pg_restore = ShortCircuitOperator(
+        task_id = "check_upload_conn_id",
+        python_callable=check_upload_db_conn_id,
+        dag=dag,
+        doc_md="""
+            # Check upload DB connecton ID
+
+            Check whether the connecton ID to the destination PostGIS DB is available;
+            if it is, proceed to restore the data, otherwise stop here
+
+            The connection ID is passed through the params object to allow customization when triggering the DAG
+        """
+    )
+    task_pg_dump >> task_check_pg_restore
+
     task_pg_restore = BashOperator(
         task_id = "pg_restore",
         bash_command="date",
         dag=dag
     )
-    task_pg_dump >> task_pg_restore
+    task_check_pg_restore >> task_pg_restore
 
     return dag
 
-#planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "pbf_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf" })
-#planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "html_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/", "html_prefix": "planet" })
-planet = define_db_init_dag("db-init-planet", "@weekly", "oem-prod", { "rss_url": "https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml" })
+planet_pbf = define_db_init_dag("db-init-planet-latest", "@weekly", db_conn_id="oem-prod", pbf_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf")
+planet_html = define_db_init_dag("db-init-planet-from-html", "@weekly", db_conn_id="oem-prod", html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/", html_prefix="planet")
+planet_rss = define_db_init_dag("db-init-planet-from-rss", "@weekly", db_conn_id="oem-prod", rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml")
 
-#nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy-latest.osm.pbf" })
-italy = define_db_init_dag("db-init-italy", "@daily", "oem-prod-no", { "html_url": "http://download.geofabrik.de/europe/", "html_prefix": "italy" })
+italy_pbf = define_db_init_dag("db-init-italy-latest", "@daily", db_conn_id="oem-prod-no", pbf_url="http://download.geofabrik.de/europe/italy-latest.osm.pbf")
+italy_html = define_db_init_dag("db-init-italy-from-html", "@daily", db_conn_id="oem-prod-no", html_url="http://download.geofabrik.de/europe/", html_prefix="italy")
 
-#nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "pbf_url": "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf" })
-nord_ovest = define_db_init_dag("db-init-nord-ovest", "@daily", "oem-prod-no", { "html_url": "http://download.geofabrik.de/europe/italy/", "html_prefix": "nord-ovest" })
+nord_ovest_pbf = define_db_init_dag("db-init-italy-nord-ovest-latest", "@daily", pbf_url="http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf")
+nord_ovest_html = define_db_init_dag("db-init-italy-nord-ovest-from-html", "@daily", html_url="http://download.geofabrik.de/europe/italy/", html_prefix="nord-ovest")
