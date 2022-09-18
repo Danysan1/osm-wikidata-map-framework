@@ -25,9 +25,8 @@ def get_absolute_path(filename:str, folder:str = None) -> str:
     return os.path.join(file_dir_path, filename)
 
 class PostgresCopyOperator(PythonOperator):
-    def __init__(self, task_id:str, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list, **kwargs) -> None:
+    def __init__(self, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list, **kwargs) -> None:
         super().__init__(
-            task_id = task_id,
             python_callable = self.do_postgres_copy,
             op_kwargs = {
                 "postgres_conn_id": postgres_conn_id,
@@ -63,12 +62,11 @@ class OsmiumTagsFilterOperator(DockerOperator):
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
-    def __init__(self, task_id:str, source_path:str, dest_path:str, tags:list, invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
+    def __init__(self, source_path:str, dest_path:str, tags:list, invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
         invert_match_str = "--invert-match" if invert_match else ""
         remove_tags_str = "--remove-tags" if remove_tags else ""
         quoted_tags = ' '.join(map(lambda tag: f"'{tag}'", tags))
         super().__init__(
-            task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
             command = f"osmium tags-filter --verbose --input-format=pbf --output-format=pbf {invert_match_str} {remove_tags_str} --output='{dest_path}' --overwrite '{source_path}' {quoted_tags}",
@@ -90,11 +88,10 @@ class OsmiumExportOperator(DockerOperator):
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
-    def __init__(self, task_id:str, source_path:str, dest_path:str, cache_path:str = None, config_path:str = None, **kwargs) -> None:
+    def __init__(self, source_path:str, dest_path:str, cache_path:str = None, config_path:str = None, **kwargs) -> None:
         cache_str = f"--index-type='sparse_file_array,{cache_path}'" if cache_path != None else ""
         config_str = f"--config='{config_path}'" if config_path != None else ""
         super().__init__(
-            task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
             command = f"osmium export --verbose --overwrite -o '{dest_path}' -f 'pg' {config_str} --add-unique-id='counter' {cache_str} --show-errors '{source_path}'",
@@ -103,6 +100,38 @@ class OsmiumExportOperator(DockerOperator):
             ],
             mount_tmp_dir=False,
             auto_remove=True,
+            **kwargs
+        )
+
+class PgDumpOperator(BashOperator):
+    def __init__(self, postgres_conn_id:str, dest_path:str, **kwargs) -> None:
+        postgres_conn = PostgresHook.get_connection(postgres_conn_id)
+        super().__init__(
+            bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
+            env= {
+                "backupFilePath": dest_path,
+                "host": postgres_conn.host,
+                "port": str(postgres_conn.port),
+                "user": postgres_conn.login,
+                "dbname": postgres_conn.schema,
+                "PGPASSWORD": postgres_conn.password,
+            },
+            **kwargs
+        )
+
+class PgRestoreOperator(BashOperator):
+    def __init__(self, postgres_conn_id:str, src_path:str, **kwargs) -> None:
+        postgres_conn = PostgresHook.get_connection(postgres_conn_id)
+        super().__init__(
+            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "oem" --verbose "$backupFilePath"',
+            env= {
+                "backupFilePath": src_path,
+                "host": postgres_conn.host,
+                "port": str(postgres_conn.port),
+                "user": postgres_conn.login,
+                "dbname": postgres_conn.schema,
+                "PGPASSWORD": postgres_conn.password,
+            },
             **kwargs
         )
 
@@ -116,14 +145,13 @@ class Osm2pgsqlOperator(DockerOperator):
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
-    def __init__(self, task_id:str, postgres_conn_id:str, source_path:str, **kwargs) -> None:
+    def __init__(self, postgres_conn_id:str, source_path:str, **kwargs) -> None:
         postgres_conn = PostgresHook.get_connection(postgres_conn_id)
         host = postgres_conn.host
         port = postgres_conn.port
         user = postgres_conn.login
         db = postgres_conn.schema
         super().__init__(
-            task_id = task_id,
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
             command = f"osm2pgsql --host='{host}' --port='{port}' --database='{db}' --user='{user}' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '{source_path}'",
@@ -187,11 +215,6 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     
     # https://linuxhint.com/fetch-basename-python/
     basename = os.path.basename(source_url)
-    source_file_path = f"/workdir/{basename}"
-    filtered_name_file_path = f"/workdir/filtered_name_{basename}"
-    filtered_possible_file_path = f"/workdir/filtered_possible_{basename}"
-    filtered_file_path = f"/workdir/filtered_{basename}"
-    pg_file_path = f"/workdir/{basename}.pg"
 
     date_match = search('-(\d{2})(\d{2})(\d{2})\.', basename)
     if date_match != None:
@@ -201,11 +224,12 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='basename', value=basename)
-    ti.xcom_push(key='source_file_path', value=source_file_path)
-    ti.xcom_push(key='filtered_name_file_path', value=filtered_name_file_path)
-    ti.xcom_push(key='filtered_possible_file_path', value=filtered_possible_file_path)
-    ti.xcom_push(key='filtered_file_path', value=filtered_file_path)
-    ti.xcom_push(key='pg_file_path', value=pg_file_path)
+    ti.xcom_push(key='source_file_path', value=f"/workdir/{basename}")
+    ti.xcom_push(key='filtered_name_file_path', value=f"/workdir/filtered_name_{basename}")
+    ti.xcom_push(key='filtered_possible_file_path', value=f"/workdir/filtered_possible_{basename}")
+    ti.xcom_push(key='filtered_file_path', value=f"/workdir/filtered_{basename}")
+    ti.xcom_push(key='pg_file_path', value=f"/workdir/{basename}.pg")
+    ti.xcom_push(key='backup_file_path', value=f"/workdir/{basename}.backup")
     ti.xcom_push(key='last_data_update', value=last_data_update)
 
 def do_copy_file(source_path:str, dest_path:str) -> None:
@@ -792,12 +816,13 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
     )
     [task_get_source_url, task_setup_schema] >> task_last_update
 
-    task_pg_dump = BashOperator(
+    task_pg_dump = PgDumpOperator(
         task_id = "pg_dump",
-        bash_command="date",
+        postgres_conn_id=local_db_conn_id,
+        dest_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
         dag=dag,
         doc_md="""
-            # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
+            # TODO document
         """
     )
     [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
@@ -821,12 +846,13 @@ def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, p
     )
     task_pg_dump >> task_check_pg_restore
 
-    task_pg_restore = BashOperator(
+    task_pg_restore = PgRestoreOperator(
         task_id = "pg_restore",
-        bash_command="date",
+        postgres_conn_id=local_db_conn_id,
+        src_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
         dag=dag,
         doc_md="""
-            # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
+            # TODO document
         """
     )
     task_check_pg_restore >> task_pg_restore
