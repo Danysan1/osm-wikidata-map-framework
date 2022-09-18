@@ -249,622 +249,665 @@ def choose_load_osm_data_task(**context):
     task_id = "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
     return f"load_osm_data.{task_id}"
 
-def define_db_init_dag(dag_id:str, schedule_interval:str, db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False):
-    """
-    Generates the DAG for Open Etymology Map DB initialization
+class OemDbInitDAG(DAG):
+    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, **kwargs):
+        """
+        DAG for Open Etymology Map DB initialization
 
-    Parameters:
-    ----------
-    dag_id: str
-        dag_id of the generated DAG
-    schedule_interval: str
-        schedule_interval of the generated DAG
-    db_conn_id: str
-        Postgres connection ID for the production Database the DAG will upload to
-    pbf_url: str
-        URL to the PBF file
-    rss_url: str
-        URL to the RSS file listing PBF files
-    html_url: str
-        URL to the HTML file listing PBF files
-    html_prefix: str
-        prefix to search in the PBF filename 
-    use_osm2pgsql: bool
-        use osm2pgsql instead of osmium export
+        Parameters:
+        ----------
+        dag_id: str
+            dag_id of the generated DAG
+        schedule_interval: str
+            schedule_interval of the generated DAG
+        upload_db_conn_id: str
+            Postgres connection ID for the production Database the DAG will upload to
+        pbf_url: str
+            URL to the PBF file
+        rss_url: str
+            URL to the RSS file listing PBF files
+        html_url: str
+            URL to the HTML file listing PBF files
+        html_prefix: str
+            prefix to search in the PBF filename 
+        use_osm2pgsql: bool
+            use osm2pgsql instead of osmium export
 
-    See https://airflow.apache.org/docs/apache-airflow/stable/index.html
-    """
+        See https://airflow.apache.org/docs/apache-airflow/stable/index.html
+        """
 
-    local_db_conn_id = "oem-postgis-conn"
+        super().__init__(
+                start_date=datetime(year=2022, month=2, day=1),
+                catchup=False,
+                tags=['oem', 'db-init'],
+                params={
+                    "pbf_url": pbf_url,
+                    "rss_url": rss_url,
+                    "html_url": html_url,
+                    "html_prefix": html_prefix,
+                    "upload_db_conn_id": upload_db_conn_id,
+                    "use_osm2pgsql": use_osm2pgsql,
+                },
+                doc_md="""
+                    # Open Etymology Map DB initialization
 
-    dag = DAG(
-            dag_id = dag_id,
-            schedule_interval = schedule_interval,
-            start_date=datetime(year=2022, month=2, day=1),
-            catchup=False,
-            tags=['oem', 'db-init'],
-            params={
-                "pbf_url": pbf_url,
-                "rss_url": rss_url,
-                "html_url": html_url,
-                "html_prefix": html_prefix,
-                "upload_db_conn_id": db_conn_id,
-                "use_osm2pgsql": use_osm2pgsql,
-            },
-            doc_md="""
-                # Open Etymology Map DB initialization
+                    * downloads and and filters OSM data
+                    * downloads relevant OSM data
+                    * combines OSM and Wikidata data
+                    * uploads the output to the production DB.
 
-                * downloads and and filters OSM data
-                * downloads relevant OSM data
-                * combines OSM and Wikidata data
-                * uploads the output to the production DB.
+                    Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
+                """,
+                **kwargs
+            )
+            
+        local_db_conn_id = "oem-postgis-conn"
 
-                Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
+        task_get_source_url = PythonOperator(
+            task_id = "get_source_url",
+            python_callable = get_last_pbf_url,
+            do_xcom_push = True,
+            dag = self,
+            doc_md = """
+                # Get PBF file URL
+
+                Gets the PBF file URL starting from the parameters pbf_url/rss_url/html_url/html_prefix.
+
+                The URL parameters are passed through the params object to allow customization when triggering the DAG.
+
+                Links:
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
             """
         )
 
-    task_get_source_url = PythonOperator(
-        task_id = "get_source_url",
-        python_callable = get_last_pbf_url,
-        do_xcom_push = True,
-        dag = dag,
-        doc_md = """
-            # Get PBF file URL
-
-            Gets the PBF file URL starting from the parameters pbf_url/rss_url/html_url/html_prefix.
-
-            The URL parameters are passed through the params object to allow customization when triggering the DAG.
-
-            Links:
-            * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-            * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
-            * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
-        """
-    )
-
-    task_download_pbf = BashOperator(
-        task_id = "download_pbf",
-        bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
-        env = {
-            "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
-            "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
-        },
-        dag = dag,
-        doc_md="""
-            # Download the PBF source file
-
-            Download the source PBF file from the URL calculated by get_source_url.
-
-            Link:
-            * [curl documentation](https://curl.se/docs/manpage.html)
-            * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-            * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
-        """
-    )
-    task_get_source_url >> task_download_pbf
-
-    pbf_filter_group = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=dag)
-
-    task_keep_name = OsmiumTagsFilterOperator(
-        task_id = "keep_elements_with_name",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
-        tags=['name'],
-        dag=dag,
-        task_group=pbf_filter_group,
-    )
-    task_download_pbf >> task_keep_name
-
-    task_keep_possible_ety = OsmiumTagsFilterOperator(
-        task_id = "keep_elements_with_possible_etymology",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
-        tags=[
-            'w/highway',
-            'wikidata',
-            'name:etymology:wikidata',
-            'name:etymology',
-            'subject:wikidata'
-        ],
-        remove_tags= True,
-        dag=dag,
-        task_group=pbf_filter_group,
-    )
-    task_keep_name >> task_keep_possible_ety
-
-    task_remove_non_interesting = OsmiumTagsFilterOperator(
-        task_id = "remove_non_interesting_elements",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
-        tags=[
-            'man_made=flagpole',
-            'n/place=region',
-            'n/place=state',
-            'n/place=country',
-            'n/place=continent',
-            'r/admin_level=4',
-            'r/admin_level=3',
-            'r/admin_level=2'
-        ],
-        invert_match= True,
-        dag=dag,
-        task_group=pbf_filter_group,
-    )
-    task_keep_possible_ety >> task_remove_non_interesting
-
-    db_prepare_group = TaskGroup("prepare_db", tooltip="Prepare the DB", dag=dag)
-    
-    task_setup_db_ext = PostgresOperator(
-        task_id = "setup_db_extensions",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/setup-db-extensions.sql",
-        dag = dag,
-        task_group = db_prepare_group,
-        doc_md = """
-            # Setup the necessary extensions on the local DB
-
-            Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-
-    task_teardown_schema = PostgresOperator(
-        task_id = "teardown_schema",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/teardown-schema.sql",
-        dag = dag,
-        task_group = db_prepare_group,
-        doc_md = """
-            # Teardown the oem DB schema
-
-            Reset the oem (Open Etymology Map) schema on the local PostGIS DB to start from scratch.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_setup_db_ext >> task_teardown_schema
-
-    task_setup_schema = PostgresOperator(
-        task_id = "setup_schema",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/setup-schema.sql",
-        dag = dag,
-        task_group = db_prepare_group,
-        doc_md = """
-            # Setup the oem DB schema
-
-            Setup the oem (Open Etymology Map) schema on the local PostGIS DB.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_teardown_schema >> task_setup_schema
-
-    db_load_group = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=dag)
-    
-    task_osmium_or_osm2pgsql = BranchPythonOperator(
-        task_id = "choose_load_osm_data_method",
-        python_callable= choose_load_osm_data_task,
-        dag=dag,
-        task_group=db_load_group,
-        doc_md="""
-            # Check how to load data into the DB
-
-            Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
-            Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen.
-            This choice is due to the facts that
-            * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
-            * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
-
-            The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
-
-            Links:
-            * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-            * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
-        """
-    )
-    task_remove_non_interesting >> task_osmium_or_osm2pgsql
-
-    task_copy_config = PythonOperator(
-        task_id = "copy_osmium_export_config",
-        python_callable = do_copy_file,
-        op_kwargs = {
-            "source_path": get_absolute_path("osmium.json"),
-            "dest_path": "/workdir/osmium.json",     
-        },
-        dag=dag,
-        task_group=db_load_group,
-        doc_md="""
-            # Copy the Osmium configuration
-
-            Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/osmium.json)) into the working directory.
-
-            Links:
-            * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-            * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
-        """
-    )
-    task_osmium_or_osm2pgsql >> Label("Use osmium export") >> task_copy_config
-
-    task_export_to_pg = OsmiumExportOperator(
-        task_id = "osmium_export_pbf_to_pg",
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
-        dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
-        cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
-        config_path= "/workdir/osmium.json",
-        dag=dag,
-        task_group=db_load_group,
-        doc_md="""
-            # Export OSM data from PBF to PG
-
-            Using `osmium export`, export the filtered OpenStreetMap data from the filtered PBF file to a PG tab-separated-values file ready for importing into the DB.
-        """
-    )
-    task_copy_config >> task_export_to_pg
-
-    task_load_ele_pg = PostgresCopyOperator(
-        task_id = "load_elements_from_pg_file",
-        postgres_conn_id = local_db_conn_id,
-        filepath = "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
-        separator = '\t',
-        schema = 'oem',
-        table = 'osmdata',
-        columns = ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
-        dag = dag,
-        task_group=db_load_group,
-        doc_md="""
-            # Load OSM data from the PG file
-
-            Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table.
-        """
-    )
-    [task_export_to_pg, task_setup_schema] >> task_load_ele_pg
-
-    task_load_ele_osm2pgsql = Osm2pgsqlOperator(
-        task_id = "load_elements_with_osm2pgsql",
-        postgres_conn_id = local_db_conn_id,
-        source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
-        dag = dag,
-        task_group=db_load_group,
-        doc_md="""
-            # Load OSM data from the PBF file
-
-            Using `osm2pgsql`, load the filtered OpenStreetMap data directly from the PBF file.
-        """
-    )
-    task_osmium_or_osm2pgsql >> Label("Use osm2pgsql") >> task_load_ele_osm2pgsql
-    task_setup_schema >> task_load_ele_osm2pgsql
-
-    task_convert_osm2pgsql = PostgresOperator(
-        task_id = "convert_osm2pgsql_data",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/convert-osm2pgsql-data.sql",
-        dag = dag,
-        task_group=db_load_group,
-        doc_md = """
-            # Prepare osm2pgsql data for usage
-
-            Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_load_ele_osm2pgsql >> task_convert_osm2pgsql
-
-    join_load_ele = EmptyOperator(
-        task_id = "join",
-        trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
-        dag = dag,
-        task_group=db_load_group,
-        doc_md="""
-            # Join branches back together
-
-            Dummy task for joining the path after the branching done to choose between `osmium export` and `osm2pgsql`.
-        """
-    )
-    [task_load_ele_pg, task_convert_osm2pgsql] >> join_load_ele
-
-    elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=dag)
-
-    task_remove_ele_too_big = PostgresOperator(
-        task_id = "remove_elements_too_big",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/remove-elements-too-big.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # Remove elements too big from the DB
-
-            Remove elements that wouldn't be visible anyway on the map from the local PostGIS DB.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    join_load_ele >> task_remove_ele_too_big
-
-    task_convert_ele_wd_cods = PostgresOperator(
-        task_id = "convert_element_wikidata_cods",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/convert-element-wikidata-cods.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # Convert OSM - Wikidata associations
-
-            Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each oassociation the source (`wikidata` / `subject:wikidata` / `name:etymology:wikidata`).
-            
-            Links:
-            * [`wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
-            * [`subject:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
-            * [`name:etymology:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_remove_ele_too_big >> task_convert_ele_wd_cods
-
-    wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
-    task_load_wd_ent = PostgresCopyOperator(
-        task_id = "load_wikidata_entities",
-        postgres_conn_id = local_db_conn_id,
-        filepath = wikidata_init_file_path,
-        separator = ',',
-        schema = 'oem',
-        table = 'wikidata',
-        columns = ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
-        dag = dag,
-        doc_md="""
-            # Load default Wikidata entities
-
-            Load into the wikidata table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/wikidata_init.csv).
-        """
-    )
-    task_setup_schema >> task_load_wd_ent
-
-    task_convert_wd_ent = PostgresOperator(
-        task_id = "convert_wikidata_entities",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/convert-wikidata-entities.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # Load Wikidata entities from OSM etymologies
-
-            Load into the wikidata table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata` or `name:etymology:wikidata`).
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
-
-    task_load_named_after = BashOperator(
-        task_id = "download_named_after_wikidata_entities",
-        bash_command="date",
-        dag=dag,
-        task_group=elaborate_group,
-        doc_md="""
-            # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
-        """
-    )
-    task_convert_wd_ent >> task_load_named_after
-    
-    task_load_consists_of = BashOperator(
-        task_id = "download_consists_of_wikidata_entities",
-        bash_command="date",
-        dag=dag,
-        task_group=elaborate_group,
-        doc_md="""
-            # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
-        """
-    )
-    task_convert_wd_ent >> task_load_consists_of
-
-    task_convert_ety = PostgresOperator(
-        task_id = "convert_etymologies",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/convert-etymologies.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # TODO document
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    [task_load_named_after, task_load_consists_of] >> task_convert_ety
-
-    task_propagate = PostgresOperator(
-        task_id = "propagate_etymologies_globally",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/propagate-etymologies-global.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # TODO document
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_convert_ety >> task_propagate
-
-    task_check_text_ety = PostgresOperator(
-        task_id = "check_text_etymology",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/check-text-etymology.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # TODO document
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_propagate >> task_check_text_ety
-
-    task_check_wd_ety = PostgresOperator(
-        task_id = "check_wikidata_etymology",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/check-wd-etymology.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # TODO document
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_check_text_ety >> task_check_wd_ety
-
-    task_move_ele = PostgresOperator(
-        task_id = "move_elements_with_etymology",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/move-elements-with-etymology.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # TODO document
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_check_wd_ety >> task_move_ele
-
-    task_setup_ety_fk = PostgresOperator(
-        task_id = "setup_etymology_foreign_key",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/etymology-foreign-key.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # TODO document
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_move_ele >> task_setup_ety_fk
-
-    task_drop_temp_tables = PostgresOperator(
-        task_id = "drop_temporary_tables",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/drop-temp-tables.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md = """
-            # Remove temporary tables
-
-            Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_move_ele >> task_drop_temp_tables
-
-    task_global_map = PostgresOperator(
-        task_id = "setup_global_map",
-        postgres_conn_id = local_db_conn_id,
-        sql = "sql/global-map.sql",
-        dag = dag,
-        task_group=elaborate_group,
-        doc_md="""
-            # Save the global map view
-
-            Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    task_move_ele >> task_global_map
-
-    # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
-    task_last_update = PostgresOperator(
-        task_id = "save_last_data_update",
-        postgres_conn_id = local_db_conn_id,
-        sql = """
-            CREATE OR REPLACE FUNCTION oem.last_data_update()
-                RETURNS character varying
-                LANGUAGE 'sql'
-            AS $BODY$
-            SELECT %(last_update)s;
-            $BODY$;
-            """,
-        parameters = {
-            "last_update": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}"
-        },
-        dag = dag,
-        doc_md="""
-            # Save into the DB the date of the last update
-
-            Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
-            
-            Links:
-            * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-        """
-    )
-    [task_get_source_url, task_setup_schema] >> task_last_update
-
-    task_pg_dump = PgDumpOperator(
-        task_id = "pg_dump",
-        postgres_conn_id=local_db_conn_id,
-        dest_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
-        dag=dag,
-        doc_md="""
-            # TODO document
-        """
-    )
-    [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
-
-    task_check_pg_restore = ShortCircuitOperator(
-        task_id = "check_upload_conn_id",
-        python_callable=check_upload_db_conn_id,
-        dag=dag,
-        doc_md="""
-            # Check upload DB connecton ID
-
-            Check whether the connecton ID to the destination PostGIS DB is available: if it is, proceed to restore the data, otherwise stop here.
-
-            The connection ID is passed through the params object to allow customization when triggering the DAG.
-
-            Links:
-            * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-            * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html#shortcircuitoperator)
-            * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
-        """
-    )
-    task_pg_dump >> task_check_pg_restore
-
-    task_pg_restore = PgRestoreOperator(
-        task_id = "pg_restore",
-        postgres_conn_id=local_db_conn_id,
-        src_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
-        dag=dag,
-        doc_md="""
-            # TODO document
-        """
-    )
-    task_check_pg_restore >> task_pg_restore
-
-    return dag
-
-planet_pbf = define_db_init_dag("db-init-planet-latest", "@weekly", db_conn_id="oem-prod", pbf_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf")
-planet_html = define_db_init_dag("db-init-planet-from-html", "@weekly", db_conn_id="oem-prod", html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/", html_prefix="planet")
-planet_rss = define_db_init_dag("db-init-planet-from-rss", "@weekly", db_conn_id="oem-prod", rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml")
-
-italy_pbf = define_db_init_dag("db-init-italy-latest", "@daily", db_conn_id="oem-prod-no", pbf_url="http://download.geofabrik.de/europe/italy-latest.osm.pbf")
-italy_html = define_db_init_dag("db-init-italy-from-html", "@daily", db_conn_id="oem-prod-no", html_url="http://download.geofabrik.de/europe/", html_prefix="italy")
-
-nord_ovest_pbf = define_db_init_dag("db-init-italy-nord-ovest-latest", "@daily", pbf_url="http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf")
-nord_ovest_html = define_db_init_dag("db-init-italy-nord-ovest-from-html", "@daily", html_url="http://download.geofabrik.de/europe/italy/", html_prefix="nord-ovest")
+        task_download_pbf = BashOperator(
+            task_id = "download_pbf",
+            bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
+            env = {
+                "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
+                "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+            },
+            dag = self,
+            doc_md="""
+                # Download the PBF source file
+
+                Download the source PBF file from the URL calculated by get_source_url.
+
+                Link:
+                * [curl documentation](https://curl.se/docs/manpage.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+            """
+        )
+        task_get_source_url >> task_download_pbf
+
+        pbf_filter_group = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=self)
+
+        task_keep_name = OsmiumTagsFilterOperator(
+            task_id = "keep_elements_with_name",
+            source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
+            dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
+            tags=['name'],
+            dag = self,
+            task_group=pbf_filter_group,
+        )
+        task_download_pbf >> task_keep_name
+
+        task_keep_possible_ety = OsmiumTagsFilterOperator(
+            task_id = "keep_elements_with_possible_etymology",
+            source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
+            dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
+            tags=[
+                'w/highway',
+                'wikidata',
+                'name:etymology:wikidata',
+                'name:etymology',
+                'subject:wikidata'
+            ],
+            remove_tags= True,
+            dag = self,
+            task_group=pbf_filter_group,
+        )
+        task_keep_name >> task_keep_possible_ety
+
+        task_remove_non_interesting = OsmiumTagsFilterOperator(
+            task_id = "remove_non_interesting_elements",
+            source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
+            dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+            tags=[
+                'man_made=flagpole',
+                'n/place=region',
+                'n/place=state',
+                'n/place=country',
+                'n/place=continent',
+                'r/admin_level=4',
+                'r/admin_level=3',
+                'r/admin_level=2'
+            ],
+            invert_match= True,
+            dag = self,
+            task_group=pbf_filter_group,
+        )
+        task_keep_possible_ety >> task_remove_non_interesting
+
+        db_prepare_group = TaskGroup("prepare_db", tooltip="Prepare the DB", dag=self)
+        
+        task_setup_db_ext = PostgresOperator(
+            task_id = "setup_db_extensions",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/setup-db-extensions.sql",
+            dag = self,
+            task_group = db_prepare_group,
+            doc_md = """
+                # Setup the necessary extensions on the local DB
+
+                Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+
+        task_teardown_schema = PostgresOperator(
+            task_id = "teardown_schema",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/teardown-schema.sql",
+            dag = self,
+            task_group = db_prepare_group,
+            doc_md = """
+                # Teardown the oem DB schema
+
+                Reset the oem (Open Etymology Map) schema on the local PostGIS DB to start from scratch.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_setup_db_ext >> task_teardown_schema
+
+        task_setup_schema = PostgresOperator(
+            task_id = "setup_schema",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/setup-schema.sql",
+            dag = self,
+            task_group = db_prepare_group,
+            doc_md = """
+                # Setup the oem DB schema
+
+                Setup the oem (Open Etymology Map) schema on the local PostGIS DB.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_teardown_schema >> task_setup_schema
+
+        db_load_group = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=self)
+        
+        task_osmium_or_osm2pgsql = BranchPythonOperator(
+            task_id = "choose_load_osm_data_method",
+            python_callable= choose_load_osm_data_task,
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Check how to load data into the DB
+
+                Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
+                Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen.
+                This choice is due to the facts that
+                * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
+                * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
+
+                The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
+
+                Links:
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+            """
+        )
+        task_remove_non_interesting >> task_osmium_or_osm2pgsql
+
+        task_copy_config = PythonOperator(
+            task_id = "copy_osmium_export_config",
+            python_callable = do_copy_file,
+            op_kwargs = {
+                "source_path": get_absolute_path("osmium.json"),
+                "dest_path": "/workdir/osmium.json",     
+            },
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Copy the Osmium configuration
+
+                Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/osmium.json)) into the working directory.
+
+                Links:
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+            """
+        )
+        task_osmium_or_osm2pgsql >> Label("Use osmium export") >> task_copy_config
+
+        task_export_to_pg = OsmiumExportOperator(
+            task_id = "osmium_export_pbf_to_pg",
+            source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+            dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+            cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
+            config_path= "/workdir/osmium.json",
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Export OSM data from PBF to PG
+
+                Using `osmium export`, export the filtered OpenStreetMap data from the filtered PBF file to a PG tab-separated-values file ready for importing into the DB.
+            """
+        )
+        task_copy_config >> task_export_to_pg
+
+        task_load_ele_pg = PostgresCopyOperator(
+            task_id = "load_elements_from_pg_file",
+            postgres_conn_id = local_db_conn_id,
+            filepath = "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+            separator = '\t',
+            schema = 'oem',
+            table = 'osmdata',
+            columns = ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Load OSM data from the PG file
+
+                Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table.
+            """
+        )
+        [task_export_to_pg, task_setup_schema] >> task_load_ele_pg
+
+        task_load_ele_osm2pgsql = Osm2pgsqlOperator(
+            task_id = "load_elements_with_osm2pgsql",
+            postgres_conn_id = local_db_conn_id,
+            source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Load OSM data from the PBF file
+
+                Using `osm2pgsql`, load the filtered OpenStreetMap data directly from the PBF file.
+            """
+        )
+        task_osmium_or_osm2pgsql >> Label("Use osm2pgsql") >> task_load_ele_osm2pgsql
+        task_setup_schema >> task_load_ele_osm2pgsql
+
+        task_convert_osm2pgsql = PostgresOperator(
+            task_id = "convert_osm2pgsql_data",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/convert-osm2pgsql-data.sql",
+            dag = self,
+            task_group=db_load_group,
+            doc_md = """
+                # Prepare osm2pgsql data for usage
+
+                Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_load_ele_osm2pgsql >> task_convert_osm2pgsql
+
+        join_load_ele = EmptyOperator(
+            task_id = "join",
+            trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Join branches back together
+
+                Dummy task for joining the path after the branching done to choose between `osmium export` and `osm2pgsql`.
+            """
+        )
+        [task_load_ele_pg, task_convert_osm2pgsql] >> join_load_ele
+
+        elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=self)
+
+        task_remove_ele_too_big = PostgresOperator(
+            task_id = "remove_elements_too_big",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/remove-elements-too-big.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Remove elements too big from the DB
+
+                Remove elements that wouldn't be visible anyway on the map from the local PostGIS DB.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        join_load_ele >> task_remove_ele_too_big
+
+        task_convert_ele_wd_cods = PostgresOperator(
+            task_id = "convert_element_wikidata_cods",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/convert-element-wikidata-cods.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Convert OSM - Wikidata associations
+
+                Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each oassociation the source (`wikidata` / `subject:wikidata` / `name:etymology:wikidata`).
+                
+                Links:
+                * [`wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
+                * [`subject:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
+                * [`name:etymology:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_remove_ele_too_big >> task_convert_ele_wd_cods
+
+        wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
+        task_load_wd_ent = PostgresCopyOperator(
+            task_id = "load_wikidata_entities",
+            postgres_conn_id = local_db_conn_id,
+            filepath = wikidata_init_file_path,
+            separator = ',',
+            schema = 'oem',
+            table = 'wikidata',
+            columns = ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
+            dag = self,
+            doc_md="""
+                # Load default Wikidata entities
+
+                Load into the wikidata table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/wikidata_init.csv).
+            """
+        )
+        task_setup_schema >> task_load_wd_ent
+
+        task_convert_wd_ent = PostgresOperator(
+            task_id = "convert_wikidata_entities",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/convert-wikidata-entities.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Load Wikidata entities from OSM etymologies
+
+                Load into the wikidata table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata` or `name:etymology:wikidata`).
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
+
+        task_load_named_after = BashOperator(
+            task_id = "download_named_after_wikidata_entities",
+            bash_command="date",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
+            """
+        )
+        task_convert_wd_ent >> task_load_named_after
+        
+        task_load_consists_of = BashOperator(
+            task_id = "download_consists_of_wikidata_entities",
+            bash_command="date",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
+            """
+        )
+        task_convert_wd_ent >> task_load_consists_of
+
+        task_convert_ety = PostgresOperator(
+            task_id = "convert_etymologies",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/convert-etymologies.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # TODO document
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        [task_load_named_after, task_load_consists_of] >> task_convert_ety
+
+        task_propagate = PostgresOperator(
+            task_id = "propagate_etymologies_globally",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/propagate-etymologies-global.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # TODO document
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_convert_ety >> task_propagate
+
+        task_check_text_ety = PostgresOperator(
+            task_id = "check_text_etymology",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/check-text-etymology.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # TODO document
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_propagate >> task_check_text_ety
+
+        task_check_wd_ety = PostgresOperator(
+            task_id = "check_wikidata_etymology",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/check-wd-etymology.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # TODO document
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_check_text_ety >> task_check_wd_ety
+
+        task_move_ele = PostgresOperator(
+            task_id = "move_elements_with_etymology",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/move-elements-with-etymology.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # TODO document
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_check_wd_ety >> task_move_ele
+
+        task_setup_ety_fk = PostgresOperator(
+            task_id = "setup_etymology_foreign_key",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/etymology-foreign-key.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # TODO document
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_move_ele >> task_setup_ety_fk
+
+        task_drop_temp_tables = PostgresOperator(
+            task_id = "drop_temporary_tables",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/drop-temp-tables.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Remove temporary tables
+
+                Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_move_ele >> task_drop_temp_tables
+
+        task_global_map = PostgresOperator(
+            task_id = "setup_global_map",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/global-map.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # Save the global map view
+
+                Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_move_ele >> task_global_map
+
+        # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+        task_last_update = PostgresOperator(
+            task_id = "save_last_data_update",
+            postgres_conn_id = local_db_conn_id,
+            sql = """
+                CREATE OR REPLACE FUNCTION oem.last_data_update()
+                    RETURNS character varying
+                    LANGUAGE 'sql'
+                AS $BODY$
+                SELECT %(last_update)s;
+                $BODY$;
+                """,
+            parameters = {
+                "last_update": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}"
+            },
+            dag = self,
+            doc_md="""
+                # Save into the DB the date of the last update
+
+                Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        [task_get_source_url, task_setup_schema] >> task_last_update
+
+        task_pg_dump = PgDumpOperator(
+            task_id = "pg_dump",
+            postgres_conn_id=local_db_conn_id,
+            dest_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
+            dag = self,
+            doc_md="""
+                # TODO document
+            """
+        )
+        [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
+
+        task_check_pg_restore = ShortCircuitOperator(
+            task_id = "check_upload_conn_id",
+            python_callable=check_upload_db_conn_id,
+            dag = self,
+            doc_md="""
+                # Check upload DB connecton ID
+
+                Check whether the connecton ID to the destination PostGIS DB is available: if it is, proceed to restore the data, otherwise stop here.
+
+                The connection ID is passed through the params object to allow customization when triggering the DAG.
+
+                Links:
+                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html#shortcircuitoperator)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+            """
+        )
+        task_pg_dump >> task_check_pg_restore
+
+        task_pg_restore = PgRestoreOperator(
+            task_id = "pg_restore",
+            postgres_conn_id=local_db_conn_id,
+            src_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
+            dag = self,
+            doc_md="""
+                # TODO document
+            """
+        )
+        task_check_pg_restore >> task_pg_restore
+
+
+
+planet_pbf = OemDbInitDAG(
+    dag_id="db-init-planet-latest",
+    schedule_interval="@weekly",
+    upload_db_conn_id="oem-prod",
+    pbf_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf"
+)
+planet_html = OemDbInitDAG(
+    dag_id="db-init-planet-from-html",
+    schedule_interval="@weekly",
+    upload_db_conn_id="oem-prod",
+    html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
+    html_prefix="planet"
+)
+planet_rss = OemDbInitDAG(
+    dag_id="db-init-planet-from-rss",
+    schedule_interval="@weekly",
+    upload_db_conn_id="oem-prod",
+    rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml"
+)
+
+italy_pbf = OemDbInitDAG(
+    dag_id="db-init-italy-latest",
+    schedule_interval="@daily",
+    upload_db_conn_id="oem-prod-no",
+    pbf_url="http://download.geofabrik.de/europe/italy-latest.osm.pbf"
+)
+italy_html = OemDbInitDAG(
+    dag_id="db-init-italy-from-html",
+    schedule_interval="@daily",
+    upload_db_conn_id="oem-prod-no",
+    html_url="http://download.geofabrik.de/europe/",
+    html_prefix="italy"
+)
+
+nord_ovest_pbf = OemDbInitDAG(
+    dag_id="db-init-italy-nord-ovest-latest",
+    schedule_interval="@daily",
+    pbf_url="http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf"
+)
+nord_ovest_html = OemDbInitDAG(
+    dag_id="db-init-italy-nord-ovest-from-html",
+    schedule_interval="@daily",
+    html_url="http://download.geofabrik.de/europe/italy/",
+    html_prefix="nord-ovest"
+)
+
+kosovo_html = OemDbInitDAG(
+    dag_id="db-init-kosovo-from-html",
+    schedule_interval="@daily",
+    html_url="http://download.geofabrik.de/europe/",
+    html_prefix="kosovo"
+)
