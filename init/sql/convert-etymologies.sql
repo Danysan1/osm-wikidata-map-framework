@@ -1,6 +1,7 @@
 INSERT INTO oem.etymology (
     et_el_id,
     et_wd_id,
+    et_source_color,
     et_from_el_id,
     et_from_osm,
     et_from_wikidata,
@@ -16,6 +17,7 @@ INSERT INTO oem.etymology (
 ) SELECT
     ew_el_id,
     wd_id,
+    MIN(source_color) AS source_color,
     MIN(ew_el_id) AS from_el_id,
     BOOL_OR(wna_from_prop_cod IS NULL) AS from_osm, -- derived directly from OSM
     BOOL_OR(wna_from_prop_cod IS NOT NULL) AS from_wikidata, -- derived through Wikidata
@@ -32,6 +34,7 @@ FROM (
     SELECT DISTINCT
         ew_el_id,
         wd_id,
+        '#33ff66' AS source_color,
         ew_from_name_etymology,
         ew_from_subject,
         ew_from_wikidata,
@@ -44,6 +47,7 @@ FROM (
     SELECT DISTINCT
         ew.ew_el_id,
         nawd.wd_id,
+        '#3333ff' AS source_color,
         ew_from_name_etymology,
         ew_from_subject,
         ew_from_wikidata,
@@ -60,6 +64,7 @@ FROM (
     SELECT DISTINCT
         ew.ew_el_id,
         nawd.wd_id,
+        '#3333ff' AS source_color,
         ew_from_name_etymology,
         ew_from_subject,
         ew_from_wikidata,

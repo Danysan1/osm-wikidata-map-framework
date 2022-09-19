@@ -18,6 +18,7 @@ WITH road_etymology AS (
 INSERT INTO oem.etymology (
     et_el_id,
     et_wd_id,
+    et_source_color,
     et_from_el_id,
     et_recursion_depth,
     et_from_osm,
@@ -34,6 +35,7 @@ INSERT INTO oem.etymology (
 ) SELECT
     new_el.osm_id,
     old_et.et_wd_id,
+    '#ff3333' AS source_color,
     old_et.et_from_el_id,
     -1 AS recursion_depth,
     old_et.et_from_osm,

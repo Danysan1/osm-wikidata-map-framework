@@ -113,6 +113,7 @@ CREATE TABLE oem.etymology (
     --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
     et_el_id BIGINT NOT NULL,
     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+    et_source_color VARCHAR,
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
     et_from_osm BOOLEAN,

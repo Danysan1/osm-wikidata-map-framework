@@ -31,10 +31,10 @@ const colorSchemes: ColorScheme[] = [
         urlCode: "typeStats",
     },
     {
-        id: "propagation",
-        colorField: "propagation_color",
-        text: "By propagation",
-        color: ["coalesce", ['get', 'propagation_color'], "#223b53"],
+        id: "source",
+        colorField: "source_color",
+        text: "By source",
+        color: ["coalesce", ['get', 'source_color'], "#223b53"],
         urlCode: null
     },
     { id: "black", text: 'Uniform black', color: '#223b53', colorField: null, urlCode: null },

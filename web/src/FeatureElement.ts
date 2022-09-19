@@ -10,6 +10,7 @@ interface FeatureProperties {
     name: string | null;
     osm_id: number;
     osm_type: string;
+    source_color: string | null;
     text_etymology: string | null;
     text_etymology_descr: string | null;
     type_color: string | null;
