@@ -10,13 +10,10 @@ $webFolder = __DIR__ . "/../" . (file_exists(__DIR__ . "/../web") ? "web" : "htm
 
 require_once("$webFolder/app/IniEnvConfiguration.php");
 require_once("$webFolder/app/PostGIS_PDO.php");
-require_once("$webFolder/app/query/wikidata/RelatedEntitiesCheckWikidataQuery.php");
-require_once("$webFolder/app/query/wikidata/RelatedEntitiesDetailsWikidataQuery.php");
+require_once("$webFolder/app/loadWikidataRelatedEntities.php");
 
 use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
-use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
-use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
 $fileArgumentIndex = false;
 $options = getopt(
@@ -384,142 +381,6 @@ function loadWikidataEntities(PDO $dbh): void
     logProgress("Converted $n_wd Wikidata entities from element_wikidata_cods");
 }
 
-/**
- * @param string $wikidataCodsFilter
- * @param string $relationName
- * @param array<string> $relationProps List of wikidata cods for properties to check
- * @param null|array<string> $instanceOfCods List of Wikidata cods for classes that entities must be instance of
- * @param PDO $dbh
- * @param string $wikidataEndpointURL
- */
-function loadWikidataRelatedEntities(
-    string $wikidataCodsFilter,
-    string $relationName,
-    array $relationProps,
-    ?array $instanceOfCods,
-    PDO $dbh,
-    string $wikidataEndpointURL
-): void {
-    $wikidataJSONFile = "wikidata_$relationName.tmp.json";
-
-    $n_todo = $dbh->query(
-        "SELECT COUNT(DISTINCT ew_wikidata_cod)
-        FROM oem.element_wikidata_cods
-        WHERE $wikidataCodsFilter"
-    )->fetchColumn();
-    assert(is_int($n_todo));
-    logProgress("Counted $n_todo Wikidata codes to check");
-
-    $pageSize = 40000;
-    for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
-        $truePageSize = min($pageSize, $n_todo - $offset);
-        logProgress("Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)...");
-        $wikidataCodsResult = $dbh->query(
-            "SELECT DISTINCT ew_wikidata_cod
-            FROM oem.element_wikidata_cods
-            WHERE $wikidataCodsFilter
-            ORDER BY ew_wikidata_cod
-            LIMIT $pageSize
-            OFFSET $offset"
-        )->fetchAll();
-        $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
-
-        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-        try {
-            $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
-        } catch (Exception $e) {
-            echo 'Check failed. Retrying to fetch...';
-            $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
-        }
-        $n_wikidata_cods = count($wikidataCods);
-
-        if ($n_wikidata_cods == 0) {
-            logProgress("No elements found to fetch details for");
-        } else {
-            logProgress("Fetching details for $n_wikidata_cods elements out of $truePageSize...");
-            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-            try {
-                $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
-            } catch (Exception $e) {
-                echo 'Fetch failed. Retrying to fetch...';
-                $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
-            }
-            file_put_contents($wikidataJSONFile, $jsonResult);
-
-            logProgress("Loading Wikidata \"$relationName\" data...");
-            $sth_wd = $dbh->prepare(
-                "INSERT INTO oem.wikidata (wd_wikidata_cod)
-                SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wikidata IS NULL
-                UNION
-                SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wikidata IS NULL"
-            );
-            $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-            $sth_wd->execute();
-            $n_wd = $sth_wd->rowCount();
-
-            $sth_wna = $dbh->prepare(
-                "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
-                SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'"
-            );
-            $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-            $sth_wna->execute();
-            $n_wna = $sth_wna->rowCount();
-            logProgress("Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" associations");
-        }
-    }
-}
-
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): void
-{
-    logProgress('Loading Wikidata "named after" entities...');
-    loadWikidataRelatedEntities(
-        "ew_from_wikidata",
-        "named_after",
-        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "P138", // named after
-            "P825", // dedicated to
-            "P547", // commemorates
-        ],
-        null,
-        $dbh,
-        $wikidataEndpointURL
-    );
-}
-
-function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
-{
-    logProgress('Loading Wikidata "consists of" entities...');
-    loadWikidataRelatedEntities(
-        "ew_from_name_etymology OR ew_from_subject",
-        "consists_of",
-        ["P527"], // has part or parts
-        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "Q14073567", // sibling duo
-            "Q16979650", // sibling group
-            "Q10648343", // duo
-            "Q16334295", // group of humans
-            "Q219160", // couple
-            "Q3046146", // married couple
-            "Q1141470", // double act
-            "Q14756018", // twins
-        ],
-        $dbh,
-        $wikidataEndpointURL
-    );
-}
-
 function convertEtymologies(PDO $dbh): void
 {
     logProgress('Converting etymologies...');
@@ -732,8 +593,8 @@ try {
 
             echo 'Download of wikidata relations started at ' . date('c') . PHP_EOL;
             $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-            loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
-            loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+            App\loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
+            App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
             echo 'Download of wikidata relations ended at ' . date('c') . PHP_EOL;
         }
 
