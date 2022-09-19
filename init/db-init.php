@@ -662,8 +662,7 @@ try {
         
         logProgress("Uploading data to DB $up_db on $up_host");
         $up_dbh = new PostGIS_PDO($conf, $up_host, $up_port, $up_db, $up_user, $up_psw);
-        $up_dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
-        $up_dbh->exec("CREATE SCHEMA oem");
+        $up_dbh->exec(file_get_contents(__DIR__."/sql/prepare-db-for-upload.sql"));
         execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --schema 'oem' --verbose '$backupFilePath'");
         logProgress('Uploaded data to DB');
     }

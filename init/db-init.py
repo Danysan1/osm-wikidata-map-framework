@@ -25,33 +25,27 @@ def get_absolute_path(filename:str, folder:str = None) -> str:
         file_dir_path = os.path.join(file_dir_path, folder)
     return os.path.join(file_dir_path, filename)
 
-class PostgresCopyOperator(PythonOperator):
-    def __init__(self, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list, **kwargs) -> None:
-        super().__init__(
-            python_callable = self.do_postgres_copy,
-            op_kwargs = {
-                "postgres_conn_id": postgres_conn_id,
-                "filepath": filepath,
-                "separator": separator,
-                "schema": schema,
-                "table": table,
-                "columns": columns,
-            },
-            **kwargs
-        )
+def do_postgres_query(postgres_conn_id:str, sql:str):
+    """
+    See https://www.psycopg.org/docs/usage.html
+    """
+    pg_hook = PostgresHook(postgres_conn_id)
+    with pg_hook.get_conn() as pg_conn:
+        with pg_conn.cursor() as cursor:
+            cursor.execute(sql)
 
-    def do_postgres_copy(self, postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
-        """
-        See https://www.psycopg.org/docs/usage.html#copy
-        See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
-        See https://github.com/psycopg/psycopg2/issues/1294
-        """
-        pg_hook = PostgresHook(postgres_conn_id)
-        with pg_hook.get_conn() as pg_conn:
-            with pg_conn.cursor() as cursor:
-                with open(filepath) as file:
-                    cursor.execute(f'SET search_path TO {schema}')
-                    cursor.copy_from(file, table, separator, columns = columns)
+def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
+    """
+    See https://www.psycopg.org/docs/usage.html#copy
+    See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
+    See https://github.com/psycopg/psycopg2/issues/1294
+    """
+    pg_hook = PostgresHook(postgres_conn_id)
+    with pg_hook.get_conn() as pg_conn:
+        with pg_conn.cursor() as cursor:
+            with open(filepath) as file:
+                cursor.execute(f'SET search_path TO {schema}')
+                cursor.copy_from(file, table, separator, columns = columns)
 
 class OsmiumTagsFilterOperator(DockerOperator):
     """
@@ -101,54 +95,6 @@ class OsmiumExportOperator(DockerOperator):
             ],
             mount_tmp_dir=False,
             auto_remove=True,
-            **kwargs
-        )
-
-class PgDumpOperator(BashOperator):
-    """
-    Execute pg_dump on the specified connection
-
-    Links:
-    * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
-    """
-    def __init__(self, postgres_conn_id:str, dest_path:str, **kwargs) -> None:
-        postgres_conn = PostgresHook.get_connection(postgres_conn_id)
-        super().__init__(
-            bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
-            env= {
-                "backupFilePath": dest_path,
-                "host": postgres_conn.host,
-                "port": str(postgres_conn.port),
-                "user": postgres_conn.login,
-                "dbname": postgres_conn.schema,
-                "PGPASSWORD": postgres_conn.password,
-            },
-            **kwargs
-        )
-
-class PgRestoreOperator(BashOperator):
-    """
-    Execute pg_restore on upload_db_conn_id
-
-    Links:
-    * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
-    * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
-    """
-    def __init__(self, src_path:str, **kwargs) -> None:
-        super().__init__(
-            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "oem" --verbose "$backupFilePath"',
-            env= {
-                "backupFilePath": src_path,
-                "host": "{{ conn[params.upload_db_conn_id].host }}",
-                "port": "{{ str(conn[params.upload_db_conn_id].port) }}",
-                "user": "{{ conn[params.upload_db_conn_id].login }}",
-                "dbname": "{{ conn[params.upload_db_conn_id].dbname }}",
-                "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
-            },
             **kwargs
         )
 
@@ -524,20 +470,27 @@ class OemDbInitDAG(DAG):
         )
         task_copy_config >> task_export_to_pg
 
-        task_load_ele_pg = PostgresCopyOperator(
+        task_load_ele_pg = PythonOperator(
             task_id = "load_elements_from_pg_file",
-            postgres_conn_id = local_db_conn_id,
-            filepath = "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
-            separator = '\t',
-            schema = 'oem',
-            table = 'osmdata',
-            columns = ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
+            python_callable = do_postgres_copy,
+            op_kwargs = {
+                "postgres_conn_id": local_db_conn_id,
+                "filepath": "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+                "separator": '\t',
+                "schema": 'oem',
+                "table": 'osmdata',
+                "columns": ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
+            },
             dag = self,
             task_group=db_load_group,
             doc_md="""
                 # Load OSM data from the PG file
 
                 Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table.
+
+                Links:
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
             """
         )
         [task_export_to_pg, task_setup_schema] >> task_load_ele_pg
@@ -627,19 +580,26 @@ class OemDbInitDAG(DAG):
         task_remove_ele_too_big >> task_convert_ele_wd_cods
 
         wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
-        task_load_wd_ent = PostgresCopyOperator(
+        task_load_wd_ent = PythonOperator(
             task_id = "load_wikidata_entities",
-            postgres_conn_id = local_db_conn_id,
-            filepath = wikidata_init_file_path,
-            separator = ',',
-            schema = 'oem',
-            table = 'wikidata',
-            columns = ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
+            python_callable = do_postgres_copy,
+            op_kwargs = {
+                "postgres_conn_id": local_db_conn_id,
+                "filepath": wikidata_init_file_path,
+                "separator": ',',
+                "schema": 'oem',
+                "table": 'wikidata',
+                "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
+            },
             dag = self,
             doc_md="""
                 # Load default Wikidata entities
 
                 Load into the wikidata table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/wikidata_init.csv).
+
+                Links:
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
             """
         )
         task_setup_schema >> task_load_wd_ent
@@ -852,15 +812,28 @@ class OemDbInitDAG(DAG):
         )
         [task_get_source_url, task_setup_schema] >> task_last_update
 
-        task_pg_dump = PgDumpOperator(
+        task_pg_dump = BashOperator(
             task_id = "pg_dump",
-            postgres_conn_id=local_db_conn_id,
-            dest_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
+            bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
+            env= {
+                "backupFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
+                "host": f'{{{{ conn["{local_db_conn_id}"].host }}}}',
+                "port": f'{{{{ conn["{local_db_conn_id}"].port|string }}}}',
+                "user": f'{{{{ conn["{local_db_conn_id}"].login }}}}',
+                "dbname": f'{{{{ conn["{local_db_conn_id}"].schema }}}}',
+                "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
+            },
             dag = self,
             doc_md="""
                 # Backup the data from the local DB
 
                 Backup the data from the local DB with pg_dump into the backup file.
+
+                Links:
+                * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+                * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
         [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
@@ -884,50 +857,81 @@ class OemDbInitDAG(DAG):
         )
         task_pg_dump >> task_check_pg_restore
 
-        task_pg_restore = PgRestoreOperator(
+        task_prepare_upload = PythonOperator(
+            task_id = "prepare_db_for_upload",
+            python_callable = do_postgres_query,
+            op_kwargs = {
+                "postgres_conn_id": "{{ params.upload_db_conn_id }}",
+                "sql": open(get_absolute_path("sql/prepare-db-for-upload.sql"), "r").read(),
+            },
+            dag = self,
+            doc_md="""
+                # Prepare the remote DB for uploading
+
+                Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the oem schema 
+
+                Links:
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+            """
+        )
+        task_check_pg_restore >> task_prepare_upload
+
+        task_pg_restore = BashOperator(
             task_id = "pg_restore",
-            src_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
+            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "oem" --verbose "$backupFilePath"',
+            env= {
+                "backupFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
+                "host": "{{ conn[params.upload_db_conn_id].host }}",
+                "port": "{{ conn[params.upload_db_conn_id].port|string }}",
+                "user": "{{ conn[params.upload_db_conn_id].login }}",
+                "dbname": "{{ conn[params.upload_db_conn_id].schema }}",
+                "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
+            },
             dag = self,
             doc_md="""
                 # Upload the data on the remote DB
 
-                Upload the data from the backup file on the remote DB with pg_restore.
+                Upload the data from the backup file on the remote DB configured in upload_db_conn_id with pg_restore.
+
+                Links:
+                * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
             """
         )
-        task_check_pg_restore >> task_pg_restore
+        task_prepare_upload >> task_pg_restore
 
 
 
 planet_pbf = OemDbInitDAG(
     dag_id="db-init-planet-latest",
     schedule_interval="@weekly",
-    upload_db_conn_id="oem-prod",
     pbf_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf"
 )
 planet_html = OemDbInitDAG(
     dag_id="db-init-planet-from-html",
     schedule_interval="@weekly",
-    upload_db_conn_id="oem-prod",
+    upload_db_conn_id="nord_ovest-postgres",
     html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
     html_prefix="planet"
 )
 planet_rss = OemDbInitDAG(
     dag_id="db-init-planet-from-rss",
     schedule_interval="@weekly",
-    upload_db_conn_id="oem-prod",
     rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml"
 )
 
 italy_pbf = OemDbInitDAG(
     dag_id="db-init-italy-latest",
     schedule_interval="@daily",
-    upload_db_conn_id="oem-prod-no",
     pbf_url="http://download.geofabrik.de/europe/italy-latest.osm.pbf"
 )
 italy_html = OemDbInitDAG(
     dag_id="db-init-italy-from-html",
     schedule_interval="@daily",
-    upload_db_conn_id="oem-prod-no",
+    upload_db_conn_id="nord_ovest-postgres",
     html_url="http://download.geofabrik.de/europe/",
     html_prefix="italy"
 )
@@ -947,6 +951,7 @@ nord_ovest_html = OemDbInitDAG(
 kosovo_html = OemDbInitDAG(
     dag_id="db-init-kosovo-from-html",
     schedule_interval="@daily",
+    upload_db_conn_id="oem-postgis-postgres",
     html_url="http://download.geofabrik.de/europe/",
     html_prefix="kosovo"
 )
