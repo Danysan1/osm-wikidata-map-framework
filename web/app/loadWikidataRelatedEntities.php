@@ -36,10 +36,11 @@ function loadWikidataRelatedEntities(
         )->fetchColumn())
         throw new Exception("Temporary tables already deleted, can't load Wikidata related entities");
     
-    echo "Loading Wikidata \"$relationName\" entities...";
+    echo "Loading Wikidata \"$relationName\" entities...".PHP_EOL;
 
     $wikidataJSONFile = "wikidata_$relationName.tmp.json";
-    $total_entities = 0;
+    $total_wd = 0;
+    $total_wna = 0;
 
     $n_todo = $dbh->query(
         "SELECT COUNT(DISTINCT ew_wikidata_cod)
@@ -47,12 +48,12 @@ function loadWikidataRelatedEntities(
         WHERE $wikidataCodsFilter"
     )->fetchColumn();
     assert(is_int($n_todo));
-    echo "Counted $n_todo Wikidata codes to check";
+    echo "Counted $n_todo Wikidata codes to check".PHP_EOL;
 
     $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
         $truePageSize = min($pageSize, $n_todo - $offset);
-        echo "Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)...";
+        echo "Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)...".PHP_EOL;
         $wikidataCodsResult = $dbh->query(
             "SELECT DISTINCT ew_wikidata_cod
             FROM oem.element_wikidata_cods
@@ -67,25 +68,25 @@ function loadWikidataRelatedEntities(
         try {
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         } catch (Exception $e) {
-            echo 'Check failed. Retrying to fetch...';
+            echo 'Check failed. Retrying to fetch...'.PHP_EOL;
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         }
         $n_wikidata_cods = count($wikidataCods);
 
         if ($n_wikidata_cods == 0) {
-            echo "No elements found to fetch details for";
+            echo "No elements found to fetch details for".PHP_EOL;
         } else {
-            echo "Fetching details for $n_wikidata_cods elements out of $truePageSize...";
+            echo "Fetching details for $n_wikidata_cods elements out of $truePageSize...".PHP_EOL;
             $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
             try {
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             } catch (Exception $e) {
-                echo 'Fetch failed. Retrying to fetch...';
+                echo 'Fetch failed. Retrying to fetch...'.PHP_EOL;
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             }
             file_put_contents($wikidataJSONFile, $jsonResult);
 
-            echo "Loading Wikidata \"$relationName\" data...";
+            echo "Loading Wikidata \"$relationName\" data...".PHP_EOL;
             $sth_wd = $dbh->prepare(
                 "INSERT INTO oem.wikidata (wd_wikidata_cod)
                 SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
@@ -115,14 +116,15 @@ function loadWikidataRelatedEntities(
             $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
             $sth_wna->execute();
             $n_wna = $sth_wna->rowCount();
-            echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" associations";
+            echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" relationships".PHP_EOL;
 
-            $total_entities += $n_wd;
+            $total_wd += $n_wd;
+            $total_wna += $n_wna;
         }
     }
 
-    echo "Loaded $total_entities Wikidata \"$relationName\" entities";
-    return $total_entities;
+    echo "Finished loading $total_wd Wikidata entities and $total_wna \"$relationName\" relationships".PHP_EOL;
+    return $total_wd;
 }
 
 function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): int
