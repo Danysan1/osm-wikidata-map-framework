@@ -327,6 +327,7 @@ services:
       - oem-postgis
     networks:
       - oem-internal
+      - airflow-worker-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s

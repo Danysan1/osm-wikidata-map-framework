@@ -14,6 +14,7 @@ from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
 from docker.types import Mount
 from airflow.utils.edgemodifier import Label
+from airflow.providers.http.operators.http import SimpleHttpOperator
 
 # https://www.astronomer.io/guides/logging/
 #task_logger = logging.getLogger('airflow.task')
@@ -317,7 +318,8 @@ class OemDbInitDAG(DAG):
                 **kwargs
             )
             
-        local_db_conn_id = "oem-postgis-conn"
+        local_db_conn_id = "oem-postgis-postgres"
+        local_web_conn_id = "oem-web-dev-http"
 
         task_get_source_url = PythonOperator(
             task_id = "get_source_url",
@@ -659,24 +661,42 @@ class OemDbInitDAG(DAG):
         )
         [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
 
-        task_load_named_after = BashOperator(
+        task_load_named_after = SimpleHttpOperator(
             task_id = "download_named_after_wikidata_entities",
-            bash_command="date",
+            http_conn_id = local_web_conn_id,
+            endpoint = "/loadWikidataNamedAfterEntities.php",
+            method = "GET",
+            response_check = lambda response: response.status_code == 200,
             dag = self,
             task_group=elaborate_group,
             doc_md="""
-                # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
+                # Load Wikidata 'named after' entities
+
+                For each existing Wikidata entity representing an OSM element, load into the wikidata table of the local PostGIS DB all the Wikidata entities that the entity is named after.
+
+                Links:
+                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
+                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
             """
         )
         task_convert_wd_ent >> task_load_named_after
         
-        task_load_consists_of = BashOperator(
+        task_load_consists_of = SimpleHttpOperator(
             task_id = "download_consists_of_wikidata_entities",
-            bash_command="date",
+            http_conn_id = local_web_conn_id,
+            endpoint = "/loadWikidataConsistsOfEntities.php",
+            method = "GET",
+            response_check = lambda response: response.status_code == 200,
             dag = self,
             task_group=elaborate_group,
             doc_md="""
-                # TODO yet to be implemented, see [db-init.php](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/db-init.php)
+                # Load Wikidata 'consists of' entities
+
+                For each existing Wikidata entity representing the etymology for and OSM element, load into the wikidata table of the local PostGIS DB all the Wikidata entities that are part of the entity.
+
+                Links:
+                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
+                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
             """
         )
         task_convert_wd_ent >> task_load_consists_of
@@ -838,7 +858,9 @@ class OemDbInitDAG(DAG):
             dest_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
             dag = self,
             doc_md="""
-                # TODO document
+                # Backup the data from the local DB
+
+                Backup the data from the local DB with pg_dump into the backup file.
             """
         )
         [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
@@ -867,7 +889,9 @@ class OemDbInitDAG(DAG):
             src_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
             dag = self,
             doc_md="""
-                # TODO document
+                # Upload the data on the remote DB
+
+                Upload the data from the backup file on the remote DB with pg_restore.
             """
         )
         task_check_pg_restore >> task_pg_restore
