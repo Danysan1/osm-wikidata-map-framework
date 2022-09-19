@@ -812,6 +812,8 @@ class OemDbInitDAG(DAG):
         )
         [task_get_source_url, task_setup_schema] >> task_last_update
 
+        upload_group = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
+
         task_pg_dump = BashOperator(
             task_id = "pg_dump",
             bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
@@ -824,6 +826,7 @@ class OemDbInitDAG(DAG):
                 "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
             },
             dag = self,
+            task_group = upload_group,
             doc_md="""
                 # Backup the data from the local DB
 
@@ -842,6 +845,7 @@ class OemDbInitDAG(DAG):
             task_id = "check_upload_conn_id",
             python_callable=check_upload_db_conn_id,
             dag = self,
+            task_group = upload_group,
             doc_md="""
                 # Check upload DB connecton ID
 
@@ -865,6 +869,7 @@ class OemDbInitDAG(DAG):
                 "sql": open(get_absolute_path("sql/prepare-db-for-upload.sql"), "r").read(),
             },
             dag = self,
+            task_group = upload_group,
             doc_md="""
                 # Prepare the remote DB for uploading
 
@@ -889,6 +894,7 @@ class OemDbInitDAG(DAG):
                 "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
             },
             dag = self,
+            task_group = upload_group,
             doc_md="""
                 # Upload the data on the remote DB
 
