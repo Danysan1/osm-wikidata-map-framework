@@ -8,7 +8,7 @@ use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
 
 $conf = new IniEnvConfiguration();
-preparePage($conf);
+prepareText($conf);
 
 $dbh = new PostGIS_PDO($conf);
 $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");

@@ -41,7 +41,7 @@ class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
                     ?element owl:sameAs [ ?prop [] ].
                 }
             }";
-        file_put_contents("RelatedEntitiesCheckWikidataQuery.tmp.rq", $sparqlQuery);
+        @file_put_contents("RelatedEntitiesCheckWikidataQuery.tmp.rq", $sparqlQuery);
         parent::__construct($sparqlQuery, $endpointURL);
     }
 

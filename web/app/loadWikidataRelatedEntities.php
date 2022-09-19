@@ -48,7 +48,7 @@ function loadWikidataRelatedEntities(
         WHERE $wikidataCodsFilter"
     )->fetchColumn();
     assert(is_int($n_todo));
-    echo "Counted $n_todo Wikidata codes to check".PHP_EOL;
+    echo "Counted $n_todo Wikidata codes to check.".PHP_EOL;
 
     $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
@@ -68,23 +68,23 @@ function loadWikidataRelatedEntities(
         try {
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         } catch (Exception $e) {
-            echo 'Check failed. Retrying to fetch...'.PHP_EOL;
+            echo "Check failed. Retrying to fetch...".PHP_EOL;
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         }
         $n_wikidata_cods = count($wikidataCods);
 
         if ($n_wikidata_cods == 0) {
-            echo "No elements found to fetch details for".PHP_EOL;
+            echo "No elements found to fetch details for.".PHP_EOL;
         } else {
             echo "Fetching details for $n_wikidata_cods elements out of $truePageSize...".PHP_EOL;
             $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
             try {
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             } catch (Exception $e) {
-                echo 'Fetch failed. Retrying to fetch...'.PHP_EOL;
+                echo "Fetch failed. Retrying to fetch...".PHP_EOL;
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             }
-            file_put_contents($wikidataJSONFile, $jsonResult);
+            @file_put_contents($wikidataJSONFile, $jsonResult);
 
             echo "Loading Wikidata \"$relationName\" data...".PHP_EOL;
             $sth_wd = $dbh->prepare(
@@ -116,14 +116,14 @@ function loadWikidataRelatedEntities(
             $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
             $sth_wna->execute();
             $n_wna = $sth_wna->rowCount();
-            echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" relationships".PHP_EOL;
+            echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" relationships.".PHP_EOL;
 
             $total_wd += $n_wd;
             $total_wna += $n_wna;
         }
     }
 
-    echo "Finished loading $total_wd Wikidata entities and $total_wna \"$relationName\" relationships".PHP_EOL;
+    echo "Finished loading $total_wd Wikidata entities and $total_wna \"$relationName\" relationships.".PHP_EOL;
     return $total_wd;
 }
 
