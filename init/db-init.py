@@ -130,6 +130,9 @@ class Osm2pgsqlOperator(DockerOperator):
             **kwargs
         )
 
+class TemplatedPostgresOperator(PostgresOperator):
+    template_fields = ('parameters', 'postgres_conn_id', 'sql')
+
 def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     from urllib.request import urlopen
     from re import search, findall
@@ -184,7 +187,7 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     if date_match != None:
         last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
     else:
-        last_data_update = datetime.now().strftime('%y-%m-%d')
+        last_data_update = datetime.now().strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
     
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='basename', value=basename)
@@ -842,8 +845,7 @@ class OemDbInitDAG(DAG):
         )
         task_move_ele >> task_global_map
 
-        # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
-        task_last_update = PostgresOperator(
+        task_last_update = TemplatedPostgresOperator(
             task_id = "save_last_data_update",
             postgres_conn_id = local_db_conn_id,
             sql = """
@@ -918,13 +920,10 @@ class OemDbInitDAG(DAG):
         )
         task_pg_dump >> task_check_pg_restore
 
-        task_prepare_upload = PythonOperator(
+        task_prepare_upload = TemplatedPostgresOperator(
             task_id = "prepare_db_for_upload",
-            python_callable = do_postgres_query,
-            op_kwargs = {
-                "postgres_conn_id": "{{ params.upload_db_conn_id }}",
-                "sql": open(get_absolute_path("sql/prepare-db-for-upload.sql"), "r").read(),
-            },
+            postgres_conn_id = "{{ params.upload_db_conn_id }}",
+            sql = "sql/prepare-db-for-upload.sql",
             dag = self,
             task_group = upload_group,
             doc_md="""

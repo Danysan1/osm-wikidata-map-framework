@@ -47,7 +47,7 @@ FROM (
     SELECT DISTINCT
         ew.ew_el_id,
         nawd.wd_id,
-        '#3333ff' AS source_color,
+        '#3399ff' AS source_color,
         ew_from_name_etymology,
         ew_from_subject,
         ew_from_wikidata,
@@ -64,7 +64,7 @@ FROM (
     SELECT DISTINCT
         ew.ew_el_id,
         nawd.wd_id,
-        '#3333ff' AS source_color,
+        '#3399ff' AS source_color,
         ew_from_name_etymology,
         ew_from_subject,
         ew_from_wikidata,
