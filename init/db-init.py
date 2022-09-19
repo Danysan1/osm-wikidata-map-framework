@@ -220,10 +220,6 @@ class OemDbInitDAG(DAG):
 
         Parameters:
         ----------
-        dag_id: str
-            dag_id of the generated DAG
-        schedule_interval: str
-            schedule_interval of the generated DAG
         upload_db_conn_id: str
             Postgres connection ID for the production Database the DAG will upload to
         pbf_url: str
@@ -487,7 +483,7 @@ class OemDbInitDAG(DAG):
             doc_md="""
                 # Load OSM data from the PG file
 
-                Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table.
+                Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
@@ -596,7 +592,7 @@ class OemDbInitDAG(DAG):
             doc_md="""
                 # Load default Wikidata entities
 
-                Load into the wikidata table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/wikidata_init.csv).
+                Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/wikidata_init.csv).
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
@@ -614,7 +610,7 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Load Wikidata entities from OSM etymologies
 
-                Load into the wikidata table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata` or `name:etymology:wikidata`).
+                Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata` or `name:etymology:wikidata`).
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -633,7 +629,9 @@ class OemDbInitDAG(DAG):
             doc_md="""
                 # Load Wikidata 'named after' entities
 
-                For each existing Wikidata entity representing an OSM element, load into the wikidata table of the local PostGIS DB all the Wikidata entities that the entity is named after.
+                For each existing Wikidata entity representing an OSM element:
+                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
+                * load into the `wikidata_named_after` table of the local PostGIS DB the 'named after' relationships
 
                 Links:
                 * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
@@ -653,7 +651,9 @@ class OemDbInitDAG(DAG):
             doc_md="""
                 # Load Wikidata 'consists of' entities
 
-                For each existing Wikidata entity representing the etymology for and OSM element, load into the wikidata table of the local PostGIS DB all the Wikidata entities that are part of the entity.
+                For each existing Wikidata entity representing the etymology for and OSM element:
+                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are part of the entity
+                * load into the `wikidata_named_after` table of the local PostGIS DB the 'consists of' relationships
 
                 Links:
                 * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
@@ -669,7 +669,9 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # TODO document
+                # Convert the etymologies
+
+                Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -684,7 +686,10 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # TODO document
+                # Propagate the etymologies
+
+                Check the reliable etymologies (where multiple case-insensitive homonymous elements have etymologies to the exactly the same Wikidata entity).
+                Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -699,7 +704,9 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # TODO document
+                # Check elements with a text etymology
+
+                Check elements with an etymology that comes from `name:etymology`.
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -714,7 +721,9 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # TODO document
+                # Check elements with a Wikidata etymology
+
+                Check elements with an etymology that comes from `subject:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -729,7 +738,9 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # TODO document
+                # Remove elements without any etymology
+
+                Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -744,7 +755,7 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # TODO document
+                # Apply the foreign key from etymology to wikidata
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -957,7 +968,7 @@ nord_ovest_html = OemDbInitDAG(
 
 kosovo_html = OemDbInitDAG(
     dag_id="db-init-kosovo-from-html",
-    schedule_interval="@daily",
+    schedule_interval="@yearly",
     upload_db_conn_id="oem-postgis-postgres",
     html_url="http://download.geofabrik.de/europe/",
     html_prefix="kosovo"
