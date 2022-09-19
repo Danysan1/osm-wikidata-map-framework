@@ -109,6 +109,16 @@ function prepareHTML(Configuration $conf)
  * @param Configuration $conf
  * @return void
  */
+function prepareText(Configuration $conf)
+{
+	preparePage($conf);
+	header("Content-Type: text/plain; charset=utf-8");
+}
+
+/**
+ * @param Configuration $conf
+ * @return void
+ */
 function prepareJSON(Configuration $conf)
 {
 	preparePage($conf);

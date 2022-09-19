@@ -4,7 +4,8 @@ namespace App;
 
 require_once(__DIR__ . "/Configuration.php");
 
-use \PDO;
+use PDO;
+use Exception;
 use \App\Configuration;
 
 class PostGIS_PDO extends PDO
@@ -17,6 +18,9 @@ class PostGIS_PDO extends PDO
         ?string $user = null,
         ?string $password = null
     ) {
+        if(!$conf->getBool("db-enable"))
+            throw new Exception("The usage of the DB is disabled in the configuration");
+
         $host = $host ?: (string)$conf->get("db_host");
         $port = $port ?: (int)$conf->get("db_port");
         $dbname = $dbname ?: (string)$conf->get("db_database");
