@@ -10,13 +10,10 @@ $webFolder = __DIR__ . "/../" . (file_exists(__DIR__ . "/../web") ? "web" : "htm
 
 require_once("$webFolder/app/IniEnvConfiguration.php");
 require_once("$webFolder/app/PostGIS_PDO.php");
-require_once("$webFolder/app/query/wikidata/RelatedEntitiesCheckWikidataQuery.php");
-require_once("$webFolder/app/query/wikidata/RelatedEntitiesDetailsWikidataQuery.php");
+require_once("$webFolder/app/loadWikidataRelatedEntities.php");
 
 use App\IniEnvConfiguration;
 use App\PostGIS_PDO;
-use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
-use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
 $fileArgumentIndex = false;
 $options = getopt(
@@ -39,8 +36,8 @@ $options = getopt(
 $conf = new IniEnvConfiguration();
 if (!empty($argv[$fileArgumentIndex])) {
     $fileArgument = (string)$argv[$fileArgumentIndex];
-    if (str_starts_with($fileArgument, './init/pbf/') || str_starts_with($fileArgument, '.\\init\\pbf\\')) {
-        $fileArgument = substr($fileArgument, 11);
+    if (!str_ends_with($fileArgument, '.pbf')) {
+        $fileArgument = "$fileArgument.osm.pbf";
     }
 } elseif($conf->has("db_init_source_url")) {
     $fileArgument = (string)$conf->get("db_init_source_url");
@@ -51,8 +48,8 @@ if (!empty($argv[$fileArgumentIndex])) {
 
 if (isset($options["help"]) || isset($options["h"])) {
     echo
-    "Usage: php db-init.php [OPTIONS] SOURCE_FILE.osm.pbf" . PHP_EOL .
-        "\tSOURCE_FILE: a .pbf file in web/" . PHP_EOL .
+    "Usage: php db-init.php [OPTIONS] SOURCE_FILE_URL" . PHP_EOL .
+        "\tSOURCE_FILE_URL: a .osm.pbf file URL" . PHP_EOL .
         "\tOPTIONS: an optional combination of one or more of these flags:" . PHP_EOL .
         "\t\t--keep-temp-tables / -k : Don't delete temporary tables after elaborating (temporary tables are deleted by default)" . PHP_EOL .
         "\t\t--cleanup / -c : Delete temporary files before elaborating (disabled by default)" . PHP_EOL .
@@ -129,14 +126,14 @@ if (filter_var($fileArgument, FILTER_VALIDATE_URL) !== false) {
         echo "ERROR: You must pass as first argument the name or URL of the .osm.pbf input extract" . PHP_EOL;
         exit(1);
     }
-    $sourceFilePath = __DIR__ . "/pbf/" . $fileName;
+    $sourceFilePath = "/workdir/$fileName";
     logProgress("Downloading $fileName");
-    execAndCheck("curl --fail -z $sourceFilePath -o $sourceFilePath $url");
+    execAndCheck("curl --fail -v -z $sourceFilePath -o $sourceFilePath $url");
     logProgress("Download completed");
-} elseif (!empty(realpath(__DIR__ . "/pbf/" . $fileArgument))) {
+} elseif (!empty(realpath("/workdir/$fileArgument"))) {
     // $fileArgument is a relative path from the folder of db-init
     // Example: php db-init.php isole-latest.osm.pbf
-    $sourceFilePath = realpath(__DIR__ . "/pbf/" . $fileArgument);
+    $sourceFilePath = "/workdir/$fileArgument";
 } elseif (!empty(realpath($fileArgument))) {
     // $fileArgument is an absolute path
     // Example: php db-init.php /tmp/isole-latest.osm.pbf
@@ -229,7 +226,7 @@ function runOsmiumTagsFilter(
         logProgress("Data already filtered in $destinationFilePath");
     } else {
         logProgress("Filtering OSM data in $destinationFilePath...");
-        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf $extraArgs -o '$destinationFilePath' '$sourceFilePath' $quoted_tags");
+        execAndCheck("osmium tags-filter --verbose --input-format=pbf --output-format=pbf $extraArgs --output='$destinationFilePath' --overwrite '$sourceFilePath' $quoted_tags");
         $sourceSizeMB = filesize($sourceFilePath) / 1000000;
         $destinationSizeMB = filesize($destinationFilePath) / 1000000;
         logProgress("Filtered OSM data in $destinationFilePath ($sourceSizeMB MB => $destinationSizeMB MB)");
@@ -242,31 +239,30 @@ function runOsmiumFileInfo(string $filePath): array
 }
 
 function filterInputData(
-    string $sourceFilePath,
+    string $workDir,
     string $sourceFileName,
-    string $filteredFilePath,
+    string $filteredFileName,
     bool $cleanup = false,
     bool $load_roads = false,
     bool $load_text_etymology = false
 ): void {
-    // Keep only elements that have a tag that could lead to an etymology
+    // Keep only elements that have a name
+    $sourceFilePath = "$workDir/$sourceFileName";
+    $filteredNameFilePath = "$workDir/filtered_name_$sourceFileName";
+    runOsmiumTagsFilter($sourceFilePath, $filteredNameFilePath, 'name', $cleanup);
+
+    // Keep only elements that have a tag that could possibly lead to an etymology
     $allowedTags = [];
     if ($load_roads) {
-        //$allowedTags[] = 'w/highway';
-        $allowedTags[] = 'w/highway=residential';
-        $allowedTags[] = 'w/highway=unclassified';
+        $allowedTags[] = 'w/highway';
     }
     $allowedTags[] = 'wikidata';
     $allowedTags[] = 'name:etymology:wikidata';
     if ($load_text_etymology)
         $allowedTags[] = 'name:etymology';
     $allowedTags[] = 'subject:wikidata';
-    $filteredWithFlagsTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_tags_$sourceFileName";
-    runOsmiumTagsFilter($sourceFilePath, $filteredWithFlagsTagsFilePath, $allowedTags, $cleanup,  '--remove-tags');
-
-    // Keep only elements that have a name
-    $filteredWithFlagsNameTagsFilePath = sys_get_temp_dir() . "/filtered_with_flags_name_tags_$sourceFileName";
-    runOsmiumTagsFilter($filteredWithFlagsTagsFilePath, $filteredWithFlagsNameTagsFilePath, 'name', $cleanup);
+    $filteredPossibleFilePath = "$workDir/filtered_possible_$sourceFileName";
+    runOsmiumTagsFilter($filteredNameFilePath, $filteredPossibleFilePath, $allowedTags, $cleanup, '--remove-tags');
 
     // Remove elements not interesting or too big
     $unallowedTags = [
@@ -279,7 +275,8 @@ function filterInputData(
         'r/admin_level=3',
         'r/admin_level=2'
     ];
-    runOsmiumTagsFilter($filteredWithFlagsNameTagsFilePath, $filteredFilePath, $unallowedTags, $cleanup, '--invert-match');
+    $filteredFilePath = "$workDir/$filteredFileName";
+    runOsmiumTagsFilter($filteredPossibleFilePath, $filteredFilePath, $unallowedTags, $cleanup, '--invert-match');
 
     //runOsmiumFileInfo($filteredFilePath);
 }
@@ -298,7 +295,7 @@ function isSchemaAlreadySetup(PDO $dbh): bool
 function setupSchema(PDO $dbh): void
 {
     logProgress('Preparing DB schema...');
-    $dbh->exec(file_get_contents(__DIR__."/sql/schema.sql"));
+    $dbh->exec(file_get_contents(__DIR__."/sql/setup-schema.sql"));
     logProgress('DB schema prepared');
 }
 
@@ -341,39 +338,13 @@ function loadOsmDataWithOsm2pgsql(PDO $dbh, string $host, int $port, string $dbn
     logProgress("Data loaded into DB ($n_point points, $n_line lines, $n_polygon polygons)");
 
     logProgress('Converting elements...');
-    $n_element = $dbh->exec(
-        "INSERT INTO oem.osmdata (
-            osm_osm_type,
-            osm_osm_id,
-            osm_tags,
-            osm_geometry
-        )
-        SELECT 'node', osm_id, hstore_to_jsonb(tags), way
-        FROM planet_osm_point
-        UNION
-        SELECT
-            CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
-            CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-            hstore_to_jsonb(tags),
-            way AS geom
-        FROM planet_osm_line
-        UNION
-        SELECT
-            CASE WHEN osm_id > 0 THEN 'way' ELSE 'relation' END AS osm_type,
-            CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
-            hstore_to_jsonb(tags),
-            way AS geom
-        FROM planet_osm_polygon"
-    );
+    $n_element = $dbh->exec(file_get_contents(__DIR__."/sql/convert-osm2pgsql-data.sql"));
     logProgress("Converted $n_element elements");
 }
 
 function removeElementsTooBig(PDO $dbh) : void {
     logProgress('Removing elements too big to be shown...');
-    $n_element = $dbh->exec(
-        "DELETE FROM oem.osmdata
-        WHERE ST_Area(osm_geometry) >= 0.01"
-    );
+    $n_element = $dbh->exec(file_get_contents(__DIR__."/sql/remove-elements-too-big.sql"));
     $n_remaining = (int)$dbh->query("SELECT COUNT(*) FROM oem.osmdata")->fetchColumn();
     logProgress("Removed $n_element elements, $n_remaining remain");
 }
@@ -408,142 +379,6 @@ function loadWikidataEntities(PDO $dbh): void
     logProgress('Converting Wikidata entities from element_wikidata_cods...');
     $n_wd = $dbh->exec(file_get_contents(__DIR__."/sql/convert-wikidata-entities.sql"));
     logProgress("Converted $n_wd Wikidata entities from element_wikidata_cods");
-}
-
-/**
- * @param string $wikidataCodsFilter
- * @param string $relationName
- * @param array<string> $relationProps List of wikidata cods for properties to check
- * @param null|array<string> $instanceOfCods List of Wikidata cods for classes that entities must be instance of
- * @param PDO $dbh
- * @param string $wikidataEndpointURL
- */
-function loadWikidataRelatedEntities(
-    string $wikidataCodsFilter,
-    string $relationName,
-    array $relationProps,
-    ?array $instanceOfCods,
-    PDO $dbh,
-    string $wikidataEndpointURL
-): void {
-    $wikidataJSONFile = "wikidata_$relationName.tmp.json";
-
-    $n_todo = $dbh->query(
-        "SELECT COUNT(DISTINCT ew_wikidata_cod)
-        FROM oem.element_wikidata_cods
-        WHERE $wikidataCodsFilter"
-    )->fetchColumn();
-    assert(is_int($n_todo));
-    logProgress("Counted $n_todo Wikidata codes to check");
-
-    $pageSize = 40000;
-    for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
-        $truePageSize = min($pageSize, $n_todo - $offset);
-        logProgress("Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)...");
-        $wikidataCodsResult = $dbh->query(
-            "SELECT DISTINCT ew_wikidata_cod
-            FROM oem.element_wikidata_cods
-            WHERE $wikidataCodsFilter
-            ORDER BY ew_wikidata_cod
-            LIMIT $pageSize
-            OFFSET $offset"
-        )->fetchAll();
-        $wikidataCods = array_column($wikidataCodsResult, "ew_wikidata_cod");
-
-        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-        try {
-            $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
-        } catch (Exception $e) {
-            echo 'Check failed. Retrying to fetch...';
-            $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
-        }
-        $n_wikidata_cods = count($wikidataCods);
-
-        if ($n_wikidata_cods == 0) {
-            logProgress("No elements found to fetch details for");
-        } else {
-            logProgress("Fetching details for $n_wikidata_cods elements out of $truePageSize...");
-            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
-            try {
-                $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
-            } catch (Exception $e) {
-                echo 'Fetch failed. Retrying to fetch...';
-                $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
-            }
-            file_put_contents($wikidataJSONFile, $jsonResult);
-
-            logProgress("Loading Wikidata \"$relationName\" data...");
-            $sth_wd = $dbh->prepare(
-                "INSERT INTO oem.wikidata (wd_wikidata_cod)
-                SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wikidata IS NULL
-                UNION
-                SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wikidata IS NULL"
-            );
-            $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-            $sth_wd->execute();
-            $n_wd = $sth_wd->rowCount();
-
-            $sth_wna = $dbh->prepare(
-                "INSERT INTO oem.wikidata_named_after (wna_wd_id, wna_named_after_wd_id, wna_from_prop_cod)
-                SELECT DISTINCT w1.wd_id, w2.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'"
-            );
-            $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-            $sth_wna->execute();
-            $n_wna = $sth_wna->rowCount();
-            logProgress("Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" associations");
-        }
-    }
-}
-
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): void
-{
-    logProgress('Loading Wikidata "named after" entities...');
-    loadWikidataRelatedEntities(
-        "ew_from_wikidata",
-        "named_after",
-        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "P138", // named after
-            "P825", // dedicated to
-            "P547", // commemorates
-        ],
-        null,
-        $dbh,
-        $wikidataEndpointURL
-    );
-}
-
-function loadWikidataConsistsOfEntities(PDO $dbh, string $wikidataEndpointURL): void
-{
-    logProgress('Loading Wikidata "consists of" entities...');
-    loadWikidataRelatedEntities(
-        "ew_from_name_etymology OR ew_from_subject",
-        "consists_of",
-        ["P527"], // has part or parts
-        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "Q14073567", // sibling duo
-            "Q16979650", // sibling group
-            "Q10648343", // duo
-            "Q16334295", // group of humans
-            "Q219160", // couple
-            "Q3046146", // married couple
-            "Q1141470", // double act
-            "Q14756018", // twins
-        ],
-        $dbh,
-        $wikidataEndpointURL
-    );
 }
 
 function convertEtymologies(PDO $dbh): void
@@ -644,26 +479,30 @@ if (!is_file($osmiumFilePath)) {
     exit(1);
 }
 
-$filteredFilePath = sys_get_temp_dir() . "/filtered_$sourceFileName";
-$osmiumCachePath = sys_get_temp_dir() . "/osmium_${sourceFileName}_" . filesize($sourceFilePath);
-$osmiumCache = "sparse_file_array,$osmiumCachePath";
+$filteredFileName = "filtered_$sourceFileName";
+$filteredFilePath = "$workDir/$filteredFileName";
 
 if (is_file($filteredFilePath) && $cleanup)
     unlink($filteredFilePath);
 
-$pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
-//$pgFilePath = "$workDir/$sourceFileName.pg";
+//$pgFilePath = sys_get_temp_dir() . "/$sourceFileName.pg";
+$pgFilePath = "$workDir/$sourceFileName.pg";
+
 if (is_file($pgFilePath) && $cleanup) {
     unlink($pgFilePath);
 }
 
 $propagate = $propagate_nearby || $propagate_global;
-filterInputData($sourceFilePath, $sourceFileName, $filteredFilePath, $cleanup, $propagate, $load_text_etymology);
+filterInputData($workDir, $sourceFileName, $filteredFileName, $cleanup, $propagate, $load_text_etymology);
 
 if (is_file($pgFilePath) && (filemtime($pgFilePath) > filemtime($sourceFilePath))) {
     logProgress('Data already exported to PostGIS tsv');
 } elseif ($use_osmium_export) {
     logProgress('Exporting OSM data to PostGIS tsv...');
+
+    $osmiumCachePath = sys_get_temp_dir() . "/osmium_${sourceFileName}_" . filesize($sourceFilePath);
+    $osmiumCache = "sparse_file_array,$osmiumCachePath";
+    
     /**
      * @link https://docs.osmcode.org/osmium/latest/osmium-export.html
      */
@@ -703,21 +542,15 @@ try {
     if (empty($dbh))
         throw new Exception("Database connection initialization failed");
 
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis");
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch");
-    //$dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder");
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS postgis_topology");
-    $dbh->exec("CREATE EXTENSION IF NOT EXISTS hstore");
-
     try {
-        $dbh->query("SELECT PostGIS_Version()");
+        $dbh->exec(file_get_contents(__DIR__."/sql/setup-db-extensions.sql"));
     } catch (Exception $e) {
         throw new Exception('PostGIS is required, it is not installed on the DB and initialization failed: ' . $e->getMessage());
     }
 
     if ($reset) {
         logProgress('Resetting DB schema');
-        $dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
+        $dbh->exec(file_get_contents(__DIR__."/sql/teardown-schema.sql"));
     }
 
     if (isSchemaAlreadySetup($dbh)) {
@@ -760,8 +593,8 @@ try {
 
             echo 'Download of wikidata relations started at ' . date('c') . PHP_EOL;
             $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
-            loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
-            loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+            App\loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
+            App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
             echo 'Download of wikidata relations ended at ' . date('c') . PHP_EOL;
         }
 
@@ -800,14 +633,8 @@ try {
         moveElementsWithEtymology($dbh, $load_text_etymology);
 
         if (!$keep_temp_tables) {
-            $dbh->exec('DROP TABLE oem.osmdata');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_line');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_point');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_polygon');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_rels');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_roads');
-            $dbh->exec('DROP TABLE IF EXISTS oem.planet_osm_ways');
-            $dbh->exec('DROP TABLE IF EXISTS oem.etymology_template');
+            logProgress('Dropping temporary tables...');
+            $dbh->exec(file_get_contents(__DIR__."/sql/drop-temp-tables.sql"));
         }
 
         setupGlobalMap($dbh);
@@ -835,8 +662,7 @@ try {
         
         logProgress("Uploading data to DB $up_db on $up_host");
         $up_dbh = new PostGIS_PDO($conf, $up_host, $up_port, $up_db, $up_user, $up_psw);
-        $up_dbh->exec("DROP SCHEMA IF EXISTS oem CASCADE");
-        $up_dbh->exec("CREATE SCHEMA oem");
+        $up_dbh->exec(file_get_contents(__DIR__."/sql/prepare-db-for-upload.sql"));
         execAndCheck("PGPASSWORD='$up_psw' pg_restore --host='$up_host' --port='$up_port' --dbname='$up_db' --username='$up_user' --no-password --schema 'oem' --verbose '$backupFilePath'");
         logProgress('Uploaded data to DB');
     }

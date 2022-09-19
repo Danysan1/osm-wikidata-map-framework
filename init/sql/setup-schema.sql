@@ -168,8 +168,3 @@ CREATE TABLE oem.wikidata_text (
 );
 
 CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
-
-CREATE TABLE oem.etymology_template (
-    ett_name VARCHAR NOT NULL PRIMARY KEY,
-    ett_from_et_id INT NOT NULL REFERENCES oem.etymology(et_id)
-);

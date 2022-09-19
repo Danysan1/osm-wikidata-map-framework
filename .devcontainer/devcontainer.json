@@ -8,11 +8,11 @@
 	// The .devcontainer/docker-compose.yml file contains any overrides you need/want to make.
 	"dockerComposeFile": "../docker-compose.yml",
 
-	"runServices": ["postgis_db", "pgadmin", "web_dev"],	
+	"runServices": ["oem-postgis", "pgadmin", "oem-web-dev"],	
 
 	// The 'service' property is the name of the service for the container that VS Code should
 	// use. Update this value and .devcontainer/docker-compose.yml to the real service name.
-	"service": "web_dev",
+	"service": "oem-web-dev",
 
 	// The optional 'workspaceFolder' property is the path VS Code should open by default when
 	// connected. This is typically a file mount in .devcontainer/docker-compose.yml

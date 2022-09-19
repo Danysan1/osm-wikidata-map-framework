@@ -4,7 +4,7 @@ actor Browser
 rectangle "Docker Compose - profile 'dev'" as docker {
   port "8080" as 8080docker
   port "80" as 80docker
-  node postgis_db {
+  node "oem-postgis" {
     port 5432 as 5432db
     database "PostGIS DB" as db
   }
@@ -12,7 +12,7 @@ rectangle "Docker Compose - profile 'dev'" as docker {
     port "80" as 80pgAdmin
     component pgAdmin
   }
-  node web_dev {
+  node "oem-web-dev" {
     port "80" as 80webDev
     component Apache
     folder "/var/www/init" as initRem
