@@ -104,6 +104,14 @@ class OsmiumExportOperator(DockerOperator):
         )
 
 class PgDumpOperator(BashOperator):
+    """
+    Execute pg_dump on the specified connection
+
+    Links:
+    * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
+    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+    """
     def __init__(self, postgres_conn_id:str, dest_path:str, **kwargs) -> None:
         postgres_conn = PostgresHook.get_connection(postgres_conn_id)
         super().__init__(
@@ -120,17 +128,25 @@ class PgDumpOperator(BashOperator):
         )
 
 class PgRestoreOperator(BashOperator):
-    def __init__(self, postgres_conn_id:str, src_path:str, **kwargs) -> None:
-        postgres_conn = PostgresHook.get_connection(postgres_conn_id)
+    """
+    Execute pg_restore on upload_db_conn_id
+
+    Links:
+    * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
+    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+    * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
+    """
+    def __init__(self, src_path:str, **kwargs) -> None:
         super().__init__(
             bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "oem" --verbose "$backupFilePath"',
             env= {
                 "backupFilePath": src_path,
-                "host": postgres_conn.host,
-                "port": str(postgres_conn.port),
-                "user": postgres_conn.login,
-                "dbname": postgres_conn.schema,
-                "PGPASSWORD": postgres_conn.password,
+                "host": "{{ conn[params.upload_db_conn_id].host }}",
+                "port": "{{ str(conn[params.upload_db_conn_id].port) }}",
+                "user": "{{ conn[params.upload_db_conn_id].login }}",
+                "dbname": "{{ conn[params.upload_db_conn_id].dbname }}",
+                "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
             },
             **kwargs
         )
@@ -335,7 +351,7 @@ class OemDbInitDAG(DAG):
 
                 Download the source PBF file from the URL calculated by get_source_url.
 
-                Link:
+                Links:
                 * [curl documentation](https://curl.se/docs/manpage.html)
                 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
                 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
@@ -848,7 +864,6 @@ class OemDbInitDAG(DAG):
 
         task_pg_restore = PgRestoreOperator(
             task_id = "pg_restore",
-            postgres_conn_id=local_db_conn_id,
             src_path="{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
             dag = self,
             doc_md="""
