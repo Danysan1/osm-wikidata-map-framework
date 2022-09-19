@@ -137,11 +137,11 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     params = context["params"]
 
     source_url = None
-    if "pbf_url" in params and isinstance(params["pbf_url"],str) and params["pbf_url"]!="":
+    if "pbf_url" in params and params["pbf_url"] and isinstance(params["pbf_url"],str):
         pbf_url = params["pbf_url"]
         print("Using 'pbf_url' as source URL: ", pbf_url)
         source_url = pbf_url
-    elif "rss_url" in params and isinstance(params["rss_url"],str) and params["rss_url"].endswith(".xml"):
+    elif "rss_url" in params and params["rss_url"] and isinstance(params["rss_url"],str) and params["rss_url"].endswith(".xml"):
         rss_url = params["rss_url"]
         print("Fetching the source URL from 'rss_url':", rss_url)
         from xml.etree.ElementTree import fromstring
@@ -153,7 +153,8 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
             item = channel.find('item')
             link = item.find('link')
             source_url = link.text
-    elif "html_url" in params and isinstance(params["html_url"],str) and params["html_url"]!="" and "html_prefix" in params and isinstance(params["html_prefix"],str) and params["html_prefix"]!="":
+    elif "html_url" in params and params["html_url"] and isinstance(params["html_url"],str) and \
+            "html_prefix" in params and params["html_prefix"] and isinstance(params["html_prefix"],str):
         html_url = params["html_url"]
         html_prefix = params["html_prefix"]
         print("Fetching the source URL from 'html_url':", html_url, html_prefix)
@@ -820,7 +821,7 @@ class OemDbInitDAG(DAG):
             env= {
                 "backupFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
                 "host": f'{{{{ conn["{local_db_conn_id}"].host }}}}',
-                "port": f'{{{{ conn["{local_db_conn_id}"].port|string }}}}',
+                "port": f'{{{{ (conn["{local_db_conn_id}"].port)|string }}}}',
                 "user": f'{{{{ conn["{local_db_conn_id}"].login }}}}',
                 "dbname": f'{{{{ conn["{local_db_conn_id}"].schema }}}}',
                 "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
@@ -888,7 +889,7 @@ class OemDbInitDAG(DAG):
             env= {
                 "backupFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='backup_file_path') }}",
                 "host": "{{ conn[params.upload_db_conn_id].host }}",
-                "port": "{{ conn[params.upload_db_conn_id].port|string }}",
+                "port": "{{ (conn[params.upload_db_conn_id].port)|string }}",
                 "user": "{{ conn[params.upload_db_conn_id].login }}",
                 "dbname": "{{ conn[params.upload_db_conn_id].schema }}",
                 "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
