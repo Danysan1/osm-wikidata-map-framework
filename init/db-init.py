@@ -203,18 +203,26 @@ def do_copy_file(source_path:str, dest_path:str) -> None:
     from shutil import copyfile
     copyfile(source_path, dest_path)
 
-def check_upload_db_conn_id(**context):
+def check_upload_db_conn_id(**context) -> bool:
     p = context["params"]
     return "upload_db_conn_id" in p and isinstance(p["upload_db_conn_id"], str) and p["upload_db_conn_id"]!=""
 
-def choose_load_osm_data_task(**context):
+def choose_first_task(ti:TaskInstance, **context) -> str:
+    p = context["params"]
+    use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
+    xcom_file_key = 'filtered_file_path' if use_osm2pgsql else 'pg_file_path'
+    file_exists = os.path.exists(ti.xcom_pull(task_ids='get_source_url', key=xcom_file_key))
+    ffwd_to_load = file_exists and "ffwd_to_load" in p and p["ffwd_to_load"]
+    return "load_osm_data.join_pre_load_ele" if ffwd_to_load else "download_pbf"
+
+def choose_load_osm_data_task(**context) -> str:
     p = context["params"]
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
     task_id = "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
     return f"load_osm_data.{task_id}"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, **kwargs):
+    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, **kwargs):
         """
         DAG for Open Etymology Map DB initialization
 
@@ -247,6 +255,7 @@ class OemDbInitDAG(DAG):
                     "html_prefix": html_prefix,
                     "upload_db_conn_id": upload_db_conn_id,
                     "use_osm2pgsql": use_osm2pgsql,
+                    "ffwd_to_load": ffwd_to_load,
                 },
                 doc_md="""
                     # Open Etymology Map DB initialization
@@ -283,6 +292,28 @@ class OemDbInitDAG(DAG):
             """
         )
 
+        task_ffwd_to_upload = BranchPythonOperator(
+            task_id = "choose_whether_to_ffwd",
+            python_callable= choose_first_task,
+            dag = self,
+            doc_md="""
+                # Check how to load data into the DB
+
+                Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
+                Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen.
+                This choice is due to the facts that
+                * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
+                * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
+
+                The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
+
+                Links:
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+            """
+        )
+        task_get_source_url >> task_ffwd_to_upload
+
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
@@ -302,7 +333,7 @@ class OemDbInitDAG(DAG):
                 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
             """
         )
-        task_get_source_url >> task_download_pbf
+        task_ffwd_to_upload >> Label("Download and filter") >> task_download_pbf
 
         pbf_filter_group = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=self)
 
@@ -406,6 +437,20 @@ class OemDbInitDAG(DAG):
         task_teardown_schema >> task_setup_schema
 
         db_load_group = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=self)
+
+        join_pre_load_ele = EmptyOperator(
+            task_id = "join_pre_load_ele",
+            trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
+            dag = self,
+            task_group=db_load_group,
+            doc_md="""
+                # Join branches back together
+
+                Dummy task for joining the path after the branching done to choose whether to skip downloading and filtering data.
+            """
+        )
+        task_ffwd_to_upload >> Label("Fast forward") >> join_pre_load_ele
+        task_remove_non_interesting >> join_pre_load_ele
         
         task_osmium_or_osm2pgsql = BranchPythonOperator(
             task_id = "choose_load_osm_data_method",
@@ -428,7 +473,7 @@ class OemDbInitDAG(DAG):
                 * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
             """
         )
-        task_remove_non_interesting >> task_osmium_or_osm2pgsql
+        join_pre_load_ele >> task_osmium_or_osm2pgsql
 
         task_copy_config = PythonOperator(
             task_id = "copy_osmium_export_config",
@@ -524,8 +569,8 @@ class OemDbInitDAG(DAG):
         )
         task_load_ele_osm2pgsql >> task_convert_osm2pgsql
 
-        join_load_ele = EmptyOperator(
-            task_id = "join",
+        join_post_load_ele = EmptyOperator(
+            task_id = "join_post_load_ele",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
             task_group=db_load_group,
@@ -535,7 +580,7 @@ class OemDbInitDAG(DAG):
                 Dummy task for joining the path after the branching done to choose between `osmium export` and `osm2pgsql`.
             """
         )
-        [task_load_ele_pg, task_convert_osm2pgsql] >> join_load_ele
+        [task_load_ele_pg, task_convert_osm2pgsql] >> join_post_load_ele
 
         elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=self)
 
@@ -554,7 +599,7 @@ class OemDbInitDAG(DAG):
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
-        join_load_ele >> task_remove_ele_too_big
+        join_post_load_ele >> task_remove_ele_too_big
 
         task_convert_ele_wd_cods = PostgresOperator(
             task_id = "convert_element_wikidata_cods",
@@ -970,6 +1015,7 @@ kosovo_html = OemDbInitDAG(
     dag_id="db-init-kosovo-from-html",
     schedule_interval="@yearly",
     upload_db_conn_id="oem-postgis-postgres",
+    ffwd_to_load=False,
     html_url="http://download.geofabrik.de/europe/",
     html_prefix="kosovo"
 )
