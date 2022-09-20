@@ -7,7 +7,8 @@ import { IControl, Map, Popup } from 'mapbox-gl';
  * @param {Map} map 
  */
 function openInfoWindow(map: Map) {
-    const content = document.getElementById("intro")?.cloneNode(true);
+    const popupPosition = map.unproject([0, 0]),
+        content = document.getElementById("intro")?.cloneNode(true);
     if (!content)
         throw new Error("Failed cloning info popup content");
     new Popup({
@@ -16,7 +17,7 @@ function openInfoWindow(map: Map) {
         closeOnMove: true,
         maxWidth: 'none',
         className: "oem_info_popup"
-    }).setLngLat(map.getBounds().getNorthWest())
+    }).setLngLat(popupPosition)
         .setDOMContent(content)
         .addTo(map);
 }
