@@ -1,7 +1,6 @@
 INSERT INTO oem.etymology (
     et_el_id,
     et_wd_id,
-    et_source_color,
     et_from_el_id,
     et_recursion_depth,
     et_from_osm,
@@ -18,7 +17,6 @@ INSERT INTO oem.etymology (
 ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
     new_el.osm_id,
     old_et.et_wd_id,
-    '#ff6633' AS source_color,
     old_et.et_from_el_id,
     :depth::INT AS recursion_depth,
     old_et.et_from_osm,

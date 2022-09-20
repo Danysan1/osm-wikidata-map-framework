@@ -16,11 +16,16 @@ DROP TABLE IF EXISTS oem.element;
 
 DROP TABLE IF EXISTS oem.osmdata;
 
-DROP FUNCTION IF EXISTS oem.parseTimestamp;
+DROP FUNCTION IF EXISTS oem.parse_timestamp;
 
 DROP MATERIALIZED VIEW IF EXISTS oem.vm_global_map;
 
-CREATE FUNCTION oem.parseTimestamp(IN txt TEXT) RETURNS TIMESTAMP AS $$
+CREATE OR REPLACE FUNCTION oem.parse_timestamp(txt TEXT)
+    RETURNS timestamp without time zone
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
 DECLARE
     nonZeroTxt TEXT := REPLACE(REPLACE(txt, '0000-', '0001-'), '-00-00', '-01-01');
 BEGIN
@@ -32,9 +37,9 @@ BEGIN
         ELSE nonZeroTxt::TIMESTAMP -- AD timestamp
     END;
 END;
-$$ LANGUAGE plpgsql;
+$BODY$;
 
-COMMENT ON FUNCTION oem.parseTimestamp(text) IS '
+COMMENT ON FUNCTION oem.parse_timestamp(text) IS '
 Takes as input an ISO 8601 timestamp string and returns a TIMESTAMP, unless the string is not representable (e.g. it overflows).
 Documentation:
 - https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-TABLE
@@ -113,7 +118,6 @@ CREATE TABLE oem.etymology (
     --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
     et_el_id BIGINT NOT NULL,
     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-    et_source_color VARCHAR,
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
     et_from_osm BOOLEAN,
@@ -169,3 +173,31 @@ CREATE TABLE oem.wikidata_text (
 );
 
 CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
+
+CREATE OR REPLACE FUNCTION oem.et_source_color(et oem.etymology)
+    RETURNS text
+    LANGUAGE 'sql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+SELECT CASE
+	WHEN et.et_recursion_depth != 0 THEN '#ff3333'
+	WHEN et.et_from_wikidata THEN '#3399ff'
+	WHEN et.et_from_osm THEN '#33ff66'
+	ELSE NULL
+END
+$BODY$;
+
+CREATE OR REPLACE FUNCTION oem.et_source_name(et oem.etymology)
+    RETURNS text
+    LANGUAGE 'sql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+SELECT CASE
+	WHEN et.et_recursion_depth != 0 THEN 'Propagation'
+	WHEN et.et_from_wikidata THEN 'Wikidata'
+	WHEN et.et_from_osm THEN 'OpenStreetMap'
+	ELSE NULL
+END
+$BODY$;

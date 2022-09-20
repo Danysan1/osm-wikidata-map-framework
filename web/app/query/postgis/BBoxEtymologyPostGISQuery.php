@@ -70,7 +70,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
-                    MIN(et_source_color) AS source_color,
+                    MIN(et_source_color(etymology)) AS source_color,
                     MIN(gender.wd_gender_color) AS gender_color,
                     MIN(instance.wd_type_color) AS type_color,
                     JSON_AGG(JSON_BUILD_OBJECT(

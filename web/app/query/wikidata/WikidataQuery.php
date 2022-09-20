@@ -13,8 +13,8 @@ use App\Query\CurlQuery;
  */
 abstract class WikidataQuery extends CurlQuery
 {
-    private static $method = "POST";
-    private static $userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36";
+    private static string $method = "POST";
+    private static string $userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.102 Safari/537.36";
 
     public function __construct(string $query, string $format, string $endpointURL)
     {

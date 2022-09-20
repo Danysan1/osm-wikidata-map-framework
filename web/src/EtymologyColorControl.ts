@@ -35,7 +35,7 @@ const colorSchemes: ColorScheme[] = [
         colorField: "source_color",
         text: "By source",
         color: ["coalesce", ['get', 'source_color'], "#223b53"],
-        urlCode: null
+        urlCode: "sourceStats",
     },
     { id: "black", text: 'Uniform black', color: '#223b53', colorField: null, urlCode: null },
     { id: "red", text: 'Uniform red', color: '#e55e5e', colorField: null, urlCode: null },

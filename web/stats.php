@@ -8,10 +8,11 @@ $serverTiming = new ServerTiming();
 require_once(__DIR__ . "/app/IniEnvConfiguration.php");
 require_once(__DIR__ . "/app/BaseBoundingBox.php");
 require_once(__DIR__ . "/app/PostGIS_PDO.php");
-require_once(__DIR__ . "/app/query/postgis/BBoxGenderStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/postgis/BBoxTypeStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/wikidata/GenderStatsWikidataFactory.php");
-require_once(__DIR__ . "/app/query/wikidata/TypeStatsWikidataFactory.php");
+require_once(__DIR__ . "/app/query/postgis/stats/BBoxGenderStatsPostGISQuery.php");
+require_once(__DIR__ . "/app/query/postgis/stats/BBoxTypeStatsPostGISQuery.php");
+require_once(__DIR__ . "/app/query/postgis/stats/BBoxSourceStatsPostGISQuery.php");
+require_once(__DIR__ . "/app/query/wikidata/stats/GenderStatsWikidataFactory.php");
+require_once(__DIR__ . "/app/query/wikidata/stats/TypeStatsWikidataFactory.php");
 require_once(__DIR__ . "/app/query/cache/CSVCachedBBoxJSONQuery.php");
 require_once(__DIR__ . "/app/query/combined/BBoxStatsOverpassWikidataQuery.php");
 require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
@@ -23,10 +24,11 @@ use \App\BaseBoundingBox;
 use \App\PostGIS_PDO;
 use \App\Query\Cache\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxStatsOverpassWikidataQuery;
-use \App\Query\PostGIS\BBoxGenderStatsPostGISQuery;
-use \App\Query\PostGIS\BBoxTypeStatsPostGISQuery;
-use \App\Query\Wikidata\GenderStatsWikidataFactory;
-use \App\Query\Wikidata\TypeStatsWikidataFactory;
+use \App\Query\PostGIS\Stats\BBoxGenderStatsPostGISQuery;
+use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
+use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
+use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
+use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 
 $conf = new IniEnvConfiguration();
@@ -61,7 +63,7 @@ $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
 
 $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
 
-if (!empty($db)) {
+if (!empty($db) && $db instanceof PDO) {
     if ($to == "genderStats") {
         $query = new BBoxGenderStatsPostGISQuery(
             $bbox,
@@ -70,7 +72,7 @@ if (!empty($db)) {
             $wikidataEndpointURL,
             $serverTiming
         );
-    } else {
+    } elseif ($to == "typeStats") {
         $query = new BBoxTypeStatsPostGISQuery(
             $bbox,
             $safeLanguage,
@@ -78,13 +80,24 @@ if (!empty($db)) {
             $wikidataEndpointURL,
             $serverTiming
         );
+    } elseif ($to == "sourceStats") {
+        $query = new BBoxSourceStatsPostGISQuery(
+            $bbox,
+            $db,
+            $serverTiming
+        );
+    } else {
+        throw new Exception("Bad 'to' parameter");
     }
 } else {
     if ($to == "genderStats") {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-    } else {
+    } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+    } else {
+        throw new Exception("Bad 'to' parameter");
     }
+    
     $baseQuery = new BBoxStatsOverpassWikidataQuery(
         $bbox,
         $overpassConfig,

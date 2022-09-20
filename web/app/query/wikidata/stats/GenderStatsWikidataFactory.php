@@ -1,21 +1,18 @@
 <?php
 
-namespace App\Query\Wikidata;
+namespace App\Query\Wikidata\Stats;
 
-require_once(__DIR__ . "/TypeStatsWikidataQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
-require_once(__DIR__ . "/../../StringSet.php");
+require_once(__DIR__ . "/GenderStatsWikidataQuery.php");
+require_once(__DIR__ . "/../../StringSetXMLQuery.php");
+require_once(__DIR__ . "/../../StringSetXMLQueryFactory.php");
+require_once(__DIR__ . "/../../../StringSet.php");
 
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
-use \App\Query\Wikidata\TypeStatsWikidataQuery;
+use \App\Query\Wikidata\Stats\GenderStatsWikidataQuery;
 
-/**
- * @author Daniele Santini <daniele@dsantini.it>
- */
-class TypeStatsWikidataFactory implements StringSetXMLQueryFactory
+class GenderStatsWikidataFactory implements StringSetXMLQueryFactory
 {
     /**
      * @var string $language
@@ -39,6 +36,6 @@ class TypeStatsWikidataFactory implements StringSetXMLQueryFactory
 
     public function create(StringSet $input): StringSetXMLQuery
     {
-        return new TypeStatsWikidataQuery($input, $this->language, $this->endpointURL);
+        return new GenderStatsWikidataQuery($input, $this->language, $this->endpointURL);
     }
 }

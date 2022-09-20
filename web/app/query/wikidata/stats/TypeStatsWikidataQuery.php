@@ -1,20 +1,20 @@
 <?php
 
-namespace App\Query\Wikidata;
+namespace App\Query\Wikidata\Stats;
 
-require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
-require_once(__DIR__ . "/../../result/wikidata/XMLWikidataStatsQueryResult.php");
+require_once(__DIR__ . "/../StringSetXMLWikidataQuery.php");
+require_once(__DIR__ . "/../../../result/wikidata/XMLWikidataStatsQueryResult.php");
 
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
 use \App\Result\XMLQueryResult;
 use \App\Result\Wikidata\XMLWikidataStatsQueryResult;
 
 /**
- * Wikidata SPARQL query which retrieves statistics on the gender of some items for which the ID is given.
+ * Wikidata SPARQL query which retrieves statistics on the type of some items for which the ID is given.
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
+class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
 {
     public function sendAndGetXMLResult(): XMLQueryResult
     {
@@ -28,10 +28,13 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
             
-                ?wikidata wdt:P31 wd:Q5
                 OPTIONAL {
-                    ?id ^wdt:P21 ?wikidata;
-                        rdfs:label ?name.
+                    {
+                        ?id ^wdt:P31 ?wikidata.
+                    } UNION {
+                        ?id ^wdt:P279 ?wikidata.
+                    }
+                    ?id rdfs:label ?name.
                     FILTER(lang(?name)='$language').
                 }
             }

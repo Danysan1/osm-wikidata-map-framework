@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Query\PostGIS;
+namespace App\Query\PostGIS\Stats;
 
-require_once(__DIR__ . "/BBoxTextPostGISQuery.php");
-require_once(__DIR__ . "/../BBoxJSONQuery.php");
-require_once(__DIR__ . "/../../result/JSONQueryResult.php");
-require_once(__DIR__ . "/../../result/JSONLocalQueryResult.php");
+require_once(__DIR__ . "/../BBoxTextPostGISQuery.php");
+require_once(__DIR__ . "/../../BBoxJSONQuery.php");
+require_once(__DIR__ . "/../../../result/JSONQueryResult.php");
+require_once(__DIR__ . "/../../../result/JSONLocalQueryResult.php");
 
 use \App\Query\BBoxJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;

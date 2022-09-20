@@ -190,8 +190,10 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
         last_data_update = datetime.now().strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
     
     ti.xcom_push(key='source_url', value=source_url)
+    ti.xcom_push(key='md5_url', value=f'{source_url}.md5')
     ti.xcom_push(key='basename', value=basename)
     ti.xcom_push(key='source_file_path', value=f"/workdir/{basename}")
+    ti.xcom_push(key='md5_file_path', value=f"/workdir/{basename}.md5")
     ti.xcom_push(key='filtered_name_file_path', value=f"/workdir/filtered_name_{basename}")
     ti.xcom_push(key='filtered_possible_file_path', value=f"/workdir/filtered_possible_{basename}")
     ti.xcom_push(key='filtered_file_path', value=f"/workdir/filtered_{basename}")
@@ -222,9 +224,9 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
         elif file_exists and not use_osm2pgsql:
             ret = "load_osm_data.join_pre_load_from_pg"
         else:
-            ret = "download_pbf"
+            ret = "get_osm_data.download_pbf"
     else:
-        ret = "download_pbf"
+        ret = "get_osm_data.download_pbf"
 
     return ret
 
@@ -327,6 +329,8 @@ class OemDbInitDAG(DAG):
         )
         task_get_source_url >> task_ffwd_to_upload
 
+        get_pbf_group = TaskGroup("get_osm_data", tooltip="Get OpenStreetMap .pbf data", dag=self)
+
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
@@ -335,6 +339,7 @@ class OemDbInitDAG(DAG):
                 "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
             },
             dag = self,
+            task_group=get_pbf_group,
             doc_md="""
                 # Download the PBF source file
 
@@ -348,15 +353,13 @@ class OemDbInitDAG(DAG):
         )
         task_ffwd_to_upload >> Label("Download and filter") >> task_download_pbf
 
-        pbf_filter_group = TaskGroup("filter_osm_data", tooltip="Filter OpenStreetMap pbf data", dag=self)
-
         task_keep_name = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_name",
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
             tags=['name'],
             dag = self,
-            task_group=pbf_filter_group,
+            task_group=get_pbf_group,
         )
         task_download_pbf >> task_keep_name
 
@@ -373,7 +376,7 @@ class OemDbInitDAG(DAG):
             ],
             remove_tags= True,
             dag = self,
-            task_group=pbf_filter_group,
+            task_group=get_pbf_group,
         )
         task_keep_name >> task_keep_possible_ety
 
@@ -393,7 +396,7 @@ class OemDbInitDAG(DAG):
             ],
             invert_match= True,
             dag = self,
-            task_group=pbf_filter_group,
+            task_group=get_pbf_group,
         )
         task_keep_possible_ety >> task_remove_non_interesting
 
@@ -1032,6 +1035,14 @@ nord_ovest_html = OemDbInitDAG(
     schedule_interval="@daily",
     html_url="http://download.geofabrik.de/europe/italy/",
     html_prefix="nord-ovest"
+)
+
+kosovo_latest = OemDbInitDAG(
+    dag_id="db-init-kosovo-latest",
+    schedule_interval="@yearly",
+    upload_db_conn_id="oem-postgis-postgres",
+    ffwd_to_load=False,
+    pbf_url="http://download.geofabrik.de/europe/kosovo-latest.osm.pbf"
 )
 
 kosovo_html = OemDbInitDAG(
