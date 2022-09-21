@@ -450,7 +450,7 @@ export class EtymologyMap extends Map {
         sourceDataURL: string,
         minZoom: number | undefined = undefined,
         maxZoom: number | undefined = undefined,
-        clusterProperties: any = undefined,
+        clusterProperties: object | undefined = undefined,
         countFieldName: string | undefined = 'point_count',
         countShowFieldName: string | undefined = 'point_count_abbreviated'
     ) {
@@ -633,7 +633,6 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
      */
     setupGeocoder() {
-        let control;
         if (this.geocoderControl) {
             this.addControl(this.geocoderControl, 'top-left');
         }
@@ -697,8 +696,6 @@ export class EtymologyMap extends Map {
         this.on('sourcedata', this.mapSourceDataHandler);
 
         this.on('error', this.mapErrorHandler);
-
-        //prepareGlobalLayers(map);
     }
 
     /**
