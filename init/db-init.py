@@ -333,17 +333,29 @@ class OemDbInitDAG(DAG):
 
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
-            bash_command = 'curl --fail -v -z "$sourceFilePath" -o "$sourceFilePath" "$url"',
+            bash_command = """
+                curl --fail -v -o "$sourceFilePath" "$sourceUrl"
+                curl --fail -v -o "$md5FilePath" "$md5Url"
+                if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
+                    echo "The md5 sum doesn't match:"
+                    cat "$md5FilePath"
+                    md5sum "$sourceFilePath"
+                    exit 1
+                fi
+            """,
             env = {
                 "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
-                "url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+                "sourceUrl": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+                "md5FilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_file_path') }}",
+                "md5Url": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_url') }}",
             },
+            retries = 3,
             dag = self,
             task_group=get_pbf_group,
             doc_md="""
                 # Download the PBF source file
 
-                Download the source PBF file from the URL calculated by get_source_url.
+                Download the source PBF file from the URL calculated by get_source_url and check that the md5 checksum checks out.
 
                 Links:
                 * [curl documentation](https://curl.se/docs/manpage.html)
@@ -699,6 +711,7 @@ class OemDbInitDAG(DAG):
             endpoint = "/loadWikidataNamedAfterEntities.php",
             method = "GET",
             response_check = lambda response: response.status_code == 200,
+            retries = 3,
             dag = self,
             task_group=elaborate_group,
             doc_md="""
@@ -721,6 +734,7 @@ class OemDbInitDAG(DAG):
             endpoint = "/loadWikidataConsistsOfEntities.php",
             method = "GET",
             response_check = lambda response: response.status_code == 200,
+            retries = 3,
             dag = self,
             task_group=elaborate_group,
             doc_md="""
@@ -1053,3 +1067,18 @@ kosovo_html = OemDbInitDAG(
     html_url="http://download.geofabrik.de/europe/",
     html_prefix="kosovo"
 )
+
+with DAG(
+    dag_id="db-init-cleanup",
+    schedule_interval="@monthly",
+    start_date=datetime(year=2022, month=2, day=1),
+    catchup=False,
+    tags=['oem', 'db-init'],
+) as dag:
+    BashOperator(
+        task_id="ls",
+        bash_command="""
+            ls -lah /workdir/
+            rm /workdir/*
+        """,
+    )
