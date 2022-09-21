@@ -1,5 +1,5 @@
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, supported, setRTLTextPlugin } from 'maplibre-gl';
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature, CirclePaint, IControl } from 'mapbox-gl';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl } from 'mapbox-gl';
 
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -337,7 +337,7 @@ export class EtymologyMap extends Map {
         if ((e as any).popupAlreadyShown) {
             console.info("onWikidataLayerClick: etymology popup already shown", e);
         } else {
-            const feature = (e as any).features[0] as MapboxGeoJSONFeature,
+            const feature = (e as any).features[0] as MapGeoJSONFeature,
                 //popupPosition = e.lngLat,
                 //popupPosition = this.getBounds().getNorthWest(),
                 popupPosition = this.unproject([0, 0]),
@@ -489,7 +489,8 @@ export class EtymologyMap extends Map {
 
             // inspect a cluster on click
             this.on('click', clusterLayerName, (e) => {
-                const feature = this.getClickedClusterFeature(pointLayerName, e),
+                //
+                const feature = this.getClickedClusterFeature(clusterLayerName, e),
                     clusterId = EtymologyMap.getClusterFeatureId(feature),
                     center = EtymologyMap.getClusterFeatureCenter(feature),
                     defaultZoom = maxZoom ? maxZoom + 0.5 : 9;
@@ -556,7 +557,7 @@ export class EtymologyMap extends Map {
         }
     }
 
-    getClickedClusterFeature(layerId: string, event: MapMouseEvent): MapboxGeoJSONFeature {
+    getClickedClusterFeature(layerId: string, event: MapMouseEvent): MapGeoJSONFeature {
         const features = this.queryRenderedFeatures(event.point, { layers: [layerId] }),
             feature = features[0];
         if (!feature)
@@ -564,14 +565,14 @@ export class EtymologyMap extends Map {
         return feature;
     }
 
-    static getClusterFeatureId(feature: MapboxGeoJSONFeature): number {
+    static getClusterFeatureId(feature: MapGeoJSONFeature): number {
         const clusterId = feature.properties?.cluster_id;
         if (typeof clusterId != 'number')
             throw new Error("No valid cluster ID found");
         return clusterId;
     }
 
-    static getClusterFeatureCenter(feature: MapboxGeoJSONFeature): LngLatLike {
+    static getClusterFeatureCenter(feature: MapGeoJSONFeature): LngLatLike {
         return (feature.geometry as any).coordinates as LngLatLike;
     }
 

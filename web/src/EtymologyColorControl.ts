@@ -149,9 +149,11 @@ class EtymologyColorControl implements IControl {
      * @returns {string} The current color scheme
      */
     getColorScheme(): string {
-        const colorScheme = this._ctrlDropDown?.value;
+        if (this._ctrlDropDown == null)
+            throw new Error("Missing color control dropdown");
+        const colorScheme = this._ctrlDropDown.value;
         if (typeof colorScheme != 'string')
-            throw new Error("Bad dropdown or dropdown value");
+            throw new Error("Bad color control dropdown value");
         return colorScheme;
     }
 
@@ -174,7 +176,7 @@ class EtymologyColorControl implements IControl {
     dropDownClickHandler(event: Event) {
         const dropDown = event.target;
         if (!(dropDown instanceof HTMLSelectElement))
-            throw new Error("dropDownClickHandler: bad dropdown");
+            throw new Error("Bad event target dropdown");
         const colorScheme = dropDown.value,
             colorSchemeObj = colorSchemes.find(scheme => scheme.id == colorScheme);
         let color: string | Expression;

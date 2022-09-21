@@ -1,4 +1,4 @@
-import { MapboxGeoJSONFeature } from "mapbox-gl";
+import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 import { Etymology, etymologyToDomElement } from "./EtymologyElement";
 
 interface FeatureProperties {
@@ -23,47 +23,39 @@ interface FeatureProperties {
  * @param {object} feature 
  * @return {HTMLElement}
  */
-export function featureToDomElement(feature: MapboxGeoJSONFeature) {
-    const properties = feature.properties as FeatureProperties,
-        etymologies = JSON.parse(properties?.etymologies) as Etymology[],
-        detail_template = document.getElementById('detail_template');
+export function featureToDomElement(feature: MapGeoJSONFeature) {
+    const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
-    const detail_container = detail_template.content.cloneNode(true) as HTMLElement,
-        element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button'),
-        element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button'),
-        element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button'),
-        element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button'),
-        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
-        element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button'),
-        element_name = detail_container.querySelector<HTMLElement>('.element_name'),
-        element_alt_name = detail_container.querySelector<HTMLElement>('.element_alt_name'),
-        etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container'),
-        osm_full_id = properties.osm_type + '/' + properties.osm_id,
-        mapcomplete_url = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id,
-        osm_url = 'https://www.openstreetmap.org/' + osm_full_id;
 
-    console.info("featureToDomElement", {
+    const properties = feature.properties as FeatureProperties,
+        etymologies = JSON.parse(properties?.etymologies) as Etymology[],
+        detail_container = detail_template.content.cloneNode(true) as HTMLElement,
+        osm_full_id = properties.osm_type + '/' + properties.osm_id;
+
+    /*console.info("featureToDomElement", {
         el_id: properties.el_id,
         feature,
         etymologies,
-        detail_container,
-        etymologies_container
-    });
+        detail_container
+    });*/
 
+    const element_name = detail_container.querySelector<HTMLElement>('.element_name');
     if (!element_name) {
         console.warn("Missing element_name");
     } else if (properties.name && properties.name != 'null') {
         element_name.innerText = '📍 ' + properties.name;
     }
 
+    const element_alt_name = detail_container.querySelector<HTMLElement>('.element_alt_name');
     if (!element_alt_name) {
         console.warn("Missing element_alt_name");
     } else if (properties.alt_name && properties.alt_name != 'null') {
         element_alt_name.innerText = '("' + properties.alt_name + '")';
     }
 
-    const wikidata: string | null = properties.wikidata;
+    const wikidata: string | null = properties.wikidata,
+        element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
     if (!element_wikidata_button) {
         console.warn("Missing element_wikidata_button");
     } else if (wikidata && wikidata != 'null') {
@@ -73,7 +65,8 @@ export function featureToDomElement(feature: MapboxGeoJSONFeature) {
         element_wikidata_button.style.display = 'none';
     }
 
-    const wikipedia = properties.wikipedia;
+    const wikipedia = properties.wikipedia,
+        element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
     if (!element_wikipedia_button) {
         console.warn("Missing element_wikipedia_button");
     } else if (wikipedia && wikipedia != 'null') {
@@ -83,7 +76,8 @@ export function featureToDomElement(feature: MapboxGeoJSONFeature) {
         element_wikipedia_button.style.display = 'none';
     }
 
-    const commons = properties.commons;
+    const commons = properties.commons,
+        element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
     if (!element_commons_button) {
         console.warn("Missing element_commons_button");
     } else if (commons && commons != 'null') {
@@ -93,18 +87,23 @@ export function featureToDomElement(feature: MapboxGeoJSONFeature) {
         element_commons_button.style.display = 'none';
     }
 
+    const osm_url = 'https://www.openstreetmap.org/' + osm_full_id,
+        element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
     if (!element_osm_button) {
         console.warn("Missing element_osm_button");
     } else {
         element_osm_button.href = osm_url;
     }
 
+    const mapcomplete_url = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id,
+        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
         console.warn("Missing element_mapcomplete_button");
     } else {
         element_mapcomplete_button.href = mapcomplete_url;
     }
 
+    const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
     if (!element_location_button) {
         console.warn("Missing element_location_button");
     } else {
@@ -115,6 +114,7 @@ export function featureToDomElement(feature: MapboxGeoJSONFeature) {
         element_location_button.href = "#" + coord[0] + "," + coord[1] + ",18";
     }
 
+    const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
     } else {
