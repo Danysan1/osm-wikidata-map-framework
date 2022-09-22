@@ -134,6 +134,13 @@ class TemplatedPostgresOperator(PostgresOperator):
     template_fields = ('parameters', 'postgres_conn_id', 'sql')
 
 def get_last_pbf_url(ti:TaskInstance, **context) -> str:
+    """
+    Get the URL of the OSM PBF file to download and derivate the path of the files that will be created later.
+
+    Links:
+    * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.3.4/best-practices.html)
+    * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/models/taskinstance/index.html)
+    """
     from urllib.request import urlopen
     from re import search, findall
 
@@ -189,16 +196,20 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     else:
         last_data_update = datetime.now().strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
     
+    work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
+    
+    ti.xcom_push(key='work_dir', value=work_dir)
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='md5_url', value=f'{source_url}.md5')
     ti.xcom_push(key='basename', value=basename)
-    ti.xcom_push(key='source_file_path', value=f"/workdir/{basename}")
-    ti.xcom_push(key='md5_file_path', value=f"/workdir/{basename}.md5")
-    ti.xcom_push(key='filtered_name_file_path', value=f"/workdir/filtered_name_{basename}")
-    ti.xcom_push(key='filtered_possible_file_path', value=f"/workdir/filtered_possible_{basename}")
-    ti.xcom_push(key='filtered_file_path', value=f"/workdir/filtered_{basename}")
-    ti.xcom_push(key='pg_file_path', value=f"/workdir/{basename}.pg")
-    ti.xcom_push(key='backup_file_path', value=f"/workdir/{basename}.backup")
+    ti.xcom_push(key='source_file_path', value=f"{work_dir}/{basename}")
+    ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{basename}.md5")
+    ti.xcom_push(key='filtered_name_file_path', value=f"{work_dir}/filtered_name_{basename}")
+    ti.xcom_push(key='filtered_possible_file_path', value=f"{work_dir}/filtered_possible_{basename}")
+    ti.xcom_push(key='filtered_file_path', value=f"{work_dir}/filtered_{basename}")
+    ti.xcom_push(key='osmium_config_file_path', value=f"{work_dir}/osmium.json")
+    ti.xcom_push(key='pg_file_path', value=f"{work_dir}/{basename}.pg")
+    ti.xcom_push(key='backup_file_path', value=f"{work_dir}/{basename}.backup")
     ti.xcom_push(key='last_data_update', value=last_data_update)
 
 def do_copy_file(source_path:str, dest_path:str) -> None:
@@ -256,7 +267,7 @@ class OemDbInitDAG(DAG):
         use_osm2pgsql: bool
             use osm2pgsql instead of osmium export
 
-        See https://airflow.apache.org/docs/apache-airflow/stable/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.3.4/index.html
         """
 
         super().__init__(
@@ -296,14 +307,16 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Get PBF file URL
 
-                Gets the PBF file URL starting from the parameters pbf_url/rss_url/html_url/html_prefix.
+                Gets the URL of the OSM PBF file to download starting from the parameters pbf_url/rss_url/html_url/html_prefix.
 
                 The URL parameters are passed through the params object to allow customization when triggering the DAG.
 
+                The task also calculates the paths of all files that will be generated.
+
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/python.html)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/concepts/params.html)
             """
         )
 
@@ -323,8 +336,8 @@ class OemDbInitDAG(DAG):
                 The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
 
                 Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/concepts/params.html)
             """
         )
         task_get_source_url >> task_ffwd_to_upload
@@ -334,6 +347,7 @@ class OemDbInitDAG(DAG):
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = """
+                mkdir -p "$workDir"
                 curl --fail -v -o "$sourceFilePath" "$sourceUrl"
                 curl --fail -v -o "$md5FilePath" "$md5Url"
                 if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
@@ -344,6 +358,7 @@ class OemDbInitDAG(DAG):
                 fi
             """,
             env = {
+                "workDir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}",
                 "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
                 "sourceUrl": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
                 "md5FilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_file_path') }}",
@@ -359,8 +374,8 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [curl documentation](https://curl.se/docs/manpage.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/bash.html)
             """
         )
         task_ffwd_to_upload >> Label("Download and filter") >> task_download_pbf
@@ -483,8 +498,8 @@ class OemDbInitDAG(DAG):
                 The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
 
                 Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/concepts/params.html)
             """
         )
         task_remove_non_interesting >> task_osmium_or_osm2pgsql
@@ -508,7 +523,7 @@ class OemDbInitDAG(DAG):
             python_callable = do_copy_file,
             op_kwargs = {
                 "source_path": get_absolute_path("osmium.json"),
-                "dest_path": "/workdir/osmium.json",     
+                "dest_path": "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             },
             dag = self,
             task_group=db_load_group,
@@ -518,8 +533,8 @@ class OemDbInitDAG(DAG):
                 Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/osmium.json)) into the working directory.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/python.html)
             """
         )
         task_osmium_or_osm2pgsql >> Label("Use osmium export") >> task_copy_config
@@ -529,7 +544,7 @@ class OemDbInitDAG(DAG):
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
             cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
-            config_path= "/workdir/osmium.json",
+            config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             dag = self,
             task_group=db_load_group,
             doc_md="""
@@ -573,8 +588,8 @@ class OemDbInitDAG(DAG):
                 Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/python.html)
             """
         )
         [join_pre_load_from_pg, task_setup_schema] >> task_load_ele_pg
@@ -682,8 +697,8 @@ class OemDbInitDAG(DAG):
                 Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/init/wikidata_init.csv).
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/python.html)
             """
         )
         task_setup_schema >> task_load_wd_ent
@@ -934,8 +949,8 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/bash.html)
                 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
@@ -954,9 +969,9 @@ class OemDbInitDAG(DAG):
                 The connection ID is passed through the params object to allow customization when triggering the DAG.
 
                 Links:
-                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html#shortcircuitoperator)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/stable/concepts/params.html)
+                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/python.html#shortcircuitoperator)
+                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/concepts/params.html)
             """
         )
         task_pg_dump >> task_check_pg_restore
@@ -973,8 +988,8 @@ class OemDbInitDAG(DAG):
                 Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the oem schema 
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/python.html)
             """
         )
         task_check_pg_restore >> task_prepare_upload
@@ -999,9 +1014,9 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/stable/howto/operator/bash.html)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.3.4/howto/operator/bash.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.3.4/templates-ref.html)
             """
         )
         task_prepare_upload >> task_pg_restore
@@ -1079,6 +1094,6 @@ with DAG(
         task_id="ls",
         bash_command="""
             ls -lah /workdir/
-            rm /workdir/*
+            rm -r /workdir/*
         """,
     )
