@@ -2,10 +2,12 @@ WITH road_etymology AS (
         SELECT LOWER(osm_tags->>'name') AS low_name, et_wd_id, MIN(et_id) as et_id
         FROM oem.etymology
         JOIN oem.osmdata ON et_el_id = osm_id
-        WHERE osm_tags ? 'highway'
-        AND osm_tags ? 'name'
-        AND NOT osm_tags->>'name' ILIKE '%th street%' -- Prevent bad propagations
-        AND NOT osm_tags->>'name' ILIKE '%th ave%'
+        WHERE osm_tags ? 'highway' -- Include only highways
+        AND osm_tags ? 'name' -- Include only elements with a name
+        AND et_recursion_depth = 0 -- Exclude etymologies already locally propagated
+        AND NOT et_from_name_etymology_consists -- Exclude etymologies derived as consists-of
+        AND NOT osm_tags->>'name' ILIKE '%th street%' -- Exclude known problematic names
+        AND NOT osm_tags->>'name' ILIKE '%th ave%' -- Exclude known problematic names
         GROUP BY low_name, et_wd_id, ST_ReducePrecision(ST_Centroid(osm_geometry), 0.1)
     ),
     propagatable_etymology AS (
