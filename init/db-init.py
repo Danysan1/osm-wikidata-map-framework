@@ -1,5 +1,5 @@
 import os
-from datetime import datetime
+from pendulum import datetime, now
 from airflow.models import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
@@ -16,8 +16,7 @@ from docker.types import Mount
 from airflow.utils.edgemodifier import Label
 from airflow.providers.http.operators.http import SimpleHttpOperator
 
-# https://www.astronomer.io/guides/logging/
-#task_logger = logging.getLogger('airflow.task')
+dagTimezone = 'Europe/Rome' # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = os.path.dirname(os.path.abspath(__file__))
@@ -194,7 +193,7 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     if date_match != None:
         last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
     else:
-        last_data_update = datetime.now().strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+        last_data_update = now(dagTimezone).strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
     
     work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
     
@@ -271,7 +270,7 @@ class OemDbInitDAG(DAG):
         """
 
         super().__init__(
-                start_date=datetime(year=2022, month=2, day=1),
+                start_date=datetime(year=2022, month=9, day=15, tz=dagTimezone), # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
                 catchup=False,
                 tags=['oem', 'db-init'],
                 params={
@@ -1085,8 +1084,8 @@ kosovo_html = OemDbInitDAG(
 
 with DAG(
     dag_id="db-init-cleanup",
-    schedule_interval="@monthly",
-    start_date=datetime(year=2022, month=2, day=1),
+    schedule_interval=None,
+    start_date=datetime(year=2022, month=9, day=15, tz=dagTimezone),
     catchup=False,
     tags=['oem', 'db-init'],
 ) as dag:
