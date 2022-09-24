@@ -32,6 +32,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature) {
         etymologies = JSON.parse(properties?.etymologies) as Etymology[],
         detail_container = detail_template.content.cloneNode(true) as HTMLElement,
         osm_full_id = properties.osm_type + '/' + properties.osm_id;
+    detail_container.dataset.el_id = properties.el_id?.toString();
 
     /*console.info("featureToDomElement", {
         el_id: properties.el_id,

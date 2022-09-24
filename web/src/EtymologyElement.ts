@@ -77,8 +77,19 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
     if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
-    const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement,
-        etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
+
+    const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement;
+    etyDomElement.dataset.et_id = ety.et_id?.toString();
+    etyDomElement.dataset.wd_id = ety.wd_id?.toString();
+
+    /*console.info("etymologyToDomElement", {
+        et_id: ety.et_id,
+        wd_id: ety.wd_id,
+        ety,
+        etyDomElement
+    });*/
+
+    const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {
         console.warn("Missing etymology_name");
     } else if (ety.name) {
@@ -239,9 +250,9 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
     }
 
     const propagated = etyDomElement.querySelector<HTMLElement>('.etymology_propagated');
-    if(propagated && ety.recursion_depth) {
+    if (propagated && ety.recursion_depth) {
         propagated.style.display = 'inline';
-    } else if(propagated) {
+    } else if (propagated) {
         propagated.style.display = 'none';
     }
 
