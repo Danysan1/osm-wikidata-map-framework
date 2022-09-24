@@ -1,4 +1,4 @@
-import os
+from os.path import dirname, abspath, join, basename, exists
 from pendulum import datetime, now
 from airflow.models import DAG
 from airflow.operators.bash import BashOperator
@@ -19,10 +19,10 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 dagTimezone = 'Europe/Rome' # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
-    file_dir_path = os.path.dirname(os.path.abspath(__file__))
+    file_dir_path = dirname(abspath(__file__))
     if folder != None:
-        file_dir_path = os.path.join(file_dir_path, folder)
-    return os.path.join(file_dir_path, filename)
+        file_dir_path = join(file_dir_path, folder)
+    return join(file_dir_path, filename)
 
 def do_postgres_query(postgres_conn_id:str, sql:str):
     """
@@ -134,16 +134,30 @@ class TemplatedPostgresOperator(PostgresOperator):
 
 def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     """
-    Get the URL of the OSM PBF file to download and derivate the path of the files that will be created later.
+        # Get PBF file URL
 
-    Links:
-    * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.4.0/best-practices.html)
-    * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/models/taskinstance/index.html)
+        Gets the URL of the OSM PBF file to download and derivate the path of the files that will be created later.
+        The file urls, names and paths are calculated from the parameters 'pbf_url'/'rss_url'/'html_url'/'html_prefix'.
+
+        The URL parameters are passed through the params object to allow customization when triggering the DAG.
+
+        The task also calculates the paths of all files that will be generated.
+
+        Links:
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+        * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.4.0/best-practices.html)
+        * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/models/taskinstance/index.html)
     """
     from urllib.request import urlopen
     from re import search, findall
+    from os import makedirs
 
     params = context["params"]
+    
+    work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
+    makedirs(work_dir)
 
     source_url = None
     if "pbf_url" in params and params["pbf_url"] and isinstance(params["pbf_url"],str):
@@ -153,10 +167,17 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     elif "rss_url" in params and params["rss_url"] and isinstance(params["rss_url"],str) and params["rss_url"].endswith(".xml"):
         rss_url = params["rss_url"]
         print("Fetching the source URL from 'rss_url':", rss_url)
-        from xml.etree.ElementTree import fromstring
+        from xml.etree.ElementTree import fromstring, ElementTree
         with urlopen(rss_url) as response:
             xml_content = response.read()
-            tree = fromstring(xml_content)
+            rss_path = f"{work_dir}/{basename(rss_url)}"
+            try:
+                with open(rss_path, "w") as rss_file:
+                    rss_file.write(xml_content)
+            except:
+                print("Failed saving RSS file content in working directory, proceding anyway")
+            
+            tree = ElementTree(fromstring(xml_content))
             root = tree.getroot()
             channel = root.find('channel')
             item = channel.find('item')
@@ -187,28 +208,26 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
         raise Exception("The source url must be an OSM pbf file or as RSS for one", source_url)
     
     # https://linuxhint.com/fetch-basename-python/
-    basename = os.path.basename(source_url)
+    source_basename = basename(source_url)
 
-    date_match = search('-(\d{2})(\d{2})(\d{2})\.', basename)
+    date_match = search('-(\d{2})(\d{2})(\d{2})\.', source_basename)
     if date_match != None:
         last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
     else:
         last_data_update = now(dagTimezone).strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
     
-    work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
-    
     ti.xcom_push(key='work_dir', value=work_dir)
     ti.xcom_push(key='source_url', value=source_url)
     ti.xcom_push(key='md5_url', value=f'{source_url}.md5')
-    ti.xcom_push(key='basename', value=basename)
-    ti.xcom_push(key='source_file_path', value=f"{work_dir}/{basename}")
-    ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{basename}.md5")
-    ti.xcom_push(key='filtered_name_file_path', value=f"{work_dir}/filtered_name_{basename}")
-    ti.xcom_push(key='filtered_possible_file_path', value=f"{work_dir}/filtered_possible_{basename}")
-    ti.xcom_push(key='filtered_file_path', value=f"{work_dir}/filtered_{basename}")
+    ti.xcom_push(key='basename', value=source_basename)
+    ti.xcom_push(key='source_file_path', value=f"{work_dir}/{source_basename}")
+    ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{source_basename}.md5")
+    ti.xcom_push(key='filtered_name_file_path', value=f"{work_dir}/filtered_name_{source_basename}")
+    ti.xcom_push(key='filtered_possible_file_path', value=f"{work_dir}/filtered_possible_{source_basename}")
+    ti.xcom_push(key='filtered_file_path', value=f"{work_dir}/filtered_{source_basename}")
     ti.xcom_push(key='osmium_config_file_path', value=f"{work_dir}/osmium.json")
-    ti.xcom_push(key='pg_file_path', value=f"{work_dir}/{basename}.pg")
-    ti.xcom_push(key='backup_file_path', value=f"{work_dir}/{basename}.backup")
+    ti.xcom_push(key='pg_file_path', value=f"{work_dir}/{source_basename}.pg")
+    ti.xcom_push(key='backup_file_path', value=f"{work_dir}/{source_basename}.backup")
     ti.xcom_push(key='last_data_update', value=last_data_update)
 
 def do_copy_file(source_path:str, dest_path:str) -> None:
@@ -219,28 +238,79 @@ def do_copy_file(source_path:str, dest_path:str) -> None:
     copyfile(source_path, dest_path)
 
 def check_upload_db_conn_id(**context) -> bool:
+    """
+        # Check upload DB connecton ID
+
+        Check whether the connecton ID to the destination PostGIS DB is available: if it is, proceed to restore the data, otherwise stop here.
+
+        The connection ID is passed through the params object to allow customization when triggering the DAG.
+
+        Links:
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html#shortcircuitoperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+    """
     p = context["params"]
     return "upload_db_conn_id" in p and isinstance(p["upload_db_conn_id"], str) and p["upload_db_conn_id"]!=""
 
 def choose_first_task(ti:TaskInstance, **context) -> str:
+    """
+        # Check whether to skip downloading OSM data
+
+        Check whether to always download and filter the OSM data or to skip directly to loading it if it has already been downloaded and filtered.
+        Downloading and filtering the OSM data is skipped if the 'ffwd_to_load' parameter is present and True and the data has already been filtered in this or another DAG run.
+        Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen by default (for the reasons explained in the 'choose_load_osm_data_method' task docs).
+        The 'ffwd_to_load' and 'use_osm2pgsql' parameter are passed through the params object to allow customization when triggering the DAG.
+
+        Links:
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+    """
     p = context["params"]
     ffwd_to_load = "ffwd_to_load" in p and p["ffwd_to_load"]
     if ffwd_to_load:
         use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
         xcom_file_key = 'filtered_file_path' if use_osm2pgsql else 'pg_file_path'
-        file_exists = os.path.exists(ti.xcom_pull(task_ids='get_source_url', key=xcom_file_key))
-        if file_exists and use_osm2pgsql:
-            ret = "load_osm_data.join_pre_osm2pgsql"
-        elif file_exists and not use_osm2pgsql:
-            ret = "load_osm_data.join_pre_load_from_pg"
-        else:
-            ret = "get_osm_data.download_pbf"
+        loading_task_id = f"load_osm_data.{'join_pre_osm2pgsql' if use_osm2pgsql else 'join_pre_load_from_pg'}"
+        file_path = ti.xcom_pull(task_ids='get_source_url', key=xcom_file_key)
+        file_exists = exists(file_path)
+        if file_exists:
+            print("Filtered OSM data already found in this folder, using it:", file_path)
+            ret = loading_task_id
+        else: # File does not exist in this folder, search in other workdir folders
+            from glob import glob
+            from shutil import copyfile
+            file_basename = basename(file_path)
+            file_list = glob(f'/workdir/*/*/{file_basename}')
+            if len(file_list) > 0:
+                print("Filtered OSM data already found in another workdir folder, copying it:", file_list[0])
+                copyfile(file_list[0], file_path)
+                ret = loading_task_id
+            else:
+                print("Filtered OSM data not found, downloading and filtering it")
+                ret = "get_osm_data.download_pbf"
     else:
+        print(f"ffwd_to_load=False, downloading and filtering OSM data")
         ret = "get_osm_data.download_pbf"
 
     return ret
 
 def choose_load_osm_data_task(**context) -> str:
+    """
+        # Check how to load data into the DB
+
+        Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
+        Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen by default.
+        This choice is due to the facts that
+        * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
+        * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
+
+        The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
+
+        Links:
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+    """
     p = context["params"]
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
     task_id = "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
@@ -303,41 +373,14 @@ class OemDbInitDAG(DAG):
             python_callable = get_last_pbf_url,
             do_xcom_push = True,
             dag = self,
-            doc_md = """
-                # Get PBF file URL
-
-                Gets the URL of the OSM PBF file to download starting from the parameters pbf_url/rss_url/html_url/html_prefix.
-
-                The URL parameters are passed through the params object to allow customization when triggering the DAG.
-
-                The task also calculates the paths of all files that will be generated.
-
-                Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
-            """
+            doc_md = get_last_pbf_url.__doc__
         )
 
         task_ffwd_to_upload = BranchPythonOperator(
             task_id = "choose_whether_to_ffwd",
             python_callable= choose_first_task,
             dag = self,
-            doc_md="""
-                # Check how to load data into the DB
-
-                Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
-                Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen.
-                This choice is due to the facts that
-                * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
-                * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
-
-                The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
-
-                Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
-            """
+            doc_md = choose_first_task.__doc__
         )
         task_get_source_url >> task_ffwd_to_upload
 
@@ -346,7 +389,6 @@ class OemDbInitDAG(DAG):
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = """
-                mkdir -p "$workDir"
                 curl --fail -v -o "$sourceFilePath" "$sourceUrl"
                 curl --fail -v -o "$md5FilePath" "$md5Url"
                 if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
@@ -357,7 +399,6 @@ class OemDbInitDAG(DAG):
                 fi
             """,
             env = {
-                "workDir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}",
                 "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
                 "sourceUrl": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
                 "md5FilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_file_path') }}",
@@ -485,21 +526,7 @@ class OemDbInitDAG(DAG):
             python_callable= choose_load_osm_data_task,
             dag = self,
             task_group=db_load_group,
-            doc_md="""
-                # Check how to load data into the DB
-
-                Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
-                Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen.
-                This choice is due to the facts that
-                * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
-                * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
-
-                The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
-
-                Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
-            """
+            doc_md = choose_load_osm_data_task.__doc__
         )
         task_remove_non_interesting >> task_osmium_or_osm2pgsql
 
@@ -960,18 +987,7 @@ class OemDbInitDAG(DAG):
             python_callable=check_upload_db_conn_id,
             dag = self,
             task_group = upload_group,
-            doc_md="""
-                # Check upload DB connecton ID
-
-                Check whether the connecton ID to the destination PostGIS DB is available: if it is, proceed to restore the data, otherwise stop here.
-
-                The connection ID is passed through the params object to allow customization when triggering the DAG.
-
-                Links:
-                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-                * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html#shortcircuitoperator)
-                * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
-            """
+            doc_md=check_upload_db_conn_id.__doc__
         )
         task_pg_dump >> task_check_pg_restore
 
@@ -1024,7 +1040,7 @@ class OemDbInitDAG(DAG):
 
 planet_pbf = OemDbInitDAG(
     dag_id="db-init-planet-latest",
-    schedule_interval="@weekly",
+    schedule_interval=None,
     pbf_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf"
 )
 planet_html = OemDbInitDAG(
@@ -1036,13 +1052,13 @@ planet_html = OemDbInitDAG(
 )
 planet_rss = OemDbInitDAG(
     dag_id="db-init-planet-from-rss",
-    schedule_interval="@weekly",
+    schedule_interval=None,
     rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml"
 )
 
 italy_pbf = OemDbInitDAG(
     dag_id="db-init-italy-latest",
-    schedule_interval="@daily",
+    schedule_interval=None,
     pbf_url="http://download.geofabrik.de/europe/italy-latest.osm.pbf"
 )
 italy_html = OemDbInitDAG(
@@ -1055,19 +1071,19 @@ italy_html = OemDbInitDAG(
 
 nord_ovest_pbf = OemDbInitDAG(
     dag_id="db-init-italy-nord-ovest-latest",
-    schedule_interval="@daily",
+    schedule_interval=None,
     pbf_url="http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf"
 )
 nord_ovest_html = OemDbInitDAG(
     dag_id="db-init-italy-nord-ovest-from-html",
-    schedule_interval="@daily",
+    schedule_interval=None,
     html_url="http://download.geofabrik.de/europe/italy/",
     html_prefix="nord-ovest"
 )
 
 kosovo_latest = OemDbInitDAG(
     dag_id="db-init-kosovo-latest",
-    schedule_interval="@yearly",
+    schedule_interval=None,
     upload_db_conn_id="oem-postgis-postgres",
     ffwd_to_load=False,
     pbf_url="http://download.geofabrik.de/europe/kosovo-latest.osm.pbf"
@@ -1075,7 +1091,7 @@ kosovo_latest = OemDbInitDAG(
 
 kosovo_html = OemDbInitDAG(
     dag_id="db-init-kosovo-from-html",
-    schedule_interval="@yearly",
+    schedule_interval=None,
     upload_db_conn_id="oem-postgis-postgres",
     ffwd_to_load=False,
     html_url="http://download.geofabrik.de/europe/",
