@@ -11,5 +11,5 @@ $conf = new IniEnvConfiguration();
 prepareText($conf);
 
 $dbh = new PostGIS_PDO($conf);
-$wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
+$wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
 App\loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);

@@ -29,8 +29,8 @@ docker-compose version
 
 git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
-cp open-etymology-map.template.ini web/open-etymology-map.ini
-cp promtail/config.template.yaml promtail/config.yaml
+cp ".env.example" ".env"
+cp "promtail/config.template.yaml" "promtail/config.yaml"
 docker-compose --profile "prod" pull
 docker-compose --profile "prod" up -d
 
@@ -43,5 +43,5 @@ chmod u+x ec2-update.sh
 echo '0 * * * * ./open-etymology-map/ec2-update.sh' | crontab -
 ## Logs: docker-compose logs
 
-echo 'Remember to fill web/open-etymology-map.ini !'
+echo 'Remember to fill .env !'
 echo 'Remember to fill promtail/config.yaml !'

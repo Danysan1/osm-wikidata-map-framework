@@ -24,14 +24,22 @@ class MultiConfiguration extends BaseConfiguration
 		$this->configs = $configs;
 	}
 
+	public function listKeys(): array
+	{
+		return array_reduce(
+			$this->configs,
+			function (array $keys, Configuration $config): array { return array_merge($keys, $config->listKeys()); },
+			[]
+		);
+	}
+
 	public function has(string $key): bool
 	{
-		return array_reduce($this->configs, function (
-			bool $found,
-			Configuration $config
-		) use ($key): bool {
-			return $found || $config->has($key);
-		}, false);
+		return array_reduce(
+			$this->configs,
+			function (bool $found, Configuration $config) use ($key): bool { return $found || $config->has($key); },
+			false
+		);
 	}
 
 	/**

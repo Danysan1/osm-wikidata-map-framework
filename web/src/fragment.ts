@@ -1,12 +1,12 @@
 import { getConfig } from "./config";
 
-const default_center_lat_raw = getConfig("default-center-lat"),
-    default_center_lon_raw = getConfig("default-center-lon"),
-    default_zoom_raw = getConfig("default-zoom"),
+const default_center_lat_raw = getConfig("default_center_lat"),
+    default_center_lon_raw = getConfig("default_center_lon"),
+    default_zoom_raw = getConfig("default_zoom"),
     default_center_lat = default_center_lat_raw ? parseFloat(default_center_lat_raw) : 0,
     default_center_lon = default_center_lon_raw ? parseFloat(default_center_lon_raw) : 0,
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
-    defaultColorScheme = getConfig("default-color-scheme");
+    defaultColorScheme = getConfig("default_color_scheme");
 
 interface FragmentParams {
     lon: number | null;

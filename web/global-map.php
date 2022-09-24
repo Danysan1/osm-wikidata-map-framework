@@ -10,7 +10,7 @@ $conf = new IniEnvConfiguration();
 
 prepareGeoJSON($conf);
 
-if ($conf->getBool("db-enable")) {
+if ($conf->getBool("db_enable")) {
     $db = new PostGIS_PDO($conf);
     echo $db->query(
         "SELECT JSON_BUILD_OBJECT(

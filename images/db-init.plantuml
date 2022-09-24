@@ -1,12 +1,10 @@
 @startuml db-init
 
-file "open-etymology-map.ini" as conf
 card "Get config and parameters" as param #LightGreen
 cloud "OSM extract mirror" as mirror
 file X.osm.pbf
 card Download #LightYellow
 mirror <.> Download
-conf .> param
 param -[bold]-> Download
 Download .> X.osm.pbf
 

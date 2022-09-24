@@ -19,6 +19,6 @@ abstract class BaseConfiguration implements Configuration
         if ($optional && !$this->has($key))
             return "";
         else
-            return '<meta name="config_'.$key.'" content="'.htmlspecialchars($this->get($key)).'" />';
+            return '<meta name="config_'.$key.'" content="'.htmlspecialchars((string)$this->get($key)).'" />';
     }
 }

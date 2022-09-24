@@ -5,7 +5,7 @@ function getOverpassEndpoint(): string
         /**
          * @var array<string>
          */
-        $possibleEndpoints = (array)parse_ini_file("open-etymology-map.template.ini")["overpass-endpoints"];
+        $possibleEndpoints = (array)json_decode((string)(getenv("overpass_endpoints")));
         return $possibleEndpoints[array_rand($possibleEndpoints)];
     } catch (Exception $e) {
         return 'https://overpass-api.de/api/interpreter';

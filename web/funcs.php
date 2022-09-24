@@ -28,13 +28,13 @@ function handleException(Throwable $t)
  */
 function preparePage(Configuration $conf)
 {
-	if ($conf->has('log-file-path'))
-		ini_set("error_log", (string)$conf->get("log-file-path"));
+	if ($conf->has('log_file_path'))
+		ini_set("error_log", (string)$conf->get("log_file_path"));
 
-	if ($conf->has('sentry-php-dsn')) {
+	if ($conf->has('sentry_php_dsn')) {
 		\Sentry\init([
-			'dsn' => (string)$conf->get('sentry-php-dsn'),
-			'environment' => (string)$conf->get('sentry-php-env'),
+			'dsn' => (string)$conf->get('sentry_php_dsn'),
+			'environment' => (string)$conf->get('sentry_php_env'),
 		]);
 	}
 
@@ -55,35 +55,35 @@ function prepareHTML(Configuration $conf)
 	header("Content-Type: text/html; charset=utf-8");
 
 	$reportUri = "";
-	if($conf->has('sentry-js-uri')) {
-		$reportUri = "report-uri " . (string)$conf->get("sentry-js-uri") . "; ";
+	if($conf->has('sentry_js_uri')) {
+		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
 	}
 
 	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 
 	$maptilerConnectSrcs = '';
-	if($conf->has("maptiler-key")) {
+	if($conf->has("maptiler_key")) {
 		$maptilerConnectSrcs = 'https://api.maptiler.com';
 	}
 
 	$googleAnalyticsConnectSrcs = '';
 	$googleAnalyticsScriptSrcs = '';
-	if($conf->has('google-analytics-id')) {
+	if($conf->has('google_analytics_id')) {
 		$googleAnalyticsConnectSrcs = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
 		$googleAnalyticsScriptSrcs = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
 	}
 
 	$sentryConnectSrcs = '';
 	$sentryScriptSrcs = '';
-	if($conf->has('sentry-js-dsn')) {
+	if($conf->has('sentry_js_dsn')) {
 		$sentryConnectSrcs = 'https://*.ingest.sentry.io';
 		$sentryScriptSrcs = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
 	}
 	
 	$matomoConnectSrcs = '';
 	$matomoScriptSrcs = '';
-	if($conf->has('matomo-domain')) {
-		$matomoConnectSrcs = 'https://'.$conf->get('matomo-domain');
+	if($conf->has('matomo_domain')) {
+		$matomoConnectSrcs = 'https://'.$conf->get('matomo_domain');
 		$matomoScriptSrcs = 'https://cdn.matomo.cloud/';
 	}
 

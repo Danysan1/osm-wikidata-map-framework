@@ -11,7 +11,7 @@ class FixedEndpointOverpassConfig extends RoundRobinOverpassConfig
 {
     public function __construct(Configuration $conf)
     {
-        $endpoint = (string)$conf->get('overpass-endpoint');
+        $endpoint = (string)$conf->get('overpass_endpoint');
         parent::__construct($conf, [$endpoint]);
     }
 }

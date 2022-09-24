@@ -6,8 +6,8 @@ import { Extras } from '@sentry/types';
  * @see https://docs.sentry.io/platforms/javascript/
  */
 function initSentry() {
-    const sentry_js_dsn = getConfig("sentry-js-dsn"),
-        sentry_js_env = getConfig("sentry-js-env");
+    const sentry_js_dsn = getConfig("sentry_js_dsn"),
+        sentry_js_env = getConfig("sentry_js_env");
     if (sentry_js_dsn && sentry_js_env) {
         console.info("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
         init({
@@ -36,7 +36,7 @@ function logErrorMessage(message: string, level: SeverityLevel = "error", extra:
  * @see https://support.google.com/analytics/answer/9304153#zippy=%2Cadd-your-tag-using-google-tag-manager%2Cadd-the-google-tag-directly-to-your-web-pages
  */
 function initGoogleAnalytics() {
-    const google_analytics_id = getConfig("google-analytics-id"),
+    const google_analytics_id = getConfig("google_analytics_id"),
         gtag: Gtag.Gtag = function () { (window as any).dataLayer.push(arguments); }
 
     if (google_analytics_id) {
@@ -51,8 +51,8 @@ function initGoogleAnalytics() {
  * @see https://developer.matomo.org/guides/tracking-javascript-guide
  */
 function initMatomo() {
-    const matomo_domain = getConfig("matomo-domain"),
-        matomo_id = getConfig("matomo-id");
+    const matomo_domain = getConfig("matomo_domain"),
+        matomo_id = getConfig("matomo_id");
 
     if (matomo_domain && matomo_id) {
         console.info("Initializing Matomo", { matomo_domain, matomo_id });

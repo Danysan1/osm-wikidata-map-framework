@@ -8,9 +8,14 @@ use Exception;
 
 class EnvironmentConfiguration extends BaseConfiguration
 {
+	public function listKeys(): array
+	{
+		return array_keys(getenv());
+	}
+
 	public function has(string $key): bool
 	{
-		return isset($_ENV[$key]) && $_ENV[$key] !== "";
+		return getenv($key) !== false && getenv($key) !== "";
 	}
 
 	/**
@@ -19,14 +24,14 @@ class EnvironmentConfiguration extends BaseConfiguration
 	 */
 	public function get(string $key)
 	{
-		if (!isset($_ENV[$key])) {
+		if (!$this->has($key)) {
 			throw new Exception("Configuration not found: $key");
 		}
-		return $_ENV[$key];
+		return getenv($key);
 	}
 
 	public function getBool(string $key): bool
 	{
-		return !empty($_ENV[$key]) && $_ENV[$key] != "false";
+		return !empty(getenv($key)) && getenv($key) != "false";
 	}
 }

@@ -31,14 +31,14 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default-language'));
+$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
-$wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
-$cacheFileBasePath = (string)$conf->get("cache-file-base-path");
-$maxElements = $conf->has("max-elements") ? (int)$conf->get("max-elements") : null;
-$fetchAttribution = $conf->getBool("fetch-attribution");
+$wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
+$cacheFileBasePath = (string)$conf->get("cache_file_base_path");
+$maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
+$fetchAttribution = $conf->getBool("fetch_attribution");
 
-$enableDB = $conf->getBool("db-enable");
+$enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
@@ -63,7 +63,7 @@ $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
 $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
 $bboxArea = $bbox->getArea();
 //error_log("BBox area: $bboxArea");
-$maxArea = (float)$conf->get("wikidata-bbox-max-area");
+$maxArea = (float)$conf->get("wikidata_bbox_max_area");
 if ($bboxArea > $maxArea) {
     http_response_code(400);
     die('{"error":"The requested area is too large. Please use a smaller area."};');
@@ -113,7 +113,7 @@ if (!$result->isSuccessful()) {
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect-to-cache-file")) {
+    if ($conf->getBool("redirect_to_cache_file")) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {

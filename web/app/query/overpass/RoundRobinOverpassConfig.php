@@ -37,16 +37,16 @@ class RoundRobinOverpassConfig implements OverpassConfig
      */
     public function __construct(Configuration $conf, ?array $overrideEndpoints = null)
     {
-        $this->endpoints = empty($overrideEndpoints) ? (array)$conf->get('overpass-endpoints') : $overrideEndpoints;
+        $this->endpoints = empty($overrideEndpoints) ? (array)json_decode((string)($conf->get('overpass_endpoints'))) : $overrideEndpoints;
 
-        $this->nodes = $conf->getBool("fetch-nodes");
-        $this->ways = $conf->getBool("fetch-ways");
-        $this->relations = $conf->getBool("fetch-relations");
+        $this->nodes = $conf->getBool("fetch_nodes");
+        $this->ways = $conf->getBool("fetch_ways");
+        $this->relations = $conf->getBool("fetch_relations");
         if (!$this->nodes && !$this->ways && !$this->relations) {
             throw new \Exception("No fetching options set");
         }
 
-        $maxElements = $conf->has("max-elements") ? (int)$conf->get("max-elements") : null;
+        $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
         if ($maxElements !== null && $maxElements <= 0) {
             throw new Exception("maxElements must be > 0");
         }
@@ -55,7 +55,7 @@ class RoundRobinOverpassConfig implements OverpassConfig
 
     public function getEndpoint(): string
     {
-        $out = (string)$this->endpoints[array_rand($this->endpoints)];
+        $out = $this->endpoints[array_rand($this->endpoints)];
         //error_log("RoundRobinOverpassConfig: $out");
         return $out;
     }

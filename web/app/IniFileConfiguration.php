@@ -26,6 +26,11 @@ class IniFileConfiguration extends BaseConfiguration
 		//echo json_encode($this->config);
 	}
 
+	public function listKeys(): array
+	{
+		return array_keys($this->config);
+	}
+
 	public function has(string $key): bool
 	{
 		return isset($this->config[$key]) && $this->config[$key] !== "";

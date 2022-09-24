@@ -511,8 +511,8 @@ if (is_file($pgFilePath) && (filemtime($pgFilePath) > filemtime($sourceFilePath)
 }
 
 try {
-    if (!$conf->getBool("db-enable")) {
-        throw new Exception('The usage of the DB is disabled in the configuration (check the option "db-enable"), stopping here.');
+    if (!$conf->getBool("db_enable")) {
+        throw new Exception('The usage of the DB is disabled in the configuration (check the option "db_enable"), stopping here.');
     }
 
     $host = (string)$conf->get("db_host");
@@ -592,7 +592,7 @@ try {
             loadWikidataEntities($dbh);
 
             echo 'Download of wikidata relations started at ' . date('c') . PHP_EOL;
-            $wikidataEndpointURL = (string)$conf->get("wikidata-endpoint");
+            $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
             App\loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
             App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
             echo 'Download of wikidata relations ended at ' . date('c') . PHP_EOL;

@@ -159,9 +159,9 @@ During development you can run a local instance of Open Etymology Map using the 
 
 #### Configuration
 
-In order to make a deployed instance function correctly all instance settings must be set in `open-etymology-map.ini`.
+In order to make a deployed instance function correctly all instance settings must be set in `.env`.
 
-A template for this config file can be found in [`open-etymology-map.template.ini`](open-etymology-map.template.ini). When copying the template `.ini` you must set `mapbox-token`, while other options should already be ok as a starting point.
+You can copy the template file [`.env.example`](.env.example), you must set `mapbox_token` while other options should already be ok as a starting point.
 
 If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 
@@ -200,7 +200,7 @@ A full installation complete with DB can be deployed with docker-compose:
 ```sh
 git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
-cp open-etymology-map.template.ini web/open-etymology-map.ini
+cp ".env.example" ".env"
 docker-compose --profile "prod" up -d
 ```
 
@@ -221,11 +221,11 @@ docker-compose --profile "prod" up -d
 The front-end is composed by [index.php](web/index.php), [style.css](web/style.css) and [index.js](web/index.js).
 The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) (a tentative implementation with its FOSS fork, [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/), is WIP with no ETA) and the charts are created using [chart.js](https://www.chartjs.org/).
 
-At very low zoom level (zoom < [`min-zoom-level`](open-etymology-map.template.ini)), clustered element count is shown from [`global-map.php`](https://etymology.dsantini.it/global-map.php).
+At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from [`global-map.php`](https://etymology.dsantini.it/global-map.php).
 
-At low zoom level ([`threshold-zoom-level`](open-etymology-map.template.ini) > zoom > [`min-zoom-level`](open-etymology-map.template.ini)) clustered count is obtained from the back-end with [elements.php](web/elements.php).
+At low zoom level ([`threshold_zoom_level`](.env.example) > zoom > [`min_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](web/elements.php).
 
-At high enough zoom level (zoom > [`threshold-zoom-level`](open-etymology-map.template.ini)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
+At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
 
 #### Back-end (v2, using PostGIS DB)
 
@@ -313,7 +313,7 @@ JSONWikidataQuery <-- init
 
 [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 
-Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db-enable = true`:
+Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
 1. [`BBoxTextPostGISQuery::downloadMissingText()`](web/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
     - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](web/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
@@ -328,17 +328,17 @@ To run the database initialization:
 1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
    - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) (this is the suggested usage)
    - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
-2. initialize `open-etymology-map.ini` as shown [above](#configuration)
+2. initialize `.env` as shown [above](#configuration)
 3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data (depending on which area you want to show on the map) and place it into the [init](init/) folder.
 4. using command line run the DB initialization
    - to run it into the Docker development instance from Windows, run `.\db-init.bat .\init\YOUR_PBF_FILE_NAME.pbf`
    - to run it into the Docker development instance from Linux, run `./db-init.sh ./init/YOUR_PBF_FILE_NAME.pbf`
    - to run it locally, move into the [init/](init/) folder and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
-5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `open-etymology-map.ini`
+5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `.env`
 
 IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/openetymologymap/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/openetymologymap/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
 
-Tip: if you run the local development instance through `docker-compose` you can connect to the local DB (configured by default in [`open-etymology-map.template.ini`](open-etymology-map.template.ini)) by using PGAdmin at http://localhost:8080 .
+Tip: if you run the local development instance through `docker-compose` you can connect to the local DB ([configured by default in `.env`](.env.example)) by using PGAdmin at http://localhost:8080 .
 
 <details>
 <summary>Database initialization steps diagram</summary>
@@ -436,7 +436,7 @@ WikidataQuery --(0- wikidata
 
 </details>
 
-Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db-enable = false`):
+Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db_enable = false`):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
    - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).

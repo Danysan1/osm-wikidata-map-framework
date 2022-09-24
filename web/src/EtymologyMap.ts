@@ -14,11 +14,11 @@ import { showSnackbar } from './snackbar';
 import { getConfig } from './config';
 import './style.css';
 
-const thresholdZoomLevel_raw = getConfig("threshold-zoom-level"),
-    minZoomLevel_raw = getConfig("min-zoom-level"),
+const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
+    minZoomLevel_raw = getConfig("min_zoom_level"),
     thresholdZoomLevel = thresholdZoomLevel_raw ? parseInt(thresholdZoomLevel_raw) : 14,
     minZoomLevel = minZoomLevel_raw ? parseInt(minZoomLevel_raw) : 9,
-    defaultBackgroundStyle_raw = getConfig("default-background-style"),
+    defaultBackgroundStyle_raw = getConfig("default_background_style"),
     defaultBackgroundStyle = defaultBackgroundStyle_raw ? defaultBackgroundStyle_raw : 'mapbox_streets';
 
 export class EtymologyMap extends Map {

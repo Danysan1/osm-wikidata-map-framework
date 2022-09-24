@@ -18,8 +18,8 @@ initSentry();
 initGoogleAnalytics();
 initMatomo();
 
-const maptiler_key = getConfig("maptiler-key"),
-    mapbox_token = getConfig("mapbox-token"),
+const maptiler_key = getConfig("maptiler_key"),
+    mapbox_token = getConfig("mapbox_token"),
     backgroundStyles: BackgroundStyle[] = [];
 
 if (mapbox_token) {

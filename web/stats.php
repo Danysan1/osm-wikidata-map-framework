@@ -38,11 +38,11 @@ prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default-language'));
+$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
-$wikidataEndpointURL = (string)$conf->get('wikidata-endpoint');
-$cacheFileBasePath = (string)$conf->get("cache-file-base-path");
-$enableDB = $conf->getBool("db-enable");
+$wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
+$cacheFileBasePath = (string)$conf->get("cache_file_base_path");
+$enableDB = $conf->getBool("db_enable");
 
 if ($enableDB)
     $db = new PostGIS_PDO($conf);
@@ -125,7 +125,7 @@ if (!$result->isSuccessful()) {
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect-to-cache-file")) {
+    if ($conf->getBool("redirect_to_cache_file")) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {

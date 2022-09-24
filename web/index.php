@@ -9,13 +9,13 @@ use App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-if (!$conf->has("mapbox-token")) {
+if (!$conf->has("mapbox_token")) {
     http_response_code(500);
     die('<html><body>Missing Mapbox token from configuration</body></html>');
 }
 
 $lastUpdateString = '';
-$enableDB = $conf->getBool("db-enable");
+$enableDB = $conf->getBool("db_enable");
 if($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
@@ -40,8 +40,8 @@ if (
     && isset($langMatches[0])
 ) {
     $defaultCulture = $langMatches[0];
-} elseif ($conf->has('default-language')) {
-    $defaultCulture = (string)$conf->get('default-language');
+} elseif ($conf->has('default_language')) {
+    $defaultCulture = (string)$conf->get('default_language');
 } else {
     $defaultCulture = "en-US";
 }
@@ -52,20 +52,20 @@ if (
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
-    <?=$conf->getMetaTag("mapbox-token");?>
-    <?=$conf->getMetaTag("maptiler-key", true);?>
-    <?=$conf->getMetaTag("default-center-lat");?>
-    <?=$conf->getMetaTag("default-center-lon");?>
-    <?=$conf->getMetaTag("default-zoom");?>
-    <?=$conf->getMetaTag("threshold-zoom-level");?>
-    <?=$conf->getMetaTag("min-zoom-level");?>
-    <?=$conf->getMetaTag("default-background-style");?>
-    <?=$conf->getMetaTag("default-color-scheme");?>
-    <?=$conf->getMetaTag("google-analytics-id", true);?>
-    <?=$conf->getMetaTag("matomo-domain", true);?>
-    <?=$conf->getMetaTag("matomo-id", true);?>
-    <?=$conf->getMetaTag("sentry-js-dsn", true);?>
-    <?=$conf->getMetaTag("sentry-js-env", true);?>
+    <?=$conf->getMetaTag("mapbox_token");?>
+    <?=$conf->getMetaTag("maptiler_key", true);?>
+    <?=$conf->getMetaTag("default_center_lat");?>
+    <?=$conf->getMetaTag("default_center_lon");?>
+    <?=$conf->getMetaTag("default_zoom");?>
+    <?=$conf->getMetaTag("threshold_zoom_level");?>
+    <?=$conf->getMetaTag("min_zoom_level");?>
+    <?=$conf->getMetaTag("default_background_style");?>
+    <?=$conf->getMetaTag("default_color_scheme");?>
+    <?=$conf->getMetaTag("google_analytics_id", true);?>
+    <?=$conf->getMetaTag("matomo_domain", true);?>
+    <?=$conf->getMetaTag("matomo_id", true);?>
+    <?=$conf->getMetaTag("sentry_js_dsn", true);?>
+    <?=$conf->getMetaTag("sentry_js_env", true);?>
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -74,8 +74,8 @@ if (
     <title>Open Etymology Map</title>
     <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
-    <?php if ($conf->has("google-analytics-id")) { ?>
-        <script defer src="<?="https://www.googletagmanager.com/gtag/js?id=".$conf->get("google-analytics-id");?>"></script>
+    <?php if ($conf->has("google_analytics_id")) { ?>
+        <script defer src="<?="https://www.googletagmanager.com/gtag/js?id=".$conf->get("google_analytics_id");?>"></script>
     <?php } ?>
     <script defer src="./dist/main.js" type="application/javascript"></script>
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
@@ -107,7 +107,7 @@ if (
             <?=$lastUpdateString;?>
             <p>
                 <?= implode(" | ", [
-                    $conf->has("report-problem-url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report-problem-url") . '">Report a problem</a>' : false,
+                    $conf->has("report_problem_url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report_problem_url") . '">Report a problem</a>' : false,
                     '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
                     '<a href="https://icons8.com/icon/32958/quest">Quest</a> icon by <a href="https://icons8.com">Icons8</a>'
                 ]); ?>

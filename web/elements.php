@@ -37,7 +37,7 @@ $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 //$onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 
-$enableDB = $conf->getBool("db-enable");
+$enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
     //error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);
@@ -53,7 +53,7 @@ if ($from == "bbox") {
     $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     $bboxArea = $bbox->getArea();
     //error_log("BBox area: $bboxArea");
-    $maxArea = (float)$conf->get("elements-bbox-max-area");
+    $maxArea = (float)$conf->get("elements_bbox_max_area");
     if ($bboxArea > $maxArea) {
         http_response_code(400);
         die('{"error":"The requested area is too large. Please use a smaller area."};');
@@ -71,7 +71,7 @@ if ($from == "bbox") {
         }*/
         $query = new CSVCachedBBoxGeoJSONQuery(
             $baseQuery,
-            (string)$conf->get("cache-file-base-path"),
+            (string)$conf->get("cache_file_base_path"),
             $conf,
             $serverTiming
         );
@@ -106,7 +106,7 @@ if (!$result->isSuccessful()) {
     error_log("Overpass no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
 } elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect-to-cache-file")) {
+    if ($conf->getBool("redirect_to_cache_file")) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {

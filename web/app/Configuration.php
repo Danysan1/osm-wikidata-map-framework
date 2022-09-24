@@ -7,6 +7,8 @@ namespace App;
  */
 interface Configuration
 {
+	public function listKeys(): array;
+
 	public function has(string $key): bool;
 
 	/**

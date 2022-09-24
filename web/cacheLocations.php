@@ -20,7 +20,7 @@ $serverTiming->add("2_prepare");
 
 // it_App_Query_Combined_BBoxEtymologyOverpassWikidataQuery_cache.csv
 
-$cacheFileBasePath = (string)$conf->get("cache-file-base-path");
+$cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $geoJsonOut = [
     "type" => "FeatureCollection",
     "features" => []

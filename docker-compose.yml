@@ -308,9 +308,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=oem
-      - POSTGRES_PASSWORD=_CHANGE_ME_
-      - POSTGRES_DB=oem
+      - POSTGRES_USER=${db_user:-oem}
+      - POSTGRES_PASSWORD=${db_password:-_CHANGE_ME_}
+      - POSTGRES_DB=${db_database:-oem}
     volumes:
       - db-data:/var/lib/postgresql/data
     networks:
@@ -346,7 +346,7 @@ services:
       - oem-internal
       - pgadmin-bridge
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8000/login"]
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/misc/ping"]
       interval: 10s
       timeout: 10s
       retries: 5
@@ -361,6 +361,8 @@ services:
       dockerfile: Dockerfile
       target: dev
     image: registry.gitlab.com/openetymologymap/open-etymology-map/dev
+    env_file:
+      - .env
     ports:
       - "80:80"
     depends_on:
@@ -388,6 +390,8 @@ services:
       dockerfile: Dockerfile
       target: prod
     image: registry.gitlab.com/openetymologymap/open-etymology-map
+    env_file:
+      - .env
     ports:
       - "80:80"
       - "443:443"
@@ -404,7 +408,6 @@ services:
       retries: 5
     restart: "always"
     volumes:
-      - ./web/open-etymology-map.ini:/var/www/html/open-etymology-map.ini:cached
       - apache-sites-available:/etc/apache2/sites-available/
       - apache-sites-enabled:/etc/apache2/sites-enabled/
       - letsencrypt-certs:/etc/letsencrypt/
