@@ -435,7 +435,11 @@ class OemDbInitDAG(DAG):
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             tags=[
-                'w/highway',
+                'w/highway=residential',
+                'w/highway=unclassified',
+                'w/highway=tertiary',
+                'w/highway=secondary',
+                'w/highway=primary',
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',

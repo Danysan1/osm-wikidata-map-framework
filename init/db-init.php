@@ -254,7 +254,11 @@ function filterInputData(
     // Keep only elements that have a tag that could possibly lead to an etymology
     $allowedTags = [];
     if ($load_roads) {
-        $allowedTags[] = 'w/highway';
+        $allowedTags[] = 'w/highway=residential';
+        $allowedTags[] = 'w/highway=unclassified';
+        $allowedTags[] = 'w/highway=tertiary';
+        $allowedTags[] = 'w/highway=secondary';
+        $allowedTags[] = 'w/highway=primary';
     }
     $allowedTags[] = 'wikidata';
     $allowedTags[] = 'name:etymology:wikidata';
