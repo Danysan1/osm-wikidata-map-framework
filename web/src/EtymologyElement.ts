@@ -79,8 +79,8 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
         throw new Error("Missing etymology template");
 
     const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement;
-    etyDomElement.dataset.et_id = ety.et_id?.toString();
-    etyDomElement.dataset.wd_id = ety.wd_id?.toString();
+    //etyDomElement.dataset.et_id = ety.et_id?.toString();
+    //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
     /*console.info("etymologyToDomElement", {
         et_id: ety.et_id,

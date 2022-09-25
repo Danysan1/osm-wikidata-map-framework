@@ -21,11 +21,12 @@ class IniEnvConfiguration extends MultiConfiguration
                 $iniFilePath = (string)$environmentConfiguration->get("config_file");
         
         if (empty($iniFilePath)) {
-            error_log("IniEnvConfiguration: missing iniFilePath, using only EnvironmentConfiguration");
+            //error_log("IniEnvConfiguration: missing iniFilePath, using only EnvironmentConfiguration");
             $configs = [$environmentConfiguration];
         } else {
             try {
                 $iniFileConfiguration = new IniFileConfiguration($iniFilePath);
+                //error_log("IniEnvConfiguration: using both IniFileConfiguration and EnvironmentConfiguration");
                 $configs = [$iniFileConfiguration, $environmentConfiguration];
             } catch (Throwable $e) {
                 error_log("IniEnvConfiguration: IniFileConfiguration failed, using only EnvironmentConfiguration");
