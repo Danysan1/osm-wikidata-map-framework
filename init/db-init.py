@@ -69,6 +69,7 @@ class OsmiumTagsFilterOperator(DockerOperator):
             ],
             mount_tmp_dir=False,
             auto_remove=True,
+            pool="data_filtering",
             **kwargs
         )
 
@@ -88,12 +89,13 @@ class OsmiumExportOperator(DockerOperator):
         super().__init__(
             docker_url='unix://var/run/docker.sock',
             image='beyanora/osmtools:20210401',
-            command = f"osmium export --verbose --overwrite -o '{dest_path}' -f 'pg' {config_str} --add-unique-id='counter' {cache_str} --show-errors '{source_path}'",
+            command = f"osmium export --verbose --progress --overwrite -o '{dest_path}' -f 'pg' {config_str} --add-unique-id='counter' {cache_str} --show-errors '{source_path}'",
             mounts=[
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
             mount_tmp_dir=False,
             auto_remove=True,
+            pool="data_filtering",
             **kwargs
         )
 
@@ -126,6 +128,7 @@ class Osm2pgsqlOperator(DockerOperator):
             network_mode="open-etymology-map_airflow-worker-bridge", # The container needs to talk with the local DB
             mount_tmp_dir=False,
             auto_remove=True,
+            pool="data_filtering",
             **kwargs
         )
 
@@ -436,10 +439,6 @@ class OemDbInitDAG(DAG):
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             tags=[
                 'w/highway=residential',
-                'w/highway=unclassified',
-                'w/highway=tertiary',
-                'w/highway=secondary',
-                'w/highway=primary',
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',
