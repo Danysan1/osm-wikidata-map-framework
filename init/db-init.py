@@ -1,4 +1,5 @@
 from os.path import dirname, abspath, join, basename, exists
+from textwrap import dedent
 from pendulum import datetime, now
 from airflow.models import DAG
 from airflow.operators.bash import BashOperator
@@ -48,7 +49,9 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
 
 class OsmiumTagsFilterOperator(DockerOperator):
     """
-    Execute osmium tags-filter on a dedicated Docker container
+    ## Operator for `osmium tags-filter`
+
+    Execute `osmium tags-filter` on a dedicated Docker container
 
     Links:
     * [osmium tags-filter documentation](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html)
@@ -75,11 +78,14 @@ class OsmiumTagsFilterOperator(DockerOperator):
 
 class OsmiumExportOperator(DockerOperator):
     """
-    Execute osmium export on a dedicated Docker container
+    ## Operator for `osmium export`
+
+    Execute `osmium export` on a dedicated Docker container
 
     Links:
     * [osmium export documentation](https://docs.osmcode.org/osmium/latest/osmium-export.html)
     * [osmium export documentation](https://manpages.ubuntu.com/manpages/jammy/man1/osmium-export.1.html)
+    * [index/cache documentation](https://docs.osmcode.org/osmium/latest/osmium-index-types.html)
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
@@ -101,7 +107,9 @@ class OsmiumExportOperator(DockerOperator):
 
 class Osm2pgsqlOperator(DockerOperator):
     """
-    Execute osmium export on a dedicated Docker container
+    ## Operator for `osm2pgsql`
+
+    Execute `osm2pgsql` on a dedicated Docker container
 
     Links:
     * [osm2pgsql documentation](https://osm2pgsql.org/doc/manual.html)
@@ -133,6 +141,16 @@ class Osm2pgsqlOperator(DockerOperator):
         )
 
 class TemplatedPostgresOperator(PostgresOperator):
+    """
+    ## `PostgresOperator` with templatable `parameters` and `postgres_conn_id`
+
+    Standard `PostgresOperator` doesn't allow to use Jinja templates in `parameters` and `postgres_conn_id`, this Operator allows it.
+
+    Links:
+    * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/stable/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+    * [templating docuementation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/custom-operator.html#templating)
+    * [original value for `template_fields`](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_modules/airflow/providers/postgres/operators/postgres.html#PostgresOperator.template_fields)
+    """
     template_fields = ('parameters', 'postgres_conn_id', 'sql')
 
 def get_last_pbf_url(ti:TaskInstance, **context) -> str:
@@ -260,10 +278,11 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
     """
         # Check whether to skip downloading OSM data
 
-        Check whether to always download and filter the OSM data or to skip directly to loading it if it has already been downloaded and filtered.
-        Downloading and filtering the OSM data is skipped if the 'ffwd_to_load' parameter is present and True and the data has already been filtered in this or another DAG run.
-        Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen by default (for the reasons explained in the 'choose_load_osm_data_method' task docs).
-        The 'ffwd_to_load' and 'use_osm2pgsql' parameter are passed through the params object to allow customization when triggering the DAG.
+        Check whether to download and filter the OSM data or to skip directly to loading it because it has already been downloaded and filtered.
+        Downloading and filtering the OSM data is skipped only if the `ffwd_to_load` parameter is present and True and the data has already been filtered in this or another DAG run.
+
+        Unless the `use_osm2pgsql` parameter is present and True, `osmium export` is choosen by default (for the reasons explained in the 'choose_load_osm_data_method' task docs).
+        The `ffwd_to_load` and `use_osm2pgsql` parameters are passed through the params object to allow customization when triggering the DAG.
 
         Links:
         * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
@@ -303,12 +322,12 @@ def choose_load_osm_data_task(**context) -> str:
         # Check how to load data into the DB
 
         Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
-        Unless the 'use_osm2pgsql' parameter is present and True, `osmium export` is choosen by default.
+        Unless the `use_osm2pgsql` parameter is present and True, `osmium export` is choosen by default.
         This choice is due to the facts that
         * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
         * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
 
-        The 'use_osm2pgsql' parameter is passed through the params object to allow customization when triggering the DAG.
+        The `use_osm2pgsql` parameter is passed through the params object to allow customization when triggering the DAG.
 
         Links:
         * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
@@ -428,8 +447,16 @@ class OemDbInitDAG(DAG):
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
             tags=['name'],
+            remove_tags= True,
             dag = self,
             task_group=get_pbf_group,
+            doc_md = dedent("""
+                # Keep only elements with a name
+
+                Filter the OpenStreetMap PBF data to keep only elements which have a name.
+
+                Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
+            """) + dedent(OsmiumTagsFilterOperator.__doc__)
         )
         task_download_pbf >> task_keep_name
 
@@ -447,6 +474,16 @@ class OemDbInitDAG(DAG):
             remove_tags= True,
             dag = self,
             task_group=get_pbf_group,
+            doc_md = dedent("""
+                # Keep only elements that could have an etymology
+
+                Filter the OpenStreetMap PBF data to keep only elements which could have an etymology:
+                * elements with the etymology directly specified via the tags `name:etymology`, `name:etymology:wikidata` or 'subject:wikidata'
+                * elements that could have the etymology specified in the Wikidata entity linked by the tag `wikidata`
+                * elements for which the etymology could be propagated from homonymous elements (to keep a reasonable computation time only some highways are kept for this purpose) 
+
+                Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
+            """) + dedent(OsmiumTagsFilterOperator.__doc__)
         )
         task_keep_name >> task_keep_possible_ety
 
@@ -467,6 +504,16 @@ class OemDbInitDAG(DAG):
             invert_match= True,
             dag = self,
             task_group=get_pbf_group,
+            doc_md = dedent("""
+                # Remove non iteresting elements
+
+                Filter the OpenStreetMap PBF data to remove elements which are not interesting:
+                * flagpoles (https://gitlab.com/openetymologymap/open-etymology-map/-/issues/5)
+                * nodes that represent the label for a continent (`place=continent`), a country (`place=country`), a state (`place=state`) or a region (`place=region`), which out of their context would not make sense on the map
+                * element representing an area too big for visualization (`admin_level=2`, `admin_level=3` or `admin_level=4`)
+
+                Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
+            """) + dedent(OsmiumTagsFilterOperator.__doc__)
         )
         task_keep_possible_ety >> task_remove_non_interesting
 
@@ -576,11 +623,13 @@ class OemDbInitDAG(DAG):
             config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             dag = self,
             task_group=db_load_group,
-            doc_md="""
+            doc_md=dedent("""
                 # Export OSM data from PBF to PG
 
-                Using `osmium export`, export the filtered OpenStreetMap data from the filtered PBF file to a PG tab-separated-values file ready for importing into the DB.
-            """
+                Export the filtered OpenStreetMap data from the filtered PBF file to a PG tab-separated-values file ready for importing into the DB.
+
+                Uses `osmium export` through `OsmiumExportOperator`:
+            """) + dedent(OsmiumExportOperator.__doc__)
         )
         task_copy_config >> task_export_to_pg
 
