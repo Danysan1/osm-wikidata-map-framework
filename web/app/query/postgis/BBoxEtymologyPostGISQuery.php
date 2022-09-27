@@ -80,6 +80,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_wikidata', from_wd IS NOT NULL,
                         'from_wikidata_cod', from_wd.wd_wikidata_cod,
                         'from_wikidata_prop', et_from_wikidata_prop_cod,
+                        'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,
+                        'propagated', et_recursion_depth != 0,
                         'recursion_depth', et_recursion_depth,
                         'wd_id', wd.wd_id,
                         'birth_date', EXTRACT(epoch FROM wd.wd_birth_date),
@@ -124,6 +126,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
+                LEFT JOIN oem.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE (el.el_has_text_etymology OR wd.wd_id IS NOT NULL)
                 AND el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
