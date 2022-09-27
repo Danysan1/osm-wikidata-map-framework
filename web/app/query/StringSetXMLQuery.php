@@ -10,8 +10,6 @@ use \App\Query\XMLQuery;
 
 /**
  * A query that returns a XML result for the given string set.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface StringSetXMLQuery extends StringSetQuery, XMLQuery
 {

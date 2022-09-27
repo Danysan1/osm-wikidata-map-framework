@@ -12,8 +12,6 @@ use InvalidArgumentException;
 
 /**
  * Result of an Overpass query, convertible to GeoJSON data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQueryResult
 {

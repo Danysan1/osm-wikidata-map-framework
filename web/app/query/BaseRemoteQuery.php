@@ -8,8 +8,6 @@ use \App\Query\BaseQuery;
 
 /**
  * Base abstract implementation of a query object.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class BaseRemoteQuery extends BaseQuery
 {

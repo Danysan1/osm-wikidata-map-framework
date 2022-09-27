@@ -10,8 +10,6 @@ use \App\Query\JSONQuery;
 
 /**
  * A query that returns a JSON result for the given string set.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface StringSetJSONQuery extends StringSetQuery, JSONQuery
 {

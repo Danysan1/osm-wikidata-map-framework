@@ -10,8 +10,6 @@ use \App\Query\Wikidata\EtymologyIDListWikidataQueryBuilder;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class EtymologyIDListJSONWikidataQuery extends StringSetJSONWikidataQuery
 {

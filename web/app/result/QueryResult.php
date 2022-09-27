@@ -6,8 +6,6 @@ namespace App\Result;
  * Result of a query
  * 
  * @see Query 
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface QueryResult
 {

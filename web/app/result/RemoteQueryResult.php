@@ -8,8 +8,6 @@ use \App\Result\QueryResult;
 
 /**
  * Result of a remote query
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface RemoteQueryResult extends QueryResult {
     /**

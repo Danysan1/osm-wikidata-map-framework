@@ -18,8 +18,6 @@ use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology in the vicinity of a central point.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQuery
 {

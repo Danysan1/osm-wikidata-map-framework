@@ -15,8 +15,6 @@ use Exception;
 
 /**
  * Overpass query.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class OverpassQuery extends JSONCurlQuery
 {

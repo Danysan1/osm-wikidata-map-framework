@@ -16,8 +16,6 @@ use \App\Result\JSONQueryResult;
  * Combined query to Overpass and Wikidata.
  * It expects a bounding box and a language.
  * Fetches the objects in the given bounding box and the stats in the given language.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
 {

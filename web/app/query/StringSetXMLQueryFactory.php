@@ -10,8 +10,6 @@ use \App\StringSet;
 
 /**
  * Factory class that can create StringSetXMLQuery objects.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface StringSetXMLQueryFactory
 {

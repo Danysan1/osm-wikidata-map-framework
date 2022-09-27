@@ -21,8 +21,6 @@ use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.
  * The GeoJSON must be a feature collection where each feature has the property "etymology" which is an array of associative arrays where the field "id" contains the Wikidata IDs.
  * The query will then gather the information for each of the Wikidata IDs and add it to the feature.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidataQuery implements GeoJSONQuery
 {

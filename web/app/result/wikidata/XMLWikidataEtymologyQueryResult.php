@@ -10,8 +10,6 @@ use App\Result\XMLQueryResult;
 
 /**
  * Result of a Wikidata etymology query, convertible into matrix data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class XMLWikidataEtymologyQueryResult extends XMLWikidataQueryResult
 {

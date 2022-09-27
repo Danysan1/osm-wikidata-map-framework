@@ -22,8 +22,6 @@ use App\Result\JSONQueryResult;
 
 /**
  * OverpassQL query that retrieves only the centroid and the id of any item in a bounding box which has an etymology.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
 {

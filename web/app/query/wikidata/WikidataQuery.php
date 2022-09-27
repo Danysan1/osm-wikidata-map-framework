@@ -9,7 +9,10 @@ use App\Query\CurlQuery;
 /**
  * Wikidata query sent via HTTP request.
  * 
- * @author Daniele Santini <daniele@dsantini.it>
+ * @see https://www.wikidata.org/wiki/Wikidata:SPARQL_tutorial
+ * @see https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/queries/examples
+ * @see https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/queries/examples/advanced
+ * @see https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service/query_optimization
  */
 abstract class WikidataQuery extends CurlQuery
 {

@@ -11,8 +11,6 @@ use SimpleXMLElement;
 
 /**
  * Locally generated XML query result
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class XMLLocalQueryResult extends LocalQueryResult implements XMLQueryResult
 {

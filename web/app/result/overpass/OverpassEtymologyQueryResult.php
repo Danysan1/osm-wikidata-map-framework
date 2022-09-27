@@ -8,8 +8,6 @@ use \App\Result\Overpass\OverpassQueryResult;
 
 /**
  * Result of an Overpass query which can return multiple types of objects and etymology IDs must be separated.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class OverpassEtymologyQueryResult extends OverpassQueryResult
 {

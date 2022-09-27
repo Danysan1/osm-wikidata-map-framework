@@ -8,8 +8,6 @@ use \App\Query\Query;
 
 /**
  * Base abstract implementation of a query object.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class BaseQuery implements Query
 {

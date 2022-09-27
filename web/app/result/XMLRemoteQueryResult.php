@@ -11,8 +11,6 @@ use SimpleXMLElement;
 
 /**
  * Result of a remote query which returns XML data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class XMLRemoteQueryResult extends BaseRemoteQueryResult implements XMLQueryResult
 {

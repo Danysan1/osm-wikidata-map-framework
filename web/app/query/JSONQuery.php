@@ -12,8 +12,6 @@ use \App\Result\JSONQueryResult;
 
 /**
  * A query that returns JSON data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface JSONQuery extends Query
 {

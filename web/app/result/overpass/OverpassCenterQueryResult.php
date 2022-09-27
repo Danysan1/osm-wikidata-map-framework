@@ -10,8 +10,6 @@ use \App\Result\Overpass\OverpassQueryResult;
  * Result of an Overpass query which gathers only ids and centroids.
  * 
  * @see BBoxEtymologyCenterOverpassQuery
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class OverpassCenterQueryResult extends OverpassQueryResult
 {

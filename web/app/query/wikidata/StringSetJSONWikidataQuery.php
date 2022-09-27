@@ -12,8 +12,6 @@ use \App\Query\Wikidata\JSONWikidataQuery;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class StringSetJSONWikidataQuery extends JSONWikidataQuery implements StringSetJSONQuery
 {

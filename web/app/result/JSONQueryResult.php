@@ -8,8 +8,6 @@ use \App\Result\QueryResult;
 
 /**
  * Query result whose content can be converted to JSON data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface JSONQueryResult extends QueryResult
 {

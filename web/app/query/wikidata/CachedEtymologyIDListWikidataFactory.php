@@ -16,9 +16,6 @@ use \App\StringSet;
 use \App\Configuration;
 use \App\Query\Wikidata\EtymologyIDListXMLWikidataQuery;
 
-/**
- * @author Daniele Santini <daniele@dsantini.it>
- */
 class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
 {
     /**

@@ -8,8 +8,6 @@ use \App\Result\JSONQueryResult;
 
 /**
  * Query result whose content can be converted to GeoJSON data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface GeoJSONQueryResult extends JSONQueryResult
 {

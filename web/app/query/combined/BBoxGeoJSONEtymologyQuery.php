@@ -19,8 +19,6 @@ use \App\Result\GeoJSONQueryResult;
  * Combined query to Overpass and Wikidata.
  * It expects a bounding box and a language.
  * Fetches the objects in the given bounding box and its etymologies in the given language.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements BBoxGeoJSONQuery
 {

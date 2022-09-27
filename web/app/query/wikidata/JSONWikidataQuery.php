@@ -15,8 +15,6 @@ use App\Result\JSONRemoteQueryResult;
 
 /**
  * Wikidata query sent via HTTP  request.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class JSONWikidataQuery extends WikidataQuery implements JSONQuery
 {

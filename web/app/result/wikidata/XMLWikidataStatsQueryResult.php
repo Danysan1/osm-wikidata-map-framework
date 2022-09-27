@@ -10,8 +10,6 @@ use App\Result\XMLQueryResult;
 
 /**
  * Result of a Wikidata stats query, convertible into matrix data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class XMLWikidataStatsQueryResult extends XMLWikidataQueryResult
 {

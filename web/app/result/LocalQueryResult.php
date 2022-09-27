@@ -8,8 +8,6 @@ use \App\Result\QueryResult;
 
 /**
  * Locally generated query result.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class LocalQueryResult implements QueryResult
 {

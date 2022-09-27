@@ -2,9 +2,6 @@
 
 namespace App;
 
-/**
- * @author Daniele Santini <daniele@dsantini.it>
- */
 interface Configuration
 {
 	public function listKeys(): array;

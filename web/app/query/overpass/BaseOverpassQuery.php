@@ -10,8 +10,6 @@ use \App\Query\Overpass\OverpassConfig;
 
 /**
  * Base OverpassQL query
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BaseOverpassQuery extends OverpassQuery
 {

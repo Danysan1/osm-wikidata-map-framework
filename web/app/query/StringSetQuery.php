@@ -10,8 +10,6 @@ use \App\StringSet;
 
 /**
  * A query which takes a list of strings and returns a result based on these values.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface StringSetQuery extends Query {
     /**

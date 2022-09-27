@@ -8,8 +8,6 @@ use \App\Result\RemoteQueryResult;
 
 /**
  * Base implementation of a remote query result.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class BaseRemoteQueryResult implements RemoteQueryResult
 {

@@ -14,8 +14,6 @@ use \App\Query\Overpass\OverpassConfig;
 
 /**
  * Overpass query which saves the detail of the bounding box.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
 {

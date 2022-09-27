@@ -10,8 +10,6 @@ use \App\BoundingBox;
  * Implementation of a Geographic Bounding Box.
  * 
  * @see https://dev.overpass-api.de/overpass-doc/en/full_data/bbox.html#filter
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BaseBoundingBox implements BoundingBox
 {

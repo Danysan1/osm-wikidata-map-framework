@@ -10,8 +10,6 @@ use \App\Query\JSONQuery;
 
 /**
  * A query that returns a JSON data for the given bounding box.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface BBoxJSONQuery extends BBoxQuery, JSONQuery
 {

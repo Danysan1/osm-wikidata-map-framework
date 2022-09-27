@@ -16,8 +16,6 @@ use App\Result\XMLRemoteQueryResult;
 
 /**
  * Wikidata query sent via HTTP  request.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class XMLWikidataQuery extends WikidataQuery implements XMLQuery
 {

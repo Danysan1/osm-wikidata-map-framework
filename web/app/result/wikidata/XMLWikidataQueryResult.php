@@ -8,8 +8,6 @@ use \App\Result\XMLLocalQueryResult;
 
 /**
  * Result of a Wikidata query, convertible into matrix data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
 {

@@ -5,8 +5,6 @@ namespace App;
 /**
  * Class that allows to record a series of labeled timings.
  * These timings can then be sent to the client as a Server Timing header.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class ServerTiming
 {
@@ -14,7 +12,6 @@ class ServerTiming
      * Labeled timestamps array
      * 
      * @var array<array{string|null,float}>
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     private $times;
 
@@ -28,7 +25,6 @@ class ServerTiming
      *
      * @param string $name The label of the timestamp
      * @return void
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     public function add($name)
     {
@@ -43,7 +39,6 @@ class ServerTiming
      *
      * @param boolean $sumHomonyms
      * @return array<array{string,int}>
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     public function getSpentTimes($sumHomonyms = true)
     {
@@ -84,7 +79,6 @@ class ServerTiming
      * @param string $header Server-Timing header so far
      * @param array{string,int} $time The current row
      * @return string
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     private static function serverTimingReducer($header, $time)
     {
@@ -98,7 +92,6 @@ class ServerTiming
      * @see https://www.w3.org/TR/server-timing/
      * @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Server-Timing
      * @see https://www.fastly.com/blog/supercharging-server-timing-http-trailers
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     public function getHeader()
     {
@@ -109,7 +102,6 @@ class ServerTiming
      * Send the Server-Timing header
      *
      * @return void
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     public function sendHeader()
     {
@@ -120,7 +112,6 @@ class ServerTiming
      * Get the raw timestamps
      *
      * @return array<array{string|null,float}>
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     public function getTimestamps()
     {
@@ -140,7 +131,6 @@ class ServerTiming
      *
      * @param string $label
      * @return void
-     * @author Daniele Santini <daniele@dsantini.it>
      */
     public function logTimes($label = "")
     {

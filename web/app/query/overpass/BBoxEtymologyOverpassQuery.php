@@ -21,8 +21,6 @@ use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item in a bounding box which has an etymology.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSONQuery
 {

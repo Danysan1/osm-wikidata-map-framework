@@ -10,8 +10,6 @@ use \App\Result\JSONQueryResult;
 
 /**
  * Locally generated JSON query result
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class JSONLocalQueryResult extends LocalQueryResult implements JSONQueryResult
 {

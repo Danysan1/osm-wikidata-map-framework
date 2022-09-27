@@ -12,8 +12,6 @@ use \App\Result\GeoJSONQueryResult;
 
 /**
  * A query that returns GeoJSON data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface GeoJSONQuery extends JSONQuery
 {

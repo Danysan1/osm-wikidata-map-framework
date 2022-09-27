@@ -8,8 +8,6 @@ use \App\Result\QueryResult;
 
 /**
  * A query is a request for data from a local or remote data source.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface Query {
     public function getQuery(): string;

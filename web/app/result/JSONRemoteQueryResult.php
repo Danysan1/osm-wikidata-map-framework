@@ -10,8 +10,6 @@ use \App\Result\JSONQueryResult;
 
 /**
  * Result of a remote query which returns JSON data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class JSONRemoteQueryResult extends BaseRemoteQueryResult implements JSONQueryResult
 {

@@ -12,8 +12,6 @@ use \App\Result\XMLQueryResult;
 
 /**
  * A query that returns XML data.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 interface XMLQuery extends Query
 {

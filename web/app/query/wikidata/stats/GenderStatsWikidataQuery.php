@@ -11,8 +11,6 @@ use \App\Result\Wikidata\XMLWikidataStatsQueryResult;
 
 /**
  * Wikidata SPARQL query which retrieves statistics on the gender of some items for which the ID is given.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
 {

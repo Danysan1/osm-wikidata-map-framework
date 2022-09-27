@@ -12,9 +12,6 @@ use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
 use \App\Query\Wikidata\EtymologyIDListXMLWikidataQuery;
 
-/**
- * @author Daniele Santini <daniele@dsantini.it>
- */
 class EtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
 {
     /**
