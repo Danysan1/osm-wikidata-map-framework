@@ -169,7 +169,19 @@ def check_upload_db_conn_id(**context) -> bool:
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
     """
     p = context["params"]
-    return "upload_db_conn_id" in p and isinstance(p["upload_db_conn_id"], str) and p["upload_db_conn_id"]!=""
+    conn_id_available = "upload_db_conn_id" in p and isinstance(p["upload_db_conn_id"], str) and p["upload_db_conn_id"]!=""
+
+    if conn_id_available:
+        pg_hook = PostgresHook(p["upload_db_conn_id"])
+        with pg_hook.get_conn() as pg_conn:
+            with pg_conn.cursor() as cursor:
+                cursor.execute("SELECT PostGIS_Version()")
+                postgis_version = cursor.fetchone()
+                print(f"upload_db_conn_id available, PostGIS version {postgis_version}")
+    else:
+        print("upload_db_conn_id not available")
+
+    return conn_id_available
 
 def choose_first_task(ti:TaskInstance, **context) -> str:
     """
@@ -190,7 +202,7 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
     if ffwd_to_load:
         use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
         xcom_file_key = 'filtered_file_path' if use_osm2pgsql else 'pg_file_path'
-        loading_task_id = f"load_osm_data.{'join_pre_osm2pgsql' if use_osm2pgsql else 'join_pre_load_from_pg'}"
+        loading_task_id = 'join_pre_osm2pgsql' if use_osm2pgsql else 'join_pre_load_from_pg'
         file_path = ti.xcom_pull(task_ids='get_source_url', key=xcom_file_key)
         file_exists = exists(file_path)
         if file_exists:
@@ -232,8 +244,7 @@ def choose_load_osm_data_task(**context) -> str:
     """
     p = context["params"]
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
-    task_id = "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
-    return f"load_osm_data.{task_id}"
+    return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
     def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, **kwargs):
@@ -466,13 +477,14 @@ class OemDbInitDAG(DAG):
         )
         task_teardown_schema >> task_setup_schema
 
-        db_load_group = TaskGroup("load_osm_data", tooltip="Load OpenStreetMap data on the DB", dag=self)
+        group_db_load = TaskGroup("load_data_on_db", prefix_group_id=False, tooltip="Load the data on the DB", dag=self)
+        group_db_load_osm = TaskGroup("load_osm_data", prefix_group_id=False, tooltip="Load OpenStreetMap data on the DB", dag=self, parent_group=group_db_load)
 
         task_osmium_or_osm2pgsql = BranchPythonOperator(
             task_id = "choose_load_osm_data_method",
             python_callable= choose_load_osm_data_task,
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md = choose_load_osm_data_task.__doc__
         )
         task_remove_non_interesting >> task_osmium_or_osm2pgsql
@@ -481,7 +493,7 @@ class OemDbInitDAG(DAG):
             task_id = "join_pre_osm2pgsql",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md="""
                 # Join branches back together
 
@@ -499,7 +511,7 @@ class OemDbInitDAG(DAG):
                 "dest_path": "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             },
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md="""
                 # Copy the Osmium configuration
 
@@ -519,7 +531,7 @@ class OemDbInitDAG(DAG):
             cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
             config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md=dedent("""
                 # Export OSM data from PBF to PG
 
@@ -534,7 +546,7 @@ class OemDbInitDAG(DAG):
             task_id = "join_pre_load_from_pg",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md="""
                 # Join branches back together
 
@@ -556,7 +568,7 @@ class OemDbInitDAG(DAG):
                 "columns": ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
             },
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md="""
                 # Load OSM data from the PG file
 
@@ -574,7 +586,7 @@ class OemDbInitDAG(DAG):
             postgres_conn_id = local_db_conn_id,
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md="""
                 # Load OSM data from the PBF file
 
@@ -589,7 +601,7 @@ class OemDbInitDAG(DAG):
             postgres_conn_id = local_db_conn_id,
             sql = "sql/convert-osm2pgsql-data.sql",
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md = """
                 # Prepare osm2pgsql data for usage
 
@@ -605,7 +617,7 @@ class OemDbInitDAG(DAG):
             task_id = "join_post_load_ele",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=db_load_group,
+            task_group=group_db_load_osm,
             doc_md="""
                 # Join branches back together
 
@@ -666,6 +678,7 @@ class OemDbInitDAG(DAG):
                 "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
             },
             dag = self,
+            task_group=group_db_load,
             doc_md="""
                 # Load default Wikidata entities
 
