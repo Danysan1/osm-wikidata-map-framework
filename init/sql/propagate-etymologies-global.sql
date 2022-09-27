@@ -5,7 +5,7 @@ WITH road_etymology AS (
         WHERE osm_tags ? 'highway' -- Include only highways
         AND osm_tags ? 'name' -- Include only elements with a name
         AND et_recursion_depth = 0 -- Exclude etymologies already locally propagated
-        AND NOT et_from_parts -- Exclude etymologies derived as parts
+        AND et_from_parts_of_wd_id IS NULL -- Exclude etymologies derived as parts
         AND NOT osm_tags->>'name' ILIKE '%th street%' -- Exclude known problematic names
         AND NOT osm_tags->>'name' ILIKE '%th ave%' -- Exclude known problematic names
         GROUP BY low_name, et_wd_id, ST_ReducePrecision(ST_Centroid(osm_geometry), 0.1)

@@ -167,7 +167,7 @@ AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN '#ff3333'
 	WHEN et.et_from_osm THEN '#33ff66'
-	WHEN et.et_from_wikidata THEN '#3399ff'
+	WHEN et.et_from_wikidata_wd_id IS NOT NULL THEN '#3399ff'
 	ELSE NULL
 END
 $BODY$;
@@ -181,7 +181,7 @@ AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN 'Propagation'
 	WHEN et.et_from_osm THEN 'OpenStreetMap'
-	WHEN et.et_from_wikidata THEN 'Wikidata'
+	WHEN et.et_from_wikidata_wd_id IS NOT NULL THEN 'Wikidata'
 	ELSE NULL
 END
 $BODY$;

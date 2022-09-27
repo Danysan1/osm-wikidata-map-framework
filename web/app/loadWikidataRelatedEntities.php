@@ -32,14 +32,14 @@ function loadWikidataRelatedEntities(
     PDO $dbh,
     string $wikidataEndpointURL
 ): int {
-    if(!$dbh->query(
+    if($dbh->query(
             "SELECT EXISTS (
                 SELECT FROM pg_tables
                 WHERE schemaname = 'oem'
                 AND tablename  = 'vm_global_map'
             )"
         )->fetchColumn())
-        throw new Exception("Temporary tables already deleted, can't load Wikidata related entities");
+        throw new Exception("DB initalization already completed, can't load Wikidata related entities");
     
     echo "Loading Wikidata \"$relationName\" entities...".PHP_EOL;
 
