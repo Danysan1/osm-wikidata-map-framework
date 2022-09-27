@@ -4,14 +4,6 @@ INSERT INTO oem.etymology (
     et_from_el_id,
     et_recursion_depth,
     et_from_osm,
-    et_from_wikidata,
-    et_from_name_etymology,
-    et_from_name_etymology_consists,
-    et_from_subject,
-    et_from_subject_consists,
-    et_from_wikidata_named_after,
-    et_from_wikidata_dedicated_to,
-    et_from_wikidata_commemorates,
     et_from_wikidata_wd_id,
     et_from_wikidata_prop_cod
 ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
@@ -20,14 +12,6 @@ INSERT INTO oem.etymology (
     old_et.et_from_el_id,
     :depth::INT AS recursion_depth,
     old_et.et_from_osm,
-    old_et.et_from_wikidata,
-    old_et.et_from_name_etymology,
-    old_et.et_from_name_etymology_consists,
-    old_et.et_from_subject,
-    old_et.et_from_subject_consists,
-    old_et.et_from_wikidata_named_after,
-    old_et.et_from_wikidata_dedicated_to,
-    old_et.et_from_wikidata_commemorates,
     old_et.et_from_wikidata_wd_id,
     old_et.et_from_wikidata_prop_cod
 FROM oem.etymology AS old_et
@@ -40,6 +24,5 @@ JOIN oem.osmdata AS new_el
     AND new_el.osm_tags ?? 'name'
     AND LOWER(old_el.osm_tags->>'name') = LOWER(new_el.osm_tags->>'name')
     AND ST_Intersects(old_el.osm_geometry, new_el.osm_geometry)
-LEFT JOIN oem.etymology AS new_et ON new_et.et_el_id = new_el.osm_id
 WHERE old_et.et_recursion_depth = (:depth::INT - 1)
-AND new_et IS NULL;
+ON CONFLICT (et_el_id, et_wd_id) DO NOTHING

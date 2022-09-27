@@ -21,4 +21,5 @@ INSERT INTO oem.element (
     SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
 FROM oem.osmdata
-WHERE osm_has_wd_etymology OR osm_has_text_etymology;
+WHERE osm_has_wd_etymology OR osm_has_text_etymology
+ON CONFLICT (el_id) DO NOTHING

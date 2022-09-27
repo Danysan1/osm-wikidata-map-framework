@@ -15,7 +15,6 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 from Osm2pgsqlOperator import Osm2pgsqlOperator
-#from DownloadEntityPartsOperator import DownloadEntityPartsOperator
 
 dagTimezone = 'Europe/Rome' # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
 
@@ -696,6 +695,23 @@ class OemDbInitDAG(DAG):
         )
         [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
 
+        task_convert_ety = PostgresOperator(
+            task_id = "convert_etymologies",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/convert-etymologies.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Convert the etymologies
+
+                Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_convert_wd_ent >> task_convert_ety
+
         task_load_named_after = SimpleHttpOperator(
             task_id = "download_named_after_wikidata_entities",
             http_conn_id = local_web_conn_id,
@@ -717,47 +733,7 @@ class OemDbInitDAG(DAG):
                 * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
             """
         )
-        task_convert_wd_ent >> task_load_named_after
-        
-        task_load_consists_of = SimpleHttpOperator(
-            task_id = "download_consists_of_wikidata_entities",
-            http_conn_id = local_web_conn_id,
-            endpoint = "/loadWikidataConsistsOfEntities.php",
-            method = "GET",
-            response_check = lambda response: response.status_code == 200,
-            retries = 3,
-            dag = self,
-            task_group=elaborate_group,
-            doc_md="""
-                # Load Wikidata 'consists of' entities
-
-                For each existing Wikidata entity representing the etymology for and OSM element:
-                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are part of the entity
-                * load into the `wikidata_named_after` table of the local PostGIS DB the 'consists of' relationships
-
-                Links:
-                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
-                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
-            """
-        )
-        task_convert_wd_ent >> task_load_consists_of
-
-        task_convert_ety = PostgresOperator(
-            task_id = "convert_etymologies",
-            postgres_conn_id = local_db_conn_id,
-            sql = "sql/convert-etymologies.sql",
-            dag = self,
-            task_group=elaborate_group,
-            doc_md = """
-                # Convert the etymologies
-
-                Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-            """
-        )
-        [task_load_named_after, task_load_consists_of] >> task_convert_ety
+        task_convert_ety >> task_load_named_after
 
         task_propagate = PostgresOperator(
             task_id = "propagate_etymologies_globally",
@@ -775,7 +751,30 @@ class OemDbInitDAG(DAG):
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
-        task_convert_ety >> task_propagate
+        task_load_named_after >> task_propagate
+        
+        task_load_parts = SimpleHttpOperator(
+            task_id = "download_parts_of_wikidata_entities",
+            http_conn_id = local_web_conn_id,
+            endpoint = "/loadWikidataPartsOfEntities.php",
+            method = "GET",
+            response_check = lambda response: response.status_code == 200,
+            retries = 3,
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # Load Wikidata parts of entities
+
+                For each existing Wikidata entity representing the etymology for and OSM element:
+                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are part of the entity
+                * load into the `etymology` table of the local PostGIS DB the entity parts as etymology for the elements for which the container is an etymology
+
+                Links:
+                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
+                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
+            """
+        )
+        task_propagate >> task_load_parts
 
         task_check_text_ety = PostgresOperator(
             task_id = "check_text_etymology",
@@ -792,7 +791,7 @@ class OemDbInitDAG(DAG):
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
-        task_propagate >> task_check_text_ety
+        task_load_parts >> task_check_text_ety
 
         task_check_wd_ety = PostgresOperator(
             task_id = "check_wikidata_etymology",

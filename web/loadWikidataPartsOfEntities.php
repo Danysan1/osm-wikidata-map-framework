@@ -12,4 +12,4 @@ prepareText($conf);
 
 $dbh = new PostGIS_PDO($conf);
 $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
-App\loadWikidataConsistsOfEntities($dbh, $wikidataEndpointURL);
+App\loadWikidataPartsOfEntities($dbh, $wikidataEndpointURL);

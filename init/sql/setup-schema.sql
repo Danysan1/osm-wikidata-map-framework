@@ -6,8 +6,6 @@ DROP TABLE IF EXISTS oem.wikidata_picture;
 
 DROP TABLE IF EXISTS oem.etymology;
 
-DROP TABLE IF EXISTS oem.wikidata_named_after;
-
 DROP TABLE IF EXISTS oem.wikidata;
 
 DROP TABLE IF EXISTS oem.element_wikidata_cods;
@@ -120,17 +118,10 @@ CREATE TABLE oem.etymology (
     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
-    et_from_osm BOOLEAN,
-    et_from_name_etymology BOOLEAN,
-    et_from_name_etymology_consists BOOLEAN,
-    et_from_subject BOOLEAN,
-    et_from_subject_consists BOOLEAN,
-    et_from_wikidata BOOLEAN,
-    et_from_wikidata_named_after BOOLEAN,
-    et_from_wikidata_dedicated_to BOOLEAN,
-    et_from_wikidata_commemorates BOOLEAN,
-    et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id),
-    et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$'),
+    et_from_osm BOOLEAN DEFAULT FALSE, -- derived directly from OSM
+    et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
+    et_from_parts_of_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from whose P527 (has parts) property this etymology has been derived
+    et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- Wikidata property through which the etymology is derived
     CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );
 
@@ -146,13 +137,6 @@ CREATE TABLE oem.wikidata_picture (
 );
 
 CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100');
-
-CREATE TABLE oem.wikidata_named_after (
-    wna_id SERIAL NOT NULL PRIMARY KEY,
-    wna_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-    wna_named_after_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-    wna_from_prop_cod VARCHAR CHECK (wna_from_prop_cod ~* '^P\d+$')
-);
 
 CREATE TABLE oem.wikidata_text (
     wdt_id SERIAL NOT NULL PRIMARY KEY,
@@ -182,8 +166,8 @@ CREATE OR REPLACE FUNCTION oem.et_source_color(et oem.etymology)
 AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN '#ff3333'
-	WHEN et.et_from_wikidata THEN '#3399ff'
 	WHEN et.et_from_osm THEN '#33ff66'
+	WHEN et.et_from_wikidata THEN '#3399ff'
 	ELSE NULL
 END
 $BODY$;
@@ -196,8 +180,8 @@ CREATE OR REPLACE FUNCTION oem.et_source_name(et oem.etymology)
 AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN 'Propagation'
-	WHEN et.et_from_wikidata THEN 'Wikidata'
 	WHEN et.et_from_osm THEN 'OpenStreetMap'
+	WHEN et.et_from_wikidata THEN 'Wikidata'
 	ELSE NULL
 END
 $BODY$;

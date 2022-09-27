@@ -1,7 +1,5 @@
 DROP TABLE IF EXISTS oem.element_wikidata_cods;
 
-DROP TABLE IF EXISTS oem.wikidata_named_after;
-
 DROP TABLE IF EXISTS oem.osmdata;
 
 DROP TABLE IF EXISTS oem.planet_osm_line;

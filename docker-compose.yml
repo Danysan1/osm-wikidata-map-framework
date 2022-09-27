@@ -282,25 +282,25 @@ services:
     profiles:
       - dev+airflow
 
-  flower:
-    <<: *airflow-common
-    command: celery flower
-    ports:
-      - 5555:5555
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-      interval: 10s
-      timeout: 10s
-      retries: 5
-    restart: always
-    depends_on:
-      <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
-    networks:
-      - airflow-internal
-    profiles:
-      - dev+airflow
+  # flower:
+  #   <<: *airflow-common
+  #   command: celery flower
+  #   ports:
+  #     - 5555:5555
+  #   healthcheck:
+  #     test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+  #     interval: 10s
+  #     timeout: 10s
+  #     retries: 5
+  #   restart: always
+  #   depends_on:
+  #     <<: *airflow-common-depends-on
+  #     airflow-init:
+  #       condition: service_completed_successfully
+  #   networks:
+  #     - airflow-internal
+  #   profiles:
+  #     - dev+airflow
 
   oem-postgis:
     #image: postgis/postgis:13-3.2-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
