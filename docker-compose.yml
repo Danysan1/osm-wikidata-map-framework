@@ -1,7 +1,8 @@
 # Extends https://airflow.apache.org/docs/apache-airflow/2.4.0/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html
+# See https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/stable/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/2.4.0/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -57,7 +58,7 @@ x-airflow-common:
     target: airflow
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/index.html
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -141,7 +142,7 @@ services:
       - airflow
       - dev+airflow
 
-  airflow-scheduler:
+  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/scheduler.html
     <<: *airflow-common
     command: scheduler
     healthcheck:
@@ -296,7 +297,7 @@ services:
       - airflow
       - dev+airflow
 
-  # flower:
+  # flower: # https://flower.readthedocs.io/en/latest/
   #   <<: *airflow-common
   #   command: celery flower
   #   ports:

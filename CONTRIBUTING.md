@@ -240,7 +240,7 @@ file pbf as "OSM pbf planet file"
 component osmium
 frame oem as "Open Etymology Map v2" {
     database db as "PostgreSQL DB"
-    component init as "db-init.php"
+    component init as "Database initialization"
     node fe as "Front-end"
     node be as "Back-end" {
         component globalMap as "global-map.php"
@@ -294,7 +294,6 @@ BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
 JSONWikidataQuery --|> WikidataQuery
 
-init ..> PostGIS_PDO
 globalMap ..> PostGIS_PDO
 PostGISQuery ..> PostGIS_PDO
 PostGIS_PDO -(0- db
@@ -302,16 +301,16 @@ BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
 
 WikidataQuery -(0- wikidata
 
+db -o)- init
 osmium <.. init
 pbf <-- init
-JSONWikidataQuery <-- init
 
 @enduml
 ```
 
 </details>
 
-[db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+An Apache Airflow pipeline defined in [db-init.py](init/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
@@ -321,24 +320,23 @@ Once the DB is initialized, this is the data gathering process in [etymologyMap.
 
 ##### Database initialization
 
-As mentioned above [db-init.php](init/db-init.php) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
-This script starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
+As mentioned above an Apache Airflow pipeline defined in [db-init.py](init/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+This pipeline starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
 
 To run the database initialization:
-1. make sure [osmium](https://osmcode.org/osmium-tool/) and [psql](https://www.postgresql.org/docs/13/app-psql.html) are installed on your machine. If they are not you have two alternatives:
-   - run a development instance through `docker-compose` [as shown above](#local-development-with-docker) (this is the suggested usage)
-   - [install osmium](https://osmcode.org/osmium-tool/) and [install psql](https://www.postgresql.org/download/)
-2. initialize `.env` as shown [above](#configuration)
-3. download [a .pbf extract](http://download.geofabrik.de/) or [a .pbf planet file](https://planet.openstreetmap.org/) with OSM data (depending on which area you want to show on the map) and place it into the [init](init/) folder.
-4. using command line run the DB initialization
-   - to run it into the Docker development instance from Windows, run `.\db-init.bat .\init\YOUR_PBF_FILE_NAME.pbf`
-   - to run it into the Docker development instance from Linux, run `./db-init.sh ./init/YOUR_PBF_FILE_NAME.pbf`
-   - to run it locally, move into the [init/](init/) folder and run `php db-init.php YOUR_PBF_FILE_NAME.pbf`
-5. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `.env`
+1. make sure [`docker-compose` is installed](#local-development-with-docker)
+2. initialize `.env` from [`.env.example`](.env.example) as shown [above](#configuration)
+3. start Apache Airflow with `docker-compose --profile dev+airflow up -d`
+4. from the Apache Airflow configuration menu in the dashboard located at http://localhost:8080 create
+    * the Pool `data_filtering`
+    * the Postgres connection `oem-postgis-postgres` to `oem-postgis` with the credentials in `.env`
+    * the HTTP connection `oem-web-dev-http` to `oem-web-dev`
+5. run/enable an existing DAG pipeline (if necessary customising the launch config) or create a new one in [db-init.py](init/db-init.py) and run/enable
+6. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `.env` (and, if specified in the destination DB)
 
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with at least 8GB RAM (and a lot of patience, it will require a lot of time, [90 minutes](https://gitlab.com/openetymologymap/open-etymology-map/-/snippets/2232390) as of [v2.1.1](https://gitlab.com/openetymologymap/open-etymology-map/-/releases/v2.1.1); use a local extract in development to use less RAM and time).
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with more than 8GB RAM (and a lot of patience, it will require a lot of time; use a local extract in development to use less RAM and time).
 
-Tip: if you run the local development instance through `docker-compose` you can connect to the local DB ([configured by default in `.env`](.env.example)) by using PGAdmin at http://localhost:8080 .
+Tip: if you run the local development instance through `docker-compose` you can connect to the local DB ([configured by default in `.env`](.env.example)) by using PGAdmin at http://localhost:8000 .
 
 <details>
 <summary>Database initialization steps diagram</summary>
