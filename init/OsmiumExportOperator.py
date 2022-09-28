@@ -12,7 +12,7 @@ class OsmiumExportOperator(DockerOperator):
     * [osmium export documentation](https://manpages.ubuntu.com/manpages/jammy/man1/osmium-export.1.html)
     * [index/cache documentation](https://docs.osmcode.org/osmium/latest/osmium-index-types.html)
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
-    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
+    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/2.4.0/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, source_path:str, dest_path:str, cache_path:str = None, config_path:str = None, **kwargs) -> None:
         cache_str = f"--index-type='sparse_file_array,{cache_path}'" if cache_path != None else ""
@@ -24,7 +24,7 @@ class OsmiumExportOperator(DockerOperator):
             mounts=[
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
-            mount_tmp_dir=False,
+            mount_tmp_dir=False, # https://airflow.apache.org/docs/apache-airflow-providers-docker/2.4.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator
             auto_remove=True,
             pool="data_filtering",
             **kwargs

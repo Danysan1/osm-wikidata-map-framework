@@ -12,7 +12,7 @@ class Osm2pgsqlOperator(DockerOperator):
     * [osm2pgsql documentation](https://osm2pgsql.org/doc/manual.html)
     * [osm2pgsql documentation](https://manpages.ubuntu.com/manpages/jammy/en/man1/osm2pgsql.1.html)
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
-    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/stable/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
+    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/2.4.0/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, postgres_conn_id:str, source_path:str, **kwargs) -> None:
         postgres_conn = PostgresHook.get_connection(postgres_conn_id)
@@ -31,7 +31,7 @@ class Osm2pgsqlOperator(DockerOperator):
                 Mount(source="open-etymology-map_db-init-work-dir", target="/workdir", type="volume"),
             ],
             network_mode="open-etymology-map_airflow-worker-bridge", # The container needs to talk with the local DB
-            mount_tmp_dir=False,
+            mount_tmp_dir=False, # https://airflow.apache.org/docs/apache-airflow-providers-docker/2.4.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator
             auto_remove=True,
             pool="data_filtering",
             **kwargs

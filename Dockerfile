@@ -43,11 +43,16 @@ FROM base AS prod
 RUN apt-get update && \
 	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache && \
 	rm -rf /var/lib/apt/lists/*
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
-RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
+RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+	docker-php-ext-install -j$(nproc) pdo_pgsql zip
 
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
 
 COPY --chown=www-data:www-data --from=npm-install /app /var/www/html
 USER www-data
+
+
+
+FROM apache/airflow:2.4.0 as airflow
+RUN pip install apache-airflow-providers-docker==3.1
