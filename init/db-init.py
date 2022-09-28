@@ -478,13 +478,14 @@ class OemDbInitDAG(DAG):
         task_teardown_schema >> task_setup_schema
 
         group_db_load = TaskGroup("load_data_on_db", prefix_group_id=False, tooltip="Load the data on the DB", dag=self)
-        group_db_load_osm = TaskGroup("load_osm_data", prefix_group_id=False, tooltip="Load OpenStreetMap data on the DB", dag=self, parent_group=group_db_load)
+        group_osm2pgsql = TaskGroup("osm2pgsql", prefix_group_id=False, tooltip="Load OpenStreetMap data on the DB with osm2pgsql", dag=self, parent_group=group_db_load)
+        group_osmium_export = TaskGroup("osmium_export", prefix_group_id=False, tooltip="Load OpenStreetMap data on the DB with osm2pgsql", dag=self, parent_group=group_db_load)
 
         task_osmium_or_osm2pgsql = BranchPythonOperator(
             task_id = "choose_load_osm_data_method",
             python_callable= choose_load_osm_data_task,
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_db_load,
             doc_md = choose_load_osm_data_task.__doc__
         )
         task_remove_non_interesting >> task_osmium_or_osm2pgsql
@@ -493,7 +494,7 @@ class OemDbInitDAG(DAG):
             task_id = "join_pre_osm2pgsql",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osm2pgsql,
             doc_md="""
                 # Join branches back together
 
@@ -511,7 +512,7 @@ class OemDbInitDAG(DAG):
                 "dest_path": "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             },
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osmium_export,
             doc_md="""
                 # Copy the Osmium configuration
 
@@ -531,7 +532,7 @@ class OemDbInitDAG(DAG):
             cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
             config_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='osmium_config_file_path') }}",
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osmium_export,
             doc_md=dedent("""
                 # Export OSM data from PBF to PG
 
@@ -546,7 +547,7 @@ class OemDbInitDAG(DAG):
             task_id = "join_pre_load_from_pg",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osmium_export,
             doc_md="""
                 # Join branches back together
 
@@ -568,7 +569,7 @@ class OemDbInitDAG(DAG):
                 "columns": ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
             },
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osmium_export,
             doc_md="""
                 # Load OSM data from the PG file
 
@@ -586,7 +587,7 @@ class OemDbInitDAG(DAG):
             postgres_conn_id = local_db_conn_id,
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osm2pgsql,
             doc_md="""
                 # Load OSM data from the PBF file
 
@@ -601,7 +602,7 @@ class OemDbInitDAG(DAG):
             postgres_conn_id = local_db_conn_id,
             sql = "sql/convert-osm2pgsql-data.sql",
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_osm2pgsql,
             doc_md = """
                 # Prepare osm2pgsql data for usage
 
@@ -617,7 +618,7 @@ class OemDbInitDAG(DAG):
             task_id = "join_post_load_ele",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
-            task_group=group_db_load_osm,
+            task_group=group_db_load,
             doc_md="""
                 # Join branches back together
 
