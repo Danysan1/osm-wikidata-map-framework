@@ -16,8 +16,6 @@ from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 from Osm2pgsqlOperator import Osm2pgsqlOperator
 
-dagTimezone = 'Europe/Rome' # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
-
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
     if folder != None:
@@ -132,7 +130,7 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     if date_match != None:
         last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
     else:
-        last_data_update = now(dagTimezone).strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+        last_data_update = now('local').strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
     
     ti.xcom_push(key='work_dir', value=work_dir)
     ti.xcom_push(key='source_url', value=source_url)
@@ -270,7 +268,9 @@ class OemDbInitDAG(DAG):
         """
 
         super().__init__(
-                start_date=datetime(year=2022, month=9, day=15, tz=dagTimezone), # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+                # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+                # https://pendulum.eustace.io/docs/#instantiation
+                start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
                 tags=['oem', 'db-init'],
                 params={

@@ -3,9 +3,11 @@ from airflow.operators.bash import BashOperator
 from pendulum import datetime
 
 with DAG(
+    # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+    # https://pendulum.eustace.io/docs/#instantiation
+    start_date=datetime(year=2022, month=9, day=15, tz='local'),
     dag_id="db-init-cleanup",
     schedule_interval="@daily",
-    start_date=datetime(year=2022, month=9, day=15, tz="Europe/Rome"),
     catchup=False,
     tags=['oem', 'db-init'],
 ) as dag:
