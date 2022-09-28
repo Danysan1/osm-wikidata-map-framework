@@ -245,7 +245,7 @@ def choose_load_osm_data_task(**context) -> str:
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, **kwargs):
+    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, hour:int=0, **kwargs):
         """
         DAG for Open Etymology Map DB initialization
 
@@ -263,6 +263,8 @@ class OemDbInitDAG(DAG):
             prefix to search in the PBF filename 
         use_osm2pgsql: bool
             use osm2pgsql instead of osmium export
+        hour: int
+            time of day where to start if scheduled
 
         See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
         """
@@ -270,7 +272,7 @@ class OemDbInitDAG(DAG):
         super().__init__(
                 # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
                 # https://pendulum.eustace.io/docs/#instantiation
-                start_date=datetime(year=2022, month=9, day=15, tz='local'),
+                start_date=datetime(year=2022, month=9, day=15, hour=hour, tz='local'),
                 catchup=False,
                 tags=['oem', 'db-init'],
                 params={
@@ -1009,8 +1011,11 @@ planet_pbf = OemDbInitDAG(
 planet_html = OemDbInitDAG(
     dag_id="db-init-planet-from-html",
     schedule_interval="@weekly",
+    hour=8,
     upload_db_conn_id="nord_ovest-postgres",
-    html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
+    #html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
+    #html_url="https://planet.maps.mail.ru/pbf/",
+    html_url="https://ftpmirror.your.org/pub/openstreetmap/pbf/",
     html_prefix="planet"
 )
 planet_rss = OemDbInitDAG(
@@ -1027,6 +1032,7 @@ italy_pbf = OemDbInitDAG(
 italy_html = OemDbInitDAG(
     dag_id="db-init-italy-from-html",
     schedule_interval="@daily",
+    hour=2,
     upload_db_conn_id="nord_ovest-postgres",
     html_url="http://download.geofabrik.de/europe/",
     html_prefix="italy"
