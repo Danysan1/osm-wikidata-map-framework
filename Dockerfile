@@ -20,7 +20,7 @@ COPY ./composer.json /var/www/composer.json
 FROM base AS dev
 # https://gist.github.com/ben-albon/3c33628662dcd4120bf4
 RUN apt-get update && \
-	apt-get install -y libpq-dev libzip-dev zip git osmium-tool osm2pgsql npm && \
+	apt-get install -y libpq-dev libzip-dev zip git npm && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip

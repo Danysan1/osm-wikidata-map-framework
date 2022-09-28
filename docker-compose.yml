@@ -1,5 +1,8 @@
 # Extends https://airflow.apache.org/docs/apache-airflow/2.4.0/docker-compose.yaml
-#
+# See https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html
+# See https://airflow.apache.org/docs/docker-stack/index.html
+# See https://airflow.apache.org/docs/apache-airflow/stable/production-deployment.html
+
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -94,6 +97,7 @@ services:
       - airflow-internal
       - pgadmin-bridge
     profiles:
+      - airflow
       - dev+airflow
 
   redis:
@@ -109,6 +113,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow
       - dev+airflow
 
   airflow-webserver:
@@ -130,6 +135,7 @@ services:
       - airflow-internal
       - airflow-worker-bridge
     profiles:
+      - airflow
       - dev+airflow
 
   airflow-scheduler:
@@ -148,6 +154,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow
       - dev+airflow
 
   airflow-worker:
@@ -180,6 +187,7 @@ services:
       - db-init-work-dir:/workdir
       - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
     profiles:
+      - airflow
       - dev+airflow
 
   airflow-triggerer:
@@ -198,6 +206,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow
       - dev+airflow
 
   airflow-init:
@@ -280,6 +289,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow
       - dev+airflow
 
   # flower:
@@ -327,6 +337,7 @@ services:
     restart: "always"
     profiles:
       - dev
+      - airflow
       - dev+airflow
       - prod+db
 
@@ -379,7 +390,6 @@ services:
     volumes:
       - ./web:/var/www/html
       - ./init:/var/www/init
-      - db-init-work-dir:/workdir
     profiles:
       - dev
       - dev+airflow
@@ -415,16 +425,16 @@ services:
       - prod
       - prod+db
 
-  promtail:
-    image: grafana/promtail:main
-    volumes:
-    - ./promtail:/etc/promtail
-    - /var/log:/var/log
-    - /var/lib/docker/containers:/var/lib/docker/containers
-    command: -config.file=/etc/promtail/config.yaml
-    profiles:
-      - prod
-      - prod+db
+  # promtail:
+  #   image: grafana/promtail:main
+  #   volumes:
+  #   - ./promtail:/etc/promtail
+  #   - /var/log:/var/log
+  #   - /var/lib/docker/containers:/var/lib/docker/containers
+  #   command: -config.file=/etc/promtail/config.yaml
+  #   profiles:
+  #     - prod
+  #     - prod+db
 
 volumes:
   db-init-work-dir:
