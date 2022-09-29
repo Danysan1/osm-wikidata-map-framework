@@ -321,8 +321,8 @@ class OemDbInitDAG(DAG):
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = """
-                curl --fail -v -o "$sourceFilePath" "$sourceUrl"
-                curl --fail -v -o "$md5FilePath" "$md5Url"
+                curl --fail --verbose --progress-bar -o "$sourceFilePath" "$sourceUrl"
+                curl --fail --verbose -o "$md5FilePath" "$md5Url"
                 if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
                     echo "The md5 sum doesn't match:"
                     cat "$md5FilePath"
@@ -616,8 +616,12 @@ class OemDbInitDAG(DAG):
         )
         task_load_ele_osm2pgsql >> task_convert_osm2pgsql
 
-        join_post_load_ele = EmptyOperator(
+        join_post_load_ele = BashOperator(
             task_id = "join_post_load_ele",
+            bash_command = 'ls -l "$workdir"',
+            env = {
+                "workdir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}"
+            },
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
             task_group=group_db_load,

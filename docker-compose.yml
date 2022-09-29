@@ -70,7 +70,7 @@ x-airflow-common:
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:- apache-airflow-providers-docker}
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
   volumes:
     - ./init:/opt/airflow/dags
     - ./airflow-logs:/opt/airflow/logs
@@ -188,7 +188,7 @@ services:
       - ./init:/opt/airflow/dags
       - ./airflow-logs:/opt/airflow/logs
       - ./airflow-plugins:/opt/airflow/plugins
-      - db-init-work-dir:/workdir
+      - db-init-work-dir:/workdir:delegated
       - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
     profiles:
       - airflow
@@ -327,7 +327,7 @@ services:
       - POSTGRES_PASSWORD=${db_password:-_CHANGE_ME_}
       - POSTGRES_DB=${db_database:-oem}
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - db-data:/var/lib/postgresql/data:delegated
     networks:
       - oem-internal
       - airflow-worker-bridge
@@ -356,7 +356,7 @@ services:
       PGADMIN_DEFAULT_EMAIL: "app@app.app"
       PGADMIN_DEFAULT_PASSWORD: "app"
     volumes:
-      - pgadmin-data:/var/lib/pgadmin
+      - pgadmin-data:/var/lib/pgadmin:delegated
       - ./pgadmin_init.json:/pgadmin4/servers.json
     networks:
       - oem-internal
