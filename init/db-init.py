@@ -11,10 +11,10 @@ from airflow.operators.empty import EmptyOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
 from airflow.utils.edgemodifier import Label
-from airflow.providers.http.operators.http import SimpleHttpOperator
 from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 from Osm2pgsqlOperator import Osm2pgsqlOperator
+from OemDockerOperator import OemDockerOperator
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
@@ -298,7 +298,6 @@ class OemDbInitDAG(DAG):
             )
             
         local_db_conn_id = "oem-postgis-postgres"
-        local_web_conn_id = "oem-web-dev-http"
 
         task_get_source_url = PythonOperator(
             task_id = "get_source_url",
@@ -736,26 +735,21 @@ class OemDbInitDAG(DAG):
         )
         task_convert_wd_ent >> task_convert_ety
 
-        task_load_named_after = SimpleHttpOperator(
+        task_load_named_after = OemDockerOperator(
             task_id = "download_named_after_wikidata_entities",
-            http_conn_id = local_web_conn_id,
-            endpoint = "/loadWikidataNamedAfterEntities.php",
-            method = "GET",
-            response_check = lambda response: response.status_code == 200,
-            retries = 3,
+            command = "php html/loadWikidataNamedAfterEntities.php",
+            postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
-            doc_md="""
+            doc_md = dedent("""
                 # Load Wikidata 'named after' entities
 
                 For each existing Wikidata entity representing an OSM element:
                 * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
                 * load into the `wikidata_named_after` table of the local PostGIS DB the 'named after' relationships
-
-                Links:
-                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
-                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
-            """
+                
+                Uses the Wikidata SPARQL query service through `OemDockerOperator`:
+            """) + dedent(OemDockerOperator.__doc__)
         )
         task_convert_ety >> task_load_named_after
 
@@ -777,26 +771,21 @@ class OemDbInitDAG(DAG):
         )
         task_load_named_after >> task_propagate
         
-        task_load_parts = SimpleHttpOperator(
+        task_load_parts = OemDockerOperator(
             task_id = "download_parts_of_wikidata_entities",
-            http_conn_id = local_web_conn_id,
-            endpoint = "/loadWikidataPartsOfEntities.php",
-            method = "GET",
-            response_check = lambda response: response.status_code == 200,
-            retries = 3,
+            command = "php html/loadWikidataPartsOfEntities.php",
+            postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
-            doc_md="""
+            doc_md = dedent("""
                 # Load Wikidata parts of entities
 
                 For each existing Wikidata entity representing the etymology for and OSM element:
                 * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are part of the entity
                 * load into the `etymology` table of the local PostGIS DB the entity parts as etymology for the elements for which the container is an etymology
-
-                Links:
-                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/_api/airflow/providers/http/operators/http/index.html#airflow.providers.http.operators.http.SimpleHttpOperator)
-                * [SimpleHttpOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-http/stable/operators.html#simplehttpoperator)
-            """
+                
+                Uses the Wikidata SPARQL query service through `OemDockerOperator`:
+            """) + dedent(OemDockerOperator.__doc__)
         )
         task_propagate >> task_load_parts
 
