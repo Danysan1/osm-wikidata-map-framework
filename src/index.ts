@@ -58,7 +58,7 @@ function initMap() {
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     setRTLTextPlugin(
-        './node_modules/@mapbox/mapbox-gl-rtl-text/mapbox-gl-rtl-text.min.js',
+        'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
         err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
         true // Lazy load the plugin
     );

@@ -29,9 +29,11 @@ RUN npm install -g npm
 
 
 
+# https://docs.docker.com/language/nodejs/build-images/
 FROM node:18-alpine AS npm-install
 WORKDIR /app
-COPY ./web /app
+COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/app/"]
+COPY "./src" "/app/src"
 RUN npm install && \
 	npm run prod && \
 	npm install --production
@@ -49,7 +51,8 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.phar
 
-COPY --chown=www-data:www-data --from=npm-install /app /var/www/html
+COPY --chown=www-data:www-data ./web /var/www/html
+COPY --chown=www-data:www-data --from=npm-install /app/web/dist /var/www/html/dist
 USER www-data
 
 
@@ -60,4 +63,4 @@ RUN apt-get update && \
 	apt-get install -y libpq-dev gcc && \
 	rm -rf /var/lib/apt/lists/*
 USER airflow
-RUN pip install apache-airflow[celery,postgres,http,docker,redis]
+RUN pip install apache-airflow[celery,postgres,docker,redis]

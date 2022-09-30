@@ -7,9 +7,6 @@
         "watch": "webpack --mode=development --watch",
         "prod": "webpack --mode=production"
     },
-    "dependencies": {
-        "@mapbox/mapbox-gl-rtl-text": "^0.2.3"
-    },
     "devDependencies": {
         "@mapbox/mapbox-gl-geocoder": "^5.0.1",
         "@sentry/browser": "^7.11.1",

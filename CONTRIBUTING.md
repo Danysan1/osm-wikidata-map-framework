@@ -452,6 +452,6 @@ Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1
       7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
-The output of [etymologyMap.php](web/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [FeatureProperties](web/src/FeatureElement.ts#L4), [Etymology](web/src/EtymologyElement.ts#L3) and [ImageResponse](web/src/ImageElement.ts#L7).
+The output of [etymologyMap.php](web/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [FeatureProperties](src/FeatureElement.ts#L4), [Etymology](src/EtymologyElement.ts#L3) and [ImageResponse](src/ImageElement.ts#L7).
 
-The content of the output of [stats.php](web/stats.php) is defined in the [EtymologyStat](web/src/EtymologyColorControl.ts#L38) interface.
+The content of the output of [stats.php](web/stats.php) is defined in the [EtymologyStat](src/EtymologyColorControl.ts#L38) interface.
