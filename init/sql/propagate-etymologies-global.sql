@@ -35,9 +35,8 @@ INSERT INTO oem.etymology (
     old_et.et_from_wikidata_prop_cod
 FROM propagatable_etymology AS pet
 JOIN oem.etymology AS old_et ON pet.et_id = old_et.et_id
-JOIN oem.osmdata AS new_el
-    ON new_el.osm_tags ? 'highway'
-    AND new_el.osm_tags ? 'name'
-    AND pet.low_name = LOWER(new_el.osm_tags->>'name')
-WHERE old_et.et_recursion_depth = 0
-ON CONFLICT (et_el_id, et_wd_id) DO NOTHING
+JOIN oem.osmdata AS new_el ON pet.low_name = LOWER(new_el.osm_tags->>'name')
+WHERE NOT new_el.osm_has_wd_etymology
+AND new_el.osm_tags ? 'highway'
+AND new_el.osm_tags ? 'name'
+AND old_et.et_recursion_depth = 0

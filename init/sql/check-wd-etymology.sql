@@ -1,3 +1,5 @@
 UPDATE oem.osmdata
 SET osm_has_wd_etymology = TRUE
-WHERE osm_id IN (SELECT DISTINCT et_el_id FROM oem.etymology);
+FROM oem.etymology
+WHERE osm_id = et_el_id
+AND NOT osm_has_wd_etymology

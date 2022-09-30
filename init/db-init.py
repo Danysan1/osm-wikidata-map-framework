@@ -15,6 +15,7 @@ from airflow.providers.http.operators.http import SimpleHttpOperator
 from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 from Osm2pgsqlOperator import Osm2pgsqlOperator
+from CheckWikidataEtymologyOperator import CheckWikidataEtymologyOperator
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
@@ -321,8 +322,8 @@ class OemDbInitDAG(DAG):
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = """
-                curl --fail -v -o "$sourceFilePath" "$sourceUrl"
-                curl --fail -v -o "$md5FilePath" "$md5Url"
+                curl --fail --verbose --location --max-redirs 5 --progress-bar -o "$sourceFilePath" "$sourceUrl"
+                curl --fail --verbose --location --max-redirs 5 -o "$md5FilePath" "$md5Url"
                 if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
                     echo "The md5 sum doesn't match:"
                     cat "$md5FilePath"
@@ -376,6 +377,10 @@ class OemDbInitDAG(DAG):
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             tags=[
                 'w/highway=residential',
+                'w/highway=unclassified',
+                'w/highway=tertiary',
+                'w/highway=secondary',
+                'w/highway=primary',
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',
@@ -751,6 +756,14 @@ class OemDbInitDAG(DAG):
         )
         task_convert_ety >> task_load_named_after
 
+        task_check_wd_ety_1 = CheckWikidataEtymologyOperator(
+            task_id = "check_wikidata_etymology_1",
+            postgres_conn_id = local_db_conn_id,
+            dag = self,
+            task_group=elaborate_group
+        )
+        task_load_named_after >> task_check_wd_ety_1
+
         task_propagate = PostgresOperator(
             task_id = "propagate_etymologies_globally",
             postgres_conn_id = local_db_conn_id,
@@ -767,7 +780,7 @@ class OemDbInitDAG(DAG):
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
-        task_load_named_after >> task_propagate
+        task_check_wd_ety_1 >> task_propagate
         
         task_load_parts = SimpleHttpOperator(
             task_id = "download_parts_of_wikidata_entities",
@@ -809,22 +822,13 @@ class OemDbInitDAG(DAG):
         )
         task_remove_ele_too_big >> task_check_text_ety
 
-        task_check_wd_ety = PostgresOperator(
-            task_id = "check_wikidata_etymology",
+        task_check_wd_ety_2 = CheckWikidataEtymologyOperator(
+            task_id = "check_wikidata_etymology_2",
             postgres_conn_id = local_db_conn_id,
-            sql = "sql/check-wd-etymology.sql",
             dag = self,
-            task_group=elaborate_group,
-            doc_md = """
-                # Check elements with a Wikidata etymology
-
-                Check elements with an etymology that comes from `subject:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-            """
+            task_group=elaborate_group
         )
-        task_propagate >> task_check_wd_ety
+        task_propagate >> task_check_wd_ety_2
 
         task_move_ele = PostgresOperator(
             task_id = "move_elements_with_etymology",
@@ -841,7 +845,7 @@ class OemDbInitDAG(DAG):
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
-        [task_load_parts, task_check_wd_ety, task_check_text_ety] >> task_move_ele
+        [task_load_parts, task_check_wd_ety_2, task_check_text_ety] >> task_move_ele
 
         task_setup_ety_fk = PostgresOperator(
             task_id = "setup_etymology_foreign_key",
@@ -1022,6 +1026,12 @@ planet_rss = OemDbInitDAG(
     dag_id="db-init-planet-from-rss",
     schedule_interval=None,
     rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml"
+)
+
+europe_pbf = OemDbInitDAG(
+    dag_id="db-init-europe-latest",
+    schedule_interval=None,
+    pbf_url="http://download.geofabrik.de/europe-latest.osm.pbf"
 )
 
 italy_pbf = OemDbInitDAG(
