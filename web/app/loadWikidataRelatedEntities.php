@@ -11,10 +11,22 @@ use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
 use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
 
 /**
- * @param string $wikidataCodsFilter
- * @param string $relationName
- * @param array<string> $relationProps List of wikidata cods for properties to check
- * @param null|array<string> $instanceOfCods List of Wikidata cods for classes that entities must be instance of
+ * Queries a list of Wikidata Q-IDs to check from the DB.
+ * For each Wikidata Q-ID fetches from the Wikidata SPARQL API the entities related to that Q-ID's entity.
+ * For each relationship found
+ *  * inserts both entities in the wikidata table
+ *  * gets the elements which are related to the searched entity through an etymology
+ *  * inserts a new etymolgy for each element found to the related entity
+ * 
+ * @param string $wikidataCodsTable Table from which Wikidata Q-IDs for entities to check will be queried
+ * @param string $wikidataCodsColumn Column from which Wikidata Q-IDs for entities to check will be taken
+ * @param string $wikidataCodsFilter Filters applied when querying Wikidata Q-IDs
+ * @param string $insertFields fields of the new etymology to fill
+ * @param string $insertValues values for the fields of the new etymology to fill
+ * @param string $insertExtraJoins extra joins needed in the inser query
+ * @param string $relationName human name for this relationship (without spaces)
+ * @param array<string> $relationProps List of wikidata P-IDs for properties to check
+ * @param null|array<string> $instanceOfCods Optional list of Wikidata Q-IDs for classes that searched entities must be instance of
  * @param PDO $dbh
  * @param string $wikidataEndpointURL
  * @return int Total number of loaded entities
@@ -163,8 +175,8 @@ function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL): int
         "oem.etymology JOIN oem.wikidata ON wd_id = et_wd_id",
         "wd_wikidata_cod",
         "et_from_parts_of_wd_id IS NULL",
-        "et_el_id, et_wd_id, et_from_osm, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, et_from_parts_of_wd_id",
-        "et_el_id, w2.wd_id, et_from_osm, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, w1.wd_id",
+        "et_el_id, et_wd_id, et_from_el_id, et_from_osm, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, et_from_parts_of_wd_id",
+        "et_el_id, w2.wd_id, et_from_el_id, et_from_osm, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, w1.wd_id",
         "JOIN oem.etymology ON et_wd_id = w1.wd_id",
         "has_parts",
         ["P527"], // has part or parts
