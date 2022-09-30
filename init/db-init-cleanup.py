@@ -10,6 +10,7 @@ with DAG(
     schedule_interval="@daily",
     catchup=False,
     tags=['oem', 'db-init'],
+    params={ "min_days_file_age": 7 },
 ) as dag:
     task_ls = BashOperator(
         task_id="ls",
@@ -21,7 +22,10 @@ with DAG(
     
     task_cleanup = BashOperator(
         task_id="cleanup",
-        bash_command="find /workdir/*/* -mtime 8 -exec rm -r {} \;",
+        bash_command="find /workdir/ -type f -mtime +${minDaysFileAge} -exec rm {} \;",
+        env={
+            "minDaysFileAge": "{{ params.min_days_file_age }}",
+        },
         doc_md="""
             # Cleanup old files from work directory
 
