@@ -54,5 +54,10 @@ USER www-data
 
 
 
-FROM apache/airflow:2.4.0 as airflow
-RUN pip install apache-airflow-providers-docker==3.1
+FROM apache/airflow:slim-2.4.0 as airflow
+USER root
+RUN apt-get update && \
+	apt-get install -y libpq-dev gcc && \
+	rm -rf /var/lib/apt/lists/*
+USER airflow
+RUN pip install apache-airflow[celery,postgres,http,docker,redis]

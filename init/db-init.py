@@ -321,8 +321,8 @@ class OemDbInitDAG(DAG):
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = """
-                curl --fail --verbose --progress-bar -o "$sourceFilePath" "$sourceUrl"
-                curl --fail --verbose -o "$md5FilePath" "$md5Url"
+                curl --fail --verbose --location --max-redirs 5 --progress-bar -o "$sourceFilePath" "$sourceUrl"
+                curl --fail --verbose --location --max-redirs 5 -o "$md5FilePath" "$md5Url"
                 if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
                     echo "The md5 sum doesn't match:"
                     cat "$md5FilePath"
@@ -376,6 +376,10 @@ class OemDbInitDAG(DAG):
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             tags=[
                 'w/highway=residential',
+                'w/highway=unclassified',
+                'w/highway=tertiary',
+                'w/highway=secondary',
+                'w/highway=primary',
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',
@@ -1016,7 +1020,7 @@ planet_html = OemDbInitDAG(
     dag_id="db-init-planet-from-html",
     schedule_interval="@weekly",
     hour=8,
-    upload_db_conn_id="nord_ovest-postgres",
+    upload_db_conn_id="planet-postgres",
     #html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
     #html_url="https://planet.maps.mail.ru/pbf/",
     html_url="https://ftpmirror.your.org/pub/openstreetmap/pbf/",
@@ -1026,6 +1030,12 @@ planet_rss = OemDbInitDAG(
     dag_id="db-init-planet-from-rss",
     schedule_interval=None,
     rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml"
+)
+
+europe_pbf = OemDbInitDAG(
+    dag_id="db-init-europe-latest",
+    schedule_interval=None,
+    pbf_url="http://download.geofabrik.de/europe-latest.osm.pbf"
 )
 
 italy_pbf = OemDbInitDAG(
