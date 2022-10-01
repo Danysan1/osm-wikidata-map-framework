@@ -1,5 +1,6 @@
 from os.path import dirname, abspath, join, basename, exists
 from textwrap import dedent
+from datetime import timedelta
 from pendulum import datetime, now
 from airflow.models import DAG
 from airflow.operators.bash import BashOperator
@@ -11,6 +12,7 @@ from airflow.operators.empty import EmptyOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
 from airflow.utils.edgemodifier import Label
+from airflow.sensors.time_delta import TimeDeltaSensorAsync
 from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 from Osm2pgsqlOperator import Osm2pgsqlOperator
@@ -245,7 +247,7 @@ def choose_load_osm_data_task(**context) -> str:
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, hour:int=0, **kwargs):
+    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, hour:int=0, days_before_cleanup:int=30, **kwargs):
         """
         DAG for Open Etymology Map DB initialization
 
@@ -263,8 +265,12 @@ class OemDbInitDAG(DAG):
             prefix to search in the PBF filename 
         use_osm2pgsql: bool
             use osm2pgsql instead of osmium export
+        ffwd_to_load: bool
+
         hour: int
             time of day where to start if scheduled
+        days_before_cleanup: int
+
 
         See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
         """
@@ -915,8 +921,6 @@ class OemDbInitDAG(DAG):
         )
         [task_get_source_url, task_setup_schema] >> task_last_update
 
-        upload_group = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
-
         task_pg_dump = BashOperator(
             task_id = "pg_dump",
             bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
@@ -929,7 +933,6 @@ class OemDbInitDAG(DAG):
                 "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
             },
             dag = self,
-            task_group = upload_group,
             doc_md="""
                 # Backup the data from the local DB
 
@@ -944,11 +947,13 @@ class OemDbInitDAG(DAG):
         )
         [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_last_update] >> task_pg_dump
 
+        group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
+
         task_check_pg_restore = ShortCircuitOperator(
             task_id = "check_upload_conn_id",
             python_callable=check_upload_db_conn_id,
             dag = self,
-            task_group = upload_group,
+            task_group = group_upload,
             doc_md=check_upload_db_conn_id.__doc__
         )
         task_pg_dump >> task_check_pg_restore
@@ -958,7 +963,7 @@ class OemDbInitDAG(DAG):
             postgres_conn_id = "{{ params.upload_db_conn_id }}",
             sql = "sql/prepare-db-for-upload.sql",
             dag = self,
-            task_group = upload_group,
+            task_group = group_upload,
             doc_md="""
                 # Prepare the remote DB for uploading
 
@@ -983,7 +988,7 @@ class OemDbInitDAG(DAG):
                 "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
             },
             dag = self,
-            task_group = upload_group,
+            task_group = group_upload,
             doc_md="""
                 # Upload the data on the remote DB
 
@@ -998,6 +1003,41 @@ class OemDbInitDAG(DAG):
         )
         task_prepare_upload >> task_pg_restore
 
+        group_cleanup = TaskGroup("cleanup", tooltip="Cleanup the DAG temporary files", dag=self)
+
+        task_wait_cleanup = TimeDeltaSensorAsync(
+            task_id = 'wait_for_cleanup_time',
+            delta = timedelta(days=days_before_cleanup),
+            dag = self,
+            task_group = group_cleanup,
+            doc_md = """
+                # Wait for the time to cleanup the temporary files
+
+                Links:
+                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/time_delta/index.html)
+                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/date_time/index.html)
+                * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
+            """
+        )
+        task_pg_dump >> task_wait_cleanup
+    
+        task_cleanup = BashOperator(
+            task_id = "cleanup",
+            bash_command = 'rm -r "$workDir"',
+            env = {
+                "workDir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}",
+            },
+            dag = self,
+            task_group = group_cleanup,
+            doc_md = """
+                # Cleanup the work directory
+
+                Remove the DAG run folder
+            """
+        )
+        task_wait_cleanup >> task_cleanup
+
 
 
 planet_pbf = OemDbInitDAG(
@@ -1008,6 +1048,7 @@ planet_pbf = OemDbInitDAG(
 planet_html = OemDbInitDAG(
     dag_id="db-init-planet-from-html",
     schedule_interval="@weekly",
+    days_before_cleanup=8,
     hour=8,
     upload_db_conn_id="planet-postgres",
     #html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
@@ -1035,6 +1076,7 @@ italy_pbf = OemDbInitDAG(
 italy_html = OemDbInitDAG(
     dag_id="db-init-italy-from-html",
     schedule_interval="@daily",
+    days_before_cleanup=2,
     hour=2,
     upload_db_conn_id="nord_ovest-postgres",
     html_url="http://download.geofabrik.de/europe/",
