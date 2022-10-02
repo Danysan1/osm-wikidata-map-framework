@@ -247,12 +247,14 @@ def choose_load_osm_data_task(**context) -> str:
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
+    def __init__(self, local_db_conn_id:str="local-oem-postgres", upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
         """
         DAG for Open Etymology Map DB initialization
 
         Parameters:
         ----------
+        upload_db_conn_id: str
+            Postgres connection ID for the production Database the DAG will upload to
         upload_db_conn_id: str
             Postgres connection ID for the production Database the DAG will upload to
         pbf_url: str
@@ -300,8 +302,6 @@ class OemDbInitDAG(DAG):
                 """,
                 **kwargs
             )
-            
-        local_db_conn_id = "oem-postgis-postgres"
 
         task_get_source_url = PythonOperator(
             task_id = "get_source_url",
@@ -357,6 +357,7 @@ class OemDbInitDAG(DAG):
 
         task_keep_name = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_name",
+            container_name = "open-etymology-map-keep_elements_with_name",
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
             tags=['name'],
@@ -375,6 +376,7 @@ class OemDbInitDAG(DAG):
 
         task_keep_possible_ety = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_possible_etymology",
+            container_name = "open-etymology-map-keep_elements_with_possible_etymology",
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_name_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             tags=[
@@ -406,6 +408,7 @@ class OemDbInitDAG(DAG):
 
         task_remove_non_interesting = OsmiumTagsFilterOperator(
             task_id = "remove_non_interesting_elements",
+            container_name = "open-etymology-map-remove_non_interesting_elements",
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             tags=[
@@ -536,6 +539,7 @@ class OemDbInitDAG(DAG):
 
         task_export_to_pg = OsmiumExportOperator(
             task_id = "osmium_export_pbf_to_pg",
+            container_name = "open-etymology-map-osmium_export_pbf_to_pg",
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
             cache_path= "/tmp/osmium_{{ ti.xcom_pull(task_ids='get_source_url', key='basename') }}_{{ ti.job_id }}",
@@ -593,6 +597,7 @@ class OemDbInitDAG(DAG):
 
         task_load_ele_osm2pgsql = Osm2pgsqlOperator(
             task_id = "load_elements_with_osm2pgsql",
+            container_name = "open-etymology-map-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             dag = self,
@@ -741,6 +746,7 @@ class OemDbInitDAG(DAG):
 
         task_load_named_after = OemDockerOperator(
             task_id = "download_named_after_wikidata_entities",
+            container_name = "open-etymology-map-download_named_after_wikidata_entities",
             command = "php html/loadWikidataNamedAfterEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
@@ -777,6 +783,7 @@ class OemDbInitDAG(DAG):
         
         task_load_parts = OemDockerOperator(
             task_id = "download_parts_of_wikidata_entities",
+            container_name = "open-etymology-map-download_parts_of_wikidata_entities",
             command = "php html/loadWikidataPartsOfEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
@@ -1041,12 +1048,14 @@ class OemDbInitDAG(DAG):
 planet_pbf = OemDbInitDAG(
     dag_id="db-init-planet-latest",
     schedule_interval=None,
+    local_db_conn_id="local-oem-planet-postgres",
     pbf_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-latest.osm.pbf"
 )
 planet_html = OemDbInitDAG(
     dag_id="db-init-planet-from-html",
     schedule_interval="0 6 * * 0",
     days_before_cleanup=8,
+    local_db_conn_id="local-oem-planet-postgres",
     upload_db_conn_id="planet-postgres",
     #html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
     #html_url="https://planet.maps.mail.ru/pbf/",
@@ -1056,6 +1065,7 @@ planet_html = OemDbInitDAG(
 planet_rss = OemDbInitDAG(
     dag_id="db-init-planet-from-rss",
     schedule_interval=None,
+    local_db_conn_id="local-oem-planet-postgres",
     rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml"
 )
 
