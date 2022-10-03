@@ -154,8 +154,8 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
         "oem.element_wikidata_cods",
         "ew_wikidata_cod",
         "ew_from_wikidata",
-        "et_el_id, et_wd_id, et_from_wikidata_wd_id, et_from_wikidata_prop_cod",
-        "ew_el_id, w2.wd_id, w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
+        "et_el_id, et_wd_id, et_from_el_id, et_from_osm, et_from_wikidata_wd_id, et_from_wikidata_prop_cod",
+        "ew_el_id, w2.wd_id, ew_el_id, FALSE, w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
         "JOIN oem.element_wikidata_cods ON ew_wikidata_cod = w1.wd_wikidata_cod",
         "named_after",
         [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
