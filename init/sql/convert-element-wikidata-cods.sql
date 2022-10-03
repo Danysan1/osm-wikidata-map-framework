@@ -3,7 +3,6 @@ SELECT osm_id, UPPER(TRIM(wikidata_cod)), FALSE, FALSE, TRUE
 FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'wikidata',';') AS splitted(wikidata_cod)
 WHERE osm_tags ? 'wikidata'
 AND TRIM(wikidata_cod) ~* '^Q\d+$'
-AND wikidata_cod != 'Q314003' -- Wrong value for wikidata=*
 UNION
 SELECT osm_id, UPPER(TRIM(subject_wikidata_cod)), FALSE, TRUE, FALSE
 FROM oem.osmdata, LATERAL REGEXP_SPLIT_TO_TABLE(osm_tags->>'subject:wikidata',';') AS splitted(subject_wikidata_cod)

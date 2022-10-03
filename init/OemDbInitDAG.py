@@ -210,12 +210,11 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
             ret = loading_task_id
         else: # File does not exist in this folder, search in other workdir folders
             from glob import glob
-            from shutil import copyfile
             file_basename = basename(file_path)
             file_list = glob(f'/workdir/*/*/{file_basename}')
             if len(file_list) > 0:
-                print("Filtered OSM data already found in another workdir folder, copying it:", file_list[0])
-                copyfile(file_list[0], file_path)
+                file_path = file_list[0]
+                print("Filtered OSM data already found in another workdir folder:", file_path)
                 ret = loading_task_id
             else:
                 print("Filtered OSM data not found, downloading and filtering it")
@@ -223,7 +222,8 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
     else:
         print(f"ffwd_to_load=False, downloading and filtering OSM data")
         ret = "get_osm_data.download_pbf"
-
+    
+    ti.xcom_push(key=xcom_file_key, value=file_path)
     return ret
 
 def choose_load_osm_data_task(**context) -> str:
@@ -314,6 +314,7 @@ class OemDbInitDAG(DAG):
         task_ffwd_to_upload = BranchPythonOperator(
             task_id = "choose_whether_to_ffwd",
             python_callable= choose_first_task,
+            do_xcom_push = True,
             dag = self,
             doc_md = choose_first_task.__doc__
         )
@@ -412,14 +413,11 @@ class OemDbInitDAG(DAG):
             source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_possible_file_path') }}",
             dest_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
             tags=[
-                'man_made=flagpole',
-                'n/place=region',
-                'n/place=state',
-                'n/place=country',
-                'n/place=continent',
-                'r/admin_level=4',
-                'r/admin_level=3',
-                'r/admin_level=2'
+                'man_made=flagpole', # Flag poles
+                'n/place=region','n/place=state','n/place=country','n/place=continent', # Label nodes
+                'r/admin_level=5','r/admin_level=4','r/admin_level=3', # Region/province borders
+                'r/admin_level=2', # Country borders
+                'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],
             invert_match= True,
             dag = self,
@@ -575,7 +573,7 @@ class OemDbInitDAG(DAG):
             python_callable = do_postgres_copy,
             op_kwargs = {
                 "postgres_conn_id": local_db_conn_id,
-                "filepath": "{{ ti.xcom_pull(task_ids='get_source_url', key='pg_file_path') }}",
+                "filepath": "{{ ti.xcom_pull(task_ids='choose_whether_to_ffwd', key='pg_file_path') }}",
                 "separator": '\t',
                 "schema": 'oem',
                 "table": 'osmdata',
@@ -599,7 +597,7 @@ class OemDbInitDAG(DAG):
             task_id = "load_elements_with_osm2pgsql",
             container_name = "open-etymology-map-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
-            source_path= "{{ ti.xcom_pull(task_ids='get_source_url', key='filtered_file_path') }}",
+            source_path= "{{ ti.xcom_pull(task_ids='choose_whether_to_ffwd', key='filtered_file_path') }}",
             dag = self,
             task_group=group_osm2pgsql,
             doc_md="""
@@ -1013,6 +1011,7 @@ class OemDbInitDAG(DAG):
         task_wait_cleanup = TimeDeltaSensorAsync(
             task_id = 'wait_for_cleanup_time',
             delta = timedelta(days=days_before_cleanup),
+            trigger_rule = TriggerRule.NONE_SKIPPED,
             dag = self,
             task_group = group_cleanup,
             doc_md = """
