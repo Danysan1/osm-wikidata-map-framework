@@ -58,7 +58,7 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             FROM oem.element
             WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
             AND el_id IN (SELECT et_el_id FROM oem.etymology)
-            GROUP BY COALESCE(el_tags->>'name', el_id::TEXT)
+            GROUP BY ST_ReducePrecision(ST_Centroid(el_geometry), 0.1), LOWER(el_tags->>'name')
         ) as ele";
     }
 }
