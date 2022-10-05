@@ -386,6 +386,7 @@ class OemDbInitDAG(DAG):
                 'w/highway=tertiary',
                 'w/highway=secondary',
                 'w/highway=primary',
+                'w/highway=living_street',
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',
@@ -652,9 +653,11 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Remove elements too big from the DB
+                # Remove remaining non interesting elements
 
-                Remove elements that wouldn't be visible anyway on the map from the local PostGIS DB.
+                Remove from the local PostGIS DB elements that aren't interesting and that it wasn't possible to remove during the filtering phase:
+                * elements too big that wouldn't be visible anyway on the map 
+                * elements that have a wrong etymology (name:etymology:wikidata and wikidata values are equal)
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
