@@ -394,7 +394,6 @@ services:
     restart: unless-stopped
     volumes:
       - ./web:/var/www/html
-      - ./init:/var/www/init
     profiles:
       - dev
       - dev+airflow

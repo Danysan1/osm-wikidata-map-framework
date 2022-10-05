@@ -12,7 +12,6 @@ RUN a2enconf only-get.conf
 
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
-COPY ./composer.json /var/www/composer.json
 
 
 
@@ -22,10 +21,15 @@ FROM base AS dev
 RUN apt-get update && \
 	apt-get install -y libpq-dev libzip-dev zip git npm && \
 	rm -rf /var/lib/apt/lists/*
-RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
-RUN docker-php-ext-install -j$(nproc) pdo_pgsql zip
+RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
+	docker-php-ext-install -j$(nproc) pdo_pgsql zip
+
+COPY ["./composer.json", "./composer.lock", "/var/www/"]
 RUN php composer.phar install
-RUN npm install -g npm
+
+COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/var/www/"]
+RUN npm install -g npm && \
+	npm install
 
 
 
@@ -48,8 +52,9 @@ RUN apt-get update && \
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
 	docker-php-ext-install -j$(nproc) pdo_pgsql zip
 
+COPY ["./composer.json", "./composer.lock", "/var/www/"]
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
-	rm composer.phar
+	rm composer.json composer.lock composer.phar
 
 COPY --chown=www-data:www-data ./web /var/www/html
 COPY --chown=www-data:www-data --from=npm-install /app/web/dist /var/www/html/dist
