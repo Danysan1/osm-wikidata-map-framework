@@ -19,5 +19,6 @@
         "VERIFYHOST",
         "VERIFYPEER",
         "wikibase"
-    ]
+    ],
+    "python.linting.enabled": true
 }

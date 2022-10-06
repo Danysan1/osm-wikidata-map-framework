@@ -345,6 +345,7 @@ services:
       - airflow
       - dev+airflow
       - prod+db
+      - prod+db+promtail
 
   pgadmin:
     image: dpage/pgadmin4:6.12
@@ -428,17 +429,19 @@ services:
     profiles:
       - prod
       - prod+db
+      - prod+promtail
+      - prod+db+promtail
 
-  # promtail:
-  #   image: grafana/promtail:main
-  #   volumes:
-  #   - ./promtail:/etc/promtail
-  #   - /var/log:/var/log
-  #   - /var/lib/docker/containers:/var/lib/docker/containers
-  #   command: -config.file=/etc/promtail/config.yaml
-  #   profiles:
-  #     - prod
-  #     - prod+db
+  promtail:
+    image: grafana/promtail:main
+    volumes:
+    - ./promtail:/etc/promtail
+    - /var/log:/var/log
+    - /var/lib/docker/containers:/var/lib/docker/containers
+    command: -config.file=/etc/promtail/config.yaml
+    profiles:
+      - prod+promtail
+      - prod+db+promtail
 
 volumes:
   db-init-work-dir:

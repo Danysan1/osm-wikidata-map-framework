@@ -9,3 +9,4 @@ if [ '--build' == "$1" ]; then
     /usr/local/bin/docker-compose --profile 'prod' push
 fi
 /usr/local/bin/docker-compose --profile 'prod' up --detach --always-recreate-deps
+timeout 20 watch /usr/bin/docker ps

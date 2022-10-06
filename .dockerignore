@@ -8,7 +8,8 @@ open-etymology-map.ini
 open-etymology-map.log
 open-etymology-map-cache/
 LAST_UPDATE
-
+promtail/config.yaml
+promtail/key
 *.pbf
 db-data
 pgadmin-data
@@ -381,4 +382,3 @@ cython_debug/
 *.code-workspace
 
 # End of https://www.toptal.com/developers/gitignore/api/node,metals,phpunit,composer,visualstudiocode,python
-
