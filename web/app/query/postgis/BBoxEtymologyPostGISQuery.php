@@ -83,6 +83,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,
                         'propagated', et_recursion_depth != 0,
                         'recursion_depth', et_recursion_depth,
+                        'et_id', et_id,
                         'wd_id', wd.wd_id,
                         'birth_date', EXTRACT(epoch FROM wd.wd_birth_date),
                         'birth_date_precision', wd.wd_birth_date_precision,

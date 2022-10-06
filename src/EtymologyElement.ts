@@ -17,8 +17,8 @@ interface Etymology {
     event_date_precision: number | null;
     event_place: string | null;
     from_osm: boolean | null;
-    from_osm_id: number;
-    from_osm_type: string;
+    from_osm_id: number | null;
+    from_osm_type: string | null;
     from_parts_of_wikidata_cod: string | null;
     from_wikidata: boolean | null;
     from_wikidata_cod: string | null;
@@ -240,7 +240,12 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
         src_part_of_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_part_of_wd'),
         src_part_of_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_part_of_wd_wrapper');
     if (src_osm) {
-        src_osm.href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        if (ety.from_osm_type && ety.from_osm_id) {
+            src_osm.href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
+        } else {
+            src_osm.href = 'https://www.openstreetmap.org/';
+            console.warn("Bad etymology, missing OSM source");
+        }
     }
     if (ety.from_wikidata_cod && src_wd_wrapper && src_wd) {
         src_wd.href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;

@@ -119,7 +119,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature) {
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
     } else {
-        etymologies.filter((x: object | null) => x != null).forEach(function (ety: any) {
+        etymologies.filter(e => e && e.wd_id).forEach(function (ety) {
             try {
                 etymologies_container.appendChild(etymologyToDomElement(ety))
             } catch (err) {
