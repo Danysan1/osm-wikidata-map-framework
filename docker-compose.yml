@@ -71,6 +71,7 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
+    AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html
   volumes:
     - ./init:/opt/airflow/dags
     - ./airflow-logs:/opt/airflow/logs
@@ -323,9 +324,9 @@ services:
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_USER=${db_user:-oem}
-      - POSTGRES_PASSWORD=${db_password:-_CHANGE_ME_}
-      - POSTGRES_DB=${db_database:-oem}
+      - POSTGRES_USER=${db_user}
+      - POSTGRES_PASSWORD=${db_password}
+      - POSTGRES_DB=${db_database}
     volumes:
       - db-data:/var/lib/postgresql/data:delegated
     networks:

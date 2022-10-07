@@ -247,7 +247,7 @@ def choose_load_osm_data_task(**context) -> str:
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, local_db_conn_id:str="local-oem-postgres", upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
+    def __init__(self, local_db_conn_id:str="local_oem_postgres", upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
         """
         DAG for Open Etymology Map DB initialization
 
