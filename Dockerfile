@@ -42,8 +42,6 @@ RUN npm install && \
 	npm run prod && \
 	npm install --production
 
-
-
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
@@ -62,10 +60,13 @@ USER www-data
 
 
 
-FROM apache/airflow:slim-2.4.0 as airflow
+# https://airflow.apache.org/docs/docker-stack/build.html#adding-packages-from-requirements-txt
+FROM apache/airflow:slim-2.4.1 as airflow
 USER root
 RUN apt-get update && \
 	apt-get install -y libpq-dev gcc && \
 	rm -rf /var/lib/apt/lists/*
 USER airflow
-RUN pip install apache-airflow[celery,postgres,docker,redis]
+
+COPY requirements.txt /
+RUN pip install --no-cache-dir -r /requirements.txt
