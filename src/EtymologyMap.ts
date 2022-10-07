@@ -182,10 +182,10 @@ export class EtymologyMap extends Map {
             const queryParams = {
                 from: "bbox",
                 onlyCenter: "1",
-                minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.1234 => 0.2
-                minLon: (Math.floor(minLon * 10) / 10).toString(),
-                maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.1234 => 0.1
-                maxLon: (Math.ceil(maxLon * 10) / 10).toString(),
+                minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.1234 => 0.1
+                minLon: (Math.floor(minLon * 10) / 10).toString(), // 0.1234 => 0.1
+                maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.1234 => 0.2
+                maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.1234 => 0.2
                 language,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
