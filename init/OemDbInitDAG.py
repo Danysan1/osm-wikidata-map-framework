@@ -77,21 +77,30 @@ def get_source_url(ti:TaskInstance, **context) -> str:
     work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
     makedirs(work_dir)
 
-    source_url = get_last_pbf_url(
-        download_url = params["pbf_url"] if "pbf_url" in params else None,
-        rss_url = params["rss_url"] if "rss_url" in params else None,
-        html_url = params["html_url"] if "html_url" in params else None,
-        prefix = params["prefix"] if "prefix" in params else None
-    )
-    source_basename = basename(source_url) # https://linuxhint.com/fetch-basename-python/
-    last_data_update = get_pbf_date(source_basename)
+    if params["from_dataset"]:
+        if not params["pbf_path"] or not params["date_path"]:
+            raise Exception()
+        source_file_path = params["pbf_path"]
+        source_basename = basename(source_file_path)
+        with open(params["date_path"]) as date_file:
+            last_data_update = date_file.read()
+    else:
+        source_url = get_last_pbf_url(
+            download_url = params["pbf_url"] if "pbf_url" in params else None,
+            rss_url = params["rss_url"] if "rss_url" in params else None,
+            html_url = params["html_url"] if "html_url" in params else None,
+            prefix = params["prefix"] if "prefix" in params else None
+        )
+        source_basename = basename(source_url)
+        last_data_update = get_pbf_date(source_basename)
+        source_file_path = f"{work_dir}/{source_basename}"
+        ti.xcom_push(key='source_url', value=source_url)
+        ti.xcom_push(key='md5_url', value=f'{source_url}.md5')
+        ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{source_basename}.md5")
     
     ti.xcom_push(key='work_dir', value=work_dir)
-    ti.xcom_push(key='source_url', value=source_url)
-    ti.xcom_push(key='md5_url', value=f'{source_url}.md5')
     ti.xcom_push(key='basename', value=source_basename)
-    ti.xcom_push(key='source_file_path', value=f"{work_dir}/{source_basename}")
-    ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{source_basename}.md5")
+    ti.xcom_push(key='source_file_path', value=source_file_path)
     ti.xcom_push(key='filtered_name_file_path', value=f"{work_dir}/filtered_name_{source_basename}")
     ti.xcom_push(key='filtered_possible_file_path', value=f"{work_dir}/filtered_possible_{source_basename}")
     ti.xcom_push(key='filtered_file_path', value=f"{work_dir}/filtered_{source_basename}")
@@ -260,9 +269,6 @@ class OemDbInitDAG(DAG):
         """
 
         default_params={
-            "pbf_url": pbf_url,
-            "rss_url": rss_url,
-            "html_url": html_url,
             "prefix": prefix,
             "upload_db_conn_id": upload_db_conn_id,
             "use_osm2pgsql": use_osm2pgsql,
@@ -278,6 +284,8 @@ class OemDbInitDAG(DAG):
             pbf_path = f'/workdir/{prefix}.osm.pbf'
             date_dataset = Dataset(f'file://{date_path}')
             pbf_dataset = Dataset(f'file://{pbf_path}')
+            default_params["date_path"] = date_path
+            default_params["pbf_path"] = pbf_path
 
             super().__init__(
                 start_date=start_date,
@@ -289,6 +297,10 @@ class OemDbInitDAG(DAG):
                 **kwargs
             )
         else: # if-else needed in order to prevent schedule=None from overriding schedule_interval
+            default_params["pbf_url"] = pbf_url
+            default_params["rss_url"] = rss_url
+            default_params["html_url"] = html_url
+
             super().__init__(
                 start_date=start_date,
                 catchup=False,

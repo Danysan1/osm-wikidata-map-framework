@@ -7,6 +7,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
     """
     from urllib.request import urlopen
     from re import findall
+    from os.path import basename
 
     source_url:str = None
     if download_url:
@@ -27,7 +28,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
             links = root.findall("./rss/channel/item/link")
             print("Links found:", links)
             urls = [link.text for link in links]
-            urls = list(filter(lambda f: f!="" and f.split("/")[-1].startswith(prefix) and f.endswith(f'.{download_ext}'), urls))
+            urls = list(filter(lambda f: f!="" and basename(f).startswith(prefix) and f.endswith(f'.{download_ext}'), urls))
 
             if len(urls) > 0:
                 urls.sort(reverse=True)
