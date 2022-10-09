@@ -11,5 +11,5 @@ nord_ovest_html = OemDbInitDAG(
     dag_id="db-init-italy-nord-ovest-from-html",
     schedule_interval=None,
     html_url="http://download.geofabrik.de/europe/italy/",
-    html_prefix="nord-ovest"
+    prefix="nord-ovest"
 )

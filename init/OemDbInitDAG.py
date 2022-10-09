@@ -17,6 +17,7 @@ from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 from Osm2pgsqlOperator import Osm2pgsqlOperator
 from OemDockerOperator import OemDockerOperator
+from get_last_pbf_url import get_last_pbf_url, get_pbf_date
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
@@ -50,12 +51,12 @@ class TemplatedPostgresOperator(PostgresOperator):
     """
     template_fields = ('parameters', 'postgres_conn_id', 'sql')
 
-def get_last_pbf_url(ti:TaskInstance, **context) -> str:
+def get_source_url(ti:TaskInstance, **context) -> str:
     """
         # Get PBF file URL
 
         Gets the URL of the OSM PBF file to download and derivate the path of the files that will be created later.
-        The file urls, names and paths are calculated from the parameters 'pbf_url'/'rss_url'/'html_url'/'html_prefix'.
+        The file urls, names and paths are calculated from the parameters 'pbf_url'/'rss_url'/'html_url'/'prefix'.
 
         The URL parameters are passed through the params object to allow customization when triggering the DAG.
 
@@ -68,8 +69,6 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
         * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.4.0/best-practices.html)
         * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/models/taskinstance/index.html)
     """
-    from urllib.request import urlopen
-    from re import search, findall
     from os import makedirs
 
     params = context["params"]
@@ -77,62 +76,14 @@ def get_last_pbf_url(ti:TaskInstance, **context) -> str:
     work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
     makedirs(work_dir)
 
-    source_url = None
-    if "pbf_url" in params and params["pbf_url"] and isinstance(params["pbf_url"],str):
-        pbf_url = params["pbf_url"]
-        print("Using 'pbf_url' as source URL: ", pbf_url)
-        source_url = pbf_url
-    elif "rss_url" in params and params["rss_url"] and isinstance(params["rss_url"],str) and params["rss_url"].endswith(".xml"):
-        rss_url = params["rss_url"]
-        print("Fetching the source URL from 'rss_url':", rss_url)
-        from xml.etree.ElementTree import fromstring, ElementTree
-        with urlopen(rss_url) as response:
-            xml_content = response.read()
-            rss_path = f"{work_dir}/{basename(rss_url)}"
-            try:
-                with open(rss_path, "w") as rss_file:
-                    rss_file.write(xml_content)
-            except:
-                print("Failed saving RSS file content in working directory, proceding anyway")
-            
-            tree = ElementTree(fromstring(xml_content))
-            root = tree.getroot()
-            channel = root.find('channel')
-            item = channel.find('item')
-            link = item.find('link')
-            source_url = link.text
-    elif "html_url" in params and params["html_url"] and isinstance(params["html_url"],str) and \
-            "html_prefix" in params and params["html_prefix"] and isinstance(params["html_prefix"],str):
-        html_url = params["html_url"]
-        html_prefix = params["html_prefix"]
-        print("Fetching the source URL from 'html_url':", html_url, html_prefix)
-        with urlopen(html_url) as response:
-            html_content = response.read().decode('utf-8')
-            search_result = findall('href="([\w-]+[\d+].osm.pbf)"', html_content)
-            print("Search result:", search_result)
-
-            files = list(filter(lambda s: s.startswith(html_prefix), search_result))
-            files.sort(reverse=True)
-            print("Files found:", files)
-
-            if files != None and len(files) > 0:
-                source_url = f"{html_url}/{files[0]}"
-    else:
-        print("Unable to get the source URL", params)
-    
-    if isinstance(source_url, str) and source_url.endswith(".osm.pbf"):
-        print("Using URL:", source_url)
-    else:
-        raise Exception("The source url must be an OSM pbf file or as RSS for one", source_url)
-    
-    # https://linuxhint.com/fetch-basename-python/
-    source_basename = basename(source_url)
-
-    date_match = search('-(\d{2})(\d{2})(\d{2})\.', source_basename)
-    if date_match != None:
-        last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
-    else:
-        last_data_update = now('local').strftime('%y-%m-%d') # https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior
+    source_url = get_last_pbf_url(
+        download_url = params["pbf_url"] if "pbf_url" in params else None,
+        rss_url = params["rss_url"] if "rss_url" in params else None,
+        html_url = params["html_url"] if "html_url" in params else None,
+        prefix = params["prefix"] if "prefix" in params else None
+    )
+    source_basename = basename(source_url) # https://linuxhint.com/fetch-basename-python/
+    last_data_update = get_pbf_date(source_basename)
     
     ti.xcom_push(key='work_dir', value=work_dir)
     ti.xcom_push(key='source_url', value=source_url)
@@ -247,7 +198,7 @@ def choose_load_osm_data_task(**context) -> str:
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, local_db_conn_id:str="local_oem_postgres", upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, html_prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
+    def __init__(self, local_db_conn_id:str="local_oem_postgres", upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
         """
         DAG for Open Etymology Map DB initialization
 
@@ -263,7 +214,7 @@ class OemDbInitDAG(DAG):
             URL to the RSS file listing PBF files
         html_url: str
             URL to the HTML file listing PBF files
-        html_prefix: str
+        prefix: str
             prefix to search in the PBF filename 
         use_osm2pgsql: bool
             use osm2pgsql instead of osmium export
@@ -285,7 +236,7 @@ class OemDbInitDAG(DAG):
                     "pbf_url": pbf_url,
                     "rss_url": rss_url,
                     "html_url": html_url,
-                    "html_prefix": html_prefix,
+                    "prefix": prefix,
                     "upload_db_conn_id": upload_db_conn_id,
                     "use_osm2pgsql": use_osm2pgsql,
                     "ffwd_to_load": ffwd_to_load,
@@ -305,10 +256,10 @@ class OemDbInitDAG(DAG):
 
         task_get_source_url = PythonOperator(
             task_id = "get_source_url",
-            python_callable = get_last_pbf_url,
+            python_callable = get_source_url,
             do_xcom_push = True,
             dag = self,
-            doc_md = get_last_pbf_url.__doc__
+            doc_md = get_source_url.__doc__
         )
 
         task_ffwd_to_upload = BranchPythonOperator(

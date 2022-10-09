@@ -13,5 +13,5 @@ italy_html = OemDbInitDAG(
     days_before_cleanup=2,
     upload_db_conn_id="nord_ovest-postgres",
     html_url="http://download.geofabrik.de/europe/",
-    html_prefix="italy"
+    prefix="italy"
 )
