@@ -14,7 +14,7 @@ class OemDockerOperator(DockerOperator):
     def __init__(self, postgres_conn_id:str, **kwargs) -> None:
         super().__init__(
             docker_url='unix://var/run/docker.sock',
-            image = "registry.gitlab.com/openetymologymap/open-etymology-map",
+            image = "registry.gitlab.com/openetymologymap/open-etymology-map:latest",
             environment = {
                 "db_enable": True,
                 "db_host": f'{{{{ conn["{postgres_conn_id}"].host }}}}',

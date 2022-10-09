@@ -25,13 +25,14 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
             xml_content = response.read()
             root = fromstring(xml_content)
             links = root.findall("./rss/channel/item/link")
-            files = [link.text for link in links]
-            files = list(filter(lambda f: f.startswith(prefix) and f.endswith(f'.{download_ext}'), files))
+            print("Links found:", links)
+            urls = [link.text for link in links]
+            urls = list(filter(lambda f: f!="" and f.split("/")[-1].startswith(prefix) and f.endswith(f'.{download_ext}'), urls))
 
-            if len(files) > 0:
-                files.sort(reverse=True)
-                print("Files found:", files)
-                source_url = files[0]
+            if len(urls) > 0:
+                urls.sort(reverse=True)
+                print("URLs found:", urls)
+                source_url = urls[0]
     elif html_url:
         print("Fetching the source URL from 'html_url':", html_url)
         with urlopen(html_url) as response:

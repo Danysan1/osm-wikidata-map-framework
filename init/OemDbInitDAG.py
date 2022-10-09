@@ -2,7 +2,7 @@ from os.path import dirname, abspath, join, basename, exists
 from textwrap import dedent
 from datetime import timedelta
 from pendulum import datetime, now
-from airflow.models import DAG
+from airflow import DAG, Dataset
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
 from airflow.hooks.postgres_hook import PostgresHook
@@ -37,6 +37,7 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
             with open(filepath) as file:
                 cursor.execute(f'SET search_path TO {schema}')
                 cursor.copy_from(file, table, separator, columns = columns)
+            print("Inserted rows:", cursor.rowcount)
 
 class TemplatedPostgresOperator(PostgresOperator):
     """
@@ -150,6 +151,8 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
     """
     p = context["params"]
     ffwd_to_load = "ffwd_to_load" in p and p["ffwd_to_load"]
+    from_dataset = "from_dataset" in p and p["from_dataset"]
+    first_task_id = 'get_osm_data.keep_elements_with_name' if from_dataset else 'get_osm_data.download_pbf'
     if ffwd_to_load:
         use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
         xcom_file_key = 'filtered_file_path' if use_osm2pgsql else 'pg_file_path'
@@ -169,10 +172,10 @@ def choose_first_task(ti:TaskInstance, **context) -> str:
                 ret = loading_task_id
             else:
                 print("Filtered OSM data not found, downloading and filtering it")
-                ret = "get_osm_data.download_pbf"
+                ret = first_task_id
     else:
         print(f"ffwd_to_load=False, downloading and filtering OSM data")
-        ret = "get_osm_data.download_pbf"
+        ret = first_task_id
     
     ti.xcom_push(key=xcom_file_key, value=file_path)
     return ret
@@ -198,12 +201,27 @@ def choose_load_osm_data_task(**context) -> str:
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "copy_osmium_export_config"
 
 class OemDbInitDAG(DAG):
-    def __init__(self, local_db_conn_id:str="local_oem_postgres", upload_db_conn_id:str=None, pbf_url:str=None, rss_url:str=None, html_url:str=None, prefix:str=None, use_osm2pgsql:bool=False, ffwd_to_load:bool=True, days_before_cleanup:int=30, **kwargs):
+    def __init__(self,
+            from_dataset:bool=False,
+            local_db_conn_id:str="local_oem_postgres",
+            upload_db_conn_id:str=None,
+            pbf_url:str=None,
+            rss_url:str=None,
+            html_url:str=None,
+            prefix:str=None,
+            use_osm2pgsql:bool=False,
+            ffwd_to_load:bool=True,
+            days_before_cleanup:int=30,
+            **kwargs
+        ):
         """
         DAG for Open Etymology Map DB initialization
 
         Parameters:
         ----------
+        from_dataset: bool
+            if True, prefix must be specified; pbf_url/rss_url/html_url will be ignored and a dataset based on the prefix will be used.
+            if False, pbf_url/rss_url/html_url must be specified and schedule_interval can be specified.
         upload_db_conn_id: str
             Postgres connection ID for the production Database the DAG will upload to
         upload_db_conn_id: str
@@ -226,31 +244,57 @@ class OemDbInitDAG(DAG):
         See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
         """
 
-        super().__init__(
-                # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
-                # https://pendulum.eustace.io/docs/#instantiation
-                start_date=datetime(year=2022, month=9, day=15, tz='local'),
+        # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+        # https://pendulum.eustace.io/docs/#instantiation
+        start_date = datetime(year=2022, month=9, day=15, tz='local')
+
+        doc_md="""
+            # Open Etymology Map DB initialization
+
+            * downloads and and filters OSM data
+            * downloads relevant OSM data
+            * combines OSM and Wikidata data
+            * uploads the output to the production DB.
+
+            Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
+        """
+
+        default_params={
+            "pbf_url": pbf_url,
+            "rss_url": rss_url,
+            "html_url": html_url,
+            "prefix": prefix,
+            "upload_db_conn_id": upload_db_conn_id,
+            "use_osm2pgsql": use_osm2pgsql,
+            "ffwd_to_load": ffwd_to_load,
+            "from_dataset": from_dataset,
+        }
+
+        if from_dataset:
+            if not prefix or prefix=="":
+                raise Exception("Prefix must be specified if from_dataset=True")
+            
+            date_path = f'/workdir/{prefix}.date.txt'
+            pbf_path = f'/workdir/{prefix}.osm.pbf'
+            date_dataset = Dataset(f'file://{date_path}')
+            pbf_dataset = Dataset(f'file://{pbf_path}')
+
+            super().__init__(
+                start_date=start_date,
+                catchup=False,
+                schedule = [date_dataset,pbf_dataset],
+                tags=['oem', 'db-init', 'consumes'],
+                params=default_params,
+                doc_md = doc_md,
+                **kwargs
+            )
+        else: # if-else needed in order to prevent schedule=None from overriding schedule_interval
+            super().__init__(
+                start_date=start_date,
                 catchup=False,
                 tags=['oem', 'db-init'],
-                params={
-                    "pbf_url": pbf_url,
-                    "rss_url": rss_url,
-                    "html_url": html_url,
-                    "prefix": prefix,
-                    "upload_db_conn_id": upload_db_conn_id,
-                    "use_osm2pgsql": use_osm2pgsql,
-                    "ffwd_to_load": ffwd_to_load,
-                },
-                doc_md="""
-                    # Open Etymology Map DB initialization
-
-                    * downloads and and filters OSM data
-                    * downloads relevant OSM data
-                    * combines OSM and Wikidata data
-                    * uploads the output to the production DB.
-
-                    Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
-                """,
+                params=default_params,
+                doc_md = doc_md,
                 **kwargs
             )
 
@@ -273,40 +317,6 @@ class OemDbInitDAG(DAG):
 
         get_pbf_group = TaskGroup("get_osm_data", tooltip="Get OpenStreetMap .pbf data", dag=self)
 
-        task_download_pbf = BashOperator(
-            task_id = "download_pbf",
-            bash_command = """
-                curl --fail --verbose --location --max-redirs 5 --progress-bar -o "$sourceFilePath" "$sourceUrl"
-                curl --fail --verbose --location --max-redirs 5 -o "$md5FilePath" "$md5Url"
-                if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
-                    echo "The md5 sum doesn't match:"
-                    cat "$md5FilePath"
-                    md5sum "$sourceFilePath"
-                    exit 1
-                fi
-            """,
-            env = {
-                "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
-                "sourceUrl": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
-                "md5FilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_file_path') }}",
-                "md5Url": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_url') }}",
-            },
-            retries = 3,
-            dag = self,
-            task_group=get_pbf_group,
-            doc_md="""
-                # Download the PBF source file
-
-                Download the source PBF file from the URL calculated by get_source_url and check that the md5 checksum checks out.
-
-                Links:
-                * [curl documentation](https://curl.se/docs/manpage.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/bash.html)
-            """
-        )
-        task_ffwd_to_upload >> Label("Download and filter") >> task_download_pbf
-
         task_keep_name = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_name",
             container_name = "open-etymology-map-keep_elements_with_name",
@@ -324,7 +334,43 @@ class OemDbInitDAG(DAG):
                 Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
             """) + dedent(OsmiumTagsFilterOperator.__doc__)
         )
-        task_download_pbf >> task_keep_name
+
+        if from_dataset:
+            task_ffwd_to_upload >> Label("Filter") >> task_keep_name
+        else:
+            task_download_pbf = BashOperator(
+                task_id = "download_pbf",
+                bash_command = """
+                    curl --fail --verbose --location --max-redirs 5 --progress-bar -o "$sourceFilePath" "$sourceUrl"
+                    curl --fail --verbose --location --max-redirs 5 -o "$md5FilePath" "$md5Url"
+                    if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
+                        echo "The md5 sum doesn't match:"
+                        cat "$md5FilePath"
+                        md5sum "$sourceFilePath"
+                        exit 1
+                    fi
+                """,
+                env = {
+                    "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
+                    "sourceUrl": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+                    "md5FilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_file_path') }}",
+                    "md5Url": "{{ ti.xcom_pull(task_ids='get_source_url', key='md5_url') }}",
+                },
+                retries = 3,
+                dag = self,
+                task_group=get_pbf_group,
+                doc_md="""
+                    # Download the PBF source file
+
+                    Download the source PBF file from the URL calculated by get_source_url and check that the md5 checksum checks out.
+
+                    Links:
+                    * [curl documentation](https://curl.se/docs/manpage.html)
+                    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                    * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/bash.html)
+                """
+            )
+            task_ffwd_to_upload >> Label("Download and filter") >> task_download_pbf >> task_keep_name
 
         task_keep_possible_ety = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_possible_etymology",

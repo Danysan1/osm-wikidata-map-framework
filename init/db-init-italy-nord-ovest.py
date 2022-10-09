@@ -18,14 +18,23 @@ download_nord_ovest_html = OsmPbfDownloadDAG(
     prefix="nord-ovest"
 )
 
+nord_ovest_dataset = OemDbInitDAG(
+    dag_id="db-init-italy-nord-ovest-from-dataset",
+    from_dataset=True,
+    prefix="nord-ovest"
+)
+
 init_nord_ovest_pbf = OemDbInitDAG(
     dag_id="db-init-italy-nord-ovest-latest",
+    from_dataset=False,
     schedule_interval=None,
+    days_before_cleanup=1,
     pbf_url="http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf"
 )
 
 init_nord_ovest_html = OemDbInitDAG(
     dag_id="db-init-italy-nord-ovest-from-html",
+    from_dataset=False,
     schedule_interval=None,
     html_url="http://download.geofabrik.de/europe/italy/",
     prefix="nord-ovest"
