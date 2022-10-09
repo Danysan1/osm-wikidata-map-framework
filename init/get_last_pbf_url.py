@@ -1,4 +1,4 @@
-def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None, prefix:str='', download_ext:str=".osm.pbf", source_ext:str=".osm.pbf") -> str:
+def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None, prefix:str='', download_ext:str="osm.pbf") -> str:
     """
     ## Get PBF file URL
 
@@ -25,7 +25,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
             xml_content = response.read()
             root = fromstring(xml_content)
             links = root.findall("./rss/channel/item/link")
-            files = map(lambda l: l.text, links)
+            files = [link.text for link in links]
             files = list(filter(lambda f: f.startswith(prefix) and f.endswith(f'.{download_ext}'), files))
 
             if len(files) > 0:
@@ -36,8 +36,9 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
         print("Fetching the source URL from 'html_url':", html_url)
         with urlopen(html_url) as response:
             html_content = response.read().decode('utf-8')
-            files = findall(f'href="({prefix}[\w-]+[\d+]\.{download_ext})"', html_content)
-            print("Search result:", files)
+            regex_pattern = f'href="({prefix}[\w-]+[\d+]\.{download_ext})"'
+            files = findall(regex_pattern, html_content)
+            print("Search pattern and result:", regex_pattern, files)
 
             if len(files) > 0:
                 files.sort(reverse=True)
