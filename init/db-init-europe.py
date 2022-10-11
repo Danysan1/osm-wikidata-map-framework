@@ -1,10 +1,21 @@
+from OsmPbfDownloadDAG import OsmPbfDownloadDAG
+from OemFilterDAG import OemFilterDAG
 from OemDbInitDAG import OemDbInitDAG
 from airflow.models import DAG
 
-europe_pbf = OemDbInitDAG(
+download_europe_pbf = OsmPbfDownloadDAG(
     dag_id="db-init-europe-latest",
-    from_dataset=False,
     schedule_interval=None,
-    days_before_cleanup=1,
-    pbf_url="http://download.geofabrik.de/europe-latest.osm.pbf"
+    pbf_url="http://download.geofabrik.de/europe-latest.osm.pbf",
+    prefix="europe"
+)
+
+filter_europe = OemFilterDAG(
+    dag_id="filter-europe",
+    prefix="europe"
+)
+
+db_init_europe = OemDbInitDAG(
+    dag_id="db-init-europe",
+    prefix="europe"
 )

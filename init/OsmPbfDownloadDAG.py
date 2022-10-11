@@ -32,13 +32,18 @@ def get_source_url(ti:TaskInstance, **context) -> str:
     params = context["params"]
     
     work_dir = f'/workdir/{ti.dag_id}/{ti.run_id}'
-    makedirs(work_dir)
+    if not exists(work_dir):
+        makedirs(work_dir)
+    
+    dataset_dir = f'/workdir/{params["prefix"]}'
+    if not exists(dataset_dir):
+        makedirs(dataset_dir)
 
     source_url = get_last_pbf_url(
         download_url = params["pbf_url"] if "pbf_url" in params else None,
         rss_url = params["rss_url"] if "rss_url" in params else None,
         html_url = params["html_url"] if "html_url" in params else None,
-        prefix = params["prefix"] if "prefix" in params else None
+        prefix = params["prefix"]
     )
     source_basename = basename(source_url) # https://linuxhint.com/fetch-basename-python/
     last_data_update = get_pbf_date(source_basename)
@@ -77,14 +82,20 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
     return procede
 
 class OsmPbfDownloadDAG(DAG):
-    def __init__(self, pbf_url:str=None, rss_url:str=None, html_url:str=None, prefix:str=None, skip_if_already_downloaded:bool=True, use_torrent:bool=False, **kwargs):
+    def __init__(self,
+            pbf_url:str=None,
+            rss_url:str=None,
+            html_url:str=None,
+            prefix:str=None,
+            skip_if_already_downloaded:bool=True,
+            use_torrent:bool=False,
+            **kwargs
+        ):
         """
         DAG for Open Etymology Map DB initialization
 
         Parameters:
         ----------
-        dest_folder_name: str
-        
         pbf_url: str
             URL to the PBF file
         rss_url: str
@@ -98,24 +109,26 @@ class OsmPbfDownloadDAG(DAG):
 
         See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
         """
-        date_path = f'/workdir/{prefix}.date.txt'
-        pbf_path = f'/workdir/{prefix}.osm.pbf'
+        date_path = f'/workdir/{prefix}/{prefix}.date.txt'
+        pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
         date_dataset = Dataset(f'file://{date_path}')
         pbf_dataset = Dataset(f'file://{pbf_path}')
+
+        default_params = {
+            "pbf_url": pbf_url,
+            "rss_url": rss_url,
+            "html_url": html_url,
+            "prefix": prefix,
+            "skip_if_already_downloaded": skip_if_already_downloaded,
+        }
 
         super().__init__(
                 # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
-                tags=['oem', 'pbf-download'],
-                params={
-                    "pbf_url": pbf_url,
-                    "rss_url": rss_url,
-                    "html_url": html_url,
-                    "prefix": prefix,
-                    "skip_if_already_downloaded": skip_if_already_downloaded,
-                },
+                tags=['oem', 'pbf-download', 'produces'],
+                params=default_params,
                 doc_md="""
                     # Open Etymology Map DB initialization
 

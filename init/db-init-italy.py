@@ -1,8 +1,7 @@
 from OsmPbfDownloadDAG import OsmPbfDownloadDAG
+from OemFilterDAG import OemFilterDAG
 from OemDbInitDAG import OemDbInitDAG
 from airflow.models import DAG
-
-
 
 download_italy_pbf = OsmPbfDownloadDAG(
     dag_id = "download-italy-latest",
@@ -18,26 +17,13 @@ download_italy_html = OsmPbfDownloadDAG(
     prefix="italy"
 )
 
-italy_dataset = OemDbInitDAG(
-    dag_id="db-init-italy-from-dataset",
-    from_dataset=True,
+filter_italy = OemFilterDAG(
+    dag_id="filter-italy",
     prefix="italy"
 )
 
-italy_pbf = OemDbInitDAG(
-    dag_id="db-init-italy-latest",
-    from_dataset=False,
-    schedule_interval=None,
-    days_before_cleanup=1,
-    pbf_url="http://download.geofabrik.de/europe/italy-latest.osm.pbf"
-)
-
-italy_html = OemDbInitDAG(
-    dag_id="db-init-italy-from-html",
-    from_dataset=False,
-    schedule_interval="0 18 * * *",
-    days_before_cleanup=2,
-    upload_db_conn_id="nord_ovest-postgres",
-    html_url="http://download.geofabrik.de/europe/",
-    prefix="italy"
+db_init_italy = OemDbInitDAG(
+    dag_id="db-init-italy",
+    prefix="italy",
+    upload_db_conn_id="nord_ovest-postgres"
 )
