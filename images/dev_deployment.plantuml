@@ -15,7 +15,6 @@ rectangle "Docker Compose - profile 'dev'" as docker {
   node "oem-web-dev" {
     port "80" as 80webDev
     component Apache
-    folder "/var/www/init" as initRem
     folder "/var/www/html" as webRem
   }
 
@@ -23,10 +22,8 @@ rectangle "Docker Compose - profile 'dev'" as docker {
 cloud {
   database "Optional production DB" as extDB
 }
-folder "init" as initLoc
 folder "web" as webLoc
 
-initRem --- initLoc : volume
 webRem --- webLoc : volume
 
 Apache --> 5432db

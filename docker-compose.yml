@@ -73,7 +73,7 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html
   volumes:
-    - ./init:/opt/airflow/dags
+    - ./airflow-dags:/opt/airflow/dags
     - ./airflow-logs:/opt/airflow/logs
     - ./airflow-plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
@@ -186,7 +186,7 @@ services:
       - airflow-internal
       - airflow-worker-bridge
     volumes:
-      - ./init:/opt/airflow/dags
+      - ./airflow-dags:/opt/airflow/dags
       - ./airflow-logs:/opt/airflow/logs
       - ./airflow-plugins:/opt/airflow/plugins
       - db-init-work-dir:/workdir:delegated
@@ -290,7 +290,7 @@ services:
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
     volumes:
-      - ./init:/sources
+      - ./airflow-dags:/sources
       - db-init-work-dir:/workdir
     networks:
       - airflow-internal

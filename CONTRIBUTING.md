@@ -310,7 +310,7 @@ pbf <-- init
 
 </details>
 
-An Apache Airflow pipeline defined in [db-init.py](init/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+An Apache Airflow pipeline defined in [db-init.py](airflow-dags/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
@@ -320,7 +320,7 @@ Once the DB is initialized, this is the data gathering process in [etymologyMap.
 
 ##### Database initialization
 
-As mentioned above an Apache Airflow pipeline defined in [db-init.py](init/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+As mentioned above an Apache Airflow pipeline defined in [db-init.py](airflow-dags/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 This pipeline starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
 
 To run the database initialization:
@@ -331,7 +331,7 @@ To run the database initialization:
     * the Pool `data_filtering`
     * the Postgres connection `oem-postgis-postgres` to `oem-postgis` with the credentials in `.env`
     * the HTTP connection `oem-web-dev-http` to `oem-web-dev`
-5. run/enable an existing DAG pipeline (if necessary customising the launch config) or create a new one in [db-init.py](init/db-init.py) and run/enable
+5. run/enable an existing DAG pipeline (if necessary customising the launch config) or create a new one in [db-init.py](airflow-dags/db-init.py) and run/enable
 6. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `.env` (and, if specified in the destination DB)
 
 IMPORTANT NOTE: If you use the planet file I suggest to use a machine with more than 8GB RAM (and a lot of patience, it will require a lot of time; use a local extract in development to use less RAM and time).
@@ -349,9 +349,9 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 If launched with the `--propagate-nearby` or `--propagate-global` flag the database initializaion also loads all ways with `highway=residential` or `highway=unclassified`.
 
-With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with an existing etymology](init/sql/propagate-etymologies-nearby.sql)).
+With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with an existing etymology](airflow-dags/sql/propagate-etymologies-nearby.sql)).
 
-With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](init/sql/propagate-etymologies-global.sql)).
+With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](airflow-dags/sql/propagate-etymologies-global.sql)).
 
 #### Old back-end (v1, using Overpass)
 
