@@ -364,7 +364,7 @@ services:
       - oem-internal
       - pgadmin-bridge
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:8000/misc/ping"]
+      test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
       interval: 10s
       timeout: 10s
       retries: 5
