@@ -74,11 +74,11 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         procede = True
     else:
         with open(date_path) as date_file:
-            date:str = date_file.read().strip()
+            existing_date:str = date_file.read().strip()
         skip_if_already_downloaded:bool = "skip_if_already_downloaded" in p and p["skip_if_already_downloaded"]
-        last_data_update = ti.xcom_pull(task_ids='get_source_url', key='last_data_update')
-        print("Existing and new date:", last_data_update, date)
-        procede = not skip_if_already_downloaded or parse(date) > parse(last_data_update)
+        new_date = ti.xcom_pull(task_ids='get_source_url', key='last_data_update')
+        print("Existing and new date:", existing_date, new_date)
+        procede = not skip_if_already_downloaded or parse(new_date) > parse(existing_date)
     return procede
 
 class OsmPbfDownloadDAG(DAG):
