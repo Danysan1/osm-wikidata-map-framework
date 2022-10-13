@@ -337,7 +337,7 @@ services:
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "oem"]
+      test: ["CMD", "pg_isready", "-U", "${db_user}"]
       interval: 5s
       retries: 5
     restart: "always"
