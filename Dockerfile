@@ -34,7 +34,7 @@ RUN npm install -g npm && \
 
 
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:18-alpine AS npm-install
+FROM node:18.10-alpine AS npm-install
 WORKDIR /app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/app/"]
 COPY "./src" "/app/src"
