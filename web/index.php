@@ -30,17 +30,17 @@ $langMatches = [];
 if (
     !empty($_REQUEST['lang'])
     && is_string($_REQUEST['lang'])
-    && preg_match("/^([a-z]{2}-[A-Z]{2})$/", $_REQUEST['lang'])
+    && preg_match("/^(\w{2}-\w{2})$/", $_REQUEST['lang'])
 ) {
     $defaultCulture = $_REQUEST['lang'];
-} elseif (
+} /*elseif (
     !empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])
     && is_string($_SERVER['HTTP_ACCEPT_LANGUAGE'])
-    && preg_match("/([a-z]{2}-[A-Z]{2})/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $langMatches)
+    && preg_match("/(\w{2}-\w{2})/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $langMatches)
     && isset($langMatches[0])
 ) {
     $defaultCulture = $langMatches[0];
-} elseif ($conf->has('default_language')) {
+}*/ elseif ($conf->has('default_language')) {
     $defaultCulture = (string)$conf->get('default_language');
 } else {
     $defaultCulture = "en-US";

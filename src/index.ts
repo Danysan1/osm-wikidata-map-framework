@@ -39,7 +39,23 @@ if (maptiler_key) {
     );
 }
 
+const params = new URLSearchParams(window.location.search);
+if (!params.has("lang")) {
+    const browserLocale = window.navigator.language,
+        validBrowserLocale = browserLocale.match("^\\w{2}-\\w{2}$") != null,
+        startLocale = document.documentElement.lang;
+    if(validBrowserLocale && browserLocale != startLocale) {
+        console.info("Updating locale with browser locale", {browserLocale,validBrowserLocale,startLocale});
+        document.documentElement.lang = browserLocale;
+    } else {
+        console.info("Leaving locale untouched", {browserLocale,validBrowserLocale,startLocale});
+    }
+}
+
 document.addEventListener("DOMContentLoaded", initPage);
+
+
+
 
 
 /**
