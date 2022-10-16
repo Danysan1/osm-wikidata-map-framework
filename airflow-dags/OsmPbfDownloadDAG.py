@@ -88,7 +88,6 @@ class OsmPbfDownloadDAG(DAG):
             html_url:str=None,
             prefix:str=None,
             skip_if_already_downloaded:bool=True,
-            use_torrent:bool=False,
             **kwargs
         ):
         """
@@ -142,7 +141,6 @@ class OsmPbfDownloadDAG(DAG):
         task_get_source_url = PythonOperator(
             task_id = "get_source_url",
             python_callable = get_source_url,
-            op_kwargs = { "download_ext": 'osm.pbf.torrent' if use_torrent else 'osm.pbf' },
             do_xcom_push = True,
             dag = self,
             doc_md = get_source_url.__doc__
@@ -159,7 +157,7 @@ class OsmPbfDownloadDAG(DAG):
 
         task_chose_download_method = BranchPythonOperator(
             task_id = "chose_download_method",
-            python_callable = lambda: 'download_torrent' if use_torrent else 'download_pbf',
+            python_callable = lambda ti: 'download_torrent' if ti.xcom_pull(task_ids='get_source_url', key='source_url').endswith(".torrent") else 'download_pbf',
             dag = self
         )
         task_check_whether_to_procede >> task_chose_download_method

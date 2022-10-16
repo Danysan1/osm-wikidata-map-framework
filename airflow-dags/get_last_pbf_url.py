@@ -24,35 +24,42 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
         from xml.etree.ElementTree import fromstring
         with urlopen(rss_url) as response:
             xml_content = response.read()
+            print("XML content:", xml_content)
             root = fromstring(xml_content)
-            links = root.findall("./rss/channel/item/link")
+            print("XML root element:", root)
+            links = root.findall("./channel/item/link")
             print("Links found:", links)
             urls = [link.text for link in links]
-            urls = list(filter(lambda f: f!="" and basename(f).startswith(prefix) and f.endswith(f'.{download_ext}'), urls))
+            print("URLs found:", urls)
+            extension = f'.{download_ext}.torrent'
+            urls = list(filter(lambda f: f!="" and basename(f).startswith(prefix) and f.endswith(extension), urls))
+            print("Valid URLs found:", extension, urls)
 
             if len(urls) > 0:
                 urls.sort(reverse=True)
-                print("URLs found:", urls)
+                print("Sorted URLs:", urls)
                 source_url = urls[0]
+                print("Using url from RSS:", source_url)
+            else:
+                raise Exception("Unable to find a valid url from the RSS")
     elif html_url:
         print("Fetching the source URL from 'html_url':", html_url)
         with urlopen(html_url) as response:
             html_content = response.read().decode('utf-8')
+            print("HTML content:", xml_content)
             regex_pattern = f'href="({prefix}[\w-]+[\d+]\.{download_ext})"'
             files = findall(regex_pattern, html_content)
-            print("Search pattern and result:", regex_pattern, files)
+            print("Valid filenames:", regex_pattern, files)
 
             if len(files) > 0:
                 files.sort(reverse=True)
-                print("Files found:", files)
+                print("Sorted filenames:", files)
                 source_url = f"{html_url}/{files[0]}"
+                print("Using url from HTML:", source_url)
+            else:
+                raise Exception("Unable to find a valid url from the HTML")
     else:
-        print("Unable to get the source URL, you must specify at least one among 'download_url', 'rss_url' or 'html_url'")
-    
-    if isinstance(source_url, str) and source_url.endswith(f".{download_ext}"):
-        print("Using URL:", source_url)
-    else:
-        raise Exception("Source URL search failed", source_url)
+        raise Exception("Unable to get the source URL, you must specify at least one among 'download_url', 'rss_url' or 'html_url'")
     
     return source_url
 

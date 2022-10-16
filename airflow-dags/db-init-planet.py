@@ -13,16 +13,17 @@ download_planet_pbf = OsmPbfDownloadDAG(
 download_planet_html = OsmPbfDownloadDAG(
     dag_id="download-planet-from-html",
     schedule_interval=None,
-    #html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
+    html_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/",
     #html_url="https://planet.maps.mail.ru/pbf/",
-    html_url="https://ftpmirror.your.org/pub/openstreetmap/pbf/",
+    #html_url="https://ftpmirror.your.org/pub/openstreetmap/pbf/",
     prefix="planet"
 )
 
 download_planet_rss = OsmPbfDownloadDAG(
     dag_id="download-planet-from-rss",
     schedule_interval="0 6 * * 0",
-    rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml",
+    #rss_url="https://ftp5.gwdg.de/pub/misc/openstreetmap/planet.openstreetmap.org/pbf/planet-pbf-rss.xml",
+    rss_url = "https://planet.openstreetmap.org/pbf/planet-pbf-rss.xml",
     prefix="planet"
 )
 
