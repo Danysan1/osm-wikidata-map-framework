@@ -80,8 +80,14 @@ export class EtymologyMap extends Map {
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
             currZoom = this.getZoom(),
-            colorControl = this.currentEtymologyColorControl,
+            colorControl = this.currentEtymologyColorControl;
+        let currColorScheme:string|undefined;
+        try {
             currColorScheme = colorControl?.getColorScheme();
+        } catch(e) {
+            console.error(e);
+            currColorScheme = undefined;
+        }
         //console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme, e });
 
         // Check if the position has changed in order to avoid unnecessary map movements
