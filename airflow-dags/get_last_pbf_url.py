@@ -46,7 +46,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
         print("Fetching the source URL from 'html_url':", html_url)
         with urlopen(html_url) as response:
             html_content = response.read().decode('utf-8')
-            print("HTML content:", xml_content)
+            print("HTML content:", html_content)
             regex_pattern = f'href="({prefix}[\w-]+[\d+]\.{download_ext})"'
             files = findall(regex_pattern, html_content)
             print("Valid filenames:", regex_pattern, files)
