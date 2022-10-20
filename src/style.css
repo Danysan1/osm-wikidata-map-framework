@@ -167,6 +167,7 @@ div.info>p {
 
 /* The snackbar - position it at the bottom and in the middle of the screen */
 
+div#spinner,
 div.snackbar {
     visibility: hidden;
     /* Hidden by default. Visible on click */
@@ -208,6 +209,36 @@ div.snackbar.show {
     animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 
+div#spinner.show {
+    visibility: visible;
+}
+
+div#spinner.show::after {
+    content: '';
+    display: block;
+    margin: auto;
+    height: 36px;
+    width: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' width='36' height='36' viewBox='0 0 36 36'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23333;%7D.b%7Bopacity:0.1;%7D%3C/style%3E%3C/defs%3E%3Cpath class='a' d='M5.2721,5.2721,7.3934,7.3934a15,15,0,0,1,21.2132,0l2.1213-2.1213A18,18,0,0,0,5.2721,5.2721Z'/%3E%3Cg class='b'%3E%3Cpath d='M28.6066,28.6066A15,15,0,0,1,7.3934,7.3934L5.2721,5.2721a18,18,0,1,0,25.4558,0L28.6066,7.3934A15,15,0,0,1,28.6066,28.6066Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: .8s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: cubic-bezier(.45,.05,.55,.95);
+    animation-name: spin;
+    animation-duration: .8s;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(.45,.05,.55,.95);
+}
+
+@keyframes spin {
+    from {
+        transform:rotate(0deg);
+    }
+    to {
+        transform:rotate(360deg);
+    }
+}
 
 /* Animations to fade the snackbar in and out */
 

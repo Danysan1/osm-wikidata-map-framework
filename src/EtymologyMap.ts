@@ -10,7 +10,7 @@ import { BackgroundStyle, BackgroundStyleControl } from './BackgroundStyleContro
 import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
 import { featureToDomElement } from "./FeatureElement";
-import { showSnackbar } from './snackbar';
+import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getConfig } from './config';
 import './style.css';
 
@@ -119,6 +119,7 @@ export class EtymologyMap extends Map {
 
         if (sourceDataLoaded) {
             //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
+            showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent) {
                 this.currentEtymologyColorControl?.updateChart(e as any);
@@ -222,6 +223,9 @@ export class EtymologyMap extends Map {
      */
     prepareWikidataLayers(wikidata_url: string, minZoom: number) {
         const colorSchemeColor = getCurrentColorScheme().color;
+
+        showLoadingSpinner(true);
+
         this.addGeoJSONSource(
             "wikidata_source",
             {
