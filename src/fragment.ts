@@ -49,7 +49,7 @@ function setFragmentParams(lon: number | undefined, lat: number | undefined, zoo
 
     const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
     window.location.hash = fragment;
-    console.info("setFragmentParams", { currentParams, p, fragment, lon, lat, zoom, colorScheme });
+    //console.info("setFragmentParams", { currentParams, p, fragment, lon, lat, zoom, colorScheme });
     return fragment;
 }
 

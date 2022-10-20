@@ -1,5 +1,5 @@
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl } from 'maplibre-gl';
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl } from 'mapbox-gl';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'mapbox-gl';
 
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -81,11 +81,11 @@ export class EtymologyMap extends Map {
             currLon = this.getCenter().lng,
             currZoom = this.getZoom(),
             colorControl = this.currentEtymologyColorControl;
-        let currColorScheme:string|undefined;
+        let currColorScheme: string | undefined;
         try {
             currColorScheme = colorControl?.getColorScheme();
-        } catch(e) {
-            console.error(e);
+        } catch (err) {
+            console.error(err);
             currColorScheme = undefined;
         }
         //console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme, e });
@@ -111,10 +111,10 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
-    mapSourceDataHandler(e: MapDataEvent) {
+    mapSourceDataHandler(e: MapSourceDataEvent) {
         const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
             elementsSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
-            sourceDataLoaded = (e as any).isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent);
+            sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent);
         //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e});
 
         if (sourceDataLoaded) {
@@ -422,9 +422,7 @@ export class EtymologyMap extends Map {
         const oldSourceDataURL = (!!sourceObject && typeof (sourceObject as any)._data === 'string') ? (sourceObject as any)._data : null,
             sourceUrlChanged = oldSourceDataURL != sourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
-            console.info("prepareClusteredLayers: updating source", {
-                id, sourceObject, sourceDataURL, oldSourceDataURL
-            });
+            //console.info("prepareClusteredLayers: updating source", {id, sourceObject, sourceDataURL, oldSourceDataURL});
             sourceObject.setData(sourceDataURL);
         } else if (!sourceObject) {
             this.addSource(id, config);
@@ -622,7 +620,7 @@ export class EtymologyMap extends Map {
         const lat = this.getCenter().lat,
             lon = this.getCenter().lng,
             zoom = this.getZoom();
-        console.info("mapMoveEndHandler", { lat, lon, zoom });
+        //console.info("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
         setFragmentParams(lon, lat, zoom, undefined);
 

@@ -1,4 +1,5 @@
-import { IControl, Expression, Map } from 'mapbox-gl';
+//import { IControl, Expression, Map, MapboxEvent } from 'maplibre-gl';
+import { IControl, Expression, Map, MapboxEvent } from 'mapbox-gl';
 
 // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
@@ -208,7 +209,7 @@ class EtymologyColorControl implements IControl {
         //updateDataSource(event);
     }
 
-    updateChart(event: Event) {
+    updateChart(event: MapboxEvent|Event) {
         if (!this._ctrlDropDown) {
             console.error("updateChart: dropodown not inizialized", { event });
             return;
@@ -221,7 +222,7 @@ class EtymologyColorControl implements IControl {
             if (!bounds) {
                 console.error("updateChart: missing bounds", { event });
             } else if (colorScheme && colorScheme.urlCode) {
-                console.info("updateChart main: colorScheme is ok", { event, colorScheme });
+                //console.info("updateChart main: colorScheme is ok", { event, colorScheme });
                 if (this._chartXHR)
                     this._chartXHR.abort();
 
@@ -289,12 +290,12 @@ class EtymologyColorControl implements IControl {
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     setChartData(data: ChartData<"pie">) {
-        console.info("setChartData", {
+        /*console.info("setChartData", {
             container: this._container,
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
-        });
+        });*/
         if (this._chartJsObject && this._chartDomElement) {
             // https://www.chartjs.org/docs/latest/developers/updates.html
             this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
