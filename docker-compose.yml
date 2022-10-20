@@ -97,7 +97,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "airflow"]
       interval: 5s
       retries: 5
-    restart: always
+    restart: unless-stopped
     networks:
       - airflow-internal
       - pgadmin-bridge
@@ -114,7 +114,7 @@ services:
       interval: 5s
       timeout: 30s
       retries: 50
-    restart: always
+    restart: unless-stopped
     networks:
       - airflow-internal
     profiles:
@@ -131,7 +131,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -151,7 +151,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -177,7 +177,7 @@ services:
       # Required to handle warm shutdown of the celery workers properly
       # See https://airflow.apache.org/docs/docker-stack/entrypoint.html#signal-propagation
       DUMB_INIT_SETSID: "0"
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -203,7 +203,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: always
+    restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -308,7 +308,7 @@ services:
   #     interval: 10s
   #     timeout: 10s
   #     retries: 5
-  #   restart: always
+  #   restart: unless-stopped
   #   depends_on:
   #     <<: *airflow-common-depends-on
   #     airflow-init:
@@ -340,7 +340,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "${db_user}"]
       interval: 5s
       retries: 5
-    restart: "always"
+    restart: unless-stopped
     profiles:
       - dev
       - airflow
@@ -422,7 +422,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-    restart: "always"
+    restart: unless-stopped
     volumes:
       - apache-sites-available:/etc/apache2/sites-available/
       - apache-sites-enabled:/etc/apache2/sites-enabled/
