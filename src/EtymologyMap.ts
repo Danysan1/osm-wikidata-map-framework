@@ -1,5 +1,5 @@
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'maplibre-gl';
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, MapDataEvent, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'mapbox-gl';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'mapbox-gl';
 
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -59,7 +59,7 @@ export class EtymologyMap extends Map {
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
 
         setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
-        window.addEventListener('hashchange', (e) => this.hashChangeHandler(e), false);
+        window.addEventListener('hashchange', this.hashChangeHandler, false);
     }
 
     /**
@@ -67,7 +67,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
-    mapStyleDataHandler(e: MapDataEvent) {
+    mapStyleDataHandler(/*e: MapDataEvent*/) {
         //console.info("Map style data loaded", e);
         //setCulture(e.sender); //! Not here, this event is executed too often
     }
@@ -75,7 +75,7 @@ export class EtymologyMap extends Map {
     /**
      * Handles the change of the URL fragment
      */
-    hashChangeHandler(e: HashChangeEvent) {
+    hashChangeHandler(/*e: HashChangeEvent*/) {
         const newParams = getCorrectFragmentParams(),
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
@@ -122,7 +122,7 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent) {
-                this.currentEtymologyColorControl?.updateChart(e as any);
+                this.currentEtymologyColorControl?.updateChart(e);
             }
         }
     }
@@ -343,11 +343,13 @@ export class EtymologyMap extends Map {
      * @see https://maplibre.org/maplibre-gl-js-docs/example/popup-on-click/
      * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
      */
-    onWikidataLayerClick(e: MapMouseEvent) {
-        if ((e as any).popupAlreadyShown) {
-            console.info("onWikidataLayerClick: etymology popup already shown", e);
+    onWikidataLayerClick(ev: MapMouseEvent & { features?: MapGeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
+        if (ev.popupAlreadyShown) {
+            console.info("onWikidataLayerClick: etymology popup already shown", ev);
+        } else if (!ev.features) {
+            console.warn("onWikidataLayerClick: missing or empty clicked features list", ev);
         } else {
-            const feature = (e as any).features[0] as MapGeoJSONFeature,
+            const feature = ev.features[0] as MapGeoJSONFeature,
                 //popupPosition = e.lngLat,
                 //popupPosition = this.getBounds().getNorthWest(),
                 popupPosition = this.unproject([0, 0]),
@@ -365,7 +367,7 @@ export class EtymologyMap extends Map {
                     .setHTML('<div class="detail_wrapper"><span class="element_loading"></span></div>')
                     .addTo(this),
                 detail_wrapper = popup.getElement().querySelector<HTMLDivElement>(".detail_wrapper");
-            console.info("onWikidataLayerClick: showing etymology popup", { e, popup, detail_wrapper });
+            console.info("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
             if (!detail_wrapper)
                 throw new Error("Failed adding the popup");
 
@@ -378,7 +380,7 @@ export class EtymologyMap extends Map {
             detail_wrapper.appendChild(featureToDomElement(feature));
 
             element_loading.style.display = 'none';
-            (e as any).popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
+            ev.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
         }
     }
 
@@ -418,8 +420,8 @@ export class EtymologyMap extends Map {
     }
 
     addGeoJSONSource(id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
-        let sourceObject = this.getSource(id) as GeoJSONSource | null;
-        const oldSourceDataURL = (!!sourceObject && typeof (sourceObject as any)._data === 'string') ? (sourceObject as any)._data : null,
+        let sourceObject = this.getSource(id) as GeoJSONSource & { _data?: string | undefined } | null;
+        const oldSourceDataURL = (sourceObject && sourceObject._data) ? sourceObject._data : null,
             sourceUrlChanged = oldSourceDataURL != sourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
             //console.info("prepareClusteredLayers: updating source", {id, sourceObject, sourceDataURL, oldSourceDataURL});
