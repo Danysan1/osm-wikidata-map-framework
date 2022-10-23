@@ -38,7 +38,12 @@ class XMLWikidataQuery extends WikidataQuery implements XMLQuery
     {
         $ret = $this->send();
         if (!$ret instanceof XMLQueryResult)
-            throw new \Exception("Invalid result type");
+            throw new \Exception("sendAndGetXMLResult(): can't get XML result");
+
+        /*$classBaseName = (new \ReflectionClass($this))->getShortName();
+        $xmlContent = $ret->getXML();
+        @file_put_contents("$classBaseName.tmp.json", $xmlContent);*/
+
         return $ret;
     }
 }

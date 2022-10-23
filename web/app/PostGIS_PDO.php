@@ -28,7 +28,7 @@ class PostGIS_PDO extends PDO
                 throw new Exception("Bad db_database_list configuration");
             if (!empty($dbname_array[$server])) {
                 $dbname = (string)$dbname_array[$server];
-                error_log("Using DB name '$dbname' for server '$server'");
+                //error_log("Using DB name '$dbname' for server '$server'");
             }
         }
 

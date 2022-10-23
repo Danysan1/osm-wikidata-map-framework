@@ -41,7 +41,6 @@ class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
                     ?element owl:sameAs [ ?prop [] ].
                 }
             }";
-        @file_put_contents("RelatedEntitiesCheckWikidataQuery.tmp.rq", $sparqlQuery);
         parent::__construct($sparqlQuery, $endpointURL);
     }
 
@@ -51,7 +50,6 @@ class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
     public function sendAndGetWikidataCods(): array
     {
         $result = $this->sendAndGetJSONResult();
-        //file_put_contents("RelatedEntitiesCheckWikidataQuery.tmp.json", $result->getJSON());
 
         $resultData = $result->getJSONData();
         if (empty($resultData["results"])) {

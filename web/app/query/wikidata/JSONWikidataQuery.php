@@ -38,6 +38,11 @@ class JSONWikidataQuery extends WikidataQuery implements JSONQuery
         $out = $this->send();
         if (!$out instanceof JSONQueryResult)
             throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+
+        /*$classBaseName = (new \ReflectionClass($this))->getShortName();
+        $jsonContent = $out->getJSON();
+        @file_put_contents("$classBaseName.tmp.json", $jsonContent);*/
+
         return $out;
     }
 }

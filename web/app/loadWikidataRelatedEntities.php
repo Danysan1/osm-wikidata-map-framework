@@ -55,7 +55,6 @@ function loadWikidataRelatedEntities(
 
     echo "Loading Wikidata \"$relationName\" entities..." . PHP_EOL;
 
-    $wikidataJSONFile = "wikidata_$relationName.tmp.json";
     $total_wd = 0;
     $total_wna = 0;
 
@@ -115,7 +114,6 @@ function loadWikidataRelatedEntities(
                 echo "Fetch failed. Retrying to fetch..." . PHP_EOL;
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             }
-            @file_put_contents($wikidataJSONFile, $jsonResult);
 
             echo "Loading Wikidata \"$relationName\" data..." . PHP_EOL;
             $sth_wd = $dbh->prepare(

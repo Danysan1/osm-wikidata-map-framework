@@ -46,7 +46,6 @@ class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQue
                 MINUS { ?relatedStatement pq:P582 []. } # Related statement has ended
                 ?relatedStatement ?propStatement ?related.
             }";
-        @file_put_contents("RelatedEntitiesDetailsWikidataQuery.tmp.rq", $sparqlQuery);
         parent::__construct($sparqlQuery, $endpointURL);
     }
 }
