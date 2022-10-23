@@ -137,6 +137,7 @@ export class EtymologyMap extends Map {
     mapErrorHandler(err: any) {
         let errorMessage;
         if (["elements_source", "wikidata_source"].includes(err.sourceId) && err.error.status > 200) {
+            showLoadingSpinner(false);
             showSnackbar("An error occurred while fetching the data");
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
