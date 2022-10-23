@@ -17,7 +17,7 @@ INSERT INTO oem.element (
     osm_tags,
     osm_has_text_etymology,
     osm_has_wd_etymology,
-    SUBSTRING(osm_tags->>'wikidata' FROM '^([^;]+)'),
+    SUBSTRING(osm_tags->>'wikidata' FROM '^(Q\d+)'),
     SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
 FROM oem.osmdata
