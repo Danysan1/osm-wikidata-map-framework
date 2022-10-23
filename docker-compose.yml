@@ -102,6 +102,7 @@ services:
       - airflow-internal
       - pgadmin-bridge
     profiles:
+      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -118,6 +119,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -159,6 +161,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -192,6 +195,7 @@ services:
       - db-init-work-dir:/workdir:delegated
       - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
     profiles:
+      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -211,6 +215,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -295,6 +300,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -405,6 +411,13 @@ services:
       context: .
       dockerfile: Dockerfile
       target: prod
+      x-bake:
+        # https://docs.docker.com/build/customize/bake/compose-file/
+        # https://docs.docker.com/engine/reference/commandline/buildx_bake/
+        platforms:
+          - "linux/amd64"
+          - "linux/arm64"
+        pull: true
     image: registry.gitlab.com/openetymologymap/open-etymology-map
     env_file:
       - .env

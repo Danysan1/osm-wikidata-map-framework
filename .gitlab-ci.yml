@@ -84,10 +84,11 @@ docker-build:
     - docker pull "$CI_REGISTRY_IMAGE" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE , BUILDING FROM SCRATCH"
   script:
     - echo "Building $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
-    - docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --tag "$CI_REGISTRY_IMAGE" -f Dockerfile .
-    - echo "Pushing $CI_REGISTRY_IMAGE"
-    - docker image push "$CI_REGISTRY_IMAGE"
-    - docker image push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - docker buildx bake oem-web-prod --push
+    #- docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --tag "$CI_REGISTRY_IMAGE" -f Dockerfile .
+    #- echo "Pushing $CI_REGISTRY_IMAGE"
+    #- docker image push "$CI_REGISTRY_IMAGE"
+    #- docker image push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
       exists: 
