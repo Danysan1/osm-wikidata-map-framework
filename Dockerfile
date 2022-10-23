@@ -45,6 +45,7 @@ RUN npm install && \
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
+	apt-get install -y --reinstall libc-bin && \
 	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
