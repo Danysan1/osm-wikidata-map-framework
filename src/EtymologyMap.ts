@@ -59,7 +59,10 @@ export class EtymologyMap extends Map {
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
 
         setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
-        window.addEventListener('hashchange', this.hashChangeHandler, false);
+        
+        //eslint-disable-next-line
+        const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
+        window.addEventListener('hashchange', function(){ thisMap.hashChangeHandler() }, false);
     }
 
     /**
