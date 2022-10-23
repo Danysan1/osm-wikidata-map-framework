@@ -583,7 +583,7 @@ class OemDbInitDAG(DAG):
                 $BODY$;
             """,
             parameters = {
-                "last_update": "{{ ti.xcom_pull(task_ids='read_last_data_update', key='last_data_update') }}"
+                "last_update": "{{ ti.xcom_pull(task_ids='read_last_data_update', key='return_value') }}"
             },
             dag = self,
             doc_md="""
