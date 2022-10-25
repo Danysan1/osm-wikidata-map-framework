@@ -417,6 +417,8 @@ services:
         platforms:
           - "linux/amd64"
           - "linux/arm64"
+        cache-from:
+          - registry.gitlab.com/openetymologymap/open-etymology-map
         pull: true
     image: registry.gitlab.com/openetymologymap/open-etymology-map
     env_file:
