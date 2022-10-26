@@ -16,18 +16,23 @@ if (!$conf->has("mapbox_token")) {
 } else if ($conf->getBool("db_enable")) {
     try {
         $dbh = new PostGIS_PDO($conf);
-    } catch(Throwable $e) {
+    } catch (Throwable $e) {
         http_response_code(500);
         die('<html><body>The DB is unreachable</body></html>');
     }
-    try {
+
+    /*try {
         $dbh->query("SELECT PostGIS_Version()")->fetchColumn();
-    } catch(Throwable $e) {
+    } catch (Throwable $e) {
         http_response_code(500);
         die('<html><body>The DB is not working or missing PostGIS</body></html>');
-    }
+    }*/
 }
 
 ?>
 
-<html><body>Everything is fine</body></html>
+<html>
+
+<body>Everything is fine</body>
+
+</html>
