@@ -90,9 +90,9 @@ if (
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
     <link rel="canonical" href="https://etymology.dsantini.it/" />
-    <link type="image/png" sizes="16x16" rel="icon" href="./icons8-quest-16.png">
-    <link type="image/png" sizes="32x32" rel="icon" href="./icons8-quest-32.png">
-    <link type="image/png" sizes="96x96" rel="icon" href="./icons8-quest-96.png">
+    <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
+    <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
+    <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 </head>
 
 <body>
@@ -109,7 +109,7 @@ if (
                 <?= implode(" | ", [
                     $conf->has("report_problem_url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report_problem_url") . '">Report a problem</a>' : false,
                     '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
-                    '<a href="https://icons8.com/icon/32958/quest">Quest</a> icon by <a href="https://icons8.com">Icons8</a>'
+                    '<a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>'
                 ]); ?>
             </p>
             <h3>Click anywhere on the map to explore.</h3>
