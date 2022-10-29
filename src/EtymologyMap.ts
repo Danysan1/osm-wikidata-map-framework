@@ -88,7 +88,7 @@ export class EtymologyMap extends Map {
         try {
             currColorScheme = colorControl?.getColorScheme();
         } catch (err) {
-            console.error(err);
+            console.error("Failed getting the current color scheme:", err);
             currColorScheme = undefined;
         }
         //console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme, e });

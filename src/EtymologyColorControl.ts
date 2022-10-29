@@ -81,6 +81,24 @@ class EtymologyColorControl implements IControl {
         this._chartJsObject = null;
     }
 
+    showDropdown() {
+        if (this._ctrlDropDown) {
+            this._ctrlDropDown.classList.add("visibleDropDown");
+            this._ctrlDropDown.classList.remove("hiddenElement");
+        } else {
+            console.error("Missing dropdown, failed showing it");
+        }
+    }
+
+    hideDropdown() {
+        if (this._ctrlDropDown) {
+            this._ctrlDropDown.classList.add("hiddenElement");
+            this._ctrlDropDown.classList.remove("visibleDropDown");
+        } else {
+            console.error("Missing dropdown, failed hiding it");
+        }
+    }
+
     onAdd(map: Map): HTMLElement {
         this._map = map;
 
@@ -110,8 +128,6 @@ class EtymologyColorControl implements IControl {
         td1.className = 'button-cell';
 
         this._ctrlDropDown = document.createElement('select');
-        //this._ctrlDropDown.className = 'hiddenElement';
-        this._ctrlDropDown.className = 'visibleDropDown';
         this._ctrlDropDown.title = 'Color scheme';
         this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
         /*td1.appendChild(this._ctrlDropDown);
@@ -129,6 +145,7 @@ class EtymologyColorControl implements IControl {
             this._ctrlDropDown?.appendChild(option);
         });
         this._ctrlDropDown.dispatchEvent(new Event("change"))
+        this.showDropdown();
 
         //setFragmentParams(undefined, undefined, undefined, this._startColorScheme); //! Creates a bug when using geo-localization or location search
 
@@ -142,8 +159,7 @@ class EtymologyColorControl implements IControl {
 
     btnClickHandler(event: MouseEvent) {
         console.info("EtymologyColorControl button click", event);
-        if (this._ctrlDropDown)
-            this._ctrlDropDown.className = 'visibleDropDown';
+        this.showDropdown();
     }
 
     /**
@@ -268,7 +284,7 @@ class EtymologyColorControl implements IControl {
                         } else {
                             console.error("XHR error", { xhr, readyState, status, e });
                             //if (event.type && event.type == 'change')
-                            //    this._ctrlDropDown.className = 'hiddenElement';
+                            //    this.hideDropdown();
                             this.removeChart();
                         }
                     }
@@ -279,7 +295,7 @@ class EtymologyColorControl implements IControl {
             } else {
                 console.info("updateChart main: no colorScheme, removing", { event, colorScheme });
                 if (event.type && event.type == 'change')
-                    this._ctrlDropDown.className = 'hiddenElement';
+                    this.hideDropdown();
                 this.removeChart();
             }
         }
