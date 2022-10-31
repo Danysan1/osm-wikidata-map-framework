@@ -16,7 +16,7 @@ use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
  * For each relationship found
  *  * inserts both entities in the wikidata table
  *  * gets the elements which are related to the searched entity through an etymology
- *  * inserts a new etymolgy for each element found to the related entity
+ *  * inserts a new etymology for each element found to the related entity
  * 
  * @param string $wikidataCodsTable Table from which Wikidata Q-IDs for entities to check will be queried
  * @param string $wikidataCodsColumn Column from which Wikidata Q-IDs for entities to check will be taken
