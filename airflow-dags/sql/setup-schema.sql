@@ -133,7 +133,8 @@ CREATE TABLE oem.wikidata_picture (
     wdp_picture VARCHAR NOT NULL,
     wdp_attribution VARCHAR,
     wdp_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    wdp_full_download_date TIMESTAMP
+    wdp_full_download_date TIMESTAMP,
+    CONSTRAINT wdp_unique_wikidata_picture UNIQUE (wdp_wd_id, wdp_picture)
 );
 
 CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100');

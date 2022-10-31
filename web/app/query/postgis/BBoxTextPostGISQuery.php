@@ -233,6 +233,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     WHERE pic.picture IS NOT NULL
                     AND pic.picture != ''
                     AND wdp IS NULL
+                    ON CONFLICT (wdp_wd_id, wdp_picture) DO NOTHING
                     RETURNING CONCAT('File:',wdp_picture) AS picture"
                 );
                 $stInsertPicture->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
