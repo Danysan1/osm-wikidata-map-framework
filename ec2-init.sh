@@ -31,8 +31,8 @@ git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp ".env.example" ".env"
 cp "promtail/config.template.yaml" "promtail/config.yaml"
-docker-compose --profile "prod" pull
-docker-compose --profile "prod" up -d
+docker-compose --profile "prod+promtail" pull
+docker-compose --profile "prod+promtail" up -d
 
 ## https://certbot.eff.org/instructions?ws=apache&os=debianbuster
 
