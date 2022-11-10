@@ -155,6 +155,7 @@ class OemDbInitDAG(DAG):
             "upload_db_conn_id": upload_db_conn_id,
             "use_osm2pgsql": use_osm2pgsql,
             "date_path": date_path,
+            "drop_temporary_tables": True,
         }
 
         super().__init__(
@@ -529,6 +530,22 @@ class OemDbInitDAG(DAG):
         )
         task_move_ele >> task_setup_ety_fk
 
+        task_check_whether_to_drop = ShortCircuitOperator(
+            task_id = "check_whether_to_drop_temporary_tables",
+            python_callable = lambda **context: context["params"]["drop_temporary_tables"],
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Check whether to drop temporary tables
+
+                Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
+
+                Links:
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+            """
+        )
+        task_move_ele >> task_check_whether_to_drop
+
         task_drop_temp_tables = PostgresOperator(
             task_id = "drop_temporary_tables",
             postgres_conn_id = local_db_conn_id,
@@ -544,7 +561,7 @@ class OemDbInitDAG(DAG):
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
-        task_move_ele >> task_drop_temp_tables
+        task_check_whether_to_drop >> task_drop_temp_tables
 
         task_global_map = PostgresOperator(
             task_id = "setup_global_map",
@@ -599,6 +616,7 @@ class OemDbInitDAG(DAG):
 
         task_pg_dump = BashOperator(
             task_id = "pg_dump",
+            trigger_rule = TriggerRule.NONE_FAILED,
             bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
             env= {
                 "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
