@@ -125,6 +125,7 @@ class OemFilterDAG(DAG):
                 'w/highway=secondary',
                 'w/highway=primary',
                 'w/highway=living_street',
+                'w/highway=trunk',
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',
