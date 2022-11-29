@@ -9,4 +9,5 @@ if [ '--build' == "$1" ]; then
     /usr/local/bin/docker-compose --profile 'prod+promtail' push
 fi
 /usr/local/bin/docker-compose --profile 'prod+promtail' up --detach --always-recreate-deps
+/usr/bin/docker image prune -af
 watch /usr/bin/docker ps
