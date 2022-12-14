@@ -39,6 +39,7 @@ Q45382,coup d'état,,,Events,#ff3333
 Q180684,conflict,,,Events,#ff3333
 Q132821,murder,,,Events,#ff3333
 Q1139665,political murder,,,Events,#ff3333
+Q906512,shipwrecking,,,Events,#ff3333
 Q16560,palace,,,Buildings,#ffdd33
 Q41176,building,,,Buildings,#ffdd33
 Q23413,castle,,,Buildings,#ffdd33
@@ -189,6 +190,7 @@ Q23718,cardinal direction,,,Locations,#33ffbb
 Q133056,mountain pass,,,Locations,#33ffbb
 Q113489728,OECD country,,,Locations,#33ffbb
 Q6266,nation,,,Locations,#33ffbb
+Q34763,peninsula,,,Locations,#33ffbb
 Q5,human,,,People,#3399ff
 Q21070568,human who may be fictional,,,People,#3399ff
 Q14073567,sibling duo,,,People,#3399ff

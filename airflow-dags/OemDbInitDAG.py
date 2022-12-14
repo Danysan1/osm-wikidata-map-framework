@@ -24,6 +24,8 @@ def get_absolute_path(filename:str, folder:str = None) -> str:
 
 def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
     """
+    Copy data from a CSV/TSV/... file to a PostgreSQL table
+
     See https://www.psycopg.org/docs/usage.html#copy
     See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
     See https://github.com/psycopg/psycopg2/issues/1294
