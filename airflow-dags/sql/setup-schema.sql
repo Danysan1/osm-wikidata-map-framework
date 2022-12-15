@@ -60,6 +60,7 @@ CREATE TABLE oem.element_wikidata_cods (
     ew_wikidata_cod VARCHAR(15) NOT NULL CHECK (ew_wikidata_cod  ~* '^Q\d+$'),
     ew_from_name_etymology BOOLEAN,
     ew_from_subject BOOLEAN,
+    ew_from_buried BOOLEAN,
     ew_from_wikidata BOOLEAN
 );
 

@@ -8,7 +8,7 @@ For example https://etymology.dsantini.it/?lang=es-ES#11.7135,44.3414,15.1 passe
 
 ## Used technologies
 
-- [OpenStreetMap](https://www.openstreetmap.org/about) and its [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata) and [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) tags
+- [OpenStreetMap](https://www.openstreetmap.org/about) and its [`name:etymology:wikidata`](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata), [`subject:wikidata`](https://wiki.openstreetmap.org/wiki/Key:subject) and [`buried:wikidata`](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_link) tags
 - [Wikidata](https://www.wikidata.org/wiki/Wikidata:Introduction) and its [SPARQL Query Service](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service)
 - [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API)
 - [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs)

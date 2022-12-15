@@ -129,7 +129,8 @@ class OemFilterDAG(DAG):
                 'wikidata',
                 'name:etymology:wikidata',
                 'name:etymology',
-                'subject:wikidata'
+                'subject:wikidata',
+                'buried:wikidata',
             ],
             remove_tags= True,
             dag = self,
@@ -137,7 +138,7 @@ class OemFilterDAG(DAG):
                 # Keep only elements that could have an etymology
 
                 Filter the OpenStreetMap PBF data to keep only elements which could have an etymology:
-                * elements with the etymology directly specified via the tags `name:etymology`, `name:etymology:wikidata` or 'subject:wikidata'
+                * elements with the etymology directly specified via the tags `name:etymology`, `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata`
                 * elements that could have the etymology specified in the Wikidata entity linked by the tag `wikidata`
                 * elements for which the etymology could be propagated from homonymous elements (to keep a reasonable computation time only some highways are kept for this purpose) 
 

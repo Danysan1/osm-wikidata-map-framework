@@ -339,11 +339,12 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Convert OSM - Wikidata associations
 
-                Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each oassociation the source (`wikidata` / `subject:wikidata` / `name:etymology:wikidata`).
+                Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each association the source (`wikidata` / `subject:wikidata` / `buried:wikidata` / `name:etymology:wikidata`).
                 
                 Links:
                 * [`wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
                 * [`subject:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
+                * [`buried:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
                 * [`name:etymology:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
@@ -385,7 +386,7 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Load Wikidata entities from OSM etymologies
 
-                Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata` or `name:etymology:wikidata`).
+                Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata`, `buried:wikidata` or `name:etymology:wikidata`).
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
@@ -492,7 +493,7 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Check elements with a Wikidata etymology
 
-                Check elements with an etymology that comes from `subject:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
+                Check elements with an etymology that comes from `subject:wikidata`, `buried:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
                 
                 Links:
                 * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)

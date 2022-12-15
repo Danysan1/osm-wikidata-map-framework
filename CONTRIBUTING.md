@@ -15,7 +15,7 @@ If the etymology associated to the element is correct but there is a problem in 
 
 If the problem is related to the etymology itself (a wrong etymology is associated to the element):
 1. From the etymology window click on the "OpenStreetMap" button
-2. On the left of the opened page check if the `name:etymology:wikidata` or `subject:wikidata` tag is present. If it is, click on the dialog button on the right to add a note to the map and describe the problem
+2. On the left of the opened page check if the `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag is present. If it is, click on the dialog button on the right to add a note to the map and describe the problem
 3. If the tags above are absent, the `wikidata` tag will be present and its value will be clickable. Click on it.
    - If the opened page represents the element from the map (not its etymology, not something else), it should contain a "named after" or "dedicated to" relation to the wrong item:
       1. At the top of the opened page click on "Discussion"
@@ -94,9 +94,14 @@ map "OSM element G" as osmg #95d5b2 {
   name => Rue Pierre et Marie Curie
   **name:etymology:wikidata** => Q11297474
 }
+map "OSM element H" as osmh #95d5b2 {
+  name => Marie Curie
+  **buried:wikidata** => Q7186
+}
 
 osma --> wikia
 osmb --> wikia
+osmh --> wikia
 wikia <-- osmc
 wikib <-- osmc
 wikic <-- osmg
@@ -111,7 +116,7 @@ wikia <-- wikid
 wikie --> wikia
 wikif --> wikia
 
-note left of wikia: Etymology for OSM elements A, B, C, D, E, F and G
+note left of wikia: Etymology for OSM elements A, B, C, D, E, F, G and H
 note right of wikib: Etymology for OSM elements C and G
 note right of wikic: Etymology for OSM element G
 
@@ -123,7 +128,8 @@ Platform | Property/Key | Description | Other info
 | ---- | ---- | ---- | ---- |
 OpenStreetMap|`wikidata`|The ID of the Wikidata item about the feature (for example, Q9141 represents the way Taj Mahal). Only entries which are 'about the feature' should be linked.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
 OpenStreetMap|`name:etymology:wikidata`|It contains the ID of the Wikidata item for the feature's namesake.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
-OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
+OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument/memorial|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
+OpenStreetMap|`buried:wikidata`|It contains the ID of the Wikidata item for the person or animal that is buried in a grave/tomb|[Documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
 Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name, or namesake (in at least one language)|[Info](https://www.wikidata.org/wiki/Property:P138)
 Wikidata|`P547` ("commemorates")|What the place, monument, memorial, or holiday, commemorates|[Info](https://www.wikidata.org/wiki/Property:P547)
 Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
@@ -132,7 +138,7 @@ In order to display the etymology of an element you need to create one of these 
 
 1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/)
 2. Check out the element's tags:
-    - If the element has a `name:etymology:wikidata` or `subject:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
+    - If the element has a `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
         - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
         - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
     - If the element has a `wikidata` tag check the referenced Wikidata element.
@@ -144,7 +150,7 @@ In order to display the etymology of an element you need to create one of these 
     - If none of these tags is present, you can link the Wikidata item for the etymology to the element
         1. Search the etymology on Wikidata
         2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
-        3. Add to the OpenStreetMap element the `name:etymology:wikidata` or `subject:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
+        3. Add to the OpenStreetMap element the `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
 
 ## How to contribute to Open Etymology Map
 

@@ -52,6 +52,12 @@
             "description": "The Wikidata entity linked by the value of 'subject:wikidata' is used as etymology"
         },
         {
+            "key": "buried:wikidata",
+            "object_types": ["node", "way", "relation", "area"],
+            "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
+            "description": "The Wikidata entity linked by the value of 'buried:wikidata' is used as etymology"
+        },
+        {
             "key": "wikidata",
             "object_types": ["node", "way", "relation", "area"],
             "doc_url": "https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md",
