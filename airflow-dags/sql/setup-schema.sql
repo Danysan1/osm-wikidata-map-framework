@@ -143,7 +143,7 @@ CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (f
 CREATE TABLE oem.wikidata_text (
     wdt_id SERIAL NOT NULL PRIMARY KEY,
     wdt_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
-    wdt_language CHAR(2) NOT NULL,
+    wdt_language CHAR(3) NOT NULL,
     wdt_name VARCHAR,
     wdt_description VARCHAR,
     wdt_wikipedia_url VARCHAR,
