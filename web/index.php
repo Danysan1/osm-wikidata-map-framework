@@ -30,13 +30,13 @@ $langMatches = [];
 if (
     !empty($_REQUEST['lang'])
     && is_string($_REQUEST['lang'])
-    && preg_match("/^([a-z]{2}-[A-Z]{2})$/", $_REQUEST['lang'])
+    && preg_match(ISO_LANGUAGE_PATTERN, $_REQUEST['lang'])
 ) {
     $defaultCulture = $_REQUEST['lang'];
 } elseif (
     !empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])
     && is_string($_SERVER['HTTP_ACCEPT_LANGUAGE'])
-    && preg_match("/([a-z]{2}-[A-Z]{2})/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $langMatches)
+    && preg_match("/(\w+)(-\w+)?/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $langMatches)
     && isset($langMatches[0])
 ) {
     $defaultCulture = $langMatches[0];

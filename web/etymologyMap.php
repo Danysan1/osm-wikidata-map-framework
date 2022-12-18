@@ -48,7 +48,7 @@ if ($enableDB) {
 
 // "en-US" => "en"
 $langMatches = [];
-if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches) || empty($langMatches[1])) {
+if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMatches[1])) {
     http_response_code(400);
     die('{"error":"Invalid language code."};');
 }

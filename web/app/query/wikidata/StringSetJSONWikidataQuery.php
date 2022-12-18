@@ -49,7 +49,7 @@ abstract class StringSetJSONWikidataQuery extends JSONWikidataQuery implements S
 
         // "en-US" => "en"
         $langMatches = [];
-        if (!preg_match('/^([a-z]{2})(-[A-Z]{2})?$/', $language, $langMatches)) {
+        if (!preg_match('/^(\w+)(-\w+)?$/', $language, $langMatches)) {
             error_log("StringSetJSONWikidataQuery: Invalid language code $language");
             throw new \Exception("Invalid language code");
         }

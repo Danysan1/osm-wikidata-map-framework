@@ -4,6 +4,8 @@ declare(strict_types=1);
 require_once(__DIR__ . "/../vendor/autoload.php");
 require_once(__DIR__ . "/app/Configuration.php");
 
+define("ISO_LANGUAGE_PATTERN", '/^(\w+)(-\w+)?$/');
+
 use \App\Configuration;
 
 /**
@@ -59,6 +61,7 @@ function prepareHTML(Configuration $conf)
 		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
 	}
 
+	$mapboxScriptSrcs = 'https://api.mapbox.com';
 	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 
 	$maptilerConnectSrcs = '';
@@ -95,10 +98,10 @@ function prepareHTML(Configuration $conf)
 			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
-			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $googleAnalyticsScriptSrcs ; " .
+			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $sentryConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $matomoConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
