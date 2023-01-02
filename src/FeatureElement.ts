@@ -119,7 +119,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature) {
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
     } else {
-        etymologies.filter(e => e && e.wd_id).forEach(function (ety) {
+        etymologies.filter(e => e?.wd_id).forEach(function (ety) {
             try {
                 etymologies_container.appendChild(etymologyToDomElement(ety))
             } catch (err) {
@@ -127,27 +127,31 @@ export function featureToDomElement(feature: MapGeoJSONFeature) {
             }
         });
 
-        const text_etymology = properties.text_etymology;
-        if (text_etymology && typeof text_etymology == 'string' && text_etymology != 'null') {
-            const textEtymologyAlreadyShownByWikidata = etymologies.some((etymology: any) => {
-                const etymologyName = etymology?.name?.toLowerCase();
-                return typeof etymologyName == 'string' && etymologyName.includes(text_etymology.trim().toLowerCase());
+        const textEtyName = properties.text_etymology === "null" ? null : properties.text_etymology,
+            textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
+            textEtyDescr = properties.text_etymology_descr === "null" ? null : properties.text_etymology_descr,
+            textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
+        let textEtyNameShouldBeShown = textEtyNameExists;
+        if (textEtyNameExists) {
+            const textEtyNameAlreadyShownByWikidata = etymologies.some((etymology) => {
+                const wdEtymologyName = etymology?.name?.toLowerCase(),
+                    etyMatchesTextEty = wdEtymologyName?.includes(textEtyName.trim().toLowerCase());
+                return etyMatchesTextEty;
             });
-            let ety_descr = properties.text_etymology_descr;
-            ety_descr = ety_descr && typeof ety_descr == 'string' && ety_descr != 'null' ? ety_descr : null;
-            if (!ety_descr && textEtymologyAlreadyShownByWikidata) {
-                console.info("featureToDomElement: ignoring text etymology because already shown");
-            } else {
-                console.info("featureToDomElement: showing text etymology: ", { feature, text_etymology, ety_descr });
-                etymologies_container.appendChild(etymologyToDomElement({
-                    name: text_etymology,
-                    description: ety_descr,
-                    from_osm: true,
-                    from_osm_type: properties.osm_type,
-                    from_osm_id: properties.osm_id,
-                    from_wikidata: false,
-                } as Etymology));
-            }
+            textEtyNameShouldBeShown = textEtyNameExists && !textEtyNameAlreadyShownByWikidata;
+        }
+        /*console.info("featureToDomElement: showing text etymology? ",
+            { feature, textEtyName, textEtyNameExists, textEtyNameShouldBeShown, textEtyDescr, textEtyDescrExists }
+        );*/
+        if (textEtyNameShouldBeShown || textEtyDescrExists) {
+            etymologies_container.appendChild(etymologyToDomElement({
+                name: textEtyName,
+                description: textEtyDescr,
+                from_osm: true,
+                from_osm_type: properties.osm_type,
+                from_osm_id: properties.osm_id,
+                from_wikidata: false,
+            } as Etymology));
         }
     }
 

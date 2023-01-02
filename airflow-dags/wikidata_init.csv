@@ -174,7 +174,6 @@ Q7270,republic,,,Locations,#33ffbb
 Q3455524,administrative region,,,Locations,#33ffbb
 Q16110,region of Italy,,,Locations,#33ffbb
 Q253019,Ortsteil,,,Locations,#33ffbb
-Q134626,district capital,,,Locations,#33ffbb
 Q387917,administrative territorial entity of Germany,,,Locations,#33ffbb
 Q34876,province,,,Locations,#33ffbb
 Q532,village,,,Locations,#33ffbb
@@ -219,6 +218,8 @@ Q22988604,mythological Greek character,,,People,#3399ff
 Q3658341,literary character,,,People,#3399ff
 Q515,city,,,Human settlements,#7733ff
 Q1549591,big city,,,Human settlements,#7733ff
+Q1187811,college town,,,Human settlements,#7733ff
+Q134626,district capital,,,Human settlements,#7733ff
 Q208511,global city,,,Human settlements,#7733ff
 Q702492,urban area,,,Human settlements,#7733ff
 Q956214,chef-lieu,,,Human settlements,#7733ff
