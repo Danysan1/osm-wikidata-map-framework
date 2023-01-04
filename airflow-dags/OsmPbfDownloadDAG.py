@@ -134,9 +134,8 @@ class OsmPbfDownloadDAG(DAG):
 
         See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
         """
-        date_path = f'/workdir/{prefix}/{prefix}.date.txt'
         pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
-        date_dataset = Dataset(f'file://{date_path}')
+        pbf_date_path = f'/workdir/{prefix}/{prefix}.osm.pbf.date.txt'
         pbf_dataset = Dataset(f'file://{pbf_path}')
 
         default_params = {
@@ -152,7 +151,7 @@ class OsmPbfDownloadDAG(DAG):
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
-                tags=['oem', 'pbf-download', 'produces'],
+                tags=['oem', f'oem-{prefix}', 'pbf-download', 'produces'],
                 params=default_params,
                 doc_md="""
                     # Open Etymology Map DB initialization
@@ -175,7 +174,7 @@ class OsmPbfDownloadDAG(DAG):
         task_check_whether_to_procede = ShortCircuitOperator(
             task_id = "check_whether_to_procede",
             python_callable = check_whether_to_procede,
-            op_kwargs = { "date_path": date_path },
+            op_kwargs = { "date_path": pbf_date_path },
             dag = self,
             doc_md=check_whether_to_procede.__doc__
         )
@@ -293,24 +292,14 @@ class OsmPbfDownloadDAG(DAG):
 
         task_save_pbf = BashOperator(
             task_id = "save_pbf",
-            bash_command = 'mv "$sourceFilePath" "$pbfPath"',
+            bash_command = 'mv "$sourceFilePath" "$pbfPath" && echo "$date" > "$datePath"',
             env = {
                 "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
                 "pbfPath": pbf_path,
+                "date": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}",
+                "datePath": pbf_date_path,
             },
             outlets = pbf_dataset,
             dag = self
         )
         task_join >> task_save_pbf
-
-        task_save_date = BashOperator(
-            task_id = "save_date",
-            bash_command = 'echo "$date" > "$datePath"',
-            env = {
-                "date": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}",
-                "datePath": date_path,
-            },
-            outlets = date_dataset,
-            dag = self
-        )
-        task_join >> task_save_date

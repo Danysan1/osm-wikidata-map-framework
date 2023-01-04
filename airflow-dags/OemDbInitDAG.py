@@ -145,26 +145,24 @@ class OemDbInitDAG(DAG):
         if not prefix or prefix=="":
             raise Exception("Prefix must be specified")
         
-        date_path = f'/workdir/{prefix}/{prefix}.date.txt'
         filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
+        filtered_pbf_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf.date.txt'
         pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
-        date_dataset = Dataset(f'file://{date_path}')
-        pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
+        pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
         pg_dataset = Dataset(f'file://{pg_path}')
 
         default_params={
             "prefix": prefix,
             "upload_db_conn_id": upload_db_conn_id,
             "use_osm2pgsql": use_osm2pgsql,
-            "date_path": date_path,
             "drop_temporary_tables": True,
         }
 
         super().__init__(
             start_date=start_date,
             catchup=False,
-            schedule = [date_dataset,pbf_dataset,pg_dataset],
-            tags=['oem', 'db-init', 'consumes'],
+            schedule = [pg_dataset],
+            tags=['oem', f'oem-{prefix}', 'oem-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
             **kwargs
@@ -268,7 +266,7 @@ class OemDbInitDAG(DAG):
             task_id = "load_elements_with_osm2pgsql",
             container_name = "open-etymology-map-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
-            source_path= "{{ ti.xcom_pull(task_ids='choose_whether_to_ffwd', key='filtered_file_path') }}",
+            source_path = filtered_pbf_path,
             dag = self,
             task_group=group_db_load,
             doc_md="""
@@ -586,7 +584,7 @@ class OemDbInitDAG(DAG):
         task_read_last_update = BashOperator(
             task_id = "read_last_data_update",
             bash_command='cat "$dateFilePath"',
-            env = { "dateFilePath": date_path },
+            env = { "dateFilePath": pg_date_path },
             do_xcom_push = True,
             dag = self,
         )
