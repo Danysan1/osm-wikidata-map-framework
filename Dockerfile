@@ -40,7 +40,7 @@ COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.con
 COPY "./src" "/app/src"
 RUN npm install && \
 	npm run prod && \
-	npm install --production
+	npm install --omit=dev
 
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
@@ -57,16 +57,3 @@ RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-auto
 COPY --chown=www-data:www-data ./web /var/www/html
 COPY --chown=www-data:www-data --from=npm-install /app/web/dist /var/www/html/dist
 USER www-data
-
-
-
-# https://airflow.apache.org/docs/docker-stack/build.html#adding-packages-from-requirements-txt
-FROM apache/airflow:slim-2.4.1 as airflow
-USER root
-RUN apt-get update && \
-	apt-get install -y libpq-dev gcc && \
-	rm -rf /var/lib/apt/lists/*
-USER airflow
-
-COPY requirements.txt /
-RUN pip install --no-cache-dir -r /requirements.txt

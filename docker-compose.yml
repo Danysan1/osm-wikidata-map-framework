@@ -54,8 +54,7 @@ x-airflow-common:
   image: registry.gitlab.com/openetymologymap/open-etymology-map/airflow
   build:
     context: .
-    dockerfile: Dockerfile
-    target: airflow
+    dockerfile: airflow.Dockerfile
   environment:
     &airflow-common-env
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/index.html
@@ -140,7 +139,7 @@ services:
         condition: service_completed_successfully
     networks:
       - airflow-internal
-      - airflow-worker-bridge
+      - airflow-postgis-bridge
     profiles:
       - airflow
       - dev+airflow
@@ -187,7 +186,8 @@ services:
         condition: service_completed_successfully
     networks:
       - airflow-internal
-      - airflow-worker-bridge
+      - airflow-postgis-bridge
+      - airflow-torrent-bridge
     volumes:
       - ./airflow-dags:/opt/airflow/dags
       - ./airflow-logs:/opt/airflow/logs
@@ -304,25 +304,29 @@ services:
       - airflow
       - dev+airflow
 
-  # flower: # https://flower.readthedocs.io/en/latest/
-  #   <<: *airflow-common
-  #   command: celery flower
-  #   ports:
-  #     - 5555:5555
-  #   healthcheck:
-  #     test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 5
-  #   restart: unless-stopped
-  #   depends_on:
-  #     <<: *airflow-common-depends-on
-  #     airflow-init:
-  #       condition: service_completed_successfully
-  #   networks:
-  #     - airflow-internal
-  #   profiles:
-  #     - dev+airflow
+  torrent-daemon:
+    image: linuxserver/transmission:latest
+    environment:
+      - PUID="${AIRFLOW_UID:-50000}:0"
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - db-init-work-dir:/workdir
+    networks:
+      - airflow-torrent-bridge
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9091/transmission/web/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+    profiles:
+      - airflow
+      - dev+airflow
 
   oem-postgis:
     #image: postgis/postgis:13-3.2-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
@@ -337,7 +341,7 @@ services:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
       - oem-internal
-      - airflow-worker-bridge
+      - airflow-postgis-bridge
     logging:
       driver: json-file
       options:
@@ -393,7 +397,6 @@ services:
       - oem-postgis
     networks:
       - oem-internal
-      - airflow-worker-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -471,5 +474,6 @@ volumes:
 networks:
   oem-internal:
   airflow-internal:
-  airflow-worker-bridge:
+  airflow-postgis-bridge:
+  airflow-torrent-bridge:
   pgadmin-bridge:
