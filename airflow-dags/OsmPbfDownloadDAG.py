@@ -20,11 +20,11 @@ def get_source_url(ti:TaskInstance, **context) -> str:
         The task also calculates the paths of all files that will be generated.
 
         Links:
-        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
-        * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.4.0/best-practices.html)
-        * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/models/taskinstance/index.html)
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/params.html)
+        * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.5.0/best-practices.html)
+        * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/models/taskinstance/index.html)
     """
     from os import path, makedirs
     import re
@@ -65,9 +65,9 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         Check whether the available file is newer than the existing dataset: if it is, proceed to download the data, otherwise stop here.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html#shortcircuitoperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html#shortcircuitoperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/params.html)
     """
     from pendulum import parse
     from os import path
@@ -132,7 +132,7 @@ class OsmPbfDownloadDAG(DAG):
         skip_if_already_downloaded: bool
             if True, if the OSM data has already been downloaded it will not be downloaded again
 
-        See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.5.0/index.html
         """
         pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
         pbf_date_path = f'/workdir/{prefix}/{prefix}.osm.pbf.date.txt'
@@ -147,7 +147,7 @@ class OsmPbfDownloadDAG(DAG):
         }
 
         super().__init__(
-                # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+                # https://airflow.apache.org/docs/apache-airflow/2.5.0/timezone.html
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
@@ -214,8 +214,8 @@ class OsmPbfDownloadDAG(DAG):
 
                 Links:
                 * [curl documentation](https://curl.se/docs/manpage.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/bash.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/bash.html)
             """
         )
         task_chose_download_method >> task_download_pbf
@@ -232,28 +232,28 @@ class OsmPbfDownloadDAG(DAG):
                 Explored torrent download options:
 
                 1. Download using DockerOperator + lftp
-                    * Docker image: minidocks/lftp:latest
-                    * Command: lftp -c torrent -O '{dest_folder}' '{torrent_url}'
+                    * Docker image: `minidocks/lftp:latest`
+                    * Command: `lftp -c torrent -O '{dest_folder}' '{torrent_url}'`
                     * Documentation: http://lftp.yar.ru/lftp-man.html
                     * Problems:
                         * it fails with 'Not saving nodes, DHT not ready'
                 2. Download using DockerOperator + aria2c
-                    * Docker image: 207m/aria2c:latest
-                    * Command: aria2c --dir '{dest_folder}' '{torrent_url}'
+                    * Docker image: `207m/aria2c:latest`
+                    * Command: `aria2c --dir '{dest_folder}' '{torrent_url}'`
                     * Documentation: https://aria2.github.io/manual/en/html/aria2c.html#bittorrent-metalink-options
                     * Problems:
                         * it fails
                 3. Download using DockerOperator + transmission-cli
-                    * Docker image: mikesplain/transmission-cli
-                    * Command: transmission-cli --download-dir '{dest_folder}' '{torrent_url}'
+                    * Docker image: `mikesplain/transmission-cli`
+                    * Command: `transmission-cli --download-dir '{dest_folder}' '{torrent_url}'`
                     * Documentation: https://manpages.ubuntu.com/manpages/bionic/man1/transmission-cli.1.html
                     * Problems:
                         * transmission-cli is deprecated in favor of transmission-remote
                         * it fails with 'Not saving nodes, DHT not ready'
                         * even if it fails it returns a success return code
                 4. Download using DockerOperator + transmission-remote (+ transmission-daemon)
-                    * Docker image: linuxserver/transmission
-                    * Command: transmission-remote torrent-daemon:9091 --download-dir '{dest_folder}' --add '{torrent_url}'
+                    * Docker image: `linuxserver/transmission`
+                    * Command: `transmission-remote torrent-daemon:9091 --download-dir '{dest_folder}' --add '{torrent_url}'`
                     * Documentation: https://linux.die.net/man/1/transmission-remote
                     * Notes:
                         * requires transmission-daemon (see torrent-daemon service in docker-compose.yml)

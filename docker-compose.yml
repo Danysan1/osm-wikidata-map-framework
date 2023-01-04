@@ -1,8 +1,8 @@
-# Extends https://airflow.apache.org/docs/apache-airflow/2.4.0/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/2.5.0/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/2.4.0/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/2.5.0/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/2.5.0/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:2.4.0
+#                                Default: apache/airflow:2.5.0
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # Those configurations are useful mostly in case of standalone testing/running Airflow in test/try-out mode
@@ -57,7 +57,7 @@ x-airflow-common:
     dockerfile: airflow.Dockerfile
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/index.html
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.5.0/executor/index.html
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -144,7 +144,7 @@ services:
       - airflow
       - dev+airflow
 
-  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/scheduler.html
+  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/scheduler.html
     <<: *airflow-common
     command: scheduler
     healthcheck:
