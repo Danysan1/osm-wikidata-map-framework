@@ -1,4 +1,6 @@
 import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
+
+import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, etymologyToDomElement } from "./EtymologyElement";
 
 interface FeatureProperties {
@@ -18,12 +20,7 @@ interface FeatureProperties {
     wikipedia: string | null;
 }
 
-/**
- * 
- * @param {object} feature 
- * @return {HTMLElement}
- */
-export function featureToDomElement(feature: MapGeoJSONFeature) {
+export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
     const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
@@ -108,7 +105,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature) {
     if (!element_location_button) {
         console.warn("Missing element_location_button");
     } else {
-        let coord = (feature.geometry as any).coordinates;
+        let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
         while (Array.isArray(coord) && Array.isArray(coord[0])) {
             coord = coord[0];
         }
@@ -131,19 +128,20 @@ export function featureToDomElement(feature: MapGeoJSONFeature) {
             textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
             textEtyDescr = properties.text_etymology_descr === "null" ? null : properties.text_etymology_descr,
             textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
-        let textEtyNameShouldBeShown = textEtyNameExists;
-        if (textEtyNameExists) {
-            const textEtyNameAlreadyShownByWikidata = etymologies.some((etymology) => {
-                const wdEtymologyName = etymology?.name?.toLowerCase(),
-                    etyMatchesTextEty = wdEtymologyName?.includes(textEtyName.trim().toLowerCase());
-                return etyMatchesTextEty;
-            });
-            textEtyNameShouldBeShown = textEtyNameExists && !textEtyNameAlreadyShownByWikidata;
+        let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
+
+        if (textEtyNameExists && !textEtyDescrExists) {
+            // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+            textEtyShouldBeShown = etymologies.some((etymology) =>
+                !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
+                !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
+            );
         }
+
         /*console.info("featureToDomElement: showing text etymology? ",
-            { feature, textEtyName, textEtyNameExists, textEtyNameShouldBeShown, textEtyDescr, textEtyDescrExists }
+            { feature, textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists }
         );*/
-        if (textEtyNameShouldBeShown || textEtyDescrExists) {
+        if (textEtyShouldBeShown) {
             etymologies_container.appendChild(etymologyToDomElement({
                 name: textEtyName,
                 description: textEtyDescr,
