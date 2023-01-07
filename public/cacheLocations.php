@@ -6,7 +6,7 @@ use \App\ServerTiming;
 $serverTiming = new ServerTiming();
 
 require_once("./app/IniEnvConfiguration.php");
-require_once("./app/query/cache/CSVCachedBBoxQuery.php");
+require_once("./app/query/caching/CSVCachedBBoxQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 

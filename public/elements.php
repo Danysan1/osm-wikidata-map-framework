@@ -13,7 +13,7 @@ require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
 require_once("./app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
 require_once("./app/query/postgis/BBoxEtymologyCenterPostGISQuery.php");
 require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
-require_once("./app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
+require_once("./app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 

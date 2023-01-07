@@ -9,7 +9,7 @@ require_once(__DIR__ . "/app/IniEnvConfiguration.php");
 require_once(__DIR__ . "/app/BaseBoundingBox.php");
 require_once(__DIR__ . "/app/PostGIS_PDO.php");
 require_once(__DIR__ . "/app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
-require_once(__DIR__ . "/app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
 require_once(__DIR__ . "/app/query/combined/BBoxGeoJSONEtymologyQuery.php");
 require_once(__DIR__ . "/app/query/postgis/BBoxEtymologyPostGISQuery.php");
 require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
