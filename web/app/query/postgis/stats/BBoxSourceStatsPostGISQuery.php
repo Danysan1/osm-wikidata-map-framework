@@ -39,6 +39,7 @@ class BBoxSourceStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQu
 
     public function getQuery(): string
     {
+        $filterQuery = $this->getFilterClause();
         return
             "SELECT COALESCE(JSON_AGG(JSON_BUILD_OBJECT(
                 'count', count,
@@ -53,6 +54,7 @@ class BBoxSourceStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQu
             FROM oem.element
             JOIN oem.etymology ON et_el_id = el_id
             WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+            $filterQuery
             GROUP BY source_color, source_name
             ORDER BY count DESC
         ) AS ele";

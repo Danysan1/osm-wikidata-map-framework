@@ -37,6 +37,7 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
+$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
@@ -70,7 +71,10 @@ if (!empty($db) && $db instanceof PDO) {
             $safeLanguage,
             $db,
             $wikidataEndpointURL,
-            $serverTiming
+            $serverTiming,
+            true,
+            null,
+            $source
         );
     } elseif ($to == "typeStats") {
         $query = new BBoxTypeStatsPostGISQuery(
@@ -78,13 +82,17 @@ if (!empty($db) && $db instanceof PDO) {
             $safeLanguage,
             $db,
             $wikidataEndpointURL,
-            $serverTiming
+            $serverTiming,
+            true,
+            null,
+            $source
         );
     } elseif ($to == "sourceStats") {
         $query = new BBoxSourceStatsPostGISQuery(
             $bbox,
             $db,
-            $serverTiming
+            $serverTiming,
+            $source
         );
     } else {
         throw new Exception("Bad 'to' parameter");

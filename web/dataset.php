@@ -13,14 +13,14 @@ prepareCSV($conf);
 if ($conf->getBool("db_enable")) {
     $db = new PostGIS_PDO($conf);
     $stm = $db->query(
-        "SELECT wikidata_id, name, from_osm, from_wikidata, from_propagation
+        "SELECT wikidata_id, name, from_osm_etymology, from_osm_subject, from_osm_buried, from_wikidata, from_propagation
         FROM oem.v_dataset"
     );
 
     header('Content-Disposition: attachment; filename=open_etymology_map_dataset_'.date("Y-m-d").'.csv');  
 
     $output = fopen("php://output", "w");  
-    fputcsv($output, array('wikidata_id','name','occurences','from_osm','from_wikidata','from_wikidata_parts','from_propagation'));  
+    fputcsv($output, array('wikidata_id','name','from_osm_etymology','from_osm_subject','from_osm_buried','from_wikidata','from_propagation'));  
     while($row = $stm->fetch())
         fputcsv($output, $row);
     fclose($output);  

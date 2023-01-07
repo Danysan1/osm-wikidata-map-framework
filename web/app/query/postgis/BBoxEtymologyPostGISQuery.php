@@ -51,6 +51,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
 
     public function getQuery(): string
     {
+        $filterClause = $this->getFilterClause();
         $limitClause = $this->getLimitClause();
         return
             "SELECT JSON_BUILD_OBJECT(
@@ -74,7 +75,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     MIN(gender.wd_gender_color) AS gender_color,
                     MIN(instance.wd_type_color) AS type_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
-                        'from_osm', et_from_osm,
+                        'from_osm', et_from_osm_etymology OR et_from_osm_subject OR et_from_osm_buried,
                         'from_osm_type', from_el.el_osm_type,
                         'from_osm_id', from_el.el_osm_id,
                         'from_wikidata', from_wd IS NOT NULL,
@@ -130,6 +131,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE (el.el_has_text_etymology OR wd.wd_id IS NOT NULL)
+                $filterClause
                 AND el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el.el_id
                 $limitClause

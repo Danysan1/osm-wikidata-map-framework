@@ -32,6 +32,7 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
+$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 //$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
 //$onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
@@ -76,7 +77,7 @@ if ($from == "bbox") {
             $serverTiming
         );
     } else {
-        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming);
+        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source);
     }
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError("centerLat", FILTER_VALIDATE_FLOAT);

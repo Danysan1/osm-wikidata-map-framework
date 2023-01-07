@@ -13,7 +13,6 @@ import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getConfig } from './config';
 import './style.css';
-import { DropdownControl } from './DropdownControl';
 import { SourceControl, SourceItem } from './SourceControl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
@@ -26,7 +25,7 @@ const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private currentEtymologyColorControl?: EtymologyColorControl;
-    private currentSourceControl?: DropdownControl;
+    private currentSourceControl?: SourceControl;
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
 
@@ -127,7 +126,8 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent) {
-                this.currentEtymologyColorControl?.updateChart(e);
+                const source = this.currentSourceControl?.getCurrentID() ?? "all";
+                this.currentEtymologyColorControl?.updateChart(e, source);
             }
         }
     }
@@ -202,6 +202,7 @@ export class EtymologyMap extends Map {
                 maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.1234 => 0.2
                 maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.1234 => 0.2
                 language,
+                source,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 elements_url = './elements.php?' + queryString;
@@ -723,7 +724,8 @@ export class EtymologyMap extends Map {
             { id: "wikidata", text: "wikidata + P138/P547/P825" },
             { id: "propagated", text: "Propagated" },
         ];
-        this.addControl(new SourceControl(sourceItems, this.updateDataSource, "all"));
+        this.currentSourceControl = new SourceControl(sourceItems, this.updateDataSource.bind(this), "all");
+        this.addControl(this.currentSourceControl);
 
         this.addControl(new InfoControl(), 'top-right');
 

@@ -21,35 +21,11 @@ use Exception;
 
 abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 {
-    /**
-     * @var string $language
-     */
-    private $language;
+    private string $language;
+    private string $wikidataEndpointURL;
+    private bool $fetchAttribution;
+    private ?int $maxElements;
 
-    /**
-     * @var string $wikidataEndpointURL
-     */
-    private $wikidataEndpointURL;
-
-    /**
-     * @var boolean $fetchAttribution
-     */
-    private $fetchAttribution;
-
-    /**
-     * @var int|null $maxElements
-     */
-    private $maxElements;
-
-    /**
-     * @param BoundingBox $bbox
-     * @param string $language
-     * @param PDO $db
-     * @param string $wikidataEndpointURL
-     * @param ServerTiming|null $serverTiming
-     * @param bool $fetchAttribution
-     * @param int|null $maxElements
-     */
     public function __construct(
         BoundingBox $bbox,
         string $language,
@@ -57,11 +33,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         string $wikidataEndpointURL,
         ?ServerTiming $serverTiming = null,
         bool $fetchAttribution = true,
-        ?int $maxElements = null
+        ?int $maxElements = null,
+        ?string $source = null
     ) {
-        parent::__construct($bbox, $db, $serverTiming);
+        parent::__construct($bbox, $db, $serverTiming, $source);
 
-        if($maxElements!==null && $maxElements<=0) {
+        if ($maxElements !== null && $maxElements <= 0) {
             throw new Exception("maxElements must be > 0");
         }
 
@@ -91,11 +68,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         return $this->maxElements === null ? ' ' : " LIMIT $this->maxElements ";
     }
 
-    /**
-     * @return void
-     */
-    protected function downloadMissingText()
+    protected function downloadMissingText(): void
     {
+        $filterClause = $this->getFilterClause();
         $limitClause = $this->getLimitClause();
         $sthMissingWikidata = $this->getDB()->prepare(
             "SELECT DISTINCT wd.wd_wikidata_cod
@@ -105,6 +80,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             LEFT JOIN oem.wikidata_text AS wdt
                 ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
             WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+            $filterClause
             AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)
             $limitClause"
         );

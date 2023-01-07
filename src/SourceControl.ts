@@ -18,7 +18,7 @@ export class SourceControl extends DropdownControl {
             onSelect: () => { onSourceChange(source.id); }
         }));
         super(
-            '🗺️',
+            '⚙️',
             dropdownItems,
             startLayerId,
             'Choose source'

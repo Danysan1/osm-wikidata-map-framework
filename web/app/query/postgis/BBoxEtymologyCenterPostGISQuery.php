@@ -48,6 +48,7 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
 
     public function getQuery(): string
     {
+        $filterClause = $this->getFilterClause();
         return
             "SELECT JSON_BUILD_OBJECT(
             'type', 'FeatureCollection',
@@ -57,7 +58,7 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             SELECT ST_Centroid(ST_Collect(el_geometry)) AS geom
             FROM oem.element
             WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-            AND el_id IN (SELECT et_el_id FROM oem.etymology)
+            AND el_id IN (SELECT et_el_id FROM oem.etymology WHERE TRUE $filterClause)
             GROUP BY ST_ReducePrecision(ST_Centroid(el_geometry), 0.1), LOWER(el_tags->>'name')
         ) as ele";
     }

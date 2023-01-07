@@ -15,25 +15,31 @@ use \App\Query\PostGIS\PostGISQuery;
 
 abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
 {
-    /**
-     * @var BoundingBox $bbox
-     */
-    private $bbox;
+    private BoundingBox $bbox;
+    private string $filterClause;
 
-    /**
-     * @param BoundingBox $bbox
-     * @param PDO $db
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($bbox, $db, $serverTiming = null)
+    public function __construct(BoundingBox $bbox, PDO $db, ?ServerTiming $serverTiming = null, ?string $source = null)
     {
         parent::__construct($db, $serverTiming);
         $this->bbox = $bbox;
+        $this->filterClause = match ($source) {
+            'etymology' => 'AND et_from_osm_etymology AND et_recursion_depth = 0',
+            'subject' => 'AND et_from_osm_subject AND et_recursion_depth = 0',
+            'buried' => 'AND et_from_osm_buried AND et_recursion_depth = 0',
+            'wikidata' => 'AND et_from_wikidata_wd_id IS NOT NULL AND et_recursion_depth = 0',
+            'propagated' => 'AND et_recursion_depth != 0',
+            default => ''
+        };
     }
 
     public function getBBox(): BoundingBox
     {
         return $this->bbox;
+    }
+
+    protected function getFilterClause(): string
+    {
+        return $this->filterClause;
     }
 
     public function __toString(): string

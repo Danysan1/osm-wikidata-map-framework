@@ -42,6 +42,7 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
 
     public function getQuery(): string
     {
+        $filterClause = $this->getFilterClause();
         return
             "SELECT COALESCE(JSON_AGG(JSON_BUILD_OBJECT(
                     'count', count,
@@ -65,6 +66,7 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
                 WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 AND gender_text.wdt_name IS NOT NULL
+                $filterClause
                 GROUP BY gender.wd_id, gender_text.wdt_name
                 ORDER BY count DESC
             ) AS ele";

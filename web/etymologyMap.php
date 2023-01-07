@@ -31,6 +31,7 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
+$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
@@ -77,7 +78,8 @@ if (!empty($db) && $db instanceof PDO) {
         $wikidataEndpointURL,
         $serverTiming,
         $fetchAttribution,
-        $maxElements
+        $maxElements,
+        $source
     );
 } else {
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
