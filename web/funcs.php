@@ -122,6 +122,16 @@ function prepareText(Configuration $conf)
  * @param Configuration $conf
  * @return void
  */
+function prepareCSV(Configuration $conf)
+{
+	preparePage($conf);
+	header("Content-Type: text/csv; charset=utf-8");
+}
+
+/**
+ * @param Configuration $conf
+ * @return void
+ */
 function prepareJSON(Configuration $conf)
 {
 	preparePage($conf);

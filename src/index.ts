@@ -63,7 +63,7 @@ function initMap() {
         true // Lazy load the plugin
     );
 
-    let geocoderControl: IControl|null;
+    let geocoderControl: IControl | null;
     if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
         console.info("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
         geocoderControl = new MapboxGeocoder({
@@ -88,11 +88,20 @@ function initMap() {
  * @see https://maplibre.org/maplibre-gl-js-docs/example/check-for-support/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
  */
-function initPage(e: Event) {
+function initPage() {
     if (!supported()) {
         logErrorMessage("Device/Browser does not support Maplibre/Mapbox GL JS");
         alert('Your browser is not supported');
     } else {
         initMap();
     }
+
+    Array.from(document.getElementsByClassName("dataset_button")).forEach(
+        (element) => element.addEventListener("click", () => setTimeout(() => alert(
+            'This dataset is derived from OpenStreetMap and Wikidata and distributed under the Open Data Commons Open Database License (ODbL). ' +
+            'You are free to copy, distribute, transmit and adapt our data, as long as you credit OpenStreetMap and its contributors. ' +
+            'If you alter or build upon our data, you may distribute the result only under the same licence. ' +
+            'Find out more at https://www.openstreetmap.org/copyright . '
+        ), 1))
+    );
 }
