@@ -568,7 +568,7 @@ class OemDbInitDAG(DAG):
         task_global_map = PostgresOperator(
             task_id = "setup_global_map",
             postgres_conn_id = local_db_conn_id,
-            sql = "sql/global-map.sql",
+            sql = "sql/global-map-view.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md="""
@@ -581,6 +581,23 @@ class OemDbInitDAG(DAG):
             """
         )
         task_move_ele >> task_global_map
+
+        task_dataset = PostgresOperator(
+            task_id = "setup_dataset",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/dataset-view.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # Save the dataset view
+
+                Create in the local PostGIS DB the materialized view used for the dataset download.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_move_ele >> task_dataset
 
         task_read_last_update = BashOperator(
             task_id = "read_last_data_update",
@@ -641,7 +658,7 @@ class OemDbInitDAG(DAG):
                 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
-        [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_save_last_update, task_create_work_dir] >> task_pg_dump
+        [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_dataset, task_save_last_update, task_create_work_dir] >> task_pg_dump
 
         group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 

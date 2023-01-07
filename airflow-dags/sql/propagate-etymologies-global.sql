@@ -39,5 +39,4 @@ JOIN oem.osmdata AS new_el
     ON new_el.osm_tags ? 'highway'
     AND new_el.osm_tags ? 'name'
     AND pet.low_name = LOWER(new_el.osm_tags->>'name')
-WHERE old_et.et_recursion_depth = 0
 ON CONFLICT (et_el_id, et_wd_id) DO NOTHING
