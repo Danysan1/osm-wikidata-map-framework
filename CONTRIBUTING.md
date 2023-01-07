@@ -224,14 +224,14 @@ docker-compose --profile "prod" up -d
 
 #### Front-end
 
-The front-end is composed by [index.php](web/index.php), [style.css](web/style.css) and [index.js](web/index.js).
+The front-end is composed by [index.php](public/index.php), [style.css](public/style.css) and [index.js](public/index.js).
 The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) (a tentative implementation with its FOSS fork, [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/), is WIP with no ETA) and the charts are created using [chart.js](https://www.chartjs.org/).
 
 At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from [`global-map.php`](https://etymology.dsantini.it/global-map.php).
 
-At low zoom level ([`threshold_zoom_level`](.env.example) > zoom > [`min_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](web/elements.php).
+At low zoom level ([`threshold_zoom_level`](.env.example) > zoom > [`min_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](public/elements.php).
 
-At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](web/etymologyMap.php) .
+At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](public/etymologyMap.php) .
 
 #### Back-end (v2, using PostGIS DB)
 
@@ -318,11 +318,11 @@ pbf <-- init
 
 An Apache Airflow pipeline defined in [db-init.py](airflow-dags/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 
-Once the DB is initialized, this is the data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
+Once the DB is initialized, this is the data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
-1. [`BBoxTextPostGISQuery::downloadMissingText()`](web/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
-    - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](web/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
-2. [`BBoxEtymologyPostGISQuery`](web/app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
+1. [`BBoxTextPostGISQuery::downloadMissingText()`](public/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
+    - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](public/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
+2. [`BBoxEtymologyPostGISQuery`](public/app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
 
 ##### Database initialization
 
@@ -391,7 +391,7 @@ frame oem as "Open Etymology Map v1" {
             card BBoxEtymologyCenterOverpassQuery
         }
 /'
-        package "App\Query\Cache" {
+        package "App\Query\Caching" {
             card CSVCachedBBoxGeoJSONQuery
             card CSVCachedBBoxJSONQuery
         }
@@ -440,24 +440,24 @@ WikidataQuery --(0- wikidata
 
 </details>
 
-Data gathering process in [etymologyMap.php](web/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db_enable = false`):
+Data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db_enable = false`):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
-   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
+   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](public/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
    - Otherwise it is necessary to fetch the data from OpenStreetMap through [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
-      1. Query Overpass API in the selected area to get elements with etymology ([BBoxEtymologyOverpassQuery](web/app/query/overpass/BBoxEtymologyOverpassQuery.php)).
-      2. Transform the JSON result into GeoJSON ([OverpassEtymologyQueryResult](web/app/result/overpass/OverpassEtymologyQueryResult.php)).
-      3. Obtain a set of Wikidata IDs to get information about ([GeoJSON2XMLEtymologyWikidataQuery](web/app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
+      1. Query Overpass API in the selected area to get elements with etymology ([BBoxEtymologyOverpassQuery](public/app/query/overpass/BBoxEtymologyOverpassQuery.php)).
+      2. Transform the JSON result into GeoJSON ([OverpassEtymologyQueryResult](public/app/result/overpass/OverpassEtymologyQueryResult.php)).
+      3. Obtain a set of Wikidata IDs to get information about ([GeoJSON2XMLEtymologyWikidataQuery](public/app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
       4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
-         - If it is, use the cached result ([CSVCachedStringSetXMLQuery](web/app/query/cache/CSVCachedStringSetXMLQuery.php)).
+         - If it is, use the cached result ([CSVCachedStringSetXMLQuery](public/app/query/cache/CSVCachedStringSetXMLQuery.php)).
          - Otherwise it is necessary to fetch the data from OpenStreetMap.
-            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([EtymologyIDListXMLWikidataQuery](web/app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
-            2. Cache the XML result ([CSVCachedStringSetXMLQuery](web/app/query/cache/CSVCachedStringSetXMLQuery.php)).
-      5. Obtain from the XML result from Wikidata a matrix of details for each element ([XMLWikidataEtymologyQueryResult](web/app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
-      6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([GeoJSON2GeoJSONEtymologyWikidataQuery](web/app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
-      7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](web/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
+            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([EtymologyIDListXMLWikidataQuery](public/app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
+            2. Cache the XML result ([CSVCachedStringSetXMLQuery](public/app/query/cache/CSVCachedStringSetXMLQuery.php)).
+      5. Obtain from the XML result from Wikidata a matrix of details for each element ([XMLWikidataEtymologyQueryResult](public/app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
+      6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([GeoJSON2GeoJSONEtymologyWikidataQuery](public/app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
+      7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](public/app/query/cache/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
-The output of [etymologyMap.php](web/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [FeatureProperties](src/FeatureElement.ts#L4), [Etymology](src/EtymologyElement.ts#L3) and [ImageResponse](src/ImageElement.ts#L7).
+The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [FeatureProperties](src/FeatureElement.ts#L4), [Etymology](src/EtymologyElement.ts#L3) and [ImageResponse](src/ImageElement.ts#L7).
 
-The content of the output of [stats.php](web/stats.php) is defined in the [EtymologyStat](src/EtymologyColorControl.ts#L38) interface.
+The content of the output of [stats.php](public/stats.php) is defined in the [EtymologyStat](src/EtymologyColorControl.ts#L38) interface.

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Query\Cache;
+namespace App\Query\Caching;
 
 require_once(__DIR__ . "/CSVCachedBBoxQuery.php");
 require_once(__DIR__ . "/../BBoxJSONQuery.php");
@@ -8,7 +8,7 @@ require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/JSONQueryResult.php");
 require_once(__DIR__ . "/../../result/JSONLocalQueryResult.php");
 
-use \App\Query\Cache\CSVCachedBBoxQuery;
+use \App\Query\Caching\CSVCachedBBoxQuery;
 use \App\Query\BBoxJSONQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\JSONLocalQueryResult;

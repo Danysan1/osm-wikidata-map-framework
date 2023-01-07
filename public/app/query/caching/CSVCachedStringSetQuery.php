@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Query\Cache;
+namespace App\Query\Caching;
 
 require_once(__DIR__ . "/CSVCachedQuery.php");
 require_once(__DIR__ . "/../StringSetQuery.php");
@@ -11,9 +11,9 @@ require_once(__DIR__ . "/../../StringSet.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use \App\Query\Cache\CSVCachedQuery;
+use \App\Query\Caching\CSVCachedQuery;
 use \App\Query\StringSetQuery;
-use \App\Query\Cache\CachedStringSetQuery;
+use \App\Query\Caching\CachedStringSetQuery;
 use \App\BaseStringSet;
 use App\Result\QueryResult;
 use \App\StringSet;

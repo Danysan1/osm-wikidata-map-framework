@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Query\Cache;
+namespace App\Query\Caching;
 
 require_once(__DIR__ . "/CachedQuery.php");
 require_once(__DIR__ . "/../BBoxQuery.php");
 
-use \App\Query\Cache\CachedQuery;
+use \App\Query\Caching\CachedQuery;
 use \App\Query\BBoxQuery;
 
 /**

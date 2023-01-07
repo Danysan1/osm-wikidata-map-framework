@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Query\Cache;
+namespace App\Query\Caching;
 
 require_once(__DIR__ . "/CSVCachedStringSetQuery.php");
-require_once(__DIR__ . "/../StringSetJSONQuery.php");
+require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/JSONQueryResult.php");
-require_once(__DIR__ . "/../../result/JSONLocalQueryResult.php");
+require_once(__DIR__ . "/../../result/XMLQueryResult.php");
+require_once(__DIR__ . "/../../result/XMLLocalQueryResult.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use \App\Query\Cache\CSVCachedStringSetQuery;
-use \App\Query\StringSetJSONQuery;
-use \App\Result\JSONLocalQueryResult;
-use App\Result\JSONQueryResult;
+use \App\Query\Caching\CSVCachedStringSetQuery;
+use \App\Query\StringSetXMLQuery;
+use \App\Result\XMLLocalQueryResult;
+use App\Result\XMLQueryResult;
 use App\Result\QueryResult;
 use \App\ServerTiming;
 use \App\Configuration;
@@ -23,10 +23,10 @@ use \App\Configuration;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements StringSetJSONQuery
+class CSVCachedStringSetXMLQuery extends CSVCachedStringSetQuery implements StringSetXMLQuery
 {
     /**
-     * @param StringSetJSONQuery $baseQuery
+     * @param StringSetXMLQuery $baseQuery
      * @param string $cacheFileBasePath
      * @param Configuration $config
      * @param ServerTiming|null $serverTiming
@@ -38,16 +38,16 @@ class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements Str
 
     protected function getResultFromFile(string $relativePath): QueryResult
     {
-        return new JSONLocalQueryResult(true, null, $this->cacheFileBaseURL . $relativePath);
+        return new XMLLocalQueryResult(true, null, $this->cacheFileBaseURL . $relativePath);
     }
 
     protected function createFileFromResult(QueryResult $result): string
     {
-        if (!$result instanceof JSONQueryResult) {
-            throw new \Exception("Result is not a JSONQueryResult");
+        if (!$result instanceof XMLQueryResult) {
+            throw new \Exception("Result is not a XMLQueryResult");
         }
 
-        $xml = $result->getJSON();
+        $xml = $result->getXML();
         $hash = sha1($xml);
         $xmlRelativePath = $hash . ".xml";
         $xmlAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $xmlRelativePath;
@@ -56,11 +56,12 @@ class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements Str
         return $xmlRelativePath;
     }
 
-    public function sendAndGetJSONResult(): JSONQueryResult
+    public function sendAndGetXMLResult(): XMLQueryResult
     {
         $ret = $this->send();
-        if (!$ret instanceof JSONQueryResult)
-            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
+        if (!$ret instanceof XMLQueryResult) {
+            throw new \Exception("Internal error: Result is not a XMLQueryResult");
+        }
         return $ret;
     }
 }

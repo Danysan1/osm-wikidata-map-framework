@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Query\Cache;
+namespace App\Query\Caching;
 
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../Query.php");

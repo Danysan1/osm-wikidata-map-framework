@@ -23,7 +23,7 @@ use App\PostGIS_PDO;
 use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
 use App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
 use App\Query\Overpass\CenterEtymologyOverpassQuery;
-use App\Query\Cache\CSVCachedBBoxGeoJSONQuery;
+use App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
 use App\Query\Overpass\RoundRobinOverpassConfig;
 
 $conf = new IniEnvConfiguration();

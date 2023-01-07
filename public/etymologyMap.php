@@ -8,13 +8,10 @@ $serverTiming = new ServerTiming();
 require_once(__DIR__ . "/app/IniEnvConfiguration.php");
 require_once(__DIR__ . "/app/BaseBoundingBox.php");
 require_once(__DIR__ . "/app/PostGIS_PDO.php");
-require_once(__DIR__ . "/app/query/postgis/stats/BBoxGenderStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/postgis/stats/BBoxTypeStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/postgis/stats/BBoxSourceStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/wikidata/stats/GenderStatsWikidataFactory.php");
-require_once(__DIR__ . "/app/query/wikidata/stats/TypeStatsWikidataFactory.php");
-require_once(__DIR__ . "/app/query/cache/CSVCachedBBoxJSONQuery.php");
-require_once(__DIR__ . "/app/query/combined/BBoxStatsOverpassWikidataQuery.php");
+require_once(__DIR__ . "/app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
+require_once(__DIR__ . "/app/query/cache/CSVCachedBBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/app/query/combined/BBoxGeoJSONEtymologyQuery.php");
+require_once(__DIR__ . "/app/query/postgis/BBoxEtymologyPostGISQuery.php");
 require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
 require_once(__DIR__ . "/funcs.php");
 $serverTiming->add("0_include");
@@ -22,31 +19,33 @@ $serverTiming->add("0_include");
 use \App\IniEnvConfiguration;
 use \App\BaseBoundingBox;
 use \App\PostGIS_PDO;
-use \App\Query\Cache\CSVCachedBBoxJSONQuery;
-use \App\Query\Combined\BBoxStatsOverpassWikidataQuery;
-use \App\Query\PostGIS\Stats\BBoxGenderStatsPostGISQuery;
-use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
-use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
-use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
-use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
+use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
+use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
+use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
-prepareJSON($conf);
+prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
-$to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
-$enableDB = $conf->getBool("db_enable");
+$maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
+$fetchAttribution = $conf->getBool("fetch_attribution");
 
-if ($enableDB)
+$enableDB = $conf->getBool("db_enable");
+if ($enableDB) {
+    //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
+} else {
+    //error_log("etymologyMap.php NOT using DB");
+}
 
 // "en-US" => "en"
 $langMatches = [];
@@ -63,56 +62,39 @@ $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
 $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
 
 $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+$bboxArea = $bbox->getArea();
+//error_log("BBox area: $bboxArea");
+$maxArea = (float)$conf->get("wikidata_bbox_max_area");
+if ($bboxArea > $maxArea) {
+    http_response_code(400);
+    die('{"error":"The requested area is too large. Please use a smaller area."};');
+}
 
 if (!empty($db) && $db instanceof PDO) {
-    if ($to == "genderStats") {
-        $query = new BBoxGenderStatsPostGISQuery(
-            $bbox,
-            $safeLanguage,
-            $db,
-            $wikidataEndpointURL,
-            $serverTiming,
-            true,
-            null,
-            $source
-        );
-    } elseif ($to == "typeStats") {
-        $query = new BBoxTypeStatsPostGISQuery(
-            $bbox,
-            $safeLanguage,
-            $db,
-            $wikidataEndpointURL,
-            $serverTiming,
-            true,
-            null,
-            $source
-        );
-    } elseif ($to == "sourceStats") {
-        $query = new BBoxSourceStatsPostGISQuery(
-            $bbox,
-            $db,
-            $serverTiming,
-            $source
-        );
-    } else {
-        throw new Exception("Bad 'to' parameter");
-    }
+    $query = new BBoxEtymologyPostGISQuery(
+        $bbox,
+        $safeLanguage,
+        $db,
+        $wikidataEndpointURL,
+        $serverTiming,
+        $fetchAttribution,
+        $maxElements,
+        $source
+    );
 } else {
-    if ($to == "genderStats") {
-        $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-    } elseif ($to == "typeStats") {
-        $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-    } else {
-        throw new Exception("Bad 'to' parameter");
-    }
-    
-    $baseQuery = new BBoxStatsOverpassWikidataQuery(
+    $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
+        $safeLanguage,
+        $wikidataEndpointURL,
+        $cacheFileBasePath . $safeLanguage . "_",
+        $conf
+    );
+    $baseQuery = new BBoxGeoJSONEtymologyQuery(
         $bbox,
         $overpassConfig,
         $wikidataFactory,
         $serverTiming
     );
-    $query = new CSVCachedBBoxJSONQuery(
+    $query = new CSVCachedBBoxGeoJSONQuery(
         $baseQuery,
         $cacheFileBasePath . $safeLanguage . "_",
         $conf,
@@ -122,7 +104,7 @@ if (!empty($db) && $db instanceof PDO) {
 
 $serverTiming->add("3_init");
 
-$result = $query->sendAndGetJSONResult();
+$result = $query->sendAndGetGeoJSONResult();
 $serverTiming->add("4_query");
 if (!$result->isSuccessful()) {
     http_response_code(500);
@@ -137,11 +119,11 @@ if (!$result->isSuccessful()) {
         $out = "";
         header("Location: " . $result->getPublicSourcePath());
     } else {
-        $out = $result->getJSON();
+        $out = $result->getGeoJSON();
         header("Cache-Location: " . $result->getPublicSourcePath());
     }
 } else {
-    $out = $result->getJSON();
+    $out = $result->getGeoJSON();
 }
 
 $serverTiming->add("5_output");

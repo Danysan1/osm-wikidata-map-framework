@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Query\Cache;
+namespace App\Query\Caching;
 
 require_once(__DIR__ . "/CSVCachedQuery.php");
 require_once(__DIR__ . "/../BBoxQuery.php");
@@ -9,7 +9,7 @@ require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../BaseBoundingBox.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use App\Query\Cache\CSVCachedQuery;
+use App\Query\Caching\CSVCachedQuery;
 use App\Query\BBoxQuery;
 use \App\Result\QueryResult;
 use \App\ServerTiming;

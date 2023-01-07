@@ -9,7 +9,7 @@ require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/../../StringSet.php");
 require_once(__DIR__ . "/../../Configuration.php");
 
-use \App\Query\Cache\CSVCachedStringSetXMLQuery;
+use \App\Query\Caching\CSVCachedStringSetXMLQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;

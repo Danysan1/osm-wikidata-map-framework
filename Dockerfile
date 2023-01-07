@@ -54,6 +54,6 @@ COPY ["./composer.json", "./composer.lock", "/var/www/"]
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.json composer.lock composer.phar
 
-COPY --chown=www-data:www-data ./web /var/www/html
-COPY --chown=www-data:www-data --from=npm-install /app/web/dist /var/www/html/dist
+COPY --chown=www-data:www-data ./public /var/www/html
+COPY --chown=www-data:www-data --from=npm-install /app/public/dist /var/www/html/dist
 USER www-data
