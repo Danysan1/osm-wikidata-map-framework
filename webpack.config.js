@@ -25,7 +25,7 @@ module.exports = {
     usedExports: true,
   },
   output: {
-    path: path.resolve(__dirname, 'web', 'dist'),
+    path: path.resolve(__dirname, 'public', 'dist'),
   },
   plugins: [new MiniCssExtractPlugin()],
 };

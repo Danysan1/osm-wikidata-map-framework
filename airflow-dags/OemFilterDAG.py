@@ -45,10 +45,10 @@ class OemFilterDAG(DAG):
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
-        See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.5.0/index.html
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/2.5.0/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -56,10 +56,15 @@ class OemFilterDAG(DAG):
             raise Exception("Prefix must be specified")
         
         pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
-        filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
-        pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
+        pbf_date_path = f'/workdir/{prefix}/{prefix}.osm.pbf.date.txt'
         pbf_dataset = Dataset(f'file://{pbf_path}')
+
+        filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
+        filtered_pbf_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf.date.txt'
         filtered_pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
+
+        pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
+        pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
         pg_dataset = Dataset(f'file://{pg_path}')
 
         default_params={
@@ -73,7 +78,7 @@ class OemFilterDAG(DAG):
             start_date=start_date,
             catchup=False,
             schedule = [pbf_dataset],
-            tags=['oem', 'filter', 'consumes', 'produces'],
+            tags=['oem', f'oem-{prefix}', 'oem-filter', 'consumes', 'produces'],
             params=default_params,
             doc_md = """
                 # Open Etymology Map OSM data filtering
@@ -176,10 +181,12 @@ class OemFilterDAG(DAG):
 
         task_save_filtered_pbf_dataset = BashOperator(
             task_id = "save_filtered_pbf_dataset",
-            bash_command = 'cp "$sourceFilePath" "$filteredPbfPath"',
+            bash_command = 'cp "$sourceFilePath" "$filteredPbfPath" && cp "$pbfDatePath" "$filteredPbfDatePath"',
             env = {
                 "sourceFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
                 "filteredPbfPath": filtered_pbf_path,
+                "pbfDatePath": pbf_date_path,
+                "filteredPbfDatePath": filtered_pbf_date_path,
             },
             outlets = filtered_pbf_dataset,
             dag = self
@@ -200,8 +207,8 @@ class OemFilterDAG(DAG):
                 Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/airflow-dags/osmium.json)) into the working directory.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
             """
         )
         task_create_work_dir >> task_copy_config
@@ -226,10 +233,12 @@ class OemFilterDAG(DAG):
 
         task_save_pg_dataset = BashOperator(
             task_id = "save_pg_dataset",
-            bash_command = 'mv "$sourceFilePath" "$pgPath"',
+            bash_command = 'mv "$sourceFilePath" "$pgPath" && cp "$filteredPbfDatePath" "$pgDatePath"',
             env = {
                 "sourceFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pg",
                 "pgPath": pg_path,
+                "filteredPbfDatePath": filtered_pbf_date_path,
+                "pgDatePath": pg_date_path,
             },
             outlets = pg_dataset,
             dag = self

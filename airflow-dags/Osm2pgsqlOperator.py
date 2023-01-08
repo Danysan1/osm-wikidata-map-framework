@@ -24,6 +24,6 @@ class Osm2pgsqlOperator(OsmDockerOperator):
             environment = {
                 "PGPASSWORD": postgres_conn.password,
             },
-            network_mode="open-etymology-map_airflow-worker-bridge", # The container needs to talk with the local DB
+            network_mode="open-etymology-map_airflow-postgis-bridge", # The container needs to talk with the local DB
             **kwargs
         )

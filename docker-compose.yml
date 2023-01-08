@@ -1,8 +1,8 @@
-# Extends https://airflow.apache.org/docs/apache-airflow/2.4.0/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/2.5.0/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/2.4.0/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/2.5.0/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/2.5.0/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:2.4.0
+#                                Default: apache/airflow:2.5.0
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # Those configurations are useful mostly in case of standalone testing/running Airflow in test/try-out mode
@@ -54,11 +54,10 @@ x-airflow-common:
   image: registry.gitlab.com/openetymologymap/open-etymology-map/airflow
   build:
     context: .
-    dockerfile: Dockerfile
-    target: airflow
+    dockerfile: airflow.Dockerfile
   environment:
     &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.4.0/executor/index.html
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.5.0/executor/index.html
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -66,7 +65,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
@@ -140,12 +139,12 @@ services:
         condition: service_completed_successfully
     networks:
       - airflow-internal
-      - airflow-worker-bridge
+      - airflow-postgis-bridge
     profiles:
       - airflow
       - dev+airflow
 
-  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/scheduler.html
+  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/scheduler.html
     <<: *airflow-common
     command: scheduler
     healthcheck:
@@ -187,7 +186,8 @@ services:
         condition: service_completed_successfully
     networks:
       - airflow-internal
-      - airflow-worker-bridge
+      - airflow-postgis-bridge
+      - airflow-torrent-bridge
     volumes:
       - ./airflow-dags:/opt/airflow/dags
       - ./airflow-logs:/opt/airflow/logs
@@ -304,25 +304,30 @@ services:
       - airflow
       - dev+airflow
 
-  # flower: # https://flower.readthedocs.io/en/latest/
-  #   <<: *airflow-common
-  #   command: celery flower
-  #   ports:
-  #     - 5555:5555
-  #   healthcheck:
-  #     test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     retries: 5
-  #   restart: unless-stopped
-  #   depends_on:
-  #     <<: *airflow-common-depends-on
-  #     airflow-init:
-  #       condition: service_completed_successfully
-  #   networks:
-  #     - airflow-internal
-  #   profiles:
-  #     - dev+airflow
+  torrent-daemon:
+    image: linuxserver/transmission:latest
+    environment:
+      - PUID=${AIRFLOW_UID:-50000}
+      - PGID=1000
+      - TZ=Europe/London
+    volumes:
+      - torrent-daemon-config:/config:delegated
+      - db-init-work-dir:/workdir:delegated
+    networks:
+      - airflow-torrent-bridge
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:9091/transmission/web/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    ports:
+      - 9091:9091
+      - 51413:51413
+      - 51413:51413/udp
+    restart: unless-stopped
+    profiles:
+      - airflow
+      - dev+airflow
 
   oem-postgis:
     #image: postgis/postgis:13-3.2-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
@@ -337,7 +342,7 @@ services:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
       - oem-internal
-      - airflow-worker-bridge
+      - airflow-postgis-bridge
     logging:
       driver: json-file
       options:
@@ -393,7 +398,6 @@ services:
       - oem-postgis
     networks:
       - oem-internal
-      - airflow-worker-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -401,7 +405,8 @@ services:
       retries: 5
     restart: unless-stopped
     volumes:
-      - ./web:/var/www/html
+      - ./public:/var/www/html
+      - ./app:/var/www/app
     profiles:
       - dev
       - dev+airflow
@@ -467,9 +472,11 @@ volumes:
   apache-sites-available:
   apache-sites-enabled:
   letsencrypt-certs:
+  torrent-daemon-config:
 
 networks:
   oem-internal:
   airflow-internal:
-  airflow-worker-bridge:
+  airflow-postgis-bridge:
+  airflow-torrent-bridge:
   pgadmin-bridge:

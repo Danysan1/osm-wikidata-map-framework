@@ -22,7 +22,7 @@ rectangle "Docker Compose - profile 'dev'" as docker {
 cloud {
   database "Optional production DB" as extDB
 }
-folder "web" as webLoc
+folder "public" as webLoc
 
 webRem --- webLoc : volume
 

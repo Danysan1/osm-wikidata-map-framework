@@ -45,13 +45,15 @@ class TemplatedPostgresOperator(PostgresOperator):
     Standard `PostgresOperator` doesn't allow to use Jinja templates in `parameters` and `postgres_conn_id`, this Operator allows it.
 
     Links:
-    * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-    * [templating docuementation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/custom-operator.html#templating)
-    * [original value for `template_fields`](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_modules/airflow/providers/postgres/operators/postgres.html#PostgresOperator.template_fields)
+    * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+    * [templating docuementation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/custom-operator.html#templating)
+    * [original value for `template_fields`](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_modules/airflow/providers/postgres/operators/postgres.html#PostgresOperator.template_fields)
+    * [More details on why this is necessary](https://stackoverflow.com/a/44548570/2347196)
     """
-    template_fields = ('parameters', 'postgres_conn_id', 'sql')
+    template_fields = ('parameters', 'sql')
+    #template_fields = ('parameters', 'postgres_conn_id', 'sql')
 
-def check_upload_db_conn_id(**context) -> bool:
+def check_postgre_conn_id(conn_id:str) -> bool:
     """
         # Check upload DB connecton ID
 
@@ -60,24 +62,23 @@ def check_upload_db_conn_id(**context) -> bool:
         The connection ID is passed through the params object to allow customization when triggering the DAG.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html#shortcircuitoperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html#shortcircuitoperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/params.html)
     """
-    p = context["params"]
-    conn_id_available = "upload_db_conn_id" in p and isinstance(p["upload_db_conn_id"], str) and p["upload_db_conn_id"]!=""
-
-    if conn_id_available:
-        pg_hook = PostgresHook(p["upload_db_conn_id"])
+    connection_is_ok = False
+    if not conn_id:
+        print("Empty conn_id")
+    else:
+        pg_hook = PostgresHook(conn_id)
         with pg_hook.get_conn() as pg_conn:
             with pg_conn.cursor() as cursor:
                 cursor.execute("SELECT PostGIS_Version()")
                 postgis_version = cursor.fetchone()
-                print(f"upload_db_conn_id available, PostGIS version {postgis_version}")
-    else:
-        print("upload_db_conn_id not available")
+                connection_is_ok = True
+                print(f"conn_id available, PostGIS version {postgis_version}")
 
-    return conn_id_available
+    return connection_is_ok
 
 def choose_load_osm_data_task(**context) -> str:
     """
@@ -92,8 +93,8 @@ def choose_load_osm_data_task(**context) -> str:
         The `use_osm2pgsql` parameter is passed through the params object to allow customization when triggering the DAG.
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/concepts/params.html)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/params.html)
     """
     p = context["params"]
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
@@ -124,10 +125,10 @@ class OemDbInitDAG(DAG):
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
-        See https://airflow.apache.org/docs/apache-airflow/2.4.0/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.5.0/index.html
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/2.4.0/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/2.5.0/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -145,26 +146,24 @@ class OemDbInitDAG(DAG):
         if not prefix or prefix=="":
             raise Exception("Prefix must be specified")
         
-        date_path = f'/workdir/{prefix}/{prefix}.date.txt'
         filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
+        filtered_pbf_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf.date.txt'
         pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
-        date_dataset = Dataset(f'file://{date_path}')
-        pbf_dataset = Dataset(f'file://{filtered_pbf_path}')
+        pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
         pg_dataset = Dataset(f'file://{pg_path}')
 
         default_params={
             "prefix": prefix,
-            "upload_db_conn_id": upload_db_conn_id,
+            #"upload_db_conn_id": upload_db_conn_id,
             "use_osm2pgsql": use_osm2pgsql,
-            "date_path": date_path,
             "drop_temporary_tables": True,
         }
 
         super().__init__(
             start_date=start_date,
             catchup=False,
-            schedule = [date_dataset,pbf_dataset,pg_dataset],
-            tags=['oem', 'db-init', 'consumes'],
+            schedule = [pg_dataset],
+            tags=['oem', f'oem-{prefix}', 'oem-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
             **kwargs
@@ -191,7 +190,7 @@ class OemDbInitDAG(DAG):
                 Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
 
@@ -207,7 +206,7 @@ class OemDbInitDAG(DAG):
                 Reset the oem (Open Etymology Map) schema on the local PostGIS DB to start from scratch.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_setup_db_ext >> task_teardown_schema
@@ -224,7 +223,7 @@ class OemDbInitDAG(DAG):
                 Setup the oem (Open Etymology Map) schema on the local PostGIS DB.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_teardown_schema >> task_setup_schema
@@ -258,8 +257,8 @@ class OemDbInitDAG(DAG):
                 Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
             """
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_pg
@@ -268,7 +267,7 @@ class OemDbInitDAG(DAG):
             task_id = "load_elements_with_osm2pgsql",
             container_name = "open-etymology-map-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
-            source_path= "{{ ti.xcom_pull(task_ids='choose_whether_to_ffwd', key='filtered_file_path') }}",
+            source_path = filtered_pbf_path,
             dag = self,
             task_group=group_db_load,
             doc_md="""
@@ -291,7 +290,7 @@ class OemDbInitDAG(DAG):
                 Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_load_ele_osm2pgsql >> task_convert_osm2pgsql
@@ -325,7 +324,7 @@ class OemDbInitDAG(DAG):
                 * elements that have a wrong etymology (name:etymology:wikidata and wikidata values are equal)
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         join_post_load_ele >> task_remove_ele_too_big
@@ -346,7 +345,7 @@ class OemDbInitDAG(DAG):
                 * [`subject:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
                 * [`buried:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
                 * [`name:etymology:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_remove_ele_too_big >> task_convert_ele_wd_cods
@@ -371,8 +370,8 @@ class OemDbInitDAG(DAG):
                 Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/airflow-dags/wikidata_init.csv).
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
             """
         )
         task_setup_schema >> task_load_wd_ent
@@ -389,7 +388,7 @@ class OemDbInitDAG(DAG):
                 Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata`, `buried:wikidata` or `name:etymology:wikidata`).
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
@@ -406,7 +405,7 @@ class OemDbInitDAG(DAG):
                 Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_convert_wd_ent >> task_convert_ety
@@ -443,7 +442,7 @@ class OemDbInitDAG(DAG):
                 Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_load_named_after >> task_propagate
@@ -479,7 +478,7 @@ class OemDbInitDAG(DAG):
                 Check elements with an etymology that comes from `name:etymology`.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_remove_ele_too_big >> task_check_text_ety
@@ -496,7 +495,7 @@ class OemDbInitDAG(DAG):
                 Check elements with an etymology that comes from `subject:wikidata`, `buried:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_propagate >> task_check_wd_ety
@@ -513,7 +512,7 @@ class OemDbInitDAG(DAG):
                 Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         [task_load_parts, task_check_wd_ety, task_check_text_ety] >> task_move_ele
@@ -528,7 +527,7 @@ class OemDbInitDAG(DAG):
                 # Apply the foreign key from etymology to wikidata
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_move_ele >> task_setup_ety_fk
@@ -544,7 +543,7 @@ class OemDbInitDAG(DAG):
                 Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
 
                 Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
             """
         )
         task_move_ele >> task_check_whether_to_drop
@@ -561,7 +560,7 @@ class OemDbInitDAG(DAG):
                 Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_check_whether_to_drop >> task_drop_temp_tables
@@ -569,7 +568,7 @@ class OemDbInitDAG(DAG):
         task_global_map = PostgresOperator(
             task_id = "setup_global_map",
             postgres_conn_id = local_db_conn_id,
-            sql = "sql/global-map.sql",
+            sql = "sql/global-map-view.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md="""
@@ -578,15 +577,32 @@ class OemDbInitDAG(DAG):
                 Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_move_ele >> task_global_map
 
+        task_dataset = PostgresOperator(
+            task_id = "setup_dataset",
+            postgres_conn_id = local_db_conn_id,
+            sql = "sql/dataset-view.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # Save the dataset view
+
+                Create in the local PostGIS DB the materialized view used for the dataset download.
+                
+                Links:
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+            """
+        )
+        task_move_ele >> task_dataset
+
         task_read_last_update = BashOperator(
             task_id = "read_last_data_update",
             bash_command='cat "$dateFilePath"',
-            env = { "dateFilePath": date_path },
+            env = { "dateFilePath": pg_date_path },
             do_xcom_push = True,
             dag = self,
         )
@@ -612,7 +628,7 @@ class OemDbInitDAG(DAG):
                 Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
                 
                 Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
+                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/2.5.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         [task_setup_schema,task_read_last_update] >> task_save_last_update
@@ -637,27 +653,30 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/bash.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/bash.html)
                 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
-        [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_save_last_update, task_create_work_dir] >> task_pg_dump
+        [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_dataset, task_save_last_update, task_create_work_dir] >> task_pg_dump
 
         group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 
         task_check_pg_restore = ShortCircuitOperator(
             task_id = "check_upload_conn_id",
-            python_callable=check_upload_db_conn_id,
+            python_callable=check_postgre_conn_id,
+            op_kwargs = {
+                "conn_id": upload_db_conn_id,# "{{ params.upload_db_conn_id }}",
+            },
             dag = self,
             task_group = group_upload,
-            doc_md=check_upload_db_conn_id.__doc__
+            doc_md=check_postgre_conn_id.__doc__
         )
         task_pg_dump >> task_check_pg_restore
 
         task_prepare_upload = TemplatedPostgresOperator(
             task_id = "prepare_db_for_upload",
-            postgres_conn_id = "{{ params.upload_db_conn_id }}",
+            postgres_conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
             sql = "sql/prepare-db-for-upload.sql",
             dag = self,
             task_group = group_upload,
@@ -667,8 +686,8 @@ class OemDbInitDAG(DAG):
                 Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the oem schema 
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
             """
         )
         task_check_pg_restore >> task_prepare_upload
@@ -678,11 +697,11 @@ class OemDbInitDAG(DAG):
             bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "oem" --verbose "$backupFilePath"',
             env= {
                 "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
-                "host": "{{ conn[params.upload_db_conn_id].host }}",
-                "port": "{{ (conn[params.upload_db_conn_id].port)|string }}",
-                "user": "{{ conn[params.upload_db_conn_id].login }}",
-                "dbname": "{{ conn[params.upload_db_conn_id].schema }}",
-                "PGPASSWORD": "{{ conn[params.upload_db_conn_id].password }}",
+                "host": f"{{{{ conn['{upload_db_conn_id}'].host }}}}", # "{{ conn[params.upload_db_conn_id].host }}",
+                "port": f"{{{{ (conn['{upload_db_conn_id}'].port)|string }}}}", # "{{ (conn[params.upload_db_conn_id].port)|string }}",
+                "user": f"{{{{ conn['{upload_db_conn_id}'].login }}}}", # "{{ conn[params.upload_db_conn_id].login }}",
+                "dbname": f"{{{{ conn['{upload_db_conn_id}'].schema }}}}", # "{{ conn[params.upload_db_conn_id].schema }}",
+                "PGPASSWORD": f"{{{{ conn['{upload_db_conn_id}'].password }}}}", # "{{ conn[params.upload_db_conn_id].password }}",
             },
             dag = self,
             task_group = group_upload,
@@ -693,9 +712,9 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.4.0/howto/operator/bash.html)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.4.0/templates-ref.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/bash.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.0/templates-ref.html)
             """
         )
         task_prepare_upload >> task_pg_restore

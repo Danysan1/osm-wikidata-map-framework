@@ -13,6 +13,7 @@ import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getConfig } from './config';
 import './style.css';
+import { SourceControl, SourceItem } from './SourceControl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -23,7 +24,8 @@ const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
-    private currentEtymologyColorControl: EtymologyColorControl | null;
+    private currentEtymologyColorControl?: EtymologyColorControl;
+    private currentSourceControl?: SourceControl;
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
 
@@ -47,7 +49,6 @@ export class EtymologyMap extends Map {
         });
         this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
-        this.currentEtymologyColorControl = null;
         this.geocoderControl = geocoderControl;
 
         openInfoWindow(this);
@@ -59,10 +60,10 @@ export class EtymologyMap extends Map {
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
 
         setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
-        
+
         //eslint-disable-next-line
         const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
-        window.addEventListener('hashchange', function(){ thisMap.hashChangeHandler() }, false);
+        window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
     }
 
     /**
@@ -125,7 +126,8 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent) {
-                this.currentEtymologyColorControl?.updateChart(e);
+                const source = this.currentSourceControl?.getCurrentID() ?? "all";
+                this.currentEtymologyColorControl?.updateChart(e, source);
             }
         }
     }
@@ -161,6 +163,7 @@ export class EtymologyMap extends Map {
             maxLat = northEast.lat,
             maxLon = northEast.lng,
             zoomLevel = this.getZoom(),
+            source = this.currentSourceControl?.getCurrentID() ?? "all",
             language = document.documentElement.lang,
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
             enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
@@ -182,6 +185,7 @@ export class EtymologyMap extends Map {
                 maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
                 maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
                 language,
+                source,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 wikidata_url = './etymologyMap.php?' + queryString;
@@ -198,6 +202,7 @@ export class EtymologyMap extends Map {
                 maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.1234 => 0.2
                 maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.1234 => 0.2
                 language,
+                source,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 elements_url = './elements.php?' + queryString;
@@ -226,12 +231,17 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     prepareWikidataLayers(wikidata_url: string, minZoom: number) {
-        const colorSchemeColor = getCurrentColorScheme().color;
+        const colorSchemeColor = getCurrentColorScheme().color,
+            wikidata_source = "wikidata_source",
+            wikidata_layer_point = 'wikidata_layer_point',
+            wikidata_layer_lineString = 'wikidata_layer_lineString',
+            wikidata_layer_polygon_border = 'wikidata_layer_polygon_border',
+            wikidata_layer_polygon_fill = 'wikidata_layer_polygon_fill';
 
         showLoadingSpinner(true);
 
         this.addGeoJSONSource(
-            "wikidata_source",
+            wikidata_source,
             {
                 type: 'geojson',
                 buffer: 512,
@@ -241,10 +251,10 @@ export class EtymologyMap extends Map {
             wikidata_url
         );
 
-        if (!this.getLayer("wikidata_layer_point")) {
+        if (!this.getLayer(wikidata_layer_point)) {
             this.addLayer({
-                'id': 'wikidata_layer_point',
-                'source': 'wikidata_source',
+                'id': wikidata_layer_point,
+                'source': wikidata_source,
                 'type': 'circle',
                 "filter": ["==", ["geometry-type"], "Point"],
                 "minzoom": minZoom,
@@ -255,13 +265,13 @@ export class EtymologyMap extends Map {
                     'circle-stroke-color': 'white'
                 }
             });
-            this.initWikidataLayer("wikidata_layer_point");
+            this.initWikidataLayer(wikidata_layer_point);
         }
 
-        if (!this.getLayer("wikidata_layer_lineString")) {
+        if (!this.getLayer(wikidata_layer_lineString)) {
             this.addLayer({
-                'id': 'wikidata_layer_lineString',
-                'source': 'wikidata_source',
+                'id': wikidata_layer_lineString,
+                'source': wikidata_source,
                 'type': 'line',
                 "filter": ["==", ["geometry-type"], "LineString"],
                 "minzoom": minZoom,
@@ -270,14 +280,14 @@ export class EtymologyMap extends Map {
                     'line-opacity': 0.5,
                     'line-width': 12
                 }
-            }, "wikidata_layer_point");
-            this.initWikidataLayer("wikidata_layer_lineString");
+            }, wikidata_layer_point);
+            this.initWikidataLayer(wikidata_layer_lineString);
         }
 
-        if (!this.getLayer("wikidata_layer_polygon_border")) {
+        if (!this.getLayer(wikidata_layer_polygon_border)) {
             this.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
-                'id': 'wikidata_layer_polygon_border',
-                'source': 'wikidata_source',
+                'id': wikidata_layer_polygon_border,
+                'source': wikidata_source,
                 'type': 'line',
                 "filter": ["==", ["geometry-type"], "Polygon"],
                 "minzoom": minZoom,
@@ -287,14 +297,14 @@ export class EtymologyMap extends Map {
                     'line-width': 8,
                     'line-offset': -3.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
                 }
-            }, "wikidata_layer_lineString");
-            this.initWikidataLayer("wikidata_layer_polygon_border");
+            }, wikidata_layer_lineString);
+            this.initWikidataLayer(wikidata_layer_polygon_border);
         }
 
-        if (!this.getLayer("wikidata_layer_polygon_fill")) {
+        if (!this.getLayer(wikidata_layer_polygon_fill)) {
             this.addLayer({
-                'id': 'wikidata_layer_polygon_fill',
-                'source': 'wikidata_source',
+                'id': wikidata_layer_polygon_fill,
+                'source': wikidata_source,
                 'type': 'fill',
                 "filter": ["==", ["geometry-type"], "Polygon"],
                 "minzoom": minZoom,
@@ -303,8 +313,8 @@ export class EtymologyMap extends Map {
                     'fill-opacity': 0.5,
                     'fill-outline-color': "rgba(0, 0, 0, 0)",
                 }
-            }, "wikidata_layer_polygon_border");
-            this.initWikidataLayer("wikidata_layer_polygon_fill");
+            }, wikidata_layer_polygon_border);
+            this.initWikidataLayer(wikidata_layer_polygon_fill);
         }
 
         if (!this.currentEtymologyColorControl) {
@@ -705,6 +715,18 @@ export class EtymologyMap extends Map {
         }), 'bottom-left');
         this.addControl(new FullscreenControl(), 'top-right');
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
+
+        const sourceItems: SourceItem[] = [
+            { id: "all", text: "All sources" },
+            { id: "etymology", text: "name:etymology:wikidata" },
+            { id: "subject", text: "subject:wikidata" },
+            { id: "buried", text: "buried:wikidata" },
+            { id: "wikidata", text: "wikidata + P138/P547/P825" },
+            { id: "propagated", text: "Propagated" },
+        ];
+        this.currentSourceControl = new SourceControl(sourceItems, this.updateDataSource.bind(this), "all");
+        this.addControl(this.currentSourceControl);
+
         this.addControl(new InfoControl(), 'top-right');
 
         this.on('sourcedata', this.mapSourceDataHandler);

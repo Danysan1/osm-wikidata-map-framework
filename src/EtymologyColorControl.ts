@@ -225,7 +225,7 @@ class EtymologyColorControl implements IControl {
         //updateDataSource(event);
     }
 
-    updateChart(event: MapboxEvent|Event) {
+    updateChart(event: MapboxEvent|Event, source="all") {
         if (!this._ctrlDropDown) {
             console.error("updateChart: dropodown not inizialized", { event });
             return;
@@ -257,6 +257,7 @@ class EtymologyColorControl implements IControl {
                         maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
                         maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
                         language,
+                        source,
                     },
                     queryString = new URLSearchParams(queryParams).toString(),
                     stats_url = './stats.php?' + queryString,

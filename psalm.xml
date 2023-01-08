@@ -8,7 +8,7 @@
 >
     <projectFiles>
         <file name="sample.php" />
-        <directory name="web" />
+        <directory name="public" />
         <file name="vendor/autoload.php" />
         <file name="vendor/composer/autoload_classmap.php" />
         <file name="vendor/composer/autoload_files.php" />
@@ -21,8 +21,12 @@
         <file name="vendor/composer/InstalledVersions.php" />
         <file name="vendor/composer/platform_check.php" />
         <ignoreFiles>
+            <directory name="airflow-dags" />
+            <directory name="airflow-logs" />
+            <directory name="node_modules" />
+            <directory name="out" />
+            <directory name="pgadmin-data" />
             <directory name="vendor" />
-            <directory name="web/node_modules" />
         </ignoreFiles>
     </projectFiles>
     <!--<issueHandlers>
