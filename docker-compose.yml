@@ -311,7 +311,7 @@ services:
       - PGID=1000
       - TZ=Europe/London
     volumes:
-      - torrent-daemon-config:/config
+      - torrent-daemon-config:/config:delegated
       - db-init-work-dir:/workdir:delegated
     networks:
       - airflow-torrent-bridge

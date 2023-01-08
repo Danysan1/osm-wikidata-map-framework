@@ -161,7 +161,7 @@ def remove_torrent(torrent_id:int):
     """
     from transmission_rpc import Client
     c = Client(host="torrent-daemon")
-    c.remove_torrent(torrent_id, delete_data=True)
+    c.remove_torrent(int(torrent_id), delete_data=True)
 
 class OsmPbfDownloadDAG(DAG):
     def __init__(self,
