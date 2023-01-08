@@ -1,6 +1,6 @@
 <?php
-require_once("./app/IniEnvConfiguration.php");
-require_once("./app/PostGIS_PDO.php");
+require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/PostGIS_PDO.php");
 require_once("./funcs.php");
 
 use \App\IniEnvConfiguration;

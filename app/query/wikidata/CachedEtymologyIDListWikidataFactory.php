@@ -2,7 +2,7 @@
 
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../cache/CSVCachedStringSetXMLQuery.php");
+require_once(__DIR__ . "/../caching/CSVCachedStringSetXMLQuery.php");
 require_once(__DIR__ . "/EtymologyIDListXMLWikidataQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");

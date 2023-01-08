@@ -2,7 +2,7 @@
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
 # https://hub.docker.com/_/php
-FROM php:8.1-apache-bullseye AS base
+FROM php:8.2-apache-bullseye AS base
 WORKDIR /var/www
 
 RUN a2enmod headers ssl rewrite deflate
@@ -34,10 +34,10 @@ RUN npm install -g npm && \
 
 
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:18.10-alpine AS npm-install
-WORKDIR /app
-COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/app/"]
-COPY "./src" "/app/src"
+FROM node:19.4-alpine AS npm-install
+WORKDIR /npm_app
+COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/npm_app/"]
+COPY "./src" "/npm_app/src"
 RUN npm install && \
 	npm run prod && \
 	npm install --omit=dev
@@ -54,6 +54,7 @@ COPY ["./composer.json", "./composer.lock", "/var/www/"]
 RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
 	rm composer.json composer.lock composer.phar
 
+COPY --chown=www-data:www-data ./app /var/www/app
 COPY --chown=www-data:www-data ./public /var/www/html
-COPY --chown=www-data:www-data --from=npm-install /app/public/dist /var/www/html/dist
+COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/html/dist
 USER www-data

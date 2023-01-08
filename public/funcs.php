@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 require_once(__DIR__ . "/../vendor/autoload.php");
-require_once(__DIR__ . "/app/Configuration.php");
+require_once(__DIR__ . "/../app/Configuration.php");
 
 define("ISO_LANGUAGE_PATTERN", '/^(\w+)(-\w+)?$/');
 
@@ -57,7 +57,7 @@ function prepareHTML(Configuration $conf)
 	header("Content-Type: text/html; charset=utf-8");
 
 	$reportUri = "";
-	if($conf->has('sentry_js_uri')) {
+	if ($conf->has('sentry_js_uri')) {
 		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
 	}
 
@@ -65,28 +65,28 @@ function prepareHTML(Configuration $conf)
 	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 
 	$maptilerConnectSrcs = '';
-	if($conf->has("maptiler_key")) {
+	if ($conf->has("maptiler_key")) {
 		$maptilerConnectSrcs = 'https://api.maptiler.com';
 	}
 
 	$googleAnalyticsConnectSrcs = '';
 	$googleAnalyticsScriptSrcs = '';
-	if($conf->has('google_analytics_id')) {
+	if ($conf->has('google_analytics_id')) {
 		$googleAnalyticsConnectSrcs = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
 		$googleAnalyticsScriptSrcs = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
 	}
 
 	$sentryConnectSrcs = '';
 	$sentryScriptSrcs = '';
-	if($conf->has('sentry_js_dsn')) {
+	if ($conf->has('sentry_js_dsn')) {
 		$sentryConnectSrcs = 'https://*.ingest.sentry.io';
 		$sentryScriptSrcs = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
 	}
-	
+
 	$matomoConnectSrcs = '';
 	$matomoScriptSrcs = '';
-	if($conf->has('matomo_domain')) {
-		$matomoConnectSrcs = 'https://'.$conf->get('matomo_domain');
+	if ($conf->has('matomo_domain')) {
+		$matomoConnectSrcs = 'https://' . (string)$conf->get('matomo_domain');
 		$matomoScriptSrcs = 'https://cdn.matomo.cloud/';
 	}
 

@@ -1,6 +1,6 @@
 <?php
-require_once(__DIR__ . "/app/IniEnvConfiguration.php");
-require_once(__DIR__ . "/app/PostGIS_PDO.php");
+require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/PostGIS_PDO.php");
 require_once(__DIR__ . "/funcs.php");
 
 use \App\IniEnvConfiguration;
@@ -12,7 +12,7 @@ prepareGeoJSON($conf);
 
 if ($conf->getBool("db_enable")) {
     $db = new PostGIS_PDO($conf);
-    echo $db->query(
+    echo (string)$db->query(
         "SELECT JSON_BUILD_OBJECT(
             'type', 'FeatureCollection',
             'features', JSON_AGG(ST_AsGeoJSON(vm_global_map.*)::json)

@@ -405,6 +405,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./public:/var/www/html
+      - ./app:/var/www/app
     profiles:
       - dev
       - dev+airflow

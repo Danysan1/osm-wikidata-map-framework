@@ -1,18 +1,18 @@
 <?php
-require_once("./app/ServerTiming.php");
+require_once(__DIR__ . "/../app/ServerTiming.php");
 
 use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once(__DIR__ . "/app/IniEnvConfiguration.php");
-require_once(__DIR__ . "/app/BaseBoundingBox.php");
-require_once(__DIR__ . "/app/PostGIS_PDO.php");
-require_once(__DIR__ . "/app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
-require_once(__DIR__ . "/app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
-require_once(__DIR__ . "/app/query/combined/BBoxGeoJSONEtymologyQuery.php");
-require_once(__DIR__ . "/app/query/postgis/BBoxEtymologyPostGISQuery.php");
-require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
+require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/BaseBoundingBox.php");
+require_once(__DIR__ . "/../app/PostGIS_PDO.php");
+require_once(__DIR__ . "/../app/query/wikidata/CachedEtymologyIDListWikidataFactory.php");
+require_once(__DIR__ . "/../app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/../app/query/combined/BBoxGeoJSONEtymologyQuery.php");
+require_once(__DIR__ . "/../app/query/postgis/BBoxEtymologyPostGISQuery.php");
+require_once(__DIR__ . "/../app/query/overpass/RoundRobinOverpassConfig.php");
 require_once(__DIR__ . "/funcs.php");
 $serverTiming->add("0_include");
 

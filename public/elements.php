@@ -1,19 +1,19 @@
 <?php
-require_once("./app/ServerTiming.php");
+require_once(__DIR__ . "/../app/ServerTiming.php");
 
 use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once("./app/IniEnvConfiguration.php");
-require_once("./app/BaseBoundingBox.php");
-require_once("./app/PostGIS_PDO.php");
-require_once("./app/query/overpass/CenterEtymologyOverpassQuery.php");
-require_once("./app/query/overpass/BBoxEtymologyOverpassQuery.php");
-require_once("./app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
-require_once("./app/query/postgis/BBoxEtymologyCenterPostGISQuery.php");
-require_once("./app/query/overpass/RoundRobinOverpassConfig.php");
-require_once("./app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
+require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/BaseBoundingBox.php");
+require_once(__DIR__ . "/../app/PostGIS_PDO.php");
+require_once(__DIR__ . "/../app/query/overpass/CenterEtymologyOverpassQuery.php");
+require_once(__DIR__ . "/../app/query/overpass/BBoxEtymologyOverpassQuery.php");
+require_once(__DIR__ . "/../app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
+require_once(__DIR__ . "/../app/query/postgis/BBoxEtymologyCenterPostGISQuery.php");
+require_once(__DIR__ . "/../app/query/overpass/RoundRobinOverpassConfig.php");
+require_once(__DIR__ . "/../app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
 require_once("./funcs.php");
 $serverTiming->add("0_include");
 
@@ -60,7 +60,7 @@ if ($from == "bbox") {
         die('{"error":"The requested area is too large. Please use a smaller area."};');
     }
 
-    if (empty($db)) {
+    if (empty($db) || !$db instanceof PDO) {
         /*if($onlySkeleton) {
             $baseQuery = new BBoxEtymologySkeletonOverpassQuery(
                 $bbox, $overpassEndpointURL

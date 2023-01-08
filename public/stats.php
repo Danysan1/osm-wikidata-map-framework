@@ -1,21 +1,21 @@
 <?php
-require_once("./app/ServerTiming.php");
+require_once(__DIR__ . "/../app/ServerTiming.php");
 
 use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once(__DIR__ . "/app/IniEnvConfiguration.php");
-require_once(__DIR__ . "/app/BaseBoundingBox.php");
-require_once(__DIR__ . "/app/PostGIS_PDO.php");
-require_once(__DIR__ . "/app/query/postgis/stats/BBoxGenderStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/postgis/stats/BBoxTypeStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/postgis/stats/BBoxSourceStatsPostGISQuery.php");
-require_once(__DIR__ . "/app/query/wikidata/stats/GenderStatsWikidataFactory.php");
-require_once(__DIR__ . "/app/query/wikidata/stats/TypeStatsWikidataFactory.php");
-require_once(__DIR__ . "/app/query/caching/CSVCachedBBoxJSONQuery.php");
-require_once(__DIR__ . "/app/query/combined/BBoxStatsOverpassWikidataQuery.php");
-require_once(__DIR__ . "/app/query/overpass/RoundRobinOverpassConfig.php");
+require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/BaseBoundingBox.php");
+require_once(__DIR__ . "/../app/PostGIS_PDO.php");
+require_once(__DIR__ . "/../app/query/postgis/stats/BBoxGenderStatsPostGISQuery.php");
+require_once(__DIR__ . "/../app/query/postgis/stats/BBoxTypeStatsPostGISQuery.php");
+require_once(__DIR__ . "/../app/query/postgis/stats/BBoxSourceStatsPostGISQuery.php");
+require_once(__DIR__ . "/../app/query/wikidata/stats/GenderStatsWikidataFactory.php");
+require_once(__DIR__ . "/../app/query/wikidata/stats/TypeStatsWikidataFactory.php");
+require_once(__DIR__ . "/../app/query/caching/CSVCachedBBoxJSONQuery.php");
+require_once(__DIR__ . "/../app/query/combined/BBoxStatsOverpassWikidataQuery.php");
+require_once(__DIR__ . "/../app/query/overpass/RoundRobinOverpassConfig.php");
 require_once(__DIR__ . "/funcs.php");
 $serverTiming->add("0_include");
 
