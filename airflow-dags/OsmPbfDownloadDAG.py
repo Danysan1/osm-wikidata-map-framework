@@ -6,6 +6,8 @@ from airflow.operators.python import PythonOperator, BranchPythonOperator, Short
 from airflow.models.taskinstance import TaskInstance
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.sensors.python import PythonSensor
+from airflow.sensors.time_delta import TimeDeltaSensorAsync
+from datetime import timedelta
 from get_last_pbf_url import get_last_pbf_url, get_pbf_date
 
 def get_source_url(ti:TaskInstance, **context) -> str:
@@ -55,6 +57,7 @@ def get_source_url(ti:TaskInstance, **context) -> str:
     ti.xcom_push(key='source_basename', value=source_basename)
     ti.xcom_push(key='file_basename', value=file_basename)
     ti.xcom_push(key='source_file_path', value=f"{work_dir}/{source_basename}")
+    ti.xcom_push(key='downloaded_file_path', value=f"{work_dir}/{file_basename}")
     ti.xcom_push(key='md5_file_path', value=f"{work_dir}/{source_basename}.md5")
     ti.xcom_push(key='last_data_update', value=last_data_update)
 
@@ -85,7 +88,7 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         procede = not skip_if_already_downloaded or parse(new_date) > parse(existing_date)
     return procede
 
-def start_torrent_download(ti:TaskInstance):
+def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance):
     """
     ## Download the PBF source file through torrent
 
@@ -131,13 +134,11 @@ def start_torrent_download(ti:TaskInstance):
             * requires transmission-daemon (see torrent-daemon service in docker-compose.yml)
     """
     from transmission_rpc import Client
-    download_dir = ti.xcom_pull(task_ids='get_source_url', key='work_dir')
-    torrent_url = ti.xcom_pull(task_ids='get_source_url', key='source_url')
     c = Client(host="torrent-daemon")
     torrent = c.add_torrent(torrent_url, download_dir=download_dir)
     ti.xcom_push(key="torrent_id", value=torrent.id)
 
-def check_if_torrent_is_complete(ti:TaskInstance) -> bool:
+def check_if_torrent_is_complete(torrent_id:int) -> bool:
     """
     ## Check whether the torrent has finished downloading
     
@@ -146,10 +147,21 @@ def check_if_torrent_is_complete(ti:TaskInstance) -> bool:
     * [transmission-rpc Torrent dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
     """
     from transmission_rpc import Client
-    torrent_id = ti.xcom_pull(task_ids='download_torrent', key='torrent_id')
     c = Client(host="torrent-daemon")
-    torrent = c.get_torrent(torrent_id)
+    torrent = c.get_torrent(int(torrent_id))
     return torrent.status == "seeding"
+
+def remove_torrent(torrent_id:int):
+    """
+    ## Removes the torrent
+    
+    Links:
+    * [transmission-rpc Client dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
+    * [transmission-rpc Torrent dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
+    """
+    from transmission_rpc import Client
+    c = Client(host="torrent-daemon")
+    c.remove_torrent(torrent_id, delete_data=True)
 
 class OsmPbfDownloadDAG(DAG):
     def __init__(self,
@@ -158,6 +170,7 @@ class OsmPbfDownloadDAG(DAG):
             html_url:str=None,
             prefix:str=None,
             skip_if_already_downloaded:bool=True,
+            days_before_cleanup:int=1,
             **kwargs
         ):
         """
@@ -224,12 +237,12 @@ class OsmPbfDownloadDAG(DAG):
         )
         task_get_source_url >> task_check_whether_to_procede
 
-        task_chose_download_method = BranchPythonOperator(
-            task_id = "chose_download_method",
+        task_choose_download_method = BranchPythonOperator(
+            task_id = "choose_download_method",
             python_callable = lambda ti: 'download_torrent' if ti.xcom_pull(task_ids='get_source_url', key='source_url').endswith(".torrent") else 'download_pbf',
             dag = self
         )
-        task_check_whether_to_procede >> task_chose_download_method
+        task_check_whether_to_procede >> task_choose_download_method
 
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
@@ -262,19 +275,26 @@ class OsmPbfDownloadDAG(DAG):
                 * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/bash.html)
             """
         )
-        task_chose_download_method >> task_download_pbf
+        task_choose_download_method >> task_download_pbf
 
         task_download_torrent = PythonOperator(
             task_id = "download_torrent",
             python_callable = start_torrent_download,
+            op_kwargs = {
+                "torrent_url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+                "download_dir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}"
+            },
             dag = self,
             doc_md=dedent(start_torrent_download.__doc__)
         )
-        task_chose_download_method >> task_download_torrent
+        task_choose_download_method >> task_download_torrent
 
         task_wait_for_torrent_download = PythonSensor(
             task_id = "wait_torrent_download",
             python_callable = check_if_torrent_is_complete,
+            op_kwargs = {
+                "torrent_id": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_id') | int }}"
+            },
             dag = self,
             doc_md=dedent("""
                 # Wait for the torrent download to complete 
@@ -297,9 +317,9 @@ class OsmPbfDownloadDAG(DAG):
 
         task_save_pbf = BashOperator(
             task_id = "save_pbf",
-            bash_command = 'mv "$sourceFilePath" "$pbfPath" && echo "$date" > "$datePath"',
+            bash_command = 'cp "$downloadedFilePath" "$pbfPath" && echo "$date" > "$datePath"',
             env = {
-                "sourceFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_file_path') }}",
+                "downloadedFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='downloaded_file_path') }}",
                 "pbfPath": pbf_path,
                 "date": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}",
                 "datePath": pbf_date_path,
@@ -308,3 +328,57 @@ class OsmPbfDownloadDAG(DAG):
             dag = self
         )
         task_join >> task_save_pbf
+
+        task_wait_cleanup = TimeDeltaSensorAsync(
+            task_id = 'wait_for_cleanup_time',
+            delta = timedelta(days=days_before_cleanup),
+            trigger_rule = TriggerRule.NONE_SKIPPED,
+            dag = self,
+            doc_md = """
+                # Wait for the time to cleanup the temporary files
+
+                Links:
+                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/time_delta/index.html)
+                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/date_time/index.html)
+                * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
+            """
+        )
+        task_save_pbf >> task_wait_cleanup
+
+        task_choose_cleanup_method = BranchPythonOperator(
+            task_id = "choose_cleanup_method",
+            python_callable = lambda ti: 'cleanup_torrent' if ti.xcom_pull(task_ids='get_source_url', key='source_url').endswith(".torrent") else 'cleanup_pbf',
+            dag = self
+        )
+        task_wait_cleanup >> task_choose_cleanup_method
+    
+        task_cleanup_torrent = PythonSensor(
+            task_id = "cleanup_torrent",
+            python_callable = remove_torrent,
+            op_kwargs = {
+                "torrent_id": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_id') | int }}"
+            },
+            dag = self,
+            doc_md = """
+                # Remove the torrent
+
+                Remove the torrent from the DAG run folder and from the torrent daemon
+            """
+        )
+        task_choose_cleanup_method >> task_cleanup_torrent
+    
+        task_cleanup_pbf = BashOperator(
+            task_id = "cleanup_pbf",
+            bash_command = 'rm -r "$workDir"',
+            env = {
+                "workDir": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}",
+            },
+            dag = self,
+            doc_md = """
+                # Cleanup the work directory
+
+                Remove the DAG run folder
+            """
+        )
+        task_choose_cleanup_method >> task_cleanup_pbf

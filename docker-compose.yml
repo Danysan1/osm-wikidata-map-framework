@@ -65,7 +65,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: 'true'
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
@@ -307,11 +307,12 @@ services:
   torrent-daemon:
     image: linuxserver/transmission:latest
     environment:
-      - PUID="${AIRFLOW_UID:-50000}:0"
+      - PUID=${AIRFLOW_UID:-50000}
       - PGID=1000
       - TZ=Europe/London
     volumes:
-      - db-init-work-dir:/workdir
+      - torrent-daemon-config:/config
+      - db-init-work-dir:/workdir:delegated
     networks:
       - airflow-torrent-bridge
     healthcheck:
@@ -471,6 +472,7 @@ volumes:
   apache-sites-available:
   apache-sites-enabled:
   letsencrypt-certs:
+  torrent-daemon-config:
 
 networks:
   oem-internal:
