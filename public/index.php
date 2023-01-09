@@ -16,13 +16,13 @@ if (!$conf->has("mapbox_token")) {
 
 $lastUpdateString = '';
 $enableDB = $conf->getBool("db_enable");
-if($enableDB) {
+if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
         $lastUpdate = $dbh->query("SELECT oem.last_data_update()")->fetchColumn();
         $lastUpdateString = empty($lastUpdate) ? '' : "<p>Last data update: $lastUpdate</p>";
-    } catch(Exception $e) {
-        error_log("Error fetching last update: ".$e->getMessage());
+    } catch (Exception $e) {
+        error_log("Error fetching last update: " . $e->getMessage());
     }
 }
 
@@ -52,20 +52,20 @@ if (
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
-    <?=$conf->getMetaTag("mapbox_token");?>
-    <?=$conf->getMetaTag("maptiler_key", true);?>
-    <?=$conf->getMetaTag("default_center_lat");?>
-    <?=$conf->getMetaTag("default_center_lon");?>
-    <?=$conf->getMetaTag("default_zoom");?>
-    <?=$conf->getMetaTag("threshold_zoom_level");?>
-    <?=$conf->getMetaTag("min_zoom_level");?>
-    <?=$conf->getMetaTag("default_background_style");?>
-    <?=$conf->getMetaTag("default_color_scheme");?>
-    <?=$conf->getMetaTag("google_analytics_id", true);?>
-    <?=$conf->getMetaTag("matomo_domain", true);?>
-    <?=$conf->getMetaTag("matomo_id", true);?>
-    <?=$conf->getMetaTag("sentry_js_dsn", true);?>
-    <?=$conf->getMetaTag("sentry_js_env", true);?>
+    <?= $conf->getMetaTag("mapbox_token"); ?>
+    <?= $conf->getMetaTag("maptiler_key", true); ?>
+    <?= $conf->getMetaTag("default_center_lat"); ?>
+    <?= $conf->getMetaTag("default_center_lon"); ?>
+    <?= $conf->getMetaTag("default_zoom"); ?>
+    <?= $conf->getMetaTag("threshold_zoom_level"); ?>
+    <?= $conf->getMetaTag("min_zoom_level"); ?>
+    <?= $conf->getMetaTag("default_background_style"); ?>
+    <?= $conf->getMetaTag("default_color_scheme"); ?>
+    <?= $conf->getMetaTag("google_analytics_id", true); ?>
+    <?= $conf->getMetaTag("matomo_domain", true); ?>
+    <?= $conf->getMetaTag("matomo_id", true); ?>
+    <?= $conf->getMetaTag("sentry_js_dsn", true); ?>
+    <?= $conf->getMetaTag("sentry_js_env", true); ?>
 
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -74,8 +74,9 @@ if (
     <title>Open Etymology Map</title>
     <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
 
-    <?php if ($conf->has("google_analytics_id")) { ?>
-        <script defer src="<?="https://www.googletagmanager.com/gtag/js?id=".$conf->get("google_analytics_id");?>"></script>
+    <?php if ($conf->has("google_analytics_id")) {
+        $analyticsId = (string)$conf->get("google_analytics_id"); ?>
+        <script defer src="<?= "https://www.googletagmanager.com/gtag/js?id=$analyticsId"; ?>"></script>
     <?php } ?>
     <script defer src="./dist/main.js" type="application/javascript"></script>
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
@@ -102,14 +103,14 @@ if (
             <h1>Open Etymology Map</h1>
             <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>
 
-            <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
+            <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
-            <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
+            <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
 
-            <?=$lastUpdateString;?>
+            <?= $lastUpdateString; ?>
             <p>
                 <?= implode(" | ", [
-                    $conf->has("report_problem_url") ? '<a title="Report a problem in Open Etymology Map" href="' . $conf->get("report_problem_url") . '">Report a problem</a>' : false,
+                    $conf->has("report_problem_url") ? '<a title="Report a problem in Open Etymology Map" href="' . (string)$conf->get("report_problem_url") . '">Report a problem</a>' : false,
                     '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
                     '<a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>'
                 ]); ?>
@@ -127,27 +128,27 @@ if (
         <div class="detail_container">
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
-            <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikipedia_button" style="display:none">
+            <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button" style="display:none">
                 <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                 <span class="button_text"> Wikipedia</span>
             </a>
-            <a title="Element on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_commons_button" style="display:none">
+            <a title="Element on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button" style="display:none">
                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                 <span class="button_text"> Commons</span>
             </a>
-            <a title="Element on Wikidata" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_wikidata_button" style="display:none">
+            <a title="Element on Wikidata" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button" style="display:none">
                 <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                 <span class="button_text"> Wikidata</span>
             </a>
-            <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_osm_button">
+            <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
                 <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
                 <span class="button_text"> OpenStreetMap</span>
             </a>
-            <a title="Element on MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_mapcomplete_button">
+            <a title="Element on MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
                 <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                 <span class="button_text"> Mapcomplete</span>
             </a>
-            <a title="Element location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 element_location_button" target="_self">
+            <a title="Element location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button" target="_self">
                 <span class="button_img">📍</span>
                 <span class="button_text"> Location</span>
             </a>
@@ -155,7 +156,7 @@ if (
             <div class="etymologies_container grid grid-auto">
 
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 ety_error_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element">
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element">
                 <span class="button_img">⚠️</span>
                 <span>&nbsp;Report a problem in this element</span>
             </a>
@@ -171,19 +172,19 @@ if (
                         <h3 class="etymology_description"></h3>
                     </div>
                     <div class="info column">
-                        <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikipedia_button" style="display:none">
+                        <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button" style="display:none">
                             <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                             <span class="button_text"> Wikipedia</span>
                         </a>
-                        <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 commons_button" style="display:none">
+                        <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button" style="display:none">
                             <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                             <span class="button_text"> Commons</span>
                         </a>
-                        <a title="Subject on Wikidata" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 wikidata_button">
+                        <a title="Subject on Wikidata" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
                             <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                             <span class="button_text"> Wikidata</span>
                         </a>
-                        <a title="Subject location" class="k-button w3-button w3-white w3-border w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self">
+                        <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self">
                             <span class="button_img">📍</span>
                             <span class="button_text"> Location</span>
                         </a>
@@ -201,7 +202,7 @@ if (
                 <div class="pictures column"></div>
             </div>
             <span class="etymology_src_wrapper">
-                Etymology source: 
+                Etymology source:
                 <a title="Etymology OpenStreetMap source" class="etymology_src_osm">OpenStreetMap</a>
                 <span class="etymology_src_wd_wrapper"> + <a title="Etymology Wikidata source" class="etymology_src_wd">Wikidata</a></span>
                 <span class="etymology_propagated"> + <a title="Description of the propagation mechanism" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#propagation">propagation</a></span>

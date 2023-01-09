@@ -403,3 +403,9 @@ div.pic-container:hover p.pic-attr {
     max-width: 30em;
     opacity: 1;
 }
+
+.oem_info_popup .contribute_button,
+.oem_info_popup .dataset_button {
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
