@@ -109,12 +109,20 @@ if (
 
             <?= $lastUpdateString; ?>
             <p>
-                <?= implode(" | ", [
-                    $conf->has("report_problem_url") ? '<a title="Report a problem in Open Etymology Map" href="' . (string)$conf->get("report_problem_url") . '">Report a problem</a>' : false,
-                    '<a title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>',
-                    '<a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>'
-                ]); ?>
+                <a target="_blank" title="Report a problem in Open Etymology Map" href="https://gitlab.com/openetymologymap/open-etymology-map/-/issues">Report a problem</a>
+                |
+                <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
+                |
+                <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
             </p>
+            <form action="https://www.paypal.com/donate" method="post" target="_top">
+                <input type="hidden" name="business" value="NA5HL6EM9LDJ6" />
+                <input type="hidden" name="no_recurring" value="0" />
+                <input type="hidden" name="item_name" value="This donation will help Open Etymology Map to stay up and running. Thank you!" />
+                <input type="hidden" name="currency_code" value="EUR" />
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                <img alt="" border="0" src="https://www.paypal.com/en_IT/i/scr/pixel.gif" width="1" height="1" />
+            </form>
             <h3>Click anywhere on the map to explore.</h3>
         </div>
         <h2>The map is loading...</h2>

@@ -90,12 +90,15 @@ function prepareHTML(Configuration $conf)
 		$matomoScriptSrcs = 'https://cdn.matomo.cloud/';
 	}
 
+	$wikimediaImgSrcs = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
+	$payPalImgSrcs = "https://www.paypal.com https://www.paypalobjects.com";
+
 	header(
 		"Content-Security-Policy: " .
 			"default-src 'self'; " .
 			"worker-src blob: ; " .
 			"child-src blob: ; " .
-			"img-src 'self' data: blob: https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org $googleAnalyticsConnectSrcs ; " .
+			"img-src 'self' data: blob: $wikimediaImgSrcs $payPalImgSrcs $googleAnalyticsConnectSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
 			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
