@@ -21,11 +21,11 @@ class PostGIS_PDO extends PDO
         if (!$conf->getBool("db_enable"))
             throw new Exception("The usage of the DB is disabled in the configuration");
 
-        if ($dbname == null && $conf->has("db_database_list")) {
+        if ($dbname == null && $conf->has("db_database_map")) {
             $server = (string)$_SERVER["SERVER_NAME"];
-            $dbname_array = json_decode((string)$conf->get("db_database_list"), true);
+            $dbname_array = json_decode((string)$conf->get("db_database_map"), true);
             if (!is_array($dbname_array))
-                throw new Exception("Bad db_database_list configuration");
+                throw new Exception("Bad db_database_map configuration");
             if (!empty($dbname_array[$server])) {
                 $dbname = (string)$dbname_array[$server];
                 //error_log("Using DB name '$dbname' for server '$server'");

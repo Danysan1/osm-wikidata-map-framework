@@ -360,7 +360,7 @@ services:
       - prod+db+promtail
 
   pgadmin:
-    image: dpage/pgadmin4:6.12
+    image: dpage/pgadmin4:6.18
     ports:
       - "8000:80"
     depends_on:
@@ -454,7 +454,7 @@ services:
       - prod+db+promtail
 
   promtail:
-    image: grafana/promtail:main
+    image: grafana/promtail:2.0.0
     volumes:
     - ./promtail:/etc/promtail
     - /var/log:/var/log

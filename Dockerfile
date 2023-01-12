@@ -2,7 +2,7 @@
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
 # https://hub.docker.com/_/php
-FROM php:8.2-apache-bullseye AS base
+FROM php:8.2.1-apache-bullseye AS base
 WORKDIR /var/www
 
 RUN a2enmod headers ssl rewrite deflate
@@ -34,7 +34,7 @@ RUN npm install -g npm && \
 
 
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:19.4-alpine AS npm-install
+FROM node:19.4.0-alpine AS npm-install
 WORKDIR /npm_app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"
