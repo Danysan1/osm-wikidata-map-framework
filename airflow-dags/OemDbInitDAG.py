@@ -413,7 +413,7 @@ class OemDbInitDAG(DAG):
         task_load_named_after = OemDockerOperator(
             task_id = "download_named_after_wikidata_entities",
             container_name = "open-etymology-map-download_named_after_wikidata_entities",
-            command = "php html/loadWikidataNamedAfterEntities.php",
+            command = "php app/loadWikidataNamedAfterEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
@@ -450,7 +450,7 @@ class OemDbInitDAG(DAG):
         task_load_parts = OemDockerOperator(
             task_id = "download_parts_of_wikidata_entities",
             container_name = "open-etymology-map-download_parts_of_wikidata_entities",
-            command = "php html/loadWikidataPartsOfEntities.php",
+            command = "php app/loadWikidataPartsOfEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
