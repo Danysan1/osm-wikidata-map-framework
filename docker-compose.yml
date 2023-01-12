@@ -454,7 +454,7 @@ services:
       - prod+db+promtail
 
   promtail:
-    image: grafana/promtail:2.0.0
+    image: grafana/promtail:2.7.1
     volumes:
     - ./promtail:/etc/promtail
     - /var/log:/var/log
