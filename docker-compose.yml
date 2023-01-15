@@ -72,9 +72,9 @@ x-airflow-common:
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html
   volumes:
-    - ./airflow-dags:/opt/airflow/dags
-    - ./airflow-logs:/opt/airflow/logs
-    - ./airflow-plugins:/opt/airflow/plugins
+    - ./airflow/dags:/opt/airflow/dags
+    - ./airflow/logs:/opt/airflow/logs
+    - ./airflow/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
   depends_on:
     &airflow-common-depends-on
@@ -189,9 +189,9 @@ services:
       - airflow-postgis-bridge
       - airflow-torrent-bridge
     volumes:
-      - ./airflow-dags:/opt/airflow/dags
-      - ./airflow-logs:/opt/airflow/logs
-      - ./airflow-plugins:/opt/airflow/plugins
+      - ./airflow/dags:/opt/airflow/dags
+      - ./airflow/logs:/opt/airflow/logs
+      - ./airflow/plugins:/opt/airflow/plugins
       - db-init-work-dir:/workdir:delegated
       - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
     profiles:
@@ -295,7 +295,7 @@ services:
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
     volumes:
-      - ./airflow-dags:/sources
+      - ./airflow:/sources
       - db-init-work-dir:/workdir
     networks:
       - airflow-internal

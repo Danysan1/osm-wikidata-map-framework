@@ -21,8 +21,7 @@
         <file name="vendor/composer/InstalledVersions.php" />
         <file name="vendor/composer/platform_check.php" />
         <ignoreFiles>
-            <directory name="airflow-dags" />
-            <directory name="airflow-logs" />
+            <directory name="airflow" />
             <directory name="node_modules" />
             <directory name="out" />
             <directory name="pgadmin-data" />
