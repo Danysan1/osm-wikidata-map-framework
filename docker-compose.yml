@@ -71,6 +71,7 @@ x-airflow-common:
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: 'TB'
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # https://airflow.apache.org/docs/apache-airflow/stable/howto/connection.html
+    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091
   volumes:
     - ./airflow/dags:/opt/airflow/dags
     - ./airflow/logs:/opt/airflow/logs

@@ -88,7 +88,7 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         procede = not skip_if_already_downloaded or parse(new_date) > parse(existing_date)
     return procede
 
-def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance):
+def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance, torrent_daemon_conn_id:str="torrent_daemon", **context):
     """
     ## Download the PBF source file through torrent
 
@@ -134,11 +134,12 @@ def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance):
             * requires transmission-daemon (see torrent-daemon service in docker-compose.yml)
     """
     from transmission_rpc import Client
-    c = Client(host="torrent-daemon")
+    conn = context["conn"].get(torrent_daemon_conn_id)
+    c = Client(host=conn.host, port=conn.port)
     torrent = c.add_torrent(torrent_url, download_dir=download_dir)
     ti.xcom_push(key="torrent_id", value=torrent.id)
 
-def check_if_torrent_is_complete(torrent_id:int) -> bool:
+def check_if_torrent_is_complete(torrent_id:int, torrent_daemon_conn_id:str="torrent_daemon", **context) -> bool:
     """
     ## Check whether the torrent has finished downloading
     
@@ -147,11 +148,12 @@ def check_if_torrent_is_complete(torrent_id:int) -> bool:
     * [transmission-rpc Torrent dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
     """
     from transmission_rpc import Client
-    c = Client(host="torrent-daemon")
+    conn = context["conn"].get(torrent_daemon_conn_id)
+    c = Client(host=conn.host, port=conn.port)
     torrent = c.get_torrent(int(torrent_id))
     return torrent.status == "seeding"
 
-def remove_torrent(torrent_id:int):
+def remove_torrent(torrent_id:int, torrent_daemon_conn_id:str="torrent_daemon", **context):
     """
     ## Removes the torrent
     
@@ -160,7 +162,8 @@ def remove_torrent(torrent_id:int):
     * [transmission-rpc Torrent dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
     """
     from transmission_rpc import Client
-    c = Client(host="torrent-daemon")
+    conn = context["conn"].get(torrent_daemon_conn_id)
+    c = Client(host=conn.host, port=conn.port)
     c.remove_torrent(int(torrent_id), delete_data=True)
 
 class OsmPbfDownloadDAG(DAG):

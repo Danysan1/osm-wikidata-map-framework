@@ -40,6 +40,9 @@ Q180684,conflict,,,Events,#ff3333
 Q132821,murder,,,Events,#ff3333
 Q1139665,political murder,,,Events,#ff3333
 Q906512,shipwrecking,,,Events,#ff3333
+Q645883,military operation,,,Events,#ff3333
+Q83267,crime,,,Events,#ff3333
+Q1214249,plebiscite,,,Events,#ff3333
 Q16560,palace,,,Buildings,#ffdd33
 Q41176,building,,,Buildings,#ffdd33
 Q23413,castle,,,Buildings,#ffdd33
@@ -190,6 +193,8 @@ Q133056,mountain pass,,,Locations,#33ffbb
 Q113489728,OECD country,,,Locations,#33ffbb
 Q6266,nation,,,Locations,#33ffbb
 Q34763,peninsula,,,Locations,#33ffbb
+Q3502482,cultural region,,,Locations,#33ffbb
+Q1710033,italian autonomous region with special statute,,,Locations,#33ffbb
 Q5,human,,,People,#3399ff
 Q21070568,human who may be fictional,,,People,#3399ff
 Q14073567,sibling duo,,,People,#3399ff
@@ -259,6 +264,9 @@ Q2039348,municipality of the Netherlands,,,Human settlements,#7733ff
 Q2983893,quarter,,,Human settlements,#7733ff
 Q3558970,village of Poland,,,Human settlements,#7733ff
 Q188509,suburb,,,Human settlements,#7733ff
+Q200250,metropolis,,,Human settlements,#7733ff
+Q2074737,municipality of Spain,,,Human settlements,#7733ff
+Q5153359,municipality of the Czech Republic,,,Human settlements,#7733ff
 Q43229,organization,,,Organization,#ff33dd
 Q4830453,business,,,Organization,#ff33dd
 Q6881511,enterprise,,,Organization,#ff33dd
