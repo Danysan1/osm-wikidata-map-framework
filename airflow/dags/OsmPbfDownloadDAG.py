@@ -356,7 +356,7 @@ class OsmPbfDownloadDAG(DAG):
         )
         task_wait_cleanup >> task_choose_cleanup_method
     
-        task_cleanup_torrent = PythonSensor(
+        task_cleanup_torrent = PythonOperator(
             task_id = "cleanup_torrent",
             python_callable = remove_torrent,
             op_kwargs = {
