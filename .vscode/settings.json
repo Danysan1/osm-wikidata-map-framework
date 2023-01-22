@@ -1,24 +1,25 @@
 {
-    "files.watcherExclude": {
-        "**/target": true
-    },
-    "cSpell.words": [
-        "bbox",
-        "CURLOPT",
-        "DAST",
-        "dsantini",
-        "gitlab",
-        "mapboxgl",
-        "maplibregl",
-        "Montalcini",
-        "rdfs",
-        "RETURNTRANSFER",
-        "SAST",
-        "skel",
-        "sparql",
-        "VERIFYHOST",
-        "VERIFYPEER",
-        "wikibase"
-    ],
-    "python.linting.enabled": true
+  "files.watcherExclude": {
+    "**/target": true
+  },
+  "cSpell.words": [
+    "bbox",
+    "CURLOPT",
+    "DAST",
+    "dsantini",
+    "gitlab",
+    "mapboxgl",
+    "maplibregl",
+    "Montalcini",
+    "rdfs",
+    "RETURNTRANSFER",
+    "SAST",
+    "skel",
+    "sparql",
+    "VERIFYHOST",
+    "VERIFYPEER",
+    "wikibase"
+  ],
+  "python.linting.enabled": true,
+  "dotenv.enableAutocloaking": false
 }

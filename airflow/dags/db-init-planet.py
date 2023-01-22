@@ -37,6 +37,6 @@ db_init_planet = OemDbInitDAG(
     dag_id="db-init-planet",
     days_before_cleanup=8,
     prefix="planet",
-    local_db_conn_id="local-oem-planet-postgres",
+    local_db_conn_id="local_oem_postgres_planet",
     upload_db_conn_id="planet-postgres",
 )

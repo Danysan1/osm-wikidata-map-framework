@@ -731,10 +731,10 @@ class OemDbInitDAG(DAG):
                 # Wait for the time to cleanup the temporary files
 
                 Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/stable/_api/airflow/sensors/date_time/index.html)
+                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/sensors/time_delta/index.html)
+                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/sensors/date_time/index.html)
                 * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/stable/templates-ref.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.0/templates-ref.html)
             """
         )
         task_pg_dump >> task_wait_cleanup
