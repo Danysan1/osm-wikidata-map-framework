@@ -39,90 +39,8 @@ The wikidata ID of an item (object/person/...) can be found by searching its nam
 Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find it's page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, it's ID is `Q8023`.
 
 Open Etymology Map obtains the etymology data from multiple tags:
-```plantuml
-@startuml
 
-map "Wikidata item Q7186" as wikia #ffa2a2 {
-  label => Marie Curie
-}
-map "Wikidata item Q37463" as wikib #ffa2a2 {
-  label => Pierre Curie
-}
-map "Wikidata item Q11297474" as wikic #ffa2a2 {
-  label => Pierre and Marie Curie
-  P31 (instance of) => Q3046146 (married couple)
-  **P527 (has part)** => Q7186;Q37463
-}
-
-map "Wikidata item Q1548496" as wikid #a2d2ff {
-  label => Marie-Curie-Gymnasium Dresden
-  **P138 (named after)** => Q7186
-}
-map "Wikidata item Q96391995" as wikie #a2d2ff {
-  label => Marie Curie Monument in Lublin
-  **P547 (commemorates)** => Q7186
-}
-map "Wikidata item ..." as wikif #a2d2ff {
-  **P825 (dedicated to)** => Q7186
-}
-
-map "OSM element A" as osma #95d5b2 {
-  name => Marie Curie Elementary School
-  **name:etymology:wikidata** => Q7186
-}
-map "OSM element B" as osmb #95d5b2 {
-  name => Marii Skłodowskiej-Curie
-  **subject:wikidata** => Q7186
-}
-map "OSM element C" as osmc #95d5b2 {
-  name => Rue Marie et Pierre Curie
-  **name:etymology:wikidata** => Q7186;Q37463
-}
-map "OSM element D" as osmd #95d5b2 {
-  name => Marie-Curie-Gymnasium
-  **wikidata** => Q1548496
-}
-map "OSM element E" as osme #95d5b2 {
-  name => Pomnik Marii Curie-Skłodowskiej
-  **wikidata** => Q96391995
-}
-map "OSM element F" as osmf #95d5b2 {
-  name => ...
-  **wikidata** => ...
-}
-map "OSM element G" as osmg #95d5b2 {
-  name => Rue Pierre et Marie Curie
-  **name:etymology:wikidata** => Q11297474
-}
-map "OSM element H" as osmh #95d5b2 {
-  name => Marie Curie
-  **buried:wikidata** => Q7186
-}
-
-osma --> wikia
-osmb --> wikia
-osmh --> wikia
-wikia <-- osmc
-wikib <-- osmc
-wikic <-- osmg
-
-wikid <-- osmd
-osme --> wikie
-osmf --> wikif
-
-wikia <-- wikic
-wikib <-- wikic
-wikia <-- wikid
-wikie --> wikia
-wikif --> wikia
-
-note left of wikia: Etymology for OSM elements A, B, C, D, E, F, G and H
-note right of wikib: Etymology for OSM elements C and G
-note right of wikic: Etymology for OSM element G
-
-
-@enduml
-```
+![Tags and properties used by Open Etymology Map](images/tags.svg)
 
 Platform | Property/Key | Description | Other info
 | ---- | ---- | ---- | ---- |
@@ -175,7 +93,7 @@ If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS 
 
 A local development instance can be started with Docker by running `docker-compose --profile dev up` in the project root. This will start
 - An instance of Open Etymology exposed at http://localhost:80
-- A PostgreSQL+PostGIS DB exposed on localhost:5432
+- A PostgreSQL+PostGIS DB exposed on `localhost:5432`
 - A PGAdmin instance exposed at http://localhost:8080
 
 <details>
@@ -189,7 +107,7 @@ Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/
 
 #### Production deployment with Docker
 
-The latest version can be deployed through Docker using the image `registry.gitlab.com/openetymologymap/open-etymology-map` whose available tags are listed [here](https://gitlab.com/openetymologymap/open-etymology-map/container_registry/3032190).
+The latest version can be deployed through Docker using the image [`registry.gitlab.com/openetymologymap/open-etymology-map`](https://gitlab.com/openetymologymap/open-etymology-map/container_registry/3032190).
 
 ```sh
 docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/open-etymology-map:latest
@@ -237,7 +155,7 @@ docker-compose --profile "prod+db" up -d
 
 #### Front-end
 
-The front-end is composed by [index.php](public/index.php), [style.css](public/style.css) and [index.js](public/index.js).
+The front-end is composed by [index.php](public/index.php), [style.css](src/style.css) and index.js (built from [index.ts](src/index.ts)).
 The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) (a tentative implementation with its FOSS fork, [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/), is WIP with no ETA) and the charts are created using [chart.js](https://www.chartjs.org/).
 
 At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from [`global-map.php`](https://etymology.dsantini.it/global-map.php).
@@ -255,31 +173,28 @@ At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual
 
 </details>
 
-An Apache Airflow pipeline defined in [db-init.py](airflow-dags/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+An Apache Airflow pipeline defined in [db-init-planet.py](airflow/dags/db-init-planet.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective Wikidata etymology IDs.
 
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
-1. [`BBoxTextPostGISQuery::downloadMissingText()`](public/app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
-    - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](public/app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
-2. [`BBoxEtymologyPostGISQuery`](public/app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
+1. [`BBoxTextPostGISQuery::downloadMissingText()`](app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
+    - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
+2. [`BBoxEtymologyPostGISQuery`](app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
 
 ##### Database initialization
 
-As mentioned above an Apache Airflow pipeline defined in [db-init.py](airflow-dags/db-init.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
+As mentioned above an Apache Airflow pipeline defined in [db-init-planet.py](airflow/dags/db-init-planet.py) is regularly run to initialize the [PostgreSQL](https://www.postgresql.org/)+[PostGIS](https://postgis.net/) DB with the latest OpenStreetMap elements and their respective wikidata etymology IDs.
 This pipeline starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
 
 To run the database initialization:
 1. make sure [`docker-compose` is installed](#local-development-with-docker)
 2. initialize `.env` from [`.env.example`](.env.example) as shown [above](#configuration)
-3. start Apache Airflow with `docker-compose --profile dev+airflow up -d`
-4. from the Apache Airflow configuration menu in the dashboard located at http://localhost:8080 create
-    * the Pool `data_filtering`
-    * the Postgres connection `oem-postgis-postgres` to `oem-postgis` with the credentials in `.env`
-    * the HTTP connection `oem-web-dev-http` to `oem-web-dev`
-5. run/enable an existing DAG pipeline (if necessary customising the launch config) or create a new one in [db-init.py](airflow-dags/db-init.py) and run/enable
+3. start Apache Airflow with `docker-compose --profile airflow up -d`
+4. from the Apache Airflow configuration menu in the dashboard located at http://localhost:8080 create the Pool `data_filtering`
+5. run/enable an existing DAG pipeline (if necessary customising the launch config)
 6. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `.env` (and, if specified in the destination DB)
 
-IMPORTANT NOTE: If you use the planet file I suggest to use a machine with more than 8GB RAM (and a lot of patience, it will require a lot of time; use a local extract in development to use less RAM and time).
+IMPORTANT NOTE: If you use the planet file I suggest to use a machine with 16GB of RAM (and a lot of patience, it will require more than 6 hours; use a local extract in development to use less RAM and time, for an example see [db-init-italy-nord-ovest.py](airflow/dags/db-init-italy-nord-ovest.py)).
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB ([configured by default in `.env`](.env.example)) by using PGAdmin at http://localhost:8000 .
 
@@ -294,9 +209,9 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 If launched with the `--propagate-nearby` or `--propagate-global` flag the database initializaion also loads all ways with `highway=residential` or `highway=unclassified`.
 
-With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with an existing etymology](airflow-dags/sql/propagate-etymologies-nearby.sql)).
+With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with an existing etymology](airflow/dags/sql/propagate-etymologies-nearby.sql)).
 
-With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](airflow-dags/sql/propagate-etymologies-global.sql)).
+With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](airflow/dags/sql/propagate-etymologies-global.sql)).
 
 #### Old back-end (v1, using Overpass)
 
@@ -310,21 +225,21 @@ With `--propagate-global` after elaborating the etymologies the system also prop
 Data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db_enable = false`):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
-   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](public/app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
+   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
    - Otherwise it is necessary to fetch the data from OpenStreetMap through [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
-      1. Query Overpass API in the selected area to get elements with etymology ([BBoxEtymologyOverpassQuery](public/app/query/overpass/BBoxEtymologyOverpassQuery.php)).
-      2. Transform the JSON result into GeoJSON ([OverpassEtymologyQueryResult](public/app/result/overpass/OverpassEtymologyQueryResult.php)).
-      3. Obtain a set of Wikidata IDs to get information about ([GeoJSON2XMLEtymologyWikidataQuery](public/app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
+      1. Query Overpass API in the selected area to get elements with etymology ([`BBoxEtymologyOverpassQuery`](app/query/overpass/BBoxEtymologyOverpassQuery.php)).
+      2. Transform the JSON result into GeoJSON ([`OverpassEtymologyQueryResult`](app/result/overpass/OverpassEtymologyQueryResult.php)).
+      3. Obtain a set of Wikidata IDs to get information about ([`GeoJSON2XMLEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
       4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
-         - If it is, use the cached result ([CSVCachedStringSetXMLQuery](public/app/query/caching/CSVCachedStringSetXMLQuery.php)).
+         - If it is, use the cached result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
          - Otherwise it is necessary to fetch the data from OpenStreetMap.
-            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([EtymologyIDListXMLWikidataQuery](public/app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
-            2. Cache the XML result ([CSVCachedStringSetXMLQuery](public/app/query/caching/CSVCachedStringSetXMLQuery.php)).
-      5. Obtain from the XML result from Wikidata a matrix of details for each element ([XMLWikidataEtymologyQueryResult](public/app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
-      6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([GeoJSON2GeoJSONEtymologyWikidataQuery](public/app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
-      7. Cache the GeoJSON result ([CSVCachedBBoxGeoJSONQuery](public/app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
+            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([`EtymologyIDListXMLWikidataQuery`](app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
+            2. Cache the XML result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
+      5. Obtain from the XML result from Wikidata a matrix of details for each element ([`XMLWikidataEtymologyQueryResult`](app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
+      6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([`GeoJSON2GeoJSONEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
+      7. Cache the GeoJSON result ([`CSVCachedBBoxGeoJSONQuery`](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
-The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [FeatureProperties](src/FeatureElement.ts#L4), [Etymology](src/EtymologyElement.ts#L3) and [ImageResponse](src/ImageElement.ts#L7).
+The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [`FeatureProperties`](src/FeatureElement.ts#L7), [`Etymology`](src/EtymologyElement.ts#L4) and [`ImageResponse`](src/ImageElement.ts#L3).
 
-The content of the output of [stats.php](public/stats.php) is defined in the [EtymologyStat](src/EtymologyColorControl.ts#L38) interface.
+The content of the output of [stats.php](public/stats.php) is defined in the [`EtymologyStat`](src/EtymologyColorControl.ts#L47) interface.
