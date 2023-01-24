@@ -201,13 +201,25 @@ This image can be built with:
 docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod" .
 ```
 
+A full installation without DB (using Overpass) can be deployed with docker-compose:
+
+```sh
+git clone https://gitlab.com/openetymologymap/open-etymology-map.git
+cd open-etymology-map
+cp ".env.example" ".env"
+# At this point edit the file .env adding the correct mapbox_token
+docker-compose --profile "prod" up -d
+```
+
 A full installation complete with DB can be deployed with docker-compose:
 
 ```sh
 git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp ".env.example" ".env"
-docker-compose --profile "prod" up -d
+# At this point edit the file .env adding the correct mapbox_token and setting db_enable=true
+docker-compose --profile "prod+db" up -d
+# At this point you need to load a dump of the DB on the DB exposed on port 5432 
 ```
 
 <details>
