@@ -53,10 +53,10 @@ abstract class CSVCachedQuery implements Query
         $this->config = $config;
         $this->serverTiming = $serverTiming;
 
-        $cacheTimeoutHours = (int)$config->get('cache-timeout-hours');
+        $cacheTimeoutHours = (int)$config->get('cache_timeout_hours');
         $this->timeoutThresholdTimestamp = time() - (60 * 60 * $cacheTimeoutHours);
 
-        $this->cacheFileBaseURL = (string)$this->getConfig()->get("cache-file-base-url");
+        $this->cacheFileBaseURL = (string)$this->getConfig()->get("cache_file_base_url");
     }
 
     public function getBaseQuery(): Query

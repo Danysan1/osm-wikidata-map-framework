@@ -33,10 +33,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
     //detail_container.dataset.el_id = properties.el_id?.toString();
 
     debugLog("featureToDomElement", {
-        el_id: properties.el_id,
-        feature,
-        etymologies,
-        detail_container
+        el_id: properties.el_id, feature, etymologies, detail_container
     });
 
     const element_name = detail_container.querySelector<HTMLElement>('.element_name');
@@ -117,7 +114,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
     } else {
-        etymologies.filter(e => e?.wd_id).forEach(function (ety) {
+        etymologies.filter(e => e?.wikidata).forEach(function (ety) {
             try {
                 etymologies_container.appendChild(etymologyToDomElement(ety))
             } catch (err) {

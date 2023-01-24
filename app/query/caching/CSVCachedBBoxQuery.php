@@ -115,7 +115,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $rowData = $this->getRowDataFromResult($result);
         $hash = sha1($rowData);
         $fileRelativePath = $hash . "." . $this->getExtension();
-        $fileAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $fileRelativePath;
+        $fileAbsolutePath = (string)$this->getConfig()->get("cache_file_base_path") . $fileRelativePath;
         file_put_contents($fileAbsolutePath, $rowData);
 
         $newRow = [

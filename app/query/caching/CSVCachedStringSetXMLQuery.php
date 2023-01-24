@@ -50,7 +50,7 @@ class CSVCachedStringSetXMLQuery extends CSVCachedStringSetQuery implements Stri
         $xml = $result->getXML();
         $hash = sha1($xml);
         $xmlRelativePath = $hash . ".xml";
-        $xmlAbsolutePath = (string)$this->getConfig()->get("cache-file-base-path") . $xmlRelativePath;
+        $xmlAbsolutePath = (string)$this->getConfig()->get("cache_file_base_path") . $xmlRelativePath;
         file_put_contents($xmlAbsolutePath, $xml);
 
         return $xmlRelativePath;

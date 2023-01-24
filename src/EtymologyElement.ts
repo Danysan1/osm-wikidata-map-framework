@@ -86,10 +86,7 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
     //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
     debugLog("etymologyToDomElement", {
-        et_id: ety.et_id,
-        wd_id: ety.wd_id,
-        ety,
-        etyDomElement
+        et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement
     });
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
