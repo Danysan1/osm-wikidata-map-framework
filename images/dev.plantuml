@@ -1,4 +1,4 @@
-@startuml dev_deployment
+@startuml dev
 
 actor Browser
 rectangle "Docker Compose --profile 'dev'" as docker {

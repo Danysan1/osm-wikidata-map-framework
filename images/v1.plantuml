@@ -1,0 +1,75 @@
+@startuml v1
+
+actor user as "User"
+frame oem as "Open Etymology Map v1" {
+    node "Front-end" {
+        component index as "index.php"
+    }
+    node "Back-end" {
+        component etymologyMap as "etymologyMap.php"
+        component elements as "elements.php"
+        component stats as "stats.php"
+        package "App\Query\Combined" {
+            card BBoxGeoJSONEtymologyQuery
+            card BBoxStatsOverpassWikidataQuery
+            card BBoxJSONOverpassWikidataQuery
+        }
+        package "App\Query\Wikidata" {
+            card WikidataQuery
+            card EtymologyIDListXMLWikidataQuery
+            card TypeStatsWikidataQuery
+            card GenderStatsWikidataQuery
+        }
+        package "App\Query\Overpass" {
+            card OverpassQuery
+            card BBoxEtymologyOverpassQuery
+            card BBoxEtymologyCenterOverpassQuery
+        }
+/'
+        package "App\Query\Caching" {
+            card CSVCachedBBoxGeoJSONQuery
+            card CSVCachedBBoxJSONQuery
+        }
+        'file cache as "Cache"
+'/
+    }
+}
+agent wikidata as "Wikidata SPARQL API"
+agent overpass as "Overpass API"
+
+user --> index
+index -(0- etymologyMap
+index -(0- elements
+index -(0- stats
+
+/'
+stats  ..> CSVCachedBBoxJSONQuery
+etymologyMap  ..> CSVCachedBBoxGeoJSONQuery
+elements ..> CSVCachedBBoxGeoJSONQuery
+CSVCachedBBoxGeoJSONQuery --|> CSVCachedBBoxJSONQuery
+CSVCachedBBoxJSONQuery --> cache
+'/
+
+elements --> BBoxEtymologyCenterOverpassQuery
+etymologyMap --> BBoxGeoJSONEtymologyQuery
+stats --> BBoxStatsOverpassWikidataQuery
+
+BBoxGeoJSONEtymologyQuery --|> BBoxJSONOverpassWikidataQuery
+BBoxStatsOverpassWikidataQuery --|> BBoxJSONOverpassWikidataQuery
+
+BBoxEtymologyOverpassQuery --|> OverpassQuery
+BBoxEtymologyCenterOverpassQuery --|> OverpassQuery
+
+EtymologyIDListXMLWikidataQuery --|> WikidataQuery
+TypeStatsWikidataQuery --|> WikidataQuery
+GenderStatsWikidataQuery --|> WikidataQuery
+
+BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
+BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
+BBoxStatsOverpassWikidataQuery --> GenderStatsWikidataQuery
+BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
+
+OverpassQuery --(0- overpass
+WikidataQuery --(0- wikidata
+
+@enduml

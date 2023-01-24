@@ -181,7 +181,7 @@ A local development instance can be started with Docker by running `docker-compo
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/dev_deployment.svg)
+![deployment diagram](images/dev.svg)
 
 </details>
 
@@ -225,11 +225,11 @@ docker-compose --profile "prod+db" up -d
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/prod_deployment.svg)
+![deployment diagram](images/prod.svg)
 
-![deployment diagram](images/prod+db_deployment.svg)
+![deployment diagram](images/prod+db.svg)
 
-![deployment diagram](images/prod+promtail_deployment.svg)
+![deployment diagram](images/prod+promtail.svg)
 
 </details>
 
@@ -251,81 +251,7 @@ At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual
 <details>
 <summary>Deployment diagram</summary>
 
-```plantuml
-@startuml
-
-actor user as "User"
-file pbf as "OSM pbf planet file"
-component osmium
-frame oem as "Open Etymology Map v2" {
-    database db as "PostgreSQL DB"
-    component init as "Database initialization"
-    node fe as "Front-end"
-    node be as "Back-end" {
-        component globalMap as "global-map.php"
-        component elements as "elements.php"
-        component etymologyMap as "etymologyMap.php"
-        component stats as "stats.php"
-        component index as "index.php"
-        package App {
-            card PostGIS_PDO
-            package Query {
-                package PostGIS {
-                    card BBoxEtymologyPostGISQuery
-                    card BBoxGenderStatsPostGISQuery
-                    card BBoxTypeStatsPostGISQuery
-                    card BBoxEtymologyCenterPostGISQuery
-                    card BBoxTextPostGISQuery
-                    card PostGISQuery
-                }
-                package Wikidata {
-                    card EtymologyIDListJSONWikidataQuery
-                    card JSONWikidataQuery
-                    card WikidataQuery
-                }
-            }
-        }
-    }
-}
-agent wikidata as "Wikidata SPARQL API"
-
-index <--> fe
-
-user --> fe
-
-fe -(0- globalMap
-fe -(0- etymologyMap
-fe -(0- elements
-fe -(0- stats
-
-
-etymologyMap ..> BBoxEtymologyPostGISQuery
-stats ..> BBoxGenderStatsPostGISQuery
-stats ..> BBoxTypeStatsPostGISQuery
-elements ..> BBoxEtymologyCenterPostGISQuery
-
-BBoxTextPostGISQuery --|> PostGISQuery
-BBoxEtymologyPostGISQuery --|> BBoxTextPostGISQuery
-BBoxGenderStatsPostGISQuery --|> BBoxTextPostGISQuery
-BBoxTypeStatsPostGISQuery --|> BBoxTextPostGISQuery
-BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
-
-EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
-JSONWikidataQuery --|> WikidataQuery
-
-globalMap ..> PostGIS_PDO
-PostGISQuery ..> PostGIS_PDO
-PostGIS_PDO -(0- db
-BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
-
-WikidataQuery -(0- wikidata
-
-db -o)- init
-osmium <.. init
-pbf <-- init
-
-@enduml
-```
+![deployment diagram](images/v2.svg)
 
 </details>
 
@@ -377,79 +303,7 @@ With `--propagate-global` after elaborating the etymologies the system also prop
 <details>
 <summary>Deployment diagram</summary>
 
-```plantuml
-actor user as "User"
-frame oem as "Open Etymology Map v1" {
-    node "Front-end" {
-        component index as "index.php"
-    }
-    node "Back-end" {
-        component etymologyMap as "etymologyMap.php"
-        component elements as "elements.php"
-        component stats as "stats.php"
-        package "App\Query\Combined" {
-            card BBoxGeoJSONEtymologyQuery
-            card BBoxStatsOverpassWikidataQuery
-            card BBoxJSONOverpassWikidataQuery
-        }
-        package "App\Query\Wikidata" {
-            card WikidataQuery
-            card EtymologyIDListXMLWikidataQuery
-            card TypeStatsWikidataQuery
-            card GenderStatsWikidataQuery
-        }
-        package "App\Query\Overpass" {
-            card OverpassQuery
-            card BBoxEtymologyOverpassQuery
-            card BBoxEtymologyCenterOverpassQuery
-        }
-/'
-        package "App\Query\Caching" {
-            card CSVCachedBBoxGeoJSONQuery
-            card CSVCachedBBoxJSONQuery
-        }
-        'file cache as "Cache"
-'/
-    }
-}
-agent wikidata as "Wikidata SPARQL API"
-agent overpass as "Overpass API"
-
-user --> index
-index -(0- etymologyMap
-index -(0- elements
-index -(0- stats
-
-/'
-stats  ..> CSVCachedBBoxJSONQuery
-etymologyMap  ..> CSVCachedBBoxGeoJSONQuery
-elements ..> CSVCachedBBoxGeoJSONQuery
-CSVCachedBBoxGeoJSONQuery --|> CSVCachedBBoxJSONQuery
-CSVCachedBBoxJSONQuery --> cache
-'/
-
-elements --> BBoxEtymologyCenterOverpassQuery
-etymologyMap --> BBoxGeoJSONEtymologyQuery
-stats --> BBoxStatsOverpassWikidataQuery
-
-BBoxGeoJSONEtymologyQuery --|> BBoxJSONOverpassWikidataQuery
-BBoxStatsOverpassWikidataQuery --|> BBoxJSONOverpassWikidataQuery
-
-BBoxEtymologyOverpassQuery --|> OverpassQuery
-BBoxEtymologyCenterOverpassQuery --|> OverpassQuery
-
-EtymologyIDListXMLWikidataQuery --|> WikidataQuery
-TypeStatsWikidataQuery --|> WikidataQuery
-GenderStatsWikidataQuery --|> WikidataQuery
-
-BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
-BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
-BBoxStatsOverpassWikidataQuery --> GenderStatsWikidataQuery
-BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
-
-OverpassQuery --(0- overpass
-WikidataQuery --(0- wikidata
-```
+![deployment diagram](images/v1.svg)
 
 </details>
 

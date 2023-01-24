@@ -1,4 +1,4 @@
-@startuml prod_deployment
+@startuml prod
 
 actor Browser
 component Server {

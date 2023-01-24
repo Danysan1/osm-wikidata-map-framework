@@ -1,4 +1,4 @@
-@startuml prod+promtail_deployment
+@startuml prod+promtail
 
 actor Browser
 cloud Grafana {

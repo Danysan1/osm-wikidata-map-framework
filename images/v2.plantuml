@@ -1,0 +1,66 @@
+@startuml v2
+
+actor user as "User"
+frame oem as "Open Etymology Map v2" {
+    database db as "PostgreSQL DB"
+    node fe as "Front-end"
+    node be as "Back-end" {
+        component globalMap as "global-map.php"
+        component elements as "elements.php"
+        component etymologyMap as "etymologyMap.php"
+        component stats as "stats.php"
+        component index as "index.php"
+        package App {
+            card PostGIS_PDO
+            package Query {
+                package PostGIS {
+                    card BBoxEtymologyPostGISQuery
+                    card BBoxGenderStatsPostGISQuery
+                    card BBoxTypeStatsPostGISQuery
+                    card BBoxEtymologyCenterPostGISQuery
+                    card BBoxTextPostGISQuery
+                    card PostGISQuery
+                }
+                package Wikidata {
+                    card EtymologyIDListJSONWikidataQuery
+                    card JSONWikidataQuery
+                    card WikidataQuery
+                }
+            }
+        }
+    }
+}
+agent wikidata as "Wikidata SPARQL API"
+
+index <--> fe
+
+user --> fe
+
+fe -(0- globalMap
+fe -(0- etymologyMap
+fe -(0- elements
+fe -(0- stats
+
+
+etymologyMap ..> BBoxEtymologyPostGISQuery
+stats ..> BBoxGenderStatsPostGISQuery
+stats ..> BBoxTypeStatsPostGISQuery
+elements ..> BBoxEtymologyCenterPostGISQuery
+
+BBoxTextPostGISQuery --|> PostGISQuery
+BBoxEtymologyPostGISQuery --|> BBoxTextPostGISQuery
+BBoxGenderStatsPostGISQuery --|> BBoxTextPostGISQuery
+BBoxTypeStatsPostGISQuery --|> BBoxTextPostGISQuery
+BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
+
+EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
+JSONWikidataQuery --|> WikidataQuery
+
+globalMap ..> PostGIS_PDO
+PostGISQuery ..> PostGIS_PDO
+PostGIS_PDO --(0- db
+BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
+
+WikidataQuery -(0- wikidata
+
+@enduml

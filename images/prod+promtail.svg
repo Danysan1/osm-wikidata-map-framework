@@ -22,8 +22,8 @@ reverse link Apache to 80webProd--><g id="link_Apache_80webProd"><path d="M978.3
 link promRem to promLoc--><g id="link_promRem_promLoc"><path d="M197,377.9254 C197,424.8354 197,520.7354 197,567.7154 " fill="none" id="promRem-promLoc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="40" x="198" y="470.3805">volume</text></g><!--MD5=[22fcf1e33b40493c5e2fc9dd2c31ffd5]
 link logRem to logLoc--><g id="link_logRem_logLoc"><path d="M324,377.9254 C324,424.8354 324,520.7354 324,567.7154 " fill="none" id="logRem-logLoc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="40" x="325" y="470.3805">volume</text></g><!--MD5=[5ab18d128b9e03ee7a87eeb6c6f98176]
 link contRem to contLoc--><g id="link_contRem_contLoc"><path d="M492,377.9254 C492,424.8354 492,520.7354 492,567.7154 " fill="none" id="contRem-contLoc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacing" textLength="40" x="493" y="470.3805">volume</text></g><!--MD5=[ca91e133679fb377bc773829be79666e]
-reverse link Loki to promInst--><g id="link_Loki_promInst"><path d="M667,99.2254 C667,154.2854 667,274.7154 667,325.5354 " fill="none" id="Loki-backto-promInst" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="667,94.1054,663,103.1054,667,99.1054,671,103.1054,667,94.1054" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[c36c1f187fa6a26f7f173cd1b81d7bf1]
-@startuml prod+promtail_deployment
+reverse link Loki to promInst--><g id="link_Loki_promInst"><path d="M667,99.2254 C667,154.2854 667,274.7154 667,325.5354 " fill="none" id="Loki-backto-promInst" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="667,94.1054,663,103.1054,667,99.1054,671,103.1054,667,94.1054" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[b7533a7a55354ccdac6266a2614ad9bd]
+@startuml prod+promtail
 
 actor Browser
 cloud Grafana {
