@@ -37,7 +37,13 @@ class RoundRobinOverpassConfig implements OverpassConfig
      */
     public function __construct(Configuration $conf, ?array $overrideEndpoints = null)
     {
-        $this->endpoints = empty($overrideEndpoints) ? (array)json_decode((string)($conf->get('overpass_endpoints'))) : $overrideEndpoints;
+        if (empty($overrideEndpoints)) {
+            $raw_endpoint = (string)($conf->get('overpass_endpoints'));
+            $endpoints = json_decode($raw_endpoint);
+            $this->endpoints = is_array($endpoints) ? $endpoints : [$raw_endpoint];
+        } else {
+            $this->endpoints = $overrideEndpoints;
+        }
 
         $this->nodes = $conf->getBool("fetch_nodes");
         $this->ways = $conf->getBool("fetch_ways");
