@@ -1,3 +1,5 @@
+import { debugLog } from "./config";
+
 /**
  * Show an error/info snackbar
  * 
@@ -11,12 +13,12 @@ function showSnackbar(message: string, color = "lightcoral", timeout = 3000) {
     document.body.appendChild(x);
     x.innerText = message;
     x.style.backgroundColor = color;
-    //console.info("Showing snackbar", x);
+    debugLog("Showing snackbar", x);
     x.classList.add("snackbar", "show");
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
-        //console.info("Hiding snackbar", x);
+        debugLog("Hiding snackbar", x);
         setTimeout(function () { x.classList.remove("show"); }, timeout);
     }
     return x;
@@ -30,7 +32,7 @@ function showSnackbar(message: string, color = "lightcoral", timeout = 3000) {
  */
 function showLoadingSpinner(on = true) {
     let spinnerEl = document.getElementById('spinner');
-    if(!spinnerEl) {
+    if (!spinnerEl) {
         spinnerEl = document.createElement("div");
         document.body.appendChild(spinnerEl);
         spinnerEl.className = "spinner";
@@ -38,12 +40,12 @@ function showLoadingSpinner(on = true) {
     }
 
     if (on) {
-        //console.info("Showing spinner", spinnerEl);
+        debugLog("Showing spinner", spinnerEl);
         spinnerEl.classList.add('show');
     } else {
-        //console.info("Hiding spinner", spinnerEl);
+        debugLog("Hiding spinner", spinnerEl);
         spinnerEl.classList.remove('show');
     }
 }
 
-export {showSnackbar, showLoadingSpinner};
+export { showSnackbar, showLoadingSpinner };

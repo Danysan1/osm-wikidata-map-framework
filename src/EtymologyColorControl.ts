@@ -6,6 +6,7 @@ import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'ch
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
+import { debugLog } from './config';
 
 interface ColorScheme {
     id: string;
@@ -21,21 +22,21 @@ const colorSchemes: ColorScheme[] = [
         id: "gender",
         colorField: 'gender_color',
         text: 'By gender',
-        color: ["coalesce", ['get', 'gender_color'], "#223b53"],
+        color: ['get', 'gender_color'],
         urlCode: "genderStats",
     },
     {
         id: "type",
         colorField: 'type_color',
         text: 'By type',
-        color: ["coalesce", ['get', 'type_color'], "#223b53"],
+        color: ['get', 'type_color'],
         urlCode: "typeStats",
     },
     {
         id: "source",
         colorField: "source_color",
         text: "By source",
-        color: ["coalesce", ['get', 'source_color'], "#223b53"],
+        color: ['get', 'source_color'],
         urlCode: "sourceStats",
     },
     { id: "black", text: 'Uniform black', color: '#223b53', colorField: null, urlCode: null },
@@ -158,7 +159,7 @@ class EtymologyColorControl implements IControl {
     }
 
     btnClickHandler(event: MouseEvent) {
-        console.info("EtymologyColorControl button click", event);
+        debugLog("EtymologyColorControl button click", event);
         this.showDropdown();
     }
 
@@ -175,7 +176,7 @@ class EtymologyColorControl implements IControl {
     }
 
     setColorScheme(colorScheme: string) {
-        console.info("EtymologyColorControl setColorScheme", { colorScheme });
+        debugLog("EtymologyColorControl setColorScheme", { colorScheme });
         if (!this._ctrlDropDown || !this._ctrlDropDown.options) {
             console.warn("setColorScheme: dropdown not yet initialized");
         } else {
@@ -204,7 +205,7 @@ class EtymologyColorControl implements IControl {
             logErrorMessage("Invalid selected color scheme", "error", { colorScheme });
             color = '#3bb2d0';
         }
-        console.info("EtymologyColorControl dropDown click", { event, colorScheme, colorSchemeObj, color });
+        debugLog("EtymologyColorControl dropDown click", { event, colorScheme, colorSchemeObj, color });
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -225,7 +226,7 @@ class EtymologyColorControl implements IControl {
         //updateDataSource(event);
     }
 
-    updateChart(event: MapboxEvent|Event, source="all") {
+    updateChart(event: MapboxEvent | Event, source = "all") {
         if (!this._ctrlDropDown) {
             console.error("updateChart: dropodown not inizialized", { event });
             return;
@@ -233,12 +234,12 @@ class EtymologyColorControl implements IControl {
             const dropdown = this._ctrlDropDown,
                 colorScheme = colorSchemes.find(scheme => scheme.id == dropdown.value),
                 bounds = this._map?.getBounds();
-            //console.info("updateChart", { event, colorScheme });
+            debugLog("updateChart", { event, colorScheme });
 
             if (!bounds) {
                 console.error("updateChart: missing bounds", { event });
             } else if (colorScheme && colorScheme.urlCode) {
-                //console.info("updateChart main: colorScheme is ok", { event, colorScheme });
+                debugLog("updateChart main: colorScheme is ok", { event, colorScheme });
                 if (this._chartXHR)
                     this._chartXHR.abort();
 
@@ -281,7 +282,7 @@ class EtymologyColorControl implements IControl {
                             });
                             this.setChartData(data);
                         } else if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-                            console.info("XHR aborted", { xhr, readyState, status, e });
+                            debugLog("XHR aborted", { xhr, readyState, status, e });
                         } else {
                             console.error("XHR error", { xhr, readyState, status, e });
                             //if (event.type && event.type == 'change')
@@ -294,7 +295,7 @@ class EtymologyColorControl implements IControl {
                 xhr.send();
                 this._chartXHR = xhr;
             } else {
-                console.info("updateChart main: no colorScheme, removing", { event, colorScheme });
+                debugLog("updateChart main: no colorScheme, removing", { event, colorScheme });
                 if (event.type && event.type == 'change')
                     this.hideDropdown();
                 this.removeChart();
@@ -307,12 +308,12 @@ class EtymologyColorControl implements IControl {
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     setChartData(data: ChartData<"pie">) {
-        /*console.info("setChartData", {
+        debugLog("setChartData", {
             container: this._container,
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
-        });*/
+        });
         if (this._chartJsObject && this._chartDomElement) {
             // https://www.chartjs.org/docs/latest/developers/updates.html
             this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
@@ -321,10 +322,10 @@ class EtymologyColorControl implements IControl {
 
             this._chartJsObject.update();
         } else if (this._chartInitInProgress) {
-            console.info("setChartData: chart already loading");
+            debugLog("setChartData: chart already loading");
         } else {
             this._chartInitInProgress = true;
-            console.info("setChartData: Loading chart.js and initializing the chart");
+            debugLog("setChartData: Loading chart.js and initializing the chart");
             this.initChart(data);
         }
     }

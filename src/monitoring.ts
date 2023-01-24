@@ -1,4 +1,4 @@
-import { getConfig } from "./config";
+import { debugLog, getConfig } from "./config";
 import { init, captureException, captureMessage, SeverityLevel } from "@sentry/browser";
 import { Extras } from '@sentry/types';
 
@@ -9,7 +9,7 @@ function initSentry() {
     const sentry_js_dsn = getConfig("sentry_js_dsn"),
         sentry_js_env = getConfig("sentry_js_env");
     if (sentry_js_dsn && sentry_js_env) {
-        console.info("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
+        debugLog("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
         init({
             dsn: sentry_js_dsn,
             environment: sentry_js_env
@@ -37,10 +37,11 @@ function logErrorMessage(message: string, level: SeverityLevel = "error", extra:
  */
 function initGoogleAnalytics() {
     const google_analytics_id = getConfig("google_analytics_id"),
+        // eslint-disable-next-line prefer-rest-params
         gtag: Gtag.Gtag = function () { (window as any).dataLayer.push(arguments); }
 
     if (google_analytics_id) {
-        console.info("Initializing Google Analytics", { google_analytics_id });
+        debugLog("Initializing Google Analytics", { google_analytics_id });
         (window as any).dataLayer = (window as any).dataLayer || [];
         gtag('js', new Date());
         gtag('config', google_analytics_id);
@@ -55,15 +56,18 @@ function initMatomo() {
         matomo_id = getConfig("matomo_id");
 
     if (matomo_domain && matomo_id) {
-        console.info("Initializing Matomo", { matomo_domain, matomo_id });
+        debugLog("Initializing Matomo", { matomo_domain, matomo_id });
+        // eslint-disable-next-line no-var
         var _paq = (window as any)._paq = (window as any)._paq || [];
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */
         _paq.push(['trackPageView']);
         _paq.push(['enableLinkTracking']);
         (function () {
+            // eslint-disable-next-line no-var
             var u = `https://${matomo_domain}/`;
             _paq.push(['setTrackerUrl', u + 'matomo.php']);
             _paq.push(['setSiteId', matomo_id]);
+            // eslint-disable-next-line no-var
             var d = document, g = d.createElement('script'), s = d.getElementsByTagName('script')[0];
             g.async = true; g.src = `//cdn.matomo.cloud/${matomo_domain}/matomo.js`; s.parentNode?.insertBefore(g, s);
         })();

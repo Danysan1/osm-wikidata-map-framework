@@ -1,5 +1,5 @@
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'maplibre-gl';
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent } from 'mapbox-gl';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent } from 'mapbox-gl';
 
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -11,7 +11,7 @@ import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorCo
 import { InfoControl, openInfoWindow } from './InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { getConfig } from './config';
+import { debugLog, getConfig } from './config';
 import './style.css';
 import { SourceControl, SourceItem } from './SourceControl';
 
@@ -71,8 +71,8 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
-    mapStyleDataHandler(/*e: MapDataEvent*/) {
-        //console.info("Map style data loaded", e);
+    mapStyleDataHandler(e: MapDataEvent) {
+        debugLog("Map style data loaded", e);
         //setCulture(e.sender); //! Not here, this event is executed too often
     }
 
@@ -92,7 +92,7 @@ export class EtymologyMap extends Map {
             console.error("Failed getting the current color scheme:", err);
             currColorScheme = undefined;
         }
-        //console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme, e });
+        debugLog("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme });
 
         // Check if the position has changed in order to avoid unnecessary map movements
         if (Math.abs(currLat - newParams.lat) > 0.001 ||
@@ -119,10 +119,11 @@ export class EtymologyMap extends Map {
         const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
             elementsSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
             sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent);
-        //console.info("mapSourceDataHandler", {sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e});
 
         if (sourceDataLoaded) {
-            //console.info("mapSourceDataHandler: data loaded", { e, source:e.sourceId });
+            debugLog("mapSourceDataHandler: data loaded", {
+                sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e, source: e.sourceId
+            });
             showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent) {
@@ -156,26 +157,27 @@ export class EtymologyMap extends Map {
      */
     updateDataSource() {
         const bounds = this.getBounds(),
+            bbox_margin = parseFloat(getConfig("bbox_margin") ?? "0"),
             southWest = bounds.getSouthWest(),
-            minLat = southWest.lat,
-            minLon = southWest.lng,
+            minLat = southWest.lat - bbox_margin,
+            minLon = southWest.lng - bbox_margin,
             northEast = bounds.getNorthEast(),
-            maxLat = northEast.lat,
-            maxLon = northEast.lng,
+            maxLat = northEast.lat + bbox_margin,
+            maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
             source = this.currentSourceControl?.getCurrentID() ?? "all",
             language = document.documentElement.lang,
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
             enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
             enableGlobalLayers = zoomLevel < minZoomLevel;
-        /*console.info("updateDataSource", {
+        debugLog("updateDataSource", {
             zoomLevel,
             minZoomLevel,
             thresholdZoomLevel,
             enableWikidataLayers,
             enableElementLayers,
             enableGlobalLayers
-        });*/
+        });
 
         if (enableWikidataLayers) {
             const queryParams = {
@@ -244,7 +246,7 @@ export class EtymologyMap extends Map {
             wikidata_source,
             {
                 type: 'geojson',
-                buffer: 512,
+                //buffer: 512, // This only works on already downloaded data
                 data: wikidata_url,
                 attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
             },
@@ -359,7 +361,7 @@ export class EtymologyMap extends Map {
      */
     onWikidataLayerClick(ev: MapMouseEvent & { features?: MapGeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
         if (ev.popupAlreadyShown) {
-            console.info("onWikidataLayerClick: etymology popup already shown", ev);
+            debugLog("onWikidataLayerClick: etymology popup already shown", ev);
         } else if (!ev.features) {
             console.warn("onWikidataLayerClick: missing or empty clicked features list", ev);
         } else {
@@ -381,7 +383,7 @@ export class EtymologyMap extends Map {
                     .setHTML('<div class="detail_wrapper"><span class="element_loading"></span></div>')
                     .addTo(this),
                 detail_wrapper = popup.getElement().querySelector<HTMLDivElement>(".detail_wrapper");
-            //console.info("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
+            debugLog("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
             if (!detail_wrapper)
                 throw new Error("Failed adding the popup");
 
@@ -438,13 +440,13 @@ export class EtymologyMap extends Map {
         const oldSourceDataURL = (sourceObject && sourceObject._data) ? sourceObject._data : null,
             sourceUrlChanged = oldSourceDataURL != sourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
-            //console.info("prepareClusteredLayers: updating source", {id, sourceObject, sourceDataURL, oldSourceDataURL});
+            debugLog("prepareClusteredLayers: updating source", { id, sourceObject, sourceDataURL, oldSourceDataURL });
             sourceObject.setData(sourceDataURL);
         } else if (!sourceObject) {
             this.addSource(id, config);
             sourceObject = this.getSource(id) as GeoJSONSource;
             if (sourceObject)
-                console.info("addGeoJSONSource success ", { id, config, sourceObject });
+                debugLog("addGeoJSONSource success ", { id, config, sourceObject });
             else {
                 console.error("addGeoJSONSource failed", { id, config, sourceObject })
                 throw new Error("Failed adding source");
@@ -526,7 +528,9 @@ export class EtymologyMap extends Map {
             this.on('mouseenter', clusterLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', clusterLayerName, () => this.getCanvas().style.cursor = '');
 
-            console.info("prepareClusteredLayers cluster", clusterLayerName, { layerDefinition, layer: this.getLayer(clusterLayerName) });
+            debugLog("prepareClusteredLayers cluster", {
+                clusterLayerName, layerDefinition, layer: this.getLayer(clusterLayerName)
+            });
         }
 
         if (!this.getLayer(countLayerName)) {
@@ -544,7 +548,7 @@ export class EtymologyMap extends Map {
                 }
             } as SymbolLayer;
             this.addLayer(layerDefinition);
-            console.info("prepareClusteredLayers count", countLayerName, { layerDefinition, layer: this.getLayer(countLayerName) });
+            debugLog("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
         }
 
         if (!this.getLayer(pointLayerName)) {
@@ -577,7 +581,9 @@ export class EtymologyMap extends Map {
             this.on('mouseenter', pointLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', pointLayerName, () => this.getCanvas().style.cursor = '');
 
-            console.info("prepareClusteredLayers point", pointLayerName, { layerDefinition, layer: this.getLayer(pointLayerName) });
+            debugLog("prepareClusteredLayers point", {
+                pointLayerName, layerDefinition, layer: this.getLayer(pointLayerName)
+            });
         }
     }
 
@@ -617,7 +623,7 @@ export class EtymologyMap extends Map {
                 zoom = defaultZoom
                 console.warn("easeToClusterCenter: Empty zoom, using default");
             }
-            //console.info("easeToClusterCenter", {zoom, center});
+            debugLog("easeToClusterCenter", { zoom, center });
             this.easeTo({
                 center: center,
                 zoom: zoom
@@ -636,7 +642,7 @@ export class EtymologyMap extends Map {
         const lat = this.getCenter().lat,
             lon = this.getCenter().lng,
             zoom = this.getZoom();
-        //console.info("updateDataForMapPosition", { lat, lon, zoom });
+        debugLog("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
         setFragmentParams(lon, lat, zoom, undefined);
 
@@ -785,7 +791,7 @@ export class EtymologyMap extends Map {
             nameLayerIds = symbolLayerIds.filter(id => this.isNameSymbolLayer(id)),
             nameLayerOldTextFields = nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field')),
             newTextField = ['coalesce', ['get', 'name:' + language], ['get', 'name_' + language], ['get', 'name']];
-        console.info("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
+        debugLog("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
         nameLayerIds.forEach(id => this.setLayoutProperty(id, 'text-field', newTextField));
     }
 }

@@ -1,5 +1,6 @@
 import { logErrorMessage } from './monitoring';
 import { Map } from 'mapbox-gl';
+import { debugLog } from './config';
 
 export interface DropdownItem {
     id: string;
@@ -89,7 +90,7 @@ export class DropdownControl {
             throw new Error("Bad event target dropdown");
         const dropdownItemId = dropDown.value,
             dropdownItemObj = this._dropdownItems.find(item => item.id === dropdownItemId);
-        //console.info("DropdownControl select", { dropdownItemObj, event });
+        debugLog("DropdownControl select", { dropdownItemObj, event });
         if (dropdownItemObj) {
             dropdownItemObj.onSelect()
             if (this._ctrlDropDown)

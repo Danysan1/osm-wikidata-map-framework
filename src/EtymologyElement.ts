@@ -1,3 +1,4 @@
+import { debugLog } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 
 interface Etymology {
@@ -71,7 +72,7 @@ function formatDate(date: string | Date, precision: number | null): string {
     }
 
     const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
-    //console.info("formatDate", { date, precision, dateObject, options, out });
+    debugLog("formatDate", { date, precision, dateObject, options, out });
     return out;
 }
 
@@ -84,12 +85,12 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
     //etyDomElement.dataset.et_id = ety.et_id?.toString();
     //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
-    /*console.info("etymologyToDomElement", {
+    debugLog("etymologyToDomElement", {
         et_id: ety.et_id,
         wd_id: ety.wd_id,
         ety,
         etyDomElement
-    });*/
+    });
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {

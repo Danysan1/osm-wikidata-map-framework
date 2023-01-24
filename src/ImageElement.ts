@@ -1,7 +1,8 @@
+import { debugLog } from "./config";
 
 interface DetailedImage {
     picture: string,
-    attribution: string|null,
+    attribution: string | null,
 }
 
 type ImageResponse = string | DetailedImage;
@@ -17,12 +18,12 @@ function imageToDomElement(img: ImageResponse): HTMLDivElement {
         imgPreviewUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
         imgUrl = 'https://commons.wikimedia.org/wiki/File:' + img.picture;
         imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
-        //console.info("imageToDomElement: object img", {img, imgUrl, imgPreviewUrl, imgAttribution});
+        debugLog("imageToDomElement: object img", { img, imgUrl, imgPreviewUrl, imgAttribution });
     } else if (typeof img == 'string') {
         imgPreviewUrl = img;
         imgUrl = img;
         imgAttribution = null;
-        //console.info("imageToDomElement: string img", {img, imgUrl, imgPreviewUrl, imgAttribution});
+        debugLog("imageToDomElement: string img", { img, imgUrl, imgPreviewUrl, imgAttribution });
     } else {
         imgPreviewUrl = null;
         imgUrl = null;

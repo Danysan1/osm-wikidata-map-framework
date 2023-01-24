@@ -2,6 +2,7 @@ import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, etymologyToDomElement } from "./EtymologyElement";
+import { debugLog } from "./config";
 
 interface FeatureProperties {
     alt_name: string | null;
@@ -31,12 +32,12 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
         osm_full_id = properties.osm_type + '/' + properties.osm_id;
     //detail_container.dataset.el_id = properties.el_id?.toString();
 
-    /*console.info("featureToDomElement", {
+    debugLog("featureToDomElement", {
         el_id: properties.el_id,
         feature,
         etymologies,
         detail_container
-    });*/
+    });
 
     const element_name = detail_container.querySelector<HTMLElement>('.element_name');
     if (!element_name) {
@@ -138,9 +139,9 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
             );
         }
 
-        /*console.info("featureToDomElement: showing text etymology? ",
-            { feature, textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists }
-        );*/
+        debugLog("featureToDomElement: showing text etymology? ", {
+            feature, textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
+        });
         if (textEtyShouldBeShown) {
             etymologies_container.appendChild(etymologyToDomElement({
                 name: textEtyName,

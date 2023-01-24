@@ -1,4 +1,4 @@
-import { getConfig } from "./config";
+import { debugLog, getConfig } from "./config";
 
 const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lon_raw = getConfig("default_center_lon"),
@@ -28,7 +28,7 @@ function getFragmentParams(): FragmentParams {
             zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : null,
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
         } as FragmentParams;
-    //console.info("getFragmentParams", hashParams, out);
+    debugLog("getFragmentParams", { hashParams, out });
     return out;
 }
 
@@ -49,7 +49,7 @@ function setFragmentParams(lon: number | undefined, lat: number | undefined, zoo
 
     const fragment = "#" + p.lon + "," + p.lat + "," + p.zoom + "," + p.colorScheme;
     window.location.hash = fragment;
-    //console.info("setFragmentParams", { currentParams, p, fragment, lon, lat, zoom, colorScheme });
+    debugLog("setFragmentParams", { currentParams, p, fragment, lon, lat, zoom, colorScheme });
     return fragment;
 }
 
@@ -68,14 +68,14 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
     }
 
     if (p.lon === null || p.lat === null || p.zoom === null) {
-        console.info("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
+        debugLog("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
         p.lon = default_center_lon;
         p.lat = default_center_lat;
         p.zoom = default_zoom;
     }
 
     if (p.colorScheme === undefined || p.colorScheme === 'undefined') {
-        console.info("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
+        debugLog("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
         p.colorScheme = defaultColorScheme;
     }
 

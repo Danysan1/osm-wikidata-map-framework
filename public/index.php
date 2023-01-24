@@ -52,21 +52,6 @@ if (
 <html lang="<?= $defaultCulture; ?>">
 
 <head>
-    <?= $conf->getMetaTag("mapbox_token"); ?>
-    <?= $conf->getMetaTag("maptiler_key", true); ?>
-    <?= $conf->getMetaTag("default_center_lat"); ?>
-    <?= $conf->getMetaTag("default_center_lon"); ?>
-    <?= $conf->getMetaTag("default_zoom"); ?>
-    <?= $conf->getMetaTag("threshold_zoom_level"); ?>
-    <?= $conf->getMetaTag("min_zoom_level"); ?>
-    <?= $conf->getMetaTag("default_background_style"); ?>
-    <?= $conf->getMetaTag("default_color_scheme"); ?>
-    <?= $conf->getMetaTag("google_analytics_id", true); ?>
-    <?= $conf->getMetaTag("matomo_domain", true); ?>
-    <?= $conf->getMetaTag("matomo_id", true); ?>
-    <?= $conf->getMetaTag("sentry_js_dsn", true); ?>
-    <?= $conf->getMetaTag("sentry_js_env", true); ?>
-
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
@@ -94,6 +79,23 @@ if (
     <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
+
+    <?= $conf->getMetaTag("mapbox_token"); ?>
+    <?= $conf->getMetaTag("maptiler_key", true); ?>
+    <?= $conf->getMetaTag("default_center_lat"); ?>
+    <?= $conf->getMetaTag("default_center_lon"); ?>
+    <?= $conf->getMetaTag("default_zoom"); ?>
+    <?= $conf->getMetaTag("threshold_zoom_level"); ?>
+    <?= $conf->getMetaTag("min_zoom_level"); ?>
+    <?= $conf->getMetaTag("default_background_style"); ?>
+    <?= $conf->getMetaTag("default_color_scheme"); ?>
+    <?= $conf->getMetaTag("google_analytics_id", true); ?>
+    <?= $conf->getMetaTag("matomo_domain", true); ?>
+    <?= $conf->getMetaTag("matomo_id", true); ?>
+    <?= $conf->getMetaTag("sentry_js_dsn", true); ?>
+    <?= $conf->getMetaTag("sentry_js_env", true); ?>
+    <?= $conf->getMetaTag("bbox_margin", true); ?>
+    <?= $conf->getMetaTag("enable_debug_log", true); ?>
 </head>
 
 <body>

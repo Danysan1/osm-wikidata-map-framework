@@ -11,7 +11,7 @@ import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { getCorrectFragmentParams } from './fragment';
 import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
-import { getConfig } from './config';
+import { debugLog, getConfig } from './config';
 import './style.css';
 
 initSentry();
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  */
 function initMap() {
     const startParams = getCorrectFragmentParams();
-    console.info("Initializing the map", startParams);
+    debugLog("Initializing the map", startParams);
 
     if (typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
         mapboxgl.accessToken = mapbox_token;
@@ -59,20 +59,20 @@ function initMap() {
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     setRTLTextPlugin(
         'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
-        err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : console.info("mapbox-gl-rtl-text loaded"),
+        err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
         true // Lazy load the plugin
     );
 
     let geocoderControl: IControl | null;
     if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
-        console.info("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
+        debugLog("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
         geocoderControl = new MapboxGeocoder({
             accessToken: mapbox_token,
             collapsed: true,
             mapboxgl: mapboxgl
         });
     } /*else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
-        console.info("Using MaptilerGeocoderControl", { maplibregl, MaptilerGeocoderControl, maptiler_key });
+        debugLog("Using MaptilerGeocoderControl", { maplibregl, MaptilerGeocoderControl, maptiler_key });
         geocoderControl = new MaptilerGeocoderControl(maptiler_key);
     }*/ else {
         geocoderControl = null;
