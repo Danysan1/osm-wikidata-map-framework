@@ -1,8 +1,9 @@
 @startuml dev_deployment
 
 actor Browser
-rectangle "Docker Compose - profile 'dev'" as docker {
-  port "8080" as 8080docker
+rectangle "Docker Compose --profile 'dev'" as docker {
+  port "8000" as 8000docker
+  port "5432" as 5432docker
   port "80" as 80docker
   node "oem-postgis" {
     port 5432 as 5432db
@@ -15,26 +16,26 @@ rectangle "Docker Compose - profile 'dev'" as docker {
   node "oem-web-dev" {
     port "80" as 80webDev
     component Apache
-    folder "/var/www/html" as webRem
+    folder "/var/www/app" as appRem
+    folder "/var/www/html" as htmlRem
   }
 
 }
-cloud {
-  database "Optional production DB" as extDB
-}
-folder "public" as webLoc
-
-webRem --- webLoc : volume
+folder "public" as htmlLoc
+folder "app" as appLoc
 
 Apache --> 5432db
-Apache --> extDB
 pgAdmin --> 5432db
 
 Browser --> 80docker
-Browser --> 8080docker
+Browser --> 8000docker
 
 80docker --> 80webDev
-8080docker --> 80pgAdmin
+8000docker --> 80pgAdmin
+5432docker --> 5432db
+
+htmlLoc ... htmlRem : volume
+appLoc ... appRem : volume
 
 80webDev -> Apache
 5432db -> db

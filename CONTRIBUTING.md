@@ -225,10 +225,11 @@ docker-compose --profile "prod+db" up -d
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/prod+db_deployment.svg)
-
 ![deployment diagram](images/prod_deployment.svg)
 
+![deployment diagram](images/prod+db_deployment.svg)
+
+![deployment diagram](images/prod+promtail_deployment.svg)
 
 </details>
 

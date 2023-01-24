@@ -14,38 +14,32 @@ end note
 X.osm.pbf .. xsize
 
 card "osmium tags-filter" as filter1 #LightGreen
-file filtered_with_flags_tags_X.osm.pbf as file1
+file with_name.osm.pbf as file1
 X.osm.pbf .> filter1
 Download -[bold]-> filter1
 filter1 .> file1
 
 card "osmium tags-filter" as filter2 #LightGreen
-file filtered_with_flags_tags_X.osm.pbf as file2
+file possible_etymology.osm.pbf as file2
 file1 .> filter2
 filter1 -[bold]-> filter2
 filter2 .> file2
 
 card "osmium tags-filter" as filter3 #LightGreen
-file filtered_with_flags_name_tags_X.osm.pbf as file3
+file filtered.osm.pbf as file3
 file2 .> filter3
 filter2 -[bold]-> filter3
 filter3 .> file3
 
-card "osmium tags-filter" as filter4 #LightGreen
-file filtered_X.osm.pbf as file4
-file3 .> filter4
-filter3 -[bold]-> filter4
-filter4 .> file4
-
-note as 4size
+note as 3size
   Size: 4MB ~ 6GB
 end note
-4size .. file4
+3size .. file3
 
 card "osmium export" as export #LightGreen
 file X.osm.pbf.pg as tsv
-file4 .> export
-filter4 -[bold]-> export
+file3 .> export
+filter3 -[bold]-> export
 export .> tsv
 
 note as tsvsize
@@ -55,12 +49,10 @@ tsvsize .. tsv
 
 database "Local DB" as db #LightBlue
 card "Setup DB schema" as setup #LightGreen
-file "schema.sql" as sqlschema
-sqlschema .> setup
 setup .left.> db #Blue
 export -[bold]-> setup
 
-card "pgSQL COPY" as copy #LightGreen
+card "pgSQL COPY FROM CSV" as copy #LightGreen
 tsv .> copy
 setup -[bold]-> copy
 copy .left.> db #Blue
@@ -70,15 +62,11 @@ toobig <.left.> db #Blue
 copy -[bold]-> toobig
 
 card "Convert element wikidata codes" as wdcod #LightGreen
-file "convert-element-wikidata-cods.sql" as sqlwdcod
-sqlwdcod .> wdcod
 wdcod <.left.> db #Blue
 toobig -[bold]-> wdcod
 
 card "Load and convert wikidata entities" as wdent #LightGreen
 file "wikidata-init.csv" as csv
-file "convert-wikidata-entities.sql" as sqlwdent
-wdent <. sqlwdent
 csv .> wdent
 wdent <.left.> db #Blue
 wdcod -[bold]-> wdent
@@ -89,38 +77,24 @@ wd <.> wdcoent
 wdcoent <.left.> db #Blue
 wdent -[bold]-> wdcoent
 
+card "Propagate etymologies" as propagate #LightGreen
+propagate <.left.> db #Blue
+wdcoent -[bold]-> propagate
+
 card "Load wikidata 'named after' entities" as wdnaent #LightGreen
 wd <.> wdnaent
 wdnaent <.left.> db #Blue
-wdcoent -[bold]-> wdnaent
+propagate -[bold]-> wdnaent
 
 card "Convert etymologies" as ety #LightGreen
-file "convert-etymologies.sql" as sqlety
-sqlety .> ety
 ety <.left.> db #Blue
 wdnaent -[bold]-> ety
 
-card "Propagate etymologies" as propagate #LightYellow
-file "propagate-etymologies.sql" as sqlpropagate
-sqlpropagate .> propagate
-propagate <.left.> db #Blue
-ety -[bold]-> propagate
-
 card "Remove elements without etymology" as temp #LightGreen
-file "check-wd-etymology.sql" as sqlwd
-file "check-text-etymology.sql" as sqltext
-file "move-elements-with-etymology.sql" as sqltemp
-file "etymology-foreign-key.sql" as sqlfk
-sqlwd .> temp
-sqltext .> temp
-temp <. sqltemp
-temp <. sqlfk
 temp <.left.> db #Blue
-propagate -[bold]-> temp
+ety -[bold]-> temp
 
 card "Setup global map" as global #LightGreen
-file "global-map.sql" as sqlglobal
-sqlglobal .> global
 global <.left.> db #Blue
 temp -[bold]-> global
 

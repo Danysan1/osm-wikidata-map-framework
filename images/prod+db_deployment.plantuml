@@ -3,34 +3,17 @@
 actor Browser
 component Server {
   port "80" as 80docker
-  rectangle "Docker Compose - profile 'prod+db'" as docker {
+  rectangle "Docker Compose --profile 'prod+db'" as docker {
     node "oem-postgis" {
       port 5432 as 5432db
       database "PostGIS DB" as db
-    }
-    node promtail {
-      component promtail as promInst
-      folder "/etc/promtail" as promRem
-      folder "/var/log" as logRem
-      folder "/var/lib/docker/containers" as contRem
     }
     node "oem-web-prod" {
       port "80" as 80webProd
       component Apache
     }
   }
-  folder "promtail" as promLoc
-  folder "/var/log" as logLoc
-  folder "/var/lib/docker/containers" as contLoc
 }
-cloud Grafana {
-  component Loki
-}
-Loki <-- promInst
-
-promRem --- promLoc : volume
-logRem --- logLoc : volume
-contRem --- contLoc : volume
 
 Apache --> 5432db
 

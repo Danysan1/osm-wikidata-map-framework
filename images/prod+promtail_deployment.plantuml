@@ -1,0 +1,42 @@
+@startuml prod+promtail_deployment
+
+actor Browser
+cloud Grafana {
+  component Loki
+}
+component Server {
+  port "80" as 80docker
+  rectangle "Docker Compose --profile 'prod+promtail'" as docker {
+    node promtail {
+      component promtail as promInst
+      folder "/etc/promtail" as promRem
+      folder "/var/log" as logRem
+      folder "/var/lib/docker/containers" as contRem
+    }
+    node "oem-web-prod" {
+      port "80" as 80webProd
+      component Apache
+    }
+  }
+  folder "promtail" as promLoc
+  folder "/var/log" as logLoc
+  folder "/var/lib/docker/containers" as contLoc
+}
+cloud {
+  database "PostGIS DB or Overpass API" as db
+}
+
+Apache ---> db
+
+Browser --> 80docker
+
+80docker --> 80webProd
+
+Apache <-- 80webProd
+
+promRem ... promLoc : volume
+logRem ... logLoc : volume
+contRem ... contLoc : volume
+Loki <--- promInst
+
+@enduml
