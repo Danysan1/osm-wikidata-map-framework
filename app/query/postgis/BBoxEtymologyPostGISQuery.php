@@ -71,9 +71,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
-                    MIN(et_source_color(etymology)) AS source_color,
-                    MIN(gender.wd_gender_color) AS gender_color,
-                    MIN(instance.wd_type_color) AS type_color,
+                    COALESCE(MIN(oem.et_source_color(etymology)), '#223b53') AS source_color,
+                    COALESCE(MIN(gender.wd_gender_color), '#223b53') AS gender_color,
+                    COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'from_osm', et_from_osm_etymology OR et_from_osm_subject OR et_from_osm_buried,
                         'from_osm_type', from_el.el_osm_type,
