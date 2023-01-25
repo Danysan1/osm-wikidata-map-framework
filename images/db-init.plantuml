@@ -71,28 +71,29 @@ csv .> wdent
 wdent <.left.> db #Blue
 wdcod -[bold]-> wdent
 
-card "Load wikidata 'consists of' entities" as wdcoent #LightGreen
-cloud "Wikidata Query Service" as wd
-wd <.> wdcoent
-wdcoent <.left.> db #Blue
-wdent -[bold]-> wdcoent
+card "Convert etymologies" as ety #LightGreen
+ety <.left.> db #Blue
+wdent -[bold]-> ety
 
-card "Propagate etymologies" as propagate #LightGreen
-propagate <.left.> db #Blue
-wdcoent -[bold]-> propagate
+cloud "Wikidata Query Service" as wd
 
 card "Load wikidata 'named after' entities" as wdnaent #LightGreen
 wd <.> wdnaent
 wdnaent <.left.> db #Blue
-propagate -[bold]-> wdnaent
+ety -[bold]-> wdnaent
 
-card "Convert etymologies" as ety #LightGreen
-ety <.left.> db #Blue
-wdnaent -[bold]-> ety
+card "Propagate etymologies" as propagate #LightGreen
+propagate <.left.> db #Blue
+wdnaent -[bold]-> propagate
+
+card "Load wikidata 'consists of' entities" as wdcoent #LightGreen
+wd <.> wdcoent
+wdcoent <.left.> db #Blue
+propagate -[bold]-> wdcoent
 
 card "Remove elements without etymology" as temp #LightGreen
 temp <.left.> db #Blue
-ety -[bold]-> temp
+wdcoent -[bold]-> temp
 
 card "Setup global map" as global #LightGreen
 global <.left.> db #Blue

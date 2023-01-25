@@ -8,19 +8,21 @@ You can learn how to map on [the official welcome page](https://www.openstreetma
 ## How to report a problem in the etymology of an element
 
 If the etymology associated to the element is correct but there is a problem in the details (birth date, nationality, ...):
+
 1. From the etymology window click on the "Wikidata" button for the incorrect etymology
 2. At the top of the opened page click on "Discussion"
 3. Append in the opened text box the description of the problem you found in the data
 4. Confirm your comment by clicking on the blue button below
 
 If the problem is related to the etymology itself (a wrong etymology is associated to the element):
+
 1. From the etymology window click on the "OpenStreetMap" button
 2. On the left of the opened page check if the `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag is present. If it is, click on the dialog button on the right to add a note to the map and describe the problem
 3. If the tags above are absent, the `wikidata` tag will be present and its value will be clickable. Click on it.
    - If the opened page represents the element from the map (not its etymology, not something else), it should contain a "named after" or "dedicated to" relation to the wrong item:
-      1. At the top of the opened page click on "Discussion"
-      2. Append in the opened text box the description of the problem you found in the etymology for the item
-      3. Confirm your comment by clicking on the blue button below
+     1. At the top of the opened page click on "Discussion"
+     2. Append in the opened text box the description of the problem you found in the etymology for the item
+     3. Confirm your comment by clicking on the blue button below
    - If instead the opened page represents something else, go back to the OpenStreetMap page, click on the button on the right to add a note to the map and write that the `wikidata` tag points to the wrong item
 
 ## How to contribute to the etymology data
@@ -42,33 +44,33 @@ Open Etymology Map obtains the etymology data from multiple tags:
 
 ![Tags and properties used by Open Etymology Map](images/tags.svg)
 
-Platform | Property/Key | Description | Other info
-| ---- | ---- | ---- | ---- |
-OpenStreetMap|`wikidata`|The ID of the Wikidata item about the feature (for example, Q9141 represents the way Taj Mahal). Only entries which are 'about the feature' should be linked.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
-OpenStreetMap|`name:etymology:wikidata`|It contains the ID of the Wikidata item for the feature's namesake.|[Documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
-OpenStreetMap|`subject:wikidata`|It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument/memorial|[Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
-OpenStreetMap|`buried:wikidata`|It contains the ID of the Wikidata item for the person or animal that is buried in a grave/tomb|[Documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
-Wikidata|`P138` ("named after")|Entity or event that inspired the subject's name, or namesake (in at least one language)|[Info](https://www.wikidata.org/wiki/Property:P138)
-Wikidata|`P547` ("commemorates")|What the place, monument, memorial, or holiday, commemorates|[Info](https://www.wikidata.org/wiki/Property:P547)
-Wikidata|`P825` ("dedicated to")|Person or organization to whom the subject was dedicated|[Info](https://www.wikidata.org/wiki/Property:P825)
+| Platform      | Property/Key              | Description                                                                                                        | Other info                                                                                 |
+| ------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
+| OpenStreetMap | `wikidata`                | The ID of the Wikidata item about the feature (for example, Q9141 represents the way Taj Mahal)                    | [Documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)                          |
+| OpenStreetMap | `name:etymology:wikidata` | It contains the ID of the Wikidata item for the feature's namesake                                                 | [Documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)           |
+| OpenStreetMap | `subject:wikidata`        | It contains the ID of the Wikidata item for the event, person or thing that is memorialized in a monument/memorial | [Documentation](https://wiki.openstreetmap.org/wiki/Key:subject)                           |
+| OpenStreetMap | `buried:wikidata`         | It contains the ID of the Wikidata item for the person or animal that is buried in a grave/tomb                    | [Documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links) |
+| Wikidata      | `P138` ("named after")    | Entity or event that inspired the subject's name, or namesake (in at least one language)                           | [Info](https://www.wikidata.org/wiki/Property:P138)                                        |
+| Wikidata      | `P547` ("commemorates")   | What the place, monument, memorial, or holiday, commemorates                                                       | [Info](https://www.wikidata.org/wiki/Property:P547)                                        |
+| Wikidata      | `P825` ("dedicated to")   | Person or organization to whom the subject was dedicated                                                           | [Info](https://www.wikidata.org/wiki/Property:P825)                                        |
 
 In order to display the etymology of an element you need to create one of these combinations. Here's how to do it:
 
 1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/)
 2. Check out the element's tags:
-    - If the element has a `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
-        - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
-        - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
-    - If the element has a `wikidata` tag check the referenced Wikidata element.
-        - If it does not represent the same real world object of the OSM element, search the correct one and change it.
-        - If it contains a `P138` ("named after"), `P547` ("commemorates") or `P825` ("dedicated to") relation check that it links to the correct etymology. If it is absent, add it:
-            1. Click "+ Add statement"
-            2. On the left choose `P138`, `P547` or `P825` (depending on which is more appropriate) as property
-            3. On the right search the desired etymology to use as the value
-    - If none of these tags is present, you can link the Wikidata item for the etymology to the element
-        1. Search the etymology on Wikidata
-        2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
-        3. Add to the OpenStreetMap element the `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
+   - If the element has a `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
+     - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
+     - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
+   - If the element has a `wikidata` tag check the referenced Wikidata element.
+     - If it does not represent the same real world object of the OSM element, search the correct one and change it.
+     - If it contains a `P138` ("named after"), `P547` ("commemorates") or `P825` ("dedicated to") relation check that it links to the correct etymology. If it is absent, add it:
+       1. Click "+ Add statement"
+       2. On the left choose `P138`, `P547` or `P825` (depending on which is more appropriate) as property
+       3. On the right search the desired etymology to use as the value
+   - If none of these tags is present, you can link the Wikidata item for the etymology to the element
+     1. Search the etymology on Wikidata
+     2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
+     3. Add to the OpenStreetMap element the `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
 
 ## How to contribute to Open Etymology Map
 
@@ -92,6 +94,7 @@ If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS 
 #### Local development with Docker
 
 A local development instance can be started with Docker by running `docker-compose --profile dev up` in the project root. This will start
+
 - An instance of Open Etymology exposed at http://localhost:80
 - A PostgreSQL+PostGIS DB exposed on `localhost:5432`
 - A PGAdmin instance exposed at http://localhost:8080
@@ -100,6 +103,14 @@ A local development instance can be started with Docker by running `docker-compo
 <summary>Deployment diagram</summary>
 
 ![deployment diagram](images/dev.svg)
+
+| Local folder                 | Destination folder   | Development service                                                             | Production service                                |
+| ---------------------------- | -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------- |
+| [airflow/dags](airflow/dags) | `/opt/airflow/dags`  | `airflow-webserver`, `airflow-scheduler`, `airflow-worker`, `airflow-triggerer` |                                                   |
+| [app](app)                   | `/var/www/app`       | `oem-web-dev` (mapped via volume)                                               | `oem-web-prod` (copied during build)              |
+| [public](public)             | `/var/www/html`      | `oem-web-dev` (mapped via volume)                                               | `oem-web-prod` (copied during build)              |
+| [src](src)                   | `/var/www/html/dist` | `oem-web-dev` (compiled)                                                        | `oem-web-prod` (compiled and copied during build) |
+| [promtail](promtail)         | `/etc/promtail`      |                                                                                 | `promtail` (mapped via volume)                    |
 
 </details>
 
@@ -137,7 +148,7 @@ cd open-etymology-map
 cp ".env.example" ".env"
 # At this point edit the file .env adding the correct mapbox_token and setting db_enable=true
 docker-compose --profile "prod+db" up -d
-# At this point you need to load a dump of the DB on the DB exposed on port 5432 
+# At this point you need to load a dump of the DB on the DB exposed on port 5432
 ```
 
 <details>
@@ -178,7 +189,7 @@ An Apache Airflow pipeline defined in [db-init-planet.py](airflow/dags/db-init-p
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
 1. [`BBoxTextPostGISQuery::downloadMissingText()`](app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
-    - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
+   - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
 2. [`BBoxEtymologyPostGISQuery`](app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
 
 ##### Database initialization
@@ -187,6 +198,7 @@ As mentioned above an Apache Airflow pipeline defined in [db-init-planet.py](air
 This pipeline starts from a .pbf file ([a local extract](http://download.geofabrik.de/) in testing or [a full planet export](https://planet.openstreetmap.org/) in production), filters it with [osmium](https://osmcode.org/osmium-tool/) [`tags-filter`](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html), exports it to a tab-separated-values file with [osmium](https://osmcode.org/osmium-tool/) [`export`](https://docs.osmcode.org/osmium/latest/osmium-export.html) and imports it into the DB. [osm2pgsql](https://osm2pgsql.org/) is also supported in place of `osmium export` but the former is typically used.
 
 To run the database initialization:
+
 1. make sure [`docker-compose` is installed](#local-development-with-docker)
 2. initialize `.env` from [`.env.example`](.env.example) as shown [above](#configuration)
 3. start Apache Airflow with `docker-compose --profile airflow up -d`
@@ -227,19 +239,20 @@ Data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in
 1. Check if the GeoJSON result for the requested area has already been cached recently.
    - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
    - Otherwise it is necessary to fetch the data from OpenStreetMap through [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
-      1. Query Overpass API in the selected area to get elements with etymology ([`BBoxEtymologyOverpassQuery`](app/query/overpass/BBoxEtymologyOverpassQuery.php)).
-      2. Transform the JSON result into GeoJSON ([`OverpassEtymologyQueryResult`](app/result/overpass/OverpassEtymologyQueryResult.php)).
-      3. Obtain a set of Wikidata IDs to get information about ([`GeoJSON2XMLEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
-      4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
-         - If it is, use the cached result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
-         - Otherwise it is necessary to fetch the data from OpenStreetMap.
-            1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([`EtymologyIDListXMLWikidataQuery`](app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
-            2. Cache the XML result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
-      5. Obtain from the XML result from Wikidata a matrix of details for each element ([`XMLWikidataEtymologyQueryResult`](app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
-      6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([`GeoJSON2GeoJSONEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
-      7. Cache the GeoJSON result ([`CSVCachedBBoxGeoJSONQuery`](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
+     1. Query Overpass API in the selected area to get elements with etymology ([`BBoxEtymologyOverpassQuery`](app/query/overpass/BBoxEtymologyOverpassQuery.php)).
+     2. Transform the JSON result into GeoJSON ([`OverpassEtymologyQueryResult`](app/result/overpass/OverpassEtymologyQueryResult.php)).
+     3. Obtain a set of Wikidata IDs to get information about ([`GeoJSON2XMLEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
+     4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
+        - If it is, use the cached result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
+        - Otherwise it is necessary to fetch the data from OpenStreetMap.
+          1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([`EtymologyIDListXMLWikidataQuery`](app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
+          2. Cache the XML result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
+     5. Obtain from the XML result from Wikidata a matrix of details for each element ([`XMLWikidataEtymologyQueryResult`](app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
+     6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([`GeoJSON2GeoJSONEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
+     7. Cache the GeoJSON result ([`CSVCachedBBoxGeoJSONQuery`](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
+
 The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [`FeatureProperties`](src/FeatureElement.ts#L7), [`Etymology`](src/EtymologyElement.ts#L4) and [`ImageResponse`](src/ImageElement.ts#L3).
 
 The content of the output of [stats.php](public/stats.php) is defined in the [`EtymologyStat`](src/EtymologyColorControl.ts#L47) interface.
