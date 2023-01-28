@@ -53,29 +53,14 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 
     protected function shouldKeepRow(array $row): bool
     {
-        $rowTimestamp = (int)$row[BBOX_CACHE_COLUMN_TIMESTAMP];
-        $jsonFileRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
-        $rowBBox = $this->getBBoxFromRow($row);
-        if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
-            // Row too old, ignore
-            error_log(get_class($this) . ": trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
-            $ret = false;
-        } elseif ($this->getBBox()->strictlyContains($rowBBox)) {
-            // Cache row bbox is entirely contained by the new query bbox, ignore the cache row
-            error_log(
-                get_class($this) . ": trashing smaller bbox row:" . PHP_EOL .
-                    $this->getBBox() . " VS " . $rowBBox
-            );
-            $ret = false;
-        } elseif (!is_file($this->cacheFileBaseURL . $jsonFileRelativePath)) {
-            // Cached result is inexistent or not a regular file, ignore
-            error_log(get_class($this) . ": trashing non-file cached result: $jsonFileRelativePath");
-            $ret = false;
-        } else {
-            // Row is still valid, add to new cache
-            $ret = true;
-        }
-        return $ret;
+        $newBBox = $this->getBBox();
+        return $this->baseShouldKeepRow(
+            $row,
+            BBOX_CACHE_COLUMN_TIMESTAMP,
+            BBOX_CACHE_COLUMN_RESULT,
+            [$this, "getBBoxFromRow"],
+            [$newBBox, "strictlyContains"]
+        );
     }
 
     protected abstract function getResultFromFilePath(string $fileRelativePath): QueryResult;
@@ -129,7 +114,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         return $newRow;
     }
 
-    private function getBBoxFromRow(array $row): BoundingBox
+    public function getBBoxFromRow(array $row): BoundingBox
     {
         $rowMinLat = (float)$row[BBOX_CACHE_COLUMN_MIN_LAT];
         $rowMaxLat = (float)$row[BBOX_CACHE_COLUMN_MAX_LAT];

@@ -88,6 +88,35 @@ abstract class CSVCachedQuery implements Query
 
     protected abstract function shouldKeepRow(array $row): bool;
 
+    protected function baseShouldKeepRow(
+        array $row,
+        int $timestampColumn,
+        int $resultColumn,
+        callable $parseKeyFromRow,
+        callable $newRowKeyContainsKey
+    ): bool {
+        $rowTimestamp = (int)$row[$timestampColumn];
+        $contentFileRelativePath = (string)$row[$resultColumn];
+        $rowKey = $parseKeyFromRow($row);
+        if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
+            // Row too old, ignore
+            error_log(get_class($this) . ": trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
+            $ret = false;
+        } elseif ($newRowKeyContainsKey($rowKey)) {
+            // Cache row key is entirely contained by the new query key, ignore the cache row
+            error_log(get_class($this) . ": trashing row with key contained by the new one:" . PHP_EOL . $rowKey);
+            $ret = false;
+        } elseif (!is_file($this->cacheFileBaseURL . $contentFileRelativePath)) {
+            // Cached result is inexistent or not a regular file, ignore
+            error_log(get_class($this) . ": trashing cached result '$contentFileRelativePath' because it does not exist in " . $this->cacheFileBaseURL);
+            $ret = false;
+        } else {
+            // Row is still valid, add to new cache
+            $ret = true;
+        }
+        return $ret;
+    }
+
     /**
      * There are only two hard things in Computer Science: cache invalidation and naming things.
      * -- Phil Karlton
@@ -154,7 +183,7 @@ abstract class CSVCachedQuery implements Query
                     error_log("CachedQuery: save cache of " . count($newCache) . " rows for $className");
                     $cacheFile = @fopen($cacheFilePath, "w+");
                     if (empty($cacheFile)) {
-                        error_log("CachedQuery: failed to open cache file for writing");
+                        error_log("CachedQuery: failed to open cache file for writing: $cacheFilePath");
                     } else {
                         foreach ($newCache as $row) {
                             fputcsv($cacheFile, $row);

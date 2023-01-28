@@ -53,29 +53,14 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
 
     protected function shouldKeepRow(array $row): bool
     {
-        $rowTimestamp = (int)$row[STRING_SET_CACHE_COLUMN_TIMESTAMP];
-        $contentFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
-        $rowStringSet = $this->getStringSetFromRow($row);
-        if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
-            // Row too old, ignore
-            error_log(get_class($this) . ": trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
-            $ret = false;
-        } elseif ($this->getStringSet()->strictlyContains($rowStringSet)) {
-            // Cache row string set is entirely contained by the new query string set, ignore the cache row
-            error_log(
-                get_class($this) . ": trashing string subset row:" . PHP_EOL .
-                    $this->getStringSet() . " VS " . $rowStringSet
-            );
-            $ret = false;
-        } elseif (!is_file($this->cacheFileBaseURL . $contentFileRelativePath)) {
-            // Cached result is inexistent or not a regular file, ignore
-            error_log(get_class($this) . ": trashing non-file cached result: $contentFileRelativePath");
-            $ret = false;
-        } else {
-            // Row is still valid, add to new cache
-            $ret = true;
-        }
-        return $ret;
+        $newStringSet = $this->getStringSet();
+        return $this->baseShouldKeepRow(
+            $row,
+            STRING_SET_CACHE_COLUMN_TIMESTAMP,
+            STRING_SET_CACHE_COLUMN_RESULT,
+            [$this, "getStringSetFromRow"],
+            [$newStringSet, "strictlyContains"]
+        );
     }
 
     protected abstract function getResultFromFile(string $relativePath): QueryResult;
@@ -120,7 +105,7 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
         return $newRow;
     }
 
-    private function getStringSetFromRow(array $row): StringSet
+    public function getStringSetFromRow(array $row): StringSet
     {
         return BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
     }
