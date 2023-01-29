@@ -68,7 +68,7 @@ x-airflow-common: &airflow-common
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90 # https://airflow.apache.org/docs/apache-airflow/stable/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
+    #AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90 # https://airflow.apache.org/docs/apache-airflow/stable/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/connection.html#storing-connections-in-environment-variables - Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database}
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES_PLANET: postgres://${db_user}:${db_password}@oem-postgis:5432/planet
