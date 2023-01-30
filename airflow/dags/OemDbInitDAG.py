@@ -6,7 +6,7 @@ from airflow import DAG, Dataset
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
 from airflow.hooks.postgres_hook import PostgresHook
-from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.models.taskinstance import TaskInstance
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.trigger_rule import TriggerRule
@@ -37,21 +37,6 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
                 cursor.execute(f'SET search_path TO {schema}')
                 cursor.copy_from(file, table, separator, columns = columns)
             print("Inserted rows:", cursor.rowcount)
-
-class TemplatedPostgresOperator(PostgresOperator):
-    """
-    ## `PostgresOperator` with templatable `parameters` and `postgres_conn_id`
-
-    Standard `PostgresOperator` doesn't allow to use Jinja templates in `parameters` and `postgres_conn_id`, this Operator allows it.
-
-    Links:
-    * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
-    * [templating docuementation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/custom-operator.html#templating)
-    * [original value for `template_fields`](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_modules/airflow/providers/postgres/operators/postgres.html#PostgresOperator.template_fields)
-    * [More details on why this is necessary](https://stackoverflow.com/a/44548570/2347196)
-    """
-    template_fields = ('parameters', 'sql')
-    #template_fields = ('parameters', 'postgres_conn_id', 'sql')
 
 def check_postgre_conn_id(conn_id:str) -> bool:
     """
@@ -178,9 +163,9 @@ class OemDbInitDAG(DAG):
             dag = self,
         )
         
-        task_setup_db_ext = PostgresOperator(
+        task_setup_db_ext = SQLExecuteQueryOperator(
             task_id = "setup_db_extensions",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/setup-db-extensions.sql",
             dag = self,
             task_group = db_prepare_group,
@@ -188,15 +173,12 @@ class OemDbInitDAG(DAG):
                 # Setup the necessary extensions on the local DB
 
                 Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
 
-        task_teardown_schema = PostgresOperator(
+        task_teardown_schema = SQLExecuteQueryOperator(
             task_id = "teardown_schema",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/teardown-schema.sql",
             dag = self,
             task_group = db_prepare_group,
@@ -204,16 +186,13 @@ class OemDbInitDAG(DAG):
                 # Teardown the oem DB schema
 
                 Reset the oem (Open Etymology Map) schema on the local PostGIS DB to start from scratch.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_setup_db_ext >> task_teardown_schema
 
-        task_setup_schema = PostgresOperator(
+        task_setup_schema = SQLExecuteQueryOperator(
             task_id = "setup_schema",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/setup-schema.sql",
             dag = self,
             task_group = db_prepare_group,
@@ -221,9 +200,6 @@ class OemDbInitDAG(DAG):
                 # Setup the oem DB schema
 
                 Setup the oem (Open Etymology Map) schema on the local PostGIS DB.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_teardown_schema >> task_setup_schema
@@ -278,9 +254,9 @@ class OemDbInitDAG(DAG):
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_osm2pgsql
 
-        task_convert_osm2pgsql = PostgresOperator(
+        task_convert_osm2pgsql = SQLExecuteQueryOperator(
             task_id = "convert_osm2pgsql_data",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/convert-osm2pgsql-data.sql",
             dag = self,
             task_group=group_db_load,
@@ -288,9 +264,6 @@ class OemDbInitDAG(DAG):
                 # Prepare osm2pgsql data for usage
 
                 Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_load_ele_osm2pgsql >> task_convert_osm2pgsql
@@ -310,9 +283,9 @@ class OemDbInitDAG(DAG):
 
         elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=self)
 
-        task_remove_ele_too_big = PostgresOperator(
+        task_remove_ele_too_big = SQLExecuteQueryOperator(
             task_id = "remove_elements_too_big",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/remove-elements-too-big.sql",
             dag = self,
             task_group=elaborate_group,
@@ -322,16 +295,13 @@ class OemDbInitDAG(DAG):
                 Remove from the local PostGIS DB elements that aren't interesting and that it wasn't possible to remove during the filtering phase:
                 * elements too big that wouldn't be visible anyway on the map 
                 * elements that have a wrong etymology (name:etymology:wikidata and wikidata values are equal)
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         join_post_load_ele >> task_remove_ele_too_big
 
-        task_convert_ele_wd_cods = PostgresOperator(
+        task_convert_ele_wd_cods = SQLExecuteQueryOperator(
             task_id = "convert_element_wikidata_cods",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/convert-element-wikidata-cods.sql",
             dag = self,
             task_group=elaborate_group,
@@ -345,7 +315,6 @@ class OemDbInitDAG(DAG):
                 * [`subject:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
                 * [`buried:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
                 * [`name:etymology:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_remove_ele_too_big >> task_convert_ele_wd_cods
@@ -376,9 +345,9 @@ class OemDbInitDAG(DAG):
         )
         task_setup_schema >> task_load_wd_ent
 
-        task_convert_wd_ent = PostgresOperator(
+        task_convert_wd_ent = SQLExecuteQueryOperator(
             task_id = "convert_wikidata_entities",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/convert-wikidata-entities.sql",
             dag = self,
             task_group=elaborate_group,
@@ -386,16 +355,13 @@ class OemDbInitDAG(DAG):
                 # Load Wikidata entities from OSM etymologies
 
                 Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata`, `buried:wikidata` or `name:etymology:wikidata`).
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
 
-        task_convert_ety = PostgresOperator(
+        task_convert_ety = SQLExecuteQueryOperator(
             task_id = "convert_etymologies",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/convert-etymologies.sql",
             dag = self,
             task_group=elaborate_group,
@@ -403,9 +369,6 @@ class OemDbInitDAG(DAG):
                 # Convert the etymologies
 
                 Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_convert_wd_ent >> task_convert_ety
@@ -429,9 +392,9 @@ class OemDbInitDAG(DAG):
         )
         task_convert_ety >> task_load_named_after
 
-        task_propagate = PostgresOperator(
+        task_propagate = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/propagate-etymologies-global.sql",
             dag = self,
             task_group=elaborate_group,
@@ -440,9 +403,6 @@ class OemDbInitDAG(DAG):
 
                 Check the reliable etymologies (where multiple case-insensitive homonymous elements have etymologies to the exactly the same Wikidata entity).
                 Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_load_named_after >> task_propagate
@@ -466,9 +426,9 @@ class OemDbInitDAG(DAG):
         )
         task_propagate >> task_load_parts
 
-        task_check_text_ety = PostgresOperator(
+        task_check_text_ety = SQLExecuteQueryOperator(
             task_id = "check_text_etymology",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/check-text-etymology.sql",
             dag = self,
             task_group=elaborate_group,
@@ -476,16 +436,13 @@ class OemDbInitDAG(DAG):
                 # Check elements with a text etymology
 
                 Check elements with an etymology that comes from `name:etymology`.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_remove_ele_too_big >> task_check_text_ety
 
-        task_check_wd_ety = PostgresOperator(
+        task_check_wd_ety = SQLExecuteQueryOperator(
             task_id = "check_wikidata_etymology",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/check-wd-etymology.sql",
             dag = self,
             task_group=elaborate_group,
@@ -493,16 +450,13 @@ class OemDbInitDAG(DAG):
                 # Check elements with a Wikidata etymology
 
                 Check elements with an etymology that comes from `subject:wikidata`, `buried:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_propagate >> task_check_wd_ety
 
-        task_move_ele = PostgresOperator(
+        task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/move-elements-with-etymology.sql",
             dag = self,
             task_group=elaborate_group,
@@ -510,24 +464,18 @@ class OemDbInitDAG(DAG):
                 # Remove elements without any etymology
 
                 Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         [task_load_parts, task_check_wd_ety, task_check_text_ety] >> task_move_ele
 
-        task_setup_ety_fk = PostgresOperator(
+        task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/etymology-foreign-key.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
                 # Apply the foreign key from etymology to wikidata
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_move_ele >> task_setup_ety_fk
@@ -548,9 +496,9 @@ class OemDbInitDAG(DAG):
         )
         task_move_ele >> task_check_whether_to_drop
 
-        task_drop_temp_tables = PostgresOperator(
+        task_drop_temp_tables = SQLExecuteQueryOperator(
             task_id = "drop_temporary_tables",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/drop-temp-tables.sql",
             dag = self,
             task_group=elaborate_group,
@@ -558,16 +506,13 @@ class OemDbInitDAG(DAG):
                 # Remove temporary tables
 
                 Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_check_whether_to_drop >> task_drop_temp_tables
 
-        task_global_map = PostgresOperator(
+        task_global_map = SQLExecuteQueryOperator(
             task_id = "setup_global_map",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/global-map-view.sql",
             dag = self,
             task_group=elaborate_group,
@@ -575,16 +520,13 @@ class OemDbInitDAG(DAG):
                 # Save the global map view
 
                 Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_move_ele >> task_global_map
 
-        task_dataset = PostgresOperator(
+        task_dataset = SQLExecuteQueryOperator(
             task_id = "setup_dataset",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = "sql/dataset-view.sql",
             dag = self,
             task_group=elaborate_group,
@@ -592,9 +534,6 @@ class OemDbInitDAG(DAG):
                 # Save the dataset view
 
                 Create in the local PostGIS DB the materialized view used for the dataset download.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         task_move_ele >> task_dataset
@@ -607,9 +546,9 @@ class OemDbInitDAG(DAG):
             dag = self,
         )
 
-        task_save_last_update = TemplatedPostgresOperator(
+        task_save_last_update = SQLExecuteQueryOperator(
             task_id = "save_last_data_update",
-            postgres_conn_id = local_db_conn_id,
+            conn_id = local_db_conn_id,
             sql = """
                 CREATE OR REPLACE FUNCTION oem.last_data_update()
                     RETURNS character varying
@@ -626,9 +565,6 @@ class OemDbInitDAG(DAG):
                 # Save into the DB the date of the last update
 
                 Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
-                
-                Links:
-                * [PostgresOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-postgres/5.4.0/_api/airflow/providers/postgres/operators/postgres/index.html#airflow.providers.postgres.operators.postgres.PostgresOperator)
             """
         )
         [task_setup_schema,task_read_last_update] >> task_save_last_update
@@ -674,9 +610,9 @@ class OemDbInitDAG(DAG):
         )
         task_pg_dump >> task_check_pg_restore
 
-        task_prepare_upload = TemplatedPostgresOperator(
+        task_prepare_upload = SQLExecuteQueryOperator(
             task_id = "prepare_db_for_upload",
-            postgres_conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
+            conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
             sql = "sql/prepare-db-for-upload.sql",
             dag = self,
             task_group = group_upload,
