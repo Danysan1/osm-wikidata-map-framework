@@ -147,7 +147,7 @@ git clone https://gitlab.com/openetymologymap/open-etymology-map.git
 cd open-etymology-map
 cp ".env.example" ".env"
 # At this point edit the file .env adding the correct mapbox_token and setting db_enable=true
-docker-compose --profile "prod+db" up -d
+COMPOSE_PROFILES=prod,db docker-compose up -d
 # At this point you need to load a dump of the DB on the DB exposed on port 5432
 ```
 

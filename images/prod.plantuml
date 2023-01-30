@@ -3,7 +3,7 @@
 actor Browser
 component Server {
   port "80" as 80docker
-  rectangle "Docker Compose --profile 'prod'" as docker {
+  rectangle "Docker Compose profile 'prod'" as docker {
     node "oem-web-prod" {
       port "80" as 80webProd
       component Apache

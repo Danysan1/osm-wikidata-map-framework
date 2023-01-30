@@ -33,6 +33,8 @@
 #                                Default: apache/airflow:2.5.1
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
+# AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
+#                                Default: .
 # Those configurations are useful mostly in case of standalone testing/running Airflow in test/try-out mode
 #
 # _AIRFLOW_WWW_USER_USERNAME   - Username for the administrator account (if requested).
@@ -44,40 +46,47 @@
 #
 # Feel free to modify this file to suit your needs.
 ---
-version: "3.9"
-
-x-airflow-common: &airflow-common
+version: '3'
+x-airflow-common:
+  &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: registry.gitlab.com/openetymologymap/open-etymology-map/airflow
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.5.1}
   build:
     context: .
     dockerfile: airflow.Dockerfile
-  environment: &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.5.1/executor/index.html
+  environment:
+    &airflow-common-env
+    # https://airflow.apache.org/docs/apache-airflow/2.5.1/executor/index.html
+    # https://airflow.apache.org/docs/apache-airflow/2.5.1/core-concepts/executor/celery.html
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://airflow:airflow@postgres/airflow
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
-    AIRFLOW__CORE__FERNET_KEY: ""
-    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
-    AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-    AIRFLOW__API__AUTH_BACKENDS: "airflow.api.auth.backend.basic_auth"
+    AIRFLOW__CORE__FERNET_KEY: ''
+    AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90 # https://airflow.apache.org/docs/apache-airflow/2.5.1/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
-    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/connection.html#storing-connections-in-environment-variables - Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
+    # https://airflow.apache.org/docs/apache-airflow/2.5.1/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
+    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90
+    # https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/connection.html#storing-connections-in-environment-variables
+    # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
+    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database}
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES_PLANET: postgres://${db_user}:${db_password}@oem-postgis:5432/planet
   volumes:
-    - ./airflow/dags:/opt/airflow/dags
-    - ./airflow/logs:/opt/airflow/logs
-    - ./airflow/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+    - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+    - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
   user: "${AIRFLOW_UID:-50000}:0"
-  depends_on: &airflow-common-depends-on
+  depends_on:
+    &airflow-common-depends-on
     redis:
       condition: service_healthy
     postgres:
@@ -103,7 +112,6 @@ services:
     profiles:
       - airflow-minimal
       - airflow
-      - dev+airflow
 
   redis:
     image: redis:latest
@@ -120,7 +128,6 @@ services:
     profiles:
       - airflow-minimal
       - airflow
-      - dev+airflow
 
   airflow-webserver:
     <<: *airflow-common
@@ -142,17 +149,13 @@ services:
       - airflow-postgis-bridge
     profiles:
       - airflow
-      - dev+airflow
 
-  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/scheduler.html
+  # https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/scheduler.html
+  airflow-scheduler:
     <<: *airflow-common
     command: scheduler
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"',
-        ]
+      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
       interval: 10s
       timeout: 10s
       retries: 5
@@ -166,7 +169,6 @@ services:
     profiles:
       - airflow-minimal
       - airflow
-      - dev+airflow
 
   airflow-worker:
     <<: *airflow-common
@@ -192,26 +194,23 @@ services:
       - airflow-internal
       - airflow-postgis-bridge
       - airflow-torrent-bridge
+    # In order to mount db-init-work-dir and the Docker socket for DinD, all common volumes need to be specified again
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
+      - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
+      - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
+      - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
       - db-init-work-dir:/workdir:delegated
-      - //var/run/docker.sock:/var/run/docker.sock # https://devopscube.com/run-docker-in-docker/
+      # https://devopscube.com/run-docker-in-docker/
+      - //var/run/docker.sock:/var/run/docker.sock
     profiles:
       - airflow-minimal
       - airflow
-      - dev+airflow
 
   airflow-triggerer:
     <<: *airflow-common
     command: triggerer
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"',
-        ]
+      test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
       interval: 10s
       timeout: 10s
       retries: 5
@@ -225,7 +224,6 @@ services:
     profiles:
       - airflow-minimal
       - airflow
-      - dev+airflow
 
   airflow-init:
     <<: *airflow-common
@@ -254,7 +252,7 @@ services:
           echo "If you are on Linux, you SHOULD follow the instructions below to set "
           echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
           echo "For other operating systems you can get rid of the warning with manually created .env file:"
-          echo "    See: https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#setting-the-right-airflow-user"
           echo
         fi
         one_meg=1048576
@@ -287,7 +285,7 @@ services:
           echo
           echo -e "\033[1;33mWARNING!!!: You have not enough resources to run Airflow (see above)!\e[0m"
           echo "Please follow the instructions to increase amount of resources available:"
-          echo "   https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/docker-compose/index.html#before-you-begin"
+          echo "   https://airflow.apache.org/docs/apache-airflow/stable/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins /workdir
@@ -296,20 +294,53 @@ services:
     # yamllint enable rule:line-length
     environment:
       <<: *airflow-common-env
-      _AIRFLOW_DB_UPGRADE: "true"
-      _AIRFLOW_WWW_USER_CREATE: "true"
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
-      _PIP_ADDITIONAL_REQUIREMENTS: ""
+      _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
     volumes:
-      - ./airflow:/sources
+      - ${AIRFLOW_PROJ_DIR:-.}:/sources
       - db-init-work-dir:/workdir
     networks:
       - airflow-internal
     profiles:
       - airflow
-      - dev+airflow
+
+  airflow-cli:
+    <<: *airflow-common
+    profiles:
+      - debug
+    environment:
+      <<: *airflow-common-env
+      CONNECTION_CHECK_MAX_COUNT: "0"
+    # Workaround for entrypoint issue. See: https://github.com/apache/airflow/issues/16252
+    command:
+      - bash
+      - -c
+      - airflow
+
+  # You can enable flower by adding "--profile flower" option e.g. docker-compose --profile flower up
+  # or by explicitly targeted on the command line e.g. docker-compose up flower.
+  # See: https://docs.docker.com/compose/profiles/
+  flower:
+    <<: *airflow-common
+    command: celery flower
+    profiles:
+      - flower
+    ports:
+      - 5555:5555
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: always
+    depends_on:
+      <<: *airflow-common-depends-on
+      airflow-init:
+        condition: service_completed_successfully
 
   torrent-daemon:
     image: linuxserver/transmission:latest
@@ -335,7 +366,6 @@ services:
     profiles:
       - torrent
       - airflow
-      - dev+airflow
 
   oem-postgis:
     image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
@@ -363,9 +393,7 @@ services:
     profiles:
       - dev
       - airflow
-      - dev+airflow
-      - prod+db
-      - prod+db+promtail
+      - db
 
   pgadmin:
     image: dpage/pgadmin4:6.18
@@ -390,7 +418,6 @@ services:
     restart: unless-stopped
     profiles:
       - dev
-      - dev+airflow
 
   oem-web-dev:
     build:
@@ -417,7 +444,6 @@ services:
       - ./app:/var/www/app
     profiles:
       - dev
-      - dev+airflow
 
   oem-web-prod:
     build:
@@ -457,9 +483,6 @@ services:
       - letsencrypt-certs:/etc/letsencrypt/
     profiles:
       - prod
-      - prod+db
-      - prod+promtail
-      - prod+db+promtail
 
   promtail:
     image: grafana/promtail:2.7.1
@@ -469,8 +492,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers
     command: -config.file=/etc/promtail/config.yaml
     profiles:
-      - prod+promtail
-      - prod+db+promtail
+      - promtail
 
 volumes:
   db-init-work-dir:

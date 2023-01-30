@@ -1,7 +1,7 @@
 @startuml dev
 
 actor Browser
-rectangle "Docker Compose --profile 'dev'" as docker {
+rectangle "Docker Compose profile 'dev'" as docker {
   port "8000" as 8000docker
   port "5432" as 5432docker
   port "80" as 80docker

@@ -6,7 +6,7 @@ cloud Grafana {
 }
 component Server {
   port "80" as 80docker
-  rectangle "Docker Compose --profile 'prod+promtail'" as docker {
+  rectangle "Docker Compose profiles 'prod'+'promtail'" as docker {
     node promtail {
       component promtail as promInst
       folder "/etc/promtail" as promRem

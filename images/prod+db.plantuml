@@ -3,7 +3,7 @@
 actor Browser
 component Server {
   port "80" as 80docker
-  rectangle "Docker Compose --profile 'prod+db'" as docker {
+  rectangle "Docker Compose profiles 'prod'+'db'" as docker {
     node "oem-postgis" {
       port 5432 as 5432db
       database "PostGIS DB" as db
