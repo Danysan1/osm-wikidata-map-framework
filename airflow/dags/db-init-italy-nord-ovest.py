@@ -5,14 +5,14 @@ from airflow.models import DAG #! Don't delete, necessary for Airflow to recogni
 
 download_nord_ovest_pbf = OsmPbfDownloadDAG(
     dag_id = "download-italy-nord-ovest-latest",
-    schedule_interval=None,
+    schedule=None,
     pbf_url = "http://download.geofabrik.de/europe/italy/nord-ovest-latest.osm.pbf",
     prefix = "nord-ovest"
 )
 
 download_nord_ovest_html = OsmPbfDownloadDAG(
     dag_id = "download-italy-nord-ovest-from-html",
-    schedule_interval=None,
+    schedule=None,
     html_url="http://download.geofabrik.de/europe/italy/",
     prefix="nord-ovest"
 )

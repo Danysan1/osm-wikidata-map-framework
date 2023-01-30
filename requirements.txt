@@ -1,2 +1,2 @@
-apache-airflow[celery,postgres,docker,redis]==2.5.0
+apache-airflow[celery,postgres,docker,redis]==2.5.1
 transmission-rpc==3.4.0

@@ -45,10 +45,10 @@ class OemFilterDAG(DAG):
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
-        See https://airflow.apache.org/docs/apache-airflow/2.5.0/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.5.1/index.html
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/2.5.0/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/2.5.1/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -207,8 +207,8 @@ class OemFilterDAG(DAG):
                 Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/airflow/dags/osmium.json)) into the working directory.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
             """
         )
         task_create_work_dir >> task_copy_config
@@ -254,10 +254,10 @@ class OemFilterDAG(DAG):
                 # Wait for the time to cleanup the temporary files
 
                 Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/sensors/date_time/index.html)
+                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/sensors/time_delta/index.html)
+                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/sensors/date_time/index.html)
                 * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.0/templates-ref.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.1/templates-ref.html)
             """
         )
         task_export_to_pg >> task_wait_cleanup

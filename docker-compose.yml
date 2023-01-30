@@ -1,8 +1,8 @@
-# Derived from https://airflow.apache.org/docs/apache-airflow/2.5.0/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/2.5.1/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/2.5.0/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/2.5.0/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/2.5.1/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/2.5.1/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:2.5.0
+#                                Default: apache/airflow:2.5.1
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # Those configurations are useful mostly in case of standalone testing/running Airflow in test/try-out mode
@@ -55,7 +55,7 @@ x-airflow-common: &airflow-common
     context: .
     dockerfile: airflow.Dockerfile
   environment: &airflow-common-env
-    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.5.0/executor/index.html
+    AIRFLOW__CORE__EXECUTOR: CeleryExecutor # https://airflow.apache.org/docs/apache-airflow/2.5.1/executor/index.html
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
     AIRFLOW__CORE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
@@ -68,8 +68,8 @@ x-airflow-common: &airflow-common
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
     _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    #AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90 # https://airflow.apache.org/docs/apache-airflow/stable/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
-    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/connection.html#storing-connections-in-environment-variables - Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
+    AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90 # https://airflow.apache.org/docs/apache-airflow/2.5.1/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
+    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/connection.html#storing-connections-in-environment-variables - Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database}
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES_PLANET: postgres://${db_user}:${db_password}@oem-postgis:5432/planet
   volumes:
@@ -144,7 +144,7 @@ services:
       - airflow
       - dev+airflow
 
-  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/scheduler.html
+  airflow-scheduler: # https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/scheduler.html
     <<: *airflow-common
     command: scheduler
     healthcheck:
@@ -254,7 +254,7 @@ services:
           echo "If you are on Linux, you SHOULD follow the instructions below to set "
           echo "AIRFLOW_UID environment variable, otherwise files will be owned by root."
           echo "For other operating systems you can get rid of the warning with manually created .env file:"
-          echo "    See: https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/docker-compose/index.html#setting-the-right-airflow-user"
+          echo "    See: https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/docker-compose/index.html#setting-the-right-airflow-user"
           echo
         fi
         one_meg=1048576
@@ -287,7 +287,7 @@ services:
           echo
           echo -e "\033[1;33mWARNING!!!: You have not enough resources to run Airflow (see above)!\e[0m"
           echo "Please follow the instructions to increase amount of resources available:"
-          echo "   https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/docker-compose/index.html#before-you-begin"
+          echo "   https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/docker-compose/index.html#before-you-begin"
           echo
         fi
         mkdir -p /sources/logs /sources/dags /sources/plugins /workdir
@@ -308,7 +308,6 @@ services:
     networks:
       - airflow-internal
     profiles:
-      - airflow-minimal
       - airflow
       - dev+airflow
 
@@ -334,12 +333,13 @@ services:
       - 51413:51413/udp
     restart: unless-stopped
     profiles:
+      - torrent
       - airflow
       - dev+airflow
 
   oem-postgis:
-    #image: postgis/postgis:13-3.2-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
-    image: odidev/postgis:13-3.1-alpine
+    image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
+    #image: odidev/postgis:13-3.1-alpine
     ports:
       - "5432:5432"
     environment:

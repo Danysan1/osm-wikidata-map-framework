@@ -5,7 +5,7 @@ from airflow.models import DAG #! Don't delete, necessary for Airflow to recogni
 
 download_europe_pbf = OsmPbfDownloadDAG(
     dag_id="db-init-europe-latest",
-    schedule_interval=None,
+    schedule=None,
     pbf_url="http://download.geofabrik.de/europe-latest.osm.pbf",
     prefix="europe"
 )

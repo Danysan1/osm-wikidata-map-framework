@@ -9,7 +9,7 @@ class OemDockerOperator(DockerOperator):
 
     Links:
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
-    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/2.5.0/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
+    * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/3.5.0/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, postgres_conn_id:str, **kwargs) -> None:
         super().__init__(
@@ -26,7 +26,7 @@ class OemDockerOperator(DockerOperator):
             },
             retries = 3,
             network_mode="open-etymology-map_airflow-postgis-bridge", # The container needs to talk with the local DB
-            mount_tmp_dir=False, # https://airflow.apache.org/docs/apache-airflow-providers-docker/2.5.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator
+            mount_tmp_dir=False, # https://airflow.apache.org/docs/apache-airflow-providers-docker/3.5.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator
             auto_remove=True,
             **kwargs
         )

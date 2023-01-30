@@ -1,5 +1,5 @@
 # https://airflow.apache.org/docs/docker-stack/build.html#adding-packages-from-requirements-txt
-FROM apache/airflow:slim-2.5.0
+FROM apache/airflow:slim-2.5.1
 USER root
 RUN apt-get update && \
 	apt-get install -y libpq-dev gcc && \

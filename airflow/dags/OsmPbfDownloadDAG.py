@@ -22,11 +22,11 @@ def get_source_url(ti:TaskInstance, **context) -> str:
         The task also calculates the paths of all files that will be generated.
 
         Links:
-        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/params.html)
-        * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.5.0/best-practices.html)
-        * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/models/taskinstance/index.html)
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+        * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+        * [Apache Airflow best practices](https://airflow.apache.org/docs/apache-airflow/2.5.1/best-practices.html)
+        * [TaskInstance documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/models/taskinstance/index.html)
     """
     from os import path, makedirs
     import re
@@ -68,9 +68,9 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         Check whether the available file is newer than the existing dataset: if it is, proceed to download the data, otherwise stop here.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/python.html#shortcircuitoperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/concepts/params.html)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html#shortcircuitoperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
     """
     from pendulum import parse
     from os import path
@@ -192,7 +192,7 @@ class OsmPbfDownloadDAG(DAG):
         skip_if_already_downloaded: bool
             if True, if the OSM data has already been downloaded it will not be downloaded again
 
-        See https://airflow.apache.org/docs/apache-airflow/2.5.0/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.5.1/index.html
         """
         pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
         pbf_date_path = f'/workdir/{prefix}/{prefix}.osm.pbf.date.txt'
@@ -207,7 +207,7 @@ class OsmPbfDownloadDAG(DAG):
         }
 
         super().__init__(
-                # https://airflow.apache.org/docs/apache-airflow/2.5.0/timezone.html
+                # https://airflow.apache.org/docs/apache-airflow/2.5.1/timezone.html
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
@@ -274,8 +274,8 @@ class OsmPbfDownloadDAG(DAG):
 
                 Links:
                 * [curl documentation](https://curl.se/docs/manpage.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/howto/operator/bash.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/bash.html)
             """
         )
         task_choose_download_method >> task_download_pbf
@@ -341,10 +341,10 @@ class OsmPbfDownloadDAG(DAG):
                 # Wait for the time to cleanup the temporary files
 
                 Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.5.0/_api/airflow/sensors/date_time/index.html)
+                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/sensors/time_delta/index.html)
+                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/sensors/date_time/index.html)
                 * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.0/templates-ref.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.1/templates-ref.html)
             """
         )
         task_save_pbf >> task_wait_cleanup
