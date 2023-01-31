@@ -1,8 +1,12 @@
 Q6581072,female,Female,#ff3333,,
-Q1052281,transgender female,Transgender female,#ff33dd,,
+Q1052281,transgender female,Female,#ff3333,,
+Q43445,female organism,Female,#ff3333,,
+Q15145779,cisgender female,Female,#ff3333,,
 Q1097630,intersex,Intersex,#7733ff,,
-Q2449503,transgender male,Transgender male,#33ffbb,,
+Q2449503,transgender male,Male,#3399ff,,
 Q6581097,male,Male,#3399ff,,
+Q44148,male organism,Male,#3399ff,,
+Q15145778,cisgender male,Male,#3399ff,,
 Q178561,battle,,,Events,#ff3333
 Q188055,siege,,,Events,#ff3333
 Q3199915,massacre,,,Events,#ff3333
@@ -101,6 +105,10 @@ Q158438,arch bridge,,,Buildings,#ffdd33
 Q1735471,box girder bridge,,,Buildings,#ffdd33
 Q12042110,steel bridge,,,Buildings,#ffdd33
 Q537127,road bridge,,,Buildings,#ffdd33
+Q52177058,civic building,,,Buildings,#ffdd33
+Q16831714,government building,,,Buildings,#ffdd33
+Q25550691,town hall,,,Buildings,#ffdd33
+Q148837,polis,,,Buildings,#ffdd33
 Q8502,mountain,,,Nature,#77ff33
 Q46831,mountain range,,,Nature,#77ff33
 Q3777462,alpine group,,,Nature,#77ff33
