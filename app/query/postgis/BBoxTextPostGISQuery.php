@@ -122,7 +122,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 FROM json_array_elements((:result::JSON)->'results'->'bindings')
                 LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE LEFT(value->'instanceID'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                AND wikidata IS NULL"
+                AND wikidata IS NULL
+                ON CONFLICT (wd_wikidata_cod) DO NOTHING"
             );
             $stInsertGender->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
             //$stInsertGender->debugDumpParams();
@@ -156,7 +157,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = instance.cod
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
-                WHERE wdt IS NULL"
+                WHERE wdt IS NULL
+                ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );
             $stInsertGenderText->bindValue("lang", $this->language, PDO::PARAM_STR);
             $stInsertGenderText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
