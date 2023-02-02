@@ -1,15 +1,16 @@
 {
     "name": "open-etymology-map",
-    "version": "2.17.0",
+    "version": "2.19.0",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack --mode=development",
         "watch": "webpack --mode=development --watch",
         "prod": "webpack --mode=production"
     },
+    "dependencies": {},
     "devDependencies": {
         "@mapbox/mapbox-gl-geocoder": "^5.0.1",
-        "@sentry/browser": "^7.11.1",
+        "@sentry/browser": "^7.34.0",
         "@types/chart.js": "^2.9.37",
         "@types/gtag.js": "^0.0.11",
         "@types/mapbox__mapbox-gl-geocoder": "^4.7.3",

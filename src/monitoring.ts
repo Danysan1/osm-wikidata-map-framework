@@ -1,18 +1,30 @@
 import { debugLog, getConfig } from "./config";
-import { init, captureException, captureMessage, SeverityLevel } from "@sentry/browser";
-import { Extras } from '@sentry/types';
+import { init, captureException, captureMessage, SeverityLevel, Replay } from "@sentry/browser";
+import { Extras, Integration } from '@sentry/types';
 
 /**
  * @see https://docs.sentry.io/platforms/javascript/
+ * @see https://docs.sentry.io/platforms/javascript/session-replay/
  */
 function initSentry() {
-    const sentry_js_dsn = getConfig("sentry_js_dsn"),
-        sentry_js_env = getConfig("sentry_js_env");
-    if (sentry_js_dsn && sentry_js_env) {
-        debugLog("Initializing Sentry", { sentry_js_dsn, sentry_js_env });
+    const dsn = getConfig("sentry_js_dsn"),
+        environment = getConfig("sentry_js_env");
+    if (dsn && environment) {
+        const rawReplaysSessionSampleRate = getConfig("sentry_js_replays_session_sample_rate"),
+            rawReplaysOnErrorSampleRate = getConfig("sentry_js_replays_on_error_sample_rate"),
+            replaysSessionSampleRate = rawReplaysSessionSampleRate ? parseFloat(rawReplaysSessionSampleRate) : 0,
+            replaysOnErrorSampleRate = rawReplaysOnErrorSampleRate ? parseFloat(rawReplaysOnErrorSampleRate) : 0,
+            integrations: Integration[] = [];
+
+        if (replaysSessionSampleRate > 0 || replaysOnErrorSampleRate > 0)
+            integrations.push(new Replay({ maskAllText: true, blockAllMedia: true }));
+
+        debugLog("Initializing Sentry", {
+            dsn, environment, rawReplaysSessionSampleRate, rawReplaysOnErrorSampleRate, replaysSessionSampleRate, replaysOnErrorSampleRate
+        });
+
         init({
-            dsn: sentry_js_dsn,
-            environment: sentry_js_env
+            dsn, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, integrations
         });
     }
 }
