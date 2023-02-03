@@ -1,0 +1,224 @@
+# php sample.php wikidata 175
+
+SELECT ?wikidata
+    (SAMPLE(?name) AS ?name)
+    (SAMPLE(?description) AS ?description)
+    (SAMPLE(?instanceID) AS ?instanceID)
+    (SAMPLE(?instance_name) AS ?instance)
+    (SAMPLE(?genderID) AS ?genderID)
+    (SAMPLE(?gender_name) AS ?gender)
+    (SAMPLE(?wikipedia) AS ?wikipedia)
+    (SAMPLE(?commons) AS ?commons)
+    (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
+    (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
+    (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='`') AS ?pictures)
+    (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
+    (SAMPLE(?event_date) AS ?event_date)
+    (SAMPLE(?event_date_precision) AS ?event_date_precision)
+    (SAMPLE(?start_date) AS ?start_date)
+    (SAMPLE(?start_date_precision) AS ?start_date_precision)
+    (SAMPLE(?end_date) AS ?end_date)
+    (SAMPLE(?end_date_precision) AS ?end_date_precision)
+    (SAMPLE(?birth_date) AS ?birth_date)
+    (SAMPLE(?birth_date_precision) AS ?birth_date_precision)
+    (SAMPLE(?death_date) AS ?death_date)
+    (SAMPLE(?death_date_precision) AS ?death_date_precision)
+    (GROUP_CONCAT(DISTINCT ?event_place_name; SEPARATOR=', ') AS ?event_place)
+    (SAMPLE(?birth_place_name) AS ?birth_place)
+    (SAMPLE(?death_place_name) AS ?death_place)
+    (SAMPLE(?wkt_coords) AS ?wkt_coords)
+WHERE {
+    VALUES ?wikidata { wd:Q10806 wd:Q166092 wd:Q3840201 wd:Q1067 wd:Q36488 wd:Q1345358 wd:Q1345358 wd:Q185007 wd:Q64707121 wd:Q55433 wd:Q2001 wd:Q6292252 wd:Q16534203 wd:Q1541043 wd:Q11762987 wd:Q365144 wd:Q1055802 }
+
+    OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
+        ?instanceID ^wdt:P31 ?wikidata;
+            rdfs:label ?instance_name.
+        FILTER(lang(?instance_name)='it').
+    }
+
+    {
+        ?name ^rdfs:label ?wikidata.
+        FILTER(lang(?name)='it').
+        OPTIONAL {
+            ?description ^schema:description ?wikidata.
+            FILTER(lang(?description)='it').
+        }
+    } UNION {
+        MINUS {
+            ?other_name ^rdfs:label ?wikidata.
+            FILTER(lang(?other_name)='it').
+        }
+        ?name ^rdfs:label ?wikidata.
+        FILTER(lang(?name)='en').
+        OPTIONAL {
+            ?description ^schema:description ?wikidata.
+            FILTER(lang(?description)='en').
+        }
+    } UNION {
+        MINUS {
+            ?other_name ^rdfs:label ?wikidata.
+            FILTER(lang(?other_name)='it' || lang(?other_name)='en').
+        }
+        ?name ^rdfs:label ?wikidata.
+    }
+
+    OPTIONAL {
+        ?occupation ^wdt:P106 ?wikidata.
+        {
+            ?gender ^wdt:P21 ?wikidata.
+            FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
+            ?occupation_name ^wdt:P2521 ?occupation. # female form of occupation label
+        } UNION {
+            MINUS {
+                ?occupation_name ^wdt:P2521 ?occupation.
+                FILTER(lang(?occupation_name)='it').
+            }. # female form of occupation is NOT available in this language
+            ?gender ^wdt:P21 ?wikidata.
+            FILTER(?gender IN (wd:Q6581072, wd:Q1052281)). # female / transgender female
+            ?occupation_name ^rdfs:label ?occupation. # base occupation label
+        } UNION {
+            ?gender ^wdt:P21 ?wikidata.
+            FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
+            ?occupation_name ^wdt:P3321 ?occupation. # male form of occupation label
+        } UNION {
+            MINUS {
+                ?occupation_name ^wdt:P3321 ?occupation.
+                FILTER(lang(?occupation_name)='it').
+            }. # male form of occupation is NOT available in this language
+            ?gender ^wdt:P21 ?wikidata.
+            FILTER(?gender NOT IN (wd:Q6581072, wd:Q1052281)). # NOT female / transgender female
+            ?occupation_name ^rdfs:label ?occupation. # male form of occupation label
+        } UNION {
+            MINUS { ?wikidata wdt:P21 []. } . # no gender specified
+            ?occupation_name ^rdfs:label ?occupation. # base occupation label
+        }
+        FILTER(lang(?occupation_name)='it').
+    }
+
+    OPTIONAL {
+        ?picture ^wdt:P18|^wdt:P94|^wdt:P242|^wdt:P15|^wdt:P41 ?wikidata.
+# picture - https://www.wikidata.org/wiki/Property:P18
+# coat of arms image - https://www.wikidata.org/wiki/Property:P94
+# locator map image - https://www.wikidata.org/wiki/Property:P242
+# route map - https://www.wikidata.org/wiki/Property:P15
+# flag - https://www.wikidata.org/wiki/Property:P41
+    }
+
+    OPTIONAL {
+        ?genderID ^wdt:P21 ?wikidata;
+            rdfs:label ?gender_name.
+        FILTER(lang(?gender_name)='it').
+    }
+
+    OPTIONAL {
+        ?wikidata p:P585/psv:P585 [ # event date - https://www.wikidata.org/wiki/Property:P585
+            wikibase:timePrecision ?event_date_precision;
+            wikibase:timeValue ?event_date
+        ].
+        MINUS {
+            ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_event_date_precision.
+            FILTER (?other_event_date_precision > ?event_date_precision).
+        }.
+    }
+
+    OPTIONAL {
+        ?wikidata (p:P580/psv:P580)|(p:P571/psv:P571)|(p:P1619/psv:P1619) [
+# start time - https://www.wikidata.org/wiki/Property:P580
+# inception - https://www.wikidata.org/wiki/Property:P571
+# date of official opening - https://www.wikidata.org/wiki/Property:P1619
+            wikibase:timePrecision ?start_date_precision;
+            wikibase:timeValue ?start_date
+        ].
+        MINUS {
+            ?wikidata (p:P571/psv:P571/wikibase:timePrecision)|(p:P1619/psv:P1619/wikibase:timePrecision)|(p:P569/psv:P569/wikibase:timePrecision) ?other_start_date_precision.
+            FILTER (?other_start_date_precision > ?start_date_precision).
+        }.
+    }
+
+    OPTIONAL {
+        ?wikidata (p:P582/psv:P582)|(p:P576/psv:P576)|(p:P3999/psv:P3999) [
+# end time - https://www.wikidata.org/wiki/Property:P582
+# dissolved, abolished or demolished date - https://www.wikidata.org/wiki/Property:P576
+# date of official closure - https://www.wikidata.org/wiki/Property:P3999
+            wikibase:timePrecision ?end_date_precision;
+            wikibase:timeValue ?end_date
+        ].
+        MINUS {
+            ?wikidata (p:P582/psv:P582/wikibase:timePrecision)|(p:P576/psv:P576/wikibase:timePrecision)|(p:P3999/psv:P3999/wikibase:timePrecision) ?other_end_date_precision.
+            FILTER (?other_end_date_precision > ?end_date_precision).
+        }.
+    }
+
+    OPTIONAL {
+        ?wikidata p:P569/psv:P569 [ # birth date - https://www.wikidata.org/wiki/Property:P569
+            wikibase:timePrecision ?birth_date_precision;
+            wikibase:timeValue ?birth_date
+        ].
+        MINUS {
+            ?wikidata p:P569/psv:P569/wikibase:timePrecision ?other_birth_date_precision.
+            FILTER (?other_birth_date_precision > ?birth_date_precision).
+        }.
+    }
+
+    OPTIONAL {
+        ?wikidata p:P570/psv:P570 [ # death date - https://www.wikidata.org/wiki/Property:P570
+            wikibase:timePrecision ?death_date_precision;
+            wikibase:timeValue ?death_date
+        ].
+        MINUS {
+            ?wikidata p:P570/psv:P570/wikibase:timePrecision ?other_death_date_precision.
+            FILTER (?other_death_date_precision > ?death_date_precision).
+        }.
+    }
+
+    OPTIONAL {
+        ?event_place_name ^rdfs:label/^wdt:P276 ?wikidata.
+        FILTER(lang(?event_place_name)='it').
+    }
+
+    OPTIONAL {
+        ?birth_place_name ^rdfs:label/^wdt:P19 ?wikidata.
+        FILTER(lang(?birth_place_name)='it').
+    }
+
+    OPTIONAL {
+        ?death_place_name ^rdfs:label/^wdt:P20 ?wikidata.
+        FILTER(lang(?death_place_name)='it').
+    }
+
+    OPTIONAL {
+        ?wikipedia schema:about ?wikidata;
+            schema:inLanguage 'it';
+            schema:isPartOf [ wikibase:wikiGroup 'wikipedia' ].
+    }
+
+    OPTIONAL {
+        ?commons ^wdt:P373 ?wikidata.
+    }
+
+    OPTIONAL {
+        ?prize ^wdt:P166 ?wikidata # awarded prize
+        {
+            ?prize_group ^wdt:P361 ?prize.
+            FILTER(?prize_group IN (wd:Q7191,wd:Q19020,wd:Q41254)). # Nobel, Academy (Oscar), Grammy
+        } UNION {
+            ?prize wdt:P31 wd:Q28444913. # Palme d'Or (Cannes)
+        } UNION {
+            ?prize wdt:P1027 wd:Q49024. # Golden Lion (Venice)
+        }
+        ?prize_name ^rdfs:label ?prize.
+        FILTER(lang(?prize_name)='it').
+    }
+
+    OPTIONAL {
+        ?wkt_coords ^wdt:P625 ?wikidata.
+        FILTER(STRSTARTS(?wkt_coords, 'Point')).
+    }
+
+    OPTIONAL {
+        ?citizenship_name ^rdfs:label/^wdt:P27 ?wikidata.
+        FILTER(lang(?citizenship_name)='it').
+    }
+}
+GROUP BY ?wikidata
+ORDER BY ?wikidata

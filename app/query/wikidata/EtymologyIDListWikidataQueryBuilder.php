@@ -39,7 +39,7 @@ class EtymologyIDListWikidataQueryBuilder
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
 
-                OPTIONAL { # https://www.wikidata.org/wiki/Property:P31 / https://www.wikidata.org/wiki/Property:P279
+                OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
                     ?instanceID ^wdt:P31 ?wikidata;
                         rdfs:label ?instance_name.
                     FILTER(lang(?instance_name)='$language').
@@ -105,17 +105,12 @@ class EtymologyIDListWikidataQueryBuilder
                 }
 
                 OPTIONAL {
-                    {
-                        ?picture ^wdt:P18 ?wikidata # picture
-                    } UNION {
-                        ?picture ^wdt:P94 ?wikidata # coat of arms image
-                    } UNION {
-                        ?picture ^wdt:P242 ?wikidata # locator map image
-                    } UNION {
-                        ?picture ^wdt:P15 ?wikidata # route map
-                    } UNION {
-                        ?picture ^wdt:P41 ?wikidata # flag
-                    }
+                    ?picture ^wdt:P18|^wdt:P94|^wdt:P242|^wdt:P15|^wdt:P41 ?wikidata.
+# picture - https://www.wikidata.org/wiki/Property:P18
+# coat of arms image - https://www.wikidata.org/wiki/Property:P94
+# locator map image - https://www.wikidata.org/wiki/Property:P242
+# route map - https://www.wikidata.org/wiki/Property:P15
+# flag - https://www.wikidata.org/wiki/Property:P41
                 }
 
                 OPTIONAL {
@@ -136,47 +131,31 @@ class EtymologyIDListWikidataQueryBuilder
                 }
 
                 OPTIONAL {
-                    {
-                        ?wikidata p:P580/psv:P580 [ # start time - https://www.wikidata.org/wiki/Property:P580
-                            wikibase:timePrecision ?start_date_precision;
-                            wikibase:timeValue ?start_date
-                        ].
-                        MINUS {
-                            ?wikidata p:P580/psv:P580/wikibase:timePrecision ?other_start_date_precision.
-                            FILTER (?other_start_date_precision > ?start_date_precision).
-                        }.
-                    } UNION {
-                        ?wikidata p:P571/psv:P571 [ # inception - https://www.wikidata.org/wiki/Property:P571
-                            wikibase:timePrecision ?start_date_precision;
-                            wikibase:timeValue ?start_date
-                        ].
-                        MINUS {
-                            ?wikidata p:P571/psv:P571/wikibase:timePrecision ?other_start_date_precision.
-                            FILTER (?other_start_date_precision > ?start_date_precision).
-                        }.
-                    }
+                    ?wikidata (p:P580/psv:P580)|(p:P571/psv:P571)|(p:P1619/psv:P1619) [
+# start time - https://www.wikidata.org/wiki/Property:P580
+# inception - https://www.wikidata.org/wiki/Property:P571
+# date of official opening - https://www.wikidata.org/wiki/Property:P1619
+                        wikibase:timePrecision ?start_date_precision;
+                        wikibase:timeValue ?start_date
+                    ].
+                    MINUS {
+                        ?wikidata (p:P571/psv:P571/wikibase:timePrecision)|(p:P1619/psv:P1619/wikibase:timePrecision)|(p:P569/psv:P569/wikibase:timePrecision) ?other_start_date_precision.
+                        FILTER (?other_start_date_precision > ?start_date_precision).
+                    }.
                 }
 
                 OPTIONAL {
-                    {
-                        ?wikidata p:P582/psv:P582 [ # end time - https://www.wikidata.org/wiki/Property:P582
-                            wikibase:timePrecision ?end_date_precision;
-                            wikibase:timeValue ?end_date
-                        ].
-                        MINUS {
-                            ?wikidata p:P582/psv:P582/wikibase:timePrecision ?other_end_date_precision.
-                            FILTER (?other_end_date_precision > ?end_date_precision).
-                        }.
-                    } UNION {
-                        ?wikidata p:P576/psv:P576 [ # dissolved, abolished or demolished date - https://www.wikidata.org/wiki/Property:P576
-                            wikibase:timePrecision ?end_date_precision;
-                            wikibase:timeValue ?end_date
-                        ].
-                        MINUS {
-                            ?wikidata p:P576/psv:P576/wikibase:timePrecision ?other_end_date_precision.
-                            FILTER (?other_end_date_precision > ?end_date_precision).
-                        }.
-                    }
+                    ?wikidata (p:P582/psv:P582)|(p:P576/psv:P576)|(p:P3999/psv:P3999) [
+# end time - https://www.wikidata.org/wiki/Property:P582
+# dissolved, abolished or demolished date - https://www.wikidata.org/wiki/Property:P576
+# date of official closure - https://www.wikidata.org/wiki/Property:P3999
+                        wikibase:timePrecision ?end_date_precision;
+                        wikibase:timeValue ?end_date
+                    ].
+                    MINUS {
+                        ?wikidata (p:P582/psv:P582/wikibase:timePrecision)|(p:P576/psv:P576/wikibase:timePrecision)|(p:P3999/psv:P3999/wikibase:timePrecision) ?other_end_date_precision.
+                        FILTER (?other_end_date_precision > ?end_date_precision).
+                    }.
                 }
 
                 OPTIONAL {
