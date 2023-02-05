@@ -19,7 +19,7 @@ $enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
-        $lastUpdate = $dbh->query("SELECT oem.last_data_update()")->fetchColumn();
+        $lastUpdate = (string)$dbh->query("SELECT oem.last_data_update()")->fetchColumn();
         $lastUpdateString = empty($lastUpdate) ? '' : "<p>Last data update: $lastUpdate</p>";
     } catch (Exception $e) {
         error_log("Error fetching last update: " . $e->getMessage());
@@ -109,7 +109,7 @@ if (
 
             <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
 
-            <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
+            <?php if ($enableDB) { ?> <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a> <?php } ?>
 
             <?= $lastUpdateString; ?>
             <p>
