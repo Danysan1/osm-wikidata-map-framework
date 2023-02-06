@@ -179,9 +179,8 @@ function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL): int
         "has_parts",
         ["P527"], // has part or parts
         [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "Q14073567", // sibling duo
-            "Q16979650", // sibling group
-            "Q10648343", // duo
+            "Q16979650", "Q14073567", "Q58603552", // sibling group / duo / trio
+            "Q10648343", "Q16145172", "Q1826687", "Q99241914", // duo / trio / quartet / quintet
             "Q16334295", // group of humans
             "Q219160", // couple
             "Q3046146", // married couple
