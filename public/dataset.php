@@ -34,7 +34,7 @@ $stm = $db->query(
     JOIN oem.wikidata AS wd ON wd.wd_id = ety.et_wd_id
     JOIN oem.element AS ele ON ele.el_id = ety.et_el_id
     GROUP BY wd.wd_id, ele.el_tags->>\'name\'
-    ORDER BY LENGTH(wd.wd_wikidata_cod), wd.wd_wikidata_cod'
+    ORDER BY LENGTH(wd.wd_wikidata_cod), wd.wd_wikidata_cod, ele.el_tags->>\'name\''
 );
 
 header("Content-Disposition: attachment; filename=open_etymology_map_dataset_$lastUpdate.csv");

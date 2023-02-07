@@ -34,8 +34,7 @@ $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
-//$onlySkeleton = (bool)getFilteredParamOrDefault( "onlySkeleton", FILTER_VALIDATE_BOOLEAN, false );
-//$onlyCenter = (bool)getFilteredParamOrDefault("onlyCenter", FILTER_VALIDATE_BOOLEAN, false);
+$subject = (string)getFilteredParamOrDefault("subject", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 
 $enableDB = $conf->getBool("db_enable");
@@ -44,51 +43,38 @@ if ($enableDB) {
     $db = new PostGIS_PDO($conf);
 } else {
     //error_log("elements.php NOT using DB");
+    $db = null;
 }
 
 if ($from == "bbox") {
-    $minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
-    $minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
-    $maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
-    $maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
-    $bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
-    $bboxArea = $bbox->getArea();
-    //error_log("BBox area: $bboxArea");
     $maxArea = (float)$conf->get("elements_bbox_max_area");
-    if ($bboxArea > $maxArea) {
-        http_response_code(400);
-        die('{"error":"The requested area is too large. Please use a smaller area."};');
-    }
+    $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
-    if (empty($db) || !$db instanceof PDO) {
-        /*if($onlySkeleton) {
-            $baseQuery = new BBoxEtymologySkeletonOverpassQuery(
-                $bbox, $overpassEndpointURL
-            );
-        } elseif ($onlyCenter) {*/
+    if ($db != null) {
+        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $subject);
+    } else {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery($bbox, $overpassConfig);
-        /*} else {
-            $baseQuery = new BBoxEtymologyOverpassQuery($bbox,$overpassConfig);
-        }*/
         $query = new CSVCachedBBoxGeoJSONQuery(
             $baseQuery,
             (string)$conf->get("cache_file_base_path"),
             $conf,
             $serverTiming
         );
-    } else {
-        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source);
     }
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError("centerLat", FILTER_VALIDATE_FLOAT);
     $centerLon = (float)getFilteredParamOrError("centerLon", FILTER_VALIDATE_FLOAT);
     $radius = (float)getFilteredParamOrError("radius", FILTER_VALIDATE_FLOAT);
-    $query = new CenterEtymologyOverpassQuery(
-        $centerLat,
-        $centerLon,
-        $radius,
-        $overpassConfig
-    );
+    if ($db != null) {
+        throw new Exception("Not yet implemented");
+    } else {
+        $query = new CenterEtymologyOverpassQuery(
+            $centerLat,
+            $centerLon,
+            $radius,
+            $overpassConfig
+        );
+    }
 } else {
     http_response_code(400);
     die('{"error":"You must specify either the BBox or center and radius"}');

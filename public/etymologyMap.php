@@ -33,6 +33,7 @@ $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
+$subject = (string)getFilteredParamOrDefault("subject", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
@@ -45,6 +46,7 @@ if ($enableDB) {
     $db = new PostGIS_PDO($conf);
 } else {
     //error_log("etymologyMap.php NOT using DB");
+    $db = null;
 }
 
 // "en-US" => "en"
@@ -56,21 +58,10 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
-$minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
-$maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
-$maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
-
-$bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
-$bboxArea = $bbox->getArea();
-//error_log("BBox area: $bboxArea");
 $maxArea = (float)$conf->get("wikidata_bbox_max_area");
-if ($bboxArea > $maxArea) {
-    http_response_code(400);
-    die('{"error":"The requested area is too large. Please use a smaller area."};');
-}
+$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
-if (!empty($db) && $db instanceof PDO) {
+if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery(
         $bbox,
         $safeLanguage,
@@ -79,7 +70,8 @@ if (!empty($db) && $db instanceof PDO) {
         $serverTiming,
         $fetchAttribution,
         $maxElements,
-        $source
+        $source,
+        $subject
     );
 } else {
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory(

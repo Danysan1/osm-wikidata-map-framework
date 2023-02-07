@@ -28,6 +28,7 @@ export class EtymologyMap extends Map {
     private currentSourceControl?: SourceControl;
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
+    private subject: string;
 
     constructor(
         containerId: string,
@@ -64,6 +65,8 @@ export class EtymologyMap extends Map {
         //eslint-disable-next-line
         const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
         window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
+
+        this.subject = new URLSearchParams(window.location.search).get("subject") ?? "";
     }
 
     /**
@@ -176,7 +179,10 @@ export class EtymologyMap extends Map {
             thresholdZoomLevel,
             enableWikidataLayers,
             enableElementLayers,
-            enableGlobalLayers
+            enableGlobalLayers,
+            source,
+            language,
+            subject: this.subject,
         });
 
         if (enableWikidataLayers) {
@@ -188,6 +194,7 @@ export class EtymologyMap extends Map {
                 maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
                 language,
                 source,
+                subject: this.subject,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 wikidata_url = './etymologyMap.php?' + queryString;
@@ -205,6 +212,7 @@ export class EtymologyMap extends Map {
                 maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.1234 => 0.2
                 language,
                 source,
+                subject: this.subject,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 elements_url = './elements.php?' + queryString;
@@ -634,7 +642,7 @@ export class EtymologyMap extends Map {
     /**
      * Handles the dragging of a map
      */
-    mapMoveEndHandler(e: DragEvent) {
+    mapMoveEndHandler() {
         this.updateDataForMapPosition();
     }
 

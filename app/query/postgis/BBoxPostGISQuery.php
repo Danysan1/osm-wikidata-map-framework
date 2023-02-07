@@ -12,14 +12,20 @@ use \App\BoundingBox;
 use \App\ServerTiming;
 use \App\Query\BBoxQuery;
 use \App\Query\PostGIS\PostGISQuery;
+use InvalidArgumentException;
 
 abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
 {
     private BoundingBox $bbox;
     private string $filterClause;
 
-    public function __construct(BoundingBox $bbox, PDO $db, ?ServerTiming $serverTiming = null, ?string $source = null)
-    {
+    public function __construct(
+        BoundingBox $bbox,
+        PDO $db,
+        ?ServerTiming $serverTiming = null,
+        ?string $source = null,
+        ?string $subject = null
+    ) {
         parent::__construct($db, $serverTiming);
         $this->bbox = $bbox;
         $this->filterClause = match ($source) {
@@ -30,6 +36,11 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
             'propagated' => 'AND et_recursion_depth != 0',
             default => ''
         };
+        if (!empty($subject)) {
+            if (preg_match('/^Q\d+$/', $subject) !== 1) //! regex match fundamental to prevent SQL injection
+                throw new InvalidArgumentException("Bad subject: $subject");
+            $this->filterClause .= " AND wd.wd_wikidata_cod = '$subject'";
+        }
     }
 
     public function getBBox(): BoundingBox

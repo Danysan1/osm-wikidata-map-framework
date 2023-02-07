@@ -5,6 +5,8 @@ namespace App;
 require_once(__DIR__ . "/BoundingBox.php");
 
 use \App\BoundingBox;
+use Exception;
+use InvalidArgumentException;
 
 /**
  * Implementation of a Geographic Bounding Box.
@@ -217,5 +219,46 @@ class BaseBoundingBox implements BoundingBox
     public function __toString(): string
     {
         return "BaseBoundingBox(" . $this->minLat . "," . $this->minLon . "," . $this->maxLat . "," . $this->maxLon . ")";
+    }
+
+    /**
+     * @param int $inputType See https://www.php.net/manual/en/function.filter-input.php for possible values
+     */
+    public static function fromInput(int $inputType = INPUT_GET, ?float $maxArea = null): BaseBoundingBox
+    {
+        $args = filter_input_array($inputType, [
+            "minLat" => [
+                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -90, "max_range" => 90]
+            ],
+            "minLon" => [
+                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -180, "max_range" => 180]
+            ],
+            "maxLat" => [
+                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -90, "max_range" => 90]
+            ],
+            "maxLon" => [
+                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -180, "max_range" => 180]
+            ],
+        ]);
+
+        if (empty($args))
+            throw new InvalidArgumentException("Failed parsing input bounding box parameters");
+
+        foreach ($args as $k => $v) {
+            if ($v === null || $v === false)
+                throw new InvalidArgumentException("$k is not a valid floating point number");
+        }
+
+        $bbox = new BaseBoundingBox(
+            $args["minLat"],
+            $args["minLon"],
+            $args["maxLat"],
+            $args["maxLon"]
+        );
+
+        if ($maxArea > 0 && $bbox->getArea() > $maxArea)
+            throw new Exception("The requested area is too large. Please use a smaller area.");
+
+        return $bbox;
     }
 }

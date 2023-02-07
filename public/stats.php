@@ -57,12 +57,8 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$minLat = (float)getFilteredParamOrError("minLat", FILTER_VALIDATE_FLOAT);
-$minLon = (float)getFilteredParamOrError("minLon", FILTER_VALIDATE_FLOAT);
-$maxLat = (float)getFilteredParamOrError("maxLat", FILTER_VALIDATE_FLOAT);
-$maxLon = (float)getFilteredParamOrError("maxLon", FILTER_VALIDATE_FLOAT);
-
-$bbox = new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
+$maxArea = (float)$conf->get("elements_bbox_max_area");
+$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if (!empty($db) && $db instanceof PDO) {
     if ($to == "genderStats") {

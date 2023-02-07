@@ -58,7 +58,13 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             SELECT ST_Centroid(ST_Collect(el_geometry)) AS geom
             FROM oem.element
             WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
-            AND el_id IN (SELECT et_el_id FROM oem.etymology WHERE TRUE $filterClause)
+            AND el_id IN (
+                SELECT et_el_id
+                FROM oem.etymology AS et
+                JOIN oem.wikidata AS wd ON wd.wd_id = et.et_wd_id
+                WHERE TRUE
+                $filterClause
+            )
             GROUP BY ST_ReducePrecision(ST_Centroid(el_geometry), 0.1), LOWER(el_tags->>'name')
         ) as ele";
     }
