@@ -11,6 +11,8 @@ use \App\Result\Overpass\OverpassQueryResult;
  */
 class OverpassEtymologyQueryResult extends OverpassQueryResult
 {
+    const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
+
     /**
      * @param int $index
      * @param array $element
@@ -23,12 +25,13 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
             return false;
         }
 
+
         if (!empty($element["tags"]["name:etymology:wikidata"])) {
-            $wikidataTag = trim((string)$element["tags"]["name:etymology:wikidata"]);
+            $wikidataTag = str_replace(self::BAD_CHARS, '', (string)$element["tags"]["name:etymology:wikidata"]);
         } elseif (!empty($element["tags"]["subject:wikidata"])) {
-            $wikidataTag = trim((string)$element["tags"]["subject:wikidata"]);
+            $wikidataTag = str_replace(self::BAD_CHARS, '', (string)$element["tags"]["subject:wikidata"]);
         } elseif (!empty($element["tags"]["buried:wikidata"])) {
-            $wikidataTag = trim((string)$element["tags"]["buried:wikidata"]);
+            $wikidataTag = str_replace(self::BAD_CHARS, '', (string)$element["tags"]["buried:wikidata"]);
         } else {
             return false;
         }
