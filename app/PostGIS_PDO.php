@@ -2,7 +2,7 @@
 
 namespace App;
 
-require_once(__DIR__ . "/Configuration.php");
+require_once(__DIR__ . "/config/Configuration.php");
 
 use PDO;
 use Exception;

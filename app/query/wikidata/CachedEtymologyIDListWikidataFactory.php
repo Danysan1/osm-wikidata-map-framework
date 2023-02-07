@@ -7,7 +7,7 @@ require_once(__DIR__ . "/EtymologyIDListXMLWikidataQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQuery.php");
 require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 require_once(__DIR__ . "/../../StringSet.php");
-require_once(__DIR__ . "/../../Configuration.php");
+require_once(__DIR__ . "/../../config/Configuration.php");
 
 use \App\Query\Caching\CSVCachedStringSetXMLQuery;
 use \App\Query\StringSetXMLQuery;

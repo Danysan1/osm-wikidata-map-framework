@@ -4,7 +4,7 @@ if (php_sapi_name() != "cli") {
     die("Only runnable through CLI");
 }
 
-require_once(__DIR__ . "/IniEnvConfiguration.php");
+require_once(__DIR__ . "/config/IniEnvConfiguration.php");
 require_once(__DIR__ . "/PostGIS_PDO.php");
 require_once(__DIR__ . "/loadWikidataRelatedEntities.php");
 

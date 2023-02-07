@@ -8,7 +8,7 @@ require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/JSONQueryResult.php");
 require_once(__DIR__ . "/../../result/JSONLocalQueryResult.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../../Configuration.php");
+require_once(__DIR__ . "/../../config/Configuration.php");
 
 use \App\Query\Caching\CSVCachedStringSetQuery;
 use \App\Query\StringSetJSONQuery;

@@ -32,6 +32,6 @@ class EnvironmentConfiguration extends BaseConfiguration
 
 	public function getBool(string $key): bool
 	{
-		return !empty(getenv($key)) && getenv($key) != "false";
+		return !empty(getenv($key)) && getenv($key) != "false" && getenv($key) != "0";
 	}
 }

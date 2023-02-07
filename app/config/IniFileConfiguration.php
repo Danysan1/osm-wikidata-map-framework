@@ -16,7 +16,7 @@ class IniFileConfiguration extends BaseConfiguration
 	/**
 	 * @param string $iniFilePath
 	 */
-	public function __construct(string $iniFilePath = __DIR__ . "/../open-etymology-map.ini")
+	public function __construct(string $iniFilePath = __DIR__ . "/../../open-etymology-map.ini")
 	{
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config)) {
@@ -50,6 +50,6 @@ class IniFileConfiguration extends BaseConfiguration
 
 	public function getBool(string $key): bool
 	{
-		return !empty($this->config[$key]) && $this->config[$key] != "false";
+		return !empty($this->config[$key]) && $this->config[$key] != "false" && $this->config[$key] != "0";
 	}
 }

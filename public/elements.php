@@ -5,7 +5,7 @@ use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/config/IniEnvConfiguration.php");
 require_once(__DIR__ . "/../app/BaseBoundingBox.php");
 require_once(__DIR__ . "/../app/PostGIS_PDO.php");
 require_once(__DIR__ . "/../app/query/overpass/CenterEtymologyOverpassQuery.php");

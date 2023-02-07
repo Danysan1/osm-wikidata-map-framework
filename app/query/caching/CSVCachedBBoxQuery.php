@@ -7,7 +7,7 @@ require_once(__DIR__ . "/../BBoxQuery.php");
 require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../ServerTiming.php");
 require_once(__DIR__ . "/../../BaseBoundingBox.php");
-require_once(__DIR__ . "/../../Configuration.php");
+require_once(__DIR__ . "/../../config/Configuration.php");
 
 use App\Query\Caching\CSVCachedQuery;
 use App\Query\BBoxQuery;

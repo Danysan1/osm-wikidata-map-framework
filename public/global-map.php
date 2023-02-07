@@ -1,5 +1,5 @@
 <?php
-require_once(__DIR__ . "/../app/IniEnvConfiguration.php");
+require_once(__DIR__ . "/../app/config/IniEnvConfiguration.php");
 require_once(__DIR__ . "/../app/PostGIS_PDO.php");
 require_once(__DIR__ . "/funcs.php");
 
