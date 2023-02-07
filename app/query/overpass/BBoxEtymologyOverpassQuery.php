@@ -33,7 +33,7 @@ class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSO
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements===null ? ' ' : " $maxElements";
         parent::__construct(
-            ['name:etymology:wikidata', 'subject:wikidata'],
+            ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'],
             $bbox,
             "out body $limitClause; >; out skel qt;",
             $config

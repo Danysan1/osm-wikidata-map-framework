@@ -24,9 +24,11 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
         }
 
         if (!empty($element["tags"]["name:etymology:wikidata"])) {
-            $wikidataTag = str_replace(' ', '', (string)$element["tags"]["name:etymology:wikidata"]);
+            $wikidataTag = trim((string)$element["tags"]["name:etymology:wikidata"]);
         } elseif (!empty($element["tags"]["subject:wikidata"])) {
-            $wikidataTag = str_replace(' ', '', (string)$element["tags"]["subject:wikidata"]);
+            $wikidataTag = trim((string)$element["tags"]["subject:wikidata"]);
+        } elseif (!empty($element["tags"]["buried:wikidata"])) {
+            $wikidataTag = trim((string)$element["tags"]["buried:wikidata"]);
         } else {
             return false;
         }

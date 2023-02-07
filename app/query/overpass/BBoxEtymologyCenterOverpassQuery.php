@@ -37,8 +37,7 @@ class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQ
     public function __construct($bbox, $config)
     {
         $this->baseQuery = new BBoxOverpassQuery(
-            //['name:etymology:wikidata', 'subject:wikidata'],
-            'name:etymology:wikidata',
+            ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'],
             $bbox,
             'out ids center;',
             $config
