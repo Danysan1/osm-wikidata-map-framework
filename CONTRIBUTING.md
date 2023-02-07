@@ -177,6 +177,8 @@ At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual
 
 #### Back-end (v2, using PostGIS DB)
 
+Available on [etymology.dsantini.it](https://etymology.dsantini.it).
+
 <details>
 <summary>Deployment diagram</summary>
 
@@ -219,13 +221,17 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 ##### Propagation
 
-If launched with the `--propagate-nearby` or `--propagate-global` flag the database initializaion also loads all ways with `highway=residential` or `highway=unclassified`.
+The database initialization:
 
-With `--propagate-nearby` after elaborating the etymologies the system also propagates them to nearby homonimous roads (more specifically, [roads which intersect any road with an existing etymology](airflow/dags/sql/propagate-etymologies-nearby.sql)).
+1. loads all highways with a name, even if they have no etymology
+2. after elaborating the etymologies finds names that are in etymologies for at least two elements far away from each other, with the same subject
+3. propagates these etymologies to all homonimous highways
 
-With `--propagate-global` after elaborating the etymologies the system also propagates them to all homonimous highways (to prevent bad propagations, [if a name is used in multiple roads with different etymology that name is not propagated](airflow/dags/sql/propagate-etymologies-global.sql)).
+More specifically, this happens in [propagate-etymologies-global.sql](airflow/dags/sql/propagate-etymologies-global.sql).
 
 #### Old back-end (v1, using Overpass)
+
+Available on [etymology-no.dsantini.it](https://etymology-no.dsantini.it).
 
 <details>
 <summary>Deployment diagram</summary>
