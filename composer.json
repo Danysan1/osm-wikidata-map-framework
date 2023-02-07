@@ -18,6 +18,6 @@
         "email": "danysan95@gmail.com"
     }],
     "require-dev": {
-        "vimeo/psalm": "^4.27"
+        "vimeo/psalm": "^5.6"
     }
 }
