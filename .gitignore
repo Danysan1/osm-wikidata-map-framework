@@ -8,6 +8,7 @@ airflow/plugins/
 *.mvt
 open-etymology-map.ini
 open-etymology-map.log
+open-etymology-map-cache/
 LAST_UPDATE
 promtail/config.yaml
 promtail/key
