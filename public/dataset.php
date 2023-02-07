@@ -10,7 +10,7 @@ $conf = new IniEnvConfiguration();
 
 prepareCSV($conf);
 
-if (!$conf->getBool("db_enable")) { // The dataset is not available without the DB
+if (!$conf->getDbEnable()) { // The dataset is not available without the DB
     throw new Exception("No DB, can't export to dataset");
 }
 

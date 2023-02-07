@@ -15,7 +15,7 @@ use \App\IniEnvConfiguration;
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
-if($conf->getBool("db_enable")) {
+if($conf->getDbEnable()) {
     http_response_code(400);
     die("<html><body>The system is using the DB, not Overpass cache</body></html>");
 }

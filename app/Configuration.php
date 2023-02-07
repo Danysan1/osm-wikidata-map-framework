@@ -21,5 +21,9 @@ interface Configuration
 
 	public function getBool(string $key): bool;
 
-	function getMetaTag(string $key, ?bool $optional = false) : string;
+	public function getMetaTag(string $key, ?bool $optional = false): string;
+
+	public function getDbEnable(): bool;
+
+	public function getDbDatabase(): string;
 }

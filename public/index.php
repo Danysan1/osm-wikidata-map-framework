@@ -15,7 +15,7 @@ if (!$conf->has("mapbox_token")) {
 }
 
 $lastUpdateString = '';
-$enableDB = $conf->getBool("db_enable");
+$enableDB = $conf->getDbEnable();
 if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
