@@ -1,51 +1,67 @@
 import { debugLog } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 
+/**
+ * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
+ */
+const enum DatePrecision {
+    second = 14,
+    minute = 13,
+    hour = 12,
+    day = 11,
+    month = 10,
+    year = 9,
+    decade = 8,
+    century = 7,
+    millennium = 6,
+    hundred_thousand_years = 4,
+    million_years = 3,
+    billion_years = 0,
+}
+
 interface Etymology {
-    birth_date: string | null;
-    birth_date_precision: number | null;
-    birth_place: string | null;
-    citizenship: string | null;
-    commons: string | null;
-    death_date: string | null;
-    death_date_precision: number | null;
-    death_place: string | null;
-    description: string | null;
-    end_date: string | null;
-    end_date_precision: number | null;
-    et_id: number | null;
-    event_date: string | null;
-    event_date_precision: number | null;
-    event_place: string | null;
-    from_osm: boolean | null;
-    from_osm_id: number | null;
-    from_osm_type: string | null;
-    from_parts_of_wikidata_cod: string | null;
-    from_wikidata: boolean | null;
-    from_wikidata_cod: string | null;
-    from_wikidata_prop: string | null;
-    gender: string | null;
-    name: string | null;
-    occupations: string | null;
-    pictures: ImageResponse[] | null;
-    prizes: string | null;
-    propagated: boolean | null;
-    recursion_depth: number | null;
-    start_date: string | null;
-    start_date_precision: number | null;
-    wd_id: string | null;
-    wikidata: string | null;
-    wikipedia: string | null;
-    wkt_coords: string | null;
+    birth_date?: string;
+    birth_date_precision?: DatePrecision;
+    birth_place?: string;
+    citizenship?: string;
+    commons?: string;
+    death_date?: string;
+    death_date_precision?: DatePrecision;
+    death_place?: string;
+    description?: string;
+    end_date?: string;
+    end_date_precision?: DatePrecision;
+    et_id?: number;
+    event_date?: string;
+    event_date_precision?: DatePrecision;
+    event_place?: string;
+    from_osm?: boolean;
+    from_osm_id?: number;
+    from_osm_type?: string;
+    from_parts_of_wikidata_cod?: string;
+    from_wikidata?: boolean;
+    from_wikidata_cod?: string;
+    from_wikidata_prop?: string;
+    gender?: string;
+    name?: string;
+    occupations?: string;
+    pictures?: ImageResponse[];
+    prizes?: string;
+    propagated?: boolean;
+    recursion_depth?: number;
+    start_date?: string;
+    start_date_precision?: DatePrecision;
+    wd_id?: string;
+    wikidata?: string;
+    wikipedia?: string;
+    wkt_coords?: string;
 }
 
 /**
- * 
- * @param {number} precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
  */
-function formatDate(date: string | Date, precision: number | null): string {
+function formatDate(date: Date | string | number, precision?: DatePrecision): string {
     let dateObject: Date;
     const options: Intl.DateTimeFormatOptions = {};
 
@@ -54,16 +70,17 @@ function formatDate(date: string | Date, precision: number | null): string {
     else if (typeof date === 'string')
         dateObject = new Date(date);
     else if (typeof date === 'number')
-        dateObject = new Date(date * 1000); // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
+        // Convert the epoch timestamp to a Date: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
+        dateObject = new Date(date * 1000);
     else
         throw new Error("Invalid date parameter");
 
     if (precision) {
-        if (precision >= 14) options.second = 'numeric';
-        if (precision >= 13) options.minute = 'numeric';
-        if (precision >= 12) options.hour = 'numeric';
-        if (precision >= 11) options.day = 'numeric';
-        if (precision >= 10) options.month = 'numeric';
+        if (precision >= DatePrecision.second) options.second = 'numeric';
+        if (precision >= DatePrecision.minute) options.minute = 'numeric';
+        if (precision >= DatePrecision.hour) options.hour = 'numeric';
+        if (precision >= DatePrecision.day) options.day = 'numeric';
+        if (precision >= DatePrecision.month) options.month = 'numeric';
         options.year = 'numeric';
     }
 

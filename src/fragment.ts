@@ -17,8 +17,6 @@ interface FragmentParams {
 
 /**
  * Gets the parameters passed through the fragment
- * 
- * @returns {FragmentParams} Parameters passed through the fragment
  */
 function getFragmentParams(): FragmentParams {
     const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
@@ -33,10 +31,9 @@ function getFragmentParams(): FragmentParams {
 }
 
 /**
+ * Update the URL fragment with the given parameters.
  * If a parameter is !== undefined it is updated in the fragment.
- * If it is === is left untouched
- * 
- * @returns {string} The fragment actually set
+ * If it is === undefined it is left untouched.
  */
 function setFragmentParams(lon: number | undefined, lat: number | undefined, zoom: number | undefined, colorScheme: string | undefined): string {
     const currentParams = getFragmentParams(),

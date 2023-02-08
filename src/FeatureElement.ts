@@ -5,20 +5,20 @@ import { Etymology, etymologyToDomElement } from "./EtymologyElement";
 import { debugLog } from "./config";
 
 interface FeatureProperties {
-    alt_name: string | null;
-    commons: string | null;
+    alt_name?: string;
+    commons?: string;
     el_id: number;
-    etymologies: string;
-    gender_color: string | null;
-    name: string | null;
+    etymologies: Etymology[] | string; // Even though it is received as an array, for some reason Mapbox GL JS stringifies it as JSON
+    gender_color?: string;
+    name?: string;
     osm_id: number;
     osm_type: string;
-    source_color: string | null;
-    text_etymology: string | null;
-    text_etymology_descr: string | null;
-    type_color: string | null;
-    wikidata: string | null;
-    wikipedia: string | null;
+    source_color?: string;
+    text_etymology?: string;
+    text_etymology_descr?: string;
+    type_color?: string;
+    wikidata?: string;
+    wikipedia?: string;
 }
 
 export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
@@ -27,7 +27,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
         throw new Error("Missing etymology template");
 
     const properties = feature.properties as FeatureProperties,
-        etymologies = JSON.parse(properties?.etymologies) as Etymology[],
+        etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as Etymology[] : properties?.etymologies,
         detail_container = detail_template.content.cloneNode(true) as HTMLElement,
         osm_full_id = properties.osm_type + '/' + properties.osm_id;
     //detail_container.dataset.el_id = properties.el_id?.toString();
@@ -50,7 +50,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
         element_alt_name.innerText = '("' + properties.alt_name + '")';
     }
 
-    const wikidata: string | null = properties.wikidata,
+    const wikidata = properties.wikidata,
         element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
     if (!element_wikidata_button) {
         console.warn("Missing element_wikidata_button");

@@ -470,10 +470,10 @@ export class EtymologyMap extends Map {
      * - a layer to show the count labels on top of the clusters
      * - a layer for single points
      * 
-     * @param {string} prefix the prefix for the name of each layer
-     * @param {*?} clusterProperties GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option.
-     * @param {string?} countFieldName Selects the property to be used as count
-     * @param {string?} countShowFieldName Selects the property to be shown as count
+     * @param prefix The prefix for the name of each layer
+     * @param clusterProperties GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option.
+     * @param countFieldName The name of the field to be used as count
+     * @param countShowFieldName The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version)
      * 
      * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
      * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
@@ -617,7 +617,7 @@ export class EtymologyMap extends Map {
     /**
      * Callback for getClusterExpansionZoom which eases the map to the cluster center at the calculated zoom
 
-    * @param {number} defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
+    * @param defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
     * 
     * @see https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#getclusterexpansionzoom
     * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto

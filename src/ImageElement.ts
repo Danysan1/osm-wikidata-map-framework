@@ -2,7 +2,7 @@ import { debugLog } from "./config";
 
 interface DetailedImage {
     picture: string,
-    attribution: string | null,
+    attribution?: string,
 }
 
 type ImageResponse = string | DetailedImage;

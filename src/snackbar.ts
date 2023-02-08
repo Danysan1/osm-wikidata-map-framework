@@ -3,9 +3,9 @@ import { debugLog } from "./config";
 /**
  * Show an error/info snackbar
  * 
- * @param {string} message The message to show
- * @param {string} color The color of the snackbar
- * @param {number} timeout The timeout in milliseconds
+ * @param message The message to show
+ * @param color The color of the snackbar
+ * @param timeout The timeout in milliseconds
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
 function showSnackbar(message: string, color = "lightcoral", timeout = 3000) {

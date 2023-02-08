@@ -3,8 +3,6 @@ import { IControl, Map, Popup } from 'mapbox-gl';
 
 /**
  * Opens the information intro window
- * 
- * @param {Map} map 
  */
 function openInfoWindow(map: Map) {
     const popupPosition = map.unproject([0, 0]),

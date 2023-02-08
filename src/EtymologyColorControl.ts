@@ -164,7 +164,7 @@ class EtymologyColorControl implements IControl {
     }
 
     /**
-     * @returns {string} The current color scheme
+     * Get the currently selected color scheme
      */
     getColorScheme(): string {
         if (this._ctrlDropDown == null)
@@ -367,10 +367,7 @@ class EtymologyColorControl implements IControl {
     }
 }
 
-/**
- * @return {ColorScheme}
- */
-function getCurrentColorScheme() {
+function getCurrentColorScheme(): ColorScheme {
     const colorSchemeId = getCorrectFragmentParams().colorScheme;
     let colorScheme = colorSchemes.find(scheme => scheme.id == colorSchemeId);
     if (!colorScheme) {
