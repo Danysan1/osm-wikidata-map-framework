@@ -18,6 +18,7 @@
         "email": "danysan95@gmail.com"
     }],
     "require-dev": {
-        "vimeo/psalm": "^5.6"
+        "vimeo/psalm": "^5.6",
+        "vlucas/phpdotenv": "^5.5"
     }
 }

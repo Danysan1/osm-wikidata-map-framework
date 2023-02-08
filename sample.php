@@ -1,13 +1,22 @@
 <?php
+require_once("./vendor/autoload.php");
+
 function getOverpassEndpoint(): string
 {
     try {
+        $dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+        $dotenv->load();
+
+        $rawEndpoints = $_ENV["overpass_endpoints"];
+        if (empty($rawEndpoints))
+            throw new Exception("Empty overpass_endpoints");
         /**
          * @var array<string>
          */
-        $possibleEndpoints = (array)json_decode((string)(getenv("overpass_endpoints")));
-        return $possibleEndpoints[array_rand($possibleEndpoints)];
+        $endpoints = json_decode((string)$rawEndpoints);
+        return is_array($endpoints) ? $endpoints[array_rand($endpoints)] : $endpoints;
     } catch (Exception $e) {
+        echo "Non fatal error: " . $e . PHP_EOL;
         return 'https://overpass-api.de/api/interpreter';
     }
 }
@@ -67,8 +76,9 @@ switch (strtolower($inputString)) {
         */
         $baseURL = getOverpassEndpoint() . "?data=";
         $folder = "overpassql";
-        $inputExtension = "overpass";
+        $inputExtension = "overpassql";
         $outputExtension = "json";
+        break;
 
     case "overpassxml":
     case "opx":
@@ -80,6 +90,7 @@ switch (strtolower($inputString)) {
         $folder = "overpassxml";
         $inputExtension = "xml";
         $outputExtension = "json";
+        break;
 
     default:
         echo "Please provide a VALID string as the first argument." . PHP_EOL;
