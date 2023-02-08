@@ -17,17 +17,27 @@ abstract class BaseConfiguration implements Configuration
         return true;
     }
 
-    function getMetaTag(string $key, ?bool $optional = false): string
+    private static function lowLevelMetaTag(string $key, string $value): string
+    {
+        return '<meta name="config_' . htmlspecialchars($key) . '" content="' . htmlspecialchars($value) . '" />';
+    }
+
+    public function getMetaTag(string $key, ?bool $optional = false): string
     {
         if ($optional && !$this->has($key))
             return "";
         else
-            return '<meta name="config_' . $key . '" content="' . htmlspecialchars((string)$this->get($key)) . '" />';
+            return self::lowLevelMetaTag($key, $this->get($key));
     }
 
     public function getDbEnable(): bool
     {
         return $this->getBool("db_enable");
+    }
+
+    public function getDbEnableMetaTag(): string
+    {
+        return self::lowLevelMetaTag("db_enable", json_encode($this->getDbEnable()));
     }
 
     public function getDbDatabase(): string

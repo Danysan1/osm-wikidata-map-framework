@@ -45,8 +45,10 @@ $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $enableDB = $conf->getDbEnable();
 
-if ($enableDB)
+if ($enableDB && $source != "overpass")
     $db = new PostGIS_PDO($conf);
+else
+    $db = null;
 
 // "en-US" => "en"
 $langMatches = [];
@@ -60,7 +62,7 @@ $safeLanguage = $langMatches[1];
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
-if (!empty($db) && $db instanceof PDO) {
+if ($db != null) {
     if ($to == "genderStats") {
         $query = new BBoxGenderStatsPostGISQuery(
             $bbox,
@@ -98,10 +100,12 @@ if (!empty($db) && $db instanceof PDO) {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+    } elseif ($to == "sourceStats") {
+        throw new Exception("Not yet implemented");
     } else {
         throw new Exception("Bad 'to' parameter");
     }
-    
+
     $baseQuery = new BBoxStatsOverpassWikidataQuery(
         $bbox,
         $overpassConfig,

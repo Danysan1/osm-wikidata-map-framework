@@ -11,7 +11,7 @@ export interface SourceItem {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
  **/
 export class SourceControl extends DropdownControl {
-    constructor(sources: SourceItem[], onSourceChange: (sourceID: string) => void, startLayerId: string) {
+    constructor(sources: SourceItem[], onSourceChange: (sourceID: string) => void, startSourceID: string) {
         const dropdownItems: DropdownItem[] = sources.map(source => ({
             id: source.id,
             text: source.text,
@@ -20,7 +20,7 @@ export class SourceControl extends DropdownControl {
         super(
             '⚙️',
             dropdownItems,
-            startLayerId,
+            startSourceID,
             'Choose source'
         );
     }

@@ -41,7 +41,7 @@ $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : nu
 $fetchAttribution = $conf->getBool("fetch_attribution");
 
 $enableDB = $conf->getDbEnable();
-if ($enableDB) {
+if ($enableDB && $source != "overpass") {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {

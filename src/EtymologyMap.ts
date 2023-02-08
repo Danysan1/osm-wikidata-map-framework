@@ -730,16 +730,25 @@ export class EtymologyMap extends Map {
         this.addControl(new FullscreenControl(), 'top-right');
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
-        const sourceItems: SourceItem[] = [
-            { id: "all", text: "All sources" },
-            { id: "etymology", text: "name:etymology:wikidata" },
-            { id: "subject", text: "subject:wikidata" },
-            { id: "buried", text: "buried:wikidata" },
-            { id: "wikidata", text: "wikidata + P138/P547/P825" },
-            { id: "propagated", text: "Propagated" },
-        ];
-        this.currentSourceControl = new SourceControl(sourceItems, this.updateDataSource.bind(this), "all");
-        this.addControl(this.currentSourceControl);
+        const sourceItems: SourceItem[] = [{ id: "overpass", text: "OSM (real time via Overpass API)" }];
+        let defaultSource = "overpass";
+        if (getConfig("db_enable") === "true") {
+            sourceItems.push(
+                { id: "etymology", text: "OSM name:etymology:wikidata (from DB)" },
+                { id: "subject", text: "OSM subject:wikidata (from DB)" },
+                { id: "buried", text: "OSM buried:wikidata (from DB)" },
+                { id: "wikidata", text: "OSM + Wikidata P138/P547/P825 (from DB)" },
+                { id: "propagated", text: "Propagated (from DB)" },
+                { id: "all", text: "All sources from DB" },
+            );
+            defaultSource = "all";
+        }
+        this.currentSourceControl = new SourceControl(
+            sourceItems,
+            this.updateDataSource.bind(this),
+            defaultSource
+        );
+        this.addControl(this.currentSourceControl, 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
 
