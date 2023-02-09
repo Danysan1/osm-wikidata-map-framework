@@ -71,7 +71,7 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
         p.zoom = default_zoom;
     }
 
-    if (p.colorScheme === undefined || p.colorScheme === 'undefined') {
+    if (!p.colorScheme || p.colorScheme === 'null' || p.colorScheme === 'undefined') {
         debugLog("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
         p.colorScheme = defaultColorScheme;
     }

@@ -186,6 +186,7 @@ export class EtymologyMap extends Map {
         });
 
         if (enableWikidataLayers) {
+            showLoadingSpinner(true);
             const queryParams = {
                 from: "bbox",
                 minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
@@ -203,6 +204,7 @@ export class EtymologyMap extends Map {
         } else if (enableGlobalLayers) {
             this.prepareGlobalLayers(minZoomLevel);
         } else if (enableElementLayers) {
+            showLoadingSpinner(true);
             const queryParams = {
                 from: "bbox",
                 onlyCenter: "1",
@@ -247,8 +249,6 @@ export class EtymologyMap extends Map {
             wikidata_layer_lineString = 'wikidata_layer_lineString',
             wikidata_layer_polygon_border = 'wikidata_layer_polygon_border',
             wikidata_layer_polygon_fill = 'wikidata_layer_polygon_fill';
-
-        showLoadingSpinner(true);
 
         this.addGeoJSONSource(
             wikidata_source,
@@ -327,6 +327,36 @@ export class EtymologyMap extends Map {
             this.initWikidataLayer(wikidata_layer_polygon_fill);
         }
 
+        this.initSourceControl();
+        this.initEtymologyColorControl();
+    }
+
+    initSourceControl() {
+        if (!this.currentSourceControl) {
+            const sourceItems: SourceItem[] = [{ id: "overpass", text: "OSM (real time via Overpass API)" }];
+            let defaultSource = "overpass";
+            if (getConfig("db_enable") === "true") {
+                sourceItems.push(
+                    { id: "etymology", text: "OSM name:etymology:wikidata (from DB)" },
+                    { id: "subject", text: "OSM subject:wikidata (from DB)" },
+                    { id: "buried", text: "OSM buried:wikidata (from DB)" },
+                    { id: "wikidata", text: "OSM + Wikidata P138/P547/P825 (from DB)" },
+                    { id: "propagated", text: "Propagated (from DB)" },
+                    { id: "all", text: "All sources from DB" },
+                );
+                defaultSource = "all";
+            }
+            const sourceControl = new SourceControl(
+                sourceItems,
+                this.updateDataSource.bind(this),
+                defaultSource
+            );
+            this.currentSourceControl = sourceControl;
+            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+        }
+    }
+
+    initEtymologyColorControl() {
         if (!this.currentEtymologyColorControl) {
             const colorControl = new EtymologyColorControl(getCorrectFragmentParams().colorScheme);
             this.currentEtymologyColorControl = colorControl;
@@ -441,6 +471,8 @@ export class EtymologyMap extends Map {
             minZoom,
             maxZoom
         );
+
+        this.initSourceControl();
     }
 
     addGeoJSONSource(id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
@@ -729,26 +761,6 @@ export class EtymologyMap extends Map {
         }), 'bottom-left');
         this.addControl(new FullscreenControl(), 'top-right');
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
-
-        const sourceItems: SourceItem[] = [{ id: "overpass", text: "OSM (real time via Overpass API)" }];
-        let defaultSource = "overpass";
-        if (getConfig("db_enable") === "true") {
-            sourceItems.push(
-                { id: "etymology", text: "OSM name:etymology:wikidata (from DB)" },
-                { id: "subject", text: "OSM subject:wikidata (from DB)" },
-                { id: "buried", text: "OSM buried:wikidata (from DB)" },
-                { id: "wikidata", text: "OSM + Wikidata P138/P547/P825 (from DB)" },
-                { id: "propagated", text: "Propagated (from DB)" },
-                { id: "all", text: "All sources from DB" },
-            );
-            defaultSource = "all";
-        }
-        this.currentSourceControl = new SourceControl(
-            sourceItems,
-            this.updateDataSource.bind(this),
-            defaultSource
-        );
-        this.addControl(this.currentSourceControl, 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
 
