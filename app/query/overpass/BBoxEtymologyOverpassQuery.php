@@ -11,6 +11,7 @@ require_once(__DIR__ . "/../../result/QueryResult.php");
 require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\BoundingBox;
+use App\Query\BaseQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\BBoxGeoJSONQuery;
@@ -22,22 +23,25 @@ use \App\Result\GeoJSONQueryResult;
 /**
  * OverpassQL query that retrieves all the details of any item in a bounding box which has an etymology.
  */
-class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSONQuery
+class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
 {
-    /**
-     * @param BoundingBox $bbox
-     * @param OverpassConfig $config
-     */
-    public function __construct($bbox, $config)
+    private BBoxOverpassQuery $baseQuery;
+
+    public function __construct(BoundingBox $bbox, OverpassConfig $config)
     {
         $maxElements = $config->getMaxElements();
-        $limitClause = $maxElements===null ? ' ' : " $maxElements";
-        parent::__construct(
+        $limitClause = $maxElements === null ? ' ' : " $maxElements";
+        $this->baseQuery = new BBoxOverpassQuery(
             ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'],
             $bbox,
             "out body $limitClause; >; out skel qt;",
             $config
         );
+    }
+
+    public function send(): QueryResult
+    {
+        return $this->sendAndGetGeoJSONResult();
     }
 
     public function sendAndGetJSONResult(): JSONQueryResult
@@ -47,7 +51,17 @@ class BBoxEtymologyOverpassQuery extends BBoxOverpassQuery implements BBoxGeoJSO
 
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
-        $res = $this->sendAndRequireResult();
+        $res = $this->baseQuery->sendAndRequireResult();
         return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
+    }
+
+    public function getBBox(): BoundingBox
+    {
+        return $this->baseQuery->getBBox();
+    }
+
+    public function getQuery(): string
+    {
+        return $this->baseQuery->getQuery();
     }
 }

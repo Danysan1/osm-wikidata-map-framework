@@ -32,6 +32,7 @@ class XMLWikidataStatsQueryResult extends XMLWikidataQueryResult
             "id" => "wd:uri",
             //"count" => "xsd:integer",
             "count" => "wd:literal",
+            "color" => "wd:literal",
         ];
     }
 

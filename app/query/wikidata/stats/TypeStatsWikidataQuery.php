@@ -22,7 +22,7 @@ class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
     public function createQuery(string $wikidataIDList, string $language): string
     {
         return
-            "SELECT ?name ?id (COUNT(*) AS ?count)
+            "SELECT ?name ?id (COUNT(*) AS ?count) ('#223b53' AS ?color)
             WHERE {
                 VALUES ?wikidata { $wikidataIDList }
             

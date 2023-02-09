@@ -2,24 +2,18 @@
 
 namespace App\Result\Overpass;
 
-require_once(__DIR__ . "/OverpassQueryResult.php");
+require_once(__DIR__ . "/GeoJSONOverpassQueryResult.php");
 
-use \App\Result\Overpass\OverpassQueryResult;
+use \App\Result\Overpass\GeoJSONOverpassQueryResult;
 
 /**
  * Result of an Overpass query which gathers only ids and centroids.
  * 
  * @see BBoxEtymologyCenterOverpassQuery
  */
-class OverpassCenterQueryResult extends OverpassQueryResult
+class OverpassCenterQueryResult extends GeoJSONOverpassQueryResult
 {
-    /**
-     * @param int $index
-     * @param array $element
-     * @param array $allElements
-     * @return array|false
-     */
-    protected function convertElementToGeoJSONFeature($index, $element, $allElements)
+    protected function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false
     {
         $feature = [
             "type" => "Feature",

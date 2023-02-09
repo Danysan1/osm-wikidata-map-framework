@@ -16,6 +16,7 @@ require_once(__DIR__ . "/../app/query/wikidata/stats/TypeStatsWikidataFactory.ph
 require_once(__DIR__ . "/../app/query/caching/CSVCachedBBoxJSONQuery.php");
 require_once(__DIR__ . "/../app/query/combined/BBoxStatsOverpassWikidataQuery.php");
 require_once(__DIR__ . "/../app/query/overpass/RoundRobinOverpassConfig.php");
+require_once(__DIR__ . "/../app/query/overpass/stats/BBoxSourceStatsOverpassQuery.php");
 require_once(__DIR__ . "/funcs.php");
 $serverTiming->add("0_include");
 
@@ -30,6 +31,7 @@ use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
 use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\Query\Overpass\Stats\BBoxSourceStatsOverpassQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -98,20 +100,16 @@ if ($db != null) {
 } else {
     if ($to == "genderStats") {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($bbox, $overpassConfig, $wikidataFactory, $serverTiming);
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($bbox, $overpassConfig, $wikidataFactory, $serverTiming);
     } elseif ($to == "sourceStats") {
-        throw new Exception("Not yet implemented");
+        $baseQuery = new BBoxSourceStatsOverpassQuery($bbox, $overpassConfig, $serverTiming);
     } else {
         throw new Exception("Bad 'to' parameter");
     }
 
-    $baseQuery = new BBoxStatsOverpassWikidataQuery(
-        $bbox,
-        $overpassConfig,
-        $wikidataFactory,
-        $serverTiming
-    );
     $query = new CSVCachedBBoxJSONQuery(
         $baseQuery,
         $cacheFileBasePath . $safeLanguage . "_",

@@ -2,24 +2,18 @@
 
 namespace App\Result\Overpass;
 
-require_once(__DIR__ . "/OverpassQueryResult.php");
+require_once(__DIR__ . "/GeoJSONOverpassQueryResult.php");
 
-use \App\Result\Overpass\OverpassQueryResult;
+use \App\Result\Overpass\GeoJSONOverpassQueryResult;
 
 /**
  * Result of an Overpass query which can return multiple types of objects and etymology IDs must be separated.
  */
-class OverpassEtymologyQueryResult extends OverpassQueryResult
+class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 {
     const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
 
-    /**
-     * @param int $index
-     * @param array $element
-     * @param array $allElements
-     * @return array|false
-     */
-    protected function convertElementToGeoJSONFeature($index, $element, $allElements)
+    protected function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false
     {
         if (empty($element["tags"]) || !is_array($element["tags"])) {
             return false;
@@ -50,7 +44,7 @@ class OverpassEtymologyQueryResult extends OverpassQueryResult
         $feature = [
             "type" => "Feature",
             "geometry" => [],
-            "properties" => ["name" => $elementName, "osm_type" => $element["type"], "osm_id" => $element["id"]],
+            "properties" => ["name" => $elementName, "osm_type" => $element["type"], "osm_id" => $element["id"], "source_color" => "#33ff66"],
         ];
 
         if (!empty($element["tags"]["wikipedia"])) {

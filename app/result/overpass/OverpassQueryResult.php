@@ -3,23 +3,20 @@
 namespace App\Result\Overpass;
 
 require_once(__DIR__ . "/../LocalQueryResult.php");
-require_once(__DIR__ . "/../GeoJSONQueryResult.php");
+require_once(__DIR__ . "/../JSONQueryResult.php");
 
 use \App\Result\LocalQueryResult;
-use \App\Result\GeoJSONQueryResult;
+use \App\Result\JSONQueryResult;
+use App\Result\QueryResult;
 use Exception;
 use InvalidArgumentException;
 
 /**
- * Result of an Overpass query, convertible to GeoJSON data.
+ * Result of an Overpass query
  */
-abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQueryResult
+class OverpassQueryResult extends LocalQueryResult implements JSONQueryResult
 {
-    /**
-     * @param bool $success
-     * @param array|null $result
-     */
-    public function __construct($success, $result)
+    public function __construct(bool $success, ?array $result)
     {
         if ($success && !is_array($result)) {
             error_log("OverpassQueryResult::__construct: " . json_encode($result));
@@ -29,58 +26,29 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
     }
 
     /**
-     * @param int $index
-     * @param array $element
-     * @param array $allElements
-     * @return array|false
+     * @return array<array>
      */
-    protected abstract function convertElementToGeoJSONFeature($index, $element, $allElements);
-
-    /**
-     * @return array{type:string}
-     *
-     * https://gis.stackexchange.com/questions/115733/converting-json-to-geojson-or-csv/115736#115736
-     */
-    public function getGeoJSONData(): array
+    public function getElements(): array
     {
         $data = $this->getJSONData();
         if (!isset($data["elements"])) {
             error_log("OverpassQueryResult: " . json_encode($data));
-            throw new \Exception("Missing element section in Overpass response");
+            throw new Exception("Missing element section in Overpass response");
         }
         if (!is_array($data["elements"])) {
             error_log("OverpassQueryResult: " . json_encode($data));
-            throw new \Exception("Element section in Overpass response is not an array");
+            throw new Exception("Element section in Overpass response is not an array");
         }
         if (empty($data["elements"])) {
             error_log("OverpassQueryResult: No elements found in Overpass response:" . PHP_EOL . json_encode($data));
         }
-        //$totalElements = count($data["elements"]);
-
-        $geojson = ["type" => "FeatureCollection", "features" => []];
-
-        /**
-         * @psalm-suppress MixedAssignment
-         */
-        foreach ($data["elements"] as $index => $row) {
-            if (!is_int($index)) {
-                error_log("OverpassQueryResult::getGeoJSONData: malformed array key");
-            } elseif (!is_array($row)) {
-                error_log("OverpassQueryResult::getGeoJSONData: malformed array value");
-            } else {
-                $feature = $this->convertElementToGeoJSONFeature($index, $row, $data["elements"]);
-                if (!empty($feature)) {
-                    $geojson["features"][] = $feature;
-                }
+        foreach ($data["elements"] as $row) {
+            if (!is_array($row)) {
+                error_log("OverpassQueryResult: " . json_encode($data));
+                throw new Exception("Element section in Overpass response contains a bad element");
             }
         }
-        if (empty($geojson["features"])) { // debug
-            error_log(get_class($this) . ": GeoJSON with no features");
-            //error_log(get_class($this) . ": " . json_encode($geojson));
-            //error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
-        }
-
-        return $geojson;
+        return $data["elements"];
     }
 
     public function getJSONData(): array
@@ -98,17 +66,8 @@ abstract class OverpassQueryResult extends LocalQueryResult implements GeoJSONQu
         return $this->getJSONData();
     }
 
-    /**
-     * @return string
-     */
-    public function getGeoJSON(): string
-    {
-        return json_encode($this->getGeoJSONData());
-    }
-
     public function getJSON(): string
     {
-        error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
         return json_encode($this->getJSONData());
     }
 }
