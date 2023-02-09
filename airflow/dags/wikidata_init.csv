@@ -47,6 +47,7 @@ Q906512,shipwrecking,,,Events,#ff3333
 Q645883,military operation,,,Events,#ff3333
 Q83267,crime,,,Events,#ff3333
 Q1214249,plebiscite,,,Events,#ff3333
+Q744913,aviation accident,,,Events,#ff3333
 Q16560,palace,,,Buildings,#ffdd33
 Q41176,building,,,Buildings,#ffdd33
 Q23413,castle,,,Buildings,#ffdd33
@@ -275,6 +276,7 @@ Q188509,suburb,,,Human settlements,#7733ff
 Q200250,metropolis,,,Human settlements,#7733ff
 Q2074737,municipality of Spain,,,Human settlements,#7733ff
 Q5153359,municipality of the Czech Republic,,,Human settlements,#7733ff
+Q133442,city-state,,,Human settlements,#7733ff
 Q43229,organization,,,Organization,#ff33dd
 Q4830453,business,,,Organization,#ff33dd
 Q6881511,enterprise,,,Organization,#ff33dd
