@@ -25,16 +25,9 @@ use App\Result\JSONQueryResult;
  */
 class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
 {
-    /**
-     * @var BBoxOverpassQuery $baseQuery
-     */
-    private $baseQuery;
+    private BBoxOverpassQuery $baseQuery;
 
-    /**
-     * @param BoundingBox $bbox
-     * @param OverpassConfig $config
-     */
-    public function __construct($bbox, $config)
+    public function __construct(BoundingBox $bbox, OverpassConfig $config)
     {
         $this->baseQuery = new BBoxOverpassQuery(
             ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'],
@@ -56,7 +49,7 @@ class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQ
 
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
-        $res = $this->baseQuery->send();
+        $res = $this->baseQuery->sendAndRequireResult();
         return new OverpassCenterQueryResult($res->isSuccessful(), $res->getArray());
     }
 
