@@ -11,12 +11,14 @@ import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { getCorrectFragmentParams } from './fragment';
 import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
-import { debugLog, getConfig } from './config';
+import { debugLog, getConfig, setPageLocale } from './config';
 import './style.css';
 
 initSentry();
 initGoogleAnalytics();
 initMatomo();
+
+setPageLocale();
 
 const maptiler_key = getConfig("maptiler_key"),
     mapbox_token = getConfig("mapbox_token"),

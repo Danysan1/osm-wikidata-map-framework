@@ -26,30 +26,10 @@ if ($enableDB) {
     }
 }
 
-$langMatches = [];
-if (
-    !empty($_REQUEST['lang'])
-    && is_string($_REQUEST['lang'])
-    && preg_match(ISO_LANGUAGE_PATTERN, $_REQUEST['lang'])
-) {
-    $defaultCulture = $_REQUEST['lang'];
-} elseif (
-    !empty($_SERVER['HTTP_ACCEPT_LANGUAGE'])
-    && is_string($_SERVER['HTTP_ACCEPT_LANGUAGE'])
-    && preg_match("/(\w+)(-\w+)?/", $_SERVER['HTTP_ACCEPT_LANGUAGE'], $langMatches)
-    && isset($langMatches[0])
-) {
-    $defaultCulture = $langMatches[0];
-} elseif ($conf->has('default_language')) {
-    $defaultCulture = (string)$conf->get('default_language');
-} else {
-    $defaultCulture = "en-US";
-}
-
 ?>
 
 <!DOCTYPE html>
-<html lang="<?= $defaultCulture; ?>">
+<html>
 
 <head>
     <meta charset="UTF-8">
@@ -71,7 +51,6 @@ if (
     <meta property="og:title" content="Open Etymology Map" />
     <meta property="og:site_name" content="Open Etymology Map" />
     <meta property="og:description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
-    <meta property="og:locale" content="<?= $defaultCulture; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">

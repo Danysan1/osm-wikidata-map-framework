@@ -12,3 +12,14 @@ export function debugLog(msg: string, extra?: object) {
 
     if (enable_debug_log) console.info(msg, extra);
 }
+
+export function setPageLocale() {
+    const langParam = new URLSearchParams(document.location.search).get("lang"),
+        locale = langParam || navigator.languages?.find(x => x.includes("-")) || navigator.language || 'en-US';
+
+    debugLog("setPageLocale", {
+        langParam, lang: navigator.language, langs: navigator.languages, locale
+    });
+
+    document.documentElement.setAttribute("lang", locale);
+}
