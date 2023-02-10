@@ -5,7 +5,7 @@ import { debugLog } from './config';
 export interface DropdownItem {
     id: string;
     text: string;
-    onSelect: () => void;
+    onSelect: (event: Event) => void;
 }
 
 /**
@@ -22,12 +22,20 @@ export class DropdownControl implements IControl {
     private _map?: Map;
     private _container?: HTMLDivElement;
     private _ctrlDropDown?: HTMLSelectElement;
+    private _leftButton: boolean;
 
-    constructor(buttonContent: string, dropdownItems: DropdownItem[], startDropdownItemsId?: string, title?: string) {
+    constructor(
+        buttonContent: string,
+        dropdownItems: DropdownItem[],
+        startDropdownItemsId?: string,
+        title?: string,
+        leftButton = false
+    ) {
         this._title = title;
         this._buttonContent = buttonContent;
         this._dropdownItems = dropdownItems;
         this._startDropdownItemId = startDropdownItemsId;
+        this._leftButton = leftButton;
     }
 
     onAdd(map: Map): HTMLElement {
@@ -42,10 +50,10 @@ export class DropdownControl implements IControl {
         const tr = document.createElement('tr');
         table.appendChild(tr);
 
-        const td1 = document.createElement('td'),
-            td2 = document.createElement('td');
-        tr.appendChild(td1);
-        tr.appendChild(td2);
+        const btnCell = document.createElement('td'),
+            dropdownCell = document.createElement('td');
+        tr.appendChild(this._leftButton ? btnCell : dropdownCell);
+        tr.appendChild(this._leftButton ? dropdownCell : btnCell);
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'dropdown-ctrl-button';
@@ -53,13 +61,15 @@ export class DropdownControl implements IControl {
         ctrlBtn.textContent = this._buttonContent;
         // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
         ctrlBtn.onclick = this.btnClickHandler.bind(this);
-        td2.appendChild(ctrlBtn);
+        btnCell.appendChild(ctrlBtn);
+        btnCell.className = 'button-cell';
 
         this._ctrlDropDown = document.createElement('select');
         this._ctrlDropDown.className = 'hiddenElement';
         if (this._title) this._ctrlDropDown.title = this._title;
         this._ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
-        td1.appendChild(this._ctrlDropDown);
+        dropdownCell.appendChild(this._ctrlDropDown);
+        dropdownCell.className = 'dropdown-cell';
 
         this._dropdownItems.forEach(item => {
             const option = document.createElement('option');
@@ -80,8 +90,8 @@ export class DropdownControl implements IControl {
     }
 
     btnClickHandler(event: MouseEvent) {
-        if (this._ctrlDropDown)
-            this._ctrlDropDown.className = 'visibleDropDown';
+        debugLog("EtymologyColorControl button click", event);
+        this.showDropdown();
     }
 
     dropDownChangeHandler(event: Event) {
@@ -92,9 +102,7 @@ export class DropdownControl implements IControl {
             dropdownItemObj = this._dropdownItems.find(item => item.id === dropdownItemId);
         debugLog("DropdownControl select", { dropdownItemObj, event });
         if (dropdownItemObj) {
-            dropdownItemObj.onSelect()
-            if (this._ctrlDropDown)
-                this._ctrlDropDown.className = 'hiddenElement';
+            dropdownItemObj.onSelect(event)
         } else {
             logErrorMessage("Invalid selected dropdown item", "error", { dropdownItemId });
         }
@@ -104,14 +112,36 @@ export class DropdownControl implements IControl {
         return this._map;
     }
 
+    protected getContainer() {
+        return this._container;
+    }
+
+    protected getDropdown() {
+        return this._ctrlDropDown;
+    }
+
     getCurrentID() {
         return this._ctrlDropDown?.value;
     }
 
-    show(show: boolean) {
-        if (show)
-            this._container?.classList?.remove("hiddenElement");
+    show(show = true) {
+        if (!this._container)
+            console.warn("Missing control container, failed showing/hiding it", { show });
+        else if (show)
+            this._container.classList?.remove("hiddenElement");
         else
-            this._container?.classList?.add("hiddenElement");
+            this._container.classList?.add("hiddenElement");
+    }
+
+    showDropdown(show = true) {
+        if (!this._ctrlDropDown) {
+            console.warn("Missing control dropdown, failed showing/hiding it", { show });
+        } else if (show) {
+            this._ctrlDropDown.classList.add("visibleDropDown");
+            this._ctrlDropDown.classList.remove("hiddenElement");
+        } else {
+            this._ctrlDropDown.classList.add("hiddenElement");
+            this._ctrlDropDown.classList.remove("visibleDropDown");
+        }
     }
 }

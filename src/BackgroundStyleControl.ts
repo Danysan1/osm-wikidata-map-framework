@@ -38,7 +38,12 @@ export class BackgroundStyleControl extends DropdownControl {
         super(
             '🌐',
             backgroundStyles.map(style => ({
-                id: style.id, text: style.text, onSelect: () => this.getMap()?.setStyle(style.styleUrl)
+                id: style.id,
+                text: style.text,
+                onSelect: () => {
+                    this.getMap()?.setStyle(style.styleUrl);
+                    this.showDropdown(false);
+                }
             })),
             startBackgroundStyleId ? startBackgroundStyleId : backgroundStyles[0]?.id,
             'Choose background style'

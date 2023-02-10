@@ -1,5 +1,5 @@
-//import { IControl, Expression, Map, MapboxEvent } from 'maplibre-gl';
-import { IControl, Expression, Map, MapboxEvent } from 'mapbox-gl';
+//import { Expression, MapboxEvent } from 'maplibre-gl';
+import { Expression, MapboxEvent } from 'mapbox-gl';
 
 // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
@@ -8,6 +8,7 @@ import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { debugLog } from './config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from './colorScheme.model';
+import { DropdownControl, DropdownItem } from './DropdownControl';
 
 export interface EtymologyStat {
     color: string;
@@ -26,142 +27,64 @@ export interface EtymologyStat {
  * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-1/
  * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-2/
  **/
-class EtymologyColorControl implements IControl {
-    private _startColorScheme: string;
+class EtymologyColorControl extends DropdownControl {
     private _chartInitInProgress: boolean;
-    private _map: Map | null;
-    private _container: HTMLDivElement | null;
-    private _ctrlDropDown: HTMLSelectElement | null;
     private _chartXHR: XMLHttpRequest | null;
     private _chartDomElement: HTMLCanvasElement | null;
     private _chartJsObject: Chart | null;
 
-    constructor(startColorScheme: string) {
-        this._startColorScheme = startColorScheme;
+    constructor(startColorScheme: ColorSchemeID) {
+        const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
+            id,
+            text: item.text,
+            onSelect: (event) => this.onColorSchemeSelect(id, event)
+        }));
+        super(
+            '🎨',
+            dropdownItems,
+            startColorScheme,
+            'Choose color scheme',
+            true
+        );
         this._chartInitInProgress = false;
-        this._map = null;
-        this._container = null;
-        this._ctrlDropDown = null;
         this._chartXHR = null;
         this._chartDomElement = null;
         this._chartJsObject = null;
-    }
-
-    showDropdown() {
-        if (this._ctrlDropDown) {
-            this._ctrlDropDown.classList.add("visibleDropDown");
-            this._ctrlDropDown.classList.remove("hiddenElement");
-        } else {
-            console.error("Missing dropdown, failed showing it");
-        }
-    }
-
-    hideDropdown() {
-        if (this._ctrlDropDown) {
-            this._ctrlDropDown.classList.add("hiddenElement");
-            this._ctrlDropDown.classList.remove("visibleDropDown");
-        } else {
-            console.error("Missing dropdown, failed hiding it");
-        }
-    }
-
-    onAdd(map: Map): HTMLElement {
-        this._map = map;
-
-        this._container = document.createElement('div');
-        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl etymology-color-ctrl';
-
-        const table = document.createElement('table');
-        this._container.appendChild(table);
-
-        const tr = document.createElement('tr');
-        table.appendChild(tr);
-
-        const td1 = document.createElement('td'),
-            td2 = document.createElement('td');
-        tr.appendChild(td1);
-        tr.appendChild(td2);
-
-        const ctrlBtn = document.createElement('button');
-        ctrlBtn.className = 'etymology-color-ctrl-button';
-        ctrlBtn.title = 'Choose color scheme';
-        ctrlBtn.textContent = '🎨';
-        // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
-        ctrlBtn.onclick = this.btnClickHandler.bind(this);
-        /*td2.appendChild(ctrlBtn);
-        td2.className = 'button-cell';*/
-        td1.appendChild(ctrlBtn);
-        td1.className = 'button-cell';
-
-        this._ctrlDropDown = document.createElement('select');
-        this._ctrlDropDown.title = 'Color scheme';
-        this._ctrlDropDown.onchange = this.dropDownClickHandler.bind(this);
-        /*td1.appendChild(this._ctrlDropDown);
-        td1.className = 'dropdown-cell';*/
-        td2.appendChild(this._ctrlDropDown);
-        td2.className = 'dropdown-cell';
-
-        Object.entries(colorSchemes).forEach(([schemeID, scheme]) => {
-            const option = document.createElement('option');
-            option.innerText = scheme.text;
-            option.value = schemeID;
-            if (schemeID == this._startColorScheme) {
-                option.selected = true;
-            }
-            this._ctrlDropDown?.appendChild(option);
-        });
-        this._ctrlDropDown.dispatchEvent(new Event("change"))
-        this.showDropdown();
-
-        //setFragmentParams(undefined, undefined, undefined, this._startColorScheme); //! Creates a bug when using geo-localization or location search
-
-        return this._container;
-    }
-
-    onRemove() {
-        this._container?.parentNode?.removeChild(this._container);
-        this._map = null;
-    }
-
-    btnClickHandler(event: MouseEvent) {
-        debugLog("EtymologyColorControl button click", event);
-        this.showDropdown();
     }
 
     /**
      * Get the currently selected color scheme
      */
     getColorScheme(): string {
-        if (this._ctrlDropDown == null)
+        const dropdown = this.getDropdown();
+        if (!dropdown)
             throw new Error("Missing color control dropdown");
-        const colorScheme = this._ctrlDropDown.value;
+        const colorScheme = dropdown.value;
         if (typeof colorScheme != 'string')
             throw new Error("Bad color control dropdown value");
         return colorScheme;
     }
 
-    setColorScheme(colorScheme: string) {
+    setColorScheme(colorScheme: ColorSchemeID) {
         debugLog("EtymologyColorControl setColorScheme", { colorScheme });
-        if (!this._ctrlDropDown || !this._ctrlDropDown.options) {
+        const dropdown = this.getDropdown();
+        if (!dropdown?.options) {
             console.warn("setColorScheme: dropdown not yet initialized");
         } else {
             Array.prototype.forEach(option => {
                 if (option.value === colorScheme) {
                     option.selected = true;
-                    this._ctrlDropDown?.dispatchEvent(new Event("change"));
+                    dropdown.dispatchEvent(new Event("change"));
                     return;
                 }
-            }, this._ctrlDropDown.options);
+            }, dropdown.options);
             console.error("EtymologyColorControl setColorScheme: invalid color scheme", { colorScheme });
         }
     }
 
-    dropDownClickHandler(event: Event) {
-        const dropDown = event.target;
-        if (!(dropDown instanceof HTMLSelectElement))
-            throw new Error("Bad event target dropdown");
-        const colorSchemeID = dropDown.value as ColorSchemeID,
-            colorSchemeObj = colorSchemes[colorSchemeID];
+    onColorSchemeSelect(colorSchemeID: string, event: Event) {
+        const colorSchemeObj = colorSchemes[colorSchemeID as ColorSchemeID],
+            map = this.getMap();
         let color: string | Expression;
 
         if (colorSchemeObj) {
@@ -178,8 +101,8 @@ class EtymologyColorControl implements IControl {
             ["wikidata_layer_polygon_fill", 'fill-color'],
             ["wikidata_layer_polygon_border", 'line-color'],
         ].forEach(([layerID, property]) => {
-            if (this._map?.getLayer(layerID)) {
-                this._map.setPaintProperty(layerID, property, color);
+            if (map?.getLayer(layerID)) {
+                map.setPaintProperty(layerID, property, color);
             } else {
                 console.warn("Layer does not exist, can't set property", { layerID, property, color });
             }
@@ -187,20 +110,20 @@ class EtymologyColorControl implements IControl {
 
         this.updateChart(event);
 
-        setFragmentParams(undefined, undefined, undefined, colorSchemeID);
+        setFragmentParams(undefined, undefined, undefined, colorSchemeID as ColorSchemeID);
         //updateDataSource(event);
     }
 
     updateChart(event: MapboxEvent | Event, source = "all") {
-        if (!this._ctrlDropDown) {
-            console.error("updateChart: dropodown not inizialized", { event });
+        const dropdown = this.getDropdown();
+        if (!dropdown) {
+            console.error("updateChart: dropdown not inizialized", { event });
             return;
         } else {
-            const dropdown = this._ctrlDropDown,
-                colorSchemeID = dropdown.value as ColorSchemeID,
+            const colorSchemeID = dropdown.value as ColorSchemeID,
                 colorScheme = colorSchemes[colorSchemeID],
-                bounds = this._map?.getBounds();
-            debugLog("updateChart", { event, colorScheme });
+                bounds = this.getMap()?.getBounds();
+            debugLog("updateChart", { event, colorSchemeID, colorScheme });
 
             if (!bounds) {
                 console.error("updateChart: missing bounds", { event });
@@ -260,10 +183,12 @@ class EtymologyColorControl implements IControl {
                 xhr.open('GET', stats_url, true);
                 xhr.send();
                 this._chartXHR = xhr;
+
+                this.showDropdown();
             } else {
                 debugLog("updateChart main: no colorScheme, removing", { event, colorScheme });
                 if (event.type && event.type == 'change')
-                    this.hideDropdown();
+                    this.showDropdown(false);
                 this.removeChart();
             }
         }
@@ -275,7 +200,6 @@ class EtymologyColorControl implements IControl {
      */
     setChartData(data: ChartData<"pie">) {
         debugLog("setChartData", {
-            container: this._container,
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
@@ -299,8 +223,9 @@ class EtymologyColorControl implements IControl {
     initChart(data: ChartData<"pie">) {
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
-        if (this._container)
-            this._container.appendChild(this._chartDomElement);
+        const container = this.getContainer();
+        if (container)
+            container.appendChild(this._chartDomElement);
         else
             throw new Error("Missing container");
         const ctx = this._chartDomElement.getContext('2d');
@@ -323,20 +248,13 @@ class EtymologyColorControl implements IControl {
     removeChart() {
         if (this._chartDomElement) {
             try {
-                this._container?.removeChild(this._chartDomElement);
+                this.getContainer()?.removeChild(this._chartDomElement);
                 this._chartDomElement = null;
                 this._chartJsObject = null;
             } catch (error) {
-                console.warn("Error removing old chart", { error, container: this._container, chart: this._chartDomElement });
+                console.warn("Error removing old chart", { error, chart: this._chartDomElement });
             }
         }
-    }
-
-    show(show: boolean) {
-        if (show)
-            this._container?.classList?.remove("hiddenElement");
-        else
-            this._container?.classList?.add("hiddenElement");
     }
 }
 

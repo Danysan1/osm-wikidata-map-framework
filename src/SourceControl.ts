@@ -15,13 +15,15 @@ export class SourceControl extends DropdownControl {
             onSelect: () => {
                 onSourceChange(sourceID as SourceID);
                 setFragmentParams(undefined, undefined, undefined, undefined, sourceID as SourceID);
+                this.showDropdown(false);
             }
         }));
         super(
             '⚙️',
             dropdownItems,
             startSourceID,
-            'Choose source'
+            'Choose source',
+            true
         );
     }
 }
