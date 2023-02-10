@@ -1,5 +1,5 @@
 import { logErrorMessage } from './monitoring';
-import { Map } from 'mapbox-gl';
+import { IControl, Map } from 'mapbox-gl';
 import { debugLog } from './config';
 
 export interface DropdownItem {
@@ -14,7 +14,7 @@ export interface DropdownItem {
  * Control implemented as ES6 class
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
-export class DropdownControl {
+export class DropdownControl implements IControl {
     private _buttonContent: string;
     private _dropdownItems: DropdownItem[];
     private _startDropdownItemId?: string;
@@ -108,4 +108,10 @@ export class DropdownControl {
         return this._ctrlDropDown?.value;
     }
 
+    show(show: boolean) {
+        if (show)
+            this._container?.classList?.remove("hiddenElement");
+        else
+            this._container?.classList?.add("hiddenElement");
+    }
 }

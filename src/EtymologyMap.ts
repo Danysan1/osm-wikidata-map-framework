@@ -675,13 +675,8 @@ export class EtymologyMap extends Map {
         this.updateDataSource();
         setFragmentParams(lon, lat, zoom);
 
-        const colorSchemeContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
-        if (colorSchemeContainer) {
-            if (zoom > thresholdZoomLevel)
-                colorSchemeContainer.classList.remove("hiddenElement");
-            else
-                colorSchemeContainer.classList.add("hiddenElement");
-        }
+        this.currentSourceControl?.show(zoom > minZoomLevel);
+        this.currentEtymologyColorControl?.show(zoom > thresholdZoomLevel);
     }
 
     /**

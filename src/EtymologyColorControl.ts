@@ -331,6 +331,13 @@ class EtymologyColorControl implements IControl {
             }
         }
     }
+
+    show(show: boolean) {
+        if (show)
+            this._container?.classList?.remove("hiddenElement");
+        else
+            this._container?.classList?.add("hiddenElement");
+    }
 }
 
 function getCurrentColorScheme(): ColorScheme {
