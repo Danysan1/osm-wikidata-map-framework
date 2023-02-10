@@ -1,9 +1,6 @@
 import { DropdownControl, DropdownItem } from './DropdownControl';
-
-export interface SourceItem {
-    id: string;
-    text: string;
-}
+import { setFragmentParams } from './fragment';
+import { SourceID, sources } from './source.model';
 
 /**
  * Let the user choose the map style.
@@ -11,11 +8,14 @@ export interface SourceItem {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
  **/
 export class SourceControl extends DropdownControl {
-    constructor(sources: SourceItem[], onSourceChange: (sourceID: string) => void, startSourceID: string) {
-        const dropdownItems: DropdownItem[] = sources.map(source => ({
-            id: source.id,
-            text: source.text,
-            onSelect: () => { onSourceChange(source.id); }
+    constructor(onSourceChange: (sourceID: SourceID) => void, startSourceID: SourceID) {
+        const dropdownItems: DropdownItem[] = Object.entries(sources).map(([sourceID, text]) => ({
+            id: sourceID,
+            text: text,
+            onSelect: () => {
+                onSourceChange(sourceID as SourceID);
+                setFragmentParams(undefined, undefined, undefined, undefined, sourceID as SourceID);
+            }
         }));
         super(
             '⚙️',

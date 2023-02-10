@@ -7,44 +7,9 @@ import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'ch
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { debugLog } from './config';
+import { ColorScheme, ColorSchemeID, colorSchemes } from './colorScheme.model';
 
-interface ColorScheme {
-    id: string;
-    text: string;
-    color: string | Expression;
-    colorField: string | null;
-    urlCode: string | null;
-}
-
-const colorSchemes: ColorScheme[] = [
-    { id: "blue", text: 'Uniform blue', color: '#3bb2d0', colorField: null, urlCode: null },
-    {
-        id: "gender",
-        colorField: 'gender_color',
-        text: 'By gender',
-        color: ['get', 'gender_color'],
-        urlCode: "genderStats",
-    },
-    {
-        id: "type",
-        colorField: 'type_color',
-        text: 'By type',
-        color: ['get', 'type_color'],
-        urlCode: "typeStats",
-    },
-    {
-        id: "source",
-        colorField: "source_color",
-        text: "By source",
-        color: ['get', 'source_color'],
-        urlCode: "sourceStats",
-    },
-    { id: "black", text: 'Uniform black', color: '#223b53', colorField: null, urlCode: null },
-    { id: "red", text: 'Uniform red', color: '#e55e5e', colorField: null, urlCode: null },
-    { id: "orange", text: 'Uniform orange', color: '#fbb03b', colorField: null, urlCode: null },
-];
-
-interface EtymologyStat {
+export interface EtymologyStat {
     color: string;
     name: string;
     count: number;
@@ -136,11 +101,11 @@ class EtymologyColorControl implements IControl {
         td2.appendChild(this._ctrlDropDown);
         td2.className = 'dropdown-cell';
 
-        colorSchemes.forEach(scheme => {
+        Object.entries(colorSchemes).forEach(([schemeID, scheme]) => {
             const option = document.createElement('option');
             option.innerText = scheme.text;
-            option.value = scheme.id;
-            if (scheme.id == this._startColorScheme) {
+            option.value = schemeID;
+            if (schemeID == this._startColorScheme) {
                 option.selected = true;
             }
             this._ctrlDropDown?.appendChild(option);
@@ -195,17 +160,17 @@ class EtymologyColorControl implements IControl {
         const dropDown = event.target;
         if (!(dropDown instanceof HTMLSelectElement))
             throw new Error("Bad event target dropdown");
-        const colorScheme = dropDown.value,
-            colorSchemeObj = colorSchemes.find(scheme => scheme.id == colorScheme);
+        const colorSchemeID = dropDown.value as ColorSchemeID,
+            colorSchemeObj = colorSchemes[colorSchemeID];
         let color: string | Expression;
 
         if (colorSchemeObj) {
             color = colorSchemeObj.color;
         } else {
-            logErrorMessage("Invalid selected color scheme", "error", { colorScheme });
+            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
             color = '#3bb2d0';
         }
-        debugLog("EtymologyColorControl dropDown click", { event, colorScheme, colorSchemeObj, color });
+        debugLog("EtymologyColorControl dropDown click", { event, colorSchemeID, colorSchemeObj, color });
 
         [
             ["wikidata_layer_point", "circle-color"],
@@ -222,7 +187,7 @@ class EtymologyColorControl implements IControl {
 
         this.updateChart(event);
 
-        setFragmentParams(undefined, undefined, undefined, colorScheme);
+        setFragmentParams(undefined, undefined, undefined, colorSchemeID);
         //updateDataSource(event);
     }
 
@@ -232,7 +197,8 @@ class EtymologyColorControl implements IControl {
             return;
         } else {
             const dropdown = this._ctrlDropDown,
-                colorScheme = colorSchemes.find(scheme => scheme.id == dropdown.value),
+                colorSchemeID = dropdown.value as ColorSchemeID,
+                colorScheme = colorSchemes[colorSchemeID],
                 bounds = this._map?.getBounds();
             debugLog("updateChart", { event, colorScheme });
 
@@ -369,9 +335,9 @@ class EtymologyColorControl implements IControl {
 
 function getCurrentColorScheme(): ColorScheme {
     const colorSchemeId = getCorrectFragmentParams().colorScheme;
-    let colorScheme = colorSchemes.find(scheme => scheme.id == colorSchemeId);
+    let colorScheme = colorSchemes[colorSchemeId];
     if (!colorScheme) {
-        colorScheme = colorSchemes[0];
+        colorScheme = colorSchemes.blue;
         console.warn("getCurrentColorScheme: error getting color scheme, using fallback", { colorSchemeId, colorScheme });
     }
     return colorScheme;

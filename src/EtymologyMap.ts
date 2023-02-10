@@ -5,7 +5,7 @@ import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, Fullscre
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
-import { CorrectFragmentParams, getCorrectFragmentParams, setFragmentParams } from './fragment';
+import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { BackgroundStyle, BackgroundStyleControl } from './BackgroundStyleControl';
 import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './InfoControl';
@@ -13,7 +13,7 @@ import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debugLog, getConfig } from './config';
 import './style.css';
-import { SourceControl, SourceItem } from './SourceControl';
+import { SourceControl } from './SourceControl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -33,7 +33,6 @@ export class EtymologyMap extends Map {
     constructor(
         containerId: string,
         backgroundStyles: BackgroundStyle[],
-        startParams: CorrectFragmentParams,
         geocoderControl: IControl | null
     ) {
         let backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
@@ -41,6 +40,8 @@ export class EtymologyMap extends Map {
             logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
             backgroundStyleObj = backgroundStyles[0];
         }
+        const startParams = getCorrectFragmentParams();
+        debugLog("Instantiating map", { containerId, backgroundStyleObj, startParams });
 
         super({
             container: containerId,
@@ -59,8 +60,6 @@ export class EtymologyMap extends Map {
 
         //this.dragRotate.disable(); // disable map rotation using right click + drag
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
-
-        setFragmentParams(startParams.lon, startParams.lat, startParams.zoom, startParams.colorScheme);
 
         //eslint-disable-next-line
         const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
@@ -130,7 +129,7 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen");
             if (wikidataSourceEvent) {
-                const source = this.currentSourceControl?.getCurrentID() ?? "all";
+                const source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source;
                 this.currentEtymologyColorControl?.updateChart(e, source);
             }
         }
@@ -168,7 +167,7 @@ export class EtymologyMap extends Map {
             maxLat = northEast.lat + bbox_margin,
             maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
-            source = this.currentSourceControl?.getCurrentID() ?? "all",
+            source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source,
             language = document.documentElement.lang,
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
             enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
@@ -333,26 +332,16 @@ export class EtymologyMap extends Map {
 
     initSourceControl() {
         if (!this.currentSourceControl) {
-            const sourceItems: SourceItem[] = [{ id: "overpass", text: "OSM (real time via Overpass API)" }];
-            let defaultSource = "overpass";
-            if (getConfig("db_enable") === "true") {
-                sourceItems.push(
-                    { id: "etymology", text: "OSM name:etymology:wikidata (from DB)" },
-                    { id: "subject", text: "OSM subject:wikidata (from DB)" },
-                    { id: "buried", text: "OSM buried:wikidata (from DB)" },
-                    { id: "wikidata", text: "OSM + Wikidata P138/P547/P825 (from DB)" },
-                    { id: "propagated", text: "Propagated (from DB)" },
-                    { id: "all", text: "All sources from DB" },
+            if (getConfig("db_enable") !== "true") {
+                setFragmentParams(undefined, undefined, undefined, undefined, "overpass");
+            } else {
+                const sourceControl = new SourceControl(
+                    this.updateDataSource.bind(this),
+                    getCorrectFragmentParams().source
                 );
-                defaultSource = "all";
+                this.currentSourceControl = sourceControl;
+                setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
             }
-            const sourceControl = new SourceControl(
-                sourceItems,
-                this.updateDataSource.bind(this),
-                defaultSource
-            );
-            this.currentSourceControl = sourceControl;
-            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
         }
     }
 
@@ -684,7 +673,7 @@ export class EtymologyMap extends Map {
             zoom = this.getZoom();
         debugLog("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
-        setFragmentParams(lon, lat, zoom, undefined);
+        setFragmentParams(lon, lat, zoom);
 
         const colorSchemeContainer = document.getElementsByClassName("etymology-color-ctrl")[0];
         if (colorSchemeContainer) {

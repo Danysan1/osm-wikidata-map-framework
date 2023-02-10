@@ -9,7 +9,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
-import { getCorrectFragmentParams } from './fragment';
 import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
 import { debugLog, getConfig, setPageLocale } from './config';
 import './style.css';
@@ -51,8 +50,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @see https://docs.mapbox.com/mapbox-gl-js/example/disable-rotation/
  */
 function initMap() {
-    const startParams = getCorrectFragmentParams();
-    debugLog("Initializing the map", startParams);
+    debugLog("Initializing the map");
 
     if (typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
         mapboxgl.accessToken = mapbox_token;
@@ -81,7 +79,7 @@ function initMap() {
         console.warn("No geocoding plugin available");
     }
 
-    new EtymologyMap('map', backgroundStyles, startParams, geocoderControl);
+    new EtymologyMap('map', backgroundStyles, geocoderControl);
 }
 
 
