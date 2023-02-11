@@ -25,18 +25,21 @@ const maptiler_key = getConfig("maptiler_key"),
 
 if (mapbox_token) {
     backgroundStyles.push(
-        mapboxBackgroundStyle('mapbox_streets', 'Streets (Mapbox)', 'mapbox', 'streets-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_dark', 'Dark', 'mapbox', 'dark-v10', mapbox_token)
+        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v10', mapbox_token),
+        mapboxBackgroundStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v10', mapbox_token),
+        mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
     );
 }
 
 if (maptiler_key) {
     backgroundStyles.push(
-        maptilerBackgroundStyle('maptiler_streets', 'Streets (Maptiler)', 'streets', maptiler_key),
-        maptilerBackgroundStyle('maptiler_bright', 'Bright', 'bright', maptiler_key),
-        maptilerBackgroundStyle('maptiler_hybrid', 'Satellite', 'hybrid', maptiler_key),
-        maptilerBackgroundStyle('maptiler_outdoors', 'Outdoors', 'outdoor', maptiler_key),
-        maptilerBackgroundStyle('maptiler_osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key)
+        maptilerBackgroundStyle('maptiler_streets', 'Maptiler Streets', 'streets', maptiler_key),
+        maptilerBackgroundStyle('maptiler_bright', 'Maptiler Bright', 'bright', maptiler_key),
+        maptilerBackgroundStyle('maptiler_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
+        maptilerBackgroundStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor', maptiler_key),
+        maptilerBackgroundStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
     );
 }
 
