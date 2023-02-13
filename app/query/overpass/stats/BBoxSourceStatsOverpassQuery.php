@@ -14,6 +14,7 @@ use App\Query\BaseQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\BBoxJSONQuery;
+use App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\OverpassSourceStatsQueryResult;
 use App\Result\QueryResult;
 use App\Result\JSONQueryResult;
@@ -25,7 +26,7 @@ class BBoxSourceStatsOverpassQuery extends BaseQuery implements BBoxJSONQuery
     public function __construct(BoundingBox $bbox, OverpassConfig $config)
     {
         $this->baseQuery = new BBoxOverpassQuery(
-            ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'],
+            OverpassQuery::ALL_WIKIDATA_ETYMOLOGY_TAGS,
             $bbox,
             'out ids;',
             $config

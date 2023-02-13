@@ -12,6 +12,7 @@ require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\BoundingBox;
 use App\Query\BaseQuery;
+use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\BBoxGeoJSONQuery;
@@ -32,7 +33,7 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements === null ? ' ' : " $maxElements";
         $this->baseQuery = new BBoxOverpassQuery(
-            ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'],
+            OverpassQuery::ALL_WIKIDATA_ETYMOLOGY_TAGS,
             $bbox,
             "out body $limitClause; >; out skel qt;",
             $config
