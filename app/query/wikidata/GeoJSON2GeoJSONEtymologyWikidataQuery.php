@@ -69,15 +69,14 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                         //error_log("Number of etymologies: " . $numEtymologies);
                         for ($j = 0; $j < $numEtymologies; $j++) {
                             $wikidataID = (string)$etymologies[$j]["id"];
+                            $osmType = (string)$geoJSONData["features"][$i]["properties"]["osm_type"];
+                            $osmID = (int)$geoJSONData["features"][$i]["properties"]["osm_id"];
 
                             $ety = self::buildEtymologyFromID($wikidataID, $matrixData);
+                            $ety["from_osm"] = true;
+                            $ety["from_osm_type"] = $osmType;
+                            $ety["from_osm_id"] = $osmID;
                             $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $ety;
-
-                            $osmType = $geoJSONData["features"][$i]["properties"]["osm_type"];
-                            $osmID = $geoJSONData["features"][$i]["properties"]["osm_id"];
-                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["from_osm"] = true;
-                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["from_osm_type"] = $osmType;
-                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["from_osm_id"] = $osmID;
                         }
                     }
                 }
