@@ -32,6 +32,10 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
         return $out;
     }
 
+    /**
+     * @param (string|int|bool|array|null)[][] $matrixData
+     * @return (string|int|bool|array|null)[]|null
+     */
     private static function buildEtymologyFromID(string $wikidataID, array $matrixData): array|null
     {
         //$fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
@@ -73,9 +77,11 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                             $osmID = (int)$geoJSONData["features"][$i]["properties"]["osm_id"];
 
                             $ety = self::buildEtymologyFromID($wikidataID, $matrixData);
-                            $ety["from_osm"] = true;
-                            $ety["from_osm_type"] = $osmType;
-                            $ety["from_osm_id"] = $osmID;
+                            if ($ety) {
+                                $ety["from_osm"] = true;
+                                $ety["from_osm_type"] = $osmType;
+                                $ety["from_osm_id"] = $osmID;
+                            }
                             $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $ety;
                         }
                     }

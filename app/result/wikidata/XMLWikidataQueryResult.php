@@ -52,6 +52,9 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
         return [];
     }
 
+    /**
+     * @return (string|int|bool|array|null)[][]
+     */
     public function getMatrixData(): array
     {
         //error_log("getMatrixData(): " . json_encode(debug_backtrace()));
