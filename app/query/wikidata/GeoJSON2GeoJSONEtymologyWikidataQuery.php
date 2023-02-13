@@ -32,6 +32,20 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
         return $out;
     }
 
+    private static function buildEtymologyFromID(string $wikidataID, array $matrixData): array|null
+    {
+        //$fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
+        //error_log("Wikidata ID: " . $fullWikidataID);
+
+        foreach ($matrixData as $row) {
+            if ($row["wikidata"] == $wikidataID)
+                return $row;
+        }
+
+        error_log("Etymology information not found for $wikidataID");
+        return null;
+    }
+
     protected function createQueryResult(XMLQueryResult $wikidataResult): JSONQueryResult
     {
         $wikidataResponse = XMLWikidataEtymologyQueryResult::fromXMLResult($wikidataResult);
@@ -55,20 +69,15 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                         //error_log("Number of etymologies: " . $numEtymologies);
                         for ($j = 0; $j < $numEtymologies; $j++) {
                             $wikidataID = (string)$etymologies[$j]["id"];
-                            //$fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
-                            //error_log("Wikidata ID: " . $fullWikidataID);
-                            $found = false;
-                            foreach ($matrixData as $row) {
-                                //error_log($row["wikidata"]);
-                                if ($row["wikidata"] == $wikidataID) {
-                                    $found = true;
-                                    $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $row;
-                                }
-                            }
-                            if (!$found) {
-                                error_log("Etymology information not found for $wikidataID");
-                                $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = null;
-                            }
+
+                            $ety = self::buildEtymologyFromID($wikidataID, $matrixData);
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $ety;
+
+                            $osmType = $geoJSONData["features"][$i]["properties"]["osm_type"];
+                            $osmID = $geoJSONData["features"][$i]["properties"]["osm_id"];
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["from_osm"] = true;
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["from_osm_type"] = $osmType;
+                            $geoJSONData["features"][$i]["properties"]["etymologies"][$j]["from_osm_id"] = $osmID;
                         }
                     }
                 }

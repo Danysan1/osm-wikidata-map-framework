@@ -4,6 +4,7 @@ namespace App\Result\Overpass;
 
 require_once(__DIR__ . "/GeoJSONOverpassQueryResult.php");
 
+use App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\GeoJSONOverpassQueryResult;
 
 /**
@@ -11,55 +12,66 @@ use \App\Result\Overpass\GeoJSONOverpassQueryResult;
  */
 class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 {
-    const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
+    private const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
 
     protected function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false
     {
         if (empty($element["tags"]) || !is_array($element["tags"])) {
             return false;
         }
+        $osmType = (string)$element["type"];
+        $osmID = (int)$element["id"];
 
-
-        if (!empty($element["tags"]["name:etymology:wikidata"])) {
-            $wikidataTag = str_replace(self::BAD_CHARS, '', (string)$element["tags"]["name:etymology:wikidata"]);
-        } elseif (!empty($element["tags"]["subject:wikidata"])) {
-            $wikidataTag = str_replace(self::BAD_CHARS, '', (string)$element["tags"]["subject:wikidata"]);
-        } elseif (!empty($element["tags"]["buried:wikidata"])) {
-            $wikidataTag = str_replace(self::BAD_CHARS, '', (string)$element["tags"]["buried:wikidata"]);
-        } else {
-            return false;
+        $wikidataIdStrings = [];
+        foreach (OverpassQuery::ALL_WIKIDATA_ETYMOLOGY_TAGS as $tag) {
+            if (!empty($element["tags"][$tag])) {
+                $cleanValue = str_replace(self::BAD_CHARS, '', (string)$element["tags"][$tag]);
+                if (preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $cleanValue))
+                    $wikidataIdStrings[] = $cleanValue;
+                else
+                    error_log("'$tag' does not contain a valid list of wikidata tags in 'https://www.openstreetmap.org/$osmType/$osmID'");
+            }
         }
 
-        if (!preg_match("/^Q[0-9]+(;Q[0-9]+)*$/", $wikidataTag)) {
-            error_log("Feature does not contain a valid list of wikidata tags: https://www.openstreetmap.org/" . (string)$element["type"] . "/" . (int)$element["id"]);
+        if (empty($wikidataIdStrings)) {
+            error_log("Feature does not contain any valid list of wikidata tags: https://www.openstreetmap.org/$osmType/$osmID");
             return false;
+        } else {
+            $wikidataTag = implode(";", $wikidataIdStrings);
         }
 
         if (empty($element["tags"]["name"])) {
             $elementName = null;
-            error_log("Abnormal element with etymology but no name: https://www.openstreetmap.org/" . (string)$element["type"] . "/" . (int)$element["id"]);
+            error_log("Abnormal element with etymology but no name: https://www.openstreetmap.org/$osmType/$osmID");
         } else {
             $elementName = (string)$element["tags"]["name"];
         }
         $feature = [
             "type" => "Feature",
             "geometry" => [],
-            "properties" => ["name" => $elementName, "osm_type" => $element["type"], "osm_id" => $element["id"], "source_color" => "#33ff66"],
+            "properties" => [
+                "alt_name" => empty($element["tags"]["alt_name"]) ? null : (string)$element["tags"]["alt_name"],
+                "commons" => empty($element["tags"]["wikimedia_commons"]) ? null : (string)$element["tags"]["wikimedia_commons"],
+                "name" => $elementName,
+                "osm_type" => $osmType,
+                "osm_id" => $osmID,
+                "source_color" => "#33ff66",
+                "text_etymology" => empty($element["tags"]["name:etymology"]) ? null : (string)$element["tags"]["name:etymology"],
+                "text_etymology_descr" => empty($element["tags"]["name:etymology:description"]) ? null : (string)$element["tags"]["name:etymology:description"],
+                "wikidata" => empty($element["tags"]["wikidata"]) ? null : (string)$element["tags"]["wikidata"],
+                "wikipedia" => empty($element["tags"]["wikipedia"]) ? null : (string)$element["tags"]["wikipedia"],
+            ],
         ];
-
-        if (!empty($element["tags"]["wikipedia"])) {
-            $feature["properties"]["wikipedia"] = (string)$element["tags"]["wikipedia"];
-        }
 
         $feature["properties"]["etymologies"] = [];
         foreach (explode(";", $wikidataTag) as $etymologyID) {
             $feature["properties"]["etymologies"][] = ["id" => $etymologyID];
         }
 
-        if ($element["type"] == "node") {
+        if ($osmType == "node") {
             // ======================================== NODES start ========================================
             if (empty($element["lon"]) || empty($element["lat"])) {
-                error_log("OverpassEtymologyQueryResult::convertElementToGeoJSONFeature: https://www.openstreetmap.org/node/" . (int)$element["id"] . " has no coordinates");
+                error_log("OverpassEtymologyQueryResult::convertElementToGeoJSONFeature: https://www.openstreetmap.org/node/$osmID has no coordinates");
             } else {
                 $feature["geometry"]["type"] = "Point";
                 // https://docs.mapbox.com/help/troubleshooting/working-with-large-geojson-data/
@@ -69,10 +81,10 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
                 ];
             }
             // ======================================== NODES end ========================================
-        } elseif ($element["type"] == "way") {
+        } elseif ($osmType == "way") {
             // ======================================== WAYS start ========================================
             if (empty($element["nodes"]) || !is_array($element["nodes"])) {
-                error_log("OverpassEtymologyQueryResult: https://www.openstreetmap.org/way/" . (int)$element["id"] . " has no nodes");
+                error_log("OverpassEtymologyQueryResult: https://www.openstreetmap.org/way/$osmID has no nodes");
             } else {
                 $totalNodes = count($element["nodes"]);
                 $coordinates = [];
@@ -82,7 +94,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
                  */
                 foreach ($element["nodes"] as $node) {
                     if (!is_int($node)) {
-                        error_log("OverpassEtymologyQueryResult: way " . (int)$element["id"] . " has a node that is not an integer");
+                        error_log("OverpassEtymologyQueryResult: way $osmID has a node that is not an integer");
                     } else {
                         for ($i = count($allElements) - 1; $i >= 0; $i--) {
                             assert(!empty($allElements[$i]) && is_array($allElements[$i]));
@@ -114,7 +126,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             // ======================================== RELATIONS start ========================================
             //! Relations not yet supported
             //TODO
-            error_log("OverpassEtymologyQueryResult: skipped https://www.openstreetmap.org/relation/" . (int)$element["id"] . "");
+            error_log("OverpassEtymologyQueryResult: skipped https://www.openstreetmap.org/relation/$osmID");
             $feature = false;
             //$feature["geometry"]["type"] = "MultiPolygon";
             // ======================================== RELATIONS end ========================================
