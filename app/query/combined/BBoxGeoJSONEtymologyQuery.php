@@ -1,16 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Combined;
 
-require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
-require_once(__DIR__ . '/../../result/GeoJSONQueryResult.php');
-require_once(__DIR__ . "/BBoxJSONOverpassWikidataQuery.php");
-require_once(__DIR__ . "/../wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php");
 
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxJSONOverpassWikidataQuery;
 use \App\Query\Wikidata\GeoJSON2GeoJSONEtymologyWikidataQuery;
-use App\Result\GeoJSONLocalQueryResult;
+use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;

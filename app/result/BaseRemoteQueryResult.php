@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result;
 
-require_once(__DIR__ . "/RemoteQueryResult.php");
 
 use \App\Result\RemoteQueryResult;
 

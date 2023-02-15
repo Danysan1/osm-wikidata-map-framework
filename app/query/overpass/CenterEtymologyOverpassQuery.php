@@ -1,13 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/BaseOverpassQuery.php");
-require_once(__DIR__ . "/OverpassConfig.php");
-require_once(__DIR__ . "/../GeoJSONQuery.php");
-require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\BaseOverpassQuery;

@@ -1,18 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/WikidataQuery.php");
-require_once(__DIR__ . "/../XMLQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/XMLQueryResult.php");
-require_once(__DIR__ . "/../../result/XMLRemoteQueryResult.php");
 
-use App\Query\Wikidata\WikidataQuery;
-use App\Query\XMLQuery;
-use App\Result\QueryResult;
-use App\Result\XMLQueryResult;
-use App\Result\XMLRemoteQueryResult;
+use \App\Query\Wikidata\WikidataQuery;
+use \App\Query\XMLQuery;
+use \App\Result\QueryResult;
+use \App\Result\XMLQueryResult;
+use \App\Result\XMLRemoteQueryResult;
 
 /**
  * Wikidata query sent via HTTP  request.

@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
-require_once(__DIR__ . "/config/Configuration.php");
 
 use PDO;
 use Exception;
-use \App\Configuration;
+use \App\Config\Configuration;
 
 class PostGIS_PDO extends PDO
 {

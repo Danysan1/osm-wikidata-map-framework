@@ -1,15 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Combined;
 
-require_once(__DIR__ . "/BBoxJSONOverpassWikidataQuery.php");
-require_once(__DIR__ . '/../../result/JSONQueryResult.php');
-require_once(__DIR__ . '/../../result/JSONLocalQueryResult.php');
-require_once(__DIR__ . "/../wikidata/GeoJSON2JSONStatsWikidataQuery.php");
 
 use \App\Query\Combined\BBoxJSONOverpassWikidataQuery;
 use \App\Query\Wikidata\GeoJSON2JSONStatsWikidataQuery;
-use App\Result\JSONLocalQueryResult;
+use \App\Result\JSONLocalQueryResult;
 use \App\Result\JSONQueryResult;
 
 /**

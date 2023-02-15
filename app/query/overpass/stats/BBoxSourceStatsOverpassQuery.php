@@ -1,23 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass\Stats;
 
-require_once(__DIR__ . "/../../../BoundingBox.php");
-require_once(__DIR__ . "/../BBoxOverpassQuery.php");
-require_once(__DIR__ . "/../OverpassConfig.php");
-require_once(__DIR__ . "/../../BBoxJSONQuery.php");
-require_once(__DIR__ . "/../../../result/overpass/OverpassSourceStatsQueryResult.php");
-require_once(__DIR__ . "/../../../result/QueryResult.php");
 
 use \App\BoundingBox;
-use App\Query\BaseQuery;
+use \App\Query\BaseQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\BBoxJSONQuery;
-use App\Query\Overpass\OverpassQuery;
+use \App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\OverpassSourceStatsQueryResult;
-use App\Result\QueryResult;
-use App\Result\JSONQueryResult;
+use \App\Result\QueryResult;
+use \App\Result\JSONQueryResult;
 
 class BBoxSourceStatsOverpassQuery extends BaseQuery implements BBoxJSONQuery
 {

@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result\Wikidata;
 
-require_once(__DIR__ . "/XMLWikidataQueryResult.php");
-require_once(__DIR__ . "/../XMLQueryResult.php");
 
 use \App\Result\Wikidata\XMLWikidataQueryResult;
-use App\Result\XMLQueryResult;
+use \App\Result\XMLQueryResult;
 
 /**
  * Result of a Wikidata etymology query, convertible into matrix data.

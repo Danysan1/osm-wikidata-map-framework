@@ -1,19 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\PostGIS;
 
-require_once(__DIR__ . "/../../BoundingBox.php");
-require_once(__DIR__ . "/../../BaseStringSet.php");
-require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../BBoxQuery.php");
-require_once(__DIR__ . "/BBoxPostGISQuery.php");
-require_once(__DIR__ . "/../wikidata/EtymologyIDListJSONWikidataQuery.php");
-require_once(__DIR__ . "/../commons/AttributionCommonsQuery.php");
 
 use \PDO;
 use \App\BoundingBox;
 use \App\BaseStringSet;
-use App\Query\Commons\AttributionCommonsQuery;
+use \App\Query\WikimediaCommons\AttributionCommonsQuery;
 use \App\ServerTiming;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Query\Wikidata\EtymologyIDListJSONWikidataQuery;

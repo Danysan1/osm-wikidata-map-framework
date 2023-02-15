@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query;
 
-require_once(__DIR__ . "/BBoxJSONQuery.php");
-require_once(__DIR__ . "/GeoJSONQuery.php");
 
 use \App\Query\BBoxJSONQuery;
 use \App\Query\GeoJSONQuery;

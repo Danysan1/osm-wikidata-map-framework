@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/RelatedEntitiesBaseWikidataQuery.php");
 
-use App\Query\Wikidata\RelatedEntitiesBaseWikidataQuery;
+use \App\Query\Wikidata\RelatedEntitiesBaseWikidataQuery;
 
 class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQuery
 {

@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\PostGIS;
 
-require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../Query.php");
 
 use \PDO;
 use \App\ServerTiming;

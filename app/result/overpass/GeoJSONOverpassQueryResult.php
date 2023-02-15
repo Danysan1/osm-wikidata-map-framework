@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result\Overpass;
 
-require_once(__DIR__ . "/OverpassQueryResult.php");
-require_once(__DIR__ . "/../GeoJSONQueryResult.php");
 
 use \App\Result\Overpass\OverpassQueryResult;
 use \App\Result\GeoJSONQueryResult;

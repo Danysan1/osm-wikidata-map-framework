@@ -2,11 +2,10 @@
 
 declare(strict_types=1);
 require_once(__DIR__ . "/../vendor/autoload.php");
-require_once(__DIR__ . "/../app/config/Configuration.php");
 
 define("ISO_LANGUAGE_PATTERN", '/^(\w+)(-\w+)?$/');
 
-use \App\Configuration;
+use \App\Config\Configuration;
 
 /**
  * @param Throwable $t

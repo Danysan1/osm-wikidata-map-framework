@@ -1,10 +1,8 @@
 <?php
 
-namespace App;
+declare(strict_types=1);
 
-use Exception;
-
-require_once(__DIR__ . "/Configuration.php");
+namespace App\Config;
 
 abstract class BaseConfiguration implements Configuration
 {

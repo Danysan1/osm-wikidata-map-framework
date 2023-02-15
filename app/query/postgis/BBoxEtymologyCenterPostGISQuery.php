@@ -1,18 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\PostGIS;
 
-require_once(__DIR__ . "/BBoxPostGISQuery.php");
-require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
-require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
-require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
 
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
-use App\Result\QueryResult;
+use \App\Result\QueryResult;
 
 class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGeoJSONQuery
 {

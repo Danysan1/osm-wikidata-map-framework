@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/StringSetJSONWikidataQuery.php");
-require_once(__DIR__ . "/EtymologyIDListWikidataQueryBuilder.php");
 
 use \App\Query\Wikidata\StringSetJSONWikidataQuery;
 use \App\Query\Wikidata\EtymologyIDListWikidataQueryBuilder;

@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/RoundRobinOverpassConfig.php");
 
-use App\Configuration;
+use \App\Config\Configuration;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 
 class FixedEndpointOverpassConfig extends RoundRobinOverpassConfig

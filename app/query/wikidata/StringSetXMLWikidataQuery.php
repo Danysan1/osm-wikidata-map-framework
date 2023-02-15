@@ -1,13 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../../StringSet.php");
-require_once(__DIR__ . "/../StringSetXMLQuery.php");
-require_once(__DIR__ . "/XMLWikidataQuery.php");
 
-use App\StringSet;
-use App\Query\StringSetXMLQuery;
+use \App\StringSet;
+use \App\Query\StringSetXMLQuery;
 use \App\Query\Wikidata\XMLWikidataQuery;
 
 /**

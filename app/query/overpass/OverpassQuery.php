@@ -1,10 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/../JSONCurlQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/JSONRemoteQueryResult.php");
 
 use \App\Query\JSONCurlQuery;
 use \App\Result\QueryResult;

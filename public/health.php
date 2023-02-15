@@ -1,10 +1,10 @@
 <?php
-require_once(__DIR__ . "/../app/config/IniEnvConfiguration.php");
-require_once(__DIR__ . "/../app/PostGIS_PDO.php");
-require_once("./funcs.php");
 
-use \App\IniEnvConfiguration;
-use App\PostGIS_PDO;
+declare(strict_types=1);
+require_once(__DIR__ . "/funcs.php");
+
+use \App\Config\IniEnvConfiguration;
+use \App\PostGIS_PDO;
 
 $conf = new IniEnvConfiguration();
 

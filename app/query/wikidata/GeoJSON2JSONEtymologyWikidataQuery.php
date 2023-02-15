@@ -1,14 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../JSONQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
-require_once(__DIR__ . "/GeoJSON2XMLEtymologyWikidataQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/JSONQueryResult.php");
-require_once(__DIR__ . "/../../result/JSONLocalQueryResult.php");
-require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
 
 use \App\Query\JSONQuery;
 use \App\Query\StringSetXMLQueryFactory;

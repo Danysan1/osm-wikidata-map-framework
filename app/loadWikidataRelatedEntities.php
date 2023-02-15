@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App;
 
-require_once(__DIR__ . "/query/wikidata/RelatedEntitiesCheckWikidataQuery.php");
-require_once(__DIR__ . "/query/wikidata/RelatedEntitiesDetailsWikidataQuery.php");
+if (php_sapi_name() != "cli") {
+    http_response_code(400);
+    die("Only runnable through CLI");
+}
+
+require_once(__DIR__ . "/../vendor/autoload.php");
 
 use PDO;
 use Exception;
@@ -45,7 +51,7 @@ function loadWikidataRelatedEntities(
     string $wikidataEndpointURL
 ): int {
     if ($dbh->query(
-    "SELECT EXISTS (
+        "SELECT EXISTS (
             SELECT FROM pg_tables
             WHERE schemaname = 'oem'
             AND tablename  = 'vm_global_map'

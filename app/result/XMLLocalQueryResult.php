@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result;
 
-require_once(__DIR__ . "/LocalQueryResult.php");
-require_once(__DIR__ . "/XMLQueryResult.php");
 
 use \App\Result\LocalQueryResult;
 use \App\Result\XMLQueryResult;

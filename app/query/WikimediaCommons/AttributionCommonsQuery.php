@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Query\Commons;
+declare(strict_types=1);
 
-require_once(__DIR__ . "/../JSONCurlQuery.php");
+namespace App\Query\WikimediaCommons;
 
-use App\Query\JSONCurlQuery;
+
+use \App\Query\JSONCurlQuery;
 use Exception;
 
 define("COMMONS_DEFAULT_ENDPOINT_URL", "https://commons.wikimedia.org/w/api.php");

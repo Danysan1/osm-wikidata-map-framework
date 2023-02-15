@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result\Wikidata;
 
-require_once(__DIR__ . "/../XMLLocalQueryResult.php");
 
 use \App\Result\XMLLocalQueryResult;
 

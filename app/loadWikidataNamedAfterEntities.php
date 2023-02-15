@@ -1,15 +1,10 @@
 <?php
-if (php_sapi_name() != "cli") {
-    http_response_code(400);
-    die("Only runnable through CLI");
-}
 
-require_once(__DIR__ . "/config/IniEnvConfiguration.php");
-require_once(__DIR__ . "/PostGIS_PDO.php");
+declare(strict_types=1);
 require_once(__DIR__ . "/loadWikidataRelatedEntities.php");
 
-use App\IniEnvConfiguration;
-use App\PostGIS_PDO;
+use \App\Config\IniEnvConfiguration;
+use \App\PostGIS_PDO;
 
 $conf = new IniEnvConfiguration();
 $dbh = new PostGIS_PDO($conf);

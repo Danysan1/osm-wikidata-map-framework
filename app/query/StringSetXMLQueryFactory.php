@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query;
 
-require_once(__DIR__ . "/StringSetXMLQuery.php");
-require_once(__DIR__ . "/../StringSet.php");
 
 use \App\Query\StringSetXMLQuery;
 use \App\StringSet;

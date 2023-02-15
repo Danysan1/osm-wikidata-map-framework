@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query;
 
-require_once(__DIR__ . "/BBoxQuery.php");
-require_once(__DIR__ . "/JSONQuery.php");
 
 use \App\Query\BBoxQuery;
 use \App\Query\JSONQuery;

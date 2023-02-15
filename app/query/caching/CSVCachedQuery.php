@@ -1,14 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Caching;
 
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../Query.php");
-require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../../config/Configuration.php");
 
 use \App\ServerTiming;
-use \App\Configuration;
+use \App\Config\Configuration;
 use \App\Result\QueryResult;
 use \App\Query\Query;
 

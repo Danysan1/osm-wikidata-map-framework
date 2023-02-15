@@ -1,12 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query;
 
-require_once(__DIR__ . "/BaseRemoteQuery.php");
-require_once(__DIR__ . "/../result/QueryResult.php");
 
-use App\Query\BaseRemoteQuery;
-use App\Result\QueryResult;
+use \App\Query\BaseRemoteQuery;
+use \App\Result\QueryResult;
 
 abstract class CurlQuery extends BaseRemoteQuery
 {

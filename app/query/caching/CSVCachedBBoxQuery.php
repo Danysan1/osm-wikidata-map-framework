@@ -1,21 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Caching;
 
-require_once(__DIR__ . "/CSVCachedQuery.php");
-require_once(__DIR__ . "/../BBoxQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../../BaseBoundingBox.php");
-require_once(__DIR__ . "/../../config/Configuration.php");
 
-use App\Query\Caching\CSVCachedQuery;
-use App\Query\BBoxQuery;
+use \App\Query\Caching\CSVCachedQuery;
+use \App\Query\BBoxQuery;
 use \App\Result\QueryResult;
 use \App\ServerTiming;
 use \App\BaseBoundingBox;
 use \App\BoundingBox;
-use \App\Configuration;
+use \App\Config\Configuration;
 
 define("BBOX_CACHE_COLUMN_TIMESTAMP", 0);
 define("BBOX_CACHE_COLUMN_MIN_LAT", 1);

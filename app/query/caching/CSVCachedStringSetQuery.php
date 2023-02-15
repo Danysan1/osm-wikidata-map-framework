@@ -1,24 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Caching;
 
-require_once(__DIR__ . "/CSVCachedQuery.php");
-require_once(__DIR__ . "/../StringSetQuery.php");
-require_once(__DIR__ . "/CachedStringSetQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../BaseStringSet.php");
-require_once(__DIR__ . "/../../StringSet.php");
-require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../../config/Configuration.php");
 
 use \App\Query\Caching\CSVCachedQuery;
 use \App\Query\StringSetQuery;
 use \App\Query\Caching\CachedStringSetQuery;
 use \App\BaseStringSet;
-use App\Result\QueryResult;
+use \App\Result\QueryResult;
 use \App\StringSet;
 use \App\ServerTiming;
-use \App\Configuration;
+use \App\Config\Configuration;
 
 define("STRING_SET_CACHE_COLUMN_TIMESTAMP", 0);
 define("STRING_SET_CACHE_COLUMN_SET", 1);

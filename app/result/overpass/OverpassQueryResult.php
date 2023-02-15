@@ -1,13 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result\Overpass;
 
-require_once(__DIR__ . "/../LocalQueryResult.php");
-require_once(__DIR__ . "/../JSONQueryResult.php");
 
 use \App\Result\LocalQueryResult;
 use \App\Result\JSONQueryResult;
-use App\Result\QueryResult;
+use \App\Result\QueryResult;
 use Exception;
 use InvalidArgumentException;
 

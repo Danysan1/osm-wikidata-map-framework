@@ -1,22 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Caching;
 
-require_once(__DIR__ . "/CSVCachedStringSetQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/XMLQueryResult.php");
-require_once(__DIR__ . "/../../result/XMLLocalQueryResult.php");
-require_once(__DIR__ . "/../../ServerTiming.php");
-require_once(__DIR__ . "/../../config/Configuration.php");
 
 use \App\Query\Caching\CSVCachedStringSetQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Result\XMLLocalQueryResult;
-use App\Result\XMLQueryResult;
-use App\Result\QueryResult;
+use \App\Result\XMLQueryResult;
+use \App\Result\QueryResult;
 use \App\ServerTiming;
-use \App\Configuration;
+use \App\Config\Configuration;
 
 /**
  * A query which searches objects in a given string set caching the result in a file.

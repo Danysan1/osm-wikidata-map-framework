@@ -1,20 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../XMLQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
-require_once(__DIR__ . "/../../BaseStringSet.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/XMLQueryResult.php");
 
 use \App\Query\XMLQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\BaseStringSet;
-use App\Result\QueryResult;
-use App\Result\XMLQueryResult;
+use \App\Result\QueryResult;
+use \App\Result\XMLQueryResult;
 
 /**
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.

@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query;
 
-require_once(__DIR__ . "/BaseQuery.php");
 
 use \App\Query\BaseQuery;
 

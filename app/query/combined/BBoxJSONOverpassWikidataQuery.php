@@ -1,15 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Combined;
 
-require_once(__DIR__ . '/../../BoundingBox.php');
-require_once(__DIR__ . '/../../ServerTiming.php');
-require_once(__DIR__ . "/../BBoxJSONQuery.php");
-require_once(__DIR__ . '/../../result/JSONQueryResult.php');
-require_once(__DIR__ . "/../overpass/BBoxEtymologyOverpassQuery.php");
-require_once(__DIR__ . "/../overpass/OverpassConfig.php");
-require_once(__DIR__ . "/../wikidata/GeoJSON2JSONEtymologyWikidataQuery.php");
-require_once(__DIR__ . "/../StringSetXMLQueryFactory.php");
 
 use \App\BoundingBox;
 use \App\ServerTiming;

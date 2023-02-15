@@ -1,12 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../GeoJSONQuery.php");
-require_once(__DIR__ . "/GeoJSON2JSONEtymologyWikidataQuery.php");
-require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
-require_once(__DIR__ . "/../../result/GeoJSONLocalQueryResult.php");
-require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
 
 use \App\Query\GeoJSONQuery;
 use \App\Query\Wikidata\GeoJSON2JSONEtymologyWikidataQuery;

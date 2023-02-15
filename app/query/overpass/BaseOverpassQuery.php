@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/OverpassQuery.php");
-require_once(__DIR__ . "/OverpassConfig.php");
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\OverpassConfig;

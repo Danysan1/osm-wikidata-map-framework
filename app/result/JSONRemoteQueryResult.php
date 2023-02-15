@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result;
 
-require_once(__DIR__ . "/BaseRemoteQueryResult.php");
-require_once(__DIR__ . "/JSONQueryResult.php");
 
 use \App\Result\BaseRemoteQueryResult;
 use \App\Result\JSONQueryResult;

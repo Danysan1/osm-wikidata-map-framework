@@ -1,17 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/../../BoundingBox.php");
-require_once(__DIR__ . "/BBoxOverpassQuery.php");
-require_once(__DIR__ . "/OverpassConfig.php");
-require_once(__DIR__ . "/../BBoxGeoJSONQuery.php");
-require_once(__DIR__ . "/../../result/overpass/OverpassEtymologyQueryResult.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/GeoJSONQueryResult.php");
 
 use \App\BoundingBox;
-use App\Query\BaseQuery;
+use \App\Query\BaseQuery;
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;

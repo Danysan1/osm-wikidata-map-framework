@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Result\Overpass;
 
-require_once(__DIR__ . "/GeoJSONOverpassQueryResult.php");
 
-use App\Query\Overpass\OverpassQuery;
+use \App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\GeoJSONOverpassQueryResult;
 
 /**

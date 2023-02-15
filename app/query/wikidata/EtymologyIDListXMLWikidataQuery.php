@@ -1,11 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/StringSetXMLWikidataQuery.php");
-require_once(__DIR__ . "/../../result/XMLQueryResult.php");
-require_once(__DIR__ . "/../../result/wikidata/XMLWikidataEtymologyQueryResult.php");
-require_once(__DIR__ . "/EtymologyIDListWikidataQueryBuilder.php");
 
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
 use \App\Result\XMLQueryResult;

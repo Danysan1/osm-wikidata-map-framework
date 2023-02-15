@@ -51,12 +51,14 @@ RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
 	docker-php-ext-install -j$(nproc) pdo_pgsql zip
 
 COPY ["./composer.json", "./composer.lock", "/var/www/"]
-RUN php composer.phar install --no-dev --no-scripts --no-plugins --optimize-autoloader && \
+RUN php composer.phar install --no-dev --no-scripts --no-plugins
+
+COPY --chown=www-data:www-data ./app /var/www/app
+RUN php composer.phar dump-autoload --optimize --apcu && \
 	rm composer.json composer.lock composer.phar
 
 USER www-data
 RUN mkdir /var/www/html/open-etymology-map-cache
 
-COPY --chown=www-data:www-data ./app /var/www/app
 COPY --chown=www-data:www-data ./public /var/www/html
 COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/html/dist

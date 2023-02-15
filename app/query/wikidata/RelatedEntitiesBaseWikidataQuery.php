@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/JSONWikidataQuery.php");
 
-use App\Query\Wikidata\JSONWikidataQuery;
+use \App\Query\Wikidata\JSONWikidataQuery;
 use InvalidArgumentException;
 
 abstract class RelatedEntitiesBaseWikidataQuery extends JSONWikidataQuery

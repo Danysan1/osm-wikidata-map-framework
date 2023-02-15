@@ -1,14 +1,12 @@
 <?php
 
-namespace App;
+declare(strict_types=1);
 
-require_once(__DIR__ . "/IniFileConfiguration.php");
-require_once(__DIR__ . "/EnvironmentConfiguration.php");
-require_once(__DIR__ . "/MultiConfiguration.php");
+namespace App\Config;
 
-use \App\IniFileConfiguration;
-use \App\EnvironmentConfiguration;
-use \App\MultiConfiguration;
+use \App\Config\IniFileConfiguration;
+use \App\Config\EnvironmentConfiguration;
+use \App\Config\MultiConfiguration;
 use \Throwable;
 
 class IniEnvConfiguration extends MultiConfiguration

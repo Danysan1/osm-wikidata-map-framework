@@ -1,11 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Overpass;
 
-require_once(__DIR__ . "/../../BoundingBox.php");
-require_once(__DIR__ . "/../BBoxQuery.php");
-require_once(__DIR__ . "/BaseOverpassQuery.php");
-require_once(__DIR__ . "/OverpassConfig.php");
 
 use \App\BoundingBox;
 use \App\Query\BBoxQuery;

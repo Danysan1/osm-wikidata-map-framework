@@ -1,17 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\PostGIS\Stats;
 
-require_once(__DIR__ . "/../BBoxTextPostGISQuery.php");
-require_once(__DIR__ . "/../../BBoxJSONQuery.php");
-require_once(__DIR__ . "/../../../result/JSONQueryResult.php");
-require_once(__DIR__ . "/../../../result/JSONLocalQueryResult.php");
 
 use \App\Query\BBoxJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\JSONLocalQueryResult;
-use App\Result\QueryResult;
+use \App\Result\QueryResult;
 
 class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSONQuery
 {

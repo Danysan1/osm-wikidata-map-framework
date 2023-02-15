@@ -1,9 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata\Stats;
 
-require_once(__DIR__ . "/../StringSetXMLWikidataQuery.php");
-require_once(__DIR__ . "/../../../result/wikidata/XMLWikidataStatsQueryResult.php");
 
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
 use \App\Result\XMLQueryResult;

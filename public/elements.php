@@ -1,30 +1,20 @@
 <?php
-require_once(__DIR__ . "/../app/ServerTiming.php");
+
+declare(strict_types=1);
+require_once(__DIR__ . "/funcs.php");
 
 use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once(__DIR__ . "/../app/config/IniEnvConfiguration.php");
-require_once(__DIR__ . "/../app/BaseBoundingBox.php");
-require_once(__DIR__ . "/../app/PostGIS_PDO.php");
-require_once(__DIR__ . "/../app/query/overpass/CenterEtymologyOverpassQuery.php");
-require_once(__DIR__ . "/../app/query/overpass/BBoxEtymologyOverpassQuery.php");
-require_once(__DIR__ . "/../app/query/overpass/BBoxEtymologyCenterOverpassQuery.php");
-require_once(__DIR__ . "/../app/query/postgis/BBoxEtymologyCenterPostGISQuery.php");
-require_once(__DIR__ . "/../app/query/overpass/RoundRobinOverpassConfig.php");
-require_once(__DIR__ . "/../app/query/caching/CSVCachedBBoxGeoJSONQuery.php");
-require_once("./funcs.php");
-$serverTiming->add("0_include");
-
-use \App\IniEnvConfiguration;
+use \App\Config\IniEnvConfiguration;
 use \App\BaseBoundingBox;
-use App\PostGIS_PDO;
-use App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
-use App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
-use App\Query\Overpass\CenterEtymologyOverpassQuery;
-use App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
-use App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\PostGIS_PDO;
+use \App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
+use \App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
+use \App\Query\Overpass\CenterEtymologyOverpassQuery;
+use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
+use \App\Query\Overpass\RoundRobinOverpassConfig;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");

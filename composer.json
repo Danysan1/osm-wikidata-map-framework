@@ -1,15 +1,16 @@
 {
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    },
     "name": "dsantini/open-etymology-map",
     "description": "Open Etymology Map - Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata",
     "type": "project",
-    "version": "1",
+    "version": "2.21.0",
     "require": {
         "php": "^7.3|^8.0",
         "sentry/sdk": "^3.1"
-    },
-    "config": {
-        "optimize-autoloader": true,
-        "apcu-autoloader": true
     },
     "homepage": "https://etymology.dsantini.it",
     "license": "GPL-3.0",

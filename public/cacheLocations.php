@@ -1,21 +1,18 @@
 <?php
-require_once(__DIR__ . "/../app/ServerTiming.php");
+
+declare(strict_types=1);
+require_once(__DIR__ . "/funcs.php");
 
 use \App\ServerTiming;
 
 $serverTiming = new ServerTiming();
 
-require_once(__DIR__ . "/../app/config/IniEnvConfiguration.php");
-require_once(__DIR__ . "/../app/query/caching/CSVCachedBBoxQuery.php");
-require_once("./funcs.php");
-$serverTiming->add("0_include");
-
-use \App\IniEnvConfiguration;
+use \App\Config\IniEnvConfiguration;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
 
-if($conf->getDbEnable()) {
+if ($conf->getDbEnable()) {
     http_response_code(400);
     die("<html><body>The system is using the DB, not Overpass cache</body></html>");
 }
@@ -37,7 +34,7 @@ $files = array_merge(
 );
 foreach ($files as $filePath) {
     $file = @fopen($filePath, "r");
-    if($file === false) {
+    if ($file === false) {
         error_log("Failed opening $filePath");
     } else {
         while (($row = fgetcsv($file)) !== false) {

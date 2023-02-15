@@ -1,10 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/../CurlQuery.php");
 
-use App\Query\CurlQuery;
+use \App\Query\CurlQuery;
 
 /**
  * Wikidata query sent via HTTP request.

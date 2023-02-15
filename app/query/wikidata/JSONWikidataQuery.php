@@ -1,17 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Query\Wikidata;
 
-require_once(__DIR__ . "/WikidataQuery.php");
-require_once(__DIR__ . "/../JSONQuery.php");
-require_once(__DIR__ . "/../../result/QueryResult.php");
-require_once(__DIR__ . "/../../result/JSONRemoteQueryResult.php");
 
-use App\Query\Wikidata\WikidataQuery;
-use App\Query\JSONQuery;
-use App\Result\JSONQueryResult;
-use App\Result\QueryResult;
-use App\Result\JSONRemoteQueryResult;
+use \App\Query\Wikidata\WikidataQuery;
+use \App\Query\JSONQuery;
+use \App\Result\JSONQueryResult;
+use \App\Result\QueryResult;
+use \App\Result\JSONRemoteQueryResult;
 
 /**
  * Wikidata query sent via HTTP  request.
