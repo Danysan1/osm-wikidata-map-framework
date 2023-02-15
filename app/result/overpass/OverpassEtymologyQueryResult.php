@@ -46,6 +46,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         } else {
             $elementName = (string)$element["tags"]["name"];
         }
+
         $feature = [
             "type" => "Feature",
             "geometry" => [],
@@ -58,10 +59,18 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
                 "source_color" => "#33ff66",
                 "text_etymology" => empty($element["tags"]["name:etymology"]) ? null : (string)$element["tags"]["name:etymology"],
                 "text_etymology_descr" => empty($element["tags"]["name:etymology:description"]) ? null : (string)$element["tags"]["name:etymology:description"],
-                "wikidata" => empty($element["tags"]["wikidata"]) ? null : (string)$element["tags"]["wikidata"],
                 "wikipedia" => empty($element["tags"]["wikipedia"]) ? null : (string)$element["tags"]["wikipedia"],
             ],
         ];
+
+        if (!empty($element["tags"]["wikidata"])) {
+            $wikidataTag = (string)$element["tags"]["wikidata"];
+            $matches = [];
+            if (preg_match('/^(Q\d+)/', $wikidataTag, $matches) !== 1)
+                error_log("Bad wikidata tag: $wikidataTag");
+            else
+                $feature["properties"]["wikidata"] = $matches[1];
+        }
 
         $feature["properties"]["etymologies"] = [];
         foreach (explode(";", $wikidataTag) as $etymologyID) {
