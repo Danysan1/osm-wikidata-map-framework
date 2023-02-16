@@ -29,7 +29,7 @@ class CSVCachedBBoxGeoJSONQuery extends CSVCachedBBoxJSONQuery implements BBoxGe
     public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
     {
         parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
-        error_log("CSVCachedBBoxGeoJSONQuery base query: " . get_class($baseQuery));
+        //error_log("CSVCachedBBoxGeoJSONQuery base query: " . get_class($baseQuery));
     }
 
     protected function getResultFromFilePath(string $fileRelativePath): QueryResult

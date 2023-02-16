@@ -98,15 +98,15 @@ abstract class CSVCachedQuery implements Query
         $rowKey = $parseKeyFromRow($row);
         if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
             // Row too old, ignore
-            error_log(get_class($this) . ": trashing old row ($rowTimestamp < $this->timeoutThresholdTimestamp)");
+            error_log("Trashing old row ( $rowTimestamp < $this->timeoutThresholdTimestamp ) in " . get_class($this));
             $ret = false;
         } elseif ($newRowKeyContainsKey($rowKey)) {
             // Cache row key is entirely contained by the new query key, ignore the cache row
-            error_log(get_class($this) . ": trashing row with key contained by the new one:" . PHP_EOL . $rowKey);
+            error_log("Trashing row with key contained by the new one ( $rowKey ) in " . get_class($this));
             $ret = false;
         } elseif (!is_file($this->cacheFileBaseURL . $contentFileRelativePath)) {
             // Cached result is inexistent or not a regular file, ignore
-            error_log(get_class($this) . ": trashing cached result '$contentFileRelativePath' because it does not exist in " . $this->cacheFileBaseURL);
+            error_log("Trashing cached result ( $contentFileRelativePath ) because it does not exist in the cache folder (" . $this->cacheFileBaseURL . ") in " . get_class($this));
             $ret = false;
         } else {
             // Row is still valid, add to new cache
