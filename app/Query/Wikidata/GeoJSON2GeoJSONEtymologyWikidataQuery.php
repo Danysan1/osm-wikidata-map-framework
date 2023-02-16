@@ -7,7 +7,7 @@ namespace App\Query\Wikidata;
 
 use \App\Query\GeoJSONQuery;
 use \App\Query\Wikidata\GeoJSON2JSONEtymologyWikidataQuery;
-use \App\Result\QueryResult;
+use \App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
@@ -69,7 +69,7 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                         $numEtymologies = count($etymologies);
                         //error_log("Number of etymologies: " . $numEtymologies);
                         for ($j = 0; $j < $numEtymologies; $j++) {
-                            $wikidataID = (string)$etymologies[$j]["id"];
+                            $wikidataID = (string)$etymologies[$j][OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY];
                             $osmType = (string)$geoJSONData["features"][$i]["properties"]["osm_type"];
                             $osmID = (int)$geoJSONData["features"][$i]["properties"]["osm_id"];
 
