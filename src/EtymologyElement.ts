@@ -24,6 +24,7 @@ interface Etymology {
     birth_date_precision?: DatePrecision;
     birth_place?: string;
     citizenship?: string;
+    wd_class?: string;
     commons?: string;
     death_date?: string;
     death_date_precision?: DatePrecision;
@@ -102,8 +103,9 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
     //etyDomElement.dataset.et_id = ety.et_id?.toString();
     //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
+    const lang = document.documentElement.lang?.split("-")?.at(0);
     debugLog("etymologyToDomElement", {
-        et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement
+        et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
@@ -134,6 +136,16 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
         wikidata_button.style.display = 'inline-flex';
     } else {
         wikidata_button.style.display = 'none';
+    }
+
+    const entitree_button = etyDomElement.querySelector<HTMLAnchorElement>('.entitree_button');
+    if (!entitree_button) {
+        console.warn("Missing entitree_button");
+    } else if (lang && ety.wikidata && ety.wd_class == "Q5") {
+        entitree_button.href = `https://www.entitree.com/${lang}/family_tree/${ety.wikidata}`;
+        entitree_button.style.display = 'inline-flex';
+    } else {
+        entitree_button.style.display = 'none';
     }
 
     const wikipedia_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikipedia_button');
