@@ -103,7 +103,7 @@ function prepareHTML(Configuration $conf)
 			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' https://*.wikipedia.org/api/rest_v1/page/summary/ $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

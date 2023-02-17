@@ -179,7 +179,7 @@ if ($enableDB) {
                             <span class="button_text"> Wikidata</span>
                         </a>
                         <a title="Person on EntiTree" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
-                            <img class="button_img" src="img/entitree.svg" alt="EntiTree logo">
+                            <img class="button_img" src="img/entitree.png" alt="EntiTree logo">
                             <span class="button_text"> EntiTree</span>
                         </a>
                         <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self">
@@ -187,9 +187,9 @@ if ($enableDB) {
                             <span class="button_text"> Location</span>
                         </a>
 
+                        <p class="wikipedia_extract"></p>
                         <p class="start_end_date"></p>
                         <p class="event_place"></p>
-
                         <p class="citizenship"></p>
                         <p class="gender"></p>
                         <p class="occupations"></p>

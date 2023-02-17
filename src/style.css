@@ -146,9 +146,8 @@ div.custom-ctrl>table>tr>td {
     /*text-align: right;*/
 }
 
-div.detail_container div.header>h2,
-div.detail_container div.header>h3,
-div.detail_container div.info>p {
+div.detail_container div.header,
+div.detail_container div.info {
     max-width: 40em;
 }
 

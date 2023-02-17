@@ -24,7 +24,6 @@ interface Etymology {
     birth_date_precision?: DatePrecision;
     birth_place?: string;
     citizenship?: string;
-    wd_class?: string;
     commons?: string;
     death_date?: string;
     death_date_precision?: DatePrecision;
@@ -52,6 +51,7 @@ interface Etymology {
     recursion_depth?: number;
     start_date?: string;
     start_date_precision?: DatePrecision;
+    wd_class?: string;
     wd_id?: string;
     wikidata?: string;
     wikipedia?: string;
@@ -181,6 +181,23 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
             location_button.style.display = 'none';
             console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
         }
+    }
+
+    const wikipedia_extract = etyDomElement.querySelector<HTMLElement>('.wikipedia_extract');
+    if (!wikipedia_extract) {
+        console.warn("Missing wikipedia_extract");
+    } else if (ety.wikipedia) {
+        fetch(ety.wikipedia?.replace("/wiki/", "/api/rest_v1/page/summary/"))
+            .then(response => response.json())
+            .then(res => {
+                wikipedia_extract.innerText = res.extract;
+            })
+            .catch(err => {
+                console.error(err);
+                wikipedia_extract.style.display = 'none';
+            });
+    } else {
+        wikipedia_extract.style.display = 'none';
     }
 
     const start_end_date = etyDomElement.querySelector<HTMLElement>('.start_end_date')
