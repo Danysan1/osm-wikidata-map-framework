@@ -457,9 +457,9 @@ services:
           - "linux/amd64"
           - "linux/arm64"
         cache-from:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/open-etymology-map
+          - type=registry,ref=registry.gitlab.com/openetymologymap/open-etymology-map/cache
         cache-to:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/open-etymology-map,mode=max
+          - type=registry,ref=registry.gitlab.com/openetymologymap/open-etymology-map/cache,mode=max
         pull: true
     image: registry.gitlab.com/openetymologymap/open-etymology-map
     env_file:
