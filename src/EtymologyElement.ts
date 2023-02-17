@@ -187,13 +187,20 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
     if (!wikipedia_extract) {
         console.warn("Missing wikipedia_extract");
     } else if (ety.wikipedia) {
-        fetch(ety.wikipedia?.replace("/wiki/", "/api/rest_v1/page/summary/"))
-            .then(response => response.json())
+        fetch(ety.wikipedia?.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true")
+            .then(response => {
+                if (response.status == 200)
+                    return response.json();
+                else if (response.status == 302)
+                    throw new Error("The Wikipedia page for this item is a redirect");
+                else
+                    throw new Error("The request for the Wikipedia extract failed with code " + response.status);
+            })
             .then(res => {
-                wikipedia_extract.innerText = res.extract;
+                wikipedia_extract.innerText = '📖 ' + res.extract;
             })
             .catch(err => {
-                console.error(err);
+                console.warn(err);
                 wikipedia_extract.style.display = 'none';
             });
     } else {
