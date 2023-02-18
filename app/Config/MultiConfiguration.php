@@ -67,8 +67,8 @@ class MultiConfiguration extends BaseConfiguration
 	public function getDbEnable(): bool
 	{
 		$ret = null;
-		if ($this->has("db_enable_map")) {
-			$server = (string)$_SERVER["SERVER_NAME"];
+		if (!empty($_SERVER["SERVER_NAME"]) && $this->has("db_enable_map")) {
+			$server = $_SERVER["SERVER_NAME"];
 			$db_enable_map = json_decode((string)$this->get("db_enable_map"), true);
 			//error_log("db_enable_map: " . json_encode($db_enable_map));
 
@@ -88,8 +88,8 @@ class MultiConfiguration extends BaseConfiguration
 	public function getDbDatabase(): string
 	{
 		$ret = null;
-		if ($this->has("db_database_map")) {
-			$server = (string)$_SERVER["SERVER_NAME"];
+		if (!empty($_SERVER["SERVER_NAME"]) && $this->has("db_database_map")) {
+			$server = $_SERVER["SERVER_NAME"];
 			$db_database_map = json_decode((string)$this->get("db_database_map"), true);
 			//error_log("db_database_map: " . json_encode($db_database_map));
 

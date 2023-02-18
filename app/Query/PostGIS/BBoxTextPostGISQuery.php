@@ -8,7 +8,6 @@ namespace App\Query\PostGIS;
 use \PDO;
 use \App\BoundingBox;
 use \App\BaseStringSet;
-use \App\Query\WikimediaCommons\AttributionCommonsQuery;
 use \App\ServerTiming;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Query\Wikidata\EtymologyIDListJSONWikidataQuery;
@@ -90,6 +89,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $missingWikidataText = $sthMissingWikidata->fetchAll(PDO::FETCH_NUM);
         if (!empty($missingWikidataText)) {
             //error_log("missingWikidataText=" . json_encode($missingWikidataText));
+            /**
+             * @var string[] $searchArray
+             */
             $searchArray = array_column($missingWikidataText, 0);
             $searchSet = new BaseStringSet($searchArray);
             $wikidataQuery = new EtymologyIDListJSONWikidataQuery(

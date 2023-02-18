@@ -43,6 +43,6 @@ $output = fopen("php://output", "w");
 fputcsv($output, array(
     'wikidata_id', 'name', 'from_osm_etymology', 'from_osm_subject', 'from_osm_buried', 'from_wikidata', 'from_part_of', 'from_propagation'
 ));
-while ($row = $stm->fetch())
+while ( /** @var Stringable[]|false $row */ $row = $stm->fetch())
     fputcsv($output, $row);
 fclose($output);

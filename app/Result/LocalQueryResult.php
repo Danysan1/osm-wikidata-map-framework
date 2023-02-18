@@ -12,36 +12,17 @@ use \App\Result\QueryResult;
  */
 abstract class LocalQueryResult implements QueryResult
 {
-    /**
-     * @var boolean
-     */
-    private $success;
+    private bool $success;
+    private ?string $sourcePath;
+    private mixed $result;
 
-    /**
-     * @var string|null
-     */
-    private $sourcePath;
-
-    /**
-     * @var mixed
-     */
-    private $result;
-
-    /**
-     * @param boolean $success
-     * @param mixed $result
-     * @param string|null $sourcePath
-     */
-    public function __construct($success, $result, $sourcePath = null)
+    public function __construct(bool $success, mixed $result, ?string $sourcePath = null)
     {
         $this->success = $success;
         $this->sourcePath = $sourcePath;
         $this->result = $result;
     }
 
-    /**
-     * @return boolean
-     */
     public function isSuccessful(): bool
     {
         return $this->success;
@@ -59,7 +40,7 @@ abstract class LocalQueryResult implements QueryResult
         } elseif ($this->hasPublicSourcePath()) {
             $path = $this->getPublicSourcePath();
             $ret = @file_get_contents($path);
-            if($ret === false) {
+            if ($ret === false) {
                 error_log(get_class($this) . ": Unable to read source file '$path'");
                 throw new \Exception("Unable to read source file");
             }

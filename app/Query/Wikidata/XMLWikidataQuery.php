@@ -21,12 +21,7 @@ class XMLWikidataQuery extends WikidataQuery implements XMLQuery
         parent::__construct($query, "xml", $endpointURL);
     }
 
-    /**
-     * @param string|null $result
-     * @param array $curlInfo
-     * @return QueryResult
-     */
-    protected function getResultFromCurlData($result, $curlInfo): QueryResult
+    protected function getResultFromCurlData(?string $result, array $curlInfo): QueryResult
     {
         return new XMLRemoteQueryResult($result, $curlInfo);
     }

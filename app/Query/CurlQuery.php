@@ -10,7 +10,7 @@ use \App\Result\QueryResult;
 
 abstract class CurlQuery extends BaseRemoteQuery
 {
-    private $curlOptions;
+    private array $curlOptions;
 
     public function __construct(array|string $query, string $endpointURL, ?string $method = "GET", ?string $userAgent = null)
     {
@@ -41,12 +41,8 @@ abstract class CurlQuery extends BaseRemoteQuery
 
     /**
      * Function that transforms the output of cURL to a QueryResult
-     * 
-     * @param string|null $result
-     * @param array $curlInfo
-     * @return QueryResult
      */
-    protected abstract function getResultFromCurlData(string $result, array $curlInfo): QueryResult;
+    protected abstract function getResultFromCurlData(?string $result, array $curlInfo): QueryResult;
 
     public function send(): QueryResult
     {

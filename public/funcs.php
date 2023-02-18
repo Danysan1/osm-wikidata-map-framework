@@ -7,11 +7,7 @@ define("ISO_LANGUAGE_PATTERN", '/^(\w+)(-\w+)?$/');
 
 use \App\Config\Configuration;
 
-/**
- * @param Throwable $t
- * @return void
- */
-function handleException(Throwable $t)
+function handleException(Throwable $t): never
 {
 	error_log(
 		$t->getMessage() . PHP_EOL .

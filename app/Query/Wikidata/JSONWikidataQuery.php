@@ -21,12 +21,7 @@ class JSONWikidataQuery extends WikidataQuery implements JSONQuery
         parent::__construct($query, "json", $endpointURL);
     }
 
-    /**
-     * @param string|null $result
-     * @param array $curlInfo
-     * @return QueryResult
-     */
-    protected function getResultFromCurlData($result, $curlInfo): QueryResult
+    protected function getResultFromCurlData(?string $result, array $curlInfo): QueryResult
     {
         return new JSONRemoteQueryResult($result, $curlInfo);
     }
