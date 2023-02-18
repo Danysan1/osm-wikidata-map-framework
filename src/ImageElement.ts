@@ -72,6 +72,15 @@ function imageToDomElement(img: ImageResponse): HTMLDivElement {
     return imgContainer;
 }
 
+/**
+ * @see https://commons.wikimedia.org/wiki/Commons:Credit_line#Automatic_handling_of_attribution_by_reusers
+ * @see https://commons.wikimedia.org/w/api.php?action=help&modules=main
+ * @see https://www.mediawiki.org/wiki/API:Main_page
+ * @see https://www.mediawiki.org/wiki/API:Cross-site_requests
+ * @see https://www.mediawiki.org/wiki/Manual:CORS#Using_jQuery_methods
+ * @param imgName File name from Wikimedia Commons (NON URLencoded, withouth the initial "File:")
+ * @returns The attribution text for the file (includes license and author)
+ */
 async function fetchWikimediaCommonsAttribution(imgName: string): Promise<string> {
     const attributionApiUrl = "https://commons.wikimedia.org/w/api.php?" + (new URLSearchParams({
         action: "query",
@@ -81,8 +90,6 @@ async function fetchWikimediaCommonsAttribution(imgName: string): Promise<string
         format: "json",
         titles: "File:" + imgName,
         origin: '*',
-        // https://www.mediawiki.org/wiki/API:Cross-site_requests
-        // https://www.mediawiki.org/wiki/Manual:CORS#Using_jQuery_methods
     })).toString();
     return fetch(attributionApiUrl)
         .then(response => {
