@@ -70,16 +70,7 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
             $contentFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
             $result = $this->getResultFromFile($contentFileRelativePath);
             //error_log(get_class($this).": " . $rowStringSet . " contains " . $this->getStringSet());
-            /*error_log(
-                get_class($this)." - cache hit:" . PHP_EOL .
-                    $this->getStringSet() . " VS " . $rowStringSet . PHP_EOL .
-                    "Result: " . $contentFileRelativePath
-            );*/
         } else {
-            /*error_log(
-                get_class($this)." - no cache hit:" . PHP_EOL .
-                    $this->getStringSet() . " VS " . $rowStringSet
-            );*/
             $result = null;
         }
         return $result;

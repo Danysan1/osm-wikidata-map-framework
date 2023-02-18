@@ -46,7 +46,9 @@ class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements Str
         $hash = sha1($xml);
         $xmlRelativePath = $hash . ".xml";
         $xmlAbsolutePath = (string)$this->getConfig()->get("cache_file_base_path") . $xmlRelativePath;
-        file_put_contents($xmlAbsolutePath, $xml);
+        $writtenBytes = @file_put_contents($xmlAbsolutePath, $xml);
+        if (!$writtenBytes)
+            error_log("Failed writing cache to $xmlAbsolutePath");
 
         return $xmlRelativePath;
     }

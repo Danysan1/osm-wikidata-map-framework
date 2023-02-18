@@ -158,7 +158,7 @@ abstract class CSVCachedQuery implements Query
         }
 
         if ($result !== null) {
-            error_log("CachedQuery: cache hit for " . $this->baseQuery);
+            //error_log("CachedQuery: cache hit for " . $this->baseQuery);
         } else {
             // Cache miss, send query
             error_log("CachedQuery: cache miss for " . $this->baseQuery);

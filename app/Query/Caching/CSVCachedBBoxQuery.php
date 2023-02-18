@@ -72,16 +72,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
             $fileRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
             $result = $this->getResultFromFilePath($fileRelativePath);
             //error_log(get_class($this).": " . $rowBBox . " contains " . $this->getBBox());
-            /*error_log(
-                get_class($this)." - cache hit:" . PHP_EOL .
-                    $this->getBBox() . " VS " . $rowBBox . PHP_EOL .
-                    "Result: " . $fileRelativePath
-            );*/
         } else {
-            /*error_log(
-                get_class($this)." - no cache hit:" . PHP_EOL .
-                    $this->getBBox() . " VS " . $rowBBox
-            );*/
             $result = null;
         }
         return $result;
@@ -97,7 +88,9 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $hash = sha1($rowData);
         $fileRelativePath = $hash . "." . $this->getExtension();
         $fileAbsolutePath = (string)$this->getConfig()->get("cache_file_base_path") . $fileRelativePath;
-        file_put_contents($fileAbsolutePath, $rowData);
+        $writtenBytes = @file_put_contents($fileAbsolutePath, $rowData);
+        if (!$writtenBytes)
+            error_log("Failed writing cache to $fileAbsolutePath");
 
         $newRow = [
             BBOX_CACHE_COLUMN_TIMESTAMP => time(),
