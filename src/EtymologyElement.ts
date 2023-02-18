@@ -94,7 +94,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     return out;
 }
 
-function etymologyToDomElement(ety: Etymology): HTMLElement {
+function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
     if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
@@ -173,9 +173,13 @@ function etymologyToDomElement(ety: Etymology): HTMLElement {
         console.warn("Missing location_button");
     } else if (ety.wkt_coords) {
         const coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords),
-            coordsOk = !!coords && coords.length > 1;
-        if (coordsOk) {
-            location_button.href = "#" + coords.at(1) + "," + coords.at(2) + ",12.5";
+            coordsOk = !!coords && coords.length == 3,
+            strLon = coordsOk ? coords.at(1) : null,
+            lon = strLon ? parseFloat(strLon) : NaN,
+            strLat = coordsOk ? coords.at(2) : null,
+            lat = strLat ? parseFloat(strLat) : NaN;
+        if (!isNaN(lon) && !isNaN(lat)) {
+            location_button.href = `#${lon},${lat},${currentZoom}`;
             location_button.style.display = 'inline-flex';
         } else {
             location_button.style.display = 'none';

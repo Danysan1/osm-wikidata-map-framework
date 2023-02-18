@@ -21,7 +21,7 @@ interface FeatureProperties {
     wikipedia?: string;
 }
 
-export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
+export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
@@ -107,7 +107,8 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
         while (Array.isArray(coord) && Array.isArray(coord[0])) {
             coord = coord[0];
         }
-        element_location_button.href = "#" + coord[0] + "," + coord[1] + ",18";
+        const lon = coord[0], lat = coord[1];
+        element_location_button.href = `#${lon},${lat},${currentZoom}`;
     }
 
     const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
@@ -116,15 +117,15 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
     } else {
         etymologies.filter(e => e?.wikidata).forEach(function (ety) {
             try {
-                etymologies_container.appendChild(etymologyToDomElement(ety))
+                etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
             } catch (err) {
                 console.error("Failed adding etymology", ety, err);
             }
         });
 
-        const textEtyName = properties.text_etymology === "null" ? null : properties.text_etymology,
+        const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
             textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
-            textEtyDescr = properties.text_etymology_descr === "null" ? null : properties.text_etymology_descr,
+            textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
             textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
         let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
 
@@ -147,7 +148,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature): HTMLElement {
                 from_osm_type: properties.osm_type,
                 from_osm_id: properties.osm_id,
                 from_wikidata: false,
-            } as Etymology));
+            }, currentZoom));
         }
     }
 
