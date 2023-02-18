@@ -300,9 +300,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 JOIN oem.wikidata AS wd
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
-                LEFT JOIN oem.wikidata_text AS wdt
-                    ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
-                WHERE wdt IS NULL"
+                ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );
             $stInsertText->bindValue("lang", $this->language, PDO::PARAM_STR);
             $stInsertText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
