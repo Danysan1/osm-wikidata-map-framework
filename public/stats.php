@@ -59,7 +59,6 @@ if ($db != null) {
             $db,
             $wikidataEndpointURL,
             $serverTiming,
-            true,
             null,
             $source
         );
@@ -70,7 +69,6 @@ if ($db != null) {
             $db,
             $wikidataEndpointURL,
             $serverTiming,
-            true,
             null,
             $source
         );

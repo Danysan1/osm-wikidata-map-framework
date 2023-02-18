@@ -29,7 +29,6 @@ $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
-$fetchAttribution = $conf->getBool("fetch_attribution");
 
 $enableDB = $conf->getDbEnable();
 if ($enableDB && $source != "overpass") {
@@ -59,7 +58,6 @@ if ($db != null) {
         $db,
         $wikidataEndpointURL,
         $serverTiming,
-        $fetchAttribution,
         $maxElements,
         $source,
         $subject
