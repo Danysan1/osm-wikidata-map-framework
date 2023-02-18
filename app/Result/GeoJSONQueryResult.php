@@ -13,12 +13,9 @@ use \App\Result\JSONQueryResult;
 interface GeoJSONQueryResult extends JSONQueryResult
 {
     /**
-     * @return array{type:string}
+     * @return array{type:string,features:array}
      */
     public function getGeoJSONData(): array;
 
-    /**
-     * @return string
-     */
     public function getGeoJSON(): string;
 }

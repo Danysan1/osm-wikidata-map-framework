@@ -16,9 +16,7 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
     protected abstract function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false;
 
     /**
-     * @return array{type:string}
-     *
-     * https://gis.stackexchange.com/questions/115733/converting-json-to-geojson-or-csv/115736#115736
+     * @see https://gis.stackexchange.com/questions/115733/converting-json-to-geojson-or-csv/115736#115736
      */
     public function getGeoJSONData(): array
     {
