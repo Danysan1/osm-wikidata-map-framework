@@ -7,7 +7,7 @@
     "name": "dsantini/open-etymology-map",
     "description": "Open Etymology Map - Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata",
     "type": "project",
-    "version": "2.21.0",
+    "version": "2.22.0",
     "require": {
         "php": "^8.0",
         "sentry/sdk": "^3.1"
