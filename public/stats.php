@@ -19,6 +19,7 @@ use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 use \App\Query\Overpass\Stats\BBoxSourceStatsOverpassQuery;
+use App\Query\PostGIS\Stats\BBoxCenturyStatsPostGISQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -53,32 +54,13 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     if ($to == "genderStats") {
-        $query = new BBoxGenderStatsPostGISQuery(
-            $bbox,
-            $safeLanguage,
-            $db,
-            $wikidataEndpointURL,
-            $serverTiming,
-            null,
-            $source
-        );
+        $query = new BBoxGenderStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
     } elseif ($to == "typeStats") {
-        $query = new BBoxTypeStatsPostGISQuery(
-            $bbox,
-            $safeLanguage,
-            $db,
-            $wikidataEndpointURL,
-            $serverTiming,
-            null,
-            $source
-        );
+        $query = new BBoxTypeStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
+    } elseif ($to == "centuryStats") {
+        $query = new BBoxCenturyStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
     } elseif ($to == "sourceStats") {
-        $query = new BBoxSourceStatsPostGISQuery(
-            $bbox,
-            $db,
-            $serverTiming,
-            $source
-        );
+        $query = new BBoxSourceStatsPostGISQuery($bbox, $db, $serverTiming, $source);
     } else {
         throw new Exception("Bad 'to' parameter");
     }
@@ -89,8 +71,10 @@ if ($db != null) {
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($bbox, $overpassConfig, $wikidataFactory, $serverTiming);
+    } elseif ($to == "centuryStats") {
+        throw new Exception("Not implemented");
     } elseif ($to == "sourceStats") {
-        $baseQuery = new BBoxSourceStatsOverpassQuery($bbox, $overpassConfig, $serverTiming);
+        $baseQuery = new BBoxSourceStatsOverpassQuery($bbox, $overpassConfig);
     } else {
         throw new Exception("Bad 'to' parameter");
     }

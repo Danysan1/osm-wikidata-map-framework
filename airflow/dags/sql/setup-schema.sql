@@ -189,3 +189,20 @@ SELECT CASE
 	ELSE NULL
 END
 $BODY$;
+
+CREATE OR REPLACE FUNCTION oem.et_century_color(century NUMERIC)
+    RETURNS text
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE PARALLEL UNSAFE
+AS $BODY$
+DECLARE
+    color_ratio INT := CASE
+        WHEN century IS NULL
+        THEN NULL
+        ELSE (LEAST(GREATEST(century,5), 21) - 5) / 16.0 * 255 -- color mapping [5, 21] => [0, 255]
+    END;
+BEGIN
+    RETURN 'rgb('|| color_ratio ||',50,' || 255-color_ratio || ')';
+END
+$BODY$;
