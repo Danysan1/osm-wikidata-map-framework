@@ -8,6 +8,7 @@ use \App\ServerTiming;
 $serverTiming = new ServerTiming();
 
 use \App\Config\IniEnvConfiguration;
+use App\Query\Caching\CSVCachedBBoxQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -44,20 +45,20 @@ foreach ($files as $filePath) {
                 "geometry" => [
                     "type" => "Polygon",
                     "coordinates" => [[[
-                        (float)$row[BBOX_CACHE_COLUMN_MIN_LON],
-                        (float)$row[BBOX_CACHE_COLUMN_MIN_LAT]
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MIN_LON],
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MIN_LAT]
                     ], [
-                        (float)$row[BBOX_CACHE_COLUMN_MIN_LON],
-                        (float)$row[BBOX_CACHE_COLUMN_MAX_LAT]
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MIN_LON],
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MAX_LAT]
                     ], [
-                        (float)$row[BBOX_CACHE_COLUMN_MAX_LON],
-                        (float)$row[BBOX_CACHE_COLUMN_MAX_LAT]
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MAX_LON],
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MAX_LAT]
                     ], [
-                        (float)$row[BBOX_CACHE_COLUMN_MAX_LON],
-                        (float)$row[BBOX_CACHE_COLUMN_MIN_LAT]
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MAX_LON],
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MIN_LAT]
                     ], [
-                        (float)$row[BBOX_CACHE_COLUMN_MIN_LON],
-                        (float)$row[BBOX_CACHE_COLUMN_MIN_LAT]
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MIN_LON],
+                        (float)$row[CSVCachedBBoxQuery::BBOX_CACHE_COLUMN_MIN_LAT]
                     ]]],
                 ],
             ];

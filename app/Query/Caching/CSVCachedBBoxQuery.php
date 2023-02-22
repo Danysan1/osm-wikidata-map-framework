@@ -13,13 +13,6 @@ use \App\BaseBoundingBox;
 use \App\BoundingBox;
 use \App\Config\Configuration;
 
-define("BBOX_CACHE_COLUMN_TIMESTAMP", 0);
-define("BBOX_CACHE_COLUMN_MIN_LAT", 1);
-define("BBOX_CACHE_COLUMN_MAX_LAT", 2);
-define("BBOX_CACHE_COLUMN_MIN_LON", 3);
-define("BBOX_CACHE_COLUMN_MAX_LON", 4);
-define("BBOX_CACHE_COLUMN_RESULT", 5);
-
 /**
  * A query which searches objects in a given bounding box caching the result in a file.
  * 
@@ -27,6 +20,13 @@ define("BBOX_CACHE_COLUMN_RESULT", 5);
  */
 abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 {
+    public const BBOX_CACHE_COLUMN_TIMESTAMP = 0;
+    public const BBOX_CACHE_COLUMN_MIN_LAT = 1;
+    public const BBOX_CACHE_COLUMN_MAX_LAT = 2;
+    public const BBOX_CACHE_COLUMN_MIN_LON = 3;
+    public const BBOX_CACHE_COLUMN_MAX_LON = 4;
+    public const BBOX_CACHE_COLUMN_RESULT = 5;
+
     /**
      * @param BBoxQuery $baseQuery
      * @param string $cacheFileBasePath
@@ -52,8 +52,8 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $newBBox = $this->getBBox();
         return $this->baseShouldKeepRow(
             $row,
-            BBOX_CACHE_COLUMN_TIMESTAMP,
-            BBOX_CACHE_COLUMN_RESULT,
+            self::BBOX_CACHE_COLUMN_TIMESTAMP,
+            self::BBOX_CACHE_COLUMN_RESULT,
             [$this, "getBBoxFromRow"],
             [$newBBox, "strictlyContains"]
         );
@@ -69,7 +69,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $rowBBox = $this->getBBoxFromRow($row);
         if ($rowBBox->containsOrEquals($this->getBBox())) {
             // Row bbox contains entirely the query bbox, cache hit!
-            $fileRelativePath = (string)$row[BBOX_CACHE_COLUMN_RESULT];
+            $fileRelativePath = (string)$row[self::BBOX_CACHE_COLUMN_RESULT];
             $result = $this->getResultFromFilePath($fileRelativePath);
             //error_log(get_class($this).": " . $rowBBox . " contains " . $this->getBBox());
         } else {
@@ -93,22 +93,22 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
             error_log("Failed writing cache to $fileAbsolutePath");
 
         $newRow = [
-            BBOX_CACHE_COLUMN_TIMESTAMP => time(),
-            BBOX_CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
-            BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
-            BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
-            BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
-            BBOX_CACHE_COLUMN_RESULT => $fileRelativePath
+            self::BBOX_CACHE_COLUMN_TIMESTAMP => time(),
+            self::BBOX_CACHE_COLUMN_MIN_LAT => $this->getBBox()->getMinLat(),
+            self::BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
+            self::BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
+            self::BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
+            self::BBOX_CACHE_COLUMN_RESULT => $fileRelativePath
         ];
         return $newRow;
     }
 
     public function getBBoxFromRow(array $row): BoundingBox
     {
-        $rowMinLat = (float)$row[BBOX_CACHE_COLUMN_MIN_LAT];
-        $rowMaxLat = (float)$row[BBOX_CACHE_COLUMN_MAX_LAT];
-        $rowMinLon = (float)$row[BBOX_CACHE_COLUMN_MIN_LON];
-        $rowMaxLon = (float)$row[BBOX_CACHE_COLUMN_MAX_LON];
+        $rowMinLat = (float)$row[self::BBOX_CACHE_COLUMN_MIN_LAT];
+        $rowMaxLat = (float)$row[self::BBOX_CACHE_COLUMN_MAX_LAT];
+        $rowMinLon = (float)$row[self::BBOX_CACHE_COLUMN_MIN_LON];
+        $rowMaxLon = (float)$row[self::BBOX_CACHE_COLUMN_MAX_LON];
         return new BaseBoundingBox($rowMinLat, $rowMinLon, $rowMaxLat, $rowMaxLon);
     }
 }
