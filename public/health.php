@@ -13,7 +13,7 @@ prepareHTML($conf);
 if (!$conf->has("mapbox_token")) {
     http_response_code(500);
     die('<html><body>Missing Mapbox token from configuration</body></html>');
-} else if ($conf->getDbEnable()) {
+} else if ($conf->isDbEnabled()) {
     try {
         $dbh = new PostGIS_PDO($conf);
     } catch (Throwable $e) {

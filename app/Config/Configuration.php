@@ -23,7 +23,7 @@ interface Configuration
 
 	public function getMetaTag(string $key, ?bool $optional = false): string;
 
-	public function getDbEnable(): bool;
+	public function isDbEnabled(): bool;
 
 	public function getDbDatabase(): string;
 }

@@ -27,7 +27,7 @@ $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 $subject = (string)getFilteredParamOrDefault("subject", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 
-$enableDB = $conf->getDbEnable();
+$enableDB = $conf->isDbEnabled();
 if ($enableDB && $source != "overpass") {
     //error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);

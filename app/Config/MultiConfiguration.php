@@ -64,7 +64,7 @@ class MultiConfiguration extends BaseConfiguration
 		return $this->has($key) && $this->get($key) !== "false";
 	}
 
-	public function getDbEnable(): bool
+	public function isDbEnabled(): bool
 	{
 		$ret = null;
 		if (!empty($_SERVER["SERVER_NAME"]) && $this->has("db_enable_map")) {

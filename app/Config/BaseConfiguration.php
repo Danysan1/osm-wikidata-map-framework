@@ -37,14 +37,14 @@ abstract class BaseConfiguration implements Configuration
         return is_array($parsed) ? $parsed : [$raw];
     }
 
-    public function getDbEnable(): bool
+    public function isDbEnabled(): bool
     {
         return $this->getBool("db_enable");
     }
 
-    public function getDbEnableMetaTag(): string
+    public function isDbEnabledMetaTag(): string
     {
-        return self::lowLevelMetaTag("db_enable", json_encode($this->getDbEnable()));
+        return self::lowLevelMetaTag("db_enable", json_encode($this->isDbEnabled()));
     }
 
     public function getDbDatabase(): string

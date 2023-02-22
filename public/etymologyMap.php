@@ -30,7 +30,7 @@ $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
 
-$enableDB = $conf->getDbEnable();
+$enableDB = $conf->isDbEnabled();
 if ($enableDB && $source != "overpass") {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);

@@ -15,7 +15,7 @@ if (!$conf->has("mapbox_token")) {
 }
 
 $lastUpdateString = '';
-$enableDB = $conf->getDbEnable();
+$enableDB = $conf->isDbEnabled();
 if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
@@ -59,7 +59,7 @@ if ($enableDB) {
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 
-    <?= $conf->getDbEnableMetaTag(); ?>
+    <?= $conf->isDbEnabledMetaTag(); ?>
     <?= $conf->getMetaTag("mapbox_token"); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
     <?= $conf->getMetaTag("default_center_lat"); ?>
