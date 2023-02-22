@@ -28,9 +28,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
-        ?string $subject = null
+        ?string $search = null
     ) {
-        parent::__construct($bbox, $db, $serverTiming, $source, $subject);
+        parent::__construct($bbox, $db, $serverTiming, $source, $search);
 
         if ($maxElements !== null && $maxElements <= 0) {
             throw new Exception("maxElements must be > 0");

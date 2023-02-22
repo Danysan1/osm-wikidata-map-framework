@@ -22,7 +22,7 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
         PDO $db,
         ?ServerTiming $serverTiming = null,
         ?string $source = null,
-        ?string $subject = null
+        ?string $search = null
     ) {
         parent::__construct($db, $serverTiming);
         $this->bbox = $bbox;
@@ -34,10 +34,10 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
             'propagated' => 'AND et_recursion_depth != 0',
             default => ''
         };
-        if (!empty($subject)) {
-            if (preg_match('/^Q\d+$/', $subject) !== 1) //! regex match fundamental to prevent SQL injection
-                throw new InvalidArgumentException("Bad subject: $subject");
-            $this->filterClause .= " AND wd.wd_wikidata_cod = '$subject'";
+        if (!empty($search)) {
+            if (preg_match('/^Q\d+$/', $search) !== 1) //! regex match fundamental to prevent SQL injection
+                throw new InvalidArgumentException("Bad search: $search");
+            $this->filterClause .= " AND wd.wd_wikidata_cod = '$search'";
         }
     }
 

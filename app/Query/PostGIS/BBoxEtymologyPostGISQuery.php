@@ -4,16 +4,38 @@ declare(strict_types=1);
 
 namespace App\Query\PostGIS;
 
-
+use App\BoundingBox;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
+use App\ServerTiming;
+use PDO;
 
 class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJSONQuery
 {
+    private string $textTag;
+    private string $descriptionTag;
+
+    public function __construct(
+        BoundingBox $bbox,
+        string $language,
+        PDO $db,
+        string $wikidataEndpointURL,
+        string $textTag,
+        string $descriptionTag,
+        ?ServerTiming $serverTiming = null,
+        ?int $maxElements = null,
+        ?string $source = null,
+        ?string $search = null
+    ) {
+        parent::__construct($bbox, $language, $db, $wikidataEndpointURL, $serverTiming, $maxElements, $source, $search);
+        $this->textTag = $textTag;
+        $this->descriptionTag = $descriptionTag;
+    }
+
     public function send(): QueryResult
     {
         $this->downloadMissingText();
@@ -51,6 +73,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     {
         $filterClause = $this->getFilterClause();
         $limitClause = $this->getLimitClause();
+        $textTag = $this->textTag;
+        $descriptionTag = $this->descriptionTag;
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
@@ -64,8 +88,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_osm_id AS osm_id,
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'name:etymology' ELSE NULL END AS text_etymology,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'name:etymology:description' ELSE NULL END AS text_etymology_descr,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$textTag' ELSE NULL END AS text_etymology,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$descriptionTag' ELSE NULL END AS text_etymology_descr,
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,

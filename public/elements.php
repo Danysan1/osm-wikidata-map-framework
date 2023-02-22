@@ -24,7 +24,7 @@ $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
-$subject = (string)getFilteredParamOrDefault("subject", FILTER_SANITIZE_SPECIAL_CHARS, null);
+$search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 
 $enableDB = $conf->isDbEnabled();
@@ -44,7 +44,7 @@ if ($from == "bbox") {
     $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
     if ($db != null) {
-        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $subject);
+        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
     } else {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataTags, $bbox, $overpassConfig);
         $cacheFileBasePath = (string)$conf->get("cache_file_base_path");

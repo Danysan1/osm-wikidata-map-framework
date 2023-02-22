@@ -28,7 +28,7 @@ export class EtymologyMap extends Map {
     private currentSourceControl?: SourceControl;
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
-    private subject: string;
+    private search: string;
 
     constructor(
         containerId: string,
@@ -65,7 +65,7 @@ export class EtymologyMap extends Map {
         const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
         window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
 
-        this.subject = new URLSearchParams(window.location.search).get("subject") ?? "";
+        this.search = new URLSearchParams(window.location.search).get("search") ?? "";
     }
 
     /**
@@ -181,7 +181,7 @@ export class EtymologyMap extends Map {
             enableGlobalLayers,
             source,
             language,
-            subject: this.subject,
+            search: this.search,
         });
 
         if (enableWikidataLayers) {
@@ -194,7 +194,7 @@ export class EtymologyMap extends Map {
                 maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
                 language,
                 source,
-                subject: this.subject,
+                search: this.search,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 wikidata_url = './etymologyMap.php?' + queryString;
@@ -213,7 +213,7 @@ export class EtymologyMap extends Map {
                 maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.1234 => 0.2
                 language,
                 source,
-                subject: this.subject,
+                search: this.search,
             },
                 queryString = new URLSearchParams(queryParams).toString(),
                 elements_url = './elements.php?' + queryString;

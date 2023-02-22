@@ -24,7 +24,7 @@ $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
-$subject = (string)getFilteredParamOrDefault("subject", FILTER_SANITIZE_SPECIAL_CHARS, null);
+$search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
@@ -55,21 +55,12 @@ $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
-    $query = new BBoxEtymologyPostGISQuery(
-        $bbox,
-        $safeLanguage,
-        $db,
-        $wikidataEndpointURL,
-        $serverTiming,
-        $maxElements,
-        $source,
-        $subject
-    );
+    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textTag, $descriptionTag, $serverTiming, $maxElements, $source, $search);
 } else {
     $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
-    $wikidataFactory = new CachedEtymologyIDListWikidataFactory( $safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
-    $baseQuery = new BBoxGeoJSONEtymologyQuery( $wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
-    $query = new CSVCachedBBoxGeoJSONQuery( $baseQuery, $cacheFileBasePath, $conf, $serverTiming);
+    $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
+    $baseQuery = new BBoxGeoJSONEtymologyQuery($wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+    $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $conf, $serverTiming);
 }
 
 $serverTiming->add("3_init");
