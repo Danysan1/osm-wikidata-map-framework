@@ -171,19 +171,22 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     const location_button = etyDomElement.querySelector<HTMLAnchorElement>('.subject_location_button');
     if (!location_button) {
         console.warn("Missing location_button");
-    } else if (ety.wkt_coords) {
-        const coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords),
-            coordsOk = !!coords && coords.length == 3,
-            strLon = coordsOk ? coords.at(1) : null,
-            lon = strLon ? parseFloat(strLon) : NaN,
-            strLat = coordsOk ? coords.at(2) : null,
-            lat = strLat ? parseFloat(strLat) : NaN;
-        if (!isNaN(lon) && !isNaN(lat)) {
-            location_button.href = `#${lon},${lat},${currentZoom}`;
+    } else {
+        let ety_lat = NaN, ety_lon = NaN;
+        if (ety.wkt_coords) {
+            const coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords),
+                coordsOk = !!coords && coords.length == 3,
+                strLon = coordsOk ? coords.at(1) : null,
+                strLat = coordsOk ? coords.at(2) : null;
+            ety_lat = strLat ? parseFloat(strLat) : NaN;
+            ety_lon = strLon ? parseFloat(strLon) : NaN;
+        }
+        if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
+            location_button.href = `#${ety_lon},${ety_lat},${currentZoom}`;
             location_button.style.display = 'inline-flex';
         } else {
             location_button.style.display = 'none';
-            console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, coords, wkt_coords: ety.wkt_coords });
+            console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, wkt_coords: ety.wkt_coords });
         }
     }
 

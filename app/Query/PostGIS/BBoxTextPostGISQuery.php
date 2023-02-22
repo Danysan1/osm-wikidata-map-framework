@@ -11,6 +11,7 @@ use \App\BaseStringSet;
 use \App\ServerTiming;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Query\Wikidata\EtymologyIDListJSONWikidataQuery;
+use App\Result\RemoteQueryResult;
 use Exception;
 
 abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
@@ -103,7 +104,11 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-download");
 
-            //error_log("wikidataResult: " . $wikidataResult->getJSON());
+            if (!$wikidataResult->isSuccessful()) {
+                if ($wikidataResult instanceof RemoteQueryResult)
+                    error_log("Wikidata bad response: " . $wikidataResult->getBody());
+                throw new Exception("Wikidata request failed");
+            }
 
             $stInsertGender = $this->getDB()->prepare(
                 "INSERT INTO oem.wikidata (wd_wikidata_cod)

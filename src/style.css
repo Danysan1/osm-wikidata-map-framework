@@ -107,11 +107,12 @@ div.detail_container a.k-button>.button_img {
     font-size: 1.25em;
 }
 
-select.hiddenElement,
-table.hiddenElement,
-canvas.hiddenElement,
+select.dropdown-ctrl-dropdown.hiddenElement,
+table.dropdown-ctrl-table.hiddenElement,
+canvas.chart.hiddenElement,
+a.k-button.hiddenElement,
 .hiddenElement {
-    display: none !important;
+  display: none;
 }
 
 canvas.chart {
