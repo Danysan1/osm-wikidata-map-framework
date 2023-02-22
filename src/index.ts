@@ -9,7 +9,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
-import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
+import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle, openMapTilesBackgroundStyle } from './BackgroundStyleControl';
 import { debugLog, getConfig, setPageLocale } from './config';
 import './style.css';
 
@@ -20,6 +20,7 @@ initMatomo();
 setPageLocale();
 
 const maptiler_key = getConfig("maptiler_key"),
+    openmaptiles_key = getConfig("openmaptiles_key"),
     mapbox_token = getConfig("mapbox_token"),
     backgroundStyles: BackgroundStyle[] = [];
 
@@ -40,6 +41,15 @@ if (maptiler_key) {
         maptilerBackgroundStyle('maptiler_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
         maptilerBackgroundStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor', maptiler_key),
         maptilerBackgroundStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
+    );
+}
+
+if (openmaptiles_key) {
+    backgroundStyles.push(
+        openMapTilesBackgroundStyle('omt_bright', 'OpenMapTiles Bright', 'osm-bright', openmaptiles_key),
+        openMapTilesBackgroundStyle('omt_positron', 'OpenMapTiles Positron', 'positron', openmaptiles_key),
+        openMapTilesBackgroundStyle('omt_darkmatter', 'OpenMapTiles Dark Matter', 'dark-matter', openmaptiles_key),
+        openMapTilesBackgroundStyle('omt_klokantech-basic', 'OpenMapTiles Klokantech', 'klokantech-basic', openmaptiles_key),
     );
 }
 

@@ -58,6 +58,7 @@ if ($enableDB) {
     <?= $conf->getDbEnableMetaTag(); ?>
     <?= $conf->getMetaTag("mapbox_token", true); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
+    <?= $conf->getMetaTag("openmaptiles_key", true); ?>
     <?= $conf->getMetaTag("default_center_lat"); ?>
     <?= $conf->getMetaTag("default_center_lon"); ?>
     <?= $conf->getMetaTag("default_zoom"); ?>

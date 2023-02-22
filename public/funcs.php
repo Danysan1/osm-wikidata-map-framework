@@ -200,8 +200,8 @@ function getFilteredParamOrDefault($paramName, $filter = FILTER_DEFAULT, $defaul
 
 function checkMapToken(Configuration $conf): void
 {
-	if (!$conf->has("mapbox_token") && !$conf->has("maptiler_key")) {
+	if (!$conf->has("mapbox_token") && !$conf->has("maptiler_key") && !$conf->has("openmaptiles_key")) {
 		http_response_code(500);
-		die('<html><body>Missing any Mapbox/Maptiler token from configuration</body></html>');
+		die('<html><body>Missing any Mapbox/Maptiler/OpenMapTiles token from configuration</body></html>');
 	}
 }

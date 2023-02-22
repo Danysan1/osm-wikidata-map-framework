@@ -30,6 +30,18 @@ export function mapboxBackgroundStyle(id: string, text: string, mapboxUser: stri
 }
 
 /**
+ * @see https://openmaptiles.org/styles/
+ * @see https://openmaptiles.org/docs/website/maplibre-gl-js/
+ */
+export function openMapTilesBackgroundStyle(id: string, text: string, openMapTilesId: string, openMapTilesKey: string): BackgroundStyle {
+    return {
+        id: id,
+        text: text,
+        styleUrl: 'https://openmaptiles.github.io/' + openMapTilesId + '-gl-style/style-cdn.json?key=' + openMapTilesKey
+    };
+}
+
+/**
  * Let the user choose the map style.
  **/
 export class BackgroundStyleControl extends DropdownControl {
