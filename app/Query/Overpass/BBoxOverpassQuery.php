@@ -15,18 +15,9 @@ use \App\Query\Overpass\OverpassConfig;
  */
 class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
 {
-    /**
-     * @var BoundingBox $bbox
-     */
-    private $bbox;
+    private BoundingBox $bbox;
 
-    /**
-     * @param string|array<string> $tags
-     * @param BoundingBox $bbox
-     * @param string $outputType
-     * @param OverpassConfig $config
-     */
-    public function __construct($tags, $bbox, $outputType, $config)
+    public function __construct(string|array $tags, BoundingBox $bbox, string $outputType, OverpassConfig $config)
     {
         parent::__construct(
             $tags,
@@ -37,9 +28,6 @@ class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
         $this->bbox = $bbox;
     }
 
-    /**
-     * @return BoundingBox
-     */
     public function getBBox(): BoundingBox
     {
         return $this->bbox;

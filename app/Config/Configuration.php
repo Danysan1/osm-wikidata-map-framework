@@ -15,13 +15,11 @@ interface Configuration
 	 */
 	public function hasAll(array $keys): bool;
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function get(string $key);
+	public function get(string $key): mixed;
 
 	public function getBool(string $key): bool;
+
+	public function getArray(string $key): array;
 
 	public function getMetaTag(string $key, ?bool $optional = false): string;
 

@@ -38,6 +38,9 @@ if ($enableDB && $source != "overpass") {
     //error_log("etymologyMap.php NOT using DB");
     $db = null;
 }
+$textTag = (string)$conf->get('text_tag');
+$descriptionTag = (string)$conf->get('description_tag');
+$wikidataTags = $conf->getArray('wikidata_tags');
 
 // "en-US" => "en"
 $langMatches = [];
@@ -63,24 +66,10 @@ if ($db != null) {
         $subject
     );
 } else {
-    $wikidataFactory = new CachedEtymologyIDListWikidataFactory(
-        $safeLanguage,
-        $wikidataEndpointURL,
-        $cacheFileBasePath . $safeLanguage . "_",
-        $conf
-    );
-    $baseQuery = new BBoxGeoJSONEtymologyQuery(
-        $bbox,
-        $overpassConfig,
-        $wikidataFactory,
-        $serverTiming
-    );
-    $query = new CSVCachedBBoxGeoJSONQuery(
-        $baseQuery,
-        $cacheFileBasePath . $safeLanguage . "_",
-        $conf,
-        $serverTiming
-    );
+    $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
+    $wikidataFactory = new CachedEtymologyIDListWikidataFactory( $safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
+    $baseQuery = new BBoxGeoJSONEtymologyQuery( $wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+    $query = new CSVCachedBBoxGeoJSONQuery( $baseQuery, $cacheFileBasePath, $conf, $serverTiming);
 }
 
 $serverTiming->add("3_init");

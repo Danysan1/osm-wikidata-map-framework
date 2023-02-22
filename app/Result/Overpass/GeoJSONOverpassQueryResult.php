@@ -27,8 +27,6 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
         foreach ($elements as $index => $row) {
             if (!is_int($index)) {
                 error_log("OverpassQueryResult::getGeoJSONData: malformed array key");
-            } elseif (!is_array($row)) {
-                error_log("OverpassQueryResult::getGeoJSONData: malformed array value");
             } else {
                 $feature = $this->convertElementToGeoJSONFeature($index, $row, $elements);
                 if (!empty($feature)) {

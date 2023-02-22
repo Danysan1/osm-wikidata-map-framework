@@ -16,8 +16,6 @@ use Exception;
  */
 class OverpassQuery extends JSONCurlQuery
 {
-    public const ALL_WIKIDATA_ETYMOLOGY_TAGS = ['name:etymology:wikidata', 'subject:wikidata', 'buried:wikidata'];
-
     public function __construct(string $query, string $endpointURL)
     {
         parent::__construct(["data" => $query], $endpointURL, "POST");

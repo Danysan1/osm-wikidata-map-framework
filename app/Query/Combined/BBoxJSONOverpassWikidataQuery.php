@@ -22,24 +22,20 @@ use \App\Query\StringSetXMLQueryFactory;
  */
 abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 {
-    /** @var ServerTiming $timing */
-    protected $timing;
+    protected ServerTiming $timing;
+    private BBoxEtymologyOverpassQuery $overpassQuery;
+    protected StringSetXMLQueryFactory $wikidataFactory;
 
-    /** @var BBoxEtymologyOverpassQuery $overpassQuery */
-    private $overpassQuery;
-
-    /** @var StringSetXMLQueryFactory $wikidataFactory */
-    protected $wikidataFactory;
-
-    /**
-     * @param BoundingBox $bbox
-     * @param OverpassConfig $overpassConfig
-     * @param StringSetXMLQueryFactory $wikidataFactory
-     * @param ServerTiming $timing
-     */
-    public function __construct($bbox, $overpassConfig, $wikidataFactory, $timing)
-    {
-        $this->overpassQuery = new BBoxEtymologyOverpassQuery($bbox, $overpassConfig);
+    public function __construct(
+        array $tags,
+        BoundingBox $bbox,
+        OverpassConfig $config,
+        StringSetXMLQueryFactory $wikidataFactory,
+        ServerTiming $timing,
+        string $textTag,
+        string $descriptionTag
+    ) {
+        $this->overpassQuery = new BBoxEtymologyOverpassQuery($tags, $bbox, $config, $textTag, $descriptionTag);
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }

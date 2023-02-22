@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Config;
 
+use Exception;
+
 abstract class BaseConfiguration implements Configuration
 {
     public function hasAll(array $keys): bool
@@ -25,7 +27,14 @@ abstract class BaseConfiguration implements Configuration
         if ($optional && !$this->has($key))
             return "";
         else
-            return self::lowLevelMetaTag($key, $this->get($key));
+            return self::lowLevelMetaTag($key, (string)$this->get($key));
+    }
+
+    public function getArray(string $key): array
+    {
+        $raw = (string)$this->get($key);
+        $parsed = json_decode($raw);
+        return is_array($parsed) ? $parsed : [$raw];
     }
 
     public function getDbEnable(): bool

@@ -49,6 +49,9 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
+$textTag = (string)$conf->get('text_tag');
+$descriptionTag = (string)$conf->get('description_tag');
+$wikidataTags = $conf->getArray('wikidata_tags');
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
@@ -67,14 +70,14 @@ if ($db != null) {
 } else {
     if ($to == "genderStats") {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($bbox, $overpassConfig, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($bbox, $overpassConfig, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
     } elseif ($to == "centuryStats") {
         throw new Exception("Not implemented");
     } elseif ($to == "sourceStats") {
-        $baseQuery = new BBoxSourceStatsOverpassQuery($bbox, $overpassConfig);
+        $baseQuery = new BBoxSourceStatsOverpassQuery($wikidataTags, $bbox, $overpassConfig);
     } else {
         throw new Exception("Bad 'to' parameter");
     }

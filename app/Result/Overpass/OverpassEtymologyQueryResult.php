@@ -13,9 +13,26 @@ use \App\Result\Overpass\GeoJSONOverpassQueryResult;
  */
 class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 {
+    private string $textTag;
+    private string $descriptionTag;
+    private array $wikidataTags;
+    
     public const ETYMOLOGY_WD_ID_KEY = "id";
 
     private const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
+
+    public function __construct(
+        bool $success,
+        ?array $result,
+        string $textTag,
+        string $descriptionTag,
+        array $wikidataTags
+    ) {
+        parent::__construct($success, $result);
+        $this->textTag = $textTag;
+        $this->descriptionTag = $descriptionTag;
+        $this->wikidataTags = $wikidataTags;
+    }
 
     protected function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false
     {
@@ -30,7 +47,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
          * @var string[] $wikidataEtymologyIDs All avaliable Wikidata etymology IDs
          */
         $wikidataEtymologyIDs = [];
-        foreach (OverpassQuery::ALL_WIKIDATA_ETYMOLOGY_TAGS as $tag) {
+        foreach ($this->wikidataTags as $tag) {
             if (!empty($element["tags"][$tag])) {
                 $IDs = explode(";", (string)$element["tags"][$tag]);
                 foreach ($IDs as $id) {
@@ -59,17 +76,27 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             "type" => "Feature",
             "geometry" => [],
             "properties" => [
-                "alt_name" => empty($element["tags"]["alt_name"]) ? null : (string)$element["tags"]["alt_name"],
-                "commons" => empty($element["tags"]["wikimedia_commons"]) ? null : (string)$element["tags"]["wikimedia_commons"],
                 "name" => $elementName,
                 "osm_type" => $osmType,
                 "osm_id" => $osmID,
                 "source_color" => "#33ff66",
-                "text_etymology" => empty($element["tags"]["name:etymology"]) ? null : (string)$element["tags"]["name:etymology"],
-                "text_etymology_descr" => empty($element["tags"]["name:etymology:description"]) ? null : (string)$element["tags"]["name:etymology:description"],
-                "wikipedia" => empty($element["tags"]["wikipedia"]) ? null : (string)$element["tags"]["wikipedia"],
             ],
         ];
+
+        if (!empty($element["tags"]["alt_name"]))
+            $feature["properties"]["alt_name"] = (string)$element["tags"]["alt_name"];
+
+        if (!empty($element["tags"][$this->textTag]))
+            $feature["properties"]["text_etymology"] = (string)$element["tags"][$this->textTag];
+
+        if (!empty($element["tags"][$this->descriptionTag]))
+            $feature["properties"]["text_etymology_descr"] = (string)$element["tags"][$this->descriptionTag];
+
+        if (!empty($element["tags"]["wikipedia"]))
+            $feature["properties"]["wikipedia"] = (string)$element["tags"]["wikipedia"];
+
+        if (!empty($element["tags"]["wikimedia_commons"]))
+            $feature["properties"]["commons"] = (string)$element["tags"]["wikimedia_commons"];
 
         if (!empty($element["tags"]["wikidata"])) {
             $wikidataTag = (string)$element["tags"]["wikidata"];

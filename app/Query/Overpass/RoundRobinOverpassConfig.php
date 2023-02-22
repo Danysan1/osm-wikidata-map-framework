@@ -11,26 +11,11 @@ use Exception;
 
 class RoundRobinOverpassConfig implements OverpassConfig
 {
-    /**
-     * @var array<string>
-     */
-    private $endpoints;
-    /**
-     * @var bool
-     */
-    private $nodes;
-    /**
-     * @var bool
-     */
-    private $ways;
-    /**
-     * @var bool
-     */
-    private $relations;
-    /**
-     * @var int|null
-     */
-    private $maxElements;
+    private array $endpoints;
+    private bool $nodes;
+    private bool $ways;
+    private bool $relations;
+    private ?int $maxElements;
 
     /**
      * @param Configuration $conf
@@ -39,9 +24,7 @@ class RoundRobinOverpassConfig implements OverpassConfig
     public function __construct(Configuration $conf, ?array $overrideEndpoints = null)
     {
         if (empty($overrideEndpoints)) {
-            $raw_endpoint = (string)($conf->get('overpass_endpoints'));
-            $endpoints = json_decode($raw_endpoint);
-            $this->endpoints = is_array($endpoints) ? $endpoints : [$raw_endpoint];
+            $this->endpoints = $conf->getArray('overpass_endpoints');
         } else {
             $this->endpoints = $overrideEndpoints;
         }
@@ -82,7 +65,7 @@ class RoundRobinOverpassConfig implements OverpassConfig
         return $this->relations;
     }
 
-    public function getMaxElements(): int|null
+    public function getMaxElements(): ?int
     {
         return $this->maxElements;
     }

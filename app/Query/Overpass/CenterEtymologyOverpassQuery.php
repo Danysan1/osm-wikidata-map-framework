@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Query\Overpass;
 
 
-use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\BaseOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\GeoJSONQuery;
@@ -18,21 +17,23 @@ use \App\Result\GeoJSONQueryResult;
  */
 class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQuery
 {
-    /**
-     * @var float
-     */
-    private $lat, $lon, $radius;
+    private float $lat;
+    private float $lon;
+    private float $radius;
+    private string $textTag;
+    private string $descriptionTag;
 
-    /**
-     * @param float $lat
-     * @param float $lon
-     * @param float $radius
-     * @param OverpassConfig $config
-     */
-    public function __construct($lat, $lon, $radius, $config)
-    {
+    public function __construct(
+        float $lat,
+        float $lon,
+        float $radius,
+        OverpassConfig $config,
+        string $textTag,
+        string $descriptionTag,
+        array $wikidataTags
+    ) {
         parent::__construct(
-            OverpassQuery::ALL_WIKIDATA_ETYMOLOGY_TAGS,
+            $wikidataTags,
             "around:$radius,$lat,$lon",
             "out body; >; out skel qt;",
             $config
@@ -40,6 +41,8 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
         $this->lat = $lat;
         $this->lon = $lon;
         $this->radius = $radius;
+        $this->textTag = $textTag;
+        $this->descriptionTag = $descriptionTag;
     }
 
     /**
@@ -69,7 +72,13 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
     public function send(): QueryResult
     {
         $res = $this->sendAndRequireResult();
-        return new OverpassEtymologyQueryResult($res->isSuccessful(), $res->getArray());
+        return new OverpassEtymologyQueryResult(
+            $res->isSuccessful(),
+            $res->getArray(),
+            $this->textTag,
+            $this->descriptionTag,
+            $this->tags
+        );
     }
 
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult

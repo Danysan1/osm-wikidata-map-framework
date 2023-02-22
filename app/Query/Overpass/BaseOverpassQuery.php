@@ -7,6 +7,7 @@ namespace App\Query\Overpass;
 
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
+use Exception;
 
 /**
  * Base OverpassQL query
@@ -16,27 +17,24 @@ class BaseOverpassQuery extends OverpassQuery
     /**
      * @var array<string>
      */
-    protected $tags;
+    protected array $tags;
+
+    private string $position;
+
+    private string $outputType;
 
     /**
-     * @var string
-     */
-    private $position;
-
-    /**
-     * @var string
-     */
-    private $outputType;
-
-    /**
-     * @param string|array<string> $tags Tags to search
+     * @param string|array $tags Tags to search
      * @param string $position Position filter for the elements (bbox, center, etc.)
      * @param string $outputType Desired output content ('out ids center;' / 'out body; >; out skel qt;' / ...)
      * @param OverpassConfig $config
      */
-    public function __construct($tags, string $position, string $outputType, OverpassConfig $config)
+    public function __construct(string|array $tags, string $position, string $outputType, OverpassConfig $config)
     {
-        $this->tags = is_string($tags) ? [$tags] : $tags;
+        $this->tags = is_string($tags) ? [$tags] : array_map(function (mixed $tag) {
+            if (!is_string($tag)) throw new Exception("Bag tag (is not string): $tag");
+            return $tag;
+        }, $tags);
 
         $query = "[out:json][timeout:40]; ( ";
         foreach ($this->tags as $tag) {
@@ -54,6 +52,14 @@ class BaseOverpassQuery extends OverpassQuery
 
         $this->position = $position;
         $this->outputType = $outputType;
+    }
+
+    /**
+     * @return array<string>
+     */
+    public function getTags(): array
+    {
+        return $this->tags;
     }
 
     public function __toString(): string
