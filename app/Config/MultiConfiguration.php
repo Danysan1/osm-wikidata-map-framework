@@ -46,11 +46,7 @@ class MultiConfiguration extends BaseConfiguration
 		);
 	}
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function get(string $key)
+	public function get(string $key): mixed
 	{
 		for ($i = 0; $i < count($this->configs); $i++) {
 			if ($this->configs[$i]->has($key))

@@ -13,9 +13,6 @@ class IniFileConfiguration extends BaseConfiguration
 	 */
 	private $config;
 
-	/**
-	 * @param string $iniFilePath
-	 */
 	public function __construct(string $iniFilePath = __DIR__ . "/../../open-etymology-map.ini")
 	{
 		$this->config = @parse_ini_file($iniFilePath);
@@ -36,11 +33,7 @@ class IniFileConfiguration extends BaseConfiguration
 		return isset($this->config[$key]) && $this->config[$key] !== "";
 	}
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function get(string $key)
+	public function get(string $key): mixed
 	{
 		if (!isset($this->config[$key])) {
 			throw new Exception("Configuration not found: $key");

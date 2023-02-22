@@ -18,11 +18,7 @@ class EnvironmentConfiguration extends BaseConfiguration
 		return getenv($key) !== false && getenv($key) !== "";
 	}
 
-	/**
-	 * @param string $key
-	 * @return mixed
-	 */
-	public function get(string $key)
+	public function get(string $key): mixed
 	{
 		if (!$this->has($key)) {
 			throw new Exception("Configuration not found: $key");
