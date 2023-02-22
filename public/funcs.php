@@ -87,7 +87,7 @@ function prepareHTML(Configuration $conf)
 
 	$wikimediaImgSrcs = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
 	$wikimediaConnectSrcs = "https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php";
-	
+
 	$payPalImgSrcs = "https://www.paypal.com https://www.paypalobjects.com";
 
 	header(
@@ -196,4 +196,12 @@ function getFilteredParamOrDefault($paramName, $filter = FILTER_DEFAULT, $defaul
 		$paramValue = $defaultValue;
 	}
 	return $paramValue;
+}
+
+function checkMapToken(Configuration $conf): void
+{
+	if (!$conf->has("mapbox_token") && !$conf->has("maptiler_key")) {
+		http_response_code(500);
+		die('<html><body>Missing any Mapbox/Maptiler token from configuration</body></html>');
+	}
 }

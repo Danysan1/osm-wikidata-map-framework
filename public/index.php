@@ -8,11 +8,7 @@ use \App\PostGIS_PDO;
 
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
-
-if (!$conf->has("mapbox_token")) {
-    http_response_code(500);
-    die('<html><body>Missing Mapbox token from configuration</body></html>');
-}
+checkMapToken($conf);
 
 $lastUpdateString = '';
 $enableDB = $conf->getDbEnable();
@@ -60,7 +56,7 @@ if ($enableDB) {
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 
     <?= $conf->getDbEnableMetaTag(); ?>
-    <?= $conf->getMetaTag("mapbox_token"); ?>
+    <?= $conf->getMetaTag("mapbox_token", true); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
     <?= $conf->getMetaTag("default_center_lat"); ?>
     <?= $conf->getMetaTag("default_center_lon"); ?>
