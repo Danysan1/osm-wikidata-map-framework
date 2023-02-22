@@ -45,6 +45,7 @@ export class DropdownControl implements IControl {
         this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl dropdown-ctrl';
 
         const table = document.createElement('table');
+        table.className = "dropdown-ctrl-table";
         this._container.appendChild(table);
 
         const tr = document.createElement('tr');
@@ -65,7 +66,7 @@ export class DropdownControl implements IControl {
         btnCell.className = 'button-cell';
 
         this._ctrlDropDown = document.createElement('select');
-        this._ctrlDropDown.className = 'hiddenElement';
+        this._ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
         if (this._title) this._ctrlDropDown.title = this._title;
         this._ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
         dropdownCell.appendChild(this._ctrlDropDown);

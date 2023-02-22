@@ -122,15 +122,15 @@ if ($enableDB) {
         <div class="detail_container">
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
-            <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button" style="display:none">
+            <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                 <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                 <span class="button_text"> Wikipedia</span>
             </a>
-            <a title="Element on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button" style="display:none">
+            <a title="Element on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                 <span class="button_text"> Commons</span>
             </a>
-            <a title="Element on Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button" style="display:none">
+            <a title="Element on Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
                 <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                 <span class="button_text"> Wikidata</span>
             </a>
@@ -166,11 +166,11 @@ if ($enableDB) {
                         <h3 class="etymology_description"></h3>
                     </div>
                     <div class="info column">
-                        <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button" style="display:none">
+                        <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
                             <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                             <span class="button_text"> Wikipedia</span>
                         </a>
-                        <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button" style="display:none">
+                        <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
                             <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                             <span class="button_text"> Commons</span>
                         </a>
@@ -182,7 +182,7 @@ if ($enableDB) {
                             <img class="button_img" src="img/entitree.png" alt="EntiTree logo">
                             <span class="button_text"> EntiTree</span>
                         </a>
-                        <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button" style="display:none" target="_self">
+                        <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement" target="_self">
                             <span class="button_img">📍</span>
                             <span class="button_text"> Location</span>
                         </a>

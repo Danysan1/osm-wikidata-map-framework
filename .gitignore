@@ -1,7 +1,7 @@
 samples/*/*-output.json
 samples/*/*-output.xml
-airflow/logs/
-airflow/plugins/
+airflow/
+!airflow/dags/
 
 *.geojson
 *.gz
@@ -25,6 +25,7 @@ pgadmin-data
 vendor/
 cache/
 storage/
+airflow_test/
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,metals,phpunit,composer,visualstudiocode,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,metals,phpunit,composer,visualstudiocode,python

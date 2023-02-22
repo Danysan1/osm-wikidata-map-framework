@@ -56,9 +56,9 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         console.warn("Missing element_wikidata_button");
     } else if (wikidata && wikidata != 'null') {
         element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
-        element_wikidata_button.style.display = 'inline-flex';
+        element_wikidata_button.classList.remove("hiddenElement");
     } else {
-        element_wikidata_button.style.display = 'none';
+        element_wikidata_button.classList.add("hiddenElement");
     }
 
     const wikipedia = properties.wikipedia,
@@ -67,9 +67,9 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         console.warn("Missing element_wikipedia_button");
     } else if (wikipedia && wikipedia != 'null') {
         element_wikipedia_button.href = `https://www.wikipedia.org/wiki/${wikipedia}`;
-        element_wikipedia_button.style.display = 'inline-flex';
+        element_wikipedia_button.classList.remove("hiddenElement");
     } else {
-        element_wikipedia_button.style.display = 'none';
+        element_wikipedia_button.classList.add("hiddenElement");
     }
 
     const commons = properties.commons,
@@ -78,9 +78,9 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         console.warn("Missing element_commons_button");
     } else if (commons && commons != 'null') {
         element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
-        element_commons_button.style.display = 'inline-flex';
+        element_commons_button.classList.remove("hiddenElement");
     } else {
-        element_commons_button.style.display = 'none';
+        element_commons_button.classList.add("hiddenElement");
     }
 
     const osm_url = 'https://www.openstreetmap.org/' + osm_full_id,
