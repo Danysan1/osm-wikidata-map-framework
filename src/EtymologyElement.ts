@@ -133,9 +133,9 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         console.warn("Missing wikidata_button");
     } else if (ety.wikidata) {
         wikidata_button.href = 'https://www.wikidata.org/wiki/' + ety.wikidata
-        wikidata_button.style.display = 'inline-flex';
+        wikidata_button.classList.remove("hiddenElement");
     } else {
-        wikidata_button.style.display = 'none';
+        wikidata_button.classList.add("hiddenElement");
     }
 
     const entitree_button = etyDomElement.querySelector<HTMLAnchorElement>('.entitree_button');
@@ -143,9 +143,9 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         console.warn("Missing entitree_button");
     } else if (lang && ety.wikidata && ety.wd_class == "Q5") {
         entitree_button.href = `https://www.entitree.com/${lang}/family_tree/${ety.wikidata}`;
-        entitree_button.style.display = 'inline-flex';
+        entitree_button.classList.remove("hiddenElement");
     } else {
-        entitree_button.style.display = 'none';
+        entitree_button.classList.add("hiddenElement");
     }
 
     const wikipedia_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikipedia_button');
@@ -153,9 +153,9 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         console.warn("Missing wikipedia_button");
     } else if (ety.wikipedia) {
         wikipedia_button.href = ety.wikipedia;
-        wikipedia_button.style.display = 'inline-flex';
+        wikipedia_button.classList.remove("hiddenElement");
     } else {
-        wikipedia_button.style.display = 'none';
+        wikipedia_button.classList.add("hiddenElement");
     }
 
     const commons_button = etyDomElement.querySelector<HTMLAnchorElement>('.commons_button');
@@ -163,9 +163,9 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         console.warn("Missing commons_button");
     } else if (ety.commons) {
         commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
-        commons_button.style.display = 'inline-flex';
+        commons_button.classList.remove("hiddenElement");
     } else {
-        commons_button.style.display = 'none';
+        commons_button.classList.add("hiddenElement");
     }
 
     const location_button = etyDomElement.querySelector<HTMLAnchorElement>('.subject_location_button');
@@ -183,9 +183,9 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         }
         if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
             location_button.href = `#${ety_lon},${ety_lat},${currentZoom}`;
-            location_button.style.display = 'inline-flex';
+            location_button.classList.remove("hiddenElement");
         } else {
-            location_button.style.display = 'none';
+            location_button.classList.add("hiddenElement");
             console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, wkt_coords: ety.wkt_coords });
         }
     }

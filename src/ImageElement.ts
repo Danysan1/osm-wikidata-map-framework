@@ -12,6 +12,7 @@ function imageToDomElement(img: ImageResponse): HTMLDivElement {
         picture = document.createElement('img'),
         attribution = document.createElement('p'),
         imgContainer = document.createElement('div');
+    imgContainer.className = 'pic-container';
 
     let imgUrl: string | null,
         imgPreviewUrl: string | null,
@@ -63,10 +64,8 @@ function imageToDomElement(img: ImageResponse): HTMLDivElement {
                 })
                 .catch(console.warn);
         }
-
-        imgContainer.className = 'pic-container';
     } else {
-        imgContainer.style.display = 'none';
+        imgContainer.classList.add("hiddenElement");
     }
 
     return imgContainer;

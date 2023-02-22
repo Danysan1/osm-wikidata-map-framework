@@ -107,14 +107,6 @@ div.detail_container a.k-button>.button_img {
     font-size: 1.25em;
 }
 
-select.dropdown-ctrl-dropdown.hiddenElement,
-table.dropdown-ctrl-table.hiddenElement,
-canvas.chart.hiddenElement,
-a.k-button.hiddenElement,
-.hiddenElement {
-  display: none;
-}
-
 canvas.chart {
     width: 25em;
     height: 40em;
@@ -224,19 +216,20 @@ div#spinner.show::after {
     -webkit-animation-name: spin;
     -webkit-animation-duration: .8s;
     -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: cubic-bezier(.45,.05,.55,.95);
+    -webkit-animation-timing-function: cubic-bezier(.45, .05, .55, .95);
     animation-name: spin;
     animation-duration: .8s;
     animation-iteration-count: infinite;
-    animation-timing-function: cubic-bezier(.45,.05,.55,.95);
+    animation-timing-function: cubic-bezier(.45, .05, .55, .95);
 }
 
 @keyframes spin {
     from {
-        transform:rotate(0deg);
+        transform: rotate(0deg);
     }
+
     to {
-        transform:rotate(360deg);
+        transform: rotate(360deg);
     }
 }
 
@@ -247,6 +240,7 @@ div#spinner.show::after {
         bottom: 0;
         opacity: 0;
     }
+
     to {
         bottom: 30px;
         opacity: 0.9;
@@ -258,6 +252,7 @@ div#spinner.show::after {
         bottom: 0;
         opacity: 0;
     }
+
     to {
         bottom: 30px;
         opacity: 0.9;
@@ -269,6 +264,7 @@ div#spinner.show::after {
         bottom: 30px;
         opacity: 0.9;
     }
+
     to {
         bottom: 0;
         opacity: 0;
@@ -280,6 +276,7 @@ div#spinner.show::after {
         bottom: 30px;
         opacity: 0.9;
     }
+
     to {
         bottom: 0;
         opacity: 0;
@@ -379,12 +376,26 @@ span.button_text {
     display: none;
 }
 
-div.pictures div.pic-container {
+div.pictures>div.pic-container {
     /*border-width: 0.5px;*/
     /*border-style: solid;*/
     /*border-color: #ccc;*/
     /*border-radius: 0.5em;*/
     margin: 1px;
+}
+
+.k-button {
+    display: inline-flex;
+}
+
+.hiddenElement,
+div.pictures>div.pic-container.hiddenElement,
+div.detail_container>a.k-button.hiddenElement,
+div.info>a.k-button.hiddenElement,
+select.dropdown-ctrl-dropdown.hiddenElement,
+table.dropdown-ctrl-table.hiddenElement,
+canvas.chart.hiddenElement {
+    display: none;
 }
 
 p.pic-attr {
