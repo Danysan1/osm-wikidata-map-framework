@@ -392,6 +392,8 @@ class OemDbInitDAG(DAG):
         )
         task_convert_ety >> task_load_named_after
 
+        # TODO check wether to propagate (env var propagate_data) 
+
         task_propagate = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
             conn_id = local_db_conn_id,

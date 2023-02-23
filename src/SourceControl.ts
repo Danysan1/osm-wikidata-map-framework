@@ -11,13 +11,16 @@ export class SourceControl extends DropdownControl {
     constructor(onSourceChange: (sourceID: string) => void, startSourceID: string) {
         const rawKeys = getConfig("osm_wikidata_keys"),
             rawProps = getConfig("wikidata_properties"),
+            propagationEnabled = getConfig("propagate_data") == 'true',
             sources: Record<string, string> = {
                 overpass: "OSM (real time via Overpass API)",
                 all: "All sources from DB",
-                propagated: "Propagated (from DB)",
             };
+        if (propagationEnabled) {
+            sources.propagated = "Propagated (from DB)";
+        }
 
-        if (!rawKeys || !rawProps) {
+        if (!rawProps) {
             console.warn("Missing wikidata_properties");
         } else {
             const props = JSON.parse(rawProps) as string[];

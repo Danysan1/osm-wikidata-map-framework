@@ -86,6 +86,7 @@ x-airflow-common:
     AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key}
     AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
     AIRFLOW_VAR_WIKIDATA_PROPERTIES: ${wikidata_properties}
+    AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data}
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
