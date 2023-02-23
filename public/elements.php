@@ -35,8 +35,8 @@ if ($enableDB && $source != "overpass") {
     //error_log("elements.php NOT using DB");
     $db = null;
 }
-$textTag = (string)$conf->get('osm_text_tag');
-$descriptionTag = (string)$conf->get('osm_description_tag');
+$textTag = (string)$conf->get('osm_text_key');
+$descriptionTag = (string)$conf->get('osm_description_key');
 $wikidataKeys = $conf->getWikidataKeys();
 $wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 

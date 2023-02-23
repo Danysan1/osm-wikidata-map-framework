@@ -22,7 +22,8 @@ class OemDockerOperator(DockerOperator):
                 "db_user": f'{{{{ conn["{postgres_conn_id}"].login }}}}',
                 "db_database": f'{{{{ conn["{postgres_conn_id}"].schema }}}}',
                 "db_password": f'{{{{ conn["{postgres_conn_id}"].password }}}}',
-                "wikidata_endpoint": "https://query.wikidata.org/sparql",
+                "wikidata_endpoint": 'https://{{ conn.wikidata_api.host }}/{{ conn.wikidata_api.schema }}',
+                "wikidata_properties": '{{ var.value.wikidata_properties }}',
             },
             retries = 3,
             network_mode="open-etymology-map_airflow-postgis-bridge", # The container needs to talk with the local DB

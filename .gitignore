@@ -1,7 +1,9 @@
 samples/*/*-output.json
 samples/*/*-output.xml
-airflow/
-!airflow/dags/
+airflow/logs/
+airflow/plugins/
+airflow/airflow.cfg
+airflow/webserver_config.py
 
 *.geojson
 *.gz

@@ -49,8 +49,8 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$textTag = (string)$conf->get('osm_text_tag');
-$descriptionTag = (string)$conf->get('osm_description_tag');
+$textTag = (string)$conf->get('osm_text_key');
+$descriptionTag = (string)$conf->get('osm_description_key');
 $wikidataKeys = $conf->getWikidataKeys();
 $wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 $maxArea = (float)$conf->get("elements_bbox_max_area");
