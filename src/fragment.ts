@@ -1,6 +1,5 @@
 import { ColorSchemeID } from "./colorScheme.model";
 import { debugLog, getConfig } from "./config";
-import { SourceID } from "./source.model";
 
 const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lon_raw = getConfig("default_center_lon"),
@@ -9,7 +8,7 @@ const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lon = default_center_lon_raw ? parseFloat(default_center_lon_raw) : 0,
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
     defaultColorScheme: ColorSchemeID = getConfig("default_color_scheme") as ColorSchemeID,
-    defaultSource: SourceID = "all";
+    defaultSource = "all";
 
 interface FragmentParams {
     lon: number | null;
@@ -40,7 +39,7 @@ function getFragmentParams(): FragmentParams {
  * If a parameter is !== undefined it is updated in the fragment.
  * If it is === undefined it is left untouched.
  */
-function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, source?: SourceID): string {
+function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, source?: string): string {
     const currentParams = getCorrectFragmentParams(),
         p = currentParams;
 
@@ -61,7 +60,7 @@ interface CorrectFragmentParams {
     lat: number;
     zoom: number;
     colorScheme: ColorSchemeID;
-    source: SourceID;
+    source: string;
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {

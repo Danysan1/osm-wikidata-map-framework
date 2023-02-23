@@ -41,6 +41,7 @@ if ($enableDB && $source != "overpass") {
 $textTag = (string)$conf->get('osm_text_tag');
 $descriptionTag = (string)$conf->get('osm_description_tag');
 $wikidataKeys = $conf->getWikidataKeys();
+$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 
 // "en-US" => "en"
 $langMatches = [];
@@ -55,7 +56,7 @@ $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
-    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textTag, $descriptionTag, $serverTiming, $maxElements, $source, $search);
+    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textTag, $descriptionTag, $serverTiming, $maxElements, $wikidataKeyIDs, $source, $search);
 } else {
     $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);

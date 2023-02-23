@@ -22,7 +22,7 @@ interface Configuration
 	public function getArray(string $key): array;
 
 	/**
-	 * @return array<string> OSM wikidata tags
+	 * @return array<string> Configured OSM wikidata keys
 	 */
 	public function getWikidataKeys(): array;
 

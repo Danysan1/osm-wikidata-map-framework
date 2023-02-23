@@ -17,28 +17,38 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
     private BoundingBox $bbox;
     private string $filterClause;
 
+    /**
+     * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
+     */
     public function __construct(
         BoundingBox $bbox,
         PDO $db,
         ?ServerTiming $serverTiming = null,
+        ?array $availableSourceKeyIDs = null,
         ?string $source = null,
         ?string $search = null
     ) {
         parent::__construct($db, $serverTiming);
         $this->bbox = $bbox;
-        $this->filterClause = match ($source) {
-            'etymology' => 'AND et_from_osm_name_etymology AND et_recursion_depth = 0',
-            'subject' => 'AND et_from_osm_subject AND et_recursion_depth = 0',
-            'buried' => 'AND et_from_osm_buried AND et_recursion_depth = 0',
-            'wikidata' => 'AND et_from_wikidata_wd_id IS NOT NULL AND et_recursion_depth = 0',
-            'propagated' => 'AND et_recursion_depth != 0',
-            default => ''
-        };
+
+        $filterClause = '';
+        if ($source == 'wikidata') {
+            $filterClause = 'AND et_from_wikidata_wd_id IS NOT NULL AND et_recursion_depth = 0';
+        } elseif ($source == 'propagated') {
+            $filterClause = 'AND et_recursion_depth != 0';
+        } else {
+            foreach ($availableSourceKeyIDs as $keyID) {
+                if ($source == $keyID)
+                    $filterClause = "AND et_from_$keyID AND et_recursion_depth = 0";
+            }
+        }
+
         if (!empty($search)) {
             if (preg_match('/^Q\d+$/', $search) !== 1) //! regex match fundamental to prevent SQL injection
                 throw new InvalidArgumentException("Bad search: $search");
-            $this->filterClause .= " AND wd.wd_wikidata_cod = '$search'";
+            $filterClause .= " AND wd.wd_wikidata_cod = '$search'";
         }
+        $this->filterClause = $filterClause;
     }
 
     public function getBBox(): BoundingBox

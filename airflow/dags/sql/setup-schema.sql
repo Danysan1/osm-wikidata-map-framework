@@ -119,7 +119,7 @@ CREATE TABLE oem.etymology (
     et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
-    et_from_osm_etymology BOOLEAN DEFAULT FALSE, -- derived directly from OSM name:etymology:wikidata=*
+    et_from_osm_name_etymology BOOLEAN DEFAULT FALSE, -- derived directly from OSM name:etymology:wikidata=*
     et_from_osm_subject BOOLEAN DEFAULT FALSE, -- derived directly from OSM subject:wikidata=*
     et_from_osm_buried BOOLEAN DEFAULT FALSE, -- derived directly from OSM buried:wikidata=*
     et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
@@ -170,7 +170,7 @@ CREATE OR REPLACE FUNCTION oem.et_source_color(et oem.etymology)
 AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN '#ff3333'
-	WHEN et.et_from_osm_etymology OR et.et_from_osm_subject OR et.et_from_osm_buried THEN '#33ff66'
+	WHEN et.et_from_osm_name_etymology OR et.et_from_osm_subject OR et.et_from_osm_buried THEN '#33ff66'
 	WHEN et.et_from_wikidata_wd_id IS NOT NULL THEN '#3399ff'
 	ELSE NULL
 END
@@ -184,7 +184,7 @@ CREATE OR REPLACE FUNCTION oem.et_source_name(et oem.etymology)
 AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN 'Propagation'
-	WHEN et.et_from_osm_etymology OR et.et_from_osm_subject OR et.et_from_osm_buried THEN 'OpenStreetMap'
+	WHEN et.et_from_osm_name_etymology OR et.et_from_osm_subject OR et.et_from_osm_buried THEN 'OpenStreetMap'
 	WHEN et.et_from_wikidata_wd_id IS NOT NULL THEN 'Wikidata'
 	ELSE NULL
 END

@@ -20,14 +20,11 @@ try {
 } catch (Exception $e) {
     $lastUpdate = date("Y-m-d");
 }
-$wikidataKeys = $conf->getWikidataKeys();
-$fromOsmColumnNames = array_map(function (string $tag): string {
-    return "osm_" . str_replace(":", "_", str_replace(":wikidata", "", $tag));
-}, $wikidataKeys);
-$fromOsmColumnValues = array_map(function (string $tag): string {
-    $tagID = "osm_" . str_replace(":", "_", str_replace(":wikidata", "", $tag));
-    return "COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND ety.et_from_$tagID) AS \"$tagID\"";
-}, $wikidataKeys);
+
+$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($conf->getWikidataKeys());
+$fromOsmColumnValues = array_map(function (string $keyID): string {
+    return "COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND ety.et_from_$keyID) AS \"$keyID\"";
+}, $wikidataKeyIDs);
 $stm = $db->query(
     "SELECT
         wd.wd_wikidata_cod AS \"wikidata_id\",
@@ -48,7 +45,7 @@ header("Content-Disposition: attachment; filename=open_etymology_map_dataset_$la
 $output = fopen("php://output", "w");
 fputcsv($output, array_merge( # Print column names
     ['wikidata_id', 'name'],
-    $fromOsmColumnNames,
+    $wikidataKeyIDs,
     ['from_wikidata', 'from_part_of', 'from_propagation']
 ));
 while (

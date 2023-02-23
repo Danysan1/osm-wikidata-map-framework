@@ -19,6 +19,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     private string $textTag;
     private string $descriptionTag;
 
+    /**
+     * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
+     */
     public function __construct(
         BoundingBox $bbox,
         string $language,
@@ -28,10 +31,21 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         string $descriptionTag,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
+        ?array $availableSourceKeyIDs = null,
         ?string $source = null,
         ?string $search = null
     ) {
-        parent::__construct($bbox, $language, $db, $wikidataEndpointURL, $serverTiming, $maxElements, $source, $search);
+        parent::__construct(
+            $bbox,
+            $language,
+            $db,
+            $wikidataEndpointURL,
+            $serverTiming,
+            $maxElements,
+            $availableSourceKeyIDs,
+            $source,
+            $search
+        );
         $this->textTag = $textTag;
         $this->descriptionTag = $descriptionTag;
     }

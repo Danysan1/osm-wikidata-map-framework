@@ -60,6 +60,8 @@ if ($enableDB) {
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 
     <?= $conf->isDbEnabledMetaTag(); ?>
+    <?= $conf->getMetaTag("osm_wikidata_keys"); ?>
+    <?= $conf->getMetaTag("wikidata_properties"); ?>
     <?= $conf->getMetaTag("mapbox_token"); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
     <?= $conf->getMetaTag("default_center_lat"); ?>

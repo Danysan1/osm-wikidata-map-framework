@@ -20,6 +20,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     private string $wikidataEndpointURL;
     private ?int $maxElements;
 
+    /**
+     * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
+     */
     public function __construct(
         BoundingBox $bbox,
         string $language,
@@ -27,10 +30,11 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         string $wikidataEndpointURL,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
+        ?array $availableSourceKeyIDs = null,
         ?string $source = null,
         ?string $search = null
     ) {
-        parent::__construct($bbox, $db, $serverTiming, $source, $search);
+        parent::__construct($bbox, $db, $serverTiming, $availableSourceKeyIDs, $source, $search);
 
         if ($maxElements !== null && $maxElements <= 0) {
             throw new Exception("maxElements must be > 0");

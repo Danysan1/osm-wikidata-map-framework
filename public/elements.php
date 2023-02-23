@@ -38,13 +38,14 @@ if ($enableDB && $source != "overpass") {
 $textTag = (string)$conf->get('osm_text_tag');
 $descriptionTag = (string)$conf->get('osm_description_tag');
 $wikidataKeys = $conf->getWikidataKeys();
+$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 
 if ($from == "bbox") {
     $maxArea = (float)$conf->get("elements_bbox_max_area");
     $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
     if ($db != null) {
-        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
+        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $wikidataKeyIDs, $source, $search);
     } else {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
         $cacheFileBasePath = (string)$conf->get("cache_file_base_path");

@@ -38,7 +38,7 @@ abstract class BaseConfiguration implements Configuration
     }
 
     /**
-     * @return array<string> OSM wikidata tags
+     * @return array<string> Configured OSM wikidata keys
      */
     public function getWikidataKeys(): array
     {
@@ -49,10 +49,21 @@ abstract class BaseConfiguration implements Configuration
 
         return array_map(function (mixed $item): string {
             $ret = (string)$item;
-            if (!preg_match('', $ret))
+            if (!preg_match('/^[a-z:]+$/', $ret))
                 throw new Exception("Bad OSM key: '$ret'");
             return $ret;
         }, $wikidataKeys);
+    }
+
+    /**
+     * @param array<string> $keys Configured OSM wikidata keys
+     * @return array<string> Configured OSM wikidata key IDs
+     */
+    public static function keysToIDs(array $keys): array
+    {
+        return array_map(function (string $key): string {
+            return "osm_" . str_replace(":", "_", str_replace(":wikidata", "", $key));
+        }, $keys);
     }
 
     public function isDbEnabled(): bool
