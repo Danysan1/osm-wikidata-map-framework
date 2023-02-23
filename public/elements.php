@@ -37,9 +37,7 @@ if ($enableDB && $source != "overpass") {
 }
 $textTag = (string)$conf->get('osm_text_tag');
 $descriptionTag = (string)$conf->get('osm_description_tag');
-$wikidataTags = array_map(function (mixed $x) {
-    return (string)$x;
-}, $conf->getArray('osm_wikidata_tags'));
+$wikidataKeys = $conf->getWikidataKeys();
 
 if ($from == "bbox") {
     $maxArea = (float)$conf->get("elements_bbox_max_area");
@@ -48,7 +46,7 @@ if ($from == "bbox") {
     if ($db != null) {
         $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
     } else {
-        $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataTags, $bbox, $overpassConfig);
+        $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
         $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
         $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $conf, $serverTiming);
     }
@@ -59,7 +57,7 @@ if ($from == "bbox") {
     if ($db != null) {
         throw new Exception("Not yet implemented");
     } else {
-        $query = new CenterEtymologyOverpassQuery($centerLat, $centerLon, $radius, $overpassConfig, $textTag, $descriptionTag, $wikidataTags);
+        $query = new CenterEtymologyOverpassQuery($centerLat, $centerLon, $radius, $overpassConfig, $textTag, $descriptionTag, $wikidataKeys);
     }
 } else {
     http_response_code(400);

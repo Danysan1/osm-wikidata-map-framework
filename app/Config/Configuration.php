@@ -21,6 +21,11 @@ interface Configuration
 
 	public function getArray(string $key): array;
 
+	/**
+	 * @return array<string> OSM wikidata tags
+	 */
+	public function getWikidataKeys(): array;
+
 	public function getMetaTag(string $key, ?bool $optional = false): string;
 
 	public function isDbEnabled(): bool;

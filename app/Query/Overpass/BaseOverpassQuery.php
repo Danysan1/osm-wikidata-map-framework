@@ -17,30 +17,30 @@ class BaseOverpassQuery extends OverpassQuery
     /**
      * @var array<string>
      */
-    protected array $tags;
+    private array $keys;
 
     private string $position;
 
     private string $outputType;
 
     /**
-     * @param array<string> $tags OSM wikidata tags to use
+     * @param array<string> $keys OSM wikidata keys to use
      * @param string $position Position filter for the elements (bbox, center, etc.)
      * @param string $outputType Desired output content ('out ids center;' / 'out body; >; out skel qt;' / ...)
      * @param OverpassConfig $config
      */
-    public function __construct(array $tags, string $position, string $outputType, OverpassConfig $config)
+    public function __construct(array $keys, string $position, string $outputType, OverpassConfig $config)
     {
-        $this->tags = $tags;
+        $this->keys = $keys;
 
         $query = "[out:json][timeout:40]; ( ";
-        foreach ($this->tags as $tag) {
+        foreach ($this->keys as $key) {
             if ($config->shouldFetchNodes())
-                $query .= "node['name']['$tag']($position);";
+                $query .= "node['name']['$key']($position);";
             if ($config->shouldFetchWays())
-                $query .= "way['name']['$tag']($position);";
+                $query .= "way['name']['$key']($position);";
             if ($config->shouldFetchRelations())
-                $query .= "relation['name']['$tag']($position);";
+                $query .= "relation['name']['$key']($position);";
         }
         $query .= " ); $outputType";
         //error_log(get_class($this) . ": $query");
@@ -52,17 +52,17 @@ class BaseOverpassQuery extends OverpassQuery
     }
 
     /**
-     * @return array<string>
+     * @return array<string> OSM wikidata keys to use
      */
-    public function getTags(): array
+    public function getKeys(): array
     {
-        return $this->tags;
+        return $this->keys;
     }
 
     public function __toString(): string
     {
         return parent::__toString() .
-            ", " . json_encode($this->tags) .
+            ", " . json_encode($this->keys) .
             ", " . $this->position .
             ", " . $this->outputType;
     }

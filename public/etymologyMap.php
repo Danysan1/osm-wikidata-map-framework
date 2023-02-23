@@ -40,9 +40,7 @@ if ($enableDB && $source != "overpass") {
 }
 $textTag = (string)$conf->get('osm_text_tag');
 $descriptionTag = (string)$conf->get('osm_description_tag');
-$wikidataTags = array_map(function (mixed $x) {
-    return (string)$x;
-}, $conf->getArray('osm_wikidata_tags'));
+$wikidataKeys = $conf->getWikidataKeys();
 
 // "en-US" => "en"
 $langMatches = [];
@@ -61,7 +59,7 @@ if ($db != null) {
 } else {
     $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
-    $baseQuery = new BBoxGeoJSONEtymologyQuery($wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+    $baseQuery = new BBoxGeoJSONEtymologyQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
     $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $conf, $serverTiming);
 }
 

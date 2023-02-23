@@ -15,23 +15,26 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 {
     private string $textTag;
     private string $descriptionTag;
-    private array $wikidataTags;
+    private array $keys;
     
     public const ETYMOLOGY_WD_ID_KEY = "id";
 
     private const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
 
+    /**
+     * @param array<string> $keys OSM wikidata keys to use
+     */
     public function __construct(
         bool $success,
         ?array $result,
         string $textTag,
         string $descriptionTag,
-        array $wikidataTags
+        array $keys
     ) {
         parent::__construct($success, $result);
         $this->textTag = $textTag;
         $this->descriptionTag = $descriptionTag;
-        $this->wikidataTags = $wikidataTags;
+        $this->keys = $keys;
     }
 
     protected function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false
@@ -47,9 +50,9 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
          * @var string[] $wikidataEtymologyIDs All avaliable Wikidata etymology IDs
          */
         $wikidataEtymologyIDs = [];
-        foreach ($this->wikidataTags as $tag) {
-            if (!empty($element["tags"][$tag])) {
-                $IDs = explode(";", (string)$element["tags"][$tag]);
+        foreach ($this->keys as $key) {
+            if (!empty($element["tags"][$key])) {
+                $IDs = explode(";", (string)$element["tags"][$key]);
                 foreach ($IDs as $id) {
                     $cleanID = str_replace(self::BAD_CHARS, '', $id);
                     if (preg_match("/^Q\d+$/", $cleanID))

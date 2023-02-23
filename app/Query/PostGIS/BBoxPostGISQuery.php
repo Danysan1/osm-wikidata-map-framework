@@ -27,7 +27,7 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
         parent::__construct($db, $serverTiming);
         $this->bbox = $bbox;
         $this->filterClause = match ($source) {
-            'etymology' => 'AND et_from_osm_etymology AND et_recursion_depth = 0',
+            'etymology' => 'AND et_from_osm_name_etymology AND et_recursion_depth = 0',
             'subject' => 'AND et_from_osm_subject AND et_recursion_depth = 0',
             'buried' => 'AND et_from_osm_buried AND et_recursion_depth = 0',
             'wikidata' => 'AND et_from_wikidata_wd_id IS NOT NULL AND et_recursion_depth = 0',

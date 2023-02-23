@@ -24,12 +24,12 @@ class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQ
     private BBoxOverpassQuery $baseQuery;
 
     /**
-     * @param array<string> $tags OSM wikidata tags to use
+     * @param array<string> $keys OSM wikidata keys to use
      */
-    public function __construct(array $tags, BoundingBox $bbox, OverpassConfig $config)
+    public function __construct(array $keys, BoundingBox $bbox, OverpassConfig $config)
     {
         $this->baseQuery = new BBoxOverpassQuery(
-            $tags,
+            $keys,
             $bbox,
             'out ids center;',
             $config

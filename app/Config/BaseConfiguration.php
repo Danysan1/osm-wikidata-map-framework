@@ -37,6 +37,24 @@ abstract class BaseConfiguration implements Configuration
         return is_array($parsed) ? $parsed : [$raw];
     }
 
+    /**
+     * @return array<string> OSM wikidata tags
+     */
+    public function getWikidataKeys(): array
+    {
+        $wikidataKeys = $this->getArray('osm_wikidata_keys');
+
+        if (empty($wikidataKeys))
+            throw new Exception("Empty osm_wikidata_keys");
+
+        return array_map(function (mixed $item): string {
+            $ret = (string)$item;
+            if (!preg_match('', $ret))
+                throw new Exception("Bad OSM key: '$ret'");
+            return $ret;
+        }, $wikidataKeys);
+    }
+
     public function isDbEnabled(): bool
     {
         return $this->getBool("db_enable");

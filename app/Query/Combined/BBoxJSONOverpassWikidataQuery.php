@@ -27,10 +27,10 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
     protected StringSetXMLQueryFactory $wikidataFactory;
 
     /**
-     * @param array<string> $tags OSM wikidata tags to use
+     * @param array<string> $keys OSM wikidata keys to use
      */
     public function __construct(
-        array $tags,
+        array $keys,
         BoundingBox $bbox,
         OverpassConfig $config,
         StringSetXMLQueryFactory $wikidataFactory,
@@ -38,7 +38,7 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         string $textTag,
         string $descriptionTag
     ) {
-        $this->overpassQuery = new BBoxEtymologyOverpassQuery($tags, $bbox, $config, $textTag, $descriptionTag);
+        $this->overpassQuery = new BBoxEtymologyOverpassQuery($keys, $bbox, $config, $textTag, $descriptionTag);
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }

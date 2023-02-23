@@ -51,9 +51,7 @@ $safeLanguage = $langMatches[1];
 
 $textTag = (string)$conf->get('osm_text_tag');
 $descriptionTag = (string)$conf->get('osm_description_tag');
-$wikidataTags = array_map(function (mixed $x) {
-    return (string)$x;
-}, $conf->getArray('osm_wikidata_tags'));
+$wikidataKeys = $conf->getWikidataKeys();
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
@@ -72,14 +70,14 @@ if ($db != null) {
 } else {
     if ($to == "genderStats") {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataTags, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
     } elseif ($to == "centuryStats") {
         throw new Exception("Not implemented");
     } elseif ($to == "sourceStats") {
-        $baseQuery = new BBoxSourceStatsOverpassQuery($wikidataTags, $bbox, $overpassConfig);
+        $baseQuery = new BBoxSourceStatsOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
     } else {
         throw new Exception("Bad 'to' parameter");
     }

@@ -26,14 +26,14 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
     private string $descriptionTag;
 
     /**
-     * @param array<string> $tags OSM wikidata tags to use
+     * @param array<string> $keys OSM wikidata keys to use
      */
-    public function __construct(array $tags, BoundingBox $bbox, OverpassConfig $config, string $textTag, string $descriptionTag)
+    public function __construct(array $keys, BoundingBox $bbox, OverpassConfig $config, string $textTag, string $descriptionTag)
     {
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements === null ? ' ' : " $maxElements";
         $this->baseQuery = new BBoxOverpassQuery(
-            $tags,
+            $keys,
             $bbox,
             "out body $limitClause; >; out skel qt;",
             $config
@@ -60,7 +60,7 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
             $res->getArray(),
             $this->textTag,
             $this->descriptionTag,
-            $this->baseQuery->getTags()
+            $this->baseQuery->getKeys()
         );
     }
 
