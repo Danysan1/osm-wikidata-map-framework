@@ -152,7 +152,7 @@ function loadWikidataRelatedEntities(
     return $total_wd;
 }
 
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): int
+function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataProperties): int
 {
     return loadWikidataRelatedEntities(
         "oem.element_wikidata_cods",
@@ -162,11 +162,7 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL): 
         "ew_el_id, w2.wd_id, ew_el_id, FALSE, FALSE, FALSE, w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
         "JOIN oem.element_wikidata_cods ON ew_wikidata_cod = w1.wd_wikidata_cod",
         "named_after",
-        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "P138", // named after
-            "P825", // dedicated to
-            "P547", // commemorates
-        ],
+        $wikidataProperties,
         null,
         $dbh,
         $wikidataEndpointURL

@@ -38,9 +38,11 @@ if ($enableDB && $source != "overpass") {
     //error_log("etymologyMap.php NOT using DB");
     $db = null;
 }
-$textTag = (string)$conf->get('text_tag');
-$descriptionTag = (string)$conf->get('description_tag');
-$wikidataTags = $conf->getArray('wikidata_tags');
+$textTag = (string)$conf->get('osm_text_tag');
+$descriptionTag = (string)$conf->get('osm_description_tag');
+$wikidataTags = array_map(function (mixed $x) {
+    return (string)$x;
+}, $conf->getArray('osm_wikidata_tags'));
 
 // "en-US" => "en"
 $langMatches = [];

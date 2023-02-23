@@ -17,7 +17,10 @@ class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
 {
     private BoundingBox $bbox;
 
-    public function __construct(string|array $tags, BoundingBox $bbox, string $outputType, OverpassConfig $config)
+    /**
+     * @param array<string> $tags OSM wikidata tags to use
+     */
+    public function __construct(array $tags, BoundingBox $bbox, string $outputType, OverpassConfig $config)
     {
         parent::__construct(
             $tags,

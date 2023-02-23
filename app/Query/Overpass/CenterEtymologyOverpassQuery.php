@@ -23,6 +23,9 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
     private string $textTag;
     private string $descriptionTag;
 
+    /**
+     * @param array<string> $tags OSM wikidata tags to use
+     */
     public function __construct(
         float $lat,
         float $lon,
@@ -30,10 +33,10 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
         OverpassConfig $config,
         string $textTag,
         string $descriptionTag,
-        array $wikidataTags
+        array $tags
     ) {
         parent::__construct(
-            $wikidataTags,
+            $tags,
             "around:$radius,$lat,$lon",
             "out body; >; out skel qt;",
             $config

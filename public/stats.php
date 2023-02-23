@@ -49,9 +49,11 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
 $safeLanguage = $langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$textTag = (string)$conf->get('text_tag');
-$descriptionTag = (string)$conf->get('description_tag');
-$wikidataTags = $conf->getArray('wikidata_tags');
+$textTag = (string)$conf->get('osm_text_tag');
+$descriptionTag = (string)$conf->get('osm_description_tag');
+$wikidataTags = array_map(function (mixed $x) {
+    return (string)$x;
+}, $conf->getArray('osm_wikidata_tags'));
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 

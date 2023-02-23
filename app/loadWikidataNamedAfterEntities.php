@@ -9,4 +9,7 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 $dbh = new PostGIS_PDO($conf);
 $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
-App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL);
+$wikidataProperties = array_map(function (mixed $x) {
+    return (string)$x;
+}, $conf->getArray("wikidata_properties"));
+App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL, $wikidataProperties);

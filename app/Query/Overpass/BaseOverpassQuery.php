@@ -24,17 +24,14 @@ class BaseOverpassQuery extends OverpassQuery
     private string $outputType;
 
     /**
-     * @param string|array $tags Tags to search
+     * @param array<string> $tags OSM wikidata tags to use
      * @param string $position Position filter for the elements (bbox, center, etc.)
      * @param string $outputType Desired output content ('out ids center;' / 'out body; >; out skel qt;' / ...)
      * @param OverpassConfig $config
      */
-    public function __construct(string|array $tags, string $position, string $outputType, OverpassConfig $config)
+    public function __construct(array $tags, string $position, string $outputType, OverpassConfig $config)
     {
-        $this->tags = is_string($tags) ? [$tags] : array_map(function (mixed $tag) {
-            if (!is_string($tag)) throw new Exception("Bag tag (is not string): $tag");
-            return $tag;
-        }, $tags);
+        $this->tags = $tags;
 
         $query = "[out:json][timeout:40]; ( ";
         foreach ($this->tags as $tag) {

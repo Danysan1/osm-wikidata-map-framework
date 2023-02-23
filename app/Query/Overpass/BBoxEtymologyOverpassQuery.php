@@ -25,6 +25,9 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
     private string $textTag;
     private string $descriptionTag;
 
+    /**
+     * @param array<string> $tags OSM wikidata tags to use
+     */
     public function __construct(array $tags, BoundingBox $bbox, OverpassConfig $config, string $textTag, string $descriptionTag)
     {
         $maxElements = $config->getMaxElements();

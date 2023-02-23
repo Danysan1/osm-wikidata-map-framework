@@ -19,6 +19,9 @@ class BBoxSourceStatsOverpassQuery extends BaseQuery implements BBoxJSONQuery
 {
     private BBoxOverpassQuery $baseQuery;
 
+    /**
+     * @param array<string> $tags OSM wikidata tags to use
+     */
     public function __construct(array $tags, BoundingBox $bbox, OverpassConfig $config)
     {
         $this->baseQuery = new BBoxOverpassQuery(

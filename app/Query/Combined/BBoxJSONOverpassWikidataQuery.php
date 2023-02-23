@@ -26,6 +26,9 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
     private BBoxEtymologyOverpassQuery $overpassQuery;
     protected StringSetXMLQueryFactory $wikidataFactory;
 
+    /**
+     * @param array<string> $tags OSM wikidata tags to use
+     */
     public function __construct(
         array $tags,
         BoundingBox $bbox,
