@@ -438,7 +438,7 @@ services:
     env_file:
       - .env
     ports:
-      - "80:80"
+      - "${web_http_port:-80}:80"
     depends_on:
       - oem-postgis
     networks:
@@ -475,8 +475,8 @@ services:
     env_file:
       - .env
     ports:
-      - "80:80"
-      - "443:443"
+      - "${web_http_port:-80}:80"
+      - "${web_http_port:-443}:443"
     networks:
       - oem-internal
     logging:
