@@ -51,15 +51,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $source,
             $search
         );
-
-        if (!preg_match('/^[a-z_:]+$/', $textKey))
-            throw new Exception("Bad configured text key: $textKey");
         $this->textKey = $textKey;
-
-        if (!preg_match('/^[a-z_:]+$/', $textKey))
-            throw new Exception("Bad configured description key: $textKey");
         $this->descriptionKey = $descriptionKey;
-
         $this->fromOsmQuery = implode(" OR ", array_map(function (string $id): string {
             return "et_from_$id";
         }, $availableSourceKeyIDs));
@@ -76,6 +69,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             "min_lat" => $this->getBBox()->getMinLat(),
             "max_lat" => $this->getBBox()->getMaxLat(),
             "lang" => $this->getLanguage(),
+            "textKey" => $this->textKey,
+            "descriptionKey" => $this->descriptionKey,
         ]);
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("etymology-query");
@@ -102,8 +97,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     {
         $filterClause = $this->getFilterClause();
         $limitClause = $this->getLimitClause();
-        $textKey = $this->textKey;
-        $descriptionKey = $this->descriptionKey;
         $fromOsmQuery = $this->fromOsmQuery;
         return
             "SELECT JSON_BUILD_OBJECT(
@@ -118,8 +111,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_osm_id AS osm_id,
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$textKey' ELSE NULL END AS text_etymology,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$descriptionKey' ELSE NULL END AS text_etymology_descr,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :textKey ELSE NULL END AS text_etymology,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :descriptionKey ELSE NULL END AS text_etymology_descr,
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
