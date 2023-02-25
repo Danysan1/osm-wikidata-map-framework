@@ -22,13 +22,13 @@ use \App\Result\GeoJSONQueryResult;
 class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
 {
     private BBoxOverpassQuery $baseQuery;
-    private string $textTag;
-    private string $descriptionTag;
+    private string $textKey;
+    private string $descriptionKey;
 
     /**
      * @param array<string> $keys OSM wikidata keys to use
      */
-    public function __construct(array $keys, BoundingBox $bbox, OverpassConfig $config, string $textTag, string $descriptionTag)
+    public function __construct(array $keys, BoundingBox $bbox, OverpassConfig $config, string $textKey, string $descriptionKey)
     {
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements === null ? ' ' : " $maxElements";
@@ -38,8 +38,8 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
             "out body $limitClause; >; out skel qt;",
             $config
         );
-        $this->textTag = $textTag;
-        $this->descriptionTag = $descriptionTag;
+        $this->textKey = $textKey;
+        $this->descriptionKey = $descriptionKey;
     }
 
     public function send(): QueryResult
@@ -58,8 +58,8 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
         return new OverpassEtymologyQueryResult(
             $res->isSuccessful(),
             $res->getArray(),
-            $this->textTag,
-            $this->descriptionTag,
+            $this->textKey,
+            $this->descriptionKey,
             $this->baseQuery->getKeys()
         );
     }

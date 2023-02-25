@@ -152,13 +152,13 @@ function loadWikidataRelatedEntities(
     return $total_wd;
 }
 
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataProperties): int
+function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataProperties, string $fromOsmColumns): int
 {
     return loadWikidataRelatedEntities(
         "oem.element_wikidata_cods",
         "ew_wikidata_cod",
         "ew_from_wikidata",
-        "et_el_id, et_wd_id, et_from_el_id, et_from_osm_name_etymology, et_from_osm_subject, et_from_osm_buried, et_from_wikidata_wd_id, et_from_wikidata_prop_cod",
+        "et_el_id, et_wd_id, et_from_el_id, $fromOsmColumns, et_from_wikidata_wd_id, et_from_wikidata_prop_cod",
         "ew_el_id, w2.wd_id, ew_el_id, FALSE, FALSE, FALSE, w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
         "JOIN oem.element_wikidata_cods ON ew_wikidata_cod = w1.wd_wikidata_cod",
         "named_after",
@@ -169,14 +169,14 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, a
     );
 }
 
-function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL): int
+function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL, string $fromOsmColumns): int
 {
     return loadWikidataRelatedEntities(
         "oem.etymology JOIN oem.wikidata ON wd_id = et_wd_id",
         "wd_wikidata_cod",
         "et_from_parts_of_wd_id IS NULL",
-        "et_el_id, et_wd_id, et_from_el_id, et_from_osm_name_etymology, et_from_osm_subject, et_from_osm_buried, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, et_from_parts_of_wd_id",
-        "et_el_id, w2.wd_id, et_from_el_id, et_from_osm_name_etymology, et_from_osm_subject, et_from_osm_buried, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, w1.wd_id",
+        "et_el_id, et_wd_id, et_from_el_id, $fromOsmColumns, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, et_from_parts_of_wd_id",
+        "et_el_id, w2.wd_id, et_from_el_id, $fromOsmColumns, et_from_wikidata_wd_id, et_from_wikidata_prop_cod, et_recursion_depth, w1.wd_id",
         "JOIN oem.etymology ON et_wd_id = w1.wd_id",
         "has_parts",
         ["P527"], // has part or parts

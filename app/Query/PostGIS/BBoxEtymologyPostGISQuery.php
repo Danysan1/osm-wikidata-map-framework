@@ -12,12 +12,17 @@ use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use \App\Result\QueryResult;
 use App\ServerTiming;
+use Exception;
 use PDO;
 
 class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJSONQuery
 {
-    private string $textTag;
-    private string $descriptionTag;
+    private string $textKey;
+    private string $descriptionKey;
+    /**
+     * @var string $fromOsmQuery Query to check if an etymology comes from OSM (example: et_from_osm_name_etymology OR et_from_osm_subject)
+     */
+    private string $fromOsmQuery;
 
     /**
      * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
@@ -27,8 +32,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         string $language,
         PDO $db,
         string $wikidataEndpointURL,
-        string $textTag,
-        string $descriptionTag,
+        string $textKey,
+        string $descriptionKey,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?array $availableSourceKeyIDs = null,
@@ -46,8 +51,18 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $source,
             $search
         );
-        $this->textTag = $textTag;
-        $this->descriptionTag = $descriptionTag;
+
+        if (!preg_match('/^[a-z_:]+$/', $textKey))
+            throw new Exception("Bad configured text key: $textKey");
+        $this->textKey = $textKey;
+
+        if (!preg_match('/^[a-z_:]+$/', $textKey))
+            throw new Exception("Bad configured description key: $textKey");
+        $this->descriptionKey = $descriptionKey;
+
+        $this->fromOsmQuery = implode(" OR ", array_map(function (string $id): string {
+            return "et_from_$id";
+        }, $availableSourceKeyIDs));
     }
 
     public function send(): QueryResult
@@ -87,8 +102,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     {
         $filterClause = $this->getFilterClause();
         $limitClause = $this->getLimitClause();
-        $textTag = $this->textTag;
-        $descriptionTag = $this->descriptionTag;
+        $textKey = $this->textKey;
+        $descriptionKey = $this->descriptionKey;
+        $fromOsmQuery = $this->fromOsmQuery;
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
@@ -102,8 +118,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_osm_id AS osm_id,
                     COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$textTag' ELSE NULL END AS text_etymology,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$descriptionTag' ELSE NULL END AS text_etymology_descr,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$textKey' ELSE NULL END AS text_etymology,
+                    CASE WHEN el.el_has_text_etymology THEN el.el_tags->>'$descriptionKey' ELSE NULL END AS text_etymology_descr,
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
@@ -112,7 +128,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
                     COALESCE(MIN(oem.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_event_date, wd.wd_start_date, wd.wd_birth_date)))), '#223b53') AS century_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
-                        'from_osm', et_from_osm_name_etymology OR et_from_osm_subject OR et_from_osm_buried,
+                        'from_osm', $fromOsmQuery,
                         'from_osm_type', from_el.el_osm_type,
                         'from_osm_id', from_el.el_osm_id,
                         'from_wikidata', from_wd IS NOT NULL,

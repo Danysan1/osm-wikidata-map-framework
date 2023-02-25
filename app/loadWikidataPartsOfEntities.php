@@ -9,4 +9,8 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 $dbh = new PostGIS_PDO($conf);
 $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
-App\loadWikidataPartsOfEntities($dbh, $wikidataEndpointURL);
+$fromOsmColumns = implode(", ", array_map(function (string $id): string {
+    return "et_from_$id";
+}, $availableSourceKeyIDs));
+
+App\loadWikidataPartsOfEntities($dbh, $wikidataEndpointURL, $fromOsmColumns);

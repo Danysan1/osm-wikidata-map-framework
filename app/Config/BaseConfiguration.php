@@ -34,7 +34,7 @@ abstract class BaseConfiguration implements Configuration
     {
         $raw = (string)$this->get($key);
         $parsed = json_decode($raw);
-        if(!is_array($parsed))
+        if (!is_array($parsed))
             throw new Exception("The configured value for '$key' is not a JSON array: $raw");
         return $parsed;
     }
@@ -51,7 +51,7 @@ abstract class BaseConfiguration implements Configuration
 
         return array_map(function (mixed $item): string {
             $ret = (string)$item;
-            if (!preg_match('/^[a-z:]+$/', $ret))
+            if (!preg_match('/^[a-z_:]+$/', $ret))
                 throw new Exception("Bad OSM key: '$ret'");
             return $ret;
         }, $wikidataKeys);

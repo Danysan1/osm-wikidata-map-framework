@@ -12,8 +12,11 @@ $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
 $wikidataProperties = array_map(function (mixed $x) {
     return (string)$x;
 }, $conf->getArray('wikidata_properties'));
+$fromOsmColumns = implode(", ", array_map(function (string $id): string {
+    return "et_from_$id";
+}, $availableSourceKeyIDs));
 
 error_log("Wikidata endpoint: $wikidataEndpointURL");
 error_log("Wikidata properties: " . implode(", ", $wikidataProperties));
 
-App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL, $wikidataProperties);
+App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL, $wikidataProperties, $fromOsmColumns);

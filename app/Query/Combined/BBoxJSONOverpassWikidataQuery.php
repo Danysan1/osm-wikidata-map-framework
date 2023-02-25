@@ -35,10 +35,10 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         OverpassConfig $config,
         StringSetXMLQueryFactory $wikidataFactory,
         ServerTiming $timing,
-        string $textTag,
-        string $descriptionTag
+        string $textKey,
+        string $descriptionKey
     ) {
-        $this->overpassQuery = new BBoxEtymologyOverpassQuery($keys, $bbox, $config, $textTag, $descriptionTag);
+        $this->overpassQuery = new BBoxEtymologyOverpassQuery($keys, $bbox, $config, $textKey, $descriptionKey);
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }

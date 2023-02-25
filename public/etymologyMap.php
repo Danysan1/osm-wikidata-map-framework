@@ -38,8 +38,8 @@ if ($enableDB && $source != "overpass") {
     //error_log("etymologyMap.php NOT using DB");
     $db = null;
 }
-$textTag = (string)$conf->get('osm_text_key');
-$descriptionTag = (string)$conf->get('osm_description_key');
+$textKey = (string)$conf->get('osm_text_key');
+$descriptionKey = (string)$conf->get('osm_description_key');
 $wikidataKeys = $conf->getWikidataKeys();
 $wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 
@@ -56,11 +56,11 @@ $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
-    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textTag, $descriptionTag, $serverTiming, $maxElements, $wikidataKeyIDs, $source, $search);
+    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textKey, $descriptionKey, $serverTiming, $maxElements, $wikidataKeyIDs, $source, $search);
 } else {
     $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
-    $baseQuery = new BBoxGeoJSONEtymologyQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+    $baseQuery = new BBoxGeoJSONEtymologyQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textKey, $descriptionKey);
     $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $conf, $serverTiming);
 }
 
