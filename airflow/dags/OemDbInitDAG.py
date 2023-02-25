@@ -85,6 +85,22 @@ def choose_load_osm_data_task(**context) -> str:
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "load_elements_from_pg_file"
 
+def choose_propagation_method(**context) -> str:
+    """
+        # Check whether to propagate
+
+        Links:
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+    """
+    v = context["var"]["value"]
+    if "propagate_data" in v and v["propagate_data"] == "global":
+        return "propagate_etymologies_globally"
+    elif "propagate_data" in v and v["propagate_data"] == "local":
+        return "propagate_etymologies_locally"
+    else:
+        return "join_post_propagation"
+
 class OemDbInitDAG(DAG):
     def __init__(self,
             local_db_conn_id:str="local_oem_postgres",
@@ -392,9 +408,16 @@ class OemDbInitDAG(DAG):
         )
         task_convert_ety >> task_load_named_after
 
-        # TODO check wether to propagate (env var propagate_data) 
+        task_check_propagation = BranchPythonOperator(
+            task_id = "choose_propagation_method",
+            python_callable= choose_propagation_method,
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = choose_propagation_method.__doc__
+        )
+        task_load_named_after >> task_check_propagation
 
-        task_propagate = SQLExecuteQueryOperator(
+        task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
             conn_id = local_db_conn_id,
             sql = "sql/propagate-etymologies-global.sql",
@@ -407,7 +430,29 @@ class OemDbInitDAG(DAG):
                 Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
             """
         )
-        task_load_named_after >> task_propagate
+        task_check_propagation >> task_propagate_globally
+
+        task_propagate_locally = SQLExecuteQueryOperator(
+            task_id = "propagate_etymologies_locally",
+            conn_id = local_db_conn_id,
+            sql = "sql/propagate-etymologies-global.sql",
+            dag = self,
+            task_group=elaborate_group,
+        )
+        task_check_propagation >> task_propagate_locally
+
+        join_post_propagation = EmptyOperator(
+            task_id = "join_post_propagation",
+            trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
+            dag = self,
+            task_group=elaborate_group,
+            doc_md="""
+                # Join branches back together
+
+                Dummy task for joining the path after the branching
+            """
+        )
+        [task_check_propagation, task_propagate_locally, task_propagate_globally] >> join_post_propagation
         
         task_load_parts = OemDockerOperator(
             task_id = "download_parts_of_wikidata_entities",
@@ -426,14 +471,16 @@ class OemDbInitDAG(DAG):
                 Uses the Wikidata SPARQL query service through `OemDockerOperator`:
             """) + dedent(OemDockerOperator.__doc__)
         )
-        task_propagate >> task_load_parts
+        join_post_propagation >> task_load_parts
+
+        post_elaborate_group = TaskGroup("post_elaboration", tooltip="Actions after data elaboration", dag=self)
 
         task_check_text_ety = SQLExecuteQueryOperator(
             task_id = "check_text_etymology",
             conn_id = local_db_conn_id,
             sql = "sql/check-text-etymology.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md = """
                 # Check elements with a text etymology
 
@@ -447,21 +494,21 @@ class OemDbInitDAG(DAG):
             conn_id = local_db_conn_id,
             sql = "sql/check-wd-etymology.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md = """
                 # Check elements with a Wikidata etymology
 
                 Check elements with an etymology that comes from `subject:wikidata`, `buried:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
             """
         )
-        task_propagate >> task_check_wd_ety
+        join_post_propagation >> task_check_wd_ety
 
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
             conn_id = local_db_conn_id,
             sql = "sql/move-elements-with-etymology.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md = """
                 # Remove elements without any etymology
 
@@ -475,7 +522,7 @@ class OemDbInitDAG(DAG):
             conn_id = local_db_conn_id,
             sql = "sql/etymology-foreign-key.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md = """
                 # Apply the foreign key from etymology to wikidata
             """
@@ -486,7 +533,7 @@ class OemDbInitDAG(DAG):
             task_id = "check_whether_to_drop_temporary_tables",
             python_callable = lambda **context: context["params"]["drop_temporary_tables"],
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md = """
                 # Check whether to drop temporary tables
 
@@ -503,7 +550,7 @@ class OemDbInitDAG(DAG):
             conn_id = local_db_conn_id,
             sql = "sql/drop-temp-tables.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md = """
                 # Remove temporary tables
 
@@ -517,7 +564,7 @@ class OemDbInitDAG(DAG):
             conn_id = local_db_conn_id,
             sql = "sql/global-map-view.sql",
             dag = self,
-            task_group=elaborate_group,
+            task_group=post_elaborate_group,
             doc_md="""
                 # Save the global map view
 
