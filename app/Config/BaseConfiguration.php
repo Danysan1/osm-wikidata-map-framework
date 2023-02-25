@@ -34,7 +34,9 @@ abstract class BaseConfiguration implements Configuration
     {
         $raw = (string)$this->get($key);
         $parsed = json_decode($raw);
-        return is_array($parsed) ? $parsed : [$raw];
+        if(!is_array($parsed))
+            throw new Exception("The configured value for '$key' is not a JSON array: $raw");
+        return $parsed;
     }
 
     /**

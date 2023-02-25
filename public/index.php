@@ -62,7 +62,7 @@ if ($enableDB) {
     <?= $conf->isDbEnabledMetaTag(); ?>
     <?= $conf->getMetaTag("osm_wikidata_keys"); ?>
     <?= $conf->getMetaTag("wikidata_properties"); ?>
-    <?= $conf->getMetaTag("propagate_data"); ?>
+    <?= $conf->getMetaTag("propagate_data", true); ?>
     <?= $conf->getMetaTag("mapbox_token"); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
     <?= $conf->getMetaTag("default_center_lat"); ?>
