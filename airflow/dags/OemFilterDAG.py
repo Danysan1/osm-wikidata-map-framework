@@ -105,7 +105,7 @@ class OemFilterDAG(DAG):
             container_name = "open-etymology-map-keep_elements_with_name",
             source_path= pbf_path,
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/with_name.osm.pbf",
-            tags=['name'],
+            tags=['{{ var.value.osm_filter_key }}'],
             remove_tags= True,
             dag = self,
             doc_md = dedent("""

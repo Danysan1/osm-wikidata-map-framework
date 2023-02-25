@@ -87,19 +87,22 @@ def choose_load_osm_data_task(**context) -> str:
 
 def choose_propagation_method(**context) -> str:
     """
-        # Check whether to propagate
+        # Check whether and how to propagate
 
         Links:
         * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+        * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/variables.html)
     """
-    v = context["var"]["value"]
-    if "propagate_data" in v and v["propagate_data"] == "global":
-        return "propagate_etymologies_globally"
-    elif "propagate_data" in v and v["propagate_data"] == "local":
-        return "propagate_etymologies_locally"
+
+    from airflow.models import Variable
+    propagate = Variable.get("propagate_data", default_var=None)
+    if propagate == "global":
+        return "elaborate_data.propagate_etymologies_globally"
+    elif propagate == "local":
+        return "elaborate_data.propagate_etymologies_locally"
     else:
-        return "join_post_propagation"
+        return "elaborate_data.join_post_propagation"
 
 class OemDbInitDAG(DAG):
     def __init__(self,

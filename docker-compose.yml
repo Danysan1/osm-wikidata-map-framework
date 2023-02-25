@@ -77,16 +77,19 @@ x-airflow-common:
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90
     # https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
-    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091
-    AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database}
-    AIRFLOW_CONN_LOCAL_OEM_POSTGRES_PLANET: postgres://${db_user}:${db_password}@oem-postgis:5432/planet
+    AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
+    AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # docker-compose "oem-postgis" service
+    AIRFLOW_CONN_LOCAL_OEM_POSTGRES_PLANET: postgres://${db_user}:${db_password}@oem-postgis:5432/planet # docker-compose "oem-postgis" service
     AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
+    AIRFLOW_VAR_OSM_FILTER_KEY: ${osm_filter_key}
     AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key}
     AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key}
     AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
     AIRFLOW_VAR_WIKIDATA_PROPERTIES: ${wikidata_properties}
-    AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data}
+    AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
+    AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
+    AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "open-etymology-map_db-init-work-dir" # docker-compose "db-init-work-dir" volume
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
