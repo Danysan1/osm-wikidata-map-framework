@@ -86,7 +86,7 @@ x-airflow-common:
     AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key}
     AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key}
     AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
-    AIRFLOW_VAR_WIKIDATA_PROPERTIES: ${wikidata_properties}
+    AIRFLOW_VAR_osm_wikidata_properties: ${osm_wikidata_properties}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
     AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "open-etymology-map_db-init-work-dir" # docker-compose "db-init-work-dir" volume

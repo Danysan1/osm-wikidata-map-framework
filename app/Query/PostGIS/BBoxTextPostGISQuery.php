@@ -86,6 +86,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $sthMissingWikidata->bindValue("min_lat", $this->getBBox()->getMinLat(), PDO::PARAM_STR);
         $sthMissingWikidata->bindValue("max_lat", $this->getBBox()->getMaxLat(), PDO::PARAM_STR);
         $sthMissingWikidata->bindValue("lang", $this->language, PDO::PARAM_STR);
+        if (!empty($this->getSearch()))
+            $sthMissingWikidata->bindValue("search", $this->getSearch());
         //$sthMissingWikidata->debugDumpParams();
         $sthMissingWikidata->execute();
         if ($this->hasServerTiming())

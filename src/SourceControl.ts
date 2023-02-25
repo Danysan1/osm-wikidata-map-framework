@@ -10,26 +10,27 @@ import { setFragmentParams } from './fragment';
 export class SourceControl extends DropdownControl {
     constructor(onSourceChange: (sourceID: string) => void, startSourceID: string) {
         const rawKeys = getConfig("osm_wikidata_keys"),
-            rawProps = getConfig("wikidata_properties"),
+            rawOsmProps = getConfig("osm_wikidata_properties"),
+            rawWdProperty = getConfig("wikidata_reverse_property"),
             propagationEnabled = getConfig("propagate_data") == 'true',
             sources: Record<string, string> = {
-                overpass: "OSM (real time via Overpass API)",
                 all: "All sources from DB",
             };
         if (propagationEnabled) {
-            sources.propagated = "Propagated (from DB)";
+            sources.osm_propagated = "Propagated (from DB)";
         }
 
-        if (!rawProps) {
-            console.warn("Missing wikidata_properties");
-        } else {
-            const props = JSON.parse(rawProps) as string[];
-            sources.wikidata = "OSM + Wikidata " + props.join("/") + " (from DB)";
+        if (rawOsmProps) {
+            const props = JSON.parse(rawOsmProps) as string[];
+            sources.osm_wikidata = "OSM + Wikidata " + props.join("/") + " (from DB)";
         }
 
-        if (!rawKeys) {
-            console.warn("Missing osm_wikidata_keys");
-        } else {
+        if (rawWdProperty) {
+            sources.wd_qualifier = "Wikidata " + rawWdProperty + "+P625 (real time via Wikidata SPARQL API)";
+        }
+
+        if (rawKeys) {
+            sources.overpass = "OSM (real time via Overpass API)";
             const keys = JSON.parse(rawKeys) as string[];
             keys.forEach(key => {
                 const keyID = "osm_" + key.replace(":wikidata", "").replace(":", "_");

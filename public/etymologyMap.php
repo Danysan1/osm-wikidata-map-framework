@@ -15,6 +15,7 @@ use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
 use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
+use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -31,7 +32,7 @@ $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
 
 $enableDB = $conf->isDbEnabled();
-if ($enableDB && $source != "overpass") {
+if ($enableDB && $source != "overpass" && $source != "wd_qualifier") {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -57,6 +58,10 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textKey, $descriptionKey, $wikidataKeyIDs, $serverTiming, $maxElements, $source, $search);
+} elseif ($source == "wd_qualifier") {
+    $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
+    $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
+    $query = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
 } else {
     $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);

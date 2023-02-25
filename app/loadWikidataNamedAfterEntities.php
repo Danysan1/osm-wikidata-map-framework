@@ -11,10 +11,11 @@ $dbh = new PostGIS_PDO($conf);
 $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
 $wikidataProperties = array_map(function (mixed $x) {
     return (string)$x;
-}, $conf->getArray('wikidata_properties'));
+}, $conf->getArray('osm_wikidata_properties'));
+$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($conf->getWikidataKeys());
 $fromOsmColumns = implode(", ", array_map(function (string $id): string {
     return "et_from_$id";
-}, $availableSourceKeyIDs));
+}, $wikidataKeyIDs));
 
 error_log("Wikidata endpoint: $wikidataEndpointURL");
 error_log("Wikidata properties: " . implode(", ", $wikidataProperties));

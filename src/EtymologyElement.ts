@@ -40,8 +40,8 @@ interface Etymology {
     from_osm_type?: string;
     from_parts_of_wikidata_cod?: string;
     from_wikidata?: boolean;
-    from_wikidata_cod?: string;
-    from_wikidata_prop?: string;
+    from_osm_wikidata_cod?: string;
+    from_osm_wikidata_prop?: string;
     gender?: string;
     name?: string;
     occupations?: string;
@@ -297,8 +297,8 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
             console.warn("Bad etymology, missing OSM source");
         }
     }
-    if (ety.from_wikidata_cod && src_wd_wrapper && src_wd) {
-        src_wd.href = 'https://www.wikidata.org/wiki/' + ety.from_wikidata_cod + '#' + ety.from_wikidata_prop;
+    if (ety.from_osm_wikidata_cod && src_wd_wrapper && src_wd) {
+        src_wd.href = 'https://www.wikidata.org/wiki/' + ety.from_osm_wikidata_cod + '#' + ety.from_osm_wikidata_prop;
         src_wd_wrapper.style.display = 'inline';
     } else if (src_wd_wrapper) {
         src_wd_wrapper.style.display = 'none';

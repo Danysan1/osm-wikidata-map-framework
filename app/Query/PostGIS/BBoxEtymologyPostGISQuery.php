@@ -63,15 +63,16 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         $this->downloadMissingText();
 
         $stRes = $this->getDB()->prepare($this->getQuery());
-        $stRes->execute([
-            "min_lon" => $this->getBBox()->getMinLon(),
-            "max_lon" => $this->getBBox()->getMaxLon(),
-            "min_lat" => $this->getBBox()->getMinLat(),
-            "max_lat" => $this->getBBox()->getMaxLat(),
-            "lang" => $this->getLanguage(),
-            "textKey" => $this->textKey,
-            "descriptionKey" => $this->descriptionKey,
-        ]);
+        $stRes->bindValue("min_lon", $this->getBBox()->getMinLon());
+        $stRes->bindValue("max_lon", $this->getBBox()->getMaxLon());
+        $stRes->bindValue("min_lat", $this->getBBox()->getMinLat());
+        $stRes->bindValue("max_lat", $this->getBBox()->getMaxLat());
+        $stRes->bindValue("lang", $this->getLanguage());
+        $stRes->bindValue("textKey", $this->textKey);
+        $stRes->bindValue("descriptionKey", $this->descriptionKey);
+        if (!empty($this->getSearch()))
+            $stRes->bindValue("search", $this->getSearch());
+        $stRes->execute();
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("etymology-query");
         return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
@@ -125,8 +126,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_osm_type', from_el.el_osm_type,
                         'from_osm_id', from_el.el_osm_id,
                         'from_wikidata', from_wd IS NOT NULL,
-                        'from_wikidata_cod', from_wd.wd_wikidata_cod,
-                        'from_wikidata_prop', et_from_wikidata_prop_cod,
+                        'from_osm_wikidata_cod', from_wd.wd_wikidata_cod,
+                        'from_osm_wikidata_prop', et_from_osm_wikidata_prop_cod,
                         'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,
                         'propagated', et_recursion_depth != 0,
                         'recursion_depth', et_recursion_depth,
@@ -174,7 +175,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
-                LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_wikidata_wd_id
+                LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_osm_wikidata_wd_id
                 LEFT JOIN oem.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE (el.el_has_text_etymology OR wd.wd_id IS NOT NULL)

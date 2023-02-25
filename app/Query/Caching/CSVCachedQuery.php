@@ -17,31 +17,14 @@ use \App\Query\Query;
  */
 abstract class CSVCachedQuery implements Query
 {
-    /** @var string $cacheFileBasePath */
-    private $cacheFileBasePath;
+    private string $cacheFileBasePath;
+    private Configuration $config;
+    private Query $baseQuery;
+    private ?ServerTiming $serverTiming;
+    protected int $timeoutThresholdTimestamp;
+    protected string $cacheFileBaseURL;
 
-    /** @var Configuration $config */
-    private $config;
-
-    /** @var Query */
-    private $baseQuery;
-
-    /** @var ServerTiming|null $serverTiming */
-    private $serverTiming;
-
-    /** @var int */
-    protected $timeoutThresholdTimestamp;
-
-    /** @var string */
-    protected $cacheFileBaseURL;
-
-    /**
-     * @param Query $baseQuery
-     * @param string $cacheFileBasePath
-     * @param Configuration $config
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
+    public function __construct(Query $baseQuery, string $cacheFileBasePath, Configuration $config, ?ServerTiming $serverTiming = null)
     {
         if (empty($cacheFileBasePath)) {
             throw new \Exception("Cache file base path cannot be empty");

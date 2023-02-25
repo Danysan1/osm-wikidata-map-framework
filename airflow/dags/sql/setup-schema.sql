@@ -122,9 +122,9 @@ CREATE TABLE oem.etymology (
     et_from_osm_name_etymology BOOLEAN DEFAULT FALSE, -- derived directly from OSM name:etymology:wikidata=*
     et_from_osm_subject BOOLEAN DEFAULT FALSE, -- derived directly from OSM subject:wikidata=*
     et_from_osm_buried BOOLEAN DEFAULT FALSE, -- derived directly from OSM buried:wikidata=*
-    et_from_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
+    et_from_osm_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
     et_from_parts_of_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from whose P527 (has parts) property this etymology has been derived
-    et_from_wikidata_prop_cod VARCHAR CHECK (et_from_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- Wikidata property through which the etymology is derived
+    et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- Wikidata property through which the etymology is derived
     CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );
 
@@ -171,7 +171,7 @@ AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN '#ff3333'
 	WHEN et.et_from_osm_name_etymology OR et.et_from_osm_subject OR et.et_from_osm_buried THEN '#33ff66'
-	WHEN et.et_from_wikidata_wd_id IS NOT NULL THEN '#3399ff'
+	WHEN et.et_from_osm_wikidata_wd_id IS NOT NULL THEN '#3399ff'
 	ELSE NULL
 END
 $BODY$;
@@ -185,7 +185,7 @@ AS $BODY$
 SELECT CASE
 	WHEN et.et_recursion_depth != 0 THEN 'Propagation'
 	WHEN et.et_from_osm_name_etymology OR et.et_from_osm_subject OR et.et_from_osm_buried THEN 'OpenStreetMap'
-	WHEN et.et_from_wikidata_wd_id IS NOT NULL THEN 'Wikidata'
+	WHEN et.et_from_osm_wikidata_wd_id IS NOT NULL THEN 'Wikidata'
 	ELSE NULL
 END
 $BODY$;

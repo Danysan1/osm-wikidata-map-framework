@@ -18,13 +18,14 @@ class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSON
         $this->downloadMissingText();
 
         $stRes = $this->getDB()->prepare($this->getQuery());
-        $stRes->execute([
-            "min_lon" => $this->getBBox()->getMinLon(),
-            "max_lon" => $this->getBBox()->getMaxLon(),
-            "min_lat" => $this->getBBox()->getMinLat(),
-            "max_lat" => $this->getBBox()->getMaxLat(),
-            "lang" => $this->getLanguage(),
-        ]);
+        $stRes->bindValue("min_lon", $this->getBBox()->getMinLon());
+        $stRes->bindValue("max_lon", $this->getBBox()->getMaxLon());
+        $stRes->bindValue("min_lat", $this->getBBox()->getMinLat());
+        $stRes->bindValue("max_lat", $this->getBBox()->getMaxLat());
+        $stRes->bindValue("lang", $this->getLanguage());
+        if (!empty($this->getSearch()))
+            $stRes->bindValue("search", $this->getSearch());
+        $stRes->execute();
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("stats-query");
         return new JSONLocalQueryResult(true, $stRes->fetchColumn());
