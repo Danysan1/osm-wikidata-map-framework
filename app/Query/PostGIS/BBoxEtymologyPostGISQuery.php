@@ -34,9 +34,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         string $wikidataEndpointURL,
         string $textKey,
         string $descriptionKey,
+        array $availableSourceKeyIDs,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
-        ?array $availableSourceKeyIDs = null,
         ?string $source = null,
         ?string $search = null
     ) {
