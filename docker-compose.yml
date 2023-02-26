@@ -382,7 +382,7 @@ services:
     image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     #image: odidev/postgis:13-3.1-alpine
     ports:
-      - "5432:5432"
+      - "${db_port:-5432}:5432"
     environment:
       - POSTGRES_USER=${db_user}
       - POSTGRES_PASSWORD=${db_password}
