@@ -390,6 +390,17 @@ class OemDbInitDAG(DAG):
         )
         task_convert_wd_ent >> task_convert_ety
 
+        task_check_load_named_after = BranchPythonOperator(
+            task_id = "check_whether_to_load_named_after",
+            python_callable = lambda load: "elaborate_data.download_named_after_wikidata_entities" if load=='True' else "elaborate_data.choose_propagation_method",
+            op_kwargs = {
+                "load": '{{ var.value.osm_wikidata_properties is defined and var.value.osm_wikidata_properties|length > 2 }}',
+            },
+            dag = self,
+            task_group=elaborate_group
+        )
+        task_convert_ety >> task_check_load_named_after
+
         task_load_named_after = OemDockerOperator(
             task_id = "download_named_after_wikidata_entities",
             container_name = "osm-wikidata_map_framework-download_named_after_wikidata_entities",
@@ -407,10 +418,11 @@ class OemDbInitDAG(DAG):
                 Uses the Wikidata SPARQL query service through `OemDockerOperator`:
             """) + dedent(OemDockerOperator.__doc__)
         )
-        task_convert_ety >> task_load_named_after
+        task_check_load_named_after >> task_load_named_after
 
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
+            trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             python_callable = choose_propagation_method,
             op_kwargs = {
                 "propagate_data": '{{ var.value.propagate_data }}',
@@ -419,7 +431,7 @@ class OemDbInitDAG(DAG):
             task_group=elaborate_group,
             doc_md = choose_propagation_method.__doc__
         )
-        task_load_named_after >> task_check_propagation
+        [task_check_load_named_after,task_load_named_after] >> task_check_propagation
 
         task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
