@@ -407,9 +407,9 @@ services:
       - db
 
   pgadmin:
-    image: dpage/pgadmin4:6.18
+    image: dpage/pgadmin4:6.20
     ports:
-      - "8000:80"
+      - "${pgadmin_port:-8000}:80"
     depends_on:
       - oem-postgis
     environment:
