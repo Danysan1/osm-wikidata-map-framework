@@ -88,7 +88,7 @@ If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS 
 
 #### Local development with Docker
 
-During development you can run a local instance of OSM-Wikidata Map Framework with Docker by running `docker-compose --profile dev up` in the project root. This will start
+During development you can run a local instance of OSM-Wikidata Map Framework with Docker by running `docker-compose --profile dev up -d` in the project root. This will start
 
 - An instance of the app exposed at http://localhost:80
 - A PostgreSQL+PostGIS DB exposed on `localhost:5432`
@@ -208,11 +208,12 @@ Tip: if you run the local development instance through `docker-compose` you can 
 
 ##### Propagation
 
-The database initialization:
+If the propagation is enabled, the database initialization operates as follow:
 
-1. loads all highways with a name, even if they have no etymology
-2. after elaborating the etymologies finds names that are in etymologies for at least two elements far away from each other, with the same subject
-3. propagates these etymologies to all homonimous highways
+1. load all highways with a name, even if they have no etymology
+2. find the etymologies os elements on the map through the methods cited above from OSM and Wikidata
+3. case insensitively search names used by at least two highways far away from each other which have exactly and only the same etymology
+4. propagates these etymologies to all (case insensitively) homonimous highways
 
 More specifically, this happens in [propagate-etymologies-global.sql](airflow/dags/sql/propagate-etymologies-global.sql).
 

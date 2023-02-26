@@ -321,6 +321,9 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     return etyDomElement;
 }
 
+/**
+ * @see https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_summary__title_
+ */
 async function fetchWikipediaExtract(wikipediaURL: string): Promise<string> {
     return fetch(wikipediaURL?.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true")
         .then(response => {
