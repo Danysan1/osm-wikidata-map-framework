@@ -305,13 +305,14 @@ button.maplibregl-popup-close-button,
 button.mapboxgl-popup-close-button {
     font-size: 2em;
     font-weight: bold;
-    background-color: #f22;
+    background-color: #f33;
     color: white;
+    border-bottom-left-radius: 3px;
 }
 
 button.maplibregl-popup-close-button:hover,
 button.mapboxgl-popup-close-button:hover {
-    background-color: #d00;
+    background-color: #f00;
     color: white;
 }
 

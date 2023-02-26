@@ -106,13 +106,16 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
     if (!element_location_button) {
         console.warn("Missing element_location_button");
-    } else {
+    } else if (osm_full_id || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
         let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
         while (Array.isArray(coord) && Array.isArray(coord[0])) {
             coord = coord[0];
         }
         const lon = coord[0], lat = coord[1];
         element_location_button.href = `#${lon},${lat},${currentZoom}`;
+        element_location_button.classList.add("hiddenElement");
+    } else {
+        element_location_button.classList.add("hiddenElement");
     }
 
     const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
