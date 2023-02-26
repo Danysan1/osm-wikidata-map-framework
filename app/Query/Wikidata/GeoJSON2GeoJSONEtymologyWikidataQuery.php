@@ -35,15 +35,14 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
      */
     private static function buildEtymologyFromID(string $wikidataID, array $matrixData): array|null
     {
-        //$fullWikidataID = "http://www.wikidata.org/entity/$wikidataID";
-        //error_log("Wikidata ID: " . $fullWikidataID);
-
         foreach ($matrixData as $row) {
-            if ($row["wikidata"] == $wikidataID)
+            if ($row["wikidata"] == $wikidataID) {
+                #error_log("Etymology information found for $wikidataID");
                 return $row;
+            }
         }
 
-        error_log("Etymology information not found for $wikidataID");
+        error_log("Etymology information NOT found for $wikidataID");
         return null;
     }
 
@@ -62,7 +61,8 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                 if (empty($geoJSONData["features"][$i]["properties"]["etymologies"])) {
                     throw new \Exception("GeoJSON feature has no etymologies");
                 } else {
-                    $etymologies = $geoJSONData["features"][$i]["properties"]["etymologies"];
+                    $props = (array)$geoJSONData["features"][$i]["properties"];
+                    $etymologies = $props["etymologies"];
                     if (!is_array($etymologies)) {
                         throw new \Exception("GeoJSON feature etymologies is not an array");
                     } else {
@@ -70,12 +70,12 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                         //error_log("Number of etymologies: " . $numEtymologies);
                         for ($j = 0; $j < $numEtymologies; $j++) {
                             $wikidataID = (string)$etymologies[$j][OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY];
-                            $osmType = (string)$geoJSONData["features"][$i]["properties"]["osm_type"];
-                            $osmID = (int)$geoJSONData["features"][$i]["properties"]["osm_id"];
+                            $osmType = empty($props["osm_type"]) ? null : (string)$props["osm_type"];
+                            $osmID = empty($props["osm_id"]) ? null : (int)$props["osm_id"];
 
                             $ety = self::buildEtymologyFromID($wikidataID, $matrixData);
                             if ($ety) {
-                                $ety["from_osm"] = true;
+                                $ety["from_osm"] = $osmType && $osmID;
                                 $ety["from_osm_type"] = $osmType;
                                 $ety["from_osm_id"] = $osmID;
                             }

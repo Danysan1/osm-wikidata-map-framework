@@ -7,12 +7,12 @@ import { debugLog } from "./config";
 interface FeatureProperties {
     alt_name?: string;
     commons?: string;
-    el_id: number;
+    el_id?: number;
     etymologies: Etymology[] | string; // Even though it is received as an array, for some reason Mapbox GL JS stringifies it as JSON
     gender_color?: string;
     name?: string;
-    osm_id: number;
-    osm_type: string;
+    osm_id?: number;
+    osm_type?: string;
     source_color?: string;
     text_etymology?: string;
     text_etymology_descr?: string;
@@ -29,7 +29,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     const properties = feature.properties as FeatureProperties,
         etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as Etymology[] : properties?.etymologies,
         detail_container = detail_template.content.cloneNode(true) as HTMLElement,
-        osm_full_id = properties.osm_type + '/' + properties.osm_id;
+        osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
     //detail_container.dataset.el_id = properties.el_id?.toString();
 
     debugLog("featureToDomElement", {
@@ -83,20 +83,24 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         element_commons_button.classList.add("hiddenElement");
     }
 
-    const osm_url = 'https://www.openstreetmap.org/' + osm_full_id,
-        element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
+    const element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
     if (!element_osm_button) {
         console.warn("Missing element_osm_button");
+    } else if (osm_full_id) {
+        element_osm_button.href = 'https://www.openstreetmap.org/' + osm_full_id;
+        element_osm_button.classList.remove("hiddenElement");
     } else {
-        element_osm_button.href = osm_url;
+        element_osm_button.classList.add("hiddenElement");
     }
 
-    const mapcomplete_url = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id,
-        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
+    const element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
         console.warn("Missing element_mapcomplete_button");
+    } else if (osm_full_id) {
+        element_mapcomplete_button.href = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id;
+        element_mapcomplete_button.classList.remove("hiddenElement");
     } else {
-        element_mapcomplete_button.href = mapcomplete_url;
+        element_mapcomplete_button.classList.add("hiddenElement");
     }
 
     const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');

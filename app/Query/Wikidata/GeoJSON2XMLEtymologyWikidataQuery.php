@@ -9,6 +9,7 @@ use \App\Query\XMLQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\BaseStringSet;
+use App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\XMLQueryResult;
 
@@ -19,21 +20,10 @@ use \App\Result\XMLQueryResult;
  */
 class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
 {
-    /**
-     * @var array
-     */
-    private $geoJSONInputData;
+    private array $geoJSONInputData;
+    private StringSetXMLQuery $query;
 
-    /**
-     * @var StringSetXMLQuery
-     */
-    private $query;
-
-    /**
-     * @param array $geoJSONData
-     * @param StringSetXMLQueryFactory $queryFactory
-     */
-    public function __construct($geoJSONData, $queryFactory)
+    public function __construct(array $geoJSONData, StringSetXMLQueryFactory $queryFactory)
     {
         $this->geoJSONInputData = $geoJSONData;
 
@@ -61,7 +51,7 @@ class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
                     throw new \Exception("Etymology IDs is not an array");
                 }
                 foreach ($etymologies as $etymology) {
-                    $etymologyIDSet[(string)$etymology["id"]] = true; // Using array keys guarantees uniqueness
+                    $etymologyIDSet[(string)$etymology[OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY]] = true; // Using array keys guarantees uniqueness
                 }
             }
         }
@@ -102,7 +92,7 @@ class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
         $className = get_class($this);
         $startPos = strrpos($className, "\\");
         $thisClass = substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
-        return $thisClass . empty($this->wikidataQuery) ? "" : ("_" . $this->wikidataQuery->getQueryTypeCode());
+        return $thisClass . empty($this->query) ? "" : ("_" . $this->query->getQueryTypeCode());
     }
 
     public function __toString(): string

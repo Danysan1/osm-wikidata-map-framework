@@ -6,8 +6,10 @@ namespace App\Query\Combined;
 
 
 use \App\BoundingBox;
+use App\Query\BBoxGeoJSONQuery;
 use \App\ServerTiming;
 use \App\Query\BBoxJSONQuery;
+use App\Query\GeoJSONQuery;
 use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Overpass\OverpassConfig;
 use \App\Query\Wikidata\GeoJSON2JSONEtymologyWikidataQuery;
@@ -23,22 +25,15 @@ use \App\Query\StringSetXMLQueryFactory;
 abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 {
     protected ServerTiming $timing;
-    private BBoxEtymologyOverpassQuery $overpassQuery;
+    private BBoxGeoJSONQuery $overpassQuery;
     protected StringSetXMLQueryFactory $wikidataFactory;
 
     /**
      * @param array<string> $keys OSM wikidata keys to use
      */
-    public function __construct(
-        array $keys,
-        BoundingBox $bbox,
-        OverpassConfig $config,
-        StringSetXMLQueryFactory $wikidataFactory,
-        ServerTiming $timing,
-        string $textKey,
-        string $descriptionKey
-    ) {
-        $this->overpassQuery = new BBoxEtymologyOverpassQuery($keys, $bbox, $config, $textKey, $descriptionKey);
+    public function __construct(BBoxGeoJSONQuery $overpassQuery, StringSetXMLQueryFactory $wikidataFactory, ServerTiming $timing)
+    {
+        $this->overpassQuery = $overpassQuery;
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }

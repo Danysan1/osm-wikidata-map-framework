@@ -12,6 +12,7 @@ use \App\BaseBoundingBox;
 use \App\PostGIS_PDO;
 use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
+use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
@@ -26,7 +27,6 @@ $serverTiming->add("2_prepare");
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
-$overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
@@ -58,15 +58,20 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textKey, $descriptionKey, $wikidataKeyIDs, $serverTiming, $maxElements, $source, $search);
-} elseif ($source == "wd_qualifier") {
-    $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
-    $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-    $query = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
 } else {
-    $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
+    if ($source == "wd_qualifier") {
+        $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
+        $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
+        $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
+    } else {
+        $overpassConfig = new RoundRobinOverpassConfig($conf);
+        $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
+        $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
+    }
+
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
-    $baseQuery = new BBoxGeoJSONEtymologyQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textKey, $descriptionKey);
-    $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $conf, $serverTiming);
+    $combinedQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
+    $query = new CSVCachedBBoxGeoJSONQuery($combinedQuery, $cacheFileBasePath, $conf, $serverTiming);
 }
 
 $serverTiming->add("3_init");
