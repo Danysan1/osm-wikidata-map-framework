@@ -303,8 +303,8 @@ export class EtymologyMap extends Map {
                 'paint': {
                     'line-color': colorSchemeColor,
                     'line-opacity': 0.5,
-                    'line-width': 8,
-                    'line-offset': -3.5, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+                    'line-width': 6,
+                    'line-offset': 3, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
                 }
             }, wikidata_layer_lineString);
             this.initWikidataLayer(wikidata_layer_polygon_border);
