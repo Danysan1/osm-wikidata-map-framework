@@ -34,7 +34,7 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
-$enableDB = $conf->isDbEnabled();
+$enableDB = $conf->getBool("db_enable");
 
 if ($enableDB && $source != "overpass")
     $db = new PostGIS_PDO($conf);

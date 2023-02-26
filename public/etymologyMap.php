@@ -30,7 +30,7 @@ $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CH
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
 
-$enableDB = $conf->isDbEnabled();
+$enableDB = $conf->getBool("db_enable");
 if ($enableDB && $source != "overpass" && $source != "wd_qualifier") {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);

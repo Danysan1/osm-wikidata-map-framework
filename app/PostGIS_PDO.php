@@ -19,12 +19,12 @@ class PostGIS_PDO extends PDO
         ?string $user = null,
         ?string $password = null
     ) {
-        if (!$conf->isDbEnabled())
+        if (!$conf->getBool("db_enable"))
             throw new Exception("The usage of the DB is disabled in the configuration");
 
         $host = $host ?: (string)$conf->get("db_host");
         $port = $port ?: (int)$conf->get("db_port");
-        $dbname = $dbname ?: $conf->getDbDatabase();
+        $dbname = $dbname ?: (string)$conf->get("db_database");
         $user = $user ?: (string)$conf->get("db_user");
         $password = $password ?: (string)$conf->get("db_password");
 

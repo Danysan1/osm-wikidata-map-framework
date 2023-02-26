@@ -15,7 +15,7 @@ if (!$conf->has("mapbox_token")) {
 }
 
 $lastUpdateString = '';
-$enableDB = $conf->isDbEnabled();
+$enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
@@ -59,7 +59,7 @@ if ($enableDB) {
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 
-    <?= $conf->isDbEnabledMetaTag(); ?>
+    <?= $conf->getMetaTag("db_enable"); ?>
     <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
     <?= $conf->getMetaTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>

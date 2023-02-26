@@ -67,19 +67,4 @@ abstract class BaseConfiguration implements Configuration
             return "osm_" . str_replace(":", "_", str_replace(":wikidata", "", $key));
         }, $keys);
     }
-
-    public function isDbEnabled(): bool
-    {
-        return $this->getBool("db_enable");
-    }
-
-    public function isDbEnabledMetaTag(): string
-    {
-        return self::lowLevelMetaTag("db_enable", json_encode($this->isDbEnabled()));
-    }
-
-    public function getDbDatabase(): string
-    {
-        return (string)$this->get("db_database");
-    }
 }
