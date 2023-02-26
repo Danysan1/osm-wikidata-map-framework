@@ -332,16 +332,12 @@ export class EtymologyMap extends Map {
 
     initSourceControl() {
         if (!this.currentSourceControl) {
-            if (getConfig("db_enable") !== "true") {
-                setFragmentParams(undefined, undefined, undefined, undefined, "overpass");
-            } else {
-                const sourceControl = new SourceControl(
-                    this.updateDataSource.bind(this),
-                    getCorrectFragmentParams().source
-                );
-                this.currentSourceControl = sourceControl;
-                setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
-            }
+            const sourceControl = new SourceControl(
+                this.updateDataSource.bind(this),
+                getCorrectFragmentParams().source
+            );
+            this.currentSourceControl = sourceControl;
+            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
         }
     }
 

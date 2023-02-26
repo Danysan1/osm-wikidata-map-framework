@@ -101,6 +101,9 @@ export class DropdownControl implements IControl {
         })
         this._ctrlDropDown = ctrlDropDown;
 
+        if (this._dropdownItems.length < 2)
+            this._container.classList.add("hiddenElement");
+
         return this._container;
     }
 

@@ -47,7 +47,7 @@ export class SourceControl extends DropdownControl {
         }
 
         if (rawWdProperty)
-            dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata " + rawWdProperty + "+P625", "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata " + rawWdProperty + " + P625", "Wikidata API (real time)"));
 
         if (rawKeys) {
             const keys = JSON.parse(rawKeys) as string[];
