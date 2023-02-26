@@ -11,45 +11,30 @@ use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
 use \App\Config\Configuration;
 use \App\Query\Wikidata\EtymologyIDListXMLWikidataQuery;
+use App\ServerTiming;
 
 class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
 {
-    /**
-     * @var string $language
-     */
-    private $language;
+    private string $language;
+    private string $endpointURL;
+    private string $cacheFileBasePath;
+    private Configuration $conf;
+    private ?ServerTiming $serverTiming;
 
-    /**
-     * @var string $endpointURL
-     */
-    private $endpointURL;
-    /**
-     * @var string $cacheFileBasePath
-     */
-    private $cacheFileBasePath;
-
-    /**
-     * @var Configuration $config
-     */
-    private $config;
-
-    /**
-     * @param string $language
-     * @param string $endpointURL
-     * @param string $cacheFileBasePath
-     * @param Configuration $config
-     */
-    public function __construct($language, $endpointURL, $cacheFileBasePath, $config)
+    public function __construct(string $language, string $endpointURL, string $cacheFileBasePath, Configuration $conf, ?ServerTiming $serverTiming)
     {
         $this->language = $language;
         $this->endpointURL = $endpointURL;
         $this->cacheFileBasePath = $cacheFileBasePath;
-        $this->config = $config;
+        $this->conf = $conf;
+        $this->serverTiming = $serverTiming;
     }
 
     public function create(StringSet $input): StringSetXMLQuery
     {
         $baseQuery =  new EtymologyIDListXMLWikidataQuery($input, $this->language, $this->endpointURL);
-        return new CSVCachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->config->get("wikidata_cache_timeout_hours"), $this->config->get("cache_file_base_url"));
+        $cacheTimeoutHours = (int)$this->conf->get("wikidata_cache_timeout_hours");
+        $cacheFileBaseURL = (string)$this->conf->get("cache_file_base_url");
+        return new CSVCachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->serverTiming,  $cacheTimeoutHours, $cacheFileBaseURL);
     }
 }

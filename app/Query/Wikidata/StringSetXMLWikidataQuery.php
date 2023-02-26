@@ -14,24 +14,12 @@ use \App\Query\Wikidata\XMLWikidataQuery;
  */
 abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements StringSetXMLQuery
 {
-    /**
-     * @var StringSet
-     */
-    private $wikidataIDList;
-
-    /**
-     * @var string $language
-     */
-    private $language;
+    private StringSet $wikidataIDList;
+    private string $language;
 
     protected abstract function createQuery(string $wikidataIDList, string $language): string;
 
-    /**
-     * @param StringSet $wikidataIDList
-     * @param string $language
-     * @param string $endpointURL
-     */
-    public function __construct(StringSet $wikidataIDList, $language, $endpointURL)
+    public function __construct(StringSet $wikidataIDList, string $language, string $endpointURL)
     {
         $wikidataValues = implode(' ', array_map(function ($id) {
             return "wd:$id";

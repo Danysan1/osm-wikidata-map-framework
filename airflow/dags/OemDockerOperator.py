@@ -24,6 +24,7 @@ class OemDockerOperator(DockerOperator):
                 "db_database": f'{{{{ conn["{postgres_conn_id}"].schema }}}}',
                 "db_password": f'{{{{ conn["{postgres_conn_id}"].password }}}}',
                 "wikidata_endpoint": 'https://{{ conn.wikidata_api.host }}/{{ conn.wikidata_api.schema }}',
+                "osm_wikidata_keys": '{{ var.value.osm_wikidata_keys }}',
                 "osm_wikidata_properties": '{{ var.value.osm_wikidata_properties }}',
             },
             retries = 3,
