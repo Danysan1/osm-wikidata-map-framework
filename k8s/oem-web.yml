@@ -15,7 +15,7 @@ spec:
         app: oem-web
     spec:
       containers:
-      - image: "registry.gitlab.com/openetymologymap/open-etymology-map"
+      - image: "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework"
         name: oem-web
         ports:
         - containerPort: 80

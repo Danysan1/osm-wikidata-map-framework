@@ -180,7 +180,7 @@ function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL, stri
         "JOIN oem.etymology ON et_wd_id = w1.wd_id",
         "has_parts",
         ["P527"], // has part or parts
-        [ // https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
+        [ // https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
             "Q16979650", "Q14073567", "Q58603552", // sibling group / duo / trio
             "Q10648343", "Q16145172", "Q1826687", "Q99241914", // duo / trio / quartet / quintet
             "Q16334295", // group of humans

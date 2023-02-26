@@ -1,6 +1,8 @@
 {
-    "name": "open-etymology-map",
-    "version": "2.22.0",
+    "name": "osm-wikidata-map-framework",
+    "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
+    "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
+    "version": "3.0.0",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack --mode=development",

@@ -434,7 +434,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    image: registry.gitlab.com/openetymologymap/open-etymology-map/dev
+    image: ${DEV_IMAGE_NAME}
     env_file:
       - .env
     ports:
@@ -467,11 +467,11 @@ services:
           - "linux/amd64"
           - "linux/arm64"
         cache-from:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/open-etymology-map/cache
+          - type=registry,ref=${CACHE_IMAGE_NAME}
         cache-to:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/open-etymology-map/cache,mode=max
+          - type=registry,ref=${CACHE_IMAGE_NAME},mode=max
         pull: true
-    image: registry.gitlab.com/openetymologymap/open-etymology-map
+    image: ${PROD_IMAGE_NAME}
     env_file:
       - .env
     ports:

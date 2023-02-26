@@ -1,5 +1,6 @@
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount
+from os import environ
 
 class OemDockerOperator(DockerOperator):
     """
@@ -14,7 +15,7 @@ class OemDockerOperator(DockerOperator):
     def __init__(self, postgres_conn_id:str, **kwargs) -> None:
         super().__init__(
             docker_url='unix://var/run/docker.sock',
-            image = "registry.gitlab.com/openetymologymap/open-etymology-map:latest",
+            image = environ.get("PROD_IMAGE_NAME"),
             environment = {
                 "db_enable": True,
                 "db_host": f'{{{{ conn["{postgres_conn_id}"].host }}}}',

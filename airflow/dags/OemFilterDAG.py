@@ -34,7 +34,7 @@ class OemFilterDAG(DAG):
             **kwargs
         ):
         """
-        DAG for Open Etymology Map DB initialization
+        DAG for OSM-Wikidata Map Framework DB initialization
 
         Parameters:
         ----------
@@ -81,14 +81,14 @@ class OemFilterDAG(DAG):
             tags=['oem', f'oem-{prefix}', 'oem-filter', 'consumes', 'produces'],
             params=default_params,
             doc_md = """
-                # Open Etymology Map OSM data filtering
+                # OSM-Wikidata Map Framework OSM data filtering
 
                 * downloads and and filters OSM data
                 * downloads relevant OSM data
                 * combines OSM and Wikidata data
                 * uploads the output to the production DB.
 
-                Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
+                Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
             """,
             **kwargs
         )
@@ -170,7 +170,7 @@ class OemFilterDAG(DAG):
                 # Remove non iteresting elements
 
                 Filter the OpenStreetMap PBF data to remove elements which are not interesting:
-                * flagpoles (https://gitlab.com/openetymologymap/open-etymology-map/-/issues/5)
+                * flagpoles (https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/5)
                 * nodes that represent the label for a continent (`place=continent`), a country (`place=country`), a state (`place=state`) or a region (`place=region`), which out of their context would not make sense on the map
                 * element representing an area too big for visualization (`admin_level=2`, `admin_level=3` or `admin_level=4`)
 
@@ -204,7 +204,7 @@ class OemFilterDAG(DAG):
             doc_md="""
                 # Copy the Osmium configuration
 
-                Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/airflow/dags/osmium.json)) into the working directory.
+                Copy the configuration for `osmium export` ([osmium.json](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/osmium.json)) into the working directory.
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)

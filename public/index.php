@@ -36,8 +36,8 @@ if ($enableDB) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 
-    <title>Open Etymology Map</title>
-    <meta name="description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
+    <title><?= $conf->get("info_title") ?></title>
+    <meta name="description" content="<?= $conf->get("info_description") ?>" />
 
     <?php if ($conf->has("google_analytics_id")) {
         $analyticsId = (string)$conf->get("google_analytics_id"); ?>
@@ -47,14 +47,14 @@ if ($enableDB) {
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://etymology.dsantini.it/" />
-    <meta property="og:title" content="Open Etymology Map" />
-    <meta property="og:site_name" content="Open Etymology Map" />
-    <meta property="og:description" content="Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata." />
+    <meta property="og:url" content="<?= $conf->get("home_url") ?>" />
+    <meta property="og:title" content="<?= $conf->get("info_title") ?>" />
+    <meta property="og:site_name" content="<?= $conf->get("info_title") ?>" />
+    <meta property="og:description" content="<?= $conf->get("info_description") ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
-    <link rel="canonical" href="https://etymology.dsantini.it/" />
+    <link rel="canonical" href="<?= $conf->get("home_url") ?>" />
     <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
@@ -89,10 +89,12 @@ if ($enableDB) {
     <div id="map_container">
         <div id='map'></div>
         <div id="intro">
-            <h1>Open Etymology Map</h1>
-            <p>Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.</p>
+            <h1><?= $conf->get("info_title") ?></h1>
+            <p><?= $conf->get("info_description") ?></p>
 
-            <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data"><span class="button_img">📖</span> Contribute to the map</a>
+            <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
+                <span class="button_img">📖</span> Contribute to the map
+            </a>
 
             <?php if ($enableDB) { ?>
                 <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
@@ -100,20 +102,22 @@ if ($enableDB) {
 
             <?= $lastUpdateString; ?>
             <p>
-                <a target="_blank" title="Report a problem in Open Etymology Map" href="https://gitlab.com/openetymologymap/open-etymology-map/-/issues">Report a problem</a>
+                <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
                 |
                 <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
                 |
                 <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
             </p>
-            <form action="https://www.paypal.com/donate" method="post" target="_top">
-                <input type="hidden" name="business" value="NA5HL6EM9LDJ6" />
-                <input type="hidden" name="no_recurring" value="0" />
-                <input type="hidden" name="item_name" value="This donation will help Open Etymology Map to stay up and running. Thank you!" />
-                <input type="hidden" name="currency_code" value="EUR" />
-                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
-            </form>
+            <?php if ($conf->has("paypal_id")) { ?>
+                <form action="https://www.paypal.com/donate" method="post" target="_top">
+                    <input type="hidden" name="business" value="<?= $conf->get("paypal_id") ?>" />
+                    <input type="hidden" name="no_recurring" value="0" />
+                    <input type="hidden" name="item_name" value="This donation will help this project to stay up and running. Thank you!" />
+                    <input type="hidden" name="currency_code" value="EUR" />
+                    <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                    <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+                </form>
+            <?php } ?>
             <h3>Click anywhere on the map to explore.</h3>
         </div>
         <h2>The map is loading...</h2>
@@ -155,7 +159,7 @@ if ($enableDB) {
             <div class="etymologies_container grid grid-auto">
 
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#how-to-report-a-problem-in-the-etymology-of-an-element">
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="<?= $conf->get("element_issue_url") ?>">
                 <span class="button_img">⚠️</span>
                 <span>&nbsp;Report a problem in this element</span>
             </a>
@@ -208,7 +212,7 @@ if ($enableDB) {
                 Etymology source:
                 <a title="Etymology OpenStreetMap source" class="etymology_src_osm">OpenStreetMap</a>
                 <span class="etymology_src_wd_wrapper"> + <a title="Etymology Wikidata source" class="etymology_src_wd">Wikidata</a></span>
-                <span class="etymology_propagated"> + <a title="Description of the propagation mechanism" href="https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md#propagation">propagation</a></span>
+                <span class="etymology_propagated"> + <a title="Description of the propagation mechanism" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#propagation">propagation</a></span>
                 <span class="etymology_src_part_of_wd_wrapper"> + <a title="Etymology Wikidata source" class="etymology_src_part_of_wd">Wikidata</a></span>
             </span>
         </div>

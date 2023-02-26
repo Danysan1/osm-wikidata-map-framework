@@ -114,7 +114,7 @@ class OemDbInitDAG(DAG):
             **kwargs
         ):
         """
-        DAG for Open Etymology Map DB initialization
+        DAG for OSM-Wikidata Map Framework DB initialization
 
         Parameters:
         ----------
@@ -137,14 +137,14 @@ class OemDbInitDAG(DAG):
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
         doc_md="""
-            # Open Etymology Map DB initialization
+            # OSM-Wikidata Map Framework DB initialization
 
             * downloads and and filters OSM data
             * downloads relevant OSM data
             * combines OSM and Wikidata data
             * uploads the output to the production DB.
 
-            Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
+            Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
         """
 
         if not prefix or prefix=="":
@@ -204,7 +204,7 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Teardown the oem DB schema
 
-                Reset the oem (Open Etymology Map) schema on the local PostGIS DB to start from scratch.
+                Reset the oem (OSM-Wikidata Map Framework) schema on the local PostGIS DB to start from scratch.
             """
         )
         task_setup_db_ext >> task_teardown_schema
@@ -218,7 +218,7 @@ class OemDbInitDAG(DAG):
             doc_md = """
                 # Setup the oem DB schema
 
-                Setup the oem (Open Etymology Map) schema on the local PostGIS DB.
+                Setup the oem (OSM-Wikidata Map Framework) schema on the local PostGIS DB.
             """
         )
         task_teardown_schema >> task_setup_schema
@@ -355,7 +355,7 @@ class OemDbInitDAG(DAG):
             doc_md="""
                 # Load default Wikidata entities
 
-                Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/airflow/dags/wikidata_init.csv).
+                Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/wikidata_init.csv).
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)

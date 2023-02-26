@@ -177,7 +177,7 @@ class OsmPbfDownloadDAG(DAG):
             **kwargs
         ):
         """
-        DAG for Open Etymology Map DB initialization
+        DAG for OSM-Wikidata Map Framework DB initialization
 
         Parameters:
         ----------
@@ -214,11 +214,11 @@ class OsmPbfDownloadDAG(DAG):
                 tags=['oem', f'oem-{prefix}', 'pbf-download', 'produces'],
                 params=default_params,
                 doc_md="""
-                    # Open Etymology Map DB initialization
+                    # OSM-Wikidata Map Framework DB initialization
 
                     * downloads OSM PBF data
 
-                    Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/CONTRIBUTING.md).
+                    Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
                 """,
                 **kwargs
             )

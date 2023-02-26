@@ -4,15 +4,15 @@
             "App\\": "app/"
         }
     },
-    "name": "dsantini/open-etymology-map",
-    "description": "Open Etymology Map - Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata",
+    "name": "openetymologymap/osm-wikidata-map-framework",
+    "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
     "type": "project",
-    "version": "2.22.0",
+    "version": "3.0.0",
     "require": {
         "php": "^8.0",
         "sentry/sdk": "^3.1"
     },
-    "homepage": "https://etymology.dsantini.it",
+    "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
     "license": "GPL-3.0",
     "authors": [{
         "name": "Daniele Santini",

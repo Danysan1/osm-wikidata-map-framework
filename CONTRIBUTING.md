@@ -1,4 +1,4 @@
-# Contributing to Open Etymology Map
+# Contributing to OSM-Wikidata Map Framework
 
 ## How to contribute to the background map
 
@@ -27,7 +27,7 @@ If the problem is related to the etymology itself (a wrong etymology is associat
 
 ## How to contribute to the etymology data
 
-Open Etymology Map gets the etymology of elements on the map from [OpenStreetMap](https://www.openstreetmap.org/welcome) and information about the etymology subjects from [Wikidata](https://www.wikidata.org/wiki/Wikidata:Introduction).
+OSM-Wikidata Map Framework gets the etymology of elements on the map from [OpenStreetMap](https://www.openstreetmap.org/welcome) and information about the etymology subjects from [Wikidata](https://www.wikidata.org/wiki/Wikidata:Introduction).
 
 Some tools make it easy to contribute to OpenStreetMap by linking etymology data:
 
@@ -40,9 +40,9 @@ You can learn how to map on [the official welcome page](https://www.openstreetma
 The wikidata ID of an item (object/person/...) can be found by searching its name on [wikidata.org](https://www.wikidata.org/wiki/Wikidata:Main_Page), once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.
 Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find it's page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, it's ID is `Q8023`.
 
-Open Etymology Map obtains the etymology data from multiple tags:
+OSM-Wikidata Map Framework obtains the etymology data from multiple tags:
 
-![Tags and properties used by Open Etymology Map](images/tags.svg)
+![Tags and properties used by OSM-Wikidata Map Framework](images/tags.svg)
 
 | Platform      | Property/Key              | Description                                                                                                        | Other info                                                                                 |
 | ------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |
@@ -58,7 +58,7 @@ In order to display the etymology of an element you need to create one of these 
 
 1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/)
 2. Check out the element's tags:
-   - If the element has a `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag and two weeks have passed from their addition, then the element should already be available on Open Etymology Map.
+   - If the element has a `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag and two weeks have passed from their addition, then the element should already be available on OSM-Wikidata Map Framework.
      - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
      - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
    - If the element has a `wikidata` tag check the referenced Wikidata element.
@@ -72,18 +72,13 @@ In order to display the etymology of an element you need to create one of these 
      2. If the Wikidata element for the etymology is not available you can create it [on this Wikidata page](https://www.wikidata.org/wiki/Special:NewItem) using the instructions on that page.
      3. Add to the OpenStreetMap element the `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag (depending on the meaning of the etymology) with the Wikidata ID as value. Using the example above, if you want to state an element is named after Nelson Mandela you will need to add the tag `name:etymology:wikidata`=`Q8023`.
 
-## How to contribute to Open Etymology Map
+## How to contribute to OSM-Wikidata Map Framework
 
-Any suggestion to improve this documentation page is really appreciated, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects. You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/openetymologymap/open-etymology-map/-/issues/new) describing your suggestion.
+Any suggestion to improve this documentation page is really appreciated, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects. You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/new) describing your suggestion.
 
-You can find below some information useful to contribute to the Open Etymology Map codebase.
+You can find below some information useful to contribute to the OSM-Wikidata Map Framework codebase.
 
 ### Deployment
-
-The production instance is https://etymology.dsantini.it .
-During development you can run a local instance of Open Etymology Map using the [instructions you will find below](#local-development-with-docker).
-
-#### Configuration
 
 In order to make a deployed instance function correctly all instance settings must be set in `.env`.
 
@@ -93,9 +88,9 @@ If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS 
 
 #### Local development with Docker
 
-A local development instance can be started with Docker by running `docker-compose --profile dev up` in the project root. This will start
+During development you can run a local instance of OSM-Wikidata Map Framework with Docker by running `docker-compose --profile dev up` in the project root. This will start
 
-- An instance of Open Etymology exposed at http://localhost:80
+- An instance of the app exposed at http://localhost:80
 - A PostgreSQL+PostGIS DB exposed on `localhost:5432`
 - A PGAdmin instance exposed at http://localhost:8080
 
@@ -118,22 +113,16 @@ Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/
 
 #### Production deployment with Docker
 
-The latest version can be deployed through Docker using the image [`registry.gitlab.com/openetymologymap/open-etymology-map`](https://gitlab.com/openetymologymap/open-etymology-map/container_registry/3032190).
+The latest version can be deployed through Docker using the image [`registry.gitlab.com/openetymologymap/osm-wikidata-map-framework`](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/container_registry/3032190).
 
 ```sh
-docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/open-etymology-map:latest
-```
-
-This image can be built with:
-
-```sh
-docker build --pull --rm -f "Dockerfile" -t "open-etymology-map" --target "prod" .
+docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
 ```
 
 A full installation without DB (using Overpass) can be deployed with docker-compose:
 
 ```sh
-git clone https://gitlab.com/openetymologymap/open-etymology-map.git
+git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
 cd open-etymology-map
 cp ".env.example" ".env"
 # At this point edit the file .env adding the correct mapbox_token
@@ -143,7 +132,7 @@ docker-compose --profile "prod" up -d
 A full installation complete with DB can be deployed with docker-compose:
 
 ```sh
-git clone https://gitlab.com/openetymologymap/open-etymology-map.git
+git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
 cd open-etymology-map
 cp ".env.example" ".env"
 # At this point edit the file .env adding the correct mapbox_token and setting db_enable=true
@@ -169,15 +158,13 @@ COMPOSE_PROFILES=prod,db docker-compose up -d
 The front-end is composed by [index.php](public/index.php), [style.css](src/style.css) and index.js (built from [index.ts](src/index.ts)).
 The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) (a tentative implementation with its FOSS fork, [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/), is WIP with no ETA) and the charts are created using [chart.js](https://www.chartjs.org/).
 
-At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from [`global-map.php`](https://etymology.dsantini.it/global-map.php).
+At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from `global-map.php` (for example https://etymology.dsantini.it/global-map.php ).
 
 At low zoom level ([`threshold_zoom_level`](.env.example) > zoom > [`min_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](public/elements.php).
 
 At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](public/etymologyMap.php) .
 
 #### Back-end (v2, using PostGIS DB)
-
-Available on [etymology.dsantini.it](https://etymology.dsantini.it).
 
 <details>
 <summary>Deployment diagram</summary>
@@ -206,7 +193,7 @@ To run the database initialization:
 3. start Apache Airflow with `docker-compose --profile airflow up -d`
 4. from the Apache Airflow configuration menu in the dashboard located at http://localhost:8080 create the Pool `data_filtering`
 5. run/enable an existing DAG pipeline (if necessary customising the launch config)
-6. the data for Open Etymology Map will be stored in the `oem` schema of the DB you configured in `.env` (and, if specified in the destination DB)
+6. the data for OSM-Wikidata Map Framework will be stored in the `oem` schema of the DB you configured in `.env` (and, if specified in the destination DB)
 
 IMPORTANT NOTE: If you use the planet file I suggest to use a machine with 16GB of RAM (and a lot of patience, it will require more than 6 hours; use a local extract in development to use less RAM and time, for an example see [db-init-italy-nord-ovest.py](airflow/dags/db-init-italy-nord-ovest.py)).
 
@@ -230,8 +217,6 @@ The database initialization:
 More specifically, this happens in [propagate-etymologies-global.sql](airflow/dags/sql/propagate-etymologies-global.sql).
 
 #### Old back-end (v1, using Overpass)
-
-Available on [etymology-no.dsantini.it](https://etymology-no.dsantini.it).
 
 <details>
 <summary>Deployment diagram</summary>

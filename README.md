@@ -1,10 +1,13 @@
-# Open Etymology Map
+# OSM-Wikidata Map Framework
 
-Interactive map that shows the etymology of names of streets and points of interest based on OpenStreetMap and Wikidata.
+Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata.
+
+For an example of usage, check out the existing implementations:
+* https://gitlab.com/openetymologymap/open-etymology-map
 
 By default the user language is used when fetching etymology details.
 You can force the another language by passing the [ISO-639 + ISO-3166 localization code](http://www.lingoes.net/en/translator/langcode.htm) to the `lang` parameter.
-For example https://etymology.dsantini.it/?lang=es-ES#11.7135,44.3414,15.1 passes `es-ES` to require data in spanish.
+For example https://etymology.dsantini.it/?lang=es-ES passes `es-ES` to require data in spanish.
 
 ## Used technologies
 

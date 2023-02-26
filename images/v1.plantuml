@@ -1,7 +1,7 @@
 @startuml v1
 
 actor user as "User"
-frame oem as "Open Etymology Map v1" {
+frame oem as "OSM-Wikidata Map Framework v1" {
     node "Front-end" {
         component index as "index.php"
     }

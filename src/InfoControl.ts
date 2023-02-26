@@ -33,7 +33,7 @@ class InfoControl implements IControl {
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'info-ctrl-button';
-        ctrlBtn.title = 'Info about Open Etymology Map';
+        ctrlBtn.title = 'Show the info popup';
         ctrlBtn.textContent = 'ℹ️';
         ctrlBtn.onclick = () => openInfoWindow(map);
         container.appendChild(ctrlBtn);
