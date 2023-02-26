@@ -52,6 +52,8 @@ class MultiConfiguration extends BaseConfiguration
 
 					return !empty($domain_value_map[$domain]);
 				}
+
+				return false;
 			},
 			false
 		);
@@ -68,7 +70,7 @@ class MultiConfiguration extends BaseConfiguration
 					throw new Exception("Bad db_enable_map configuration");
 
 				if (!empty($domain_value_map[$domain]))
-					return $domain_value_map[$domain];
+					return is_array($domain_value_map[$domain]) ? json_encode($domain_value_map[$domain]) : $domain_value_map[$domain];
 			}
 
 			if ($this->configs[$i]->has($key))
