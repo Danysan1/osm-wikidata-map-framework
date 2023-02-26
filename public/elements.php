@@ -15,6 +15,7 @@ use \App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
 use \App\Query\Overpass\CenterEtymologyOverpassQuery;
 use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
+use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -28,7 +29,7 @@ $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CH
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 
 $enableDB = $conf->getBool("db_enable");
-if ($enableDB && $source != "overpass") {
+if ($enableDB && $source != "overpass" && $source != "wd_qualifier") {
     //error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -47,7 +48,14 @@ if ($from == "bbox") {
     if ($db != null) {
         $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $wikidataKeyIDs, $source, $search);
     } else {
-        $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
+        if ($source == "wd_qualifier") {
+            $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
+            $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
+            $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
+            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
+        } else {
+            $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
+        }
         $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
         $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
         $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
