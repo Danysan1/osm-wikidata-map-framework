@@ -4,9 +4,9 @@ from os import environ
 
 class OemDockerOperator(DockerOperator):
     """
-    ## Operator for open-etymology-map PHP scripts
+    ## Operator for PHP scripts
 
-    Execute open-etymology-map PHP scripts on a dedicated Docker container
+    Execute PHP scripts on a dedicated Docker container using this project's production Docker image
 
     Links:
     * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
@@ -15,7 +15,7 @@ class OemDockerOperator(DockerOperator):
     def __init__(self, postgres_conn_id:str, **kwargs) -> None:
         super().__init__(
             docker_url='unix://var/run/docker.sock',
-            image = environ.get("PROD_IMAGE_NAME"),
+            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework",
             environment = {
                 "db_enable": True,
                 "db_host": f'{{{{ conn["{postgres_conn_id}"].host }}}}',

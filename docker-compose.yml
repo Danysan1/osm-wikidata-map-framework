@@ -434,7 +434,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: dev
-    image: ${DEV_IMAGE_NAME}
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/dev
     env_file:
       - .env
     ports:
@@ -467,11 +467,11 @@ services:
           - "linux/amd64"
           - "linux/arm64"
         cache-from:
-          - type=registry,ref=${CACHE_IMAGE_NAME}
+          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/cache
         cache-to:
-          - type=registry,ref=${CACHE_IMAGE_NAME},mode=max
+          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/cache,mode=max
         pull: true
-    image: ${PROD_IMAGE_NAME}
+    image: "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework"
     env_file:
       - .env
     ports:

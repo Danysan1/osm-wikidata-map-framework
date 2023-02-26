@@ -260,7 +260,7 @@ class OemDbInitDAG(DAG):
 
         task_load_ele_osm2pgsql = Osm2pgsqlOperator(
             task_id = "load_elements_with_osm2pgsql",
-            container_name = "open-etymology-map-load_elements_with_osm2pgsql",
+            container_name = "osm-wikidata_map_framework-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
             source_path = filtered_pbf_path,
             dag = self,
@@ -394,7 +394,7 @@ class OemDbInitDAG(DAG):
 
         task_load_named_after = OemDockerOperator(
             task_id = "download_named_after_wikidata_entities",
-            container_name = "open-etymology-map-download_named_after_wikidata_entities",
+            container_name = "osm-wikidata_map_framework-download_named_after_wikidata_entities",
             command = "php app/loadWikidataNamedAfterEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
@@ -459,7 +459,7 @@ class OemDbInitDAG(DAG):
         
         task_load_parts = OemDockerOperator(
             task_id = "download_parts_of_wikidata_entities",
-            container_name = "open-etymology-map-download_parts_of_wikidata_entities",
+            container_name = "osm-wikidata_map_framework-download_parts_of_wikidata_entities",
             command = "php app/loadWikidataPartsOfEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
