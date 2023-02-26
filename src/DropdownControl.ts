@@ -5,6 +5,7 @@ import { debugLog } from './config';
 export interface DropdownItem {
     id: string;
     text: string;
+    category?: string;
     onSelect: (event: Event) => void;
 }
 
@@ -65,11 +66,12 @@ export class DropdownControl implements IControl {
         btnCell.appendChild(ctrlBtn);
         btnCell.className = 'button-cell';
 
-        this._ctrlDropDown = document.createElement('select');
-        this._ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
-        if (this._title) this._ctrlDropDown.title = this._title;
-        this._ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
-        dropdownCell.appendChild(this._ctrlDropDown);
+        const ctrlDropDown = document.createElement('select');
+        ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
+        if (this._title)
+            ctrlDropDown.title = this._title;
+        ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
+        dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell';
 
         this._dropdownItems.forEach(item => {
@@ -79,8 +81,25 @@ export class DropdownControl implements IControl {
             if (item.id === this._startDropdownItemId) {
                 option.selected = true;
             }
-            this._ctrlDropDown?.appendChild(option);
+
+            let group: HTMLSelectElement | HTMLOptGroupElement | null = null;
+            if (!item.category) {
+                group = ctrlDropDown;
+            } else {
+                const children = ctrlDropDown.children;
+                Array.from(children).forEach((child) => {
+                    if (child instanceof HTMLOptGroupElement && child.label == item.category)
+                        group = child;
+                });
+                if (!group) {
+                    group = document.createElement("optgroup");
+                    group.label = item.category;
+                    ctrlDropDown.appendChild(group);
+                }
+            }
+            group.appendChild(option);
         })
+        this._ctrlDropDown = ctrlDropDown;
 
         return this._container;
     }

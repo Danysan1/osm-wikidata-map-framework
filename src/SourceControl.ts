@@ -13,40 +13,47 @@ export class SourceControl extends DropdownControl {
             rawOsmProps = getConfig("osm_wikidata_properties"),
             rawWdProperty = getConfig("wikidata_reverse_property"),
             propagationEnabled = getConfig("propagate_data") == 'true',
-            sources: Record<string, string> = {
-                all: "All sources from DB",
-            };
-        if (propagationEnabled) {
-            sources.osm_propagated = "Propagated (from DB)";
+            dbEnabled = getConfig("db_enable") == 'true',
+            dropdownItems: DropdownItem[] = [],
+            buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
+                id: sourceID,
+                text: text,
+                category: category,
+                onSelect: () => {
+                    onSourceChange(sourceID);
+                    setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                    this.showDropdown(false);
+                }
+            });
+
+        if (dbEnabled) {
+            dropdownItems.push(buildDropdownItem("all", "All sources from DB", "DB"));
+
+            if (propagationEnabled)
+                dropdownItems.push(buildDropdownItem("osm_propagated", "Propagated", "DB"));
+
+            if (rawOsmProps) {
+                const props = JSON.parse(rawOsmProps) as string[];
+                dropdownItems.push(buildDropdownItem("osm_wikidata", "OSM wikidata + Wikidata " + props.join("/"), "DB"));
+            }
+
+            if (rawKeys) {
+                const keys = JSON.parse(rawKeys) as string[];
+                keys.forEach(key => {
+                    const keyID = "osm_" + key.replace(":wikidata", "").replace(":", "_");
+                    dropdownItems.push(buildDropdownItem(keyID, "OSM " + key, "DB"));
+                });
+            }
         }
 
-        if (rawOsmProps) {
-            const props = JSON.parse(rawOsmProps) as string[];
-            sources.osm_wikidata = "OSM + Wikidata " + props.join("/") + " (from DB)";
-        }
-
-        if (rawWdProperty) {
-            sources.wd_qualifier = "Wikidata " + rawWdProperty + "+P625 (real time via Wikidata SPARQL API)";
-        }
+        if (rawWdProperty)
+            dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata " + rawWdProperty + "+P625", "Wikidata API (real time)"));
 
         if (rawKeys) {
-            sources.overpass = "OSM (real time via Overpass API)";
             const keys = JSON.parse(rawKeys) as string[];
-            keys.forEach(key => {
-                const keyID = "osm_" + key.replace(":wikidata", "").replace(":", "_");
-                sources[keyID] = "OSM " + key + " (from DB)";
-            });
+            dropdownItems.push(buildDropdownItem("overpass", "OSM " + keys.join(" / "), "Overpass + Wikidata APIs (real time)"));
         }
 
-        const dropdownItems: DropdownItem[] = Object.entries(sources).map(([sourceID, text]) => ({
-            id: sourceID,
-            text: text,
-            onSelect: () => {
-                onSourceChange(sourceID);
-                setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                this.showDropdown(false);
-            }
-        }));
         super(
             '⚙️',
             dropdownItems,
