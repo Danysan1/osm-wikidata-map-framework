@@ -85,7 +85,7 @@ def choose_load_osm_data_task(**context) -> str:
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "load_elements_from_pg_file"
 
-def choose_propagation_method(**context) -> str:
+def choose_propagation_method(propagate_data:str) -> str:
     """
         # Check whether and how to propagate
 
@@ -95,11 +95,9 @@ def choose_propagation_method(**context) -> str:
         * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/variables.html)
     """
 
-    from airflow.models import Variable
-    propagate = Variable.get("propagate_data", default_var=None)
-    if propagate == "global":
+    if propagate_data == "global" or propagate_data == "true":
         return "elaborate_data.propagate_etymologies_globally"
-    elif propagate == "local":
+    elif propagate_data == "local":
         return "elaborate_data.propagate_etymologies_locally"
     else:
         return "elaborate_data.join_post_propagation"
@@ -413,7 +411,10 @@ class OemDbInitDAG(DAG):
 
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
-            python_callable= choose_propagation_method,
+            python_callable = choose_propagation_method,
+            op_kwargs = {
+                "propagate_data": '{{ var.value.propagate_data }}',
+            },
             dag = self,
             task_group=elaborate_group,
             doc_md = choose_propagation_method.__doc__
