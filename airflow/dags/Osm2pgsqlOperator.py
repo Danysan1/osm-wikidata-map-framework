@@ -1,5 +1,6 @@
 from OsmDockerOperator import OsmDockerOperator
 from airflow.hooks.postgres_hook import PostgresHook
+from os import environ
 
 class Osm2pgsqlOperator(OsmDockerOperator):
     """
@@ -24,6 +25,6 @@ class Osm2pgsqlOperator(OsmDockerOperator):
             environment = {
                 "PGPASSWORD": postgres_conn.password,
             },
-            network_mode="open-etymology-map_airflow-postgis-bridge", # The container needs to talk with the local DB
+            network_mode = environ.get("AIRFLOW_VAR_POSTGIS_BRIDGE"), # The container needs to talk with the local DB
             **kwargs
         )

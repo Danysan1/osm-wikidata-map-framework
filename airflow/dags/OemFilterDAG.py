@@ -102,7 +102,7 @@ class OemFilterDAG(DAG):
 
         task_keep_name = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_name",
-            container_name = "open-etymology-map-keep_elements_with_name",
+            container_name = "osm-wikidata-map-framework-keep_elements_with_name",
             source_path= pbf_path,
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/with_name.osm.pbf",
             tags=['{{ var.value.osm_filter_key }}'],
@@ -120,7 +120,7 @@ class OemFilterDAG(DAG):
 
         task_keep_possible_ety = OsmiumTagsFilterOperator(
             task_id = "keep_elements_with_possible_etymology",
-            container_name = "open-etymology-map-keep_elements_with_possible_etymology",
+            container_name = "osm-wikidata-map-framework-keep_elements_with_possible_etymology",
             source_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/with_name.osm.pbf",
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/possible_etymology.osm.pbf",
             tags=[
@@ -154,7 +154,7 @@ class OemFilterDAG(DAG):
 
         task_remove_non_interesting = OsmiumTagsFilterOperator(
             task_id = "remove_non_interesting_elements",
-            container_name = "open-etymology-map-remove_non_interesting_elements",
+            container_name = "osm-wikidata-map-framework-remove_non_interesting_elements",
             source_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/possible_etymology.osm.pbf",
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
             tags=[
@@ -215,7 +215,7 @@ class OemFilterDAG(DAG):
 
         task_export_to_pg = OsmiumExportOperator(
             task_id = "osmium_export_pbf_to_pg",
-            container_name = "open-etymology-map-osmium_export_pbf_to_pg",
+            container_name = "osm-wikidata-map-framework-osmium_export_pbf_to_pg",
             source_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pg",
             cache_path = "/tmp/osmium_{{ params.prefix }}_{{ ti.job_id }}",

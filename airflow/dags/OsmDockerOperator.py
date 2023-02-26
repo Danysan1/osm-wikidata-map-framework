@@ -25,7 +25,7 @@ class OsmDockerOperator(DockerOperator):
             ],
             mount_tmp_dir=False, # https://airflow.apache.org/docs/apache-airflow-providers-docker/3.5.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator
             auto_remove=True,
-            pool="data_filtering",
+            #pool="data_filtering",
             user=getuid(),
             **kwargs
         )

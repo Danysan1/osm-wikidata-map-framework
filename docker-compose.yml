@@ -89,7 +89,8 @@ x-airflow-common:
     AIRFLOW_VAR_osm_wikidata_properties: ${osm_wikidata_properties}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
-    AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "open-etymology-map_db-init-work-dir" # docker-compose "db-init-work-dir" volume
+    AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
+    AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
