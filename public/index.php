@@ -212,7 +212,7 @@ if ($enableDB) {
                 Etymology source:
                 <a title="Etymology OpenStreetMap source" class="etymology_src_osm">OpenStreetMap</a>
                 <span class="etymology_src_wd_wrapper"> + <a title="Etymology Wikidata source" class="etymology_src_wd">Wikidata</a></span>
-                <span class="etymology_propagated"> + <a title="Description of the propagation mechanism" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#propagation">propagation</a></span>
+                <span class="etymology_propagated"> + <a title="Description of the propagation mechanism" href="<?= $conf->get("propagation_docs_url") ?>">propagation</a></span>
                 <span class="etymology_src_part_of_wd_wrapper"> + <a title="Etymology Wikidata source" class="etymology_src_part_of_wd">Wikidata</a></span>
             </span>
         </div>

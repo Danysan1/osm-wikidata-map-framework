@@ -215,7 +215,7 @@ If the propagation is enabled, the database initialization operates as follow:
 3. case insensitively search names used by at least two highways far away from each other which have exactly and only the same etymology
 4. propagates these etymologies to all (case insensitively) homonimous highways
 
-More specifically, this happens in [propagate-etymologies-global.sql](airflow/dags/sql/propagate-etymologies-global.sql).
+More specifically, this procedure is handled by [`OemDbInitDAG`](airflow/dags/OemDbInitDAG.py#L424) and [propagate-etymologies-global.sql](airflow/dags/sql/propagate-etymologies-global.sql).
 
 #### Old back-end (v1, using Overpass)
 
