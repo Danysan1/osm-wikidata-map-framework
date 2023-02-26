@@ -20,17 +20,6 @@ use \App\ServerTiming;
  */
 class CSVCachedBBoxJSONQuery extends CSVCachedBBoxQuery implements BBoxJSONQuery
 {
-    /**
-     * @param BBoxJSONQuery $baseQuery
-     * @param string $cacheFileBasePath
-     * @param Configuration $config
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
-    {
-        parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
-    }
-
     protected function getResultFromFilePath(string $fileRelativePath): QueryResult
     {
         return new JSONLocalQueryResult(true, null, $this->cacheFileBaseURL . $fileRelativePath);

@@ -20,17 +20,6 @@ use \App\Config\Configuration;
  */
 class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements StringSetJSONQuery
 {
-    /**
-     * @param StringSetJSONQuery $baseQuery
-     * @param string $cacheFileBasePath
-     * @param Configuration $config
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
-    {
-        parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
-    }
-
     protected function getResultFromFile(string $relativePath): QueryResult
     {
         return new JSONLocalQueryResult(true, null, $this->cacheFileBaseURL . $relativePath);
@@ -45,7 +34,7 @@ class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements Str
         $xml = $result->getJSON();
         $hash = sha1($xml);
         $xmlRelativePath = $hash . ".xml";
-        $xmlAbsolutePath = (string)$this->getConfig()->get("cache_file_base_path") . $xmlRelativePath;
+        $xmlAbsolutePath = $this->cacheFileBasePath . $xmlRelativePath;
         $writtenBytes = @file_put_contents($xmlAbsolutePath, $xml);
         if (!$writtenBytes)
             error_log("Failed writing cache to $xmlAbsolutePath");

@@ -17,27 +17,22 @@ use \App\Query\Query;
  */
 abstract class CSVCachedQuery implements Query
 {
-    private string $cacheFileBasePath;
-    private Configuration $config;
+    protected string $cacheFileBasePath;
     private Query $baseQuery;
     private ?ServerTiming $serverTiming;
     protected int $timeoutThresholdTimestamp;
     protected string $cacheFileBaseURL;
 
-    public function __construct(Query $baseQuery, string $cacheFileBasePath, Configuration $config, ?ServerTiming $serverTiming = null)
+    public function __construct(Query $baseQuery, string $cacheFileBasePath, ?ServerTiming $serverTiming = null, ?int $cacheTimeoutHours = 1, ?string $cacheFileBaseURL = null)
     {
         if (empty($cacheFileBasePath)) {
             throw new \Exception("Cache file base path cannot be empty");
         }
         $this->baseQuery = $baseQuery;
         $this->cacheFileBasePath = $cacheFileBasePath;
-        $this->config = $config;
         $this->serverTiming = $serverTiming;
-
-        $cacheTimeoutHours = (int)$config->get('cache_timeout_hours');
         $this->timeoutThresholdTimestamp = time() - (60 * 60 * $cacheTimeoutHours);
-
-        $this->cacheFileBaseURL = (string)$this->getConfig()->get("cache_file_base_url");
+        $this->cacheFileBaseURL = empty($cacheFileBaseURL) ? '' : $cacheFileBaseURL;
     }
 
     public function getBaseQuery(): Query
@@ -48,11 +43,6 @@ abstract class CSVCachedQuery implements Query
     public function getQuery(): string
     {
         return $this->getBaseQuery()->getQuery();
-    }
-
-    protected function getConfig(): Configuration
-    {
-        return $this->config;
     }
 
     protected function getCacheFileBasePath(): string

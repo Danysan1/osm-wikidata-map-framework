@@ -27,17 +27,6 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
     public const BBOX_CACHE_COLUMN_MAX_LON = 4;
     public const BBOX_CACHE_COLUMN_RESULT = 5;
 
-    /**
-     * @param BBoxQuery $baseQuery
-     * @param string $cacheFileBasePath
-     * @param Configuration $config
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
-    {
-        parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
-    }
-
     public function getBBox(): BoundingBox
     {
         $baseQuery = $this->getBaseQuery();
@@ -87,7 +76,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $rowData = $this->getRowDataFromResult($result);
         $hash = sha1($rowData);
         $fileRelativePath = $hash . "." . $this->getExtension();
-        $fileAbsolutePath = (string)$this->getConfig()->get("cache_file_base_path") . $fileRelativePath;
+        $fileAbsolutePath = $this->cacheFileBasePath . $fileRelativePath;
         $writtenBytes = @file_put_contents($fileAbsolutePath, $rowData);
         if (!$writtenBytes)
             error_log("Failed writing cache to $fileAbsolutePath");

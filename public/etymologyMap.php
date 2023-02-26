@@ -28,7 +28,6 @@ $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CH
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
-$cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
 
 $enableDB = $conf->isDbEnabled();
@@ -59,19 +58,22 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textKey, $descriptionKey, $wikidataKeyIDs, $serverTiming, $maxElements, $source, $search);
 } else {
+    $cacheFileBasePath = $safeLanguage . "_" . (string)$conf->get("cache_file_base_path");
+    $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
+    $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+
     if ($source == "wd_qualifier") {
         $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
         $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
         $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
     } else {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
-        $cacheFileBasePath = $cacheFileBasePath . $safeLanguage . "_";
         $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
     }
 
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataEndpointURL, $cacheFileBasePath, $conf);
     $combinedQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
-    $query = new CSVCachedBBoxGeoJSONQuery($combinedQuery, $cacheFileBasePath, $conf, $serverTiming);
+    $query = new CSVCachedBBoxGeoJSONQuery($combinedQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
 }
 
 $serverTiming->add("3_init");

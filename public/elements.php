@@ -49,7 +49,9 @@ if ($from == "bbox") {
     } else {
         $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
         $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
-        $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $conf, $serverTiming);
+        $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
+        $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+        $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
     }
 } elseif ($from == "center") {
     $centerLat = (float)getFilteredParamOrError("centerLat", FILTER_VALIDATE_FLOAT);

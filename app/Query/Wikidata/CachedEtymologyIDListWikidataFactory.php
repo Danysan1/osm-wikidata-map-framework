@@ -50,6 +50,6 @@ class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
     public function create(StringSet $input): StringSetXMLQuery
     {
         $baseQuery =  new EtymologyIDListXMLWikidataQuery($input, $this->language, $this->endpointURL);
-        return new CSVCachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->config);
+        return new CSVCachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->config->get("wikidata_cache_timeout_hours"), $this->config->get("cache_file_base_url"));
     }
 }

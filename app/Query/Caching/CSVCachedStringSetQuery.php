@@ -25,17 +25,6 @@ define("STRING_SET_CACHE_COLUMN_RESULT", 2);
  */
 abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedStringSetQuery
 {
-    /**
-     * @param StringSetQuery $baseQuery
-     * @param string $cacheFileBasePath
-     * @param Configuration $config
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($baseQuery, $cacheFileBasePath, $config, $serverTiming = null)
-    {
-        parent::__construct($baseQuery, $cacheFileBasePath, $config, $serverTiming);
-    }
-
     public function getStringSet(): StringSet
     {
         $baseQuery = $this->getBaseQuery();

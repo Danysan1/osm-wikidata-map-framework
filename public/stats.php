@@ -12,6 +12,7 @@ use \App\BaseBoundingBox;
 use \App\PostGIS_PDO;
 use \App\Query\Caching\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxStatsOverpassWikidataQuery;
+use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\PostGIS\Stats\BBoxGenderStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
@@ -46,11 +47,11 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
     http_response_code(400);
     die('{"error":"Invalid language code."};');
 }
-$safeLanguage = $langMatches[1];
+$safeLanguage = (string)$langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$textTag = (string)$conf->get('osm_text_key');
-$descriptionTag = (string)$conf->get('osm_description_key');
+$textKey = (string)$conf->get('osm_text_key');
+$descriptionKey = (string)$conf->get('osm_description_key');
 $wikidataKeys = $conf->getWikidataKeys();
 $wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 $maxArea = (float)$conf->get("elements_bbox_max_area");
@@ -70,11 +71,13 @@ if ($db != null) {
     }
 } else {
     if ($to == "genderStats") {
+        $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($overpassQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "typeStats") {
+        $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($wikidataKeys, $bbox, $overpassConfig, $wikidataFactory, $serverTiming, $textTag, $descriptionTag);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($overpassQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "centuryStats") {
         throw new Exception("Not implemented");
     } elseif ($to == "sourceStats") {
@@ -83,12 +86,10 @@ if ($db != null) {
         throw new Exception("Bad 'to' parameter");
     }
 
-    $query = new CSVCachedBBoxJSONQuery(
-        $baseQuery,
-        $cacheFileBasePath . $safeLanguage . "_",
-        $conf,
-        $serverTiming
-    );
+    $cacheFileBasePath = $safeLanguage . "_" . (string)$conf->get("cache_file_base_path");
+    $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
+    $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
 }
 
 $serverTiming->add("3_init");
