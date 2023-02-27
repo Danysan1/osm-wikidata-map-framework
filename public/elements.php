@@ -46,7 +46,7 @@ if ($from == "bbox") {
     $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
     if ($db != null) {
-        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $wikidataKeyIDs, $source, $search);
+        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
     } else {
         if ($source == "wd_qualifier") {
             $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');

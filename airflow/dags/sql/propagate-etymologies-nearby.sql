@@ -3,9 +3,8 @@ INSERT INTO oem.etymology (
     et_wd_id,
     et_from_el_id,
     et_recursion_depth,
-    et_from_osm_etymology,
-    et_from_osm_subject,
-    et_from_osm_buried,
+    et_from_osm,
+    et_from_key_ids,
     et_from_osm_wikidata_wd_id,
     et_from_osm_wikidata_prop_cod
 ) SELECT DISTINCT ON (new_el.osm_id, old_et.et_wd_id)
@@ -13,9 +12,8 @@ INSERT INTO oem.etymology (
     old_et.et_wd_id,
     old_et.et_from_el_id,
     :depth::INT AS recursion_depth,
-    old_et.et_from_osm_etymology,
-    old_et.et_from_osm_subject,
-    old_et.et_from_osm_buried,
+    FALSE,
+    ARRAY['osm_propagated'],
     old_et.et_from_osm_wikidata_wd_id,
     old_et.et_from_osm_wikidata_prop_cod
 FROM oem.etymology AS old_et

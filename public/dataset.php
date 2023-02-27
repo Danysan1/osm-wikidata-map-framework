@@ -23,7 +23,7 @@ try {
 
 $wikidataKeyIDs = IniEnvConfiguration::keysToIDs($conf->getWikidataKeys());
 $fromOsmColumnValues = implode(", ", array_map(function (string $keyID): string {
-    return "COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND ety.et_from_$keyID) AS \"$keyID\"";
+    return "COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND '$keyID' = ANY(ety.et_from_key_ids)) AS \"$keyID\"";
 }, $wikidataKeyIDs));
 $stm = $db->query(
     "SELECT

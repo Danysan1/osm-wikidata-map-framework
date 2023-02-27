@@ -23,6 +23,8 @@ class BBoxTypeStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSON
         $stRes->bindValue("min_lat", $this->getBBox()->getMinLat());
         $stRes->bindValue("max_lat", $this->getBBox()->getMaxLat());
         $stRes->bindValue("lang", $this->getLanguage());
+        if (!empty($this->getSource()))
+            $stRes->bindValue("source", $this->getSource());
         if (!empty($this->getSearch()))
             $stRes->bindValue("search", $this->getSearch());
         $stRes->execute();

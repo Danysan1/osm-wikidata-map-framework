@@ -51,7 +51,7 @@ abstract class BaseConfiguration implements Configuration
 
         return array_map(function (mixed $item): string {
             $ret = (string)$item;
-            if (!preg_match('/^[a-z_:]+$/', $ret))
+            if (!preg_match('/^[a-z_:]+$/', $ret)) //! Do not remove this validity check
                 throw new Exception("Bad OSM key: '$ret'");
             return $ret;
         }, $wikidataKeys);

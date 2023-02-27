@@ -19,10 +19,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
 {
     private string $textKey;
     private string $descriptionKey;
-    /**
-     * @var string $fromOsmQuery Query to check if an etymology comes from OSM (example: et_from_osm_name_etymology OR et_from_osm_subject)
-     */
-    private string $fromOsmQuery;
 
     /**
      * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
@@ -34,7 +30,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         string $wikidataEndpointURL,
         string $textKey,
         string $descriptionKey,
-        array $availableSourceKeyIDs,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
@@ -47,15 +42,11 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $wikidataEndpointURL,
             $serverTiming,
             $maxElements,
-            $availableSourceKeyIDs,
             $source,
             $search
         );
         $this->textKey = $textKey;
         $this->descriptionKey = $descriptionKey;
-        $this->fromOsmQuery = implode(" OR ", array_map(function (string $id): string {
-            return "et_from_$id";
-        }, $availableSourceKeyIDs));
     }
 
     public function send(): QueryResult
@@ -70,6 +61,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         $stRes->bindValue("lang", $this->getLanguage());
         $stRes->bindValue("textKey", $this->textKey);
         $stRes->bindValue("descriptionKey", $this->descriptionKey);
+        if (!empty($this->getSource()))
+            $stRes->bindValue("source", $this->getSource());
         if (!empty($this->getSearch()))
             $stRes->bindValue("search", $this->getSearch());
         $stRes->execute();
@@ -98,7 +91,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     {
         $filterClause = $this->getFilterClause();
         $limitClause = $this->getLimitClause();
-        $fromOsmQuery = $this->fromOsmQuery;
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
@@ -117,12 +109,12 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
-                    COALESCE(MIN(oem.et_source_color(etymology)), '#223b53') AS source_color,
+                    COALESCE(MIN(oem.et_source_color(et)), '#223b53') AS source_color,
                     COALESCE(MIN(gender.wd_gender_color), '#223b53') AS gender_color,
                     COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
                     COALESCE(MIN(oem.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_event_date, wd.wd_start_date, wd.wd_birth_date)))), '#223b53') AS century_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
-                        'from_osm', $fromOsmQuery,
+                        'from_osm', et_from_osm,
                         'from_osm_type', from_el.el_osm_type,
                         'from_osm_id', from_el.el_osm_id,
                         'from_wikidata', FALSE,
@@ -167,7 +159,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies
                 FROM oem.element AS el
-                LEFT JOIN oem.etymology ON et_el_id = el_id
+                LEFT JOIN oem.etymology AS et ON et_el_id = el_id
                 LEFT JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 LEFT JOIN oem.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang

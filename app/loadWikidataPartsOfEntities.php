@@ -9,6 +9,5 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 $dbh = new PostGIS_PDO($conf);
 $wikidataEndpointURL = (string)$conf->get("wikidata_endpoint");
-$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($conf->getWikidataKeys());
 
-App\loadWikidataPartsOfEntities($dbh, $wikidataEndpointURL, $wikidataKeyIDs);
+App\loadWikidataPartsOfEntities($dbh, $wikidataEndpointURL);

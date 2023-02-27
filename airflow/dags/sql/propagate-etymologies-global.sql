@@ -22,9 +22,8 @@ INSERT INTO oem.etymology (
     et_wd_id,
     et_from_el_id,
     et_recursion_depth,
-    et_from_osm_name_etymology,
-    et_from_osm_subject,
-    et_from_osm_buried,
+    et_from_osm,
+    et_from_key_ids,
     et_from_osm_wikidata_wd_id,
     et_from_osm_wikidata_prop_cod
 ) SELECT
@@ -32,9 +31,8 @@ INSERT INTO oem.etymology (
     old_et.et_wd_id,
     old_et.et_from_el_id,
     -1 AS recursion_depth,
-    old_et.et_from_osm_name_etymology,
-    old_et.et_from_osm_subject,
-    old_et.et_from_osm_buried,
+    FALSE,
+    ARRAY['osm_propagated'],
     old_et.et_from_osm_wikidata_wd_id,
     old_et.et_from_osm_wikidata_prop_cod
 FROM propagatable_etymology AS pet

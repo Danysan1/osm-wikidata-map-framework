@@ -30,11 +30,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         string $wikidataEndpointURL,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
-        ?array $availableSourceKeyIDs = null,
         ?string $source = null,
         ?string $search = null
     ) {
-        parent::__construct($bbox, $db, $serverTiming, $availableSourceKeyIDs, $source, $search);
+        parent::__construct($bbox, $db, $serverTiming, $source, $search);
 
         if ($maxElements !== null && $maxElements <= 0) {
             throw new Exception("maxElements must be > 0");
@@ -86,6 +85,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $sthMissingWikidata->bindValue("min_lat", $this->getBBox()->getMinLat(), PDO::PARAM_STR);
         $sthMissingWikidata->bindValue("max_lat", $this->getBBox()->getMaxLat(), PDO::PARAM_STR);
         $sthMissingWikidata->bindValue("lang", $this->language, PDO::PARAM_STR);
+        if (!empty($this->getSource()))
+            $sthMissingWikidata->bindValue("source", $this->getSource());
         if (!empty($this->getSearch()))
             $sthMissingWikidata->bindValue("search", $this->getSearch());
         //$sthMissingWikidata->debugDumpParams();

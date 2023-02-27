@@ -59,13 +59,13 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     if ($to == "genderStats") {
-        $query = new BBoxGenderStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $wikidataKeyIDs, $source);
+        $query = new BBoxGenderStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
     } elseif ($to == "typeStats") {
-        $query = new BBoxTypeStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $wikidataKeyIDs, $source);
+        $query = new BBoxTypeStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
     } elseif ($to == "centuryStats") {
-        $query = new BBoxCenturyStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $wikidataKeyIDs, $source);
+        $query = new BBoxCenturyStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
     } elseif ($to == "sourceStats") {
-        $query = new BBoxSourceStatsPostGISQuery($bbox, $db, $serverTiming, $wikidataKeyIDs, $source);
+        $query = new BBoxSourceStatsPostGISQuery($bbox, $db, $serverTiming, $source);
     } else {
         throw new Exception("Bad 'to' parameter");
     }
