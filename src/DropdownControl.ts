@@ -160,11 +160,9 @@ export class DropdownControl implements IControl {
         if (!this._ctrlDropDown) {
             console.warn("Missing control dropdown, failed showing/hiding it", { show });
         } else if (show) {
-            this._ctrlDropDown.classList.add("visibleDropDown");
             this._ctrlDropDown.classList.remove("hiddenElement");
         } else {
             this._ctrlDropDown.classList.add("hiddenElement");
-            this._ctrlDropDown.classList.remove("visibleDropDown");
         }
     }
 

@@ -114,7 +114,7 @@ class EtymologyColorControl extends DropdownControl {
         //updateDataSource(event);
     }
 
-    updateChart(event: MapboxEvent | Event, source = "all") {
+    updateChart(event?: MapboxEvent | Event, source?: string) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not inizialized", { event });
@@ -147,7 +147,7 @@ class EtymologyColorControl extends DropdownControl {
                         maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
                         maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
                         language,
-                        source,
+                        source: source ?? getCorrectFragmentParams().source,
                     },
                     queryString = new URLSearchParams(queryParams).toString(),
                     stats_url = './stats.php?' + queryString,
@@ -184,10 +184,11 @@ class EtymologyColorControl extends DropdownControl {
                 xhr.send();
                 this._chartXHR = xhr;
 
-                this.showDropdown();
+                if (event)
+                    this.showDropdown();
             } else {
                 debugLog("updateChart main: no colorScheme, removing", { event, colorScheme });
-                if (event.type && event.type == 'change')
+                if (event?.type && event?.type == 'change')
                     this.showDropdown(false);
                 this.removeChart();
             }
@@ -254,6 +255,16 @@ class EtymologyColorControl extends DropdownControl {
             } catch (error) {
                 console.warn("Error removing old chart", { error, chart: this._chartDomElement });
             }
+        }
+    }
+
+    showDropdown(show = true) {
+        super.showDropdown(show);
+
+        if (!this._chartDomElement && show) {
+            this.updateChart();
+        } else {
+            this.removeChart();
         }
     }
 }

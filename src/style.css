@@ -112,7 +112,7 @@ canvas.chart {
     height: 40em;
 }
 
-select.visibleDropDown {
+.dropdown-ctrl-dropdown {
     display: inline-block;
     margin: 5px;
 }
