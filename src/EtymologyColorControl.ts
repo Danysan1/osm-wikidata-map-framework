@@ -186,11 +186,9 @@ class EtymologyColorControl extends DropdownControl {
 
                 if (event)
                     this.showDropdown();
-            } else {
-                debugLog("updateChart main: no colorScheme, removing", { event, colorScheme });
-                if (event?.type && event?.type == 'change')
-                    this.showDropdown(false);
-                this.removeChart();
+            } else if (event?.type && event?.type == 'change') {
+                debugLog("updateChart main: no colorScheme and change event, hiding", { event, colorScheme });
+                this.showDropdown(false);
             }
         }
     }
