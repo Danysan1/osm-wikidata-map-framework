@@ -1,4 +1,4 @@
-import { debugLog } from "./config";
+import { debugLog, getConfig } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 
 /**
@@ -285,37 +285,54 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     }
 
     const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
-        src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
-        src_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_wd_wrapper'),
-        src_part_of_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_part_of_wd'),
+        src_osm_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_osm_wrapper');
+    if (!src_osm_wrapper) {
+        console.warn("Missing etymology_src_osm_wrapper");
+    } else if (ety.from_osm_type && ety.from_osm_id && src_osm) {
+        src_osm.href = `https://www.openstreetmap.org/${ety.from_osm_type}/${ety.from_osm_id}`;
+        src_osm_wrapper.classList.remove('hiddenElement');
+    } else {
+        src_osm_wrapper.classList.add('hiddenElement');
+    }
+
+    const src_osm_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm_wd'),
+        src_osm_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_osm_wd_wrapper');
+    if (!src_osm_wd_wrapper) {
+        console.warn("Missing etymology_src_osm_wd_wrapper");
+    } else if (ety.from_osm_wikidata_cod && src_osm_wd) {
+        src_osm_wd.href = `https://www.wikidata.org/wiki/${ety.from_osm_wikidata_cod}#${ety.from_osm_wikidata_prop}`;
+        src_osm_wd_wrapper.classList.remove("hiddenElement");
+    } else {
+        src_osm_wd_wrapper.classList.add("hiddenElement");
+    }
+
+    const src_part_of_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_part_of_wd'),
         src_part_of_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_part_of_wd_wrapper');
-    if (src_osm) {
-        if (ety.from_osm_type && ety.from_osm_id) {
-            src_osm.href = 'https://www.openstreetmap.org/' + ety.from_osm_type + '/' + ety.from_osm_id;
-        } else {
-            src_osm.href = 'https://www.openstreetmap.org/';
-            console.warn("Bad etymology, missing OSM source");
-        }
-    }
-    if (ety.from_osm_wikidata_cod && src_wd_wrapper && src_wd) {
-        src_wd.href = 'https://www.wikidata.org/wiki/' + ety.from_osm_wikidata_cod + '#' + ety.from_osm_wikidata_prop;
-        src_wd_wrapper.style.display = 'inline';
-    } else if (src_wd_wrapper) {
-        src_wd_wrapper.style.display = 'none';
-    }
-    if (ety.from_parts_of_wikidata_cod && src_part_of_wd_wrapper && src_part_of_wd) {
-        src_part_of_wd.href = 'https://www.wikidata.org/wiki/' + ety.from_parts_of_wikidata_cod + '#P527';
-        src_part_of_wd_wrapper.style.display = 'inline';
-    } else if (src_part_of_wd_wrapper) {
-        src_part_of_wd_wrapper.style.display = 'none';
+    if (!src_part_of_wd_wrapper) {
+        console.warn("Missing etymology_src_part_of_wd_wrapper");
+    } else if (ety.from_parts_of_wikidata_cod && src_part_of_wd) {
+        src_part_of_wd.href = `https://www.wikidata.org/wiki/${ety.from_parts_of_wikidata_cod}#P527`;
+        src_part_of_wd_wrapper.classList.remove("hiddenElement");
+    } else {
+        src_part_of_wd_wrapper.classList.add("hiddenElement");
     }
 
-
-    const propagated = etyDomElement.querySelector<HTMLElement>('.etymology_propagated');
+    const propagated = etyDomElement.querySelector<HTMLElement>('.etymology_propagated_wrapper');
     if (propagated && ety.recursion_depth) {
-        propagated.style.display = 'inline';
+        propagated.classList.remove("hiddenElement");
     } else if (propagated) {
-        propagated.style.display = 'none';
+        propagated.classList.add("hiddenElement");
+    }
+
+    const wdProp = getConfig("wikidata_reverse_property"),
+        src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd');
+    if (!src_wd) {
+        console.warn("Missing etymology_src_wd_wrapper");
+    } else if (wdProp && ety.from_wikidata) {
+        src_wd.href = `https://www.wikidata.org/wiki/${ety.wikidata}#${wdProp}`;
+        src_wd.classList.remove("hiddenElement");
+    } else {
+        src_wd.classList.add("hiddenElement");
     }
 
     return etyDomElement;

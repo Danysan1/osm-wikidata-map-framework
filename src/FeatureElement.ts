@@ -154,7 +154,6 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
                 from_osm: true,
                 from_osm_type: properties.osm_type,
                 from_osm_id: properties.osm_id,
-                from_wikidata: false,
             }, currentZoom));
         }
     }

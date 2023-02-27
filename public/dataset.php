@@ -46,7 +46,7 @@ $output = fopen("php://output", "w");
 fputcsv($output, array_merge( # Print column names
     ['wikidata_id', 'name'],
     $wikidataKeyIDs,
-    ['from_wikidata', 'from_part_of', 'from_propagation']
+    ['from_osm_wikidata', 'from_part_of', 'from_propagation']
 ));
 while (
     /** @var Stringable[]|false $row */

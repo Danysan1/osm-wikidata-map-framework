@@ -125,7 +125,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_osm', $fromOsmQuery,
                         'from_osm_type', from_el.el_osm_type,
                         'from_osm_id', from_el.el_osm_id,
-                        'from_wikidata', from_wd IS NOT NULL,
+                        'from_wikidata', FALSE,
                         'from_osm_wikidata_cod', from_wd.wd_wikidata_cod,
                         'from_osm_wikidata_prop', et_from_osm_wikidata_prop_cod,
                         'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,
