@@ -152,14 +152,18 @@ function loadWikidataRelatedEntities(
     return $total_wd;
 }
 
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataProperties, string $fromOsmColumns): int
+function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataProperties, array $wikidataKeyIDs): int
 {
+    $fromOsmColumns = implode(", ", array_map(function (string $id): string {
+        return "et_from_$id";
+    }, $wikidataKeyIDs));
+    $falseOsmColumns = implode(", ", array_fill(0, sizeof($wikidataKeyIDs), "FALSE"));
     return loadWikidataRelatedEntities(
         "oem.element_wikidata_cods",
         "ew_wikidata_cod",
         "ew_from_wikidata",
         "et_el_id, et_wd_id, et_from_el_id, $fromOsmColumns, et_from_osm_wikidata_wd_id, et_from_osm_wikidata_prop_cod",
-        "ew_el_id, w2.wd_id, ew_el_id, FALSE, FALSE, FALSE, w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
+        "ew_el_id, w2.wd_id, ew_el_id, $falseOsmColumns, w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
         "JOIN oem.element_wikidata_cods ON ew_wikidata_cod = w1.wd_wikidata_cod",
         "named_after",
         $wikidataProperties,
@@ -169,8 +173,11 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, a
     );
 }
 
-function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL, string $fromOsmColumns): int
+function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataKeyIDs): int
 {
+    $fromOsmColumns = implode(", ", array_map(function (string $id): string {
+        return "et_from_$id";
+    }, $wikidataKeyIDs));
     return loadWikidataRelatedEntities(
         "oem.etymology JOIN oem.wikidata ON wd_id = et_wd_id",
         "wd_wikidata_cod",

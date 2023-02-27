@@ -13,11 +13,8 @@ $wikidataProperties = array_map(function (mixed $x) {
     return (string)$x;
 }, $conf->getArray('osm_wikidata_properties'));
 $wikidataKeyIDs = IniEnvConfiguration::keysToIDs($conf->getWikidataKeys());
-$fromOsmColumns = implode(", ", array_map(function (string $id): string {
-    return "et_from_$id";
-}, $wikidataKeyIDs));
 
 error_log("Wikidata endpoint: $wikidataEndpointURL");
 error_log("Wikidata properties: " . implode(", ", $wikidataProperties));
 
-App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL, $wikidataProperties, $fromOsmColumns);
+App\loadWikidataNamedAfterEntities($dbh, $wikidataEndpointURL, $wikidataProperties, $wikidataKeyIDs);
