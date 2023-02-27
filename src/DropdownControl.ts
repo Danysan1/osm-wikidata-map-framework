@@ -114,7 +114,7 @@ export class DropdownControl implements IControl {
 
     btnClickHandler(event: MouseEvent) {
         debugLog("EtymologyColorControl button click", event);
-        this.showDropdown();
+        this.toggleDropdown();
     }
 
     dropDownChangeHandler(event: Event) {
@@ -165,6 +165,14 @@ export class DropdownControl implements IControl {
         } else {
             this._ctrlDropDown.classList.add("hiddenElement");
             this._ctrlDropDown.classList.remove("visibleDropDown");
+        }
+    }
+
+    toggleDropdown() {
+        if (!this._ctrlDropDown) {
+            console.warn("Missing control dropdown, failed toggling it");
+        } else {
+            this.showDropdown(this._ctrlDropDown.classList.contains("hiddenElement"));
         }
     }
 }

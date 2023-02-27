@@ -40,7 +40,7 @@ class EtymologyColorControl extends DropdownControl {
             onSelect: (event) => this.onColorSchemeSelect(id, event)
         }));
         super(
-            '🎨',
+            '📊', //'🎨',
             dropdownItems,
             startColorScheme,
             'Choose color scheme',
