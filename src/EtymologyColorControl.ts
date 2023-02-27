@@ -261,10 +261,10 @@ class EtymologyColorControl extends DropdownControl {
     showDropdown(show = true) {
         super.showDropdown(show);
 
-        if (!this._chartDomElement && show) {
-            this.updateChart();
-        } else {
+        if (!show) {
             this.removeChart();
+        } else if (!this._chartDomElement) {
+            this.updateChart();
         }
     }
 }
