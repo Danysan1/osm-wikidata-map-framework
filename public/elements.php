@@ -15,7 +15,8 @@ use \App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
 use \App\Query\Overpass\CenterEtymologyOverpassQuery;
 use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
-use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
+use App\Query\Wikidata\DirectEtymologyWikidataQuery;
+use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -29,7 +30,7 @@ $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CH
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 
 $enableDB = $conf->getBool("db_enable");
-if ($enableDB && $source != "overpass" && $source != "wd_qualifier") {
+if ($enableDB && !in_array($source, ["overpass", "wd_reverse", "wd_direct"])) {
     //error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -48,11 +49,14 @@ if ($from == "bbox") {
     if ($db != null) {
         $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
     } else {
-        if ($source == "wd_qualifier") {
+        if ($source == "wd_direct") {
+            $wikidataProps = $conf->getArray("osm_wikidata_properties");
+            $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $language, $wikidataEndpointURL);
+        } elseif ($source == "wd_reverse") {
             $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
             $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
             $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
+            $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
         } else {
             $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
         }

@@ -11,9 +11,11 @@ export class SourceControl extends DropdownControl {
     constructor(onSourceChange: (sourceID: string) => void, startSourceID: string) {
         const rawKeys = getConfig("osm_wikidata_keys"),
             rawOsmProps = getConfig("osm_wikidata_properties"),
-            rawWdProperty = getConfig("wikidata_reverse_property"),
+            osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
+            reverseWdProperty = getConfig("wikidata_reverse_property"),
             propagationEnabled = getConfig("propagate_data") == 'true',
-            dbEnabled = getConfig("db_enable") == 'true',
+            rawDbEnabled = getConfig("db_enable"),
+            dbEnabled = !!rawDbEnabled && rawDbEnabled != 'false' && rawDbEnabled != '0',
             dropdownItems: DropdownItem[] = [],
             buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
                 id: sourceID,
@@ -32,10 +34,8 @@ export class SourceControl extends DropdownControl {
             if (propagationEnabled)
                 dropdownItems.push(buildDropdownItem("osm_propagated", "Propagated", "DB"));
 
-            if (rawOsmProps) {
-                const props = JSON.parse(rawOsmProps) as string[];
-                dropdownItems.push(buildDropdownItem("osm_wikidata", "OSM wikidata + Wikidata " + props.join("/"), "DB"));
-            }
+            if (osmProps && osmProps.length > 0)
+                dropdownItems.push(buildDropdownItem("osm_wikidata", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
 
             if (rawKeys) {
                 const keys = JSON.parse(rawKeys) as string[];
@@ -46,8 +46,11 @@ export class SourceControl extends DropdownControl {
             }
         }
 
-        if (rawWdProperty)
-            dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata " + rawWdProperty + " + P625", "Wikidata API (real time)"));
+        if (osmProps && osmProps.length > 0)
+            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API (real time)"));
+
+        if (reverseWdProperty)
+            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata " + reverseWdProperty + " + P625", "Wikidata API (real time)"));
 
         if (rawKeys) {
             const keys = JSON.parse(rawKeys) as string[];

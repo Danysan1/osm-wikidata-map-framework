@@ -7,42 +7,23 @@ namespace App\Query\Wikidata;
 use App\BoundingBox;
 use App\Query\BaseQuery;
 use App\Query\BBoxGeoJSONQuery;
-use \App\Query\GeoJSONQuery;
-use \App\Query\Wikidata\GeoJSON2JSONEtymologyWikidataQuery;
+use App\Query\JSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
 use \App\Result\GeoJSONLocalQueryResult;
 use App\Result\QueryResult;
-use \App\Result\XMLQueryResult;
-use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
-use App\ServerTiming;
 use Exception;
 
-class QualifierEtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQuery
+abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQuery
 {
     private BoundingBox $bbox;
-    private JSONWikidataQuery $baseQuery;
+    private JSONQuery $baseQuery;
 
-    public function __construct(BoundingBox $bbox, string $wikidataProperty, string $endpointURL, ?string $imageProperty = null)
+    public function __construct(BoundingBox $bbox, JSONQuery $baseQuery)
     {
-        $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
-        $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $commonsQuery = "OPTIONAL { ?item wdt:$imageProperty ?commons. }";
-        $this->baseQuery = new JSONWikidataQuery(
-            "SELECT DISTINCT ?item ?itemLabel ?location ?commons
-            WHERE {
-              ?item p:$wikidataProperty ?burial.
-              SERVICE wikibase:box {
-                ?burial pq:P625 ?location.
-                bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
-              } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-              $commonsQuery
-            }",
-            $endpointURL
-        );
         $this->bbox = $bbox;
+        $this->baseQuery = $baseQuery;
     }
 
     public function getBBox(): BoundingBox
@@ -55,9 +36,14 @@ class QualifierEtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         return $this->baseQuery->getQuery();
     }
 
+    protected function getBaseQuery(): JSONQuery
+    {
+        return $this->baseQuery;
+    }
+
     private function convertRowToGeoJSONQuery(mixed $row): array
     {
-        if (!is_array($row) || empty($row["location"]["value"]) || empty($row["item"]["value"]))
+        if (!is_array($row) || empty($row["location"]["value"]) || empty($row["etymology"]["value"]))
             throw new Exception("Bad wikidata result row");
         $matches = [];
         if (!preg_match('/^Point\(([-\d.]+) ([-\d.]+)\)$/', (string)$row["location"]["value"], $matches))
@@ -65,7 +51,7 @@ class QualifierEtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         $lon = (float)$matches[1];
         $lat = (float)$matches[2];
         $commons = empty($row["commons"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["commons"]["value"]);
-        $itemQID = str_replace("http://www.wikidata.org/entity/", "", (string)$row["item"]["value"]);
+        $etymologyQID = str_replace("http://www.wikidata.org/entity/", "", (string)$row["etymology"]["value"]);
         return [
             "geometry" => [
                 "type" => "Point",
@@ -74,7 +60,7 @@ class QualifierEtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             "properties" => [
                 "wikimedia_commons" => $commons,
                 "etymologies" => [
-                    [OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY => $itemQID]
+                    [OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY => $etymologyQID]
                 ]
             ]
         ];

@@ -16,7 +16,8 @@ use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Query\Overpass\RoundRobinOverpassConfig;
 use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
-use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
+use App\Query\Wikidata\DirectEtymologyWikidataQuery;
+use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -31,7 +32,7 @@ $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
 
 $enableDB = $conf->getBool("db_enable");
-if ($enableDB && $source != "overpass" && $source != "wd_qualifier") {
+if ($enableDB && !in_array($source, ["overpass", "wd_reverse", "wd_direct"])) {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -62,10 +63,13 @@ if ($db != null) {
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
 
-    if ($source == "wd_qualifier") {
+    if ($source == "wd_direct") {
+        $wikidataProps = $conf->getArray("osm_wikidata_properties");
+        $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $language, $wikidataEndpointURL);
+    } elseif ($source == "wd_reverse") {
         $wikidataProperty = (string)$conf->get("wikidata_reverse_property");
         $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-        $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
+        $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
     } else {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
         $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
