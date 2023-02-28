@@ -40,7 +40,7 @@ class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJS
                     gender.wd_gender_color,
                     gender_text.wdt_name
                 FROM oem.element AS el
-                JOIN oem.etymology AS el ON et_el_id = el_id
+                JOIN oem.etymology AS et ON et_el_id = el_id
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
                 LEFT JOIN oem.wikidata_text AS gender_text
