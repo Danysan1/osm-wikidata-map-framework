@@ -50,6 +50,8 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             throw new Exception("Bad location result from Wikidata");
         $lon = (float)$matches[1];
         $lat = (float)$matches[2];
+        $wikidata = empty($row["item"]["value"]) ? null : str_replace("http://www.wikidata.org/entity/", "", (string)$row["item"]["value"]);
+        $name = empty($row["itemLabel"]["value"]) ? null : (string)$row["itemLabel"]["value"];
         $commons = empty($row["commons"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["commons"]["value"]);
         $etymologyQID = str_replace("http://www.wikidata.org/entity/", "", (string)$row["etymology"]["value"]);
         return [
@@ -58,6 +60,8 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                 "coordinates" => [round($lon, 5), round($lat, 5)]
             ],
             "properties" => [
+                "name" => $name,
+                "wikidata" => $wikidata,
                 "wikimedia_commons" => $commons,
                 "etymologies" => [
                     [OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY => $etymologyQID]
