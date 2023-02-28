@@ -8,7 +8,7 @@ const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lon = default_center_lon_raw ? parseFloat(default_center_lon_raw) : 0,
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
     defaultColorScheme: ColorSchemeID = getConfig("default_color_scheme") as ColorSchemeID,
-    defaultSource = "all";
+    defaultSource = "all_db";
 
 interface FragmentParams {
     lon: number | null;

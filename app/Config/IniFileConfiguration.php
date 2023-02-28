@@ -40,9 +40,4 @@ class IniFileConfiguration extends BaseConfiguration
 		}
 		return $this->config[$key];
 	}
-
-	public function getBool(string $key): bool
-	{
-		return !empty($this->config[$key]) && $this->config[$key] != "false" && $this->config[$key] != "0";
-	}
 }

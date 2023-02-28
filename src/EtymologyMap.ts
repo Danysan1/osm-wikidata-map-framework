@@ -20,7 +20,10 @@ const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     thresholdZoomLevel = thresholdZoomLevel_raw ? parseInt(thresholdZoomLevel_raw) : 14,
     minZoomLevel = minZoomLevel_raw ? parseInt(minZoomLevel_raw) : 9,
     defaultBackgroundStyle_raw = getConfig("default_background_style"),
-    defaultBackgroundStyle = defaultBackgroundStyle_raw ? defaultBackgroundStyle_raw : 'mapbox_streets';
+    defaultBackgroundStyle = defaultBackgroundStyle_raw ? defaultBackgroundStyle_raw : 'mapbox_streets',
+    WIKIDATA_SOURCE = "wikidata_source",
+    ELEMENTS_SOURCE = "elements_source",
+    GLOBAL_SOURCE = "global_source";
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
@@ -118,8 +121,8 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
     mapSourceDataHandler(e: MapSourceDataEvent) {
-        const wikidataSourceEvent = e.dataType == "source" && e.sourceId == "wikidata_source",
-            elementsSourceEvent = e.dataType == "source" && e.sourceId == "elements_source",
+        const wikidataSourceEvent = e.dataType == "source" && e.sourceId == WIKIDATA_SOURCE,
+            elementsSourceEvent = e.dataType == "source" && e.sourceId == ELEMENTS_SOURCE,
             sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent);
 
         if (sourceDataLoaded) {
@@ -141,9 +144,12 @@ export class EtymologyMap extends Map {
      */
     mapErrorHandler(err: any) {
         let errorMessage;
-        if (["elements_source", "wikidata_source"].includes(err.sourceId) && err.error.status > 200) {
+        if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
             showLoadingSpinner(false);
             showSnackbar("An error occurred while fetching the data");
+            errorMessage = "An error occurred while fetching " + err.sourceId;
+        } else if (GLOBAL_SOURCE == err.sourceId && err.error.status == 406) {
+            showSnackbar("Please zoom in", "wheat", 10_000);
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
             showSnackbar("A map error occurred");
@@ -243,14 +249,13 @@ export class EtymologyMap extends Map {
      */
     prepareWikidataLayers(wikidata_url: string, minZoom: number) {
         const colorSchemeColor = getCurrentColorScheme().color,
-            wikidata_source = "wikidata_source",
-            wikidata_layer_point = 'wikidata_layer_point',
-            wikidata_layer_lineString = 'wikidata_layer_lineString',
-            wikidata_layer_polygon_border = 'wikidata_layer_polygon_border',
-            wikidata_layer_polygon_fill = 'wikidata_layer_polygon_fill';
+            wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
+            wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
+            wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
+            wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill';
 
         this.addGeoJSONSource(
-            wikidata_source,
+            WIKIDATA_SOURCE,
             {
                 type: 'geojson',
                 //buffer: 512, // This only works on already downloaded data
@@ -263,7 +268,7 @@ export class EtymologyMap extends Map {
         if (!this.getLayer(wikidata_layer_point)) {
             this.addLayer({
                 'id': wikidata_layer_point,
-                'source': wikidata_source,
+                'source': WIKIDATA_SOURCE,
                 'type': 'circle',
                 "filter": ["==", ["geometry-type"], "Point"],
                 "minzoom": minZoom,
@@ -280,7 +285,7 @@ export class EtymologyMap extends Map {
         if (!this.getLayer(wikidata_layer_lineString)) {
             this.addLayer({
                 'id': wikidata_layer_lineString,
-                'source': wikidata_source,
+                'source': WIKIDATA_SOURCE,
                 'type': 'line',
                 "filter": ["==", ["geometry-type"], "LineString"],
                 "minzoom": minZoom,
@@ -296,7 +301,7 @@ export class EtymologyMap extends Map {
         if (!this.getLayer(wikidata_layer_polygon_border)) {
             this.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
                 'id': wikidata_layer_polygon_border,
-                'source': wikidata_source,
+                'source': WIKIDATA_SOURCE,
                 'type': 'line',
                 "filter": ["==", ["geometry-type"], "Polygon"],
                 "minzoom": minZoom,
@@ -313,7 +318,7 @@ export class EtymologyMap extends Map {
         if (!this.getLayer(wikidata_layer_polygon_fill)) {
             this.addLayer({
                 'id': wikidata_layer_polygon_fill,
-                'source': wikidata_source,
+                'source': WIKIDATA_SOURCE,
                 'type': 'fill',
                 "filter": ["==", ["geometry-type"], "Polygon"],
                 "minzoom": minZoom,
@@ -451,7 +456,7 @@ export class EtymologyMap extends Map {
      */
     prepareElementsLayers(elements_url: string, minZoom: number, maxZoom: number) {
         this.prepareClusteredLayers(
-            'elements',
+            ELEMENTS_SOURCE,
             elements_url,
             minZoom,
             maxZoom
@@ -497,7 +502,7 @@ export class EtymologyMap extends Map {
      * @see https://github.com/mapbox/mapbox-gl-js/issues/2898
      */
     prepareClusteredLayers(
-        prefix: string,
+        sourceName: string,
         sourceDataURL: string,
         minZoom: number | undefined = undefined,
         maxZoom: number | undefined = undefined,
@@ -505,10 +510,9 @@ export class EtymologyMap extends Map {
         countFieldName: string | undefined = 'point_count',
         countShowFieldName: string | undefined = 'point_count_abbreviated'
     ) {
-        const sourceName = prefix + '_source',
-            clusterLayerName = prefix + '_layer_cluster',
-            countLayerName = prefix + '_layer_count',
-            pointLayerName = prefix + '_layer_point',
+        const clusterLayerName = sourceName + '_layer_cluster',
+            countLayerName = sourceName + '_layer_count',
+            pointLayerName = sourceName + '_layer_point',
             sourceObject = this.addGeoJSONSource(
                 sourceName,
                 {
@@ -756,7 +760,7 @@ export class EtymologyMap extends Map {
      */
     prepareGlobalLayers(maxZoom: number): void {
         this.prepareClusteredLayers(
-            'global',
+            GLOBAL_SOURCE,
             './global-map.php',
             0,
             maxZoom,

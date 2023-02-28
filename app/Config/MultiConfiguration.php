@@ -69,18 +69,14 @@ class MultiConfiguration extends BaseConfiguration
 				if (!is_array($domain_value_map))
 					throw new Exception("Bad db_enable_map configuration");
 
-				if (!empty($domain_value_map[$domain]))
+				if (isset($domain_value_map[$domain]))
 					return is_array($domain_value_map[$domain]) ? json_encode($domain_value_map[$domain]) : $domain_value_map[$domain];
 			}
 
 			if ($this->configs[$i]->has($key))
 				return $this->configs[$i]->get($key);
 		}
-		throw new Exception("Configuration not found: $key");
-	}
 
-	public function getBool(string $key): bool
-	{
-		return $this->has($key) && $this->get($key) !== "false";
+		throw new Exception("Configuration not found: $key");
 	}
 }

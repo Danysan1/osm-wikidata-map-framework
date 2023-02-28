@@ -27,7 +27,7 @@ export class SourceControl extends DropdownControl {
             });
 
         if (dbEnabled) {
-            dropdownItems.push(buildDropdownItem("all", "All sources from DB", "DB"));
+            dropdownItems.push(buildDropdownItem("all_db", "All sources from DB", "DB"));
 
             if (propagationEnabled)
                 dropdownItems.push(buildDropdownItem("osm_propagated", "Propagated", "DB"));

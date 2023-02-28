@@ -96,10 +96,10 @@ class EtymologyColorControl extends DropdownControl {
         debugLog("EtymologyColorControl dropDown click", { event, colorSchemeID, colorSchemeObj, color });
 
         [
-            ["wikidata_layer_point", "circle-color"],
-            ["wikidata_layer_lineString", 'line-color'],
-            ["wikidata_layer_polygon_fill", 'fill-color'],
-            ["wikidata_layer_polygon_border", 'line-color'],
+            ["wikidata_source_layer_point", "circle-color"],
+            ["wikidata_source_layer_lineString", 'line-color'],
+            ["wikidata_source_layer_polygon_fill", 'fill-color'],
+            ["wikidata_source_layer_polygon_border", 'line-color'],
         ].forEach(([layerID, property]) => {
             if (map?.getLayer(layerID)) {
                 map.setPaintProperty(layerID, property, color);

@@ -39,6 +39,14 @@ abstract class BaseConfiguration implements Configuration
         return $parsed;
     }
 
+    public function getBool(string $key): bool
+    {
+        if (!$this->has($key))
+            return false;
+        $raw = $this->get($key);
+        return $raw && $raw != "false" && $raw != "0";
+    }
+
     /**
      * @return array<string> Configured OSM wikidata keys
      */

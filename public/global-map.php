@@ -19,6 +19,7 @@ if ($conf->getBool("db_enable")) {
         )
         FROM oem.vm_global_map"
     )->fetchColumn();
-} else { // The global map is not available without the DB
-    echo '{"type":"FeatureCollection", "features":[]}';
+} else {
+    http_response_code(406);
+    echo '{"error":"The global map is not available without the DB. Please zoom in or use the DB."}';
 }
