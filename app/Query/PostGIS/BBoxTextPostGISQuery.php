@@ -11,6 +11,7 @@ use \App\BaseStringSet;
 use \App\ServerTiming;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Query\Wikidata\EtymologyIDListJSONWikidataQuery;
+use App\Result\QueryResult;
 use App\Result\RemoteQueryResult;
 use Exception;
 
@@ -64,9 +65,22 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         return $this->maxElements === null ? ' ' : " LIMIT $this->maxElements ";
     }
 
-    protected function downloadMissingText(): void
+    protected function getQueryParams(): array
     {
-        $filterClause = $this->getFilterClause();
+        $params = parent::getQueryParams();
+        $params["lang"] = $this->getLanguage();
+        return $params;
+    }
+
+    public function send(): QueryResult
+    {
+        $this->downloadMissingText();
+        return parent::send();
+    }
+
+    private function downloadMissingText(): void
+    {
+        $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         $limitClause = $this->getLimitClause();
         $sthMissingWikidata = $this->getDB()->prepare(
             "SELECT DISTINCT wd.wd_wikidata_cod
@@ -75,22 +89,11 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             JOIN oem.wikidata AS wd ON et.et_wd_id = wd.wd_id
             LEFT JOIN oem.wikidata_text AS wdt
                 ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
-            WHERE el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+            WHERE (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)
             $filterClause
-            AND (wd.wd_full_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)
             $limitClause"
         );
-        $sthMissingWikidata->bindValue("min_lon", $this->getBBox()->getMinLon(), PDO::PARAM_STR);
-        $sthMissingWikidata->bindValue("max_lon", $this->getBBox()->getMaxLon(), PDO::PARAM_STR);
-        $sthMissingWikidata->bindValue("min_lat", $this->getBBox()->getMinLat(), PDO::PARAM_STR);
-        $sthMissingWikidata->bindValue("max_lat", $this->getBBox()->getMaxLat(), PDO::PARAM_STR);
-        $sthMissingWikidata->bindValue("lang", $this->language, PDO::PARAM_STR);
-        if (!empty($this->getSource()))
-            $sthMissingWikidata->bindValue("source", $this->getSource());
-        if (!empty($this->getSearch()))
-            $sthMissingWikidata->bindValue("search", $this->getSearch());
-        //$sthMissingWikidata->debugDumpParams();
-        $sthMissingWikidata->execute();
+        $sthMissingWikidata->execute(self::getQueryParams());
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("missing-wikidata-query");
 

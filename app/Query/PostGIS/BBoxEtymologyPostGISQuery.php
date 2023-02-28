@@ -49,26 +49,12 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         $this->descriptionKey = $descriptionKey;
     }
 
-    public function send(): QueryResult
+    protected function getQueryParams(): array
     {
-        $this->downloadMissingText();
-
-        $stRes = $this->getDB()->prepare($this->getQuery());
-        $stRes->bindValue("min_lon", $this->getBBox()->getMinLon());
-        $stRes->bindValue("max_lon", $this->getBBox()->getMaxLon());
-        $stRes->bindValue("min_lat", $this->getBBox()->getMinLat());
-        $stRes->bindValue("max_lat", $this->getBBox()->getMaxLat());
-        $stRes->bindValue("lang", $this->getLanguage());
-        $stRes->bindValue("textKey", $this->textKey);
-        $stRes->bindValue("descriptionKey", $this->descriptionKey);
-        if (!empty($this->getSource()))
-            $stRes->bindValue("source", $this->getSource());
-        if (!empty($this->getSearch()))
-            $stRes->bindValue("search", $this->getSearch());
-        $stRes->execute();
-        if ($this->hasServerTiming())
-            $this->getServerTiming()->add("etymology-query");
-        return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
+        $params = parent::getQueryParams();
+        $params["textKey"] = $this->textKey;
+        $params["descriptionKey"] = $this->descriptionKey;
+        return $params;
     }
 
     public function sendAndGetJSONResult(): JSONQueryResult
@@ -89,7 +75,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
 
     public function getQuery(): string
     {
-        $filterClause = $this->getFilterClause();
+        $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         $limitClause = $this->getLimitClause();
         return
             "SELECT JSON_BUILD_OBJECT(
@@ -172,7 +158,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE (el.el_has_text_etymology OR wd.wd_id IS NOT NULL)
                 $filterClause
-                AND el.el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
                 GROUP BY el.el_id
                 $limitClause
             ) AS ele";

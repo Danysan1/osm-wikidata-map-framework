@@ -14,22 +14,6 @@ use \App\Result\QueryResult;
 
 class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGeoJSONQuery
 {
-    public function send(): QueryResult
-    {
-        $stRes = $this->getDB()->prepare($this->getQuery());
-        $stRes->bindValue("min_lon", $this->getBBox()->getMinLon());
-        $stRes->bindValue("max_lon", $this->getBBox()->getMaxLon());
-        $stRes->bindValue("min_lat", $this->getBBox()->getMinLat());
-        $stRes->bindValue("max_lat", $this->getBBox()->getMaxLat());
-        if (!empty($this->getSource()))
-            $stRes->bindValue("source", $this->getSource());
-        if (!empty($this->getSearch()))
-            $stRes->bindValue("search", $this->getSearch());
-        $stRes->execute();
-        if ($this->hasServerTiming())
-            $this->getServerTiming()->add("wikidata-query");
-        return new GeoJSONLocalQueryResult(true, $stRes->fetchColumn());
-    }
 
     public function sendAndGetJSONResult(): JSONQueryResult
     {
@@ -49,7 +33,8 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
 
     public function getQuery(): string
     {
-        $filterClause = $this->getFilterClause();
+        $elementFilterClause = $this->getElementFilterClause();
+        $etymologyFilterClause = $this->getetymologyFilterClause();
         return
             "SELECT JSON_BUILD_OBJECT(
             'type', 'FeatureCollection',
@@ -57,14 +42,14 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             )
         FROM (
             SELECT ST_Centroid(ST_Collect(el_geometry)) AS geom
-            FROM oem.element
-            WHERE el_geometry @ ST_MakeEnvelope(:min_lon, :min_lat, :max_lon, :max_lat, 4326)
+            FROM oem.element AS el
+            WHERE TRUE $elementFilterClause
             AND el_id IN (
                 SELECT et_el_id
                 FROM oem.etymology AS et
                 JOIN oem.wikidata AS wd ON wd.wd_id = et.et_wd_id
                 WHERE TRUE
-                $filterClause
+                $etymologyFilterClause
             )
             GROUP BY ST_ReducePrecision(ST_Centroid(el_geometry), 0.1), LOWER(el_tags->>'name')
         ) as ele";
