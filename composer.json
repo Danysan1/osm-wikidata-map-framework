@@ -8,16 +8,35 @@
     "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
     "type": "project",
     "version": "3.0.0",
+    "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
+    "license": "GPL-3.0",
+    "keywords": [
+        "OpenStreetMap",
+        "Wikidata",
+        "map",
+        "mappa",
+        "karte",
+        "open data",
+        "linked data",
+        "structured data"
+    ],
+    "authors": [
+        {
+            "name": "Daniele Santini",
+            "homepage": "https://www.dsantini.it"
+        }
+    ],
+    "funding": [
+        {
+            "type": "paypal",
+            "url": "https://paypal.me/dsantiniit"
+        }
+    ],
+    "repositories": {},
     "require": {
         "php": "^8.0",
         "sentry/sdk": "^3.1"
     },
-    "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
-    "license": "GPL-3.0",
-    "authors": [{
-        "name": "Daniele Santini",
-        "email": "danysan95@gmail.com"
-    }],
     "require-dev": {
         "vimeo/psalm": "^5.6",
         "vlucas/phpdotenv": "^5.5"
