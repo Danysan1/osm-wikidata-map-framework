@@ -152,7 +152,7 @@ if ($enableDB) {
                 <span class="button_text"> Mapcomplete</span>
             </a>
             <a title="Element location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button" target="_self">
-                <span class="button_img">📍</span>
+                <span class="button_img">🎯</span>
                 <span class="button_text"> Location</span>
             </a>
 
@@ -192,7 +192,7 @@ if ($enableDB) {
                             <span class="button_text"> EntiTree</span>
                         </a>
                         <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement" target="_self">
-                            <span class="button_img">📍</span>
+                            <span class="button_img">🎯</span>
                             <span class="button_text"> Location</span>
                         </a>
 
