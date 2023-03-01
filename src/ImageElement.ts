@@ -105,9 +105,9 @@ async function fetchWikimediaCommonsAttribution(imgName: string): Promise<string
                 artist = extmetadata?.Artist?.value;
             let imgAttribution = "Wikimedia Commons";
             if (typeof license === "string")
-                imgAttribution += ", " + license;
+                imgAttribution += " - " + license;
             if (typeof artist === "string")
-                imgAttribution += "<br />" + artist.replace(/<span style="display: none;">.*<\/span>/, "");
+                imgAttribution += " - " + artist.replace(/<span style="display: none;">.*<\/span>/, "");
             return imgAttribution;
         });
 }

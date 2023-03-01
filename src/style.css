@@ -401,19 +401,11 @@ canvas.chart.hiddenElement {
 
 p.pic-attr {
     overflow: hidden;
-    max-height: 0;
-    max-width: 0;
-    opacity: 0;
+    max-height: 2em;
     transition: height 0.5s, width 0.5s, opacity 0.5s;
     margin-top: 0;
-    font-size: smaller;
+    font-size: x-small;
     text-align: center;
-}
-
-div.pic-container:hover p.pic-attr {
-    max-height: 30em;
-    max-width: 30em;
-    opacity: 1;
 }
 
 .oem_info_popup .contribute_button,
