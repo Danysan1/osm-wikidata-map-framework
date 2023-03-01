@@ -44,7 +44,7 @@ abstract class BaseConfiguration implements Configuration
         if (!$this->has($key))
             return false;
         $raw = $this->get($key);
-        return $raw && $raw != "false" && $raw != "0";
+        return !empty($raw) && $raw !== "false" && $raw !== "0";
     }
 
     /**

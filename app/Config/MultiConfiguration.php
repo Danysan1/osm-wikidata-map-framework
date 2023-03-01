@@ -43,12 +43,13 @@ class MultiConfiguration extends BaseConfiguration
 				if ($found || $config->has($key))
 					return true;
 
-				if (!empty($_SERVER["SERVER_NAME"]) && $config->has($key . "_map")) {
+				$mapKey = $key . "_map";
+				if (!empty($_SERVER["SERVER_NAME"]) && $config->has($mapKey)) {
 					$domain = $_SERVER["SERVER_NAME"];
-					$domain_value_map = json_decode((string)$config->get($key . "_map"), true);
+					$domain_value_map = json_decode((string)$config->get($mapKey), true);
 
 					if (!is_array($domain_value_map))
-						throw new Exception("Bad db_enable_map configuration");
+						throw new Exception("Bad $mapKey configuration");
 
 					return !empty($domain_value_map[$domain]);
 				}
@@ -61,13 +62,14 @@ class MultiConfiguration extends BaseConfiguration
 
 	public function get(string $key): mixed
 	{
+		$mapKey = $key . "_map";
 		for ($i = 0; $i < count($this->configs); $i++) {
-			if (!empty($_SERVER["SERVER_NAME"]) && $this->configs[$i]->has($key . "_map")) {
+			if (!empty($_SERVER["SERVER_NAME"]) && $this->configs[$i]->has($mapKey)) {
 				$domain = $_SERVER["SERVER_NAME"];
-				$domain_value_map = json_decode((string)$this->configs[$i]->get($key . "_map"), true);
+				$domain_value_map = json_decode((string)$this->configs[$i]->get($mapKey), true);
 
 				if (!is_array($domain_value_map))
-					throw new Exception("Bad db_enable_map configuration");
+					throw new Exception("Bad $mapKey configuration");
 
 				if (isset($domain_value_map[$domain]))
 					return is_array($domain_value_map[$domain]) ? json_encode($domain_value_map[$domain]) : $domain_value_map[$domain];

@@ -36,7 +36,7 @@ $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $enableDB = $conf->getBool("db_enable");
 
-if ($enableDB && $source != "overpass")
+if ($enableDB && !in_array($source, ["overpass", "wd_reverse", "wd_direct"]))
     $db = new PostGIS_PDO($conf);
 else
     $db = null;
