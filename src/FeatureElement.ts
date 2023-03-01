@@ -112,7 +112,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
             coord = coord[0];
         }
         const lon = coord[0], lat = coord[1];
-        element_location_button.href = `#${lon},${lat},${currentZoom}`;
+        element_location_button.href = `#${lon},${lat},${currentZoom+1}`;
         element_location_button.classList.remove("hiddenElement");
     } else {
         element_location_button.classList.add("hiddenElement");
