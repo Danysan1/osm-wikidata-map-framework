@@ -130,7 +130,7 @@ export class EtymologyMap extends Map {
                 sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e, source: e.sourceId
             });
             showLoadingSpinner(false);
-            showSnackbar("Data loaded", "lightgreen");
+            showSnackbar("Data loaded", "lightgreen", 3000, "data_loaded");
             if (wikidataSourceEvent) {
                 const source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source;
                 this.currentEtymologyColorControl?.updateChart(e, source);
@@ -191,13 +191,12 @@ export class EtymologyMap extends Map {
         });
 
         if (enableWikidataLayers) {
-            showLoadingSpinner(true);
             const queryParams = {
                 from: "bbox",
-                minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
-                minLon: (Math.floor(minLon * 1000) / 1000).toString(),
-                maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
-                maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
+                minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
+                minLon: (Math.floor(minLon * 100) / 100).toString(),
+                maxLat: (Math.ceil(maxLat * 100) / 100).toString(), // 0.123 => 0.13
+                maxLon: (Math.ceil(maxLon * 100) / 100).toString(),
                 language,
                 source,
                 search: this.search,
@@ -209,14 +208,13 @@ export class EtymologyMap extends Map {
         } else if (enableGlobalLayers) {
             this.prepareGlobalLayers(minZoomLevel);
         } else if (enableElementLayers) {
-            showLoadingSpinner(true);
             const queryParams = {
                 from: "bbox",
                 onlyCenter: "1",
-                minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.1234 => 0.1
-                minLon: (Math.floor(minLon * 10) / 10).toString(), // 0.1234 => 0.1
-                maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.1234 => 0.2
-                maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.1234 => 0.2
+                minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1
+                minLon: (Math.floor(minLon * 10) / 10).toString(), // 0.123 => 0.1
+                maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.123 => 0.2
+                maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.123 => 0.2
                 language,
                 source,
                 search: this.search,
@@ -470,9 +468,11 @@ export class EtymologyMap extends Map {
         const oldSourceDataURL = (sourceObject && sourceObject._data) ? sourceObject._data : null,
             sourceUrlChanged = oldSourceDataURL != sourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
+            showLoadingSpinner(true);
             debugLog("prepareClusteredLayers: updating source", { id, sourceObject, sourceDataURL, oldSourceDataURL });
             sourceObject.setData(sourceDataURL);
         } else if (!sourceObject) {
+            showLoadingSpinner(true);
             this.addSource(id, config);
             sourceObject = this.getSource(id) as GeoJSONSource;
             if (sourceObject)
@@ -481,6 +481,8 @@ export class EtymologyMap extends Map {
                 console.error("addGeoJSONSource failed", { id, config, sourceObject })
                 throw new Error("Failed adding source");
             }
+        } else {
+            debugLog("Skipping source update", { id, sourceDataURL });
         }
         return sourceObject;
     }
