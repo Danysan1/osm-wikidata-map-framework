@@ -25,17 +25,22 @@ div.maplibregl-popup.oem_info_popup,
 div.mapboxgl-popup.oem_etymology_popup,
 div.mapboxgl-popup.oem_info_popup {
     min-width: 15em;
-    max-width: 80%;
+    max-width: 90%;
     min-height: 15em;
-    /*height: 25em;*/
-    max-height: 90%;
-    /*max-height: 50em;*/
+    max-height: 98%;
     /*width: 80%;*/
     /*height: 80%;*/
     /*position: absolute;*/
     top: .3%;
-    left: .3%;
+    left: .5%;
     z-index: 1000;
+}
+
+div.button_row {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
 }
 
 div.maplibregl-popup-content,
@@ -137,6 +142,12 @@ div.custom-ctrl>table>tr>td {
     padding: 0;
     text-align: left;
     /*text-align: right;*/
+}
+
+.mapboxgl-ctrl-icon,
+.maplibregl-ctrl-icon,
+.dropdown-ctrl .dropdown-ctrl-button {
+    font-size: large;
 }
 
 div.detail_container div.header,

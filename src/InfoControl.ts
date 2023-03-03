@@ -32,7 +32,7 @@ class InfoControl implements IControl {
         container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
 
         const ctrlBtn = document.createElement('button');
-        ctrlBtn.className = 'info-ctrl-button';
+        ctrlBtn.className = 'info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon';
         ctrlBtn.title = 'Show the info popup';
         ctrlBtn.textContent = 'ℹ️';
         ctrlBtn.onclick = () => openInfoWindow(map);
