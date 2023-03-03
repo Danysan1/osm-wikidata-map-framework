@@ -183,7 +183,7 @@ class OemDbInitDAG(DAG):
         task_setup_db_ext = SQLExecuteQueryOperator(
             task_id = "setup_db_extensions",
             conn_id = local_db_conn_id,
-            sql = "sql/setup-db-extensions.sql",
+            sql = "sql/1-setup-db-extensions.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
@@ -196,7 +196,7 @@ class OemDbInitDAG(DAG):
         task_teardown_schema = SQLExecuteQueryOperator(
             task_id = "teardown_schema",
             conn_id = local_db_conn_id,
-            sql = "sql/teardown-schema.sql",
+            sql = "sql/2-teardown-schema.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
@@ -210,7 +210,7 @@ class OemDbInitDAG(DAG):
         task_setup_schema = SQLExecuteQueryOperator(
             task_id = "setup_schema",
             conn_id = local_db_conn_id,
-            sql = "sql/setup-schema.sql",
+            sql = "sql/3-setup-schema.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
@@ -274,7 +274,7 @@ class OemDbInitDAG(DAG):
         task_convert_osm2pgsql = SQLExecuteQueryOperator(
             task_id = "convert_osm2pgsql_data",
             conn_id = local_db_conn_id,
-            sql = "sql/convert-osm2pgsql-data.sql",
+            sql = "sql/4-convert-osm2pgsql-data.sql",
             dag = self,
             task_group=group_db_load,
             doc_md = """
@@ -303,7 +303,10 @@ class OemDbInitDAG(DAG):
         task_remove_ele_too_big = SQLExecuteQueryOperator(
             task_id = "remove_elements_too_big",
             conn_id = local_db_conn_id,
-            sql = "sql/remove-elements-too-big.sql",
+            sql = "sql/5-remove-elements-too-big.sql",
+            parameters = {
+                "osm_key": "{{ var.json.osm_wikidata_keys[0] or '' }}"
+            },
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -311,30 +314,37 @@ class OemDbInitDAG(DAG):
 
                 Remove from the local PostGIS DB elements that aren't interesting and that it wasn't possible to remove during the filtering phase:
                 * elements too big that wouldn't be visible anyway on the map 
-                * elements that have a wrong etymology (name:etymology:wikidata and wikidata values are equal)
+                * elements that have a wrong etymology (*:wikidata and wikidata values are equal)
             """
         )
         join_post_load_ele >> task_remove_ele_too_big
 
+        task_create_key_index = SQLExecuteQueryOperator(
+            task_id = "create_key_index",
+            conn_id = local_db_conn_id,
+            sql = "sql/6-create-key-index.sql",
+            dag = self,
+            task_group=elaborate_group
+        )
+        task_remove_ele_too_big >> task_create_key_index
+
         task_convert_ele_wd_cods = SQLExecuteQueryOperator(
             task_id = "convert_element_wikidata_cods",
             conn_id = local_db_conn_id,
-            sql = "sql/convert-element-wikidata-cods.sql",
+            sql = "sql/7-convert-element-wikidata-cods.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
                 # Convert OSM - Wikidata associations
 
-                Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each association the source (`wikidata` / `subject:wikidata` / `buried:wikidata` / `name:etymology:wikidata`).
+                Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each association the source (`wikidata` / `*:wikidata`).
                 
                 Links:
                 * [`wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
-                * [`subject:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:subject)
-                * [`buried:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
-                * [`name:etymology:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:name:etymology:wikidata)
+                * [`*:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
             """
         )
-        task_remove_ele_too_big >> task_convert_ele_wd_cods
+        task_create_key_index >> task_convert_ele_wd_cods
 
         wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
         task_load_wd_ent = PythonOperator(
@@ -365,13 +375,13 @@ class OemDbInitDAG(DAG):
         task_convert_wd_ent = SQLExecuteQueryOperator(
             task_id = "convert_wikidata_entities",
             conn_id = local_db_conn_id,
-            sql = "sql/convert-wikidata-entities.sql",
+            sql = "sql/8-convert-wikidata-entities.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
                 # Load Wikidata entities from OSM etymologies
 
-                Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `subject:wikidata`, `buried:wikidata` or `name:etymology:wikidata`).
+                Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `*:wikidata` configured tags).
             """
         )
         [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
@@ -379,7 +389,7 @@ class OemDbInitDAG(DAG):
         task_convert_ety = SQLExecuteQueryOperator(
             task_id = "convert_etymologies",
             conn_id = local_db_conn_id,
-            sql = "sql/convert-etymologies.sql",
+            sql = "sql/9-convert-etymologies.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -436,7 +446,7 @@ class OemDbInitDAG(DAG):
         task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
             conn_id = local_db_conn_id,
-            sql = "sql/propagate-etymologies-global.sql",
+            sql = "sql/10-propagate-etymologies-global.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -451,7 +461,7 @@ class OemDbInitDAG(DAG):
         task_propagate_locally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_locally",
             conn_id = local_db_conn_id,
-            sql = "sql/propagate-etymologies-global.sql",
+            sql = "sql/10-propagate-etymologies-global.sql",
             dag = self,
             task_group=elaborate_group,
         )
@@ -494,7 +504,11 @@ class OemDbInitDAG(DAG):
         task_check_text_ety = SQLExecuteQueryOperator(
             task_id = "check_text_etymology",
             conn_id = local_db_conn_id,
-            sql = "sql/check-text-etymology.sql",
+            sql = "sql/11-check-text-etymology.sql",
+            parameters = {
+                "text_key": "{{ var.value.osm_text_key or '' }}",
+                "description_key": "{{ var.value.osm_description_key or '' }}",
+            },
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
@@ -508,13 +522,13 @@ class OemDbInitDAG(DAG):
         task_check_wd_ety = SQLExecuteQueryOperator(
             task_id = "check_wikidata_etymology",
             conn_id = local_db_conn_id,
-            sql = "sql/check-wd-etymology.sql",
+            sql = "sql/11-check-wd-etymology.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
                 # Check elements with a Wikidata etymology
 
-                Check elements with an etymology that comes from `subject:wikidata`, `buried:wikidata`, `name:etymology:wikidata` or `wikidata`+`...`.
+                Check elements with an etymology that comes from `*:wikidata` or `wikidata`+`...`.
             """
         )
         join_post_propagation >> task_check_wd_ety
@@ -522,7 +536,7 @@ class OemDbInitDAG(DAG):
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
             conn_id = local_db_conn_id,
-            sql = "sql/move-elements-with-etymology.sql",
+            sql = "sql/12-move-elements-with-etymology.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
@@ -536,7 +550,7 @@ class OemDbInitDAG(DAG):
         task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",
             conn_id = local_db_conn_id,
-            sql = "sql/etymology-foreign-key.sql",
+            sql = "sql/13-etymology-foreign-key.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
@@ -564,7 +578,7 @@ class OemDbInitDAG(DAG):
         task_drop_temp_tables = SQLExecuteQueryOperator(
             task_id = "drop_temporary_tables",
             conn_id = local_db_conn_id,
-            sql = "sql/drop-temp-tables.sql",
+            sql = "sql/13-drop-temp-tables.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
@@ -578,7 +592,7 @@ class OemDbInitDAG(DAG):
         task_global_map = SQLExecuteQueryOperator(
             task_id = "setup_global_map",
             conn_id = local_db_conn_id,
-            sql = "sql/global-map-view.sql",
+            sql = "sql/13-global-map-view.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md="""
