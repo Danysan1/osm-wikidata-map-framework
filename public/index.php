@@ -63,7 +63,7 @@ if ($enableDB) {
     <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
     <?= $conf->getMetaTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>
-    <?= $conf->getMetaTag("wikidata_reverse_property", true); ?>
+    <?= $conf->getMetaTag("wikidata_indirect_property", true); ?>
     <?= $conf->getMetaTag("wikidata_image_property", true); ?>
     <?= $conf->getMetaTag("mapbox_token"); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
@@ -74,6 +74,7 @@ if ($enableDB) {
     <?= $conf->getMetaTag("min_zoom_level"); ?>
     <?= $conf->getMetaTag("default_background_style"); ?>
     <?= $conf->getMetaTag("default_color_scheme"); ?>
+    <?= $conf->getMetaTag("default_source"); ?>
     <?= $conf->getMetaTag("google_analytics_id", true); ?>
     <?= $conf->getMetaTag("matomo_domain", true); ?>
     <?= $conf->getMetaTag("matomo_id", true); ?>

@@ -12,7 +12,7 @@ export class SourceControl extends DropdownControl {
         const rawKeys = getConfig("osm_wikidata_keys"),
             rawOsmProps = getConfig("osm_wikidata_properties"),
             osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
-            reverseWdProperty = getConfig("wikidata_reverse_property"),
+            indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getConfig("propagate_data") == 'true',
             rawDbEnabled = getConfig("db_enable"),
             dbEnabled = !!rawDbEnabled && rawDbEnabled != 'false' && rawDbEnabled != '0',
@@ -49,8 +49,10 @@ export class SourceControl extends DropdownControl {
         if (osmProps && osmProps.length > 0)
             dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API (real time)"));
 
-        if (reverseWdProperty)
-            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata " + reverseWdProperty + " + P625", "Wikidata API (real time)"));
+        if (indirectWdProperty) {
+            dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata entities with P625 qualifier on " + indirectWdProperty, "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities with " + indirectWdProperty + " and P625", "Wikidata API (real time)"));
+        }
 
         if (rawKeys) {
             const keys = JSON.parse(rawKeys) as string[];

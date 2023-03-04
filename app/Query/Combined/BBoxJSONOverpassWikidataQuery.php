@@ -9,10 +9,6 @@ use \App\BoundingBox;
 use App\Query\BBoxGeoJSONQuery;
 use \App\ServerTiming;
 use \App\Query\BBoxJSONQuery;
-use App\Query\GeoJSONQuery;
-use \App\Query\Overpass\BBoxEtymologyOverpassQuery;
-use \App\Query\Overpass\OverpassConfig;
-use \App\Query\Wikidata\GeoJSON2JSONEtymologyWikidataQuery;
 use \App\Result\QueryResult;
 use \App\Result\JSONQueryResult;
 use \App\Query\StringSetXMLQueryFactory;
@@ -25,22 +21,22 @@ use \App\Query\StringSetXMLQueryFactory;
 abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 {
     protected ServerTiming $timing;
-    private BBoxGeoJSONQuery $overpassQuery;
+    private BBoxGeoJSONQuery $baseQuery;
     protected StringSetXMLQueryFactory $wikidataFactory;
 
     /**
      * @param array<string> $keys OSM wikidata keys to use
      */
-    public function __construct(BBoxGeoJSONQuery $overpassQuery, StringSetXMLQueryFactory $wikidataFactory, ServerTiming $timing)
+    public function __construct(BBoxGeoJSONQuery $baseQuery, StringSetXMLQueryFactory $wikidataFactory, ServerTiming $timing)
     {
-        $this->overpassQuery = $overpassQuery;
+        $this->baseQuery = $baseQuery;
         $this->timing = $timing;
         $this->wikidataFactory = $wikidataFactory;
     }
 
     public function send(): QueryResult
     {
-        $overpassResult = $this->overpassQuery->sendAndGetGeoJSONResult();
+        $overpassResult = $this->baseQuery->sendAndGetGeoJSONResult();
         $this->timing->add("overpass_query");
         if (!$overpassResult->isSuccessful()) {
             error_log("BBoxGeoJSONEtymologyQuery: Overpass query failed: $overpassResult");
@@ -71,12 +67,12 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 
     public function getBBox(): BoundingBox
     {
-        return $this->overpassQuery->getBBox();
+        return $this->baseQuery->getBBox();
     }
 
     public function getQuery(): string
     {
-        return $this->overpassQuery->getQuery();
+        return $this->baseQuery->getQuery();
     }
 
     public function getQueryTypeCode(): string
@@ -84,14 +80,18 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         $thisClassName = get_class($this);
         $thisStartPos = strrpos($thisClassName, "\\");
         $thisClass = substr($thisClassName, $thisStartPos ? $thisStartPos + 1 : 0); // class_basename();
+
+        $baseQueryClass = $this->baseQuery->getQueryTypeCode();
+
         $factoryClassName = get_class($this->wikidataFactory);
         $factoryStartPos = strrpos($factoryClassName, "\\");
         $factoryClass = substr($factoryClassName, $factoryStartPos ? $factoryStartPos + 1 : 0);
-        return $thisClass . "_" . $factoryClass;
+
+        return $thisClass . "_" . $baseQueryClass . "_" . $factoryClass;
     }
 
     public function __toString(): string
     {
-        return get_class($this) . ": " . $this->overpassQuery;
+        return get_class($this) . ": " . $this->baseQuery;
     }
 }

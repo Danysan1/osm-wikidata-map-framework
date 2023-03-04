@@ -5,10 +5,10 @@ map "**OSM element**" as osmc #95d5b2 {
   name:etymology:wikidata => Q7186;Q37463
 }
 
-map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+map "**Wikidata item Q7186**" as wikia #a2d2ff {
   label => Marie Curie
 }
-map "**Wikidata item Q37463**" as wikib #ffa2a2 {
+map "**Wikidata item Q37463**" as wikib #a2d2ff {
   label => Pierre Curie
 }
 

@@ -19,7 +19,8 @@ Data source pattern | Image | From DB | From APIs |
 | Case insensitive search of names used by multiple roads far from each other which have exactly and only the same etymology (obtained from the sources above) and propagation of that etymology to all elements with the same name | ![Propagation image](images/data/propagation.png) | :heavy_check_mark: | :x: |
 | Propagation of etymolgies to entities which are part of the original group etymology (e.g. married couple, couple of brothers, ...) | ![Parts propagation image](images/data/part_of.png) | :heavy_check_mark: | :x: |
 | Wikidata entities with the property [`P625` ("coordinate location")](https://www.wikidata.org/wiki/Property:P625) and one of the properties like those seen above  | ![Wikidata direct relation image](images/data/wd_direct.png) | :x: | :heavy_check_mark: |
-| Wikidata property `P625` used as qualifier for other properties (like [`P119` ("place of burial")](https://www.wikidata.org/wiki/Property:P119), ...) | ![Wikidata reverse relation image](images/data/wd_reverse.png) | :x: | :heavy_check_mark: |
+| Wikidata entities with the property `P625` referenced by an etymology entity with reverse properties (like [`P119` ("place of burial")](https://www.wikidata.org/wiki/Property:P119), ...) | ![Wikidata reverse relation image](images/data/wd_reverse.png) | :x: | :heavy_check_mark: |
+| Wikidata property `P625` used as qualifier for reverse properties (like `P119`, ...) | ![Wikidata qualifier relation image](images/data/wd_qualifier.png) | :x: | :heavy_check_mark: |
 
 For more details see [CONTRIBUTING.md](CONTRIBUTING.md).
 

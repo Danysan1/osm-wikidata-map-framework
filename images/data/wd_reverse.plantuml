@@ -1,12 +1,17 @@
 @startuml wd_reverse
 
-json "**Wikidata item Q8772**" as x {
-  "label": "Jean Baptiste Joseph Fourier",
-  "P1442 (image of grave)": "File:...",
-  "P119 (place of burial)": {
-    "value": "Q311 (Père Lachaise Cemetery)",
-    "**P625 (coordinate location)**": "**48.86005°, 2.394004°**"
-  }
+map "**Wikidata item Q44301**" as wikia #a2d2ff {
+  label => Jim Morrison
+  P1442 (image of grave) => File:...
+  P119 (place of burial) => Q24265482
 }
+
+map "Wikidata item Q24265482" as wikie #a2d2ff {
+  label => grave of Jim Morrison
+  **P625 (coordinate location)** => **51.24552°, 22.54164°**
+}
+
+wikie -[bold]-> wikia : Etymology
+wikie <.. wikia : Data flow
 
 @enduml

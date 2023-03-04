@@ -1,14 +1,13 @@
-SELECT DISTINCT ?item ?itemLabel ?location ?commons ?etymology
+SELECT DISTINCT ?item ?itemLabel ?location ?commons
 WHERE {
-        ?item wdt:P138|wdt:P825|wdt:P547 ?etymology.
+    ?item p:P119 ?burial.
     SERVICE wikibase:box {
-        ?item wdt:P625 ?location.
-    bd:serviceParam wikibase:cornerWest 'Point(11.676 44.354)'^^geo:wktLiteral .
-    bd:serviceParam wikibase:cornerEast 'Point(11.71 44.373)'^^geo:wktLiteral .
+        ?burial pq:P625 ?location.
+        bd:serviceParam wikibase:cornerWest 'Point(11.676 44.354)'^^geo:wktLiteral .
+        bd:serviceParam wikibase:cornerEast 'Point(11.71 44.373)'^^geo:wktLiteral .
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     OPTIONAL { ?item wdt:P18|wdt:P94|wdt:P242|wdt:P15|wdt:P41 ?commons }
     OPTIONAL {
-        ?wikidata rdfs:label ?itemLabel.
-    FILTER(lang(?itemLabel)='it-IT').
+        ?item rdfs:label ?itemLabel FILTER(lang(?itemLabel)='it').
     }
 }

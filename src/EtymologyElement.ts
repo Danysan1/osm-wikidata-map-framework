@@ -324,7 +324,7 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         propagated.classList.add("hiddenElement");
     }
 
-    const wdProp = getConfig("wikidata_reverse_property"),
+    const wdProp = getConfig("wikidata_indirect_property"),
         src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd');
     if (!src_wd) {
         console.warn("Missing etymology_src_wd_wrapper");

@@ -4,7 +4,7 @@ map "OSM element" as osma #95d5b2 {
   name => Via Roma
   name:etymology:wikidata => Q220
 }
-map "**Wikidata item Q220**" as wikia #ffa2a2 {
+map "**Wikidata item Q220**" as wikia #a2d2ff {
   label => Rome
 }
 

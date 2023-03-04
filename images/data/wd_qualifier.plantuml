@@ -1,0 +1,12 @@
+@startuml wd_qualifier
+
+json "**Wikidata item Q8772**" as x #a2d2ff {
+  "label": "Jean Baptiste Joseph Fourier",
+  "P1442 (image of grave)": "File:...",
+  "P119 (place of burial)": {
+    "value": "Q311 (Père Lachaise Cemetery)",
+    "**P625 (coordinate location)**": "**48.86005°, 2.394004°**"
+  }
+}
+
+@enduml

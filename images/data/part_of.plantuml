@@ -1,12 +1,12 @@
 @startuml part_of
 
-map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+map "**Wikidata item Q7186**" as wikia #a2d2ff {
   label => Marie Curie
 }
-map "**Wikidata item Q37463**" as wikib #ffa2a2 {
+map "**Wikidata item Q37463**" as wikib #a2d2ff {
   label => Pierre Curie
 }
-map "Wikidata item Q11297474" as wikic #ffa2a2 {
+map "Wikidata item Q11297474" as wikic #a2d2ff {
   label => Pierre and Marie Curie
   P31 (instance of) => Q3046146 (married couple)
   P527 (has part) => Q7186;Q37463

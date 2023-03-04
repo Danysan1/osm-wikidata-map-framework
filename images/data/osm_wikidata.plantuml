@@ -1,6 +1,6 @@
 @startuml osm_wikidata
 
-map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+map "**Wikidata item Q7186**" as wikia #a2d2ff {
   label => Marie Curie
 }
 
