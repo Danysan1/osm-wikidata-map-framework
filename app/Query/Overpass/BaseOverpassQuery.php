@@ -32,15 +32,16 @@ class BaseOverpassQuery extends OverpassQuery
     public function __construct(array $keys, string $position, string $outputType, OverpassConfig $config)
     {
         $this->keys = $keys;
+        $filterKey = $config->getBaseFilterKey();
 
         $query = "[out:json][timeout:40]; ( ";
         foreach ($this->keys as $key) {
             if ($config->shouldFetchNodes())
-                $query .= "node['name']['$key']($position);";
+                $query .= "node['$filterKey']['$key']($position);";
             if ($config->shouldFetchWays())
-                $query .= "way['name']['$key']($position);";
+                $query .= "way['$filterKey']['$key']($position);";
             if ($config->shouldFetchRelations())
-                $query .= "relation['name']['$key']($position);";
+                $query .= "relation['$filterKey']['$key']($position);";
         }
         $query .= " ); $outputType";
         //error_log(get_class($this) . ": $query");

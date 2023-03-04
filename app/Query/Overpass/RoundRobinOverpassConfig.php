@@ -6,7 +6,6 @@ namespace App\Query\Overpass;
 
 
 use \App\Config\Configuration;
-use \App\Query\Overpass\OverpassConfig;
 use Exception;
 
 class RoundRobinOverpassConfig implements OverpassConfig
@@ -16,6 +15,7 @@ class RoundRobinOverpassConfig implements OverpassConfig
     private bool $ways;
     private bool $relations;
     private ?int $maxElements;
+    private string $baseFilterKey;
 
     /**
      * @param Configuration $conf
@@ -41,6 +41,8 @@ class RoundRobinOverpassConfig implements OverpassConfig
             throw new Exception("maxElements must be > 0");
         }
         $this->maxElements = $maxElements;
+        
+        $this->baseFilterKey = (string)$conf->get("osm_filter_key");
     }
 
     public function getEndpoint(): string
@@ -68,5 +70,10 @@ class RoundRobinOverpassConfig implements OverpassConfig
     public function getMaxElements(): ?int
     {
         return $this->maxElements;
+    }
+
+    public function getBaseFilterKey(): string
+    {
+        return $this->baseFilterKey;
     }
 }
