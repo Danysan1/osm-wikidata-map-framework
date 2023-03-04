@@ -63,9 +63,10 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                 "name" => $name,
                 "wikidata" => $wikidata,
                 "wikimedia_commons" => $commons,
-                "etymologies" => [
-                    [OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY => $etymologyQID]
-                ]
+                "etymologies" => [[
+                    OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY => $etymologyQID,
+                    "from_wikidata" => true,
+                ]]
             ]
         ];
     }

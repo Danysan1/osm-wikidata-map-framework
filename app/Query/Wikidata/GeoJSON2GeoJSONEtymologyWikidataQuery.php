@@ -72,12 +72,15 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                             $wikidataID = (string)$etymologies[$j][OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY];
                             $osmType = empty($props["osm_type"]) ? null : (string)$props["osm_type"];
                             $osmID = empty($props["osm_id"]) ? null : (int)$props["osm_id"];
+                            $fromOSM = !empty($osmType) && !empty($osmID);
+                            $fromWikidata = !empty($etymologies[$j]["from_wikidata"]);
 
                             $ety = self::buildEtymologyFromID($wikidataID, $matrixData);
                             if ($ety) {
-                                $ety["from_osm"] = $osmType && $osmID;
+                                $ety["from_osm"] = $fromOSM;
                                 $ety["from_osm_type"] = $osmType;
                                 $ety["from_osm_id"] = $osmID;
+                                $ety["from_wikidata"] = $fromWikidata;
                             }
                             $geoJSONData["features"][$i]["properties"]["etymologies"][$j] = $ety;
                         }
