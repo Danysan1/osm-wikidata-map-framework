@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="188px" preserveAspectRatio="none" style="width:381px;height:188px;background:#FFFFFF;" version="1.1" viewBox="0 0 381 188" width="381px" zoomAndPan="magnify"><defs/><g><g id="elem_osmc"><rect fill="#95D5B2" height="64.8281" style="stroke:#181818;stroke-width:0.5;" width="338" x="19" y="7"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="94" x="141" y="23.5332">OSM element</text><line style="stroke:#181818;stroke-width:1.0;" x1="19" x2="357" y1="28.6094" y2="28.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="85" y="45.1426">name</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161" x="191" y="45.1426">Rue Marie et Pierre Curie</text><line style="stroke:#181818;stroke-width:1.0;" x1="186" x2="186" y1="28.6094" y2="50.2188"/><line style="stroke:#181818;stroke-width:1.0;" x1="19" x2="357" y1="50.2188" y2="50.2188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157" x="24" y="66.752">name:etymology:wikidata</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="191" y="66.752">Q7186;Q37463</text><line style="stroke:#181818;stroke-width:1.0;" x1="186" x2="186" y1="50.2188" y2="71.8281"/></g><g id="elem_wikia"><rect fill="#FFA2A2" height="43.2188" style="stroke:#181818;stroke-width:0.5;" width="154" x="7" y="138"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="140" x="14" y="154.5332">Wikidata item Q7186</text><line style="stroke:#181818;stroke-width:1.0;" x1="7" x2="161" y1="159.6094" y2="159.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="12" y="176.1426">label</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="73" x="52" y="176.1426">Marie Curie</text><line style="stroke:#181818;stroke-width:1.0;" x1="47" x2="47" y1="159.6094" y2="181.2188"/></g><g id="elem_wikib"><rect fill="#FFA2A2" height="43.2188" style="stroke:#181818;stroke-width:0.5;" width="162" x="212" y="138"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="148" x="219" y="154.5332">Wikidata item Q37463</text><line style="stroke:#181818;stroke-width:1.0;" x1="212" x2="374" y1="159.6094" y2="159.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="217" y="176.1426">label</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76" x="257" y="176.1426">Pierre Curie</text><line style="stroke:#181818;stroke-width:1.0;" x1="252" x2="252" y1="159.6094" y2="181.2188"/></g><!--MD5=[0d39b6ae58f1125acc96ca4471212f6b]
+link osmc to wikia--><g id="link_osmc_wikia"><path codeLine="14" d="M157.64,74.09 C142.16,91.73 123.58,112.91 108.95,129.58 " fill="none" id="osmc-to-wikia" style="stroke:#181818;stroke-width:2.0;"/><polygon fill="#181818" points="105.32,133.71,114.2646,129.5876,108.6196,129.9533,108.2539,124.3083,105.32,133.71" style="stroke:#181818;stroke-width:2.0;"/></g><!--MD5=[c91042627a54826f18429a5662e52ad9]
+link osmc to wikib--><g id="link_osmc_wikib"><path codeLine="15" d="M218.65,74.09 C234.28,91.73 253.04,112.91 267.81,129.58 " fill="none" id="osmc-to-wikib" style="stroke:#181818;stroke-width:2.0;"/><polygon fill="#181818" points="271.48,133.71,268.5082,124.3202,268.1653,129.9667,262.5188,129.6238,271.48,133.71" style="stroke:#181818;stroke-width:2.0;"/></g><!--MD5=[f0f55072271f9d49b55c36f284beb885]
+@startuml osm_name_etymology
+
+map "**OSM element**" as osmc #95d5b2 {
+  name => Rue Marie et Pierre Curie
+  name:etymology:wikidata => Q7186;Q37463
+}
+
+map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+  label => Marie Curie
+}
+map "**Wikidata item Q37463**" as wikib #ffa2a2 {
+  label => Pierre Curie
+}
+
+osmc -[bold]-> wikia
+osmc -[bold]-> wikib
+
+@enduml
+
+PlantUML version 1.2022.7(Mon Aug 22 19:01:30 CEST 2022)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: it
+Country: IT
+--></g></svg>

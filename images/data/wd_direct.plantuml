@@ -1,0 +1,15 @@
+@startuml wd_direct
+
+map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+  label => Marie Curie
+}
+
+map "Wikidata item Q96391995" as wikie #a2d2ff {
+  label => Marie Curie Monument in Lublin
+  **P625 (coordinate location)** => **51.24552°, 22.54164°**
+  P547 (commemorates) => Q7186
+}
+
+wikie -[bold]-> wikia
+
+@enduml

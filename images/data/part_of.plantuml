@@ -1,0 +1,27 @@
+@startuml part_of
+
+map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+  label => Marie Curie
+}
+map "**Wikidata item Q37463**" as wikib #ffa2a2 {
+  label => Pierre Curie
+}
+map "Wikidata item Q11297474" as wikic #ffa2a2 {
+  label => Pierre and Marie Curie
+  P31 (instance of) => Q3046146 (married couple)
+  P527 (has part) => Q7186;Q37463
+}
+
+map "**OSM element**" as osmg #95d5b2 {
+  name => Rue Pierre et Marie Curie
+  name:etymology:wikidata => Q11297474
+}
+
+osmg -[bold]-> wikia
+osmg -[bold]-> wikib
+osmg --> wikic
+
+wikic ..> wikia
+wikic ..> wikib
+
+@enduml

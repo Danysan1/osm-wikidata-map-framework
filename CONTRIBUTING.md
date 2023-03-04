@@ -42,7 +42,7 @@ Suppose for example that you want to tag something named after Nelson Mandela: a
 
 OSM-Wikidata Map Framework obtains the etymology data from multiple tags:
 
-![Tags and properties used by OSM-Wikidata Map Framework](images/data/tags.svg)
+Possible patterns of tags and properties used by OSM-Wikidata Map Framework are listed in the [README](README.md). Examples of tags and properties to be configured for these patterns are:
 
 | Platform      | Property/Key              | Description                                                                                                        | Other info                                                                                 |
 | ------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ |

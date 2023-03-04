@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="298px" preserveAspectRatio="none" style="width:541px;height:298px;background:#FFFFFF;" version="1.1" viewBox="0 0 541 298" width="541px" zoomAndPan="magnify"><defs/><g><g id="elem_osma"><rect fill="#95D5B2" height="64.8281" style="stroke:#181818;stroke-width:0.5;" width="238" x="7" y="7"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85" x="83.5" y="23.5332">OSM element</text><line style="stroke:#181818;stroke-width:1.0;" x1="7" x2="245" y1="28.6094" y2="28.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="73" y="45.1426">name</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61" x="179" y="45.1426">Via Roma</text><line style="stroke:#181818;stroke-width:1.0;" x1="174" x2="174" y1="28.6094" y2="50.2188"/><line style="stroke:#181818;stroke-width:1.0;" x1="7" x2="245" y1="50.2188" y2="50.2188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157" x="12" y="66.752">name:etymology:wikidata</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="179" y="66.752">Q220</text><line style="stroke:#181818;stroke-width:1.0;" x1="174" x2="174" y1="50.2188" y2="71.8281"/></g><g id="elem_wikia"><rect fill="#FFA2A2" height="43.2188" style="stroke:#181818;stroke-width:0.5;" width="146" x="210" y="248"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="132" x="217" y="264.5332">Wikidata item Q220</text><line style="stroke:#181818;stroke-width:1.0;" x1="210" x2="356" y1="269.6094" y2="269.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="215" y="286.1426">label</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="37" x="255" y="286.1426">Rome</text><line style="stroke:#181818;stroke-width:1.0;" x1="250" x2="250" y1="269.6094" y2="291.2188"/></g><g id="elem_osmb"><rect fill="#95D5B2" height="64.8281" style="stroke:#181818;stroke-width:0.5;" width="238" x="296" y="7"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="85" x="372.5" y="23.5332">OSM element</text><line style="stroke:#181818;stroke-width:1.0;" x1="296" x2="534" y1="28.6094" y2="28.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="362" y="45.1426">name</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61" x="468" y="45.1426">Via Roma</text><line style="stroke:#181818;stroke-width:1.0;" x1="463" x2="463" y1="28.6094" y2="50.2188"/><line style="stroke:#181818;stroke-width:1.0;" x1="296" x2="534" y1="50.2188" y2="50.2188"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="157" x="301" y="66.752">name:etymology:wikidata</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="468" y="66.752">Q220</text><line style="stroke:#181818;stroke-width:1.0;" x1="463" x2="463" y1="50.2188" y2="71.8281"/></g><g id="elem_osmc"><rect fill="#95D5B2" height="43.2188" style="stroke:#181818;stroke-width:0.5;" width="116" x="225" y="138"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="94" x="236" y="154.5332">OSM element</text><line style="stroke:#181818;stroke-width:1.0;" x1="225" x2="341" y1="159.6094" y2="159.6094"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="35" x="230" y="176.1426">name</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61" x="275" y="176.1426">Via Roma</text><line style="stroke:#181818;stroke-width:1.0;" x1="270" x2="270" y1="159.6094" y2="181.2188"/></g><!--MD5=[108cf8b8f2d57fafaf19106ca7a3eccc]
+link osma to wikia--><g id="link_osma_wikia"><path codeLine="19" d="M139.82,74.23 C152.77,104.65 173.87,149.28 199,184 C213.95,204.66 234.06,224.96 250.85,240.42 " fill="none" id="osma-to-wikia" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="254.6,243.85,250.6416,234.8316,250.9042,240.4824,245.2534,240.7449,254.6,243.85" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[dddb3423e5a18a7bb086d4d2357a4ea0]
+link osmb to wikia--><g id="link_osmb_wikia"><path codeLine="20" d="M408.26,74.14 C401.24,104.69 388.25,149.58 367,184 C353.81,205.37 334.15,225.42 317.18,240.57 " fill="none" id="osmb-to-wikia" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="313.37,243.92,322.7717,240.9861,317.1267,240.6204,317.4924,234.9754,313.37,243.92" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[0d39b6ae58f1125acc96ca4471212f6b]
+link osmc to wikia--><g id="link_osmc_wikia"><path codeLine="21" d="M283,184.24 C283,200.36 283,221.62 283,238.69 " fill="none" id="osmc-to-wikia" style="stroke:#181818;stroke-width:2.0;"/><polygon fill="#181818" points="283,243.84,287,234.84,283,238.84,279,234.84,283,243.84" style="stroke:#181818;stroke-width:2.0;"/></g><!--MD5=[580eab2369624977a581bd4a8281aeee]
+link osma to osmc--><g id="link_osma_osmc"><path codeLine="22" d="M171.83,74.09 C195.69,92.1 224.45,113.81 246.74,130.63 " fill="none" id="osma-to-osmc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="250.82,133.71,246.02,125.11,246.82,130.71,241.22,131.51,250.82,133.71" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[74a5d6c7f859ef9e565b629776ebd583]
+link osmb to osmc--><g id="link_osmb_osmc"><path codeLine="23" d="M376.47,74.09 C356.66,91.88 332.83,113.27 314.19,130 " fill="none" id="osmb-to-osmc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="310.06,133.71,319.4255,130.6625,313.7765,130.3652,314.0738,124.7161,310.06,133.71" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[47887aa23ea6d8bf8565b337fe6e9063]
+@startuml propagation
+
+map "OSM element" as osma #95d5b2 {
+  name => Via Roma
+  name:etymology:wikidata => Q220
+}
+map "**Wikidata item Q220**" as wikia #ffa2a2 {
+  label => Rome
+}
+
+map "OSM element" as osmb #95d5b2 {
+  name => Via Roma
+  name:etymology:wikidata => Q220
+}
+
+map "**OSM element**" as osmc #95d5b2 {
+  name => Via Roma
+}
+
+osma -> wikia
+osmb -> wikia
+osmc -[bold]-> wikia
+osma ..> osmc
+osmb ..> osmc
+
+@enduml
+
+PlantUML version 1.2022.7(Mon Aug 22 19:01:30 CEST 2022)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: Cp1252
+Language: it
+Country: IT
+--></g></svg>

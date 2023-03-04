@@ -1,0 +1,18 @@
+@startuml osm_name_etymology
+
+map "**OSM element**" as osmc #95d5b2 {
+  name => Rue Marie et Pierre Curie
+  name:etymology:wikidata => Q7186;Q37463
+}
+
+map "**Wikidata item Q7186**" as wikia #ffa2a2 {
+  label => Marie Curie
+}
+map "**Wikidata item Q37463**" as wikib #ffa2a2 {
+  label => Pierre Curie
+}
+
+osmc -[bold]-> wikia
+osmc -[bold]-> wikib
+
+@enduml
