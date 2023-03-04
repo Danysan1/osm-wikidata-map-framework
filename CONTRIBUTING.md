@@ -97,7 +97,7 @@ During development you can run a local instance of OSM-Wikidata Map Framework wi
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/deployment/dev.svg)
+![deployment diagram](images/deployment/dev.png)
 
 | Local folder                 | Destination folder   | Development service                                                             | Production service                                |
 | ---------------------------- | -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------- |
@@ -143,11 +143,11 @@ COMPOSE_PROFILES=prod,db docker-compose up -d
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/deployment/prod.svg)
+![deployment diagram](images/deployment/prod.png)
 
-![deployment diagram](images/deployment/prod+db.svg)
+![deployment diagram](images/deployment/prod+db.png)
 
-![deployment diagram](images/deployment/prod+promtail.svg)
+![deployment diagram](images/deployment/prod+promtail.png)
 
 </details>
 
@@ -169,7 +169,7 @@ At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/architecture/v2.svg)
+![deployment diagram](images/architecture/v2.png)
 
 </details>
 
@@ -202,7 +202,7 @@ Tip: if you run the local development instance through `docker-compose` you can 
 <details>
 <summary>Database initialization steps diagram</summary>
 
-![diagram](images/architecture/db-init.svg)
+![diagram](images/architecture/db-init.png)
 
 </details>
 
@@ -222,7 +222,7 @@ More specifically, this procedure is handled by [`OemDbInitDAG`](airflow/dags/Oe
 <details>
 <summary>Deployment diagram</summary>
 
-![deployment diagram](images/architecture/v1.svg)
+![deployment diagram](images/architecture/v1.png)
 
 </details>
 
