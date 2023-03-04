@@ -59,7 +59,7 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $textKey, $descriptionKey, $serverTiming, $maxElements, $source, $search);
 } else {
-    $cacheFileBasePath = $safeLanguage . "_" . (string)$conf->get("cache_file_base_path");
+    $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
 

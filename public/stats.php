@@ -86,7 +86,7 @@ if ($db != null) {
         throw new Exception("Bad 'to' parameter");
     }
 
-    $cacheFileBasePath = $safeLanguage . "_" . (string)$conf->get("cache_file_base_path");
+    $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
     $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
