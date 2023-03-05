@@ -16,7 +16,9 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
     private string $textTag;
     private string $descriptionTag;
     private array $keys;
-    
+
+    public const FEATURE_WIKIDATA_KEY = "wikidata";
+    public const FEATURE_COMMONS_KEY = "commons";
     public const ETYMOLOGY_WD_ID_KEY = "id";
 
     private const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
@@ -99,7 +101,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             $feature["properties"]["wikipedia"] = (string)$element["tags"]["wikipedia"];
 
         if (!empty($element["tags"]["wikimedia_commons"]))
-            $feature["properties"]["commons"] = (string)$element["tags"]["wikimedia_commons"];
+            $feature["properties"][self::FEATURE_COMMONS_KEY] = (string)$element["tags"]["wikimedia_commons"];
 
         if (!empty($element["tags"]["wikidata"])) {
             $wikidataTag = (string)$element["tags"]["wikidata"];
@@ -107,7 +109,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             if (preg_match('/^(Q\d+)/', $wikidataTag, $matches) !== 1)
                 error_log("Bad wikidata tag: $wikidataTag");
             else
-                $feature["properties"]["wikidata"] = $matches[1];
+                $feature["properties"][self::FEATURE_WIKIDATA_KEY] = $matches[1];
         }
 
         $feature["properties"]["etymologies"] = [];

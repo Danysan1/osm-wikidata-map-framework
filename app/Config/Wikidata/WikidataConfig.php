@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Config\Wikidata;
 
 /**
- * Wikidata query configuration
+ * Wikidata query techincal configuration parameters
  */
 interface WikidataConfig
 {

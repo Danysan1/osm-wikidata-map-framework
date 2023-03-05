@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Config\Overpass;
 
 /**
- * Overpass query configuration
+ * Overpass query techincal configuration parameters
  */
 interface OverpassConfig
 {
