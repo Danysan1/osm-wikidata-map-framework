@@ -51,7 +51,7 @@ export class SourceControl extends DropdownControl {
 
         if (indirectWdProperty) {
             dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata entities with P625 qualifier on " + indirectWdProperty, "Wikidata API (real time)"));
-            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities with " + indirectWdProperty + " and P625", "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities with P625 referenced with " + indirectWdProperty, "Wikidata API (real time)"));
         }
 
         if (rawKeys) {

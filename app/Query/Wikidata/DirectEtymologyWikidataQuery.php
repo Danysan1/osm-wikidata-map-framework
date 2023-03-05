@@ -29,12 +29,12 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
                 bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-                OPTIONAL { ?item wdt:P18|wdt:P94|wdt:P242|wdt:P15|wdt:P41 ?commons }
+                OPTIONAL { ?item wdt:P373 ?commons }
                 $labelQuery
             }
             $limitClause",
             $config
         );
-        parent::__construct($bbox, $baseQuery);
+        parent::__construct($bbox, $baseQuery, $language);
     }
 }

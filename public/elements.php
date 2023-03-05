@@ -57,7 +57,7 @@ if ($from == "bbox") {
         } elseif ($source == "wd_reverse") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-            $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
+            $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
         } elseif ($source == "wd_qualifier") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;

@@ -19,11 +19,13 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
 {
     private BoundingBox $bbox;
     private JSONQuery $baseQuery;
+    private ?string $language;
 
-    public function __construct(BoundingBox $bbox, JSONQuery $baseQuery)
+    public function __construct(BoundingBox $bbox, JSONQuery $baseQuery, ?string $language = null)
     {
         $this->bbox = $bbox;
         $this->baseQuery = $baseQuery;
+        $this->language = $language;
     }
 
     public function getBBox(): BoundingBox
@@ -90,7 +92,7 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             for ($i = 0; !$found && $i < count($carry); $i++) {
                 $existingWikidata = empty($carry[$i]["properties"][OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY]) ? null : (string)$carry[$i]["properties"][OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY];
                 $sameWikidata = $rowWikidata != null && $existingWikidata != null && $rowWikidata == $existingWikidata;
-                error_log("reduceRowToGeoJsonQuery: $rowWikidata VS $existingWikidata = $sameWikidata");
+                //error_log("reduceRowToGeoJsonQuery: $rowWikidata VS $existingWikidata = $sameWikidata");
                 if ($sameWikidata) {
                     $found = true;
                     $carry[$i]["properties"]["etymologies"][] = $this->convertWikidataUriToGeoJsonEtymology((string)$row["etymology"]["value"]);
@@ -127,5 +129,11 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
     public function sendAndGetJSONResult(): JSONQueryResult
     {
         return $this->sendAndGetGeoJSONResult();
+    }
+
+    public function getQueryTypeCode(): string
+    {
+        $base = parent::getQueryTypeCode();
+        return empty($this->language) ? $base : $this->language . "_" . $base;
     }
 }
