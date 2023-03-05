@@ -9,7 +9,7 @@ use \App\BoundingBox;
 use \App\Query\BaseQuery;
 use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
-use \App\Query\Overpass\OverpassConfig;
+use \App\Config\Overpass\OverpassConfig;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Result\Overpass\OverpassCenterQueryResult;
 use \App\Result\QueryResult;

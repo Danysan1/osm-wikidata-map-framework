@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Query\Overpass;
+namespace App\Config\Overpass;
 
 /**
  * Overpass query configuration
@@ -10,7 +10,7 @@ namespace App\Query\Overpass;
 interface OverpassConfig
 {
     public function getEndpoint(): string;
-    public function getMaxElements(): int|null;
+    public function getMaxElements(): ?int;
     public function shouldFetchNodes(): bool;
     public function shouldFetchWays(): bool;
     public function shouldFetchRelations(): bool;

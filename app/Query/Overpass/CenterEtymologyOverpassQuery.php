@@ -6,7 +6,7 @@ namespace App\Query\Overpass;
 
 
 use \App\Query\Overpass\BaseOverpassQuery;
-use \App\Query\Overpass\OverpassConfig;
+use \App\Config\Overpass\OverpassConfig;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;

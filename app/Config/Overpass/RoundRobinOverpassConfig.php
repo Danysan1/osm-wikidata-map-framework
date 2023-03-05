@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Query\Overpass;
+namespace App\Config\Overpass;
 
 
 use \App\Config\Configuration;

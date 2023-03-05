@@ -6,7 +6,7 @@ namespace App\Query\Overpass;
 
 
 use \App\Query\Overpass\OverpassQuery;
-use \App\Query\Overpass\OverpassConfig;
+use \App\Config\Overpass\OverpassConfig;
 use Exception;
 
 /**

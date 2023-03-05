@@ -8,7 +8,7 @@ namespace App\Query\Overpass;
 use \App\BoundingBox;
 use \App\Query\BBoxQuery;
 use \App\Query\Overpass\BaseOverpassQuery;
-use \App\Query\Overpass\OverpassConfig;
+use \App\Config\Overpass\OverpassConfig;
 
 /**
  * Overpass query which saves the detail of the bounding box.
