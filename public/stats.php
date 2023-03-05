@@ -70,7 +70,7 @@ if ($db != null) {
     } else {
         throw new Exception("Bad 'to' parameter");
     }
-} else {
+} elseif ($source == "overpass") {
     if ($to == "genderStats") {
         $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataConfig);
@@ -91,6 +91,14 @@ if ($db != null) {
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
     $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
+} elseif ($source == "wd_direct") {
+    throw new Exception("Not implemented");
+} elseif ($source == "wd_reverse") {
+    throw new Exception("Not implemented");
+} elseif ($source == "wd_qualifier") {
+    throw new Exception("Not implemented");
+} else {
+    throw new Exception("Bad 'source' parameter");
 }
 
 $serverTiming->add("3_init");

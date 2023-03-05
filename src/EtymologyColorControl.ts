@@ -9,6 +9,7 @@ import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { debugLog } from './config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from './colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
+import { showSnackbar } from './snackbar';
 
 export interface EtymologyStat {
     color: string;
@@ -162,7 +163,9 @@ class EtymologyColorControl extends DropdownControl {
                                 backgroundColor: [],
                             }]
                         } as ChartData<"pie">;
-                    if (readyState == XMLHttpRequest.DONE) {
+                    if (readyState == XMLHttpRequest.UNSENT || status == 0) {
+                        debugLog("XHR aborted", { xhr, readyState, status, e });
+                    } else if (readyState == XMLHttpRequest.DONE) {
                         if (status == 200) {
                             JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
                                 (data.datasets[0].backgroundColor as string[]).push(row.color);
@@ -170,8 +173,9 @@ class EtymologyColorControl extends DropdownControl {
                                 data.datasets[0].data.push(row["count"]);
                             });
                             this.setChartData(data);
-                        } else if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-                            debugLog("XHR aborted", { xhr, readyState, status, e });
+                        } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
+                            this.removeChart();
+                            showSnackbar("Statistics not implemented for this source", "wheat");
                         } else {
                             console.error("XHR error", { xhr, readyState, status, e });
                             //if (event.type && event.type == 'change')
