@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Query\Wikidata\Stats;
 
-
+use App\Config\Wikidata\WikidataConfig;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\StringSet;
@@ -12,28 +12,17 @@ use \App\Query\Wikidata\Stats\TypeStatsWikidataQuery;
 
 class TypeStatsWikidataFactory implements StringSetXMLQueryFactory
 {
-    /**
-     * @var string $language
-     */
-    private $language;
+    private string $language;
+    private WikidataConfig $config;
 
-    /**
-     * @var string $endpointURL
-     */
-    private $endpointURL;
-
-    /**
-     * @param string $language
-     * @param string $endpointURL
-     */
-    public function __construct($language, $endpointURL)
+    public function __construct(string $language, WikidataConfig $config)
     {
         $this->language = $language;
-        $this->endpointURL = $endpointURL;
+        $this->config = $config;
     }
 
     public function create(StringSet $input): StringSetXMLQuery
     {
-        return new TypeStatsWikidataQuery($input, $this->language, $this->endpointURL);
+        return new TypeStatsWikidataQuery($input, $this->language, $this->config);
     }
 }

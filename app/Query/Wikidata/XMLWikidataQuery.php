@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Query\Wikidata;
 
-
+use App\Config\Wikidata\WikidataConfig;
 use \App\Query\Wikidata\WikidataQuery;
 use \App\Query\XMLQuery;
 use \App\Result\QueryResult;
@@ -16,9 +16,9 @@ use \App\Result\XMLRemoteQueryResult;
  */
 class XMLWikidataQuery extends WikidataQuery implements XMLQuery
 {
-    public function __construct(string $query, string $endpointURL)
+    public function __construct(string $query, WikidataConfig $config)
     {
-        parent::__construct($query, "xml", $endpointURL);
+        parent::__construct($query, "xml", $config);
     }
 
     protected function getResultFromCurlData(?string $result, array $curlInfo): QueryResult

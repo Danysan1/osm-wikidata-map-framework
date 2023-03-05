@@ -9,12 +9,13 @@ $serverTiming = new ServerTiming();
 
 use \App\Config\IniEnvConfiguration;
 use \App\BaseBoundingBox;
+use App\Config\Wikidata\BaseWikidataConfig;
 use \App\PostGIS_PDO;
 use \App\Query\Overpass\BBoxEtymologyCenterOverpassQuery;
 use \App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
 use \App\Query\Overpass\CenterEtymologyOverpassQuery;
 use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
-use \App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
@@ -49,18 +50,18 @@ if ($from == "bbox") {
     if ($db != null) {
         $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
     } else {
-        $wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
+        $wikidataConfig = new BaseWikidataConfig($conf);
         if ($source == "wd_direct") {
             $wikidataProps = $conf->getArray("osm_wikidata_properties");
-            $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataEndpointURL);
+            $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
         } elseif ($source == "wd_reverse") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-            $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
+            $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
         } elseif ($source == "wd_qualifier") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataEndpointURL, $imageProperty);
+            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
         } else {
             $overpassConfig = new RoundRobinOverpassConfig($conf);
             $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);

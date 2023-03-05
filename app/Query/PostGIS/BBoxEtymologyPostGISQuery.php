@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Query\PostGIS;
 
 use App\BoundingBox;
+use App\Config\Wikidata\WikidataConfig;
 use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;
 use \App\Result\JSONQueryResult;
@@ -27,7 +28,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         BoundingBox $bbox,
         string $language,
         PDO $db,
-        string $wikidataEndpointURL,
+        WikidataConfig $wikidataConfig,
         string $textKey,
         string $descriptionKey,
         ?ServerTiming $serverTiming = null,
@@ -39,7 +40,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $bbox,
             $language,
             $db,
-            $wikidataEndpointURL,
+            $wikidataConfig,
             $serverTiming,
             $maxElements,
             $source,

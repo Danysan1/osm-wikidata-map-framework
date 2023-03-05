@@ -18,7 +18,8 @@ use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
 use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
-use \App\Query\Overpass\RoundRobinOverpassConfig;
+use \App\Config\Overpass\RoundRobinOverpassConfig;
+use App\Config\Wikidata\BaseWikidataConfig;
 use \App\Query\Overpass\Stats\BBoxSourceStatsOverpassQuery;
 use App\Query\PostGIS\Stats\BBoxCenturyStatsPostGISQuery;
 
@@ -32,7 +33,7 @@ $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CH
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
-$wikidataEndpointURL = (string)$conf->get('wikidata_endpoint');
+$wikidataConfig = new BaseWikidataConfig($conf);
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $enableDB = $conf->getBool("db_enable");
 
@@ -59,11 +60,11 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     if ($to == "genderStats") {
-        $query = new BBoxGenderStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
+        $query = new BBoxGenderStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $serverTiming, null, $source);
     } elseif ($to == "typeStats") {
-        $query = new BBoxTypeStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
+        $query = new BBoxTypeStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $serverTiming, null, $source);
     } elseif ($to == "centuryStats") {
-        $query = new BBoxCenturyStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataEndpointURL, $serverTiming, null, $source);
+        $query = new BBoxCenturyStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $serverTiming, null, $source);
     } elseif ($to == "sourceStats") {
         $query = new BBoxSourceStatsPostGISQuery($bbox, $db, $serverTiming, $source);
     } else {
@@ -72,11 +73,11 @@ if ($db != null) {
 } else {
     if ($to == "genderStats") {
         $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
-        $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($overpassQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "typeStats") {
         $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
-        $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataEndpointURL);
+        $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($overpassQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "centuryStats") {
         throw new Exception("Not implemented");

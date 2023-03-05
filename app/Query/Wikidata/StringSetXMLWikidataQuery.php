@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Query\Wikidata;
 
-
+use App\Config\Wikidata\WikidataConfig;
 use \App\StringSet;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\Wikidata\XMLWikidataQuery;
@@ -19,7 +19,7 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
 
     protected abstract function createQuery(string $wikidataIDList, string $language): string;
 
-    public function __construct(StringSet $wikidataIDList, string $language, string $endpointURL)
+    public function __construct(StringSet $wikidataIDList, string $language, WikidataConfig $config)
     {
         $wikidataValues = implode(' ', array_map(function ($id) {
             return "wd:$id";
@@ -44,7 +44,7 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
 
         $query = $this->createQuery($wikidataValues, $language);
         //file_put_contents("StringSetXMLWikidataQuery.rq", $query);
-        parent::__construct($query, $endpointURL);
+        parent::__construct($query, $config);
 
         $this->wikidataIDList = $wikidataIDList;
         $this->language = $language;

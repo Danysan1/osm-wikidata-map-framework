@@ -8,6 +8,7 @@ namespace App\Query\PostGIS;
 use \PDO;
 use \App\BoundingBox;
 use \App\BaseStringSet;
+use App\Config\Wikidata\WikidataConfig;
 use \App\ServerTiming;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Query\Wikidata\EtymologyIDListJSONWikidataQuery;
@@ -18,7 +19,7 @@ use Exception;
 abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 {
     private string $language;
-    private string $wikidataEndpointURL;
+    private WikidataConfig $wikidataConfig;
     private ?int $maxElements;
 
     /**
@@ -28,7 +29,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         BoundingBox $bbox,
         string $language,
         PDO $db,
-        string $wikidataEndpointURL,
+        WikidataConfig $wikidataConfig,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
@@ -41,18 +42,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         }
 
         $this->language = $language;
-        $this->wikidataEndpointURL = $wikidataEndpointURL;
+        $this->wikidataConfig = $wikidataConfig;
         $this->maxElements = $maxElements;
     }
 
     public function getLanguage(): string
     {
         return $this->language;
-    }
-
-    public function getWikidataEndpointURL(): string
-    {
-        return $this->wikidataEndpointURL;
     }
 
     protected function getMaxElements(): int|null
@@ -108,7 +104,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             $wikidataQuery = new EtymologyIDListJSONWikidataQuery(
                 $searchSet,
                 $this->language,
-                $this->wikidataEndpointURL
+                $this->wikidataConfig
             );
             $wikidataResult = $wikidataQuery->sendAndGetJSONResult();
             if ($this->hasServerTiming())

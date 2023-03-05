@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Query\Wikidata;
 
-
+use App\Config\Wikidata\WikidataConfig;
 use \App\Query\Wikidata\WikidataQuery;
 use \App\Query\JSONQuery;
 use \App\Result\JSONQueryResult;
@@ -16,9 +16,9 @@ use \App\Result\JSONRemoteQueryResult;
  */
 class JSONWikidataQuery extends WikidataQuery implements JSONQuery
 {
-    public function __construct(string $query, string $endpointURL)
+    public function __construct(string $query, WikidataConfig $config)
     {
-        parent::__construct($query, "json", $endpointURL);
+        parent::__construct($query, "json", $config);
     }
 
     protected function getResultFromCurlData(?string $result, array $curlInfo): QueryResult

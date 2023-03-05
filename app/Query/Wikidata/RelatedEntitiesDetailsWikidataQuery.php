@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Query\Wikidata;
 
-
+use App\Config\Wikidata\WikidataConfig;
 use \App\Query\Wikidata\RelatedEntitiesBaseWikidataQuery;
 
 class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQuery
@@ -12,16 +12,14 @@ class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQue
     /**
      * @param array<string> $wikidataCods List of wikidata cods for entities to check
      * @param array<string> $relationProps List of wikidata cods for properties to check
-     * @param null|string $elementFilter 
-     * @param null|array<string> $instanceOfCods 
-     * @param string $endpointURL
+     * @param ?array<string> $instanceOfCods 
      */
     public function __construct(
         array $wikidataCods,
         array $relationProps,
         ?string $elementFilter,
         ?array $instanceOfCods,
-        string $endpointURL
+        WikidataConfig $config
     ) {
         $wikidataCodsToCheck = self::getWikidataCodsToCheck($wikidataCods);
         $relationPropsToCheck = self::getPropsToCheck($relationProps);
@@ -46,7 +44,8 @@ class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQue
                 }
                 MINUS { ?relatedStatement pq:P582 []. } # Related statement has ended
                 ?relatedStatement ?propStatement ?related.
-            }";
-        parent::__construct($sparqlQuery, $endpointURL);
+            }
+            # Limiting is already applied at a higher level as paging";
+        parent::__construct($sparqlQuery, $config);
     }
 }
