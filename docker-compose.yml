@@ -472,7 +472,7 @@ services:
         cache-to:
           - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/cache,mode=max
         pull: true
-    image: "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework"
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${web_image_tag:-latest}
     env_file:
       - .env
     ports:
