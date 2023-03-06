@@ -56,12 +56,12 @@ docker-build:
     - docker:dind
   before_script:
     - cp .env.example .env
+    - sed "s/framework_image_tag = \"latest\"/framework_image_tag = \"${CI_COMMIT_REF_NAME}\"/"
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes # https://forum.gitlab.com/t/build-multi-arch-docker-image/23569/4
     - docker buildx create --use
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     #- docker pull "$CI_REGISTRY_IMAGE" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE , BUILDING FROM SCRATCH"
   script:
-    - echo "Building $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
     - docker buildx bake oem-web-prod --pull --push
     #- docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --tag "$CI_REGISTRY_IMAGE" -f Dockerfile .
     #- echo "Pushing $CI_REGISTRY_IMAGE"

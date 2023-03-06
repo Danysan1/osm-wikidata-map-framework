@@ -89,8 +89,8 @@ x-airflow-common:
     AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
-    AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
-    AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network
+    AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
+    AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network
   volumes:
     - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
@@ -467,12 +467,15 @@ services:
         platforms:
           - "linux/amd64"
           - "linux/arm64"
+        tags:
+          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${framework_image_tag}
+          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
         cache-from:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/cache
+          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache
         cache-to:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/cache,mode=max
+          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache,mode=max
         pull: true
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${web_image_tag:-latest}
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${framework_image_tag:-latest}
     env_file:
       - .env
     ports:
