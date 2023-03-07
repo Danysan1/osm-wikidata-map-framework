@@ -1,6 +1,7 @@
 @startuml propagation
 
 map "OSM element" as osma #95d5b2 {
+  highway => ...
   name => Via Roma
   name:etymology:wikidata => Q220
 }
@@ -9,17 +10,19 @@ map "**Wikidata item Q220**" as wikia #a2d2ff {
 }
 
 map "OSM element" as osmb #95d5b2 {
+  highway => ...
   name => Via Roma
   name:etymology:wikidata => Q220
 }
 
 map "**OSM element**" as osmc #95d5b2 {
+  highway => ...
   name => Via Roma
 }
 
-osma -> wikia
-osmb -> wikia
-osmc -[bold]-> wikia
+osma -> wikia : existing
+osmb -> wikia : existing
+osmc -[bold]-> wikia : new
 osma ..> osmc
 osmb ..> osmc
 

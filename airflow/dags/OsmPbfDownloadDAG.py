@@ -95,7 +95,7 @@ def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance, t
     Start the download of the source PBF file from the torrent URL calculated by get_source_url.
     
     Links:
-    * [transmission-rpc Client dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
+    * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
 
     
     Torrent download method explored before choosing this one:
@@ -144,8 +144,8 @@ def check_if_torrent_is_complete(torrent_id:int, torrent_daemon_conn_id:str="tor
     ## Check whether the torrent has finished downloading
     
     Links:
-    * [transmission-rpc Client dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
-    * [transmission-rpc Torrent dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
+    * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
+    * [transmission-rpc Torrent documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
     """
     from transmission_rpc import Client
     conn = context["conn"].get(torrent_daemon_conn_id)
@@ -158,8 +158,8 @@ def remove_torrent(torrent_id:int, torrent_daemon_conn_id:str="torrent_daemon", 
     ## Removes the torrent
     
     Links:
-    * [transmission-rpc Client dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
-    * [transmission-rpc Torrent dcumentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
+    * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
+    * [transmission-rpc Torrent documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
     """
     from transmission_rpc import Client
     conn = context["conn"].get(torrent_daemon_conn_id)
