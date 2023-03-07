@@ -37,7 +37,7 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
             "min_lat" => $this->getBBox()->getMinLat(),
             "max_lat" => $this->getBBox()->getMaxLat(),
         ];
-        if (!empty($source) && $source != "all_db") {
+        if (!empty($source) && $source != "all_db" && $source != "all") {
             $this->etymologyFilterClause .= " AND :source = ANY(et.et_from_key_ids) ";
             $this->queryParams["source"] = $source;
         }

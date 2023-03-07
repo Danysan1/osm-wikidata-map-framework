@@ -554,7 +554,7 @@ class OemDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group
         )
-        task_remove_ele_too_big >> task_create_source_index
+        task_move_ele >> task_create_source_index
 
         task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",
