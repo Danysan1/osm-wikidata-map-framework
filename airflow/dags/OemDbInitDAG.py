@@ -547,6 +547,15 @@ class OemDbInitDAG(DAG):
         )
         [task_load_parts, task_check_wd_ety, task_check_text_ety] >> task_move_ele
 
+        task_create_source_index = SQLExecuteQueryOperator(
+            task_id = "create_source_index",
+            conn_id = local_db_conn_id,
+            sql = "sql/13-create-source-index.sql",
+            dag = self,
+            task_group=post_elaborate_group
+        )
+        task_remove_ele_too_big >> task_create_source_index
+
         task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",
             conn_id = local_db_conn_id,
@@ -659,7 +668,7 @@ class OemDbInitDAG(DAG):
                 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
-        [task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_save_last_update, task_create_work_dir] >> task_pg_dump
+        [task_create_source_index, task_setup_ety_fk, task_drop_temp_tables, task_global_map, task_save_last_update, task_create_work_dir] >> task_pg_dump
 
         group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 
