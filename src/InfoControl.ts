@@ -6,7 +6,7 @@ import { IControl, Map, Popup } from 'mapbox-gl';
  */
 function openInfoWindow(map: Map) {
     const popupPosition = map.unproject([0, 0]),
-        content = document.getElementById("intro")?.cloneNode(true);
+        content = document.getElementsByClassName("intro")[0]?.cloneNode(true);
     if (!content)
         throw new Error("Failed cloning info popup content");
     new Popup({

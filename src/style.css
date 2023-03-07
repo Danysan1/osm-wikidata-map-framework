@@ -54,6 +54,10 @@ div.mapboxgl-popup-content {
     font-family: 'Arial Unicode MS Bold', 'Open Sans Semibold', sans-serif;
 }
 
+div.intro {
+    font-size: medium;
+}
+
 div.detail_container {
     text-align: center;
     max-height: 100%;

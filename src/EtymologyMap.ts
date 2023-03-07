@@ -56,7 +56,11 @@ export class EtymologyMap extends Map {
         this.backgroundStyles = backgroundStyles;
         this.geocoderControl = geocoderControl;
 
-        openInfoWindow(this);
+        try {
+            openInfoWindow(this);
+        } catch (e) {
+            console.error("Info window error:", e);
+        }
 
         this.on('load', this.mapLoadedHandler);
         this.on('styledata', this.mapStyleDataHandler);

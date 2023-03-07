@@ -9,9 +9,12 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-if (!$conf->has("mapbox_token")) {
-    http_response_code(500);
-    die('<html><body>Missing Mapbox token from configuration</body></html>');
+$required_conf = ["mapbox_token", "info_title", "info_description", "home_url"];
+foreach ($required_conf as $key) {
+    if (!$conf->has($key)) {
+        http_response_code(500);
+        die("<html><body>Missing $key from configuration</body></html>");
+    }
 }
 
 $lastUpdateString = '';
@@ -20,7 +23,7 @@ if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
         $lastUpdate = (string)$dbh->query("SELECT oem.last_data_update()")->fetchColumn();
-        $lastUpdateString = empty($lastUpdate) ? '' : "<p>Last data update: $lastUpdate</p>";
+        $lastUpdateString = empty($lastUpdate) ? '' : "<p>Last database update: $lastUpdate</p>";
     } catch (Exception $e) {
         error_log("Error fetching last update: " . $e->getMessage());
     }
@@ -89,22 +92,35 @@ if ($enableDB) {
 <body>
     <div id="map_container">
         <div id='map'></div>
-        <div id="intro">
+        <div class="intro">
             <h1><?= $conf->get("info_title") ?></h1>
             <p><?= $conf->get("info_description") ?></p>
+
+            <p>
+            <h3>Click anywhere on the map to explore.</h3>
+            Use the controls on the side to see other data:
+            <ul>
+                <li>📊 to see statistics about elements</li>
+                <li>⚙️ to choose which data source to use</li>
+                <li>🌐 to change the background map style</li>
+                <li>ℹ️ to open again this popup</li>
+            </ul>
+            </p>
+
+            <?= $lastUpdateString; ?>
 
             <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
                 <span class="button_img">📖</span> Contribute to the map
             </a>
-
             <?php if ($enableDB) { ?>
                 <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
             <?php } ?>
 
-            <?= $lastUpdateString; ?>
             <p>
-                <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
-                |
+                <?php if ($conf->has("issues_url")) { ?>
+                    <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+                    |
+                <?php } ?>
                 <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
                 |
                 <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
@@ -119,7 +135,6 @@ if ($enableDB) {
                     <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
                 </form>
             <?php } ?>
-            <h3>Click anywhere on the map to explore.</h3>
         </div>
         <h2>The map is loading...</h2>
     </div>
