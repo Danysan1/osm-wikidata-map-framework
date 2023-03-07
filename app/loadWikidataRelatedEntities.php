@@ -11,6 +11,7 @@ if (php_sapi_name() != "cli") {
 
 require_once(__DIR__ . "/../vendor/autoload.php");
 
+use App\Config\Wikidata\WikidataConfig;
 use PDO;
 use Exception;
 use \App\Query\Wikidata\RelatedEntitiesCheckWikidataQuery;
@@ -32,9 +33,7 @@ use \App\Query\Wikidata\RelatedEntitiesDetailsWikidataQuery;
  * @param string $insertExtraJoins extra joins needed in the inser query
  * @param string $relationName human name for this relationship (without spaces)
  * @param array<string> $relationProps List of wikidata P-IDs for properties to check
- * @param null|array<string> $instanceOfCods Optional list of Wikidata Q-IDs for classes that searched entities must be instance of
- * @param PDO $dbh
- * @param string $wikidataEndpointURL
+ * @param ?array<string> $instanceOfCods Optional list of Wikidata Q-IDs for classes that searched entities must be instance of
  * @return int Total number of loaded entities
  */
 function loadWikidataRelatedEntities(
@@ -48,7 +47,7 @@ function loadWikidataRelatedEntities(
     array $relationProps,
     ?array $instanceOfCods,
     PDO $dbh,
-    string $wikidataEndpointURL
+    WikidataConfig $config
 ): int {
     if ($dbh->query(
         "SELECT EXISTS (
@@ -100,7 +99,7 @@ function loadWikidataRelatedEntities(
         $wikidataCodsResult = $dbh->query("$wikidataCodsQuery LIMIT $pageSize OFFSET $offset")->fetchAll();
         $wikidataCods = array_column($wikidataCodsResult, "wikidata_cod");
 
-        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
+        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config);
         try {
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         } catch (Exception $e) {
@@ -113,7 +112,7 @@ function loadWikidataRelatedEntities(
             echo "No elements found to fetch details for." . PHP_EOL;
         } else {
             echo "Fetching details for $n_wikidata_cods elements out of $truePageSize..." . PHP_EOL;
-            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $wikidataEndpointURL);
+            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config);
             try {
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             } catch (Exception $e) {
@@ -152,7 +151,7 @@ function loadWikidataRelatedEntities(
     return $total_wd;
 }
 
-function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, array $wikidataProperties): int
+function loadWikidataNamedAfterEntities(PDO $dbh, WikidataConfig $config, array $wikidataProperties): int
 {
     return loadWikidataRelatedEntities(
         "oem.element_wikidata_cods",
@@ -165,11 +164,11 @@ function loadWikidataNamedAfterEntities(PDO $dbh, string $wikidataEndpointURL, a
         $wikidataProperties,
         null,
         $dbh,
-        $wikidataEndpointURL
+        $config
     );
 }
 
-function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL): int
+function loadWikidataPartsOfEntities(PDO $dbh, WikidataConfig $config): int
 {
     return loadWikidataRelatedEntities(
         "oem.etymology JOIN oem.wikidata ON wd_id = et_wd_id",
@@ -190,6 +189,6 @@ function loadWikidataPartsOfEntities(PDO $dbh, string $wikidataEndpointURL): int
             "Q14756018", // twins
         ],
         $dbh,
-        $wikidataEndpointURL
+        $config
     );
 }

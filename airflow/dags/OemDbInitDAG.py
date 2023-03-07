@@ -562,7 +562,7 @@ class OemDbInitDAG(DAG):
         task_create_source_index = SQLExecuteQueryOperator(
             task_id = "create_source_index",
             conn_id = local_db_conn_id,
-            sql = "sql/13-create-source-index.sql",
+            sql = "sql/14-create-source-index.sql",
             dag = self,
             task_group=post_elaborate_group
         )
