@@ -480,7 +480,7 @@ services:
       - .env
     ports:
       - "${web_http_port:-80}:80"
-      - "${web_http_port:-443}:443"
+      - "${web_https_port:-443}:443"
     networks:
       - oem-internal
     logging:
