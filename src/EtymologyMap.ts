@@ -127,11 +127,12 @@ export class EtymologyMap extends Map {
     mapSourceDataHandler(e: MapSourceDataEvent) {
         const wikidataSourceEvent = e.dataType == "source" && e.sourceId == WIKIDATA_SOURCE,
             elementsSourceEvent = e.dataType == "source" && e.sourceId == ELEMENTS_SOURCE,
-            sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent);
+            globalSourceEvent = e.dataType == "source" && e.sourceId == GLOBAL_SOURCE,
+            sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent || globalSourceEvent);
 
         if (sourceDataLoaded) {
             debugLog("mapSourceDataHandler: data loaded", {
-                sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, e, source: e.sourceId
+                sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
             });
             showLoadingSpinner(false);
             showSnackbar("Data loaded", "lightgreen", 3000, "data_loaded");
@@ -148,7 +149,7 @@ export class EtymologyMap extends Map {
      */
     mapErrorHandler(err: any) {
         showLoadingSpinner(false);
-        
+
         let errorMessage;
         if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
             showSnackbar("An error occurred while fetching the data");
