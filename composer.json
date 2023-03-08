@@ -7,7 +7,6 @@
     "name": "openetymologymap/osm-wikidata-map-framework",
     "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
     "type": "project",
-    "version": "1.0.5",
     "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
     "license": "GPL-3.0",
     "keywords": [
@@ -32,7 +31,6 @@
             "url": "https://paypal.me/dsantiniit"
         }
     ],
-    "repositories": {},
     "require": {
         "php": "^8.0",
         "sentry/sdk": "^3.1"
