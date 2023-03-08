@@ -41,7 +41,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         return $this->baseShouldKeepRow(
             $row,
             self::BBOX_CACHE_COLUMN_TIMESTAMP,
-            site::BBOX_CACHE_COLUMN_SITE,
+            self::BBOX_CACHE_COLUMN_SITE,
             self::BBOX_CACHE_COLUMN_RESULT,
             [$this, "getBBoxFromRow"],
             [$newBBox, "strictlyContains"]
@@ -52,7 +52,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 
     protected function getResultFromRow(array $row): ?QueryResult
     {
-        $rowSite = (string)$row[site::BBOX_CACHE_COLUMN_SITE];
+        $rowSite = (string)$row[self::BBOX_CACHE_COLUMN_SITE];
         $okSite = empty($_SERVER["SERVER_NAME"]) || $rowSite == $_SERVER["SERVER_NAME"];
 
         $rowBBox = $this->getBBoxFromRow($row);

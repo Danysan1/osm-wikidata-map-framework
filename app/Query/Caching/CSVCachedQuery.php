@@ -62,9 +62,24 @@ abstract class CSVCachedQuery implements Query
         callable $parseKeyFromRow,
         callable $newRowKeyContainsKey
     ): bool {
+        if(empty($row[$timestampColumn])){
+            error_log("Bad cache row, missing timestamp column ($timestampColumn)");
+            return false;
+        }
         $rowTimestamp = (int)$row[$timestampColumn];
+        
+        if(empty($row[$siteColumn])){
+            error_log("Bad cache row, missing site column ($siteColumn)");
+            return false;
+        }
         $rowSite = (string)$row[$siteColumn];
+        
+        if(empty($row[$resultColumn])){
+            error_log("Bad cache row, missing result column ($resultColumn)");
+            return false;
+        }
         $contentFileRelativePath = (string)$row[$resultColumn];
+
         $rowKey = $parseKeyFromRow($row);
         if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
             // Row too old, delete it

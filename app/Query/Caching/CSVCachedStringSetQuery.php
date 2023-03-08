@@ -11,12 +11,6 @@ use \App\Query\Caching\CachedStringSetQuery;
 use \App\BaseStringSet;
 use \App\Result\QueryResult;
 use \App\StringSet;
-use \App\ServerTiming;
-use \App\Config\Configuration;
-
-define("STRING_SET_CACHE_COLUMN_TIMESTAMP", 0);
-define("STRING_SET_CACHE_COLUMN_SET", 1);
-define("STRING_SET_CACHE_COLUMN_RESULT", 2);
 
 /**
  * A query which searches objects in a given string set caching the result in a file.
@@ -25,6 +19,11 @@ define("STRING_SET_CACHE_COLUMN_RESULT", 2);
  */
 abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedStringSetQuery
 {
+    public const STRING_SET_CACHE_COLUMN_TIMESTAMP = 1;
+    public const STRING_SET_CACHE_COLUMN_SITE = 2;
+    public const STRING_SET_CACHE_COLUMN_STRING_SET = 3;
+    public const STRING_SET_CACHE_COLUMN_RESULT = 4;
+
     public function getStringSet(): StringSet
     {
         $baseQuery = $this->getBaseQuery();
@@ -39,8 +38,9 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
         $newStringSet = $this->getStringSet();
         return $this->baseShouldKeepRow(
             $row,
-            STRING_SET_CACHE_COLUMN_TIMESTAMP,
-            STRING_SET_CACHE_COLUMN_RESULT,
+            self::STRING_SET_CACHE_COLUMN_TIMESTAMP,
+            self::STRING_SET_CACHE_COLUMN_SITE,
+            self::STRING_SET_CACHE_COLUMN_RESULT,
             [$this, "getStringSetFromRow"],
             [$newStringSet, "strictlyContains"]
         );
@@ -48,15 +48,15 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
 
     protected abstract function getResultFromFile(string $relativePath): QueryResult;
 
-    /**
-     * @return QueryResult|null
-     */
-    protected function getResultFromRow(array $row)
+    protected function getResultFromRow(array $row): ?QueryResult
     {
+        $rowSite = (string)$row[self::STRING_SET_CACHE_COLUMN_SITE];
+        $okSite = empty($_SERVER["SERVER_NAME"]) || $rowSite == $_SERVER["SERVER_NAME"];
+
         $rowStringSet = $this->getStringSetFromRow($row);
-        if ($rowStringSet->containsOrEquals($this->getStringSet())) {
+        if ($okSite && $rowStringSet->containsOrEquals($this->getStringSet())) {
             // Row string set contains entirely the query string set, cache hit!
-            $contentFileRelativePath = (string)$row[STRING_SET_CACHE_COLUMN_RESULT];
+            $contentFileRelativePath = (string)$row[self::STRING_SET_CACHE_COLUMN_RESULT];
             $result = $this->getResultFromFile($contentFileRelativePath);
             //error_log(get_class($this).": " . $rowStringSet . " contains " . $this->getStringSet());
         } else {
@@ -72,15 +72,16 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
         $contentFileRelativePath = $this->createFileFromResult($result);
 
         $newRow = [
-            STRING_SET_CACHE_COLUMN_TIMESTAMP => time(),
-            STRING_SET_CACHE_COLUMN_SET => $this->getStringSet()->toJson(),
-            STRING_SET_CACHE_COLUMN_RESULT => $contentFileRelativePath
+            self::STRING_SET_CACHE_COLUMN_TIMESTAMP => time(),
+            self::STRING_SET_CACHE_COLUMN_SITE => empty($_SERVER["SERVER_NAME"]) ? "" : $_SERVER["SERVER_NAME"],
+            self::STRING_SET_CACHE_COLUMN_STRING_SET => $this->getStringSet()->toJson(),
+            self::STRING_SET_CACHE_COLUMN_RESULT => $contentFileRelativePath
         ];
         return $newRow;
     }
 
     public function getStringSetFromRow(array $row): StringSet
     {
-        return BaseStringSet::fromJSON((string)$row[STRING_SET_CACHE_COLUMN_SET]);
+        return BaseStringSet::fromJSON((string)$row[self::STRING_SET_CACHE_COLUMN_STRING_SET]);
     }
 }
