@@ -61,6 +61,9 @@ if ($enableDB) {
     <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
+    <link rel="apple-touch-icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
+    <link rel="apple-touch-icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
+    <link rel="apple-touch-icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 
     <?= $conf->getMetaTag("db_enable"); ?>
     <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
