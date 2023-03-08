@@ -107,14 +107,16 @@ if ($enableDB) {
             </ul>
             </p>
 
-            <?= $lastUpdateString; ?>
+            <p><?= $lastUpdateString; ?></p>
 
-            <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
-                <span class="button_img">📖</span> Contribute to the map
-            </a>
-            <?php if ($enableDB) { ?>
-                <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
-            <?php } ?>
+            <p>
+                <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
+                    <span class="button_img">📖</span> Contribute to the map
+                </a>
+                <?php if ($enableDB) { ?>
+                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
+                <?php } ?>
+            </p>
 
             <p>
                 <?php if ($conf->has("issues_url")) { ?>
@@ -125,6 +127,13 @@ if ($enableDB) {
                 |
                 <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
             </p>
+
+            <p>
+                Based on
+                <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
+                <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
+            </p>
+
             <?php if ($conf->has("paypal_id")) { ?>
                 <form action="https://www.paypal.com/donate" method="post" target="_top">
                     <input type="hidden" name="business" value="<?= $conf->get("paypal_id") ?>" />

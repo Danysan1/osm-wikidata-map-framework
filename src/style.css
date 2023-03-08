@@ -25,7 +25,7 @@ div.maplibregl-popup.oem_info_popup,
 div.mapboxgl-popup.oem_etymology_popup,
 div.mapboxgl-popup.oem_info_popup {
     min-width: 15em;
-    max-width: 90%;
+    max-width: 80%;
     min-height: 15em;
     max-height: 98%;
     /*width: 80%;*/

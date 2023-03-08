@@ -147,9 +147,10 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
      */
     mapErrorHandler(err: any) {
+        showLoadingSpinner(false);
+        
         let errorMessage;
         if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
-            showLoadingSpinner(false);
             showSnackbar("An error occurred while fetching the data");
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else if (GLOBAL_SOURCE == err.sourceId && err.error.status == 406) {
