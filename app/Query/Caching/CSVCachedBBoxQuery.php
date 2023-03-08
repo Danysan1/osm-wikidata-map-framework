@@ -25,7 +25,8 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
     public const BBOX_CACHE_COLUMN_MAX_LAT = 2;
     public const BBOX_CACHE_COLUMN_MIN_LON = 3;
     public const BBOX_CACHE_COLUMN_MAX_LON = 4;
-    public const BBOX_CACHE_COLUMN_RESULT = 5;
+    public const BBOX_CACHE_COLUMN_SITE = 5;
+    public const BBOX_CACHE_COLUMN_RESULT = 6;
 
     public function getBBox(): BoundingBox
     {
@@ -38,8 +39,10 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 
     protected function shouldKeepRow(array $row): bool
     {
+        $site = $_SERVER["SERVER_NAME"];
+        $rowSite = $row[site::BBOX_CACHE_COLUMN_SITE];
         $newBBox = $this->getBBox();
-        return $this->baseShouldKeepRow(
+        return $rowSite != $site || $this->baseShouldKeepRow(
             $row,
             self::BBOX_CACHE_COLUMN_TIMESTAMP,
             self::BBOX_CACHE_COLUMN_RESULT,
@@ -55,8 +58,10 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
      */
     protected function getResultFromRow(array $row)
     {
+        $site = $_SERVER["SERVER_NAME"];
+        $rowSite = $row[site::BBOX_CACHE_COLUMN_SITE];
         $rowBBox = $this->getBBoxFromRow($row);
-        if ($rowBBox->containsOrEquals($this->getBBox())) {
+        if ($rowSite == $site && $rowBBox->containsOrEquals($this->getBBox())) {
             // Row bbox contains entirely the query bbox, cache hit!
             $fileRelativePath = (string)$row[self::BBOX_CACHE_COLUMN_RESULT];
             $result = $this->getResultFromFilePath($fileRelativePath);
@@ -87,6 +92,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
             self::BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
             self::BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
             self::BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
+            self::BBOX_CACHE_COLUMN_SITE => $_SERVER["SERVER_NAME"],
             self::BBOX_CACHE_COLUMN_RESULT => $fileRelativePath
         ];
         return $newRow;
