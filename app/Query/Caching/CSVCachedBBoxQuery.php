@@ -15,8 +15,6 @@ use \App\Config\Configuration;
 
 /**
  * A query which searches objects in a given bounding box caching the result in a file.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 {
@@ -39,12 +37,11 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 
     protected function shouldKeepRow(array $row): bool
     {
-        $site = $_SERVER["SERVER_NAME"];
-        $rowSite = $row[site::BBOX_CACHE_COLUMN_SITE];
         $newBBox = $this->getBBox();
-        return $rowSite != $site || $this->baseShouldKeepRow(
+        return $this->baseShouldKeepRow(
             $row,
             self::BBOX_CACHE_COLUMN_TIMESTAMP,
+            site::BBOX_CACHE_COLUMN_SITE,
             self::BBOX_CACHE_COLUMN_RESULT,
             [$this, "getBBoxFromRow"],
             [$newBBox, "strictlyContains"]
@@ -53,15 +50,13 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
 
     protected abstract function getResultFromFilePath(string $fileRelativePath): QueryResult;
 
-    /**
-     * @return QueryResult|null
-     */
-    protected function getResultFromRow(array $row)
+    protected function getResultFromRow(array $row): ?QueryResult
     {
-        $site = $_SERVER["SERVER_NAME"];
-        $rowSite = $row[site::BBOX_CACHE_COLUMN_SITE];
+        $rowSite = (string)$row[site::BBOX_CACHE_COLUMN_SITE];
+        $okSite = empty($_SERVER["SERVER_NAME"]) || $rowSite == $_SERVER["SERVER_NAME"];
+
         $rowBBox = $this->getBBoxFromRow($row);
-        if ($rowSite == $site && $rowBBox->containsOrEquals($this->getBBox())) {
+        if ($okSite && $rowBBox->containsOrEquals($this->getBBox())) {
             // Row bbox contains entirely the query bbox, cache hit!
             $fileRelativePath = (string)$row[self::BBOX_CACHE_COLUMN_RESULT];
             $result = $this->getResultFromFilePath($fileRelativePath);
@@ -92,7 +87,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
             self::BBOX_CACHE_COLUMN_MAX_LAT => $this->getBBox()->getMaxLat(),
             self::BBOX_CACHE_COLUMN_MIN_LON => $this->getBBox()->getMinLon(),
             self::BBOX_CACHE_COLUMN_MAX_LON => $this->getBBox()->getMaxLon(),
-            self::BBOX_CACHE_COLUMN_SITE => $_SERVER["SERVER_NAME"],
+            self::BBOX_CACHE_COLUMN_SITE => empty($_SERVER["SERVER_NAME"]) ? "" : $_SERVER["SERVER_NAME"],
             self::BBOX_CACHE_COLUMN_RESULT => $fileRelativePath
         ];
         return $newRow;

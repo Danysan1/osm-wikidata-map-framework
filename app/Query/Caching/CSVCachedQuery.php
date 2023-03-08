@@ -12,8 +12,6 @@ use \App\Query\Query;
 
 /**
  * A query which searches objects in a given bounding box caching the result in a file.
- * 
- * @author Daniele Santini <daniele@dsantini.it>
  */
 abstract class CSVCachedQuery implements Query
 {
@@ -50,10 +48,7 @@ abstract class CSVCachedQuery implements Query
         return $this->cacheFileBasePath;
     }
 
-    /**
-     * @return QueryResult|null
-     */
-    protected abstract function getResultFromRow(array $row);
+    protected abstract function getResultFromRow(array $row): ?QueryResult;
 
     protected abstract function getRowFromResult(QueryResult $result): array;
 
@@ -62,23 +57,28 @@ abstract class CSVCachedQuery implements Query
     protected function baseShouldKeepRow(
         array $row,
         int $timestampColumn,
+        int $siteColumn,
         int $resultColumn,
         callable $parseKeyFromRow,
         callable $newRowKeyContainsKey
     ): bool {
         $rowTimestamp = (int)$row[$timestampColumn];
+        $rowSite = (string)$row[$siteColumn];
         $contentFileRelativePath = (string)$row[$resultColumn];
         $rowKey = $parseKeyFromRow($row);
         if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
-            // Row too old, ignore
+            // Row too old, delete it
             error_log("Trashing old row ( $rowTimestamp < $this->timeoutThresholdTimestamp ) in " . get_class($this));
             $ret = false;
+        } elseif (!empty($_SERVER["SERVER_NAME"]) || $rowSite == $_SERVER["SERVER_NAME"]) {
+            // Cache row is from another site, don't delete it
+            $ret = true;
         } elseif ($newRowKeyContainsKey($rowKey)) {
-            // Cache row key is entirely contained by the new query key, ignore the cache row
+            // Cache row key is entirely contained by the new query key, delete the row
             error_log("Trashing row with key contained by the new one ( $rowKey ) in " . get_class($this));
             $ret = false;
         } elseif (!is_file($this->cacheFileBaseURL . $contentFileRelativePath)) {
-            // Cached result is inexistent or not a regular file, ignore
+            // Cached result is inexistent or not a regular file, delete the row
             error_log("Trashing cached result ( $contentFileRelativePath ) because it does not exist in the cache folder (" . $this->cacheFileBaseURL . ") in " . get_class($this));
             $ret = false;
         } else {
