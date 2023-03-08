@@ -52,35 +52,46 @@ abstract class CSVCachedQuery implements Query
 
     protected abstract function getRowFromResult(QueryResult $result): array;
 
+    /**
+     * Check whether a cache row should be kept.
+     * Return true if and only if the row should be kept (it should NOT be trashed).
+     */
     protected abstract function shouldKeepRow(array $row): bool;
 
+    /**
+     * Check whether a row should be trashed.
+     * A true result means the row should be trashed, for example because entirely contained by the new cache row key.
+     * A false result DOESN'T necessarily mean the row should be kept.
+     */
+    protected abstract function shouldTrashRow(array $row): bool;
+
+    /**
+     * Base template function to implement shouldKeepRow()
+     */
     protected function baseShouldKeepRow(
         array $row,
         int $timestampColumn,
         int $siteColumn,
-        int $resultColumn,
-        callable $parseKeyFromRow,
-        callable $newRowKeyContainsKey
+        int $resultColumn
     ): bool {
-        if(empty($row[$timestampColumn])){
-            error_log("Bad cache row, missing timestamp column ($timestampColumn)");
+        if (empty($row[$timestampColumn])) {
+            error_log("Bad cache row, missing timestamp column ($timestampColumn):" . json_encode($row));
             return false;
         }
         $rowTimestamp = (int)$row[$timestampColumn];
-        
-        if(empty($row[$siteColumn])){
-            error_log("Bad cache row, missing site column ($siteColumn)");
+
+        if (empty($row[$siteColumn])) {
+            error_log("Bad cache row, missing site column ($siteColumn):" . json_encode($row));
             return false;
         }
         $rowSite = (string)$row[$siteColumn];
-        
-        if(empty($row[$resultColumn])){
-            error_log("Bad cache row, missing result column ($resultColumn)");
+
+        if (empty($row[$resultColumn])) {
+            error_log("Bad cache row, missing result column ($resultColumn):" . json_encode($row));
             return false;
         }
         $contentFileRelativePath = (string)$row[$resultColumn];
 
-        $rowKey = $parseKeyFromRow($row);
         if ($rowTimestamp < $this->timeoutThresholdTimestamp) {
             // Row too old, delete it
             error_log("Trashing old row ( $rowTimestamp < $this->timeoutThresholdTimestamp ) in " . get_class($this));
@@ -88,9 +99,9 @@ abstract class CSVCachedQuery implements Query
         } elseif (!empty($_SERVER["SERVER_NAME"]) || $rowSite == $_SERVER["SERVER_NAME"]) {
             // Cache row is from another site, don't delete it
             $ret = true;
-        } elseif ($newRowKeyContainsKey($rowKey)) {
-            // Cache row key is entirely contained by the new query key, delete the row
-            error_log("Trashing row with key contained by the new one ( $rowKey ) in " . get_class($this));
+        } elseif ($this->shouldTrashRow($row)) {
+            // Cache row key is marked to be deleted, likely because entirely contained by the new cache row key, delete the row
+            error_log("Trashing row marked to be deleted in " . get_class($this));
             $ret = false;
         } elseif (!is_file($this->cacheFileBaseURL . $contentFileRelativePath)) {
             // Cached result is inexistent or not a regular file, delete the row

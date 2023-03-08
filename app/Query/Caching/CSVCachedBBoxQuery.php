@@ -35,16 +35,18 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         return $baseQuery->getBBox();
     }
 
+    protected function shouldTrashRow(array $row): bool
+    {
+        return $this->getBBox()->strictlyContains($this->getBBoxFromRow($row));
+    }
+
     protected function shouldKeepRow(array $row): bool
     {
-        $newBBox = $this->getBBox();
         return $this->baseShouldKeepRow(
             $row,
             self::BBOX_CACHE_COLUMN_TIMESTAMP,
             self::BBOX_CACHE_COLUMN_SITE,
-            self::BBOX_CACHE_COLUMN_RESULT,
-            [$this, "getBBoxFromRow"],
-            [$newBBox, "strictlyContains"]
+            self::BBOX_CACHE_COLUMN_RESULT
         );
     }
 
@@ -93,7 +95,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         return $newRow;
     }
 
-    public function getBBoxFromRow(array $row): BoundingBox
+    private function getBBoxFromRow(array $row): BoundingBox
     {
         $rowMinLat = (float)$row[self::BBOX_CACHE_COLUMN_MIN_LAT];
         $rowMaxLat = (float)$row[self::BBOX_CACHE_COLUMN_MAX_LAT];

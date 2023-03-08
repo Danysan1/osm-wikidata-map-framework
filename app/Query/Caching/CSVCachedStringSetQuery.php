@@ -19,10 +19,10 @@ use \App\StringSet;
  */
 abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedStringSetQuery
 {
-    public const STRING_SET_CACHE_COLUMN_TIMESTAMP = 1;
-    public const STRING_SET_CACHE_COLUMN_SITE = 2;
-    public const STRING_SET_CACHE_COLUMN_STRING_SET = 3;
-    public const STRING_SET_CACHE_COLUMN_RESULT = 4;
+    public const STRING_SET_CACHE_COLUMN_TIMESTAMP = 0;
+    public const STRING_SET_CACHE_COLUMN_SITE = 1;
+    public const STRING_SET_CACHE_COLUMN_STRING_SET = 2;
+    public const STRING_SET_CACHE_COLUMN_RESULT = 3;
 
     public function getStringSet(): StringSet
     {
@@ -33,16 +33,18 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
         return $baseQuery->getStringSet();
     }
 
+    protected function shouldTrashRow(array $row): bool
+    {
+        return $this->getStringSet()->strictlyContains($this->getStringSetFromRow($row));
+    }
+
     protected function shouldKeepRow(array $row): bool
     {
-        $newStringSet = $this->getStringSet();
         return $this->baseShouldKeepRow(
             $row,
             self::STRING_SET_CACHE_COLUMN_TIMESTAMP,
             self::STRING_SET_CACHE_COLUMN_SITE,
-            self::STRING_SET_CACHE_COLUMN_RESULT,
-            [$this, "getStringSetFromRow"],
-            [$newStringSet, "strictlyContains"]
+            self::STRING_SET_CACHE_COLUMN_RESULT
         );
     }
 
@@ -80,7 +82,7 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
         return $newRow;
     }
 
-    public function getStringSetFromRow(array $row): StringSet
+    private function getStringSetFromRow(array $row): StringSet
     {
         return BaseStringSet::fromJSON((string)$row[self::STRING_SET_CACHE_COLUMN_STRING_SET]);
     }
