@@ -38,4 +38,9 @@ class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
         $cacheFileBaseURL = (string)$this->conf->get("cache_file_base_url");
         return new CSVCachedStringSetXMLQuery($baseQuery, $this->cacheFileBasePath, $this->serverTiming,  $cacheTimeoutHours, $cacheFileBaseURL);
     }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
 }

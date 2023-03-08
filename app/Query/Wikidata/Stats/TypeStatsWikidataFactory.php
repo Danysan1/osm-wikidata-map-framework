@@ -25,4 +25,9 @@ class TypeStatsWikidataFactory implements StringSetXMLQueryFactory
     {
         return new TypeStatsWikidataQuery($input, $this->language, $this->config);
     }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
 }

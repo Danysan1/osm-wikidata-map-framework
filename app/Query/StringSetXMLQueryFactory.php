@@ -14,4 +14,6 @@ use \App\StringSet;
 interface StringSetXMLQueryFactory
 {
     public function create(StringSet $input): StringSetXMLQuery;
+
+    public function getLanguage(): ?string;
 }

@@ -25,4 +25,9 @@ class EtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
     {
         return new EtymologyIDListXMLWikidataQuery($input, $this->language, $this->config);
     }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
 }

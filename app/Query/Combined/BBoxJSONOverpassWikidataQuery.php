@@ -39,7 +39,7 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         $overpassResult = $this->baseQuery->sendAndGetGeoJSONResult();
         $this->timing->add("overpass_query");
         if (!$overpassResult->isSuccessful()) {
-            error_log("BBoxGeoJSONEtymologyQuery: Overpass query failed: $overpassResult");
+            error_log("BBoxJSONOverpassWikidataQuery: Overpass query failed: $overpassResult");
             throw new \Exception("Overpass query failed");
         } elseif (!$overpassResult->hasResult()) {
             throw new \Exception("Overpass query didn't return any result");
@@ -83,11 +83,13 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 
         $baseQueryClass = $this->baseQuery->getQueryTypeCode();
 
+        $factoryLanguage = $this->wikidataFactory->getLanguage();
+
         $factoryClassName = get_class($this->wikidataFactory);
         $factoryStartPos = strrpos($factoryClassName, "\\");
         $factoryClass = substr($factoryClassName, $factoryStartPos ? $factoryStartPos + 1 : 0);
 
-        return $thisClass . "_" . $baseQueryClass . "_" . $factoryClass;
+        return $thisClass . "_" . $baseQueryClass . "_" . $factoryLanguage . "_" . $factoryClass;
     }
 
     public function __toString(): string

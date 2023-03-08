@@ -25,4 +25,9 @@ class GenderStatsWikidataFactory implements StringSetXMLQueryFactory
     {
         return new GenderStatsWikidataQuery($input, $this->language, $this->config);
     }
+
+    public function getLanguage(): ?string
+    {
+        return $this->language;
+    }
 }
