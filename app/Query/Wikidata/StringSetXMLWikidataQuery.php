@@ -50,19 +50,18 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
         $this->language = $language;
     }
 
-    /**
-     * @return StringSet
-     */
     public function getStringSet(): StringSet
     {
         return $this->wikidataIDList;
     }
 
-    /**
-     * @return string
-     */
     public function getLanguage(): string
     {
         return $this->language;
+    }
+
+    public function getQueryTypeCode(): string
+    {
+        return $this->language . "_" . parent::getQueryTypeCode();
     }
 }
