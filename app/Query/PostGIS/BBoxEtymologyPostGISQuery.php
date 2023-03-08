@@ -127,6 +127,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'event_date_precision', wd.wd_event_date_precision,
                         'event_place', wdt.wdt_event_place,
                         'gender', gender_text.wdt_name,
+                        'instanceID', instance.wd_wikidata_cod,
                         'name', wdt.wdt_name,
                         'occupations', wdt.wdt_occupations,
                         'pictures', (
@@ -140,7 +141,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'prizes', wdt.wdt_prizes,
                         'start_date', EXTRACT(epoch FROM wd.wd_start_date),
                         'start_date_precision', wd.wd_start_date_precision,
-                        'wd_class', instance.wd_wikidata_cod,
                         'wikidata', wd.wd_wikidata_cod,
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)

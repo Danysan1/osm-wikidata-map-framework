@@ -43,6 +43,7 @@ interface Etymology {
     from_osm_wikidata_cod?: string;
     from_osm_wikidata_prop?: string;
     gender?: string;
+    instanceID?: string;
     name?: string;
     occupations?: string;
     pictures?: ImageResponse[];
@@ -51,7 +52,6 @@ interface Etymology {
     recursion_depth?: number;
     start_date?: string;
     start_date_precision?: DatePrecision;
-    wd_class?: string;
     wd_id?: string;
     wikidata?: string;
     wikipedia?: string;
@@ -141,7 +141,7 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     const entitree_button = etyDomElement.querySelector<HTMLAnchorElement>('.entitree_button');
     if (!entitree_button) {
         console.warn("Missing entitree_button");
-    } else if (lang && ety.wikidata && ety.wd_class == "Q5") {
+    } else if (lang && ety.wikidata && ety.instanceID == "Q5") {
         entitree_button.href = `https://www.entitree.com/${lang}/family_tree/${ety.wikidata}`;
         entitree_button.classList.remove("hiddenElement");
     } else {
