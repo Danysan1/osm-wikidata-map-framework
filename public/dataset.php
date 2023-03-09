@@ -40,13 +40,13 @@ $stm = $db->query(
     ORDER BY LENGTH(wd.wd_wikidata_cod), wd.wd_wikidata_cod, ele.el_tags->>'name'"
 );
 
-header("Content-Disposition: attachment; filename=open_etymology_map_dataset_$lastUpdate.csv");
+header("Content-Disposition: attachment; filename=dataset_$lastUpdate.csv");
 
 $output = fopen("php://output", "w");
 fputcsv($output, array_merge( # Print column names
     ['wikidata_id', 'name'],
     $wikidataKeyIDs,
-    ['from_osm_wikidata', 'from_part_of', 'from_propagation']
+    ['osm_wikidata', 'part_of', 'propagation']
 ));
 while (
     /** @var Stringable[]|false $row */
