@@ -58,6 +58,10 @@ div.intro {
     font-size: medium;
 }
 
+div.intro>footer {
+    font-size: small;
+}
+
 div.detail_container {
     text-align: center;
     max-height: 100%;

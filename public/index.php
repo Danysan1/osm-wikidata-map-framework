@@ -96,8 +96,10 @@ if ($enableDB) {
     <div id="map_container">
         <div id='map'></div>
         <div class="intro">
-            <h1><?= $conf->get("info_title") ?></h1>
-            <p><?= $conf->get("info_description") ?></p>
+            <header>
+                <h1><?= $conf->get("info_title") ?></h1>
+                <p><?= $conf->get("info_description") ?></p>
+            </header>
 
             <p>
             <h3>Click anywhere on the map to explore.</h3>
@@ -110,8 +112,6 @@ if ($enableDB) {
             </ul>
             </p>
 
-            <p><?= $lastUpdateString; ?></p>
-
             <p>
                 <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
                     <span class="button_img">📖</span> Contribute to the map
@@ -121,32 +121,34 @@ if ($enableDB) {
                 <?php } ?>
             </p>
 
-            <p>
-                <?php if ($conf->has("issues_url")) { ?>
-                    <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+            <footer>
+                <p><?= $lastUpdateString; ?></p>
+                <p>
+                    Based on
+                    <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
+                    <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
+                </p>
+                <p>
+                    <?php if ($conf->has("issues_url")) { ?>
+                        <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+                        |
+                    <?php } ?>
+                    <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
                     |
+                    <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
+                </p>
+
+                <?php if ($conf->has("paypal_id")) { ?>
+                    <form action="https://www.paypal.com/donate" method="post" target="_top">
+                        <input type="hidden" name="business" value="<?= $conf->get("paypal_id") ?>" />
+                        <input type="hidden" name="no_recurring" value="0" />
+                        <input type="hidden" name="item_name" value="This donation will help this project to stay up and running. Thank you!" />
+                        <input type="hidden" name="currency_code" value="EUR" />
+                        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                        <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+                    </form>
                 <?php } ?>
-                <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
-                |
-                <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
-            </p>
-
-            <p>
-                Based on
-                <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
-                <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
-            </p>
-
-            <?php if ($conf->has("paypal_id")) { ?>
-                <form action="https://www.paypal.com/donate" method="post" target="_top">
-                    <input type="hidden" name="business" value="<?= $conf->get("paypal_id") ?>" />
-                    <input type="hidden" name="no_recurring" value="0" />
-                    <input type="hidden" name="item_name" value="This donation will help this project to stay up and running. Thank you!" />
-                    <input type="hidden" name="currency_code" value="EUR" />
-                    <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-                    <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
-                </form>
-            <?php } ?>
+            </footer>
         </div>
         <h2>The map is loading...</h2>
     </div>
