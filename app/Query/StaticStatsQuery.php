@@ -4,20 +4,19 @@ declare(strict_types=1);
 
 namespace App\Query;
 
+use App\BoundingBox;
 use \App\Query\BaseQuery;
-use App\Query\GeoJSONQuery;
-use App\Query\JSONQuery;
 use App\Result\JSONLocalQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\JSONQueryResult;
 
-abstract class StaticStatsQuery extends BaseQuery implements JSONQuery
+class StaticStatsQuery extends BaseQuery implements BBoxJSONQuery
 {
-    private GeoJSONQuery $baseQuery;
+    private BBoxGeoJSONQuery $baseQuery;
     private string $name;
     private string $color;
 
-    public function __construct(GeoJSONQuery $baseQuery, string $name, string $color)
+    public function __construct(BBoxGeoJSONQuery $baseQuery, string $name, string $color)
     {
         $this->baseQuery = $baseQuery;
         $this->name = $name;
@@ -31,18 +30,35 @@ abstract class StaticStatsQuery extends BaseQuery implements JSONQuery
 
     public function sendAndGetJSONResult(): JSONQueryResult
     {
-        $wikidataQueryResult = $this->baseQuery->sendAndGetGeoJSONResult();
-        $elements = $wikidataQueryResult->getArray()["features"];
-        return new JSONLocalQueryResult(
-            $wikidataQueryResult->isSuccessful(),
-            empty($elements) ? [] : [
-                ["name" => $this->name, "color" => $this->color, "count" => count($elements)]
-            ]
-        );
+        $baseQueryResult = $this->baseQuery->sendAndGetGeoJSONResult();
+        if (!$baseQueryResult->isSuccessful()) {
+            error_log("StaticStatsQuery: Unsuccesful base query");
+            return $baseQueryResult;
+        } else {
+            $geoJSON = $baseQueryResult->getGeoJSONData();
+            return new JSONLocalQueryResult(
+                true,
+                empty($geoJSON["features"]) ? [] : [[
+                    "name" => $this->name,
+                    "color" => $this->color,
+                    "count" => count($geoJSON["features"])
+                ]]
+            );
+        }
+    }
+
+    public function getBBox(): BoundingBox
+    {
+        return $this->baseQuery->getBBox();
     }
 
     public function getQuery(): string
     {
         return $this->baseQuery->getQuery();
+    }
+
+    public function getQueryTypeCode(): string
+    {
+        return parent::getQueryTypeCode() . "_" . $this->baseQuery->getQueryTypeCode();
     }
 }

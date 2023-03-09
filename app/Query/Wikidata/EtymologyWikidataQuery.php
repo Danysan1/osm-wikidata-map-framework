@@ -73,7 +73,9 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             ],
             "properties" => [
                 "name" => $name,
+                "gender_color" => "#3bb2d0",
                 "source_color" => "#3399ff",
+                "type_color" => "#3bb2d0",
                 OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY => $wikidata,
                 OverpassEtymologyQueryResult::FEATURE_COMMONS_KEY => $commons,
                 "etymologies" => [
