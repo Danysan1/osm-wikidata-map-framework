@@ -76,9 +76,11 @@ if ($db != null) {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
         $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
         $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
-    } else {
+    } elseif ($source == "overpass") {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
         $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
+    } else {
+        throw new Exception("Bad 'source' parameter");
     }
 
     $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $conf, $serverTiming);
