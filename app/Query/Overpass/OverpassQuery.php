@@ -6,9 +6,9 @@ namespace App\Query\Overpass;
 
 
 use \App\Query\JSONCurlQuery;
+use \App\Result\QueryResult;
 use \App\Result\RemoteQueryResult;
 use \App\Result\JSONRemoteQueryResult;
-use App\Result\Overpass\OverpassQueryResult;
 use Exception;
 
 /**
@@ -21,7 +21,7 @@ class OverpassQuery extends JSONCurlQuery
         parent::__construct(["data" => $query], $endpointURL, "POST");
     }
 
-    public function sendAndRequireResult(): OverpassQueryResult
+    public function sendAndRequireResult(): QueryResult
     {
         $res = $this->send();
         $endpointUrl = $this->getEndpointURL();
@@ -49,6 +49,6 @@ class OverpassQuery extends JSONCurlQuery
             //error_log("sendAndRequireResult: result is of type " . gettype($res));
             //if ($res instanceof RemoteQueryResult) error_log("sendAndRequireResult: " . $res->getBody());
         }
-        return new OverpassQueryResult($res->isSuccessful(), $res->getArray());
+        return $res;
     }
 }
