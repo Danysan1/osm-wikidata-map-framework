@@ -42,7 +42,7 @@ class BBoxSourceStatsOverpassQuery extends BaseQuery implements BBoxJSONQuery
         $elements = $overpassQueryResult->getElements();
         return new JSONLocalQueryResult(
             $overpassQueryResult->isSuccessful(),
-            [["name" => "OpenStreetMap", "color" => "#33ff66", "count" => count($elements)]]
+            empty($elements) ? [] : [["name" => "OpenStreetMap", "color" => "#33ff66", "count" => count($elements)]]
         );
     }
 
