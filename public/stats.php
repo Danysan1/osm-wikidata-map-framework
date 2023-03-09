@@ -20,8 +20,7 @@ use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
-use App\Query\Overpass\Stats\SourceStatsWikidataQuery;
-use \App\Query\Overpass\Stats\BBoxSourceStatsOverpassQuery;
+use App\Query\StaticStatsQuery;
 use App\Query\PostGIS\Stats\BBoxCenturyStatsPostGISQuery;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
@@ -74,53 +73,48 @@ if ($db != null) {
     } else {
         throw new Exception("Bad 'to' parameter");
     }
-} elseif ($source == "overpass") {
+} else {
+    if ($source == "overpass") {
+        $sourceQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
+        $sourceName = "OpenStreetMap";
+        $sourceColor = "#33ff66";
+        $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    } else {
+        $sourceName = "Wikidata";
+        $sourceColor = "#3399ff";
+        $cacheTimeoutHours = (int)$conf->get("wikidata_cache_timeout_hours");
+
+        if ($source == "wd_direct") {
+            $wikidataProps = $conf->getArray("osm_wikidata_properties");
+            $sourceQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
+        } else if ($source == "wd_reverse") {
+            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+            $sourceQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        } else if ($source == "wd_qualifier") {
+            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+            $sourceQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        } else {
+            throw new Exception("Bad 'source' parameter");
+        }
+    }
+
     if ($to == "genderStats") {
-        $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($overpassQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "typeStats") {
-        $overpassQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($overpassQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "centuryStats") {
-        throw new Exception("Not implemented");
+        throw new Exception("Not implemented"); // TODO
     } elseif ($to == "sourceStats") {
-        $baseQuery = new BBoxSourceStatsOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
+        $baseQuery = new StaticStatsQuery($sourceQuery, $sourceName, $sourceColor);
     } else {
         throw new Exception("Bad 'to' parameter");
     }
 
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
-    $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
     $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
-} elseif ($source == "wd_direct") {
-    $wikidataProps = $conf->getArray("osm_wikidata_properties");
-    $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
-    if ($to == "sourceStats") {
-        $query = new SourceStatsWikidataQuery($baseQuery);
-    } else {
-        throw new Exception("Not implemented");
-    }
-} elseif ($source == "wd_reverse") {
-    $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-    $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
-    if ($to == "sourceStats") {
-        $query = new SourceStatsWikidataQuery($baseQuery);
-    } else {
-        throw new Exception("Not implemented");
-    }
-} elseif ($source == "wd_qualifier") {
-    $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-    $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
-    if ($to == "sourceStats") {
-        $query = new SourceStatsWikidataQuery($baseQuery);
-    } else {
-        throw new Exception("Not implemented");
-    }
-} else {
-    throw new Exception("Bad 'source' parameter");
 }
 
 $serverTiming->add("3_init");
