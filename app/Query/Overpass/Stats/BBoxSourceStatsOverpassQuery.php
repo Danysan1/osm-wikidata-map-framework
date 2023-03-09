@@ -10,8 +10,7 @@ use \App\Query\BaseQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Config\Overpass\OverpassConfig;
 use \App\Query\BBoxJSONQuery;
-use \App\Query\Overpass\OverpassQuery;
-use \App\Result\Overpass\OverpassSourceStatsQueryResult;
+use App\Result\JSONLocalQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\JSONQueryResult;
 
@@ -39,7 +38,12 @@ class BBoxSourceStatsOverpassQuery extends BaseQuery implements BBoxJSONQuery
 
     public function sendAndGetJSONResult(): JSONQueryResult
     {
-        return new OverpassSourceStatsQueryResult($this->baseQuery->sendAndRequireResult());
+        $overpassQueryResult = $this->baseQuery->sendAndRequireResult();
+        $elements = $overpassQueryResult->getElements();
+        return new JSONLocalQueryResult(
+            $overpassQueryResult->isSuccessful(),
+            [["name" => "OpenStreetMap", "color" => "#33ff66", "count" => count($elements)]]
+        );
     }
 
     public function getBBox(): BoundingBox
