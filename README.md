@@ -19,7 +19,7 @@ For more details see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## How to use this framework to create a map
 
-The most basic deployment can be launched by using Docker and executong these shell commands:
+The most basic deployment can be launched by using Docker and executing these shell commands:
 
 1. Create the `.env` configuration file from the template ([.env.example](.env.example))
    ```sh
