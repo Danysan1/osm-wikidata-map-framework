@@ -1,6 +1,6 @@
 # OSM-Wikidata Map Framework
 
-Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata.
+Framework for creating interactive maps that combine and display details about entities associated with geographic features from OpenStreetMap and Wikidata. The types of geographic features and related entities to show are choosen by editing a configuration file and automatically handled by the framework.
 
 ## Available data source patterns
 
