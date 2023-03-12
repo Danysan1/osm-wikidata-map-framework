@@ -32,7 +32,7 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $wikidataConfig = new BaseWikidataConfig($conf);
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
-$eagerFullDownload = $conf->getBool("eager_etymology_full_download");
+$eagerFullDownload = $conf->getBool("eager_full_etymology_download");
 
 $enableDB = $conf->getBool("db_enable");
 if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier"])) {

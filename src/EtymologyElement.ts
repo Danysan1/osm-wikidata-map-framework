@@ -1,4 +1,4 @@
-import { debugLog, getConfig } from "./config";
+import { debugLog, getBoolConfig } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 
 /**
@@ -107,6 +107,10 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     debugLog("etymologyToDomElement", {
         et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });
+
+    if(!getBoolConfig("eager_full_etymology_download")){
+        // TODO lazy loading
+    }
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {

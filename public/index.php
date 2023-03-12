@@ -90,6 +90,7 @@ if ($enableDB) {
     <?= $conf->getMetaTag("sentry_js_replays_on_error_sample_rate", true); ?>
     <?= $conf->getMetaTag("bbox_margin", true); ?>
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
+    <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
 </head>
 
 <body>
