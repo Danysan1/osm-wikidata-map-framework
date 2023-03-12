@@ -7,7 +7,7 @@ namespace App\Query\Wikidata;
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  */
-class EtymologyIDListWikidataQueryBuilder
+class FullEtymologyIDListWikidataQueryBuilder
 {
     public static function createQuery(string $wikidataIDList, string $language): string
     {

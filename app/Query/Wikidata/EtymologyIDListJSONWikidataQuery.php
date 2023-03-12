@@ -15,6 +15,6 @@ class EtymologyIDListJSONWikidataQuery extends StringSetJSONWikidataQuery
 {
     public function createQuery(string $wikidataIDList, string $language): string
     {
-        return EtymologyIDListWikidataQueryBuilder::createQuery($wikidataIDList, $language);
+        return BaseEtymologyIDListWikidataQueryBuilder::createQuery($wikidataIDList, $language);
     }
 }
