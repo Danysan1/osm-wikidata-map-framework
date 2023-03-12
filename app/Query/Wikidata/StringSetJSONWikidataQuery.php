@@ -12,7 +12,7 @@ use \App\Query\Wikidata\JSONWikidataQuery;
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  */
-abstract class StringSetJSONWikidataQuery extends JSONWikidataQuery implements StringSetJSONQuery
+class StringSetJSONWikidataQuery extends JSONWikidataQuery implements StringSetJSONQuery
 {
     private StringSet $wikidataIDList;
     private string $language;
