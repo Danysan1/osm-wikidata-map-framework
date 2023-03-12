@@ -19,9 +19,4 @@ class EtymologyIDListXMLWikidataQuery extends StringSetXMLWikidataQuery
     {
         return XMLWikidataEtymologyQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
     }
-
-    public function createQuery(string $wikidataIDList, string $language): string
-    {
-        return BaseEtymologyIDListWikidataQueryBuilder::createQuery($wikidataIDList, $language);
-    }
 }

@@ -177,9 +177,9 @@ An Apache Airflow pipeline defined in [db-init-planet.py](airflow/dags/db-init-p
 
 Once the DB is initialized, this is the data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v2 if the configuration contains `db_enable = true`:
 
-1. [`BBoxTextPostGISQuery::downloadMissingText()`](app/query/postgis/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
-   - If it has not been downloaded it downloads it downloads it using [EtymologyIDListJSONWikidataQuery](app/query/wikidata/EtymologyIDListJSONWikidataQuery.php) and loads it in the DB
-2. [`BBoxEtymologyPostGISQuery`](app/query/postgis/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
+1. [`BBoxTextPostGISQuery::downloadMissingText()`](app/Query/PostGIS/BBoxTextPostGISQuery.php) checks if the Wikidata content for the requested area has already been downloaded in the DB
+   - If it has not been downloaded it downloads it downloads it using [StringSetJSONWikidataQuery](app/Query/Wikidata/StringSetJSONWikidataQuery.php) and loads it in the DB
+2. [`BBoxEtymologyPostGISQuery`](app/Query/PostGIS/BBoxEtymologyPostGISQuery.php) queries the DB and outputs the elements and their etymologies.
 
 ##### Database initialization
 
@@ -229,19 +229,19 @@ More specifically, this procedure is handled by [`OemDbInitDAG`](airflow/dags/Oe
 Data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in v1 (and in v2 if the configuration contains `db_enable = false`):
 
 1. Check if the GeoJSON result for the requested area has already been cached recently.
-   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
+   - If it is, serve the cached result ([CSVCachedBBoxGeoJSONQuery](app/Query/Caching/CSVCachedBBoxGeoJSONQuery.php)).
    - Otherwise it is necessary to fetch the data from OpenStreetMap through [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
-     1. Query Overpass API in the selected area to get elements with etymology ([`BBoxEtymologyOverpassQuery`](app/query/overpass/BBoxEtymologyOverpassQuery.php)).
-     2. Transform the JSON result into GeoJSON ([`OverpassEtymologyQueryResult`](app/result/overpass/OverpassEtymologyQueryResult.php)).
-     3. Obtain a set of Wikidata IDs to get information about ([`GeoJSON2XMLEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
+     1. Query Overpass API in the selected area to get elements with etymology ([`BBoxEtymologyOverpassQuery`](app/Query/Overpass/BBoxEtymologyOverpassQuery.php)).
+     2. Transform the JSON result into GeoJSON ([`OverpassEtymologyQueryResult`](app/Result/Overpass/OverpassEtymologyQueryResult.php)).
+     3. Obtain a set of Wikidata IDs to get information about ([`GeoJSON2XMLEtymologyWikidataQuery`](app/Query/Wikidata/GeoJSON2XMLEtymologyWikidataQuery.php)).
      4. Check if the XML result for the requested set of Wikidata IDs has already been cached recently.
-        - If it is, use the cached result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
+        - If it is, use the cached result ([`CSVCachedStringSetXMLQuery`](app/Query/Caching/CSVCachedStringSetXMLQuery.php)).
         - Otherwise it is necessary to fetch the data from OpenStreetMap.
-          1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([`EtymologyIDListXMLWikidataQuery`](app/query/wikidata/EtymologyIDListXMLWikidataQuery.php)).
-          2. Cache the XML result ([`CSVCachedStringSetXMLQuery`](app/query/caching/CSVCachedStringSetXMLQuery.php)).
+          1. Query the Wikidata SPARQL query service to get information on the elements whose IDs are in the set obtained from OSM ([`EtymologyIDListXMLWikidataQuery`](app/Query/Wikidata/EtymologyIDListXMLWikidataQuery.php)).
+          2. Cache the XML result ([`CSVCachedStringSetXMLQuery`](app/Query/Caching/CSVCachedStringSetXMLQuery.php)).
      5. Obtain from the XML result from Wikidata a matrix of details for each element ([`XMLWikidataEtymologyQueryResult`](app/result/wikidata/XMLWikidataEtymologyQueryResult.php)).
-     6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([`GeoJSON2GeoJSONEtymologyWikidataQuery`](app/query/wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
-     7. Cache the GeoJSON result ([`CSVCachedBBoxGeoJSONQuery`](app/query/caching/CSVCachedBBoxGeoJSONQuery.php)).
+     6. Match each element in the GeoJSON data with an etymology with its details from Wikidata ([`GeoJSON2GeoJSONEtymologyWikidataQuery`](app/Query/Wikidata/GeoJSON2GeoJSONEtymologyWikidataQuery.php)).
+     7. Cache the GeoJSON result ([`CSVCachedBBoxGeoJSONQuery`](app/Query/Caching/CSVCachedBBoxGeoJSONQuery.php)).
 
 #### Output
 

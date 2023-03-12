@@ -32,6 +32,7 @@ $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIA
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 $wikidataConfig = new BaseWikidataConfig($conf);
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
+$eagerFullDownload = $conf->getBool("eager_etymology_full_download");
 
 $enableDB = $conf->getBool("db_enable");
 if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier"])) {
@@ -63,7 +64,8 @@ if ($db != null) {
 } else {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
-    $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $overpassCacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $wikidataCacheTimeoutHours = (int)$conf->get("wikidata_cache_timeout_hours");
 
     if ($source == "wd_direct") {
         $wikidataProps = $conf->getArray("osm_wikidata_properties");
@@ -83,9 +85,9 @@ if ($db != null) {
         throw new Exception("Bad 'source' parameter");
     }
 
-    $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $conf, $serverTiming);
+    $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
     $combinedQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
-    $query = new CSVCachedBBoxGeoJSONQuery($combinedQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
+    $query = new CSVCachedBBoxGeoJSONQuery($combinedQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);
 }
 
 $serverTiming->add("3_init");

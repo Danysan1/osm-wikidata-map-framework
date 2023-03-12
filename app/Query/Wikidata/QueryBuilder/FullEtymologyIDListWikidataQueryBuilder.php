@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Query\Wikidata;
+namespace App\Query\Wikidata\QueryBuilder;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.
  */
-class FullEtymologyIDListWikidataQueryBuilder
+class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBuilder
 {
-    public static function createQuery(string $wikidataIDList, string $language): string
+    protected function createQueryFromValidIDsString(string $wikidataValues, string $language): string
     {
         return "SELECT ?wikidata
                 (SAMPLE(?name) AS ?name)
@@ -39,7 +39,7 @@ class FullEtymologyIDListWikidataQueryBuilder
                 (SAMPLE(?death_place_name) AS ?death_place)
                 (SAMPLE(?wkt_coords) AS ?wkt_coords)
             WHERE {
-                VALUES ?wikidata { $wikidataIDList }
+                VALUES ?wikidata { $wikidataValues }
 
                 OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
                     ?instanceID ^wdt:P31 ?wikidata;
