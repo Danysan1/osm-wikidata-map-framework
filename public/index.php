@@ -244,11 +244,11 @@ if ($enableDB) {
             </div>
             <span class="etymology_src_wrapper">
                 Etymology source:
-                <span class="etymology_src_osm_wrapper hiddenElement"><a title="Etymology OpenStreetMap source" class="etymology_src_osm" href="https://www.openstreetmap.org">OpenStreetMap</a></span>
-                <span class="etymology_src_osm_wd_wrapper hiddenElement"> + <a title="Etymology Wikidata source" class="etymology_src_osm_wd">Wikidata</a></span>
+                <a title="Etymology OpenStreetMap source" class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
+                <span class="src_osm_plus_wd hiddenElement">&nbsp;+&nbsp;</span>
+                <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>
                 <span class="etymology_propagated_wrapper hiddenElement"> + <a title="Description of the propagation mechanism" href="<?= $conf->get("propagation_docs_url") ?>">propagation</a></span>
                 <span class="etymology_src_part_of_wd_wrapper hiddenElement"> + <a title="Etymology Wikidata source" class="etymology_src_part_of_wd">Wikidata</a></span>
-                <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>
             </span>
         </div>
     </template>

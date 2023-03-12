@@ -29,7 +29,7 @@ abstract class WikidataQuery extends CurlQuery
             ["format" => $format, "query" => self::getMinifiedQuery($query)],
             $config->getEndpoint(),
             self::$method,
-            self::$userAgent
+            self::$userAgent // Mandatory for Wikidata API calls (see https://meta.wikimedia.org/wiki/User-Agent_policy )
         );
     }
 

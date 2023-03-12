@@ -18,7 +18,12 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(
-            "SELECT DISTINCT ?location ?commons ?etymology
+            "SELECT DISTINCT
+                ?location
+                ?commons
+                ?etymology
+                (?item AS ?from_entity)
+                (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
                 SERVICE wikibase:box {

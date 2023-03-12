@@ -23,6 +23,8 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?location) AS ?location)
                 (SAMPLE(?commons) AS ?commons)
                 ?etymology
+                (?item AS ?from_entity)
+                (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
                 MINUS { ?stmt pq:P625 []. }
