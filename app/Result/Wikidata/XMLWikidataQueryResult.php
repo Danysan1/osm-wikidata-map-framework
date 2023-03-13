@@ -82,7 +82,7 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
                     if (in_array($key, $this->getArrayXMLFields())) {
                         $outRow[$key] = explode("`", $outValue);
                     } elseif (in_array($key, $this->getEntityXMLFields())) {
-                        $outRow[$key] = preg_replace('/http:\/\/www.wikidata.org\/entity\//', '', $outValue);
+                        $outRow[$key] = str_replace('http://www.wikidata.org/entity/', '', $outValue);
                     } else {
                         $outRow[$key] = $outValue;
                     }

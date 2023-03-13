@@ -112,7 +112,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
             coord = coord[0];
         }
         const lon = coord[0], lat = coord[1];
-        element_location_button.href = `#${lon},${lat},${currentZoom+1}`;
+        element_location_button.href = `#${lon},${lat},${currentZoom + 1}`;
         element_location_button.classList.remove("hiddenElement");
     } else {
         element_location_button.classList.add("hiddenElement");
@@ -122,11 +122,17 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
     } else {
-        etymologies.filter(e => e?.wikidata).forEach(function (ety) {
-            try {
-                etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
-            } catch (err) {
-                console.error("Failed adding etymology", ety, err);
+        downloadEtymologyDetails(etymologies);
+
+        etymologies.forEach(function (ety) {
+            if (ety?.wikidata) {
+                try {
+                    etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
+                } catch (err) {
+                    console.error("Failed adding etymology", ety, err);
+                }
+            } else {
+                console.warn("Found etymology without Wikidata ID", ety);
             }
         });
 
@@ -159,4 +165,23 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     }
 
     return detail_container;
+}
+
+async function downloadEtymologyDetails(etymologies: Etymology[]) {
+    const etymologyIDs = etymologies.filter(e => e?.wikidata).map(e => "wdt:" + e.wikidata);
+    try {
+        const wikidataValues = etymologyIDs.join(" "),
+            sparql = wikidataValues, // TODO
+            { WBK } = await import("wikibase-sdk"),
+            wdk = WBK({
+                instance: 'https://www.wikidata.org',
+                sparqlEndpoint: 'https://query.wikidata.org/sparql'
+            }),
+            url = wdk.sparqlQuery(sparql),
+            response = await fetch(url),
+            res = await response.json();
+        // TODO
+    } catch (err) {
+        console.error("Failed downloading etymology details", etymologyIDs, err);
+    }
 }
