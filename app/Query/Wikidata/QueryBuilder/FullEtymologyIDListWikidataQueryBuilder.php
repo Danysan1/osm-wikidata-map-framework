@@ -22,7 +22,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 (SAMPLE(?commons) AS ?commons)
                 (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
                 (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
-                (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='`') AS ?pictures)
+                (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
                 (SAMPLE(?event_date) AS ?event_date)
                 (SAMPLE(?event_date_precision) AS ?event_date_precision)

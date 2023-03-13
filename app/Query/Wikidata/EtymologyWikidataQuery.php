@@ -88,7 +88,8 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         $lat = (float)$matches[2];
         $itemQID = empty($row["item"]["value"]) ? null : str_replace(self::WD_ENTITY_PREFIX, "", (string)$row["item"]["value"]);
         $name = empty($row["itemLabel"]["value"]) ? null : (string)$row["itemLabel"]["value"];
-        $commons = empty($row["commons"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["commons"]["value"]);
+        $commons = empty($row["commons"]["value"]) ? null : "Category:" . (string)$row["commons"]["value"];
+        $picture = empty($row["picture"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["picture"]["value"]);
         return [
             "geometry" => [
                 "type" => "Point",

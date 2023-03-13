@@ -3,6 +3,7 @@ import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, etymologyToDomElement } from "./EtymologyElement";
 import { debugLog } from "./config";
+import { showLoadingSpinner } from "./snackbar";
 
 interface FeatureProperties {
     alt_name?: string;
@@ -122,55 +123,58 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
     } else {
-        downloadEtymologyDetails(etymologies);
-
-        etymologies.forEach(function (ety) {
-            if (ety?.wikidata) {
-                try {
-                    etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
-                } catch (err) {
-                    console.error("Failed adding etymology", ety, err);
+        showLoadingSpinner(true);
+        downloadEtymologyDetails(etymologies).then((filledEtymologies) => {
+            showLoadingSpinner(false);
+            filledEtymologies.forEach(function (ety) {
+                if (ety?.wikidata) {
+                    try {
+                        etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
+                    } catch (err) {
+                        console.error("Failed adding etymology", ety, err);
+                    }
+                } else {
+                    console.warn("Found etymology without Wikidata ID", ety);
                 }
-            } else {
-                console.warn("Found etymology without Wikidata ID", ety);
+            });
+
+            const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
+                textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
+                textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
+                textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
+            let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
+
+            if (textEtyNameExists && !textEtyDescrExists) {
+                // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+                textEtyShouldBeShown = filledEtymologies.some((etymology) =>
+                    !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
+                    !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
+                );
+            }
+
+            debugLog("featureToDomElement: showing text etymology? ", {
+                feature, textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
+            });
+            if (textEtyShouldBeShown) {
+                etymologies_container.appendChild(etymologyToDomElement({
+                    name: textEtyName,
+                    description: textEtyDescr,
+                    from_osm: true,
+                    from_osm_type: properties.osm_type,
+                    from_osm_id: properties.osm_id,
+                }, currentZoom));
             }
         });
-
-        const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
-            textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
-            textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
-            textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
-        let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
-
-        if (textEtyNameExists && !textEtyDescrExists) {
-            // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
-            textEtyShouldBeShown = etymologies.some((etymology) =>
-                !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
-                !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
-            );
-        }
-
-        debugLog("featureToDomElement: showing text etymology? ", {
-            feature, textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
-        });
-        if (textEtyShouldBeShown) {
-            etymologies_container.appendChild(etymologyToDomElement({
-                name: textEtyName,
-                description: textEtyDescr,
-                from_osm: true,
-                from_osm_type: properties.osm_type,
-                from_osm_id: properties.osm_id,
-            }, currentZoom));
-        }
     }
 
     return detail_container;
 }
 
-async function downloadEtymologyDetails(etymologies: Etymology[]) {
+async function downloadEtymologyDetails(etymologies: Etymology[]): Promise<Etymology[]> {
     const etymologyIDs = etymologies.filter(e => e?.wikidata).map(e => "wd:" + e.wikidata);
     try {
-        const culture = document.documentElement.lang,
+        const filledEtymologies: Etymology[] = [],
+            culture = document.documentElement.lang,
             language = culture.split('-')[0],
             wikidataValues = etymologyIDs.join(" "),
             sparql = `
@@ -185,7 +189,7 @@ SELECT ?wikidata
     (SAMPLE(?commons) AS ?commons)
     (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
     (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
-    (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='£') AS ?pictures)
+    (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
     (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
     (SAMPLE(?event_date) AS ?event_date)
     (SAMPLE(?event_date_precision) AS ?event_date_precision)
@@ -390,8 +394,39 @@ GROUP BY ?wikidata
                 body: new URLSearchParams({ format: "json", query: sparql }).toString(),
             }),
             res = await response.json();
-        res?.results?.bindings?.forEach((x: object) => console.info(x)); // TODO
+        res?.results?.bindings?.forEach((x: any) => {
+            const wdURI = x.wikidata.value as string,
+                wdQID = wdURI.replace("http://www.wikidata.org/entity/", ""),
+                etyIndex = etymologies.findIndex(ety => ety.wikidata == wdQID);
+            filledEtymologies.push({
+                ...etymologies[etyIndex],
+                birth_date: x.birth_date?.value,
+                birth_date_precision: parseInt(x.birth_date_precision?.value),
+                birth_place: x.birth_place?.value,
+                citizenship: x.citizenship?.value,
+                commons: x.commons?.value,
+                death_date: x.death_date?.value,
+                death_date_precision: parseInt(x.death_date_precision?.value),
+                death_place: x.death_place?.value,
+                description: x.description?.value,
+                end_date: x.end_date?.value,
+                end_date_precision: parseInt(x.end_date_precision?.value),
+                event_date: x.event_date?.value,
+                event_date_precision: parseInt(x.event_date_precision?.value),
+                event_place: x.event_place?.value,
+                name: x.name?.value,
+                occupations: x.occupations?.value,
+                pictures: x.pictures?.value?.split("||"),
+                prizes: x.prizes?.value,
+                start_date: x.start_date?.value,
+                start_date_precision: parseInt(x.start_date_precision?.value),
+                wikipedia: x.wikipedia?.value,
+                wkt_coords: x.wkt_coords?.value,
+            });
+        });
+        return filledEtymologies;
     } catch (err) {
         console.error("Failed downloading etymology details", etymologyIDs, err);
+        return etymologies;
     }
 }

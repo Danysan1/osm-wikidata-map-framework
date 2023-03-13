@@ -26,9 +26,9 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 VALUES ?from_prop { $directProperties }
                 ?item ?from_prop ?etymology.
                 SERVICE wikibase:box {
-                ?item wdt:P625 ?location.
-                bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
+                    ?item wdt:P625 ?location.
+                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
+                    bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                 OPTIONAL { ?item wdt:P373 ?commons }
                 $labelQuery

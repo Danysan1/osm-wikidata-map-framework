@@ -42,9 +42,9 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
     }
 
     /**
-     * Fields containing arrays glued with the character "`"
+     * Fields containing arrays glued with the character "||"
      * 
-     * Example: "foo`bar`quz" => ["foo","bar","quz"]
+     * Example: "foo||bar||quz" => ["foo","bar","quz"]
      * 
      * @return array<string>
      */
@@ -80,7 +80,7 @@ abstract class XMLWikidataQueryResult extends XMLLocalQueryResult
                 } else {
                     $outValue = $value[0]->__toString();
                     if (in_array($key, $this->getArrayXMLFields())) {
-                        $outRow[$key] = explode("`", $outValue);
+                        $outRow[$key] = explode("||", $outValue);
                     } elseif (in_array($key, $this->getEntityXMLFields())) {
                         $outRow[$key] = str_replace('http://www.wikidata.org/entity/', '', $outValue);
                     } else {

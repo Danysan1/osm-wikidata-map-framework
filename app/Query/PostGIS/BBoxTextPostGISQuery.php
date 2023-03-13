@@ -221,7 +221,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                         JOIN (
                             SELECT
                                 REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_cod,
-                                REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '`') AS picture
+                                REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '||') AS picture
                             FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                         ) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
                         LEFT JOIN oem.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id

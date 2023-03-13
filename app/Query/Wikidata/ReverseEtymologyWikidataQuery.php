@@ -29,9 +29,6 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 ?etymology p:$wikidataProperty ?stmt.
                 MINUS { ?stmt pq:P625 []. }
                 ?stmt ps:$wikidataProperty ?item.
-                # MINUS { ?item wdt:P31 wd:Q675824. } # cinerarium
-                # MINUS { ?item wdt:P31 wd:Q39614. } # cemetery
-                # MINUS { ?item wdt:P31 wd:Q515. } # city
                 SERVICE wikibase:box {
                     ?item wdt:P625 ?location.
                     bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
