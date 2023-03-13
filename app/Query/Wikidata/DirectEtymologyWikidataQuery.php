@@ -21,7 +21,15 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(
-            "SELECT DISTINCT ?item ?itemLabel ?location ?commons ?etymology (?item AS ?from_entity) ?from_prop
+            "SELECT DISTINCT
+                ?item
+                ?itemLabel
+                ?location
+                ?commons
+                ?picture
+                ?etymology (?item AS
+                ?from_entity)
+                ?from_prop
             WHERE {
                 VALUES ?from_prop { $directProperties }
                 ?item ?from_prop ?etymology.
@@ -31,6 +39,7 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                     bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                 OPTIONAL { ?item wdt:P373 ?commons }
+                OPTIONAL { ?item wdt:P18 ?picture }
                 $labelQuery
             }
             $limitClause",

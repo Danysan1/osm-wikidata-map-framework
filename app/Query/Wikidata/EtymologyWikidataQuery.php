@@ -102,6 +102,7 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                 "type_color" => "#3bb2d0",
                 OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY => $itemQID,
                 OverpassEtymologyQueryResult::FEATURE_COMMONS_KEY => $commons,
+                "picture" => $picture,
                 "etymologies" => [
                     $this->convertRowToEtymology($row)
                 ]

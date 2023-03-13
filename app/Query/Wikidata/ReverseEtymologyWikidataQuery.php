@@ -22,6 +22,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?itemLabel) AS ?itemLabel)
                 (SAMPLE(?location) AS ?location)
                 (SAMPLE(?commons) AS ?commons)
+                (SAMPLE(?picture) AS ?picture)
                 ?etymology
                 (?item AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
@@ -35,6 +36,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                     bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                 OPTIONAL { ?item wdt:P373 ?commons }
+                OPTIONAL { ?item wdt:P18 ?picture }
                 OPTIONAL {{
                     ?item rdfs:label ?itemLabel FILTER(LANG(?itemLabel)='$language').
                 } UNION {
