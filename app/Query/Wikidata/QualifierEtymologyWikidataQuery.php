@@ -22,7 +22,7 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
                 ?location
                 ?picture
                 ?etymology
-                (?item AS ?from_entity)
+                (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.

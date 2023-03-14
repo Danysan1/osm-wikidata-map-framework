@@ -1,6 +1,6 @@
-import { getConfig, getBoolConfig } from './config';
+import { getConfig, getBoolConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { setFragmentParams } from './fragment';
+import { setFragmentParams } from '../fragment';
 
 /**
  * Let the user choose the map style.

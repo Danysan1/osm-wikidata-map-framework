@@ -1,12 +1,12 @@
 //import { Expression, MapboxEvent } from 'maplibre-gl';
 import { Expression, MapboxEvent } from 'mapbox-gl';
 
-import { logErrorMessage } from './monitoring';
-import { getCorrectFragmentParams, setFragmentParams } from './fragment';
-import { debugLog } from './config';
-import { ColorScheme, ColorSchemeID, colorSchemes } from './colorScheme.model';
+import { logErrorMessage } from '../monitoring';
+import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
+import { debugLog } from '../config';
+import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { showSnackbar } from './snackbar';
+import { showSnackbar } from '../snackbar';
 
 export interface EtymologyStat {
     color: string;
