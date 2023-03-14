@@ -1,5 +1,6 @@
-import { debugLog, getBoolConfig } from "./config";
+import { debugLog } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
+import { WikipediaService } from "./services/WikipediaService";
 
 /**
  * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
@@ -203,7 +204,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     if (!wikipedia_extract) {
         console.warn("Missing wikipedia_extract");
     } else if (ety.wikipedia) {
-        fetchWikipediaExtract(ety.wikipedia)
+        new WikipediaService().fetchExtract(ety.wikipedia)
             .then(res => {
                 wikipedia_extract.innerText = '📖 ' + res;
             })
@@ -344,22 +345,4 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     }
 
     return etyDomElement;
-}
-
-/**
- * @see https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_summary__title_
- */
-async function fetchWikipediaExtract(wikipediaURL: string): Promise<string> {
-    return fetch(wikipediaURL?.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true")
-        .then(response => {
-            if (response.status == 200)
-                return response.json();
-            else if (response.status == 302)
-                throw new Error("The Wikipedia page for this item is a redirect");
-            else
-                throw new Error("The request for the Wikipedia extract failed with code " + response.status);
-        })
-        .then(res => {
-            return res.extract;
-        });
 }

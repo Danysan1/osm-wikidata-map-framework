@@ -1,5 +1,5 @@
-import { getConfig } from "./config";
-import { EtymologyDetails } from "./EtymologyElement";
+import { getConfig } from "../config";
+import { EtymologyDetails } from "../EtymologyElement";
 
 export class WikidataService {
     private baseURL: string;

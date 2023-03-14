@@ -4,7 +4,7 @@ import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
 import { debugLog, getBoolConfig } from "./config";
 import { showLoadingSpinner } from "./snackbar";
-import { WikidataService } from "./WikidataService";
+import { WikidataService } from "./services/WikidataService";
 
 interface FeatureProperties {
     alt_name?: string;
