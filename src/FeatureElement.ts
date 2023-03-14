@@ -173,8 +173,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 async function downloadEtymologyDetails(etymologies: Etymology[]): Promise<Etymology[]> {
     const etymologyIDs = etymologies.filter(e => e?.wikidata).map(e => "wd:" + e.wikidata);
     try {
-        const filledEtymologies: Etymology[] = [],
-            culture = document.documentElement.lang,
+        const culture = document.documentElement.lang,
             language = culture.split('-')[0],
             wikidataValues = etymologyIDs.join(" "),
             sparql = `
@@ -394,12 +393,12 @@ GROUP BY ?wikidata
                 body: new URLSearchParams({ format: "json", query: sparql }).toString(),
             }),
             res = await response.json();
-        res?.results?.bindings?.forEach((x: any) => {
+        return res?.results?.bindings?.map((x: any): Etymology => {
             const wdURI = x.wikidata.value as string,
                 wdQID = wdURI.replace("http://www.wikidata.org/entity/", ""),
-                etyIndex = etymologies.findIndex(ety => ety.wikidata == wdQID);
-            filledEtymologies.push({
-                ...etymologies[etyIndex],
+                sourceEty = etymologies.find(ety => ety.wikidata == wdQID);
+            return {
+                ...sourceEty,
                 birth_date: x.birth_date?.value,
                 birth_date_precision: parseInt(x.birth_date_precision?.value),
                 birth_place: x.birth_place?.value,
@@ -422,9 +421,8 @@ GROUP BY ?wikidata
                 start_date_precision: parseInt(x.start_date_precision?.value),
                 wikipedia: x.wikipedia?.value,
                 wkt_coords: x.wkt_coords?.value,
-            });
+            };
         });
-        return filledEtymologies;
     } catch (err) {
         console.error("Failed downloading etymology details", etymologyIDs, err);
         return etymologies;
