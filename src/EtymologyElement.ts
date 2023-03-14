@@ -19,7 +19,7 @@ const enum DatePrecision {
     billion_years = 0,
 }
 
-interface Etymology {
+export interface EtymologyDetails {
     birth_date?: string;
     birth_date_precision?: DatePrecision;
     birth_place?: string;
@@ -31,10 +31,23 @@ interface Etymology {
     description?: string;
     end_date?: string;
     end_date_precision?: DatePrecision;
-    et_id?: number;
     event_date?: string;
     event_date_precision?: DatePrecision;
     event_place?: string;
+    name?: string;
+    occupations?: string;
+    pictures?: ImageResponse[];
+    prizes?: string;
+    start_date?: string;
+    start_date_precision?: DatePrecision;
+    wd_id?: string;
+    wikidata?: string;
+    wikipedia?: string;
+    wkt_coords?: string;
+}
+
+export interface Etymology extends EtymologyDetails {
+    et_id?: number;
     from_osm?: boolean;
     from_osm_id?: number;
     from_osm_type?: string;
@@ -44,18 +57,9 @@ interface Etymology {
     from_wikidata_prop?: string;
     gender?: string;
     instanceID?: string;
-    name?: string;
-    occupations?: string;
-    pictures?: ImageResponse[];
-    prizes?: string;
     propagated?: boolean;
     recursion_depth?: number;
-    start_date?: string;
-    start_date_precision?: DatePrecision;
     wd_id?: string;
-    wikidata?: string;
-    wikipedia?: string;
-    wkt_coords?: string;
 }
 
 /**
@@ -94,7 +98,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     return out;
 }
 
-function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
+export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
     if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
@@ -107,10 +111,6 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     debugLog("etymologyToDomElement", {
         et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });
-
-    if(!getBoolConfig("eager_full_etymology_download")){
-        // TODO lazy loading
-    }
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {
@@ -363,5 +363,3 @@ async function fetchWikipediaExtract(wikipediaURL: string): Promise<string> {
             return res.extract;
         });
 }
-
-export { Etymology, etymologyToDomElement }

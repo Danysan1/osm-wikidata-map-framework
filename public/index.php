@@ -91,6 +91,7 @@ if ($enableDB) {
     <?= $conf->getMetaTag("bbox_margin", true); ?>
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
     <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
+    <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
 </head>
 
 <body>
@@ -244,7 +245,7 @@ if ($enableDB) {
                 <div class="pictures column"></div>
             </div>
             <span class="etymology_src_wrapper">
-                Etymology source:
+                Source:
                 <a title="Etymology OpenStreetMap source" class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
                 <span class="src_osm_plus_wd hiddenElement">&nbsp;+&nbsp;</span>
                 <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>
