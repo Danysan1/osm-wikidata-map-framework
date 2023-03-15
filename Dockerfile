@@ -36,7 +36,7 @@ RUN npm install -g npm && \
 # https://docs.docker.com/language/nodejs/build-images/
 FROM node:19.6.1-alpine AS npm-install
 WORKDIR /npm_app
-COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/npm_app/"]
+COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.common.js", "./webpack.prod.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"
 RUN npm install && \
 	npm run prod && \
