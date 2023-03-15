@@ -9,7 +9,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
-import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './BackgroundStyleControl';
+import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './controls/BackgroundStyleControl';
 import { debugLog, getConfig, setPageLocale } from './config';
 import './style.css';
 

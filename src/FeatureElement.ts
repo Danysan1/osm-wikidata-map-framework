@@ -1,8 +1,11 @@
 import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
-import { Etymology, etymologyToDomElement } from "./EtymologyElement";
-import { debugLog } from "./config";
+import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
+import { debugLog, getBoolConfig } from "./config";
+import { showLoadingSpinner } from "./snackbar";
+import { WikidataService } from "./services/WikidataService";
+import { imageToDomElement } from "./ImageElement";
 
 interface FeatureProperties {
     alt_name?: string;
@@ -13,6 +16,7 @@ interface FeatureProperties {
     name?: string;
     osm_id?: number;
     osm_type?: string;
+    picture?: string;
     source_color?: string;
     text_etymology?: string;
     text_etymology_descr?: string;
@@ -48,6 +52,18 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         console.warn("Missing element_alt_name");
     } else if (properties.alt_name && properties.alt_name != 'null') {
         element_alt_name.innerText = '("' + properties.alt_name + '")';
+    }
+
+    const show_feature_picture = getBoolConfig("show_feature_picture"),
+        feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
+    if (!feature_pictures) {
+        console.warn("Missing pictures");
+    } else if (show_feature_picture && properties.picture) {
+        feature_pictures.appendChild(imageToDomElement(properties.picture))
+    } else if (show_feature_picture && properties.commons?.includes("File:")) {
+        feature_pictures.appendChild(imageToDomElement(properties.commons))
+    } else {
+        feature_pictures.style.display = 'none';
     }
 
     const wikidata = properties.wikidata,
@@ -93,10 +109,11 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         element_osm_button.classList.add("hiddenElement");
     }
 
-    const element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
+    const show_feature_mapcomplete = getBoolConfig("show_feature_mapcomplete"),
+        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
         console.warn("Missing element_mapcomplete_button");
-    } else if (osm_full_id) {
+    } else if (show_feature_mapcomplete && osm_full_id) {
         element_mapcomplete_button.href = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id;
         element_mapcomplete_button.classList.remove("hiddenElement");
     } else {
@@ -112,7 +129,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
             coord = coord[0];
         }
         const lon = coord[0], lat = coord[1];
-        element_location_button.href = `#${lon},${lat},${currentZoom+1}`;
+        element_location_button.href = `#${lon},${lat},${currentZoom + 1}`;
         element_location_button.classList.remove("hiddenElement");
     } else {
         element_location_button.classList.add("hiddenElement");
@@ -121,42 +138,69 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
     if (!etymologies_container) {
         console.warn("Missing etymologies_container");
+    } else if (getBoolConfig("eager_full_etymology_download")) {
+        showEtymologies(properties, etymologies, etymologies_container, currentZoom);
     } else {
-        etymologies.filter(e => e?.wikidata).forEach(function (ety) {
+        showLoadingSpinner(true);
+        downloadEtymologyDetails(etymologies).then(filledEtymologies => {
+            showLoadingSpinner(false);
+            showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
+        });
+    }
+
+    return detail_container;
+}
+
+function showEtymologies(properties: FeatureProperties, etymologies: Etymology[], etymologies_container: HTMLElement, currentZoom: number) {
+    etymologies.forEach(function (ety) {
+        if (ety?.wikidata) {
             try {
                 etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
             } catch (err) {
                 console.error("Failed adding etymology", ety, err);
             }
-        });
-
-        const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
-            textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
-            textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
-            textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
-        let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
-
-        if (textEtyNameExists && !textEtyDescrExists) {
-            // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
-            textEtyShouldBeShown = etymologies.some((etymology) =>
-                !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
-                !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
-            );
+        } else {
+            console.warn("Found etymology without Wikidata ID", ety);
         }
+    });
 
-        debugLog("featureToDomElement: showing text etymology? ", {
-            feature, textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
-        });
-        if (textEtyShouldBeShown) {
-            etymologies_container.appendChild(etymologyToDomElement({
-                name: textEtyName,
-                description: textEtyDescr,
-                from_osm: true,
-                from_osm_type: properties.osm_type,
-                from_osm_id: properties.osm_id,
-            }, currentZoom));
-        }
+    const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
+        textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
+        textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
+        textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
+    let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
+
+    if (textEtyNameExists && !textEtyDescrExists) {
+        // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+        textEtyShouldBeShown = etymologies.some((etymology) =>
+            !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
+            !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
+        );
     }
 
-    return detail_container;
+    debugLog("featureToDomElement: showing text etymology? ", {
+        textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
+    });
+    if (textEtyShouldBeShown) {
+        etymologies_container.appendChild(etymologyToDomElement({
+            name: textEtyName,
+            description: textEtyDescr,
+            from_osm: true,
+            from_osm_type: properties.osm_type,
+            from_osm_id: properties.osm_id,
+        }, currentZoom));
+    }
+}
+
+async function downloadEtymologyDetails(etymologies: Etymology[]): Promise<Etymology[]> {
+    const etymologyIDs = etymologies.filter(e => e?.wikidata).map(e => "wd:" + e.wikidata);
+    try {
+        const downlodedEtymologies = await new WikidataService().fetchEtymologyDetails(etymologyIDs);
+        return downlodedEtymologies.map(
+            (newEty: EtymologyDetails): Etymology => ({ ...etymologies.find(oldEty => oldEty.wikidata == newEty.wikidata), ...newEty })
+        );
+    } catch (err) {
+        console.error("Failed downloading etymology details", etymologyIDs, err);
+        return etymologies;
+    }
 }

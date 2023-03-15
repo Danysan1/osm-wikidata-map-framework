@@ -22,20 +22,21 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?itemLabel) AS ?itemLabel)
                 (SAMPLE(?location) AS ?location)
                 (SAMPLE(?commons) AS ?commons)
+                (SAMPLE(?picture) AS ?picture)
                 ?etymology
+                (?item AS ?from_entity)
+                (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
                 MINUS { ?stmt pq:P625 []. }
                 ?stmt ps:$wikidataProperty ?item.
-                # MINUS { ?item wdt:P31 wd:Q675824. } # cinerarium
-                # MINUS { ?item wdt:P31 wd:Q39614. } # cemetery
-                # MINUS { ?item wdt:P31 wd:Q515. } # city
                 SERVICE wikibase:box {
                     ?item wdt:P625 ?location.
                     bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
                     bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                 OPTIONAL { ?item wdt:P373 ?commons }
+                OPTIONAL { ?item wdt:P18 ?picture }
                 OPTIONAL {{
                     ?item rdfs:label ?itemLabel FILTER(LANG(?itemLabel)='$language').
                 } UNION {

@@ -1,6 +1,6 @@
-import { getConfig } from './config';
+import { getConfig, getBoolConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { setFragmentParams } from './fragment';
+import { setFragmentParams } from '../fragment';
 
 /**
  * Let the user choose the map style.
@@ -13,9 +13,8 @@ export class SourceControl extends DropdownControl {
             rawOsmProps = getConfig("osm_wikidata_properties"),
             osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
             indirectWdProperty = getConfig("wikidata_indirect_property"),
-            propagationEnabled = getConfig("propagate_data") == 'true',
-            rawDbEnabled = getConfig("db_enable"),
-            dbEnabled = !!rawDbEnabled && rawDbEnabled != 'false' && rawDbEnabled != '0',
+            propagationEnabled = getBoolConfig("propagate_data"),
+            dbEnabled = getBoolConfig("db_enable"),
             dropdownItems: DropdownItem[] = [],
             buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
                 id: sourceID,

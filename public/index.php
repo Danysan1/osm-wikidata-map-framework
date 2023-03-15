@@ -90,6 +90,10 @@ if ($enableDB) {
     <?= $conf->getMetaTag("sentry_js_replays_on_error_sample_rate", true); ?>
     <?= $conf->getMetaTag("bbox_margin", true); ?>
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
+    <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
+    <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
+    <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
+    <?= $conf->getMetaTag("show_feature_picture", true); ?>
 </head>
 
 <body>
@@ -161,6 +165,7 @@ if ($enableDB) {
         <div class="detail_container">
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
+            <div class="feature_pictures"></div>
             <div class="button_row">
                 <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
@@ -240,15 +245,15 @@ if ($enableDB) {
                     </div>
                 </div>
 
-                <div class="pictures column"></div>
+                <div class="ety_pictures column"></div>
             </div>
             <span class="etymology_src_wrapper">
-                Etymology source:
-                <span class="etymology_src_osm_wrapper hiddenElement"><a title="Etymology OpenStreetMap source" class="etymology_src_osm" href="https://www.openstreetmap.org">OpenStreetMap</a></span>
-                <span class="etymology_src_osm_wd_wrapper hiddenElement"> + <a title="Etymology Wikidata source" class="etymology_src_osm_wd">Wikidata</a></span>
+                Source:
+                <a title="Etymology OpenStreetMap source" class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
+                <span class="src_osm_plus_wd hiddenElement">&nbsp;+&nbsp;</span>
+                <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>
                 <span class="etymology_propagated_wrapper hiddenElement"> + <a title="Description of the propagation mechanism" href="<?= $conf->get("propagation_docs_url") ?>">propagation</a></span>
                 <span class="etymology_src_part_of_wd_wrapper hiddenElement"> + <a title="Etymology Wikidata source" class="etymology_src_part_of_wd">Wikidata</a></span>
-                <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>
             </span>
         </div>
     </template>

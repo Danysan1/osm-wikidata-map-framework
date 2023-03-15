@@ -1,15 +1,12 @@
 //import { Expression, MapboxEvent } from 'maplibre-gl';
 import { Expression, MapboxEvent } from 'mapbox-gl';
 
-// https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
-import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
-
-import { logErrorMessage } from './monitoring';
-import { getCorrectFragmentParams, setFragmentParams } from './fragment';
-import { debugLog } from './config';
-import { ColorScheme, ColorSchemeID, colorSchemes } from './colorScheme.model';
+import { logErrorMessage } from '../monitoring';
+import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
+import { debugLog } from '../config';
+import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { showSnackbar } from './snackbar';
+import { showSnackbar } from '../snackbar';
 
 export interface EtymologyStat {
     color: string;
@@ -31,8 +28,8 @@ export interface EtymologyStat {
 class EtymologyColorControl extends DropdownControl {
     private _chartInitInProgress: boolean;
     private _chartXHR: XMLHttpRequest | null;
-    private _chartDomElement: HTMLCanvasElement | null;
-    private _chartJsObject: Chart | null;
+    private _chartDomElement?: HTMLCanvasElement;
+    private _chartJsObject?: import('chart.js').Chart;
 
     constructor(startColorScheme: ColorSchemeID) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
@@ -49,8 +46,6 @@ class EtymologyColorControl extends DropdownControl {
         );
         this._chartInitInProgress = false;
         this._chartXHR = null;
-        this._chartDomElement = null;
-        this._chartJsObject = null;
     }
 
     /**
@@ -162,7 +157,7 @@ class EtymologyColorControl extends DropdownControl {
                                 data: [],
                                 backgroundColor: [],
                             }]
-                        } as ChartData<"pie">;
+                        } as import("chart.js").ChartData<"pie">;
                     if (readyState == XMLHttpRequest.UNSENT || status == 0) {
                         debugLog("XHR aborted", { xhr, readyState, status, e });
                     } else if (readyState == XMLHttpRequest.DONE) {
@@ -201,7 +196,7 @@ class EtymologyColorControl extends DropdownControl {
      * 
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
-    setChartData(data: ChartData<"pie">) {
+    setChartData(data: import('chart.js').ChartData<"pie">) {
         debugLog("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
@@ -223,7 +218,9 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
-    initChart(data: ChartData<"pie">) {
+    async initChart(data: import('chart.js').ChartData<"pie">) {
+        // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
+        const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
         const container = this.getContainer();
@@ -252,8 +249,8 @@ class EtymologyColorControl extends DropdownControl {
         if (this._chartDomElement) {
             try {
                 this.getContainer()?.removeChild(this._chartDomElement);
-                this._chartDomElement = null;
-                this._chartJsObject = null;
+                this._chartDomElement = undefined;
+                this._chartJsObject = undefined;
             } catch (error) {
                 console.warn("Error removing old chart", { error, chart: this._chartDomElement });
             }

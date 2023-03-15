@@ -519,20 +519,6 @@ class OemDbInitDAG(DAG):
         )
         task_remove_ele_too_big >> task_check_text_ety
 
-        task_check_wd_ety = SQLExecuteQueryOperator(
-            task_id = "check_wikidata_etymology",
-            conn_id = local_db_conn_id,
-            sql = "sql/11-check-wd-etymology.sql",
-            dag = self,
-            task_group=post_elaborate_group,
-            doc_md = """
-                # Check elements with a Wikidata etymology
-
-                Check elements with an etymology that comes from `*:wikidata` or `wikidata`+`...`.
-            """
-        )
-        join_post_propagation >> task_check_wd_ety
-
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
             conn_id = local_db_conn_id,
@@ -545,7 +531,7 @@ class OemDbInitDAG(DAG):
                 Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
             """
         )
-        [task_load_parts, task_check_wd_ety, task_check_text_ety] >> task_move_ele
+        [task_load_parts, task_check_text_ety] >> task_move_ele
 
         task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",
@@ -582,7 +568,7 @@ class OemDbInitDAG(DAG):
                 * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
             """
         )
-        task_move_ele >> task_check_whether_to_drop
+        task_setup_ety_fk >> task_check_whether_to_drop
 
         task_drop_temp_tables = SQLExecuteQueryOperator(
             task_id = "drop_temporary_tables",
@@ -610,7 +596,7 @@ class OemDbInitDAG(DAG):
                 Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
             """
         )
-        task_move_ele >> task_global_map
+        task_setup_ety_fk >> task_global_map
 
         task_read_last_update = BashOperator(
             task_id = "read_last_data_update",

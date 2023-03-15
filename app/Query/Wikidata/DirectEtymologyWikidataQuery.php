@@ -13,7 +13,7 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
     {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $directProperties = implode("|", array_map(function (string $prop): string {
+        $directProperties = implode(" ", array_map(function (string $prop): string {
             return "wdt:$prop";
         }, $wikidataProps));
         $labelQuery = empty($language) ? "" : "OPTIONAL { ?item rdfs:label ?itemLabel FILTER(lang(?itemLabel)='$language') }";
@@ -21,15 +21,25 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(
-            "SELECT DISTINCT ?item ?itemLabel ?location ?commons ?etymology
+            "SELECT DISTINCT
+                ?item
+                ?itemLabel
+                ?location
+                ?commons
+                ?picture
+                ?etymology (?item AS
+                ?from_entity)
+                ?from_prop
             WHERE {
-                ?item $directProperties ?etymology.
+                VALUES ?from_prop { $directProperties }
+                ?item ?from_prop ?etymology.
                 SERVICE wikibase:box {
-                ?item wdt:P625 ?location.
-                bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
+                    ?item wdt:P625 ?location.
+                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
+                    bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                 OPTIONAL { ?item wdt:P373 ?commons }
+                OPTIONAL { ?item wdt:P18 ?picture }
                 $labelQuery
             }
             $limitClause",

@@ -6,14 +6,14 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
-import { BackgroundStyle, BackgroundStyleControl } from './BackgroundStyleControl';
-import { EtymologyColorControl, getCurrentColorScheme } from './EtymologyColorControl';
-import { InfoControl, openInfoWindow } from './InfoControl';
+import { BackgroundStyle, BackgroundStyleControl } from './controls/BackgroundStyleControl';
+import { EtymologyColorControl, getCurrentColorScheme } from './controls/EtymologyColorControl';
+import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debugLog, getConfig } from './config';
 import './style.css';
-import { SourceControl } from './SourceControl';
+import { SourceControl } from './controls/SourceControl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),

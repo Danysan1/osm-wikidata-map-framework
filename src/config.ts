@@ -6,6 +6,11 @@ export function getConfig(key: string): string | null {
     return configElement ? configElement.content : null;
 }
 
+export function getBoolConfig(key: string): boolean {
+    const rawValue = getConfig(key);
+    return !!rawValue && rawValue != "0" && rawValue != "false";
+}
+
 let enable_debug_log: boolean | null = null;
 export function debugLog(msg: string, extra?: object) {
     if (enable_debug_log === null) enable_debug_log = ["true", "1"].includes(getConfig("enable_debug_log") ?? "");

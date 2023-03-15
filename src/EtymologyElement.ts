@@ -1,5 +1,6 @@
-import { debugLog, getConfig } from "./config";
+import { debugLog } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
+import { WikipediaService } from "./services/WikipediaService";
 
 /**
  * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
@@ -19,7 +20,7 @@ const enum DatePrecision {
     billion_years = 0,
 }
 
-interface Etymology {
+export interface EtymologyDetails {
     birth_date?: string;
     birth_date_precision?: DatePrecision;
     birth_place?: string;
@@ -31,31 +32,35 @@ interface Etymology {
     description?: string;
     end_date?: string;
     end_date_precision?: DatePrecision;
-    et_id?: number;
     event_date?: string;
     event_date_precision?: DatePrecision;
     event_place?: string;
-    from_osm?: boolean;
-    from_osm_id?: number;
-    from_osm_type?: string;
-    from_parts_of_wikidata_cod?: string;
-    from_wikidata?: boolean;
-    from_osm_wikidata_cod?: string;
-    from_osm_wikidata_prop?: string;
-    gender?: string;
-    instanceID?: string;
     name?: string;
     occupations?: string;
     pictures?: ImageResponse[];
     prizes?: string;
-    propagated?: boolean;
-    recursion_depth?: number;
     start_date?: string;
     start_date_precision?: DatePrecision;
     wd_id?: string;
     wikidata?: string;
     wikipedia?: string;
     wkt_coords?: string;
+}
+
+export interface Etymology extends EtymologyDetails {
+    et_id?: number;
+    from_osm?: boolean;
+    from_osm_id?: number;
+    from_osm_type?: string;
+    from_parts_of_wikidata_cod?: string;
+    from_wikidata?: boolean;
+    from_wikidata_entity?: string;
+    from_wikidata_prop?: string;
+    gender?: string;
+    instanceID?: string;
+    propagated?: boolean;
+    recursion_depth?: number;
+    wd_id?: string;
 }
 
 /**
@@ -94,7 +99,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     return out;
 }
 
-function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
+export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
     if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
@@ -180,13 +185,18 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
                 strLat = coordsOk ? coords.at(2) : null;
             ety_lat = strLat ? parseFloat(strLat) : NaN;
             ety_lon = strLon ? parseFloat(strLon) : NaN;
-        }
-        if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
-            location_button.href = `#${ety_lon},${ety_lat},${currentZoom}`;
-            location_button.classList.remove("hiddenElement");
+
+            if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
+                location_button.href = `#${ety_lon},${ety_lat},${currentZoom}`;
+                location_button.classList.remove("hiddenElement");
+            } else {
+                location_button.classList.add("hiddenElement");
+                console.warn("Failed converting wkt_coords:", {
+                    et_id: ety.et_id, ety_lat, ety_lon, wkt_coords: ety.wkt_coords
+                });
+            }
         } else {
             location_button.classList.add("hiddenElement");
-            console.warn("Failed converting wkt_coords:", { et_id: ety.et_id, wkt_coords: ety.wkt_coords });
         }
     }
 
@@ -194,7 +204,7 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
     if (!wikipedia_extract) {
         console.warn("Missing wikipedia_extract");
     } else if (ety.wikipedia) {
-        fetchWikipediaExtract(ety.wikipedia)
+        new WikipediaService().fetchExtract(ety.wikipedia)
             .then(res => {
                 wikipedia_extract.innerText = '📖 ' + res;
             })
@@ -271,39 +281,49 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         prizes.style.display = 'none';
     }
 
-    const pictures = etyDomElement.querySelector<HTMLDivElement>('.pictures');
-    if (!pictures) {
+    const ety_pictures = etyDomElement.querySelector<HTMLDivElement>('.ety_pictures');
+    if (!ety_pictures) {
         console.warn("Missing pictures");
     } else if (ety.pictures) {
         ety.pictures.forEach(function (img: ImageResponse, n: number) {
             if (n < 5) {
-                pictures.appendChild(imageToDomElement(img));
+                ety_pictures.appendChild(imageToDomElement(img));
             }
         });
     } else {
-        pictures.style.display = 'none';
+        ety_pictures.style.display = 'none';
     }
 
-    const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
-        src_osm_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_osm_wrapper');
-    if (!src_osm_wrapper) {
-        console.warn("Missing etymology_src_osm_wrapper");
+    const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm');
+    if (!src_osm) {
+        console.warn("Missing .etymology_src_osm");
     } else if (ety.from_osm_type && ety.from_osm_id && src_osm) {
-        src_osm.href = `https://www.openstreetmap.org/${ety.from_osm_type}/${ety.from_osm_id}`;
-        src_osm_wrapper.classList.remove('hiddenElement');
+        const osmURL = `https://www.openstreetmap.org/${ety.from_osm_type}/${ety.from_osm_id}`;
+        debugLog("Showing OSM etymology source", { ety, osmURL, src_osm });
+        src_osm.href = osmURL;
+        src_osm.classList.remove('hiddenElement');
     } else {
-        src_osm_wrapper.classList.add('hiddenElement');
+        src_osm.classList.add('hiddenElement');
     }
 
-    const src_osm_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm_wd'),
-        src_osm_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_osm_wd_wrapper');
-    if (!src_osm_wd_wrapper) {
-        console.warn("Missing etymology_src_osm_wd_wrapper");
-    } else if (ety.from_osm_wikidata_cod && src_osm_wd) {
-        src_osm_wd.href = `https://www.wikidata.org/wiki/${ety.from_osm_wikidata_cod}#${ety.from_osm_wikidata_prop}`;
-        src_osm_wd_wrapper.classList.remove("hiddenElement");
+    const src_osm_plus_wd = etyDomElement.querySelector<HTMLAnchorElement>('.src_osm_plus_wd'),
+        src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd');
+    if (!src_osm_plus_wd)
+        console.warn("Missing .src_osm_plus_wd");
+    else if (ety.from_osm_type && ety.from_osm_id && ety.from_wikidata_entity)
+        src_osm_plus_wd.classList.remove("hiddenElement");
+    else
+        src_osm_plus_wd.classList.add("hiddenElement");
+
+    if (!src_wd) {
+        console.warn("Missing .etymology_src_wd");
+    } else if (ety.from_wikidata_entity) {
+        const wdURL = `https://www.wikidata.org/wiki/${ety.from_wikidata_entity}#${ety.from_wikidata_prop}`;
+        debugLog("Showing WD etymology source", { ety, wdURL, src_wd });
+        src_wd.href = wdURL;
+        src_wd.classList.remove("hiddenElement");
     } else {
-        src_osm_wd_wrapper.classList.add("hiddenElement");
+        src_wd.classList.add("hiddenElement");
     }
 
     const src_part_of_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_part_of_wd'),
@@ -324,36 +344,5 @@ function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement 
         propagated.classList.add("hiddenElement");
     }
 
-    const wdProp = getConfig("wikidata_indirect_property"),
-        src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd');
-    if (!src_wd) {
-        console.warn("Missing etymology_src_wd_wrapper");
-    } else if (wdProp && ety.from_wikidata) {
-        src_wd.href = `https://www.wikidata.org/wiki/${ety.wikidata}#${wdProp}`;
-        src_wd.classList.remove("hiddenElement");
-    } else {
-        src_wd.classList.add("hiddenElement");
-    }
-
     return etyDomElement;
 }
-
-/**
- * @see https://en.wikipedia.org/api/rest_v1/#/Page%20content/get_page_summary__title_
- */
-async function fetchWikipediaExtract(wikipediaURL: string): Promise<string> {
-    return fetch(wikipediaURL?.replace("/wiki/", "/api/rest_v1/page/summary/") + "?redirect=true")
-        .then(response => {
-            if (response.status == 200)
-                return response.json();
-            else if (response.status == 302)
-                throw new Error("The Wikipedia page for this item is a redirect");
-            else
-                throw new Error("The request for the Wikipedia extract failed with code " + response.status);
-        })
-        .then(res => {
-            return res.extract;
-        });
-}
-
-export { Etymology, etymologyToDomElement }

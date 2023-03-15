@@ -13,12 +13,17 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
     {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $commonsQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?commons. }";
+        $commonsQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(
-            "SELECT DISTINCT ?location ?commons ?etymology
+            "SELECT DISTINCT
+                ?location
+                ?picture
+                ?etymology
+                (?etymology AS ?from_entity)
+                (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
                 SERVICE wikibase:box {
