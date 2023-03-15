@@ -15,31 +15,27 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
         imgContainer = document.createElement('div');
     imgContainer.className = 'pic-container';
 
-    let imgUrl: string | null,
-        imgPreviewUrl: string | null,
-        imgAttribution: string | null,
+    let imgAttribution: string | null,
         imgName: string | null;
     if (typeof img == 'object' && typeof img.picture == 'string') {
         imgName = decodeURIComponent(img.picture);
-        imgPreviewUrl = 'https://commons.wikimedia.org/wiki/Special:FilePath/' + img.picture + '?width=400px';
-        imgUrl = 'https://commons.wikimedia.org/wiki/File:' + img.picture;
         imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
-        debugLog("imageToDomElement: object img", { img, imgUrl, imgPreviewUrl, imgAttribution });
+        debugLog("imageToDomElement: object img", { img, imgAttribution });
     } else if (typeof img == 'string') {
-        imgName = decodeURIComponent(img.replace("http://commons.wikimedia.org/wiki/Special:FilePath/", ""));
-        imgPreviewUrl = img;
-        imgUrl = img;
+        imgName = decodeURIComponent(img.replace(/^.*(commons.wikimedia.org\/wiki\/Special:FilePath\/)|(File:)/, ""));
         imgAttribution = null;
-        debugLog("imageToDomElement: string img", { img, imgUrl, imgPreviewUrl, imgAttribution });
+        debugLog("imageToDomElement: string img", { img, imgAttribution });
     } else {
         imgName = null;
-        imgPreviewUrl = null;
-        imgUrl = null;
         imgAttribution = null;
         console.warn("imageToDomElement: bad img", { img });
     }
 
-    if (imgUrl && imgPreviewUrl) {
+    if (imgName) {
+        const encoded = encodeURIComponent(imgName),
+            imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encoded}?width=400px`,
+            imgUrl = 'https://commons.wikimedia.org/wiki/File:' + encoded;
+
         picture.className = 'pic-img';
         picture.alt = "Etymology picture via Wikimedia Commons";
         picture.src = imgPreviewUrl;

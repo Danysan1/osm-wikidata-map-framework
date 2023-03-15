@@ -5,6 +5,7 @@ import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyE
 import { debugLog, getBoolConfig } from "./config";
 import { showLoadingSpinner } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
+import { imageToDomElement } from "./ImageElement";
 
 interface FeatureProperties {
     alt_name?: string;
@@ -15,6 +16,7 @@ interface FeatureProperties {
     name?: string;
     osm_id?: number;
     osm_type?: string;
+    picture?: string;
     source_color?: string;
     text_etymology?: string;
     text_etymology_descr?: string;
@@ -50,6 +52,18 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         console.warn("Missing element_alt_name");
     } else if (properties.alt_name && properties.alt_name != 'null') {
         element_alt_name.innerText = '("' + properties.alt_name + '")';
+    }
+
+    const show_feature_picture = getBoolConfig("show_feature_picture"),
+        element_picture = detail_container.querySelector<HTMLDivElement>('.element_picture');
+    if (!element_picture) {
+        console.warn("Missing pictures");
+    } else if (show_feature_picture && properties.picture) {
+        element_picture.appendChild(imageToDomElement(properties.picture))
+    } else if (show_feature_picture && properties.commons?.includes("File:")) {
+        element_picture.appendChild(imageToDomElement(properties.commons))
+    } else {
+        element_picture.style.display = 'none';
     }
 
     const wikidata = properties.wikidata,
@@ -95,10 +109,11 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         element_osm_button.classList.add("hiddenElement");
     }
 
-    const element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
+    const show_feature_mapcomplete = getBoolConfig("show_feature_mapcomplete"),
+        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
         console.warn("Missing element_mapcomplete_button");
-    } else if (osm_full_id) {
+    } else if (show_feature_mapcomplete && osm_full_id) {
         element_mapcomplete_button.href = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id;
         element_mapcomplete_button.classList.remove("hiddenElement");
     } else {

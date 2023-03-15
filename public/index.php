@@ -92,6 +92,8 @@ if ($enableDB) {
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
     <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
+    <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
+    <?= $conf->getMetaTag("show_feature_picture", true); ?>
 </head>
 
 <body>
@@ -163,6 +165,7 @@ if ($enableDB) {
         <div class="detail_container">
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
+            <div class="pictures"></div>
             <div class="button_row">
                 <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
