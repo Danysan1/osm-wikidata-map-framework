@@ -50,8 +50,7 @@ CREATE TABLE oem.osmdata (
     osm_osm_type VARCHAR(8) NOT NULL CHECK (osm_osm_type IN ('node','way','relation')),
     osm_osm_id BIGINT NOT NULL,
     osm_tags JSONB,
-    osm_has_text_etymology BOOLEAN DEFAULT FALSE,
-    osm_has_wd_etymology BOOLEAN DEFAULT FALSE
+    osm_has_text_etymology BOOLEAN DEFAULT FALSE
 );
 
 CREATE TABLE oem.element_wikidata_cods (
@@ -101,7 +100,6 @@ CREATE TABLE oem.element (
     el_osm_id BIGINT NOT NULL,
     el_tags JSONB,
     el_has_text_etymology BOOLEAN,
-    el_has_wd_etymology BOOLEAN,
     el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
     el_commons VARCHAR,
     el_wikipedia VARCHAR
