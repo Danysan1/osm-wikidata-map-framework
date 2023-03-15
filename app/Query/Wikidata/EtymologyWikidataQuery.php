@@ -122,24 +122,28 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         for ($i = 0; !$found && $i < count($carry); $i++) {
             $existingWikidata = $carry[$i]["properties"][OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY];
             $sameWikidata = $rowWikidata != null && $existingWikidata != null && $rowWikidata == $existingWikidata;
-
+            $aggregateByLocation = $rowWikidata == null && $existingWikidata == null && $newFeature["geometry"]["type"] == "Point" && $carry[$i]["geometry"]["type"] == "Point";
+            //error_log("reduceRowToGeoJsonQuery wikidata: $rowWikidata VS $existingWikidata = $sameWikidata");
             if ($sameWikidata) {
                 $found = true;
                 $carry[$i]["properties"]["etymologies"][] = $newFeature["properties"]["etymologies"][0];
-            } else if ($newFeature["geometry"]["type"] == "Point" && $carry[$i]["geometry"]["type"] == "Point") {
-                $newLon = $carry[$i]["geometry"]["coordinates"][0];
-                $newLat = $carry[$i]["geometry"]["coordinates"][1];
+            } else if ($aggregateByLocation) {
+                $newLon = $newFeature["geometry"]["coordinates"][0];
+                $newLat = $newFeature["geometry"]["coordinates"][1];
                 $existingLon = $carry[$i]["geometry"]["coordinates"][0];
                 $existingLat = $carry[$i]["geometry"]["coordinates"][1];
-                $sameLocation = $newLat == $existingLat && $newLon == $existingLon;
-                if ($sameLocation) {
+                $sameLon = $newLon == $existingLon;
+                $sameLat = $newLat == $existingLat;
+                //error_log("reduceRowToGeoJsonQuery lon: $newLon VS $existingLon = $sameLon");
+                //error_log("reduceRowToGeoJsonQuery lat: $newLat VS $existingLat = $sameLat");
+                if ($sameLon && $sameLat) {
                     $found = true;
                     $carry[$i]["properties"]["etymologies"][] = $newFeature["properties"]["etymologies"][0];
                 }
             }
         }
         if (!$found)
-            $carry[] = $this->convertRowToGeoJsonFeature($row);
+            $carry[] = $newFeature;
         return $carry;
     }
 
