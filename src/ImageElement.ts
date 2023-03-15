@@ -22,7 +22,7 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
         imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
         debugLog("imageToDomElement: object img", { img, imgAttribution });
     } else if (typeof img == 'string') {
-        imgName = decodeURIComponent(img.replace(/^.*(commons.wikimedia.org\/wiki\/Special:FilePath\/)|(File:)/, ""));
+        imgName = decodeURIComponent(img.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
         imgAttribution = null;
         debugLog("imageToDomElement: string img", { img, imgAttribution });
     } else {

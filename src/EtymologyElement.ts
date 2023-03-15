@@ -281,17 +281,17 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
         prizes.style.display = 'none';
     }
 
-    const pictures = etyDomElement.querySelector<HTMLDivElement>('.pictures');
-    if (!pictures) {
+    const ety_pictures = etyDomElement.querySelector<HTMLDivElement>('.ety_pictures');
+    if (!ety_pictures) {
         console.warn("Missing pictures");
     } else if (ety.pictures) {
         ety.pictures.forEach(function (img: ImageResponse, n: number) {
             if (n < 5) {
-                pictures.appendChild(imageToDomElement(img));
+                ety_pictures.appendChild(imageToDomElement(img));
             }
         });
     } else {
-        pictures.style.display = 'none';
+        ety_pictures.style.display = 'none';
     }
 
     const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm');

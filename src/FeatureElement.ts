@@ -55,15 +55,15 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     }
 
     const show_feature_picture = getBoolConfig("show_feature_picture"),
-        element_picture = detail_container.querySelector<HTMLDivElement>('.element_picture');
-    if (!element_picture) {
+        feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
+    if (!feature_pictures) {
         console.warn("Missing pictures");
     } else if (show_feature_picture && properties.picture) {
-        element_picture.appendChild(imageToDomElement(properties.picture))
+        feature_pictures.appendChild(imageToDomElement(properties.picture))
     } else if (show_feature_picture && properties.commons?.includes("File:")) {
-        element_picture.appendChild(imageToDomElement(properties.commons))
+        feature_pictures.appendChild(imageToDomElement(properties.commons))
     } else {
-        element_picture.style.display = 'none';
+        feature_pictures.style.display = 'none';
     }
 
     const wikidata = properties.wikidata,
