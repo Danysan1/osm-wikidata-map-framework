@@ -34,9 +34,12 @@ export class DropdownControl implements IControl {
     ) {
         this._title = title;
         this._buttonContent = buttonContent;
-        this._dropdownItems = dropdownItems;
         this._startDropdownItemId = startDropdownItemsId;
         this._leftButton = leftButton;
+
+        if (dropdownItems.length == 0)
+            throw new Error("Tried to instantiate DropdownControl with no items");
+        this._dropdownItems = dropdownItems;
     }
 
     onAdd(map: Map): HTMLElement {
@@ -74,13 +77,22 @@ export class DropdownControl implements IControl {
         dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell';
 
+        const okStartID = !!this._startDropdownItemId && this._dropdownItems.map(i => i.id).includes(this._startDropdownItemId),
+            actualStartID = okStartID ? this._startDropdownItemId : this._dropdownItems[0].id;
+        if (!okStartID) {
+            setTimeout(() => this._dropdownItems[0].onSelect(new Event("change")), 200);
+            console.warn(
+                "Original starting source is null or invalid, using the first valid source",
+                { originalStartID: this._startDropdownItemId, actualStartID, items: this._dropdownItems }
+            );
+        }
+
         this._dropdownItems.forEach(item => {
             const option = document.createElement('option');
             option.innerText = item.text;
             option.value = item.id;
-            if (item.id === this._startDropdownItemId) {
+            if (item.id === actualStartID)
                 option.selected = true;
-            }
 
             let group: HTMLSelectElement | HTMLOptGroupElement | null = null;
             if (!item.category) {
