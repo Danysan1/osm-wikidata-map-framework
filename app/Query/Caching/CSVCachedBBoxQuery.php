@@ -60,9 +60,14 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $rowBBox = $this->getBBoxFromRow($row);
         if ($okSite && $rowBBox->containsOrEquals($this->getBBox())) {
             // Row bbox contains entirely the query bbox, cache hit!
-            $fileRelativePath = (string)$row[self::BBOX_CACHE_COLUMN_RESULT];
-            $result = $this->getResultFromFilePath($fileRelativePath);
             //error_log(get_class($this).": " . $rowBBox . " contains " . $this->getBBox());
+            $fileRelativePath = (string)$row[self::BBOX_CACHE_COLUMN_RESULT];
+            if (!file_exists($this->cacheFileBaseURL . $fileRelativePath)) {
+                $result = null;
+                error_log("Registered cache content file does not exist, skipping ( $fileRelativePath )");
+            } else {
+                $result = $this->getResultFromFilePath($fileRelativePath);
+            }
         } else {
             $result = null;
         }

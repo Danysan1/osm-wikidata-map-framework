@@ -118,10 +118,9 @@ abstract class CSVCachedQuery implements Query
      * There are only two hard things in Computer Science: cache invalidation and naming things.
      * -- Phil Karlton
      * 
-     * If the cache file exists and is not expired, returns the cached result.
-     * Otherwise, executes the query and caches the result.
-     * 
-     * @return QueryResult
+     * Read the cache registry file to find a cache content file usable for the given query.
+     * If the cache content file exists and is not expired, return its content.
+     * Otherwise, execute the query and cache the result.
      */
     public function send(): QueryResult
     {
@@ -131,7 +130,7 @@ abstract class CSVCachedQuery implements Query
         $result = null;
         $newCache = [];
         if (empty($cacheFile)) {
-            error_log("CachedQuery: Cache file not found, skipping cache search");
+            error_log("CachedQuery: Cache registry file not found, skipping cache search ( $cacheFile )");
         } else {
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-search-prepare");
@@ -168,7 +167,7 @@ abstract class CSVCachedQuery implements Query
 
             if ($result->isSuccessful()) {
                 try {
-                    // Write the result to the cache file
+                    // Write the result to the cache registry file
                     $newRow = $this->getRowFromResult($result);
                     //error_log("CachedQuery: add new row for " . $this->getBBox());
                     //error_log("CachedQuery new row: ".json_encode($newRow));
@@ -180,7 +179,7 @@ abstract class CSVCachedQuery implements Query
                     error_log("CachedQuery: save cache of " . count($newCache) . " rows for $className");
                     $cacheFile = @fopen($cacheFilePath, "w+");
                     if (empty($cacheFile)) {
-                        error_log("CachedQuery: failed to open cache file for writing: $cacheFilePath");
+                        error_log("CachedQuery: failed to open cache registry file for writing: $cacheFilePath");
                     } else {
                         foreach ($newCache as $row) {
                             fputcsv($cacheFile, $row);
@@ -188,7 +187,7 @@ abstract class CSVCachedQuery implements Query
                         fclose($cacheFile);
                     }
                 } catch (\Exception $e) {
-                    error_log("CachedQuery: failed to write cache file: " . $e->getMessage());
+                    error_log("CachedQuery: failed to write cache registry file: " . $e->getMessage());
                 }
             } else {
                 error_log("CachedQuery: unsuccessful request, discarding cache changes");
