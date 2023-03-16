@@ -159,9 +159,11 @@ div.custom-ctrl>table>tr>td {
     font-size: large;
 }
 
-.detail_container .etymology div.grid,
-.detail_container .etymology div.column {
-    max-width: 40em;
+.detail_container div.header,
+.detail_container div.info,
+.detail_container div.grid,
+.detail_container div.column {
+  max-width: 40em;
 }
 
 div.info>hr,

@@ -15,8 +15,14 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
         imgContainer = document.createElement('div');
     imgContainer.className = 'pic-container';
 
-    let imgAttribution: string | null,
-        imgName: string | null;
+    let imgAttribution: string | null;
+    /**
+     * Standard name of the image, without the initial "File:"
+     * 
+     * @example Battle between Francisco Poras and Columbus on Jamaica (1).tif
+     * (visible in https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif )
+     */
+    let imgName: string | null;
     if (typeof img == 'object' && typeof img.picture == 'string') {
         imgName = decodeURIComponent(img.picture);
         imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
@@ -32,19 +38,37 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
     }
 
     if (imgName) {
-        const encoded = encodeURIComponent(imgName),
-            imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encoded}?width=400px`,
-            imgUrl = 'https://commons.wikimedia.org/wiki/File:' + encoded;
+        /**
+         * UrlEncoded name
+         * 
+         * @example Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif
+         */
+        const encodedImg = encodeURIComponent(imgName);
+
+        /**
+         * Link to the lossy preview / thumbnail
+         * 
+         * @example https://commons.wikimedia.org/wiki/Special:FilePath/Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif?width=256px
+         * (links to https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif/lossy-page1-256px-Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_%281%29.tif.jpg )
+         */
+        const imgPreviewUrl = `https://commons.wikimedia.org/wiki/Special:FilePath/${encodedImg}?width=256px`;
+
+        /**
+         * Link to original image page.
+         * 
+         * @example https://commons.wikimedia.org/wiki/File:Battle%20between%20Francisco%20Poras%20and%20Columbus%20on%20Jamaica%20(1).tif
+         * (redirects to https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif )
+         */
+        const imgUrl = 'https://commons.wikimedia.org/wiki/File:' + encodedImg;
 
         picture.className = 'pic-img';
         picture.alt = "Etymology picture via Wikimedia Commons";
         picture.src = imgPreviewUrl;
-        // Link to thumbnail, example: "https://commons.wikimedia.org/wiki/Special:FilePath/Dal%20Monte%20Casoni.tif?width=400px"
 
         link.className = 'pic-link';
         link.title = "Etymology picture via Wikimedia Commons";
         link.href = imgUrl;
-        // Link to original image page, example: "https://commons.wikimedia.org/wiki/File:Dal_Monte_Casoni.tif"
+
         link.appendChild(picture);
         imgContainer.appendChild(link);
 
