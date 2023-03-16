@@ -1,162 +1,162 @@
 .spaced {
-    margin: 1em 1em 0 1em;
+  margin: 1em 1em 0 1em;
 }
 
 #wikidata_grid img {
-    max-width: 15em;
-    max-height: 15em;
+  max-width: 15em;
+  max-height: 15em;
 }
 
 div#map_container,
 img#map_static_preview,
 div#map {
-    position: absolute;
-    /*margin: 10em auto;*/
-    width: 100%;
-    height: 100%;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
+  position: absolute;
+  /*margin: 10em auto;*/
+  width: 100%;
+  height: 100%;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
 div.maplibregl-popup.oem_etymology_popup,
 div.maplibregl-popup.oem_info_popup,
 div.mapboxgl-popup.oem_etymology_popup,
 div.mapboxgl-popup.oem_info_popup {
-    min-width: 15em;
-    max-width: 80%;
-    min-height: 15em;
-    max-height: 98%;
-    /*width: 80%;*/
-    /*height: 80%;*/
-    /*position: absolute;*/
-    top: .3%;
-    left: .5%;
-    z-index: 1000;
+  min-width: 15em;
+  max-width: 80%;
+  min-height: 15em;
+  max-height: 98%;
+  /*width: 80%;*/
+  /*height: 80%;*/
+  /*position: absolute;*/
+  top: 0.3%;
+  left: 0.5%;
+  z-index: 1000;
 }
 
 div.button_row {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
 }
 
 div.maplibregl-popup-content,
 div.mapboxgl-popup-content {
-    width: -moz-fit-content;
-    width: fit-content;
-    /*width: 50em;*/
-    max-width: 100%;
-    max-height: 100%;
-    overflow: auto;
-    font-family: 'Arial Unicode MS Bold', 'Open Sans Semibold', sans-serif;
+  width: -moz-fit-content;
+  width: fit-content;
+  /*width: 50em;*/
+  max-width: 100%;
+  max-height: 100%;
+  overflow: auto;
+  font-family: "Arial Unicode MS Bold", "Open Sans Semibold", sans-serif;
 }
 
 div.intro {
-    font-size: medium;
+  font-size: medium;
 }
 
-div.intro>footer {
-    font-size: small;
+div.intro > footer {
+  font-size: small;
 }
 
 div.detail_container {
-    text-align: center;
-    max-height: 100%;
-    overflow: auto;
+  text-align: center;
+  max-height: 100%;
+  overflow: auto;
 }
 
 div.detail_container div.grid {
-    /* https://css-tricks.com/look-ma-no-media-queries-responsive-layouts-using-css-grid/ */
-    /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
-    display: grid;
-    grid-template-rows: auto;
-    align-content: center;
-    align-items: start;
-    justify-content: center;
-    justify-items: center;
-    grid-row-gap: 0.5em;
-    grid-column-gap: 0.5em;
+  /* https://css-tricks.com/look-ma-no-media-queries-responsive-layouts-using-css-grid/ */
+  /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
+  display: grid;
+  grid-template-rows: auto;
+  align-content: center;
+  align-items: start;
+  justify-content: center;
+  justify-items: center;
+  grid-row-gap: 0.5em;
+  grid-column-gap: 0.5em;
 }
 
 div.detail_container div.grid-auto {
-    /*grid-template-columns: repeat(2, 1fr);*/
-    /*grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));*/
-    grid-template-columns: repeat(auto-fit, minmax(25em, 1fr));
+  /*grid-template-columns: repeat(2, 1fr);*/
+  /*grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));*/
+  grid-template-columns: repeat(auto-fit, minmax(25em, 1fr));
 }
 
 div.detail_container div.grid-two {
-    grid-template-columns: 1fr auto;
+  grid-template-columns: 1fr auto;
 }
 
 div.detail_container div.etymology {
-    margin: 0.5em;
-    /* padding: 0.5em; */
-    text-align: center;
-    background-color: #f1f1f1;
-    border-radius: 0.5em;
-    /*height: 100%;*/
+  margin: 0.5em;
+  /* padding: 0.5em; */
+  text-align: center;
+  background-color: #f1f1f1;
+  border-radius: 0.5em;
+  /*height: 100%;*/
 }
 
 div.detail_container div.pictures img {
-    margin: 0.5em;
-    /*padding: 0.5em;*/
-    min-width: 15em;
-    min-height: 15em;
-    max-width: 26em;
-    max-height: 26em;
+  margin: 0.5em;
+  /*padding: 0.5em;*/
+  min-width: 15em;
+  min-height: 15em;
+  max-width: 26em;
+  max-height: 26em;
 }
 
 div.detail_container a.k-button {
-    margin: 0.5em;
+  margin: 0.5em;
 }
 
-div.detail_container a.k-button>.button_img {
-    max-width: 1.25em;
-    max-height: 1.25em;
-    /* margin-right: 0.5em; */
-    font-size: 1.25em;
+div.detail_container a.k-button > .button_img {
+  max-width: 1.25em;
+  max-height: 1.25em;
+  /* margin-right: 0.5em; */
+  font-size: 1.25em;
 }
 
 canvas.chart {
-    width: 25em;
-    height: 40em;
+  width: 25em;
+  height: 40em;
 }
 
 .dropdown-ctrl-dropdown {
-    display: inline-block;
-    margin: 5px;
+  display: inline-block;
+  margin: 5px;
 }
 
 div.snackbar,
 div.custom-ctrl,
 div#welcome_board {
-    opacity: 0.8;
+  opacity: 0.8;
 }
 
-div.custom-ctrl>table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    width: 100%;
+div.custom-ctrl > table {
+  border-collapse: collapse;
+  border-spacing: 0;
+  width: 100%;
 }
 
-div.custom-ctrl>table>tr>td.button-cell {
-    width: 1em;
+div.custom-ctrl > table > tr > td.button-cell {
+  width: 1em;
 }
 
-div.custom-ctrl>table>tr>td {
-    padding: 0;
-    text-align: left;
-    /*text-align: right;*/
+div.custom-ctrl > table > tr > td {
+  padding: 0;
+  text-align: left;
+  /*text-align: right;*/
 }
 
 .mapboxgl-ctrl-icon,
 .maplibregl-ctrl-icon,
 .dropdown-ctrl .dropdown-ctrl-button {
-    font-size: large;
+  font-size: large;
 }
 
 .detail_container div.header,
@@ -166,176 +166,174 @@ div.custom-ctrl>table>tr>td {
   max-width: 40em;
 }
 
-div.info>hr,
-div.pictures>hr {
-    max-width: 3em;
-    margin-left: max(3em, auto);
-    margin-right: max(3em, auto);
+div.info > hr,
+div.pictures > hr {
+  max-width: 3em;
+  margin-left: max(3em, auto);
+  margin-right: max(3em, auto);
 }
 
-div.info>p {
-    margin-left: 1em;
-    margin-right: 1em;
+div.info > p {
+  margin-left: 1em;
+  margin-right: 1em;
 }
-
 
 /* The snackbar - position it at the bottom and in the middle of the screen */
 
 div#spinner,
 div.snackbar {
-    visibility: hidden;
-    /* Hidden by default. Visible on click */
-    min-width: 250px;
-    /* Set a default minimum width */
-    margin-left: -125px;
-    /* Divide value of min-width by 2 */
-    /*background-color: #333;*/
-    /* Black background color */
-    /*background-color: lightcoral;*/
-    color: #333;
-    /*color: #fff;*/
-    /* White text color */
-    text-align: center;
-    /* Centered text */
-    border-radius: 2px;
-    /* Rounded borders */
-    padding: 16px;
-    /* Padding */
-    position: fixed;
-    /* Sit on top of the screen */
-    z-index: 1;
-    /* Add a z-index if needed */
-    left: 50%;
-    /* Center the snackbar */
-    bottom: 30px;
-    /* 30px from the bottom */
+  visibility: hidden;
+  /* Hidden by default. Visible on click */
+  min-width: 250px;
+  /* Set a default minimum width */
+  margin-left: -125px;
+  /* Divide value of min-width by 2 */
+  /*background-color: #333;*/
+  /* Black background color */
+  /*background-color: lightcoral;*/
+  color: #333;
+  /*color: #fff;*/
+  /* White text color */
+  text-align: center;
+  /* Centered text */
+  border-radius: 2px;
+  /* Rounded borders */
+  padding: 16px;
+  /* Padding */
+  position: fixed;
+  /* Sit on top of the screen */
+  z-index: 1;
+  /* Add a z-index if needed */
+  left: 50%;
+  /* Center the snackbar */
+  bottom: 30px;
+  /* 30px from the bottom */
 }
-
 
 /* Show the snackbar when clicking on a button (class added with JavaScript) */
 
 div.snackbar.show {
-    visibility: visible;
-    /* Show the snackbar */
-    /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
+  visibility: visible;
+  /* Show the snackbar */
+  /* Add animation: Take 0.5 seconds to fade in and out the snackbar.
     However, delay the fade out process for 2.5 seconds */
-    -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
 }
 
 div#spinner.show {
-    visibility: visible;
+  visibility: visible;
 }
 
 div#spinner.show::after {
-    content: '';
-    display: block;
-    margin: auto;
-    height: 36px;
-    width: 36px;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' width='36' height='36' viewBox='0 0 36 36'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23333;%7D.b%7Bopacity:0.1;%7D%3C/style%3E%3C/defs%3E%3Cpath class='a' d='M5.2721,5.2721,7.3934,7.3934a15,15,0,0,1,21.2132,0l2.1213-2.1213A18,18,0,0,0,5.2721,5.2721Z'/%3E%3Cg class='b'%3E%3Cpath d='M28.6066,28.6066A15,15,0,0,1,7.3934,7.3934L5.2721,5.2721a18,18,0,1,0,25.4558,0L28.6066,7.3934A15,15,0,0,1,28.6066,28.6066Z'/%3E%3C/g%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    -webkit-animation-name: spin;
-    -webkit-animation-duration: .8s;
-    -webkit-animation-iteration-count: infinite;
-    -webkit-animation-timing-function: cubic-bezier(.45, .05, .55, .95);
-    animation-name: spin;
-    animation-duration: .8s;
-    animation-iteration-count: infinite;
-    animation-timing-function: cubic-bezier(.45, .05, .55, .95);
+  content: "";
+  display: block;
+  margin: auto;
+  height: 36px;
+  width: 36px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' width='36' height='36' viewBox='0 0 36 36'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23333;%7D.b%7Bopacity:0.1;%7D%3C/style%3E%3C/defs%3E%3Cpath class='a' d='M5.2721,5.2721,7.3934,7.3934a15,15,0,0,1,21.2132,0l2.1213-2.1213A18,18,0,0,0,5.2721,5.2721Z'/%3E%3Cg class='b'%3E%3Cpath d='M28.6066,28.6066A15,15,0,0,1,7.3934,7.3934L5.2721,5.2721a18,18,0,1,0,25.4558,0L28.6066,7.3934A15,15,0,0,1,28.6066,28.6066Z'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  -webkit-animation-name: spin;
+  -webkit-animation-duration: 0.8s;
+  -webkit-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+  animation-name: spin;
+  animation-duration: 0.8s;
+  animation-iteration-count: infinite;
+  animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
+  from {
+    transform: rotate(0deg);
+  }
 
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* Animations to fade the snackbar in and out */
 
 @-webkit-keyframes fadein {
-    from {
-        bottom: 0;
-        opacity: 0;
-    }
+  from {
+    bottom: 0;
+    opacity: 0;
+  }
 
-    to {
-        bottom: 30px;
-        opacity: 0.9;
-    }
+  to {
+    bottom: 30px;
+    opacity: 0.9;
+  }
 }
 
 @keyframes fadein {
-    from {
-        bottom: 0;
-        opacity: 0;
-    }
+  from {
+    bottom: 0;
+    opacity: 0;
+  }
 
-    to {
-        bottom: 30px;
-        opacity: 0.9;
-    }
+  to {
+    bottom: 30px;
+    opacity: 0.9;
+  }
 }
 
 @-webkit-keyframes fadeout {
-    from {
-        bottom: 30px;
-        opacity: 0.9;
-    }
+  from {
+    bottom: 30px;
+    opacity: 0.9;
+  }
 
-    to {
-        bottom: 0;
-        opacity: 0;
-    }
+  to {
+    bottom: 0;
+    opacity: 0;
+  }
 }
 
 @keyframes fadeout {
-    from {
-        bottom: 30px;
-        opacity: 0.9;
-    }
+  from {
+    bottom: 30px;
+    opacity: 0.9;
+  }
 
-    to {
-        bottom: 0;
-        opacity: 0;
-    }
+  to {
+    bottom: 0;
+    opacity: 0;
+  }
 }
 
 span.legend-key {
-    display: inline-block;
-    border-radius: 20%;
-    width: 10px;
-    height: 10px;
-    margin-left: 0.5em;
-    margin-right: 0.5em;
+  display: inline-block;
+  border-radius: 20%;
+  width: 10px;
+  height: 10px;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
 }
 
-body>div#map>div.maplibregl-popup,
-body>div#map>div.mapboxgl-popup {
-    max-height: 90vh !important;
-    /*max-height: 99vh !important;*/
-    max-width: 95vw !important;
-    transform: translate(10px, 0) !important;
-    z-index: 1000;
+body > div#map > div.maplibregl-popup,
+body > div#map > div.mapboxgl-popup {
+  max-height: 90vh !important;
+  /*max-height: 99vh !important;*/
+  max-width: 95vw !important;
+  transform: translate(10px, 0) !important;
+  z-index: 1000;
 }
 
 button.maplibregl-popup-close-button,
 button.mapboxgl-popup-close-button {
-    font-size: 2em;
-    font-weight: bold;
-    background-color: #f33;
-    color: white;
-    border-bottom-left-radius: 3px;
+  font-size: 2em;
+  font-weight: bold;
+  background-color: #f33;
+  color: white;
+  border-bottom-left-radius: 3px;
 }
 
 button.maplibregl-popup-close-button:hover,
 button.mapboxgl-popup-close-button:hover {
-    background-color: #f00;
-    color: white;
+  background-color: #f00;
+  color: white;
 }
 
 .maplibregl-popup-content h1,
@@ -344,94 +342,95 @@ button.mapboxgl-popup-close-button:hover {
 .mapboxgl-popup-content h1,
 .mapboxgl-popup-content h2,
 .mapboxgl-popup-content h3 {
-    margin: revert;
+  margin: revert;
 }
 
 .button-6 {
-    align-items: center;
-    background-color: #FFFFFF;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    border-radius: .25rem;
-    box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
-    box-sizing: border-box;
-    color: rgba(0, 0, 0, 0.85);
-    cursor: pointer;
-    display: inline-flex;
-    font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica, Arial, sans-serif;
-    font-size: 16px;
-    font-weight: 600;
-    justify-content: center;
-    line-height: 1.25;
-    margin: 0;
-    min-height: 3rem;
-    padding: calc(.75rem - 1px) calc(1rem - 1px);
-    /*padding: calc(.75rem - 1px) calc(1.5rem - 1px);*/
-    /*position: relative;*/
-    text-decoration: none;
-    transition: all 250ms;
-    -webkit-user-select: none;
-    user-select: none;
-    touch-action: manipulation;
-    vertical-align: baseline;
-    width: auto;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 0.25rem;
+  box-shadow: rgba(0, 0, 0, 0.02) 0 1px 3px 0;
+  box-sizing: border-box;
+  color: rgba(0, 0, 0, 0.85);
+  cursor: pointer;
+  display: inline-flex;
+  font-family: system-ui, -apple-system, system-ui, "Helvetica Neue", Helvetica,
+    Arial, sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  justify-content: center;
+  line-height: 1.25;
+  margin: 0;
+  min-height: 3rem;
+  padding: calc(0.75rem - 1px) calc(1rem - 1px);
+  /*padding: calc(.75rem - 1px) calc(1.5rem - 1px);*/
+  /*position: relative;*/
+  text-decoration: none;
+  transition: all 250ms;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  vertical-align: baseline;
+  width: auto;
 }
 
 .button-6:hover,
 .button-6:focus {
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
-    color: rgba(0, 0, 0, 0.65);
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: rgba(0, 0, 0, 0.1) 0 4px 12px;
+  color: rgba(0, 0, 0, 0.65);
 }
 
 .button-6:hover {
-    transform: translateY(-1px);
+  transform: translateY(-1px);
 }
 
 .button-6:active {
-    background-color: #F0F0F1;
-    border-color: rgba(0, 0, 0, 0.15);
-    box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
-    color: rgba(0, 0, 0, 0.65);
-    transform: translateY(0);
+  background-color: #f0f0f1;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: rgba(0, 0, 0, 0.06) 0 2px 4px;
+  color: rgba(0, 0, 0, 0.65);
+  transform: translateY(0);
 }
 
 span.button_text {
-    display: none;
+  display: none;
 }
 
-div.pictures>div.pic-container {
-    /*border-width: 0.5px;*/
-    /*border-style: solid;*/
-    /*border-color: #ccc;*/
-    /*border-radius: 0.5em;*/
-    margin: 1px;
+div.pictures > div.pic-container {
+  /*border-width: 0.5px;*/
+  /*border-style: solid;*/
+  /*border-color: #ccc;*/
+  /*border-radius: 0.5em;*/
+  margin: 1px;
 }
 
 .k-button {
-    display: inline-flex;
+  display: inline-flex;
 }
 
 .hiddenElement,
-div.pictures>div.pic-container.hiddenElement,
-div.detail_container>a.k-button.hiddenElement,
-div.info>a.k-button.hiddenElement,
+div.pictures > div.pic-container.hiddenElement,
+div.detail_container > a.k-button.hiddenElement,
+div.info > a.k-button.hiddenElement,
 select.dropdown-ctrl-dropdown.hiddenElement,
 table.dropdown-ctrl-table.hiddenElement,
 canvas.chart.hiddenElement {
-    display: none;
+  display: none;
 }
 
 p.pic-attr {
-    overflow: hidden;
-    max-height: 2em;
-    transition: height 0.5s, width 0.5s, opacity 0.5s;
-    margin-top: 0;
-    font-size: x-small;
-    text-align: center;
+  overflow: hidden;
+  max-height: 2em;
+  transition: height 0.5s, width 0.5s, opacity 0.5s;
+  margin-top: 0;
+  font-size: x-small;
+  text-align: center;
 }
 
 .oem_info_popup .contribute_button,
 .oem_info_popup .dataset_button {
-    margin-top: 0.2em;
-    margin-bottom: 0.2em;
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
 }
