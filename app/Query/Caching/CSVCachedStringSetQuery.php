@@ -58,9 +58,14 @@ abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedS
         $rowStringSet = $this->getStringSetFromRow($row);
         if ($okSite && $rowStringSet->containsOrEquals($this->getStringSet())) {
             // Row string set contains entirely the query string set, cache hit!
-            $contentFileRelativePath = (string)$row[self::STRING_SET_CACHE_COLUMN_RESULT];
-            $result = $this->getResultFromFile($contentFileRelativePath);
             //error_log(get_class($this).": " . $rowStringSet . " contains " . $this->getStringSet());
+            $contentFileRelativePath = (string)$row[self::STRING_SET_CACHE_COLUMN_RESULT];
+            if (!file_exists($this->cacheFileBaseURL . $contentFileRelativePath)) {
+                $result = null;
+                error_log("Registered cache content file does not exist, skipping ( $contentFileRelativePath )");
+            } else {
+                $result = $this->getResultFromFile($contentFileRelativePath);
+            }
         } else {
             $result = null;
         }
