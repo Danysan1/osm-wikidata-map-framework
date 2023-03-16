@@ -21,8 +21,6 @@ const enum DatePrecision {
 }
 
 export interface EtymologyDetails {
-    birth_date?: string;
-    birth_date_precision?: DatePrecision;
     birth_place?: string;
     citizenship?: string;
     commons?: string;
@@ -32,15 +30,11 @@ export interface EtymologyDetails {
     description?: string;
     end_date?: string;
     end_date_precision?: DatePrecision;
-    event_date?: string;
-    event_date_precision?: DatePrecision;
     event_place?: string;
     name?: string;
     occupations?: string;
     pictures?: ImageResponse[];
     prizes?: string;
-    start_date?: string;
-    start_date_precision?: DatePrecision;
     wd_id?: string;
     wikidata?: string;
     wikipedia?: string;
@@ -48,7 +42,11 @@ export interface EtymologyDetails {
 }
 
 export interface Etymology extends EtymologyDetails {
+    birth_date?: string;
+    birth_date_precision?: DatePrecision;
     et_id?: number;
+    event_date?: string;
+    event_date_precision?: DatePrecision;
     from_osm?: boolean;
     from_osm_id?: number;
     from_osm_type?: string;
@@ -60,6 +58,8 @@ export interface Etymology extends EtymologyDetails {
     instanceID?: string;
     propagated?: boolean;
     recursion_depth?: number;
+    start_date?: string;
+    start_date_precision?: DatePrecision;
     wd_id?: string;
 }
 
