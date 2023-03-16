@@ -24,7 +24,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?commons) AS ?commons)
                 (SAMPLE(?picture) AS ?picture)
                 ?etymology
-                (?item AS ?from_entity)
+                (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.

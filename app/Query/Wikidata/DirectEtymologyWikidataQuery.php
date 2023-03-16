@@ -27,8 +27,8 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 ?location
                 ?commons
                 ?picture
-                ?etymology (?item AS
-                ?from_entity)
+                ?etymology
+                (?item AS ?from_entity)
                 ?from_prop
             WHERE {
                 VALUES ?from_prop { $directProperties }
