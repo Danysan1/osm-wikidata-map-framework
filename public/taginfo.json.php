@@ -14,7 +14,6 @@ $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
 $textKey = (string)$conf->get("osm_text_key");
 $descriptionKey = (string)$conf->get("osm_description_key");
-$wikidataProps = $conf->getArray("osm_wikidata_properties");
 
 $tags = [[
     "key" => "alt_name",
@@ -66,14 +65,17 @@ foreach ($conf->getWikidataKeys() as $key) {
     ];
 }
 
-if (!empty($wikidataProps)) {
-    $propsString = implode(", ", $wikidataProps);
-    $tags[] = [
-        "key" => "wikidata",
-        "object_types" => ["node", "way", "relation", "area"],
-        "doc_url" => $contributingURL,
-        "description" => "The value of 'wikidata' is used to gather details from relevant properties ($propsString) of the linked Wikidata entity",
-    ];
+if($conf->has("osm_wikidata_properties")) {
+    $wikidataProps = $conf->getArray("osm_wikidata_properties");
+    if (!empty($wikidataProps)) {
+        $propsString = implode(", ", $wikidataProps);
+        $tags[] = [
+            "key" => "wikidata",
+            "object_types" => ["node", "way", "relation", "area"],
+            "doc_url" => $contributingURL,
+            "description" => "The value of 'wikidata' is used to gather details from relevant properties ($propsString) of the linked Wikidata entity",
+        ];
+    }
 }
 
 echo json_encode([
