@@ -84,16 +84,18 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             error_log((string)$row["location"]["value"]);
             throw new Exception("Bad location result from Wikidata");
         }
-        $lon = (float)$matches[1];
-        $lat = (float)$matches[2];
+        $lon = round((float)$matches[1], 5);
+        $lat = round((float)$matches[2], 5);
         $itemQID = empty($row["item"]["value"]) ? null : str_replace(self::WD_ENTITY_PREFIX, "", (string)$row["item"]["value"]);
         $name = empty($row["itemLabel"]["value"]) ? null : (string)$row["itemLabel"]["value"];
         $commons = empty($row["commons"]["value"]) ? null : "Category:" . (string)$row["commons"]["value"];
         $picture = empty($row["picture"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["picture"]["value"]);
         return [
+            "type" => "Feature", // https://www.rfc-editor.org/rfc/rfc7946#section-3.2
+            "id" => $itemQID ? $itemQID : $lon . "_" . $lat,
             "geometry" => [
                 "type" => "Point",
-                "coordinates" => [round($lon, 5), round($lat, 5)]
+                "coordinates" => [$lon, $lat]
             ],
             "properties" => [
                 "name" => $name,
@@ -110,7 +112,7 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         ];
     }
 
-    private function reduceRowToGeoJsonFeature(array $carry, mixed $row): array
+    private function reduceRowToGeoJsonFeatures(array $carry, mixed $row): array
     {
         if (!is_array($row) || empty($row["location"]["value"]) || empty($row["etymology"]["value"])) {
             error_log(json_encode($row));
@@ -118,28 +120,10 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         }
         $found = false;
         $newFeature = $this->convertRowToGeoJsonFeature($row);
-        $rowWikidata = $newFeature["properties"][OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY];
         for ($i = 0; !$found && $i < count($carry); $i++) {
-            $existingWikidata = $carry[$i]["properties"][OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY];
-            $sameWikidata = $rowWikidata != null && $existingWikidata != null && $rowWikidata == $existingWikidata;
-            $aggregateByLocation = $rowWikidata == null && $existingWikidata == null && $newFeature["geometry"]["type"] == "Point" && $carry[$i]["geometry"]["type"] == "Point";
-            //error_log("reduceRowToGeoJsonQuery wikidata: $rowWikidata VS $existingWikidata = $sameWikidata");
-            if ($sameWikidata) {
+            if ($carry[$i]["id"] === $newFeature["id"]) {
                 $found = true;
                 $carry[$i]["properties"]["etymologies"][] = $newFeature["properties"]["etymologies"][0];
-            } else if ($aggregateByLocation) {
-                $newLon = $newFeature["geometry"]["coordinates"][0];
-                $newLat = $newFeature["geometry"]["coordinates"][1];
-                $existingLon = $carry[$i]["geometry"]["coordinates"][0];
-                $existingLat = $carry[$i]["geometry"]["coordinates"][1];
-                $sameLon = $newLon == $existingLon;
-                $sameLat = $newLat == $existingLat;
-                //error_log("reduceRowToGeoJsonQuery lon: $newLon VS $existingLon = $sameLon");
-                //error_log("reduceRowToGeoJsonQuery lat: $newLat VS $existingLat = $sameLat");
-                if ($sameLon && $sameLat) {
-                    $found = true;
-                    $carry[$i]["properties"]["etymologies"][] = $newFeature["properties"]["etymologies"][0];
-                }
             }
         }
         if (!$found)
@@ -150,15 +134,17 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
     public function sendAndGetGeoJSONResult(): GeoJSONQueryResult
     {
         $wdResult = $this->baseQuery->sendAndGetJSONResult();
-        if (!$wdResult->isSuccessful())
+        if (!$wdResult->isSuccessful()) {
+            error_log($this->baseQuery->getQuery());
             throw new Exception("Wikidata query failed");
+        }
         $rows = $wdResult->getJSONData()["results"]["bindings"];
         if (!is_array($rows))
             throw new Exception("Bad result from Wikidata");
         $ret = new GeoJSONLocalQueryResult(true, [
             "type" => "FeatureCollection",
             //"features" => array_map([$this, "convertRowToGeoJsonFeature"], $rows),
-            "features" => array_reduce($rows, [$this, "reduceRowToGeoJsonFeature"], []),
+            "features" => array_reduce($rows, [$this, "reduceRowToGeoJsonFeatures"], []),
         ]);
         //error_log("EtymologyWikidataQuery result: $ret");
         return $ret;
