@@ -64,9 +64,11 @@ if ($from == "bbox") {
         } elseif ($source == "wd_indirect") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
-        } else {
+        } elseif ($source == "overpass") {
             $overpassConfig = new RoundRobinOverpassConfig($conf);
             $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
+        } else {
+            throw new Exception("Bad 'source' parameter");
         }
         $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
         $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");

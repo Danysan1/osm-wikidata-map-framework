@@ -22,6 +22,7 @@ use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use App\Query\StaticStatsQuery;
 use App\Query\PostGIS\Stats\BBoxCenturyStatsPostGISQuery;
+use App\Query\Wikidata\AllIndirectEtymologyWikidataQuery;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
 use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
@@ -93,6 +94,9 @@ if ($db != null) {
         } else if ($source == "wd_qualifier") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $sourceQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        } elseif ($source == "wd_indirect") {
+            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+            $sourceQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
         } else {
             throw new Exception("Bad 'source' parameter");
         }
