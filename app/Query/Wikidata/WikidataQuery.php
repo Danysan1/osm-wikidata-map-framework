@@ -35,10 +35,16 @@ abstract class WikidataQuery extends CurlQuery
 
     protected static function getMinifiedQuery(string $original): string
     {
-        $minified = preg_replace('/(?:^\s+)|(?:\s*#[\/\s\w\(\),\'\:\.]+$)/m', "", $original);
+        $minified = preg_replace('/\s*#[\/\s\w\(\)\'\.\-:,#]+$/m', "", $original);
+        $minified = preg_replace('/\n\s+/m', " ", $minified);
         if (empty($minified)) {
-            error_log("getMinifiedQuery:" . PHP_EOL . $original . PHP_EOL . $minified);
+            error_log($original);
+            error_log($minified);
             throw new \Exception("Query minimization led to an empty string");
+        } else {
+            // error_log("getMinifiedQuery successfully minified the query:");
+            // error_log($original);
+            // error_log($minified);
         }
         return $minified;
     }
