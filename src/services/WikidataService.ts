@@ -11,7 +11,7 @@ export class WikidataService {
     async fetchEtymologyDetails(etymologyIDs: string[]): Promise<EtymologyDetails[]> {
         const culture = document.documentElement.lang,
             language = culture.split('-')[0],
-            wikidataValues = etymologyIDs.join(" "),
+            wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
             sparql = `
 SELECT ?wikidata
     (SAMPLE(?name) AS ?name)

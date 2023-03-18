@@ -177,7 +177,7 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
         );
     }
 
-    debugLog("featureToDomElement: showing text etymology? ", {
+    debugLog("showEtymologies: showing text etymology? ", {
         textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
     });
     if (textEtyShouldBeShown) {
@@ -192,7 +192,10 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
 }
 
 async function downloadEtymologyDetails(etymologies: Etymology[]): Promise<Etymology[]> {
-    const etymologyIDs = etymologies.filter(e => e?.wikidata).map(e => "wd:" + e.wikidata);
+    const etymologyIDs = etymologies.map(e => e?.wikidata).filter(x => !!x) as string[];
+    if (etymologyIDs.length == 0)
+        return etymologies;
+
     try {
         const downlodedEtymologies = await new WikidataService().fetchEtymologyDetails(etymologyIDs);
         return downlodedEtymologies.map(
