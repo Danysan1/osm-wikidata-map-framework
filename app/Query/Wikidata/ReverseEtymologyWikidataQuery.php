@@ -38,9 +38,13 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 OPTIONAL { ?item wdt:P373 ?commons }
                 OPTIONAL { ?item wdt:P18 ?picture }
                 OPTIONAL {{
-                    ?item rdfs:label ?itemLabel FILTER(LANG(?itemLabel)='$language').
+                    ?item rdfs:label ?itemLabel.
+                    FILTER(LANG(?itemLabel) = '$language')
                 } UNION {
-                    MINUS { ?item rdfs:label ?otherLabel FILTER(LANG(?otherLabel)='$language'). }
+                    MINUS {
+                        ?item rdfs:label ?otherLabel.
+                        FILTER(LANG(?otherLabel) = '$language')
+                    }
                     ?item rdfs:label ?itemLabel.
                 }}
             }

@@ -30,12 +30,6 @@ export class SourceControl extends DropdownControl {
         if (dbEnabled) {
             dropdownItems.push(buildDropdownItem("all_db", "All sources from DB", "DB"));
 
-            if (propagationEnabled)
-                dropdownItems.push(buildDropdownItem("osm_propagated", "Propagated", "DB"));
-
-            if (osmProps && osmProps.length > 0)
-                dropdownItems.push(buildDropdownItem("osm_wikidata", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
-
             if (rawKeys) {
                 const keys = JSON.parse(rawKeys) as string[];
                 keys.forEach(key => {
@@ -43,14 +37,21 @@ export class SourceControl extends DropdownControl {
                     dropdownItems.push(buildDropdownItem(keyID, "OSM " + key, "DB"));
                 });
             }
+
+            if (osmProps && osmProps.length > 0)
+                dropdownItems.push(buildDropdownItem("osm_wikidata", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
+
+            if (propagationEnabled)
+                dropdownItems.push(buildDropdownItem("osm_propagated", "Propagated", "DB"));
         }
 
         if (osmProps && osmProps.length > 0)
             dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API (real time)"));
 
         if (indirectWdProperty) {
-            dropdownItems.push(buildDropdownItem("wd_qualifier", "Wikidata entities with P625 qualifier on " + indirectWdProperty, "Wikidata API (real time)"));
-            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities with P625 referenced with " + indirectWdProperty, "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_indirect", "P625 qualifiers & Wikidata entities referenced from " + indirectWdProperty, "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", "P625 qualifiers on " + indirectWdProperty, "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities referenced with " + indirectWdProperty, "Wikidata API (real time)"));
         }
 
         if (rawKeys) {

@@ -17,6 +17,7 @@ use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
+use App\Query\Wikidata\AllIndirectEtymologyWikidataQuery;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
@@ -35,7 +36,7 @@ $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : nu
 $eagerFullDownload = $conf->getBool("eager_full_etymology_download");
 
 $enableDB = $conf->getBool("db_enable");
-if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier"])) {
+if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier", "wd_indirect"])) {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -78,6 +79,10 @@ if ($db != null) {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
         $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
         $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
+    } elseif ($source == "wd_indirect") {
+        $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+        $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
+        $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty, $safeLanguage);
     } elseif ($source == "overpass") {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
         $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);

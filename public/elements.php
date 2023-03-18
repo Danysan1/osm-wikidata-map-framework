@@ -16,6 +16,7 @@ use \App\Query\PostGIS\BBoxEtymologyCenterPostGISQuery;
 use \App\Query\Overpass\CenterEtymologyOverpassQuery;
 use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
+use App\Query\Wikidata\AllIndirectEtymologyWikidataQuery;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
@@ -56,12 +57,13 @@ if ($from == "bbox") {
             $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
         } elseif ($source == "wd_reverse") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
             $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
         } elseif ($source == "wd_qualifier") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
+            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        } elseif ($source == "wd_indirect") {
+            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+            $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
         } else {
             $overpassConfig = new RoundRobinOverpassConfig($conf);
             $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
