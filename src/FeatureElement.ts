@@ -199,14 +199,17 @@ async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100
 
     if (etymologyIDs.length > maxItems) {
         // Too many items, limiting to the first N entities with the shortest Wikidata ID (which usually means most famous)
-        etymologyIDs = etymologyIDs.sort((a, b) => (a?.length || 0) - (b?.length || 0)).slice(0, maxItems);
+        etymologyIDs = etymologyIDs.sort((a, b) => a.length - b.length).slice(0, maxItems);
         showSnackbar(`Loading only first ${maxItems} items out of ${etymologies.length}`, "lightsalmon", 10_000);
     }
 
     try {
         const downlodedEtymologies = await new WikidataService().fetchEtymologyDetails(etymologyIDs);
         return downlodedEtymologies.map(
-            (newEty: EtymologyDetails): Etymology => ({ ...etymologies.find(oldEty => oldEty.wikidata == newEty.wikidata), ...newEty })
+            (details: EtymologyDetails): Etymology => ({
+                ...etymologies.find(oldEty => oldEty.wikidata == details.wikidata),
+                ...details
+            })
         );
     } catch (err) {
         console.error("Failed downloading etymology details", etymologyIDs, err);
