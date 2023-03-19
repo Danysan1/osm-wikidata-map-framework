@@ -25,10 +25,10 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?location) AS ?location)
                 (SAMPLE(?commons) AS ?commons)
                 (SAMPLE(?picture) AS ?picture)
-                (SAMPLE(?from_entity) AS ?from_entity)
+                (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
             WITH { 
-                SELECT ?etymology ?from_entity ?location ?picture
+                SELECT ?etymology ?location ?picture
                 WHERE {
                     ?etymology p:$wikidataProperty ?stmt.
                     SERVICE wikibase:box {
@@ -37,11 +37,10 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                             wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                     }
                     $commonsQuery
-                    BIND(?etymology AS ?from_entity)
                 }
             } AS %qualifier
             WITH {
-                SELECT ?etymology ?from_entity ?location ?item ?itemLabel ?commons
+                SELECT ?etymology ?location ?item ?itemLabel ?commons
                 WHERE {
                     ?etymology p:$wikidataProperty ?stmt.
                     MINUS { ?stmt pq:P625 []. }
@@ -63,7 +62,6 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                         }
                         ?item rdfs:label ?itemLabel.
                     }}
-                    BIND(?item AS ?from_entity)
                 }
             } AS %reverse
             WHERE {
