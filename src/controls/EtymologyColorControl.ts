@@ -170,7 +170,7 @@ class EtymologyColorControl extends DropdownControl {
                             this.setChartData(data);
                         } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
                             this.removeChart();
-                            showSnackbar("Statistic not implemented for this source", "wheat");
+                            showSnackbar("Statistic not implemented for this source", "lightsalmon");
                         } else {
                             console.error("XHR error", { xhr, readyState, status, e });
                             //if (event.type && event.type == 'change')

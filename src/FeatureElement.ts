@@ -3,7 +3,7 @@ import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
 import { debugLog, getBoolConfig } from "./config";
-import { showLoadingSpinner } from "./snackbar";
+import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
 
@@ -191,10 +191,17 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
     }
 }
 
-async function downloadEtymologyDetails(etymologies: Etymology[]): Promise<Etymology[]> {
-    const etymologyIDs = etymologies.map(e => e?.wikidata).filter(x => !!x) as string[];
+async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100): Promise<Etymology[]> {
+    let etymologyIDs = etymologies.map(e => e?.wikidata).filter(x => !!x) as string[];
+
     if (etymologyIDs.length == 0)
         return etymologies;
+
+    if (etymologyIDs.length > maxItems) {
+        // Too many items, limiting to the first N entities with the shortest Wikidata ID (which usually means most famous)
+        etymologyIDs = etymologyIDs.sort((a, b) => (a?.length || 0) - (b?.length || 0)).slice(0, maxItems);
+        showSnackbar(`Loading only first ${maxItems} items out of ${etymologies.length}`, "lightsalmon", 10_000);
+    }
 
     try {
         const downlodedEtymologies = await new WikidataService().fetchEtymologyDetails(etymologyIDs);
