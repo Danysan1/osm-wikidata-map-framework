@@ -61,4 +61,9 @@ class BBoxEtymologyCenterOverpassQuery extends BaseQuery implements BBoxGeoJSONQ
     {
         return $this->baseQuery->getQuery();
     }
+
+    public function getQueryTypeCode(): string
+    {
+        return $this->baseQuery->getQueryTypeCode();
+    }
 }

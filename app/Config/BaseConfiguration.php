@@ -47,32 +47,54 @@ abstract class BaseConfiguration implements Configuration
         return !empty($raw) && $raw !== "false" && $raw !== "0";
     }
 
+    protected function keyToID(string $key): string
+    {
+        return "osm_" . str_replace(":", "_", str_replace(":wikidata", "", $key));
+    }
+
     /**
      * @return array<string> Configured OSM wikidata keys
      */
-    public function getWikidataKeys(): array
+    public function getWikidataKeys(?string $keyID = "all"): array
     {
         $wikidataKeys = $this->getArray('osm_wikidata_keys');
 
         if (empty($wikidataKeys))
             throw new Exception("Empty osm_wikidata_keys");
 
-        return array_map(function (mixed $item): string {
+        $wikidataKeys = array_map(function (mixed $item): string {
+            //! Do not remove these validity checks
             $ret = (string)$item;
-            if (!preg_match('/^[a-z_:]+$/', $ret)) //! Do not remove this validity check
-                throw new Exception("Bad OSM key: '$ret'");
+            if ("wikidata" == $ret)
+                throw new Exception("'wikidata' should not be used in osm_wikidata_keys");
+            if (!preg_match('/^[a-z_:]+$/', $ret))
+                throw new Exception("Bad OSM key found in osm_wikidata_keys: '$ret'");
             return $ret;
         }, $wikidataKeys);
+
+        if ($keyID != "all") {
+            $wikidataKeys = array_filter($wikidataKeys, function ($key) use ($keyID) {
+                return $this->keyToID($key) == $keyID;
+            });
+            if (empty($wikidataKeys))
+                throw new Exception("Given key is not acceptable for the configured keys");
+        }
+
+        return $wikidataKeys;
     }
 
     /**
-     * @param array<string> $keys Configured OSM wikidata keys
      * @return array<string> Configured OSM wikidata key IDs
      */
-    public static function keysToIDs(array $keys): array
+    public function getWikidataKeyIDs(?string $keyID = "all"): array
     {
-        return array_map(function (string $key): string {
-            return "osm_" . str_replace(":", "_", str_replace(":wikidata", "", $key));
-        }, $keys);
+        $allIDs = array_map([$this, "keyToID"], $this->getWikidataKeys());
+        if ($keyID == "all") {
+            return $allIDs;
+        } else {
+            if (!in_array($keyID, $allIDs))
+                throw new Exception("Given key is not acceptable for the configured keys");
+            return [$keyID];
+        }
     }
 }

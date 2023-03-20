@@ -10,6 +10,7 @@ import { setFragmentParams } from '../fragment';
 export class SourceControl extends DropdownControl {
     constructor(onSourceChange: (sourceID: string) => void, startSourceID: string) {
         const rawKeys = getConfig("osm_wikidata_keys"),
+            keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
             rawOsmProps = getConfig("osm_wikidata_properties"),
             osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
             indirectWdProperty = getConfig("wikidata_indirect_property"),
@@ -28,21 +29,20 @@ export class SourceControl extends DropdownControl {
             });
 
         if (dbEnabled) {
-            dropdownItems.push(buildDropdownItem("all_db", "All sources from DB", "DB"));
+            dropdownItems.push(buildDropdownItem("db_all", "All sources from DB", "DB"));
 
-            if (rawKeys) {
-                const keys = JSON.parse(rawKeys) as string[];
+            if (keys) {
                 keys.forEach(key => {
-                    const keyID = "osm_" + key.replace(":wikidata", "").replace(":", "_");
+                    const keyID = "db_osm_" + key.replace(":wikidata", "").replace(":", "_");
                     dropdownItems.push(buildDropdownItem(keyID, "OSM " + key, "DB"));
                 });
             }
 
             if (osmProps && osmProps.length > 0)
-                dropdownItems.push(buildDropdownItem("osm_wikidata", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
 
             if (propagationEnabled)
-                dropdownItems.push(buildDropdownItem("osm_propagated", "Propagated", "DB"));
+                dropdownItems.push(buildDropdownItem("db_propagated", "Propagated", "DB"));
         }
 
         if (osmProps && osmProps.length > 0)
@@ -54,9 +54,12 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities referenced with " + indirectWdProperty, "Wikidata API (real time)"));
         }
 
-        if (rawKeys) {
-            const keys = JSON.parse(rawKeys) as string[];
-            dropdownItems.push(buildDropdownItem("overpass", "OSM " + keys.join(" / "), "Overpass + Wikidata APIs (real time)"));
+        if (keys) {
+            dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass + Wikidata APIs (real time)"));
+            keys.forEach(key => {
+                const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
+                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "Overpass + Wikidata APIs (real time)"));
+            });
         }
 
         super(

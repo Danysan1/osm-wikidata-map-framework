@@ -27,12 +27,12 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
-$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all_db");
+$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 $from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 
 $enableDB = $conf->getBool("db_enable");
-if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier"])) {
+if ($enableDB && str_starts_with($source, "db_")) {
     //error_log("elements.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -41,53 +41,38 @@ if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_
 }
 $textTag = (string)$conf->get('osm_text_key');
 $descriptionTag = (string)$conf->get('osm_description_key');
-$wikidataKeys = $conf->getWikidataKeys();
-$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 
-if ($from == "bbox") {
-    $maxArea = (float)$conf->get("elements_bbox_max_area");
-    $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
+$maxArea = (float)$conf->get("elements_bbox_max_area");
+$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
-    if ($db != null) {
-        $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
-    } else {
-        $wikidataConfig = new BaseWikidataConfig($conf);
-        if ($source == "wd_direct") {
-            $wikidataProps = $conf->getArray("osm_wikidata_properties");
-            $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
-        } elseif ($source == "wd_reverse") {
-            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
-        } elseif ($source == "wd_qualifier") {
-            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
-        } elseif ($source == "wd_indirect") {
-            $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
-        } elseif ($source == "overpass") {
-            $overpassConfig = new RoundRobinOverpassConfig($conf);
-            $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
-        } else {
-            throw new Exception("Bad 'source' parameter");
-        }
-        $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
-        $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
-        $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
-        $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
-    }
-} elseif ($from == "center") {
-    $centerLat = (float)getFilteredParamOrError("centerLat", FILTER_VALIDATE_FLOAT);
-    $centerLon = (float)getFilteredParamOrError("centerLon", FILTER_VALIDATE_FLOAT);
-    $radius = (float)getFilteredParamOrError("radius", FILTER_VALIDATE_FLOAT);
-    if ($db != null) {
-        throw new Exception("Not yet implemented");
-    } else {
-        $overpassConfig = new RoundRobinOverpassConfig($conf);
-        $query = new CenterEtymologyOverpassQuery($centerLat, $centerLon, $radius, $overpassConfig, $textTag, $descriptionTag, $wikidataKeys);
-    }
+if ($db != null) {
+    $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
 } else {
-    http_response_code(400);
-    die('{"error":"You must specify either the BBox or center and radius"}');
+    $wikidataConfig = new BaseWikidataConfig($conf);
+    if ($source == "wd_direct") {
+        $wikidataProps = $conf->getArray("osm_wikidata_properties");
+        $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
+    } elseif ($source == "wd_reverse") {
+        $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+        $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+    } elseif ($source == "wd_qualifier") {
+        $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+        $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+    } elseif ($source == "wd_indirect") {
+        $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
+        $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+    } elseif (str_starts_with($source, "overpass_")) {
+        $overpassConfig = new RoundRobinOverpassConfig($conf);
+        $keyID = str_replace("overpass_", "", $source);
+        $wikidataKeys = $conf->getWikidataKeys($keyID);
+        $baseQuery = new BBoxEtymologyCenterOverpassQuery($wikidataKeys, $bbox, $overpassConfig);
+    } else {
+        throw new Exception("Bad 'source' parameter");
+    }
+    $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
+    $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
+    $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
 }
 
 $serverTiming->add("3_init");

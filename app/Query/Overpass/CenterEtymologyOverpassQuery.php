@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Query\Overpass;
 
 
-use \App\Query\Overpass\BaseOverpassQuery;
 use \App\Config\Overpass\OverpassConfig;
 use \App\Query\GeoJSONQuery;
 use \App\Result\Overpass\OverpassEtymologyQueryResult;
@@ -15,7 +14,7 @@ use \App\Result\GeoJSONQueryResult;
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology in the vicinity of a central point.
  */
-class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQuery
+class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
 {
     private float $lat;
     private float $lon;
