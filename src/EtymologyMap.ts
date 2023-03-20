@@ -93,15 +93,11 @@ export class EtymologyMap extends Map {
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
             currZoom = this.getZoom(),
-            colorControl = this.currentEtymologyColorControl;
-        let currColorScheme: string | undefined;
-        try {
-            currColorScheme = colorControl?.getColorScheme();
-        } catch (err) {
-            console.error("Failed getting the current color scheme:", err);
-            currColorScheme = undefined;
-        }
-        debugLog("hashChangeHandler", { newParams, currLat, currLon, currZoom, currColorScheme });
+            currColorScheme = this.currentEtymologyColorControl?.getCurrentID(),
+            currSource = this.currentSourceControl?.getCurrentID();
+        debugLog("hashChangeHandler", {
+            newParams, currLat, currLon, currZoom, currColorScheme
+        });
 
         // Check if the position has changed in order to avoid unnecessary map movements
         if (Math.abs(currLat - newParams.lat) > 0.001 ||
@@ -115,7 +111,10 @@ export class EtymologyMap extends Map {
         }
 
         if (currColorScheme != newParams.colorScheme)
-            colorControl?.setColorScheme(newParams.colorScheme);
+            this.currentEtymologyColorControl?.setCurrentID(newParams.colorScheme);
+
+        if (currSource != newParams.source)
+            this.currentSourceControl?.setCurrentID(newParams.source);
     }
 
     /**

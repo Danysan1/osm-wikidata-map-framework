@@ -48,36 +48,6 @@ class EtymologyColorControl extends DropdownControl {
         this._chartXHR = null;
     }
 
-    /**
-     * Get the currently selected color scheme
-     */
-    getColorScheme(): string {
-        const dropdown = this.getDropdown();
-        if (!dropdown)
-            throw new Error("Missing color control dropdown");
-        const colorScheme = dropdown.value;
-        if (typeof colorScheme != 'string')
-            throw new Error("Bad color control dropdown value");
-        return colorScheme;
-    }
-
-    setColorScheme(colorScheme: ColorSchemeID) {
-        debugLog("EtymologyColorControl setColorScheme", { colorScheme });
-        const dropdown = this.getDropdown();
-        if (!dropdown?.options) {
-            console.warn("setColorScheme: dropdown not yet initialized");
-        } else {
-            Array.prototype.forEach(option => {
-                if (option.value === colorScheme) {
-                    option.selected = true;
-                    dropdown.dispatchEvent(new Event("change"));
-                    return;
-                }
-            }, dropdown.options);
-            console.error("EtymologyColorControl setColorScheme: invalid color scheme", { colorScheme });
-        }
-    }
-
     onColorSchemeSelect(colorSchemeID: string, event: Event) {
         const colorSchemeObj = colorSchemes[colorSchemeID as ColorSchemeID],
             map = this.getMap();

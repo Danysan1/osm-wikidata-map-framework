@@ -155,8 +155,38 @@ export class DropdownControl implements IControl {
         return this._ctrlDropDown;
     }
 
+    /**
+     * Gets the ID of the currently selected dropdown value
+     */
     getCurrentID() {
         return this._ctrlDropDown?.value;
+    }
+
+    /**
+     * Selects a new value of the dropdown by its ID
+     */
+    setCurrentID(id: string) {
+        debugLog("setCurrentID", { id });
+        const dropdown = this.getDropdown();
+        if (!dropdown?.options) {
+            console.warn("setCurrentID: dropdown not yet initialized");
+        } else {
+            Array.prototype.forEach(option => {
+                if (option.value === id) {
+                    if (option.selected) {
+                        debugLog("setCurrentID: ID already active");
+                    } else {
+                        option.selected = true;
+                        dropdown.dispatchEvent(new Event("change"));
+                    }
+                    return;
+                }
+            }, dropdown.options);
+            console.error("setCurrentID: invalid ID", {
+                id,
+                validIDs: Array.prototype.map(option => option.value, dropdown.options)
+            });
+        }
     }
 
     show(show = true) {
