@@ -61,6 +61,7 @@ class EtymologyColorControl extends DropdownControl {
         }
         debugLog("EtymologyColorControl dropDown click", { event, colorSchemeID, colorSchemeObj, color });
 
+        // TODO trigger wikidata layer update
         [
             ["wikidata_source_layer_point", "circle-color"],
             ["wikidata_source_layer_lineString", 'line-color'],
@@ -106,7 +107,6 @@ class EtymologyColorControl extends DropdownControl {
                     maxLon = northEast.lng,
                     language = document.documentElement.lang,
                     queryParams = {
-                        from: "bbox",
                         to: colorScheme.urlCode,
                         minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
                         minLon: (Math.floor(minLon * 1000) / 1000).toString(),

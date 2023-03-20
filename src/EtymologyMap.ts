@@ -178,6 +178,8 @@ export class EtymologyMap extends Map {
             maxLat = northEast.lat + bbox_margin,
             maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
+            colorScheme = this.currentEtymologyColorControl?.getCurrentID() ?? getCorrectFragmentParams().colorScheme,
+            downloadColors = ["gender", "type", "century"].includes(colorScheme),
             source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source,
             language = document.documentElement.lang,
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
@@ -197,12 +199,12 @@ export class EtymologyMap extends Map {
 
         if (enableWikidataLayers) {
             const queryParams = {
-                from: "bbox",
+                download_colors: downloadColors ? "1" : "0",
+                language,
                 minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
                 minLon: (Math.floor(minLon * 100) / 100).toString(),
                 maxLat: (Math.ceil(maxLat * 100) / 100).toString(), // 0.123 => 0.13
                 maxLon: (Math.ceil(maxLon * 100) / 100).toString(),
-                language,
                 source,
                 search: this.search,
             },
@@ -214,7 +216,6 @@ export class EtymologyMap extends Map {
             this.prepareGlobalLayers(minZoomLevel);
         } else if (enableElementLayers) {
             const queryParams = {
-                from: "bbox",
                 onlyCenter: "1",
                 minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1
                 minLon: (Math.floor(minLon * 10) / 10).toString(), // 0.123 => 0.1

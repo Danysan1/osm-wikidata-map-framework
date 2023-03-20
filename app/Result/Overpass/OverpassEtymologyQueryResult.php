@@ -19,7 +19,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 
     public const FEATURE_WIKIDATA_KEY = "wikidata";
     public const FEATURE_COMMONS_KEY = "commons";
-    public const ETYMOLOGY_WD_ID_KEY = "id";
+    public const ETYMOLOGY_WD_ID_KEY = "wikidata";
 
     private const BAD_CHARS = [" ", "\n", "\r", "\t", "\v", "\x00"];
 

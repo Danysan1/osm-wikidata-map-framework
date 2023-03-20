@@ -28,7 +28,6 @@ prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
-$from = (string)getFilteredParamOrError("from", FILTER_UNSAFE_RAW);
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 
 $enableDB = $conf->getBool("db_enable");
