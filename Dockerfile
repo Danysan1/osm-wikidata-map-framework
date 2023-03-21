@@ -27,7 +27,7 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
 COPY ["./composer.json", "./composer.lock", "/var/www/"]
 RUN php composer.phar install
 
-COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/var/www/"]
+COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.common.js", "./webpack.dev.js", "/var/www/"]
 RUN npm install -g npm && \
 	npm install
 
