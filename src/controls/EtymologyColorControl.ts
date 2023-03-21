@@ -31,11 +31,14 @@ class EtymologyColorControl extends DropdownControl {
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
 
-    constructor(startColorScheme: ColorSchemeID) {
+    constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
             id,
             text: item.text,
-            onSelect: (event) => this.onColorSchemeSelect(id, event)
+            onSelect: (event) => {
+                this.updateChart(event);
+                onSchemeChange(id as ColorSchemeID);
+            }
         }));
         super(
             '📊', //'🎨',
@@ -46,39 +49,6 @@ class EtymologyColorControl extends DropdownControl {
         );
         this._chartInitInProgress = false;
         this._chartXHR = null;
-    }
-
-    onColorSchemeSelect(colorSchemeID: string, event: Event) {
-        const colorSchemeObj = colorSchemes[colorSchemeID as ColorSchemeID],
-            map = this.getMap();
-        let color: string | Expression;
-
-        if (colorSchemeObj) {
-            color = colorSchemeObj.color;
-        } else {
-            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
-            color = '#3bb2d0';
-        }
-        debugLog("EtymologyColorControl dropDown click", { event, colorSchemeID, colorSchemeObj, color });
-
-        // TODO trigger wikidata layer update
-        [
-            ["wikidata_source_layer_point", "circle-color"],
-            ["wikidata_source_layer_lineString", 'line-color'],
-            ["wikidata_source_layer_polygon_fill", 'fill-color'],
-            ["wikidata_source_layer_polygon_border", 'line-color'],
-        ].forEach(([layerID, property]) => {
-            if (map?.getLayer(layerID)) {
-                map.setPaintProperty(layerID, property, color);
-            } else {
-                console.warn("Layer does not exist, can't set property", { layerID, property, color });
-            }
-        });
-
-        this.updateChart(event);
-
-        setFragmentParams(undefined, undefined, undefined, colorSchemeID as ColorSchemeID);
-        //updateDataSource(event);
     }
 
     updateChart(event?: MapboxEvent | Event, source?: string) {

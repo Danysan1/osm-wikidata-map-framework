@@ -1,5 +1,5 @@
 //import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent } from 'maplibre-gl';
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent } from 'mapbox-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent, Expression } from 'mapbox-gl';
 
 //import 'maplibre-gl/dist/maplibre-gl.css';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -14,6 +14,7 @@ import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debugLog, getConfig } from './config';
 import './style.css';
 import { SourceControl } from './controls/SourceControl';
+import { ColorSchemeID, colorSchemes } from './colorScheme.model';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -342,8 +343,14 @@ export class EtymologyMap extends Map {
     initSourceControl() {
         if (!this.currentSourceControl) {
             const sourceControl = new SourceControl(
-                this.updateDataSource.bind(this),
-                getCorrectFragmentParams().source
+                getCorrectFragmentParams().source,
+                (sourceID: string) => {
+                    const params = getCorrectFragmentParams();
+                    if (params.source != sourceID) {
+                        setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                        this.updateDataSource();
+                    }
+                }
             );
             this.currentSourceControl = sourceControl;
             setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
@@ -352,7 +359,39 @@ export class EtymologyMap extends Map {
 
     initEtymologyColorControl() {
         if (!this.currentEtymologyColorControl) {
-            const colorControl = new EtymologyColorControl(getCorrectFragmentParams().colorScheme);
+            const colorControl = new EtymologyColorControl(
+                getCorrectFragmentParams().colorScheme,
+                (colorSchemeID: ColorSchemeID) => {
+                    const params = getCorrectFragmentParams();
+                    if (params.colorScheme != colorSchemeID) {
+                        setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                        this.updateDataSource();
+
+                        const colorSchemeObj = colorSchemes[colorSchemeID];
+                        let color: string | Expression;
+                
+                        if (colorSchemeObj) {
+                            color = colorSchemeObj.color;
+                        } else {
+                            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
+                            color = '#3bb2d0';
+                        }
+                        debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
+                        [
+                            ["wikidata_source_layer_point", "circle-color"],
+                            ["wikidata_source_layer_lineString", 'line-color'],
+                            ["wikidata_source_layer_polygon_fill", 'fill-color'],
+                            ["wikidata_source_layer_polygon_border", 'line-color'],
+                        ].forEach(([layerID, property]) => {
+                            if (this?.getLayer(layerID)) {
+                                this.setPaintProperty(layerID, property, color);
+                            } else {
+                                console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                            }
+                        });
+                    }
+                }
+            );
             this.currentEtymologyColorControl = colorControl;
             setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
         }

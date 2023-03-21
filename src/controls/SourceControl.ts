@@ -8,7 +8,7 @@ import { setFragmentParams } from '../fragment';
  * @see https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
  **/
 export class SourceControl extends DropdownControl {
-    constructor(onSourceChange: (sourceID: string) => void, startSourceID: string) {
+    constructor(startSourceID: string, onSourceChange: (sourceID: string) => void) {
         const rawKeys = getConfig("osm_wikidata_keys"),
             keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
             rawOsmProps = getConfig("osm_wikidata_properties"),
