@@ -1,3 +1,3 @@
-apache-airflow[celery,postgres,docker,redis]~=2.5.1
-apache-airflow-providers-common-sql~=1.3.3
+apache-airflow[celery,postgres,docker,redis]~=2.5.2
+apache-airflow-providers-common-sql~=1.3.4
 transmission-rpc~=3.4.0
