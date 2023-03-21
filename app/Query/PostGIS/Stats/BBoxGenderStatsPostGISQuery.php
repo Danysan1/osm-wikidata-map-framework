@@ -4,23 +4,10 @@ declare(strict_types=1);
 
 namespace App\Query\PostGIS\Stats;
 
+use BBoxStatsPostGISQuery;
 
-use \App\Query\BBoxJSONQuery;
-use \App\Query\PostGIS\BBoxTextPostGISQuery;
-use \App\Result\JSONQueryResult;
-use \App\Result\JSONLocalQueryResult;
-use \App\Result\QueryResult;
-
-class BBoxGenderStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSONQuery
+class BBoxGenderStatsPostGISQuery extends BBoxStatsPostGISQuery
 {
-    public function sendAndGetJSONResult(): JSONQueryResult
-    {
-        $out = $this->send();
-        if (!$out instanceof JSONQueryResult)
-            throw new \Exception("sendAndGetJSONResult(): can't get JSON result");
-        return $out;
-    }
-
     public function getQuery(): string
     {
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();

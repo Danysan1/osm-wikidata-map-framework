@@ -61,7 +61,20 @@ $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
-    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $textKey, $descriptionKey, $serverTiming, $maxElements, $source, $search);
+    $query = new BBoxEtymologyPostGISQuery(
+        $bbox,
+        $safeLanguage,
+        $db,
+        $wikidataConfig,
+        $textKey,
+        $descriptionKey,
+        $serverTiming,
+        $maxElements,
+        $source,
+        $search,
+        $downloadColors,
+        $eagerFullDownload
+    );
 } else {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");

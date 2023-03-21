@@ -23,11 +23,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     private string $language;
     private WikidataConfig $wikidataConfig;
     private ?int $maxElements;
+    private bool $downloadColors;
     private bool $eagerFullDownload;
 
-    /**
-     * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
-     */
     public function __construct(
         BoundingBox $bbox,
         string $language,
@@ -37,6 +35,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
+        ?bool $downloadColors = false,
         ?bool $eagerFullDownload = false
     ) {
         parent::__construct($bbox, $db, $serverTiming, $source, $search);
@@ -48,6 +47,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $this->language = $language;
         $this->wikidataConfig = $wikidataConfig;
         $this->maxElements = $maxElements;
+        $this->downloadColors = $downloadColors;
         $this->eagerFullDownload = $eagerFullDownload;
     }
 
@@ -75,7 +75,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
     public function send(): QueryResult
     {
-        $this->downloadMissingText();
+        if ($this->downloadColors || $this->eagerFullDownload)
+            $this->downloadMissingText();
         return parent::send();
     }
 
