@@ -13,7 +13,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
     {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $commonsQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
+        $pictureQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
@@ -35,12 +35,13 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                         ?stmt pq:P625 ?location.
                         bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
                             wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
-                    }
-                    $commonsQuery
+                    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+                    $pictureQuery
                 }
+                $limitClause
             } AS %qualifier
             WITH {
-                SELECT ?etymology ?location ?item ?itemLabel ?commons
+                SELECT ?etymology ?location ?item ?itemLabel ?commons ?picture
                 WHERE {
                     ?etymology p:$wikidataProperty ?stmt.
                     MINUS { ?stmt pq:P625 []. }
@@ -49,7 +50,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                         ?item wdt:P625 ?location.
                         bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
                             wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
-                    }
+                    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                     OPTIONAL { ?item wdt:P373 ?commons. }
                     OPTIONAL { ?item wdt:P18 ?picture. }
                     OPTIONAL {{
@@ -63,6 +64,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                         ?item rdfs:label ?itemLabel.
                     }}
                 }
+                $limitClause
             } AS %reverse
             WHERE {
                 { INCLUDE %qualifier. } UNION { INCLUDE %reverse. }

@@ -32,11 +32,11 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 ?stmt ps:$wikidataProperty ?item.
                 SERVICE wikibase:box {
                     ?item wdt:P625 ?location.
-                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                    bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
+                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
+                        wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-                OPTIONAL { ?item wdt:P373 ?commons }
-                OPTIONAL { ?item wdt:P18 ?picture }
+                OPTIONAL { ?item wdt:P373 ?commons. }
+                OPTIONAL { ?item wdt:P18 ?picture. }
                 OPTIONAL {{
                     ?item rdfs:label ?itemLabel.
                     FILTER(LANG(?itemLabel) = '$language')

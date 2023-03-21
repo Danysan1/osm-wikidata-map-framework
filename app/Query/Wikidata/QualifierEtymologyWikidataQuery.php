@@ -13,7 +13,7 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
     {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $commonsQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
+        $pictureQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
@@ -28,10 +28,10 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
                 ?etymology p:$wikidataProperty ?stmt.
                 SERVICE wikibase:box {
                     ?stmt pq:P625 ?location.
-                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                    bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
+                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
+                        wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-                $commonsQuery
+                $pictureQuery
             }
             $limitClause",
             $config
