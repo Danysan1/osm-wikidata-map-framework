@@ -14,7 +14,7 @@ tasks:
     init: composer install
   - name: Apache
     env:
-      OWMF_ENV_FILE_PATH: /workspace/osm-wikidata-map-framework
+      OWMF_ENV_FILE_PATH: /workspace/osm-wikidata-map-framework/.env
     init: cp .env.example "$OWMF_ENV_FILE_PATH" && sed -i 's|/var/www/html|/workspace/osm-wikidata-map-framework/public|' "$OWMF_ENV_FILE_PATH"
     command: >
         apachectl start;
