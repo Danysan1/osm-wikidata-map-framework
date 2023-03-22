@@ -13,10 +13,13 @@ AddCharset UTF-8 .geojson
 
 AddType application/geo+json .geojson
 
-<filesMatch ".(png|css|js|geojson|mvt)$">
-  # cache files for 1 month = 2629744 seconds
-  Header set Cache-Control "max-age=2629744, public"
-</filesMatch>
+<IfModule mod_headers.c>
+  <filesMatch ".(png|css|js|geojson|mvt)$">
+    # cache files for 1 month = 2629744 seconds
+    Header set Cache-Control "max-age=2629744, public"
+  </filesMatch>
+  Header append Vary User-Agent env=!dont-vary
+</IfModule>
 
 <IfModule mod_mime.c>
 	AddType application/x-javascript .js
@@ -31,4 +34,3 @@ AddType application/geo+json .geojson
     BrowserMatch bMSIE !no-gzip !gzip-only-text/html
   </IfModule>
 </IfModule>
-Header append Vary User-Agent env=!dont-vary

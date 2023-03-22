@@ -12,6 +12,7 @@ tasks:
     command: npm run watch
   - name: php
     init: composer install
+    command: cp .env.example .env
   - name: Apache
     command: >
         apachectl start;
