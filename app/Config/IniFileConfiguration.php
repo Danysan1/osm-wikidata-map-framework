@@ -16,11 +16,8 @@ class IniFileConfiguration extends BaseConfiguration
 	public function __construct(string $iniFilePath = __DIR__ . "/../../open-etymology-map.ini")
 	{
 		$this->config = @parse_ini_file($iniFilePath);
-		if (empty($this->config)) {
-			error_log("'$iniFilePath' not found or empty");
-			throw new Exception("Configuration file not found");
-		}
-		//echo json_encode($this->config);
+		if (empty($this->config))
+			throw new Exception("Configuration file not found: '$iniFilePath'");
 	}
 
 	public function listKeys(): array

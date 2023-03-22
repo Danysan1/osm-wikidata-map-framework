@@ -14,23 +14,25 @@ class IniEnvConfiguration extends MultiConfiguration
 {
     public function __construct(?string $iniFilePath = null)
     {
-        try{
-            $dotenv = Dotenv::createImmutable(__DIR__."/../..");
-            $dotenv->load();
-        } catch (Throwable $e) {
-            //error_log("Not using .env - " . $e->getMessage());
+        if (file_exists(__DIR__ . "/../../.env")) {
+            try {
+                $dotenv = Dotenv::createImmutable(__DIR__ . "/../..");
+                $dotenv->load();
+            } catch (Throwable $e) {
+                error_log("Not using .env - " . $e->getMessage());
+            }
         }
 
         $configs = [new EnvironmentConfiguration()];
-        
+
         try {
             $configs[] = new IniFileConfiguration();
-        } catch(Throwable $e) {
+        } catch (Throwable $e) {
             //error_log("Not using .ini - " . $e->getMessage());
         }
 
         parent::__construct($configs);
 
-        //error_log(json_encode($this->listKeys()));
+        error_log(json_encode($this->listKeys()));
     }
 }
