@@ -12,8 +12,10 @@ tasks:
     command: npm run watch
   - name: php
     init: composer install
-    command: cp .env.example .env
   - name: Apache
+    env:
+      OWMF_ENV_FILE_PATH: /workspace/osm-wikidata-map-framework
+    init: cp .env.example "$OWMF_ENV_FILE_PATH" && sed -i 's|/var/www/html|/workspace/osm-wikidata-map-framework/public|' "$OWMF_ENV_FILE_PATH"
     command: >
         apachectl start;
         multitail /var/log/apache2/error.log -I /var/log/apache2/access.log

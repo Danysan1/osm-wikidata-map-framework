@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Config;
 
+use \Dotenv\Dotenv;
 use \App\Config\IniFileConfiguration;
 use \App\Config\EnvironmentConfiguration;
 use \App\Config\MultiConfiguration;
@@ -13,23 +14,19 @@ class IniEnvConfiguration extends MultiConfiguration
 {
     public function __construct(?string $iniFilePath = null)
     {
-        $environmentConfiguration = new EnvironmentConfiguration();
+        try{
+            $dotenv = Dotenv::createImmutable(__DIR__."/../..");
+            $dotenv->load();
+        } catch (Throwable $e) {
+            //error_log("Not using .env - " . $e->getMessage());
+        }
 
-        if(empty($iniFilePath) && $environmentConfiguration->has("config_file"))
-                $iniFilePath = (string)$environmentConfiguration->get("config_file");
+        $configs = [new EnvironmentConfiguration()];
         
-        if (empty($iniFilePath)) {
-            //error_log("IniEnvConfiguration: missing iniFilePath, using only EnvironmentConfiguration");
-            $configs = [$environmentConfiguration];
-        } else {
-            try {
-                $iniFileConfiguration = new IniFileConfiguration($iniFilePath);
-                //error_log("IniEnvConfiguration: using both IniFileConfiguration and EnvironmentConfiguration");
-                $configs = [$iniFileConfiguration, $environmentConfiguration];
-            } catch (Throwable $e) {
-                error_log("IniEnvConfiguration: IniFileConfiguration failed, using only EnvironmentConfiguration");
-                $configs = [$environmentConfiguration];
-            }
+        try {
+            $configs[] = new IniFileConfiguration();
+        } catch(Throwable $e) {
+            //error_log("Not using .ini - " . $e->getMessage());
         }
 
         parent::__construct($configs);
