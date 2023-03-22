@@ -27,3 +27,9 @@ ports:
   - name: npm
     port: 8888
     onOpen: ignore
+
+vscode:
+  extensions:
+    - dbaeumer.vscode-eslint
+    - bmewburn.vscode-intelephense-client
+    - mhutchie.git-graph
