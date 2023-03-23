@@ -1,12 +1,12 @@
-<Files "open-etymology-map.ini">  
+<Files "owmf.ini">  
   Require all denied
 </Files>
 
-<Files "open-etymology-map.log">  
+<Files "owmf.log">  
   Require all denied
 </Files>
 
-RedirectMatch 403 ^.*open-etymology-map-cache/.*csv$
+RedirectMatch 403 ^.*map-cache/.*csv$
 
 AddCharset UTF-8 .json
 AddCharset UTF-8 .geojson

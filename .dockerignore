@@ -1,13 +1,13 @@
 .git
 samples/
 airflow/
-open-etymology-map-cache/
+map-cache/
 
 *.geojson
 *.gz
 *.mvt
-open-etymology-map.ini
-open-etymology-map.log
+owmf.ini
+owmf.log
 LAST_UPDATE
 promtail/config.yaml
 promtail/key

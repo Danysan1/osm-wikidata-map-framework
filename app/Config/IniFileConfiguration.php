@@ -13,7 +13,7 @@ class IniFileConfiguration extends BaseConfiguration
 	 */
 	private $config;
 
-	public function __construct(string $iniFilePath = __DIR__ . "/../../open-etymology-map.ini")
+	public function __construct(string $iniFilePath = __DIR__ . "/../../owmf.ini")
 	{
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config))
