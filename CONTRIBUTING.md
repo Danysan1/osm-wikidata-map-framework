@@ -123,7 +123,7 @@ A full installation without DB (using Overpass) can be deployed with docker-comp
 
 ```sh
 git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
-cd open-etymology-map
+cd osm-wikidata-map-framework
 cp ".env.example" ".env"
 # At this point edit the file .env adding the correct mapbox_token
 docker-compose --profile "prod" up -d
@@ -133,7 +133,7 @@ A full installation complete with DB can be deployed with docker-compose:
 
 ```sh
 git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
-cd open-etymology-map
+cd osm-wikidata-map-framework
 cp ".env.example" ".env"
 # At this point edit the file .env adding the correct mapbox_token and setting db_enable=true
 COMPOSE_PROFILES=prod,db docker-compose up -d
