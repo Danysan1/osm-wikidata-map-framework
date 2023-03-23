@@ -76,8 +76,11 @@ abstract class BaseConfiguration implements Configuration
             $wikidataKeys = array_filter($wikidataKeys, function ($key) use ($keyID) {
                 return $this->keyToID($key) == $keyID;
             });
-            if (empty($wikidataKeys))
+            if (empty($wikidataKeys)) {
                 throw new Exception("Given key is not acceptable for the configured keys");
+            } else {
+                //error_log(json_encode($wikidataKeys));
+            }
         }
 
         return $wikidataKeys;

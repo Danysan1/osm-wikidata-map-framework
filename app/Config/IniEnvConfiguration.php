@@ -33,6 +33,6 @@ class IniEnvConfiguration extends MultiConfiguration
 
         parent::__construct($configs);
 
-        error_log(json_encode($this->listKeys()));
+        //error_log(json_encode($this->listKeys()));
     }
 }
