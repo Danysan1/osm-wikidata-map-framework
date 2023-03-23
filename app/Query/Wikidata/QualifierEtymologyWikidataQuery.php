@@ -19,9 +19,10 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
 
         $baseQuery = new JSONWikidataQuery(
             "SELECT DISTINCT
-                ?location
-                ?picture
                 ?etymology
+                ?location
+                ?commons
+                ?picture
                 (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
@@ -31,6 +32,7 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
                     bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
                         wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+                OPTIONAL { ?stmt pq:P373 ?commons. }
                 $pictureQuery
             }
             $limitClause",
