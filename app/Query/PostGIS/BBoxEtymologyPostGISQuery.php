@@ -82,7 +82,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
-                'etymology_count', COUNT(wd.wd_id),
+                'etymology_count', SUM(ele.num_etymologies),
                 'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::json), '[]'::JSON)
                 )
             FROM (
@@ -145,7 +145,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wikidata', wd.wd_wikidata_cod,
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)
-                    )) AS etymologies
+                    )) AS etymologies,
+                    COUNT(wd.wd_id) AS num_etymologies
                 FROM oem.element AS el
                 LEFT JOIN oem.etymology AS et ON et_el_id = el_id
                 LEFT JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
