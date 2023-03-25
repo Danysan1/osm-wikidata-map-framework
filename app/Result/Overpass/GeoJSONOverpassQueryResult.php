@@ -45,7 +45,7 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
             //error_log(get_class($this) . ": " . json_encode($geojson));
             //error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
         }
-        if ($geojson["etymology_count"] !== null)
+        if ($etymologyCount !== null)
             $geojson["etymology_count"] = $etymologyCount;
 
         return $geojson;
