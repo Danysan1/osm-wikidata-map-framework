@@ -77,7 +77,8 @@ abstract class BaseConfiguration implements Configuration
                 return $this->keyToID($key) == $keyID;
             });
             if (empty($wikidataKeys)) {
-                throw new Exception("Given key is not acceptable for the configured keys");
+                error_log("The given data source key ID is not acceptable for the configured OSM keys: '$keyID'");
+                throw new Exception("Bad source key ID");
             } else {
                 //error_log(json_encode($wikidataKeys));
             }
