@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Config;
 
-use \Dotenv\Dotenv;
+use \App\Config\EnvFileConfiguration;
 use \App\Config\IniFileConfiguration;
 use \App\Config\EnvironmentConfiguration;
 use \App\Config\MultiConfiguration;
@@ -12,24 +12,24 @@ use \Throwable;
 
 class IniEnvConfiguration extends MultiConfiguration
 {
-    public function __construct(?string $iniFilePath = null)
+    public function __construct()
     {
-        if (file_exists(__DIR__ . "/../../.env")) {
-            try {
-                $dotenv = Dotenv::createImmutable(__DIR__ . "/../..");
-                $dotenv->load();
-            } catch (Throwable $e) {
-                error_log("Not using .env - " . $e->getMessage());
-            }
-        }
 
-        $configs = [new EnvironmentConfiguration()];
+        $configs = [];
+
+        try {
+            $configs[] = new EnvFileConfiguration();
+        } catch (Throwable $e) {
+            //error_log("Not using .env configuration because of an error - " . $e->getMessage());
+        }
 
         try {
             $configs[] = new IniFileConfiguration();
         } catch (Throwable $e) {
-            //error_log("Not using .ini - " . $e->getMessage());
+            //error_log("Not using .ini configuration because of an error - " . $e->getMessage());
         }
+
+        $configs[] = new EnvironmentConfiguration();
 
         parent::__construct($configs);
 

@@ -10,12 +10,12 @@ class EnvironmentConfiguration extends BaseConfiguration
 {
 	public function listKeys(): array
 	{
-		return array_keys($_ENV);
+		return array_keys(getenv());
 	}
 
 	public function has(string $key): bool
 	{
-		return isset($_ENV[$key]) && $_ENV[$key] !== "";
+		return getenv($key) !== false && getenv($key) !== "";
 	}
 
 	public function get(string $key): mixed
@@ -23,6 +23,6 @@ class EnvironmentConfiguration extends BaseConfiguration
 		if (!$this->has($key)) {
 			throw new Exception("Configuration not found: $key");
 		}
-		return $_ENV[$key];
+		return getenv($key);
 	}
 }

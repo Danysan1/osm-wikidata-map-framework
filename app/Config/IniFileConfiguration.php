@@ -15,9 +15,12 @@ class IniFileConfiguration extends BaseConfiguration
 
 	public function __construct(string $iniFilePath = __DIR__ . "/../../owmf.ini")
 	{
+        if (!file_exists($iniFilePath))
+            throw new Exception(".ini file does not exist: '$iniFilePath'");
+		
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config))
-			throw new Exception("Configuration file not found: '$iniFilePath'");
+			throw new Exception("Failed loading .ini configuration: '$iniFilePath'");
 	}
 
 	public function listKeys(): array
