@@ -28,7 +28,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
-                MINUS { ?stmt pq:P625 []. }
+                MINUS { ?stmt pq:P625|pq:P582 []. }
                 ?stmt ps:$wikidataProperty ?item.
                 SERVICE wikibase:box {
                     ?item wdt:P625 ?location.

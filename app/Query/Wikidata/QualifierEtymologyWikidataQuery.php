@@ -27,6 +27,7 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
+                MINUS { ?stmt pq:P582 []. } # Ignore if it has a end date
                 SERVICE wikibase:box {
                     ?stmt pq:P625 ?location.
                     bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;

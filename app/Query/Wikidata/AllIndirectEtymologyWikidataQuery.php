@@ -31,6 +31,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 SELECT ?etymology ?location ?commons ?picture
                 WHERE {
                     ?etymology p:$wikidataProperty ?stmt.
+                    MINUS { ?stmt pq:P582 []. } # Ignore if it has a end date
                     SERVICE wikibase:box {
                         ?stmt pq:P625 ?location.
                         bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
@@ -45,7 +46,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 SELECT ?etymology ?location ?item ?itemLabel ?commons ?picture
                 WHERE {
                     ?etymology p:$wikidataProperty ?stmt.
-                    MINUS { ?stmt pq:P625 []. }
+                    MINUS { ?stmt pq:P625|pq:P582 []. }
                     ?stmt ps:$wikidataProperty ?item.
                     SERVICE wikibase:box {
                         ?item wdt:P625 ?location.
