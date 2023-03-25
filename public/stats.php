@@ -133,16 +133,10 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect_to_cache_file")) {
-        $out = "";
-        header("Location: " . $result->getPublicSourcePath());
-    } else {
-        $out = $result->getJSON();
-        header("Cache-Location: " . $result->getPublicSourcePath());
-    }
 } else {
     $out = $result->getJSON();
+    if ($result->hasPublicSourcePath())
+        header("Cache-Location: " . $result->getPublicSourcePath());
 }
 
 $serverTiming->add("5_output");

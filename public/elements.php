@@ -86,16 +86,10 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Overpass no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect_to_cache_file")) {
-        $out = "";
-        header("Location: " . $result->getPublicSourcePath());
-    } else {
-        $out = $result->getGeoJSON();
-        header("Cache-Location: " . $result->getPublicSourcePath());
-    }
 } else {
     $out = $result->getGeoJSON();
+    if ($result->hasPublicSourcePath())
+        header("Cache-Location: " . $result->getPublicSourcePath());
 }
 
 $serverTiming->add("5_output");
