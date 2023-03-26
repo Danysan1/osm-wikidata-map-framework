@@ -40,7 +40,7 @@ The most basic deployment can be launched by using Docker and executing these sh
 For more advanced deployment configurations check [CONTRIBUTING.md](CONTRIBUTING.md#deployment).
 
 By default the user language is used when fetching etymology details.
-You can force the another language by passing the [ISO-639 + ISO-3166 localization code](http://www.lingoes.net/en/translator/langcode.htm) to the `lang` parameter.
+You can force the another language by passing the [RFC 5646 language code](https://datatracker.ietf.org/doc/html/rfc5646) to the `lang` parameter.
 For example https://etymology.dsantini.it/?lang=es-ES passes `es-ES` to require data in spanish.
 
 ## Technologies used for data elaboration and display

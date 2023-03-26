@@ -18,14 +18,6 @@ abstract class BaseIDListWikidataQueryBuilder implements IDListWikidataQueryBuil
             }
         }
 
-        // "en-US" => "en"
-        $langMatches = [];
-        if (!preg_match('/^(\w+)(-\w+)?$/', $language, $langMatches)) {
-            error_log("StringSetXMLWikidataQuery: Invalid language code $language");
-            throw new \Exception("Invalid language code");
-        }
-        $language = $langMatches[1];
-
         $wikidataValues = implode(' ', array_map(function ($id) {
             return "wd:$id";
         }, $wikidataIDs->toArray()));
