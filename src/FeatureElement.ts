@@ -195,6 +195,8 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
             }, currentZoom));
         }
     }
+
+    etymologies_container.querySelector<HTMLDivElement>(".etymology_loading")?.classList.add("hiddenElement");
 }
 
 async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100): Promise<Etymology[]> {

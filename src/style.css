@@ -173,6 +173,7 @@ div.pictures > hr {
   margin-right: max(3em, auto);
 }
 
+.mapboxgl-popup-content .etymology_loading > h3,
 div.info > p {
   margin-left: 1em;
   margin-right: 1em;

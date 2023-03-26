@@ -193,7 +193,9 @@ if ($enableDB) {
             <?php if ($conf->getBool("show_feature_picture")) { ?><div class="feature_pictures column"></div><?php } ?>
 
             <div class="etymologies_container grid grid-auto">
-
+                <div class="etymology etymology_loading">
+                    <h3>Loading entities...</h3>
+                </div>
             </div>
             <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="<?= $conf->get("element_issue_url") ?>">
                 <span class="button_img">⚠️</span>
