@@ -165,29 +165,35 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
 
     const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
         textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
+        textEtyNames = textEtyNameExists ? textEtyName.split(";") : [],
         textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
-        textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
-    let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
+        textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr,
+        textEtyDescrs = textEtyDescrExists ? textEtyDescr.split(";") : [];
 
-    if (textEtyNameExists && !textEtyDescrExists) {
-        // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
-        textEtyShouldBeShown = etymologies.some((etymology) =>
-            !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
-            !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
-        );
-    }
-
-    debugLog("showEtymologies: showing text etymology? ", {
-        textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
-    });
-    if (textEtyShouldBeShown) {
-        etymologies_container.appendChild(etymologyToDomElement({
-            name: textEtyName,
-            description: textEtyDescr,
-            from_osm: true,
-            from_osm_type: properties.osm_type,
-            from_osm_id: properties.osm_id,
-        }, currentZoom));
+    for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
+        const nthTextEtyNameExists = n < textEtyNames.length,
+            nthTextEtyDescrExists = n < textEtyDescrs.length,
+            // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+            textEtyShouldBeShown = nthTextEtyDescrExists || (
+                nthTextEtyNameExists && etymologies.every((etymology) =>
+                    !etymology?.name?.toLowerCase()?.includes(textEtyNames[n].trim().toLowerCase()) &&
+                    !etymology?.description?.toLowerCase()?.includes(textEtyNames[n].trim().toLowerCase())
+                )
+            ),
+            nthTextEtyName = nthTextEtyNameExists ? textEtyNames[n] : undefined,
+            nthTextEtyDescr = nthTextEtyDescrExists ? textEtyDescrs[n] : undefined;
+        debugLog("showEtymologies: showing text etymology? ", {
+            n, nthTextEtyNameExists, nthTextEtyName, nthTextEtyDescrExists, nthTextEtyDescr, textEtyShouldBeShown, etymologies
+        });
+        if (textEtyShouldBeShown) {
+            etymologies_container.appendChild(etymologyToDomElement({
+                name: nthTextEtyName,
+                description: nthTextEtyDescr,
+                from_osm: true,
+                from_osm_type: properties.osm_type,
+                from_osm_id: properties.osm_id,
+            }, currentZoom));
+        }
     }
 }
 
