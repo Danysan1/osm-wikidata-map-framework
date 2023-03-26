@@ -55,7 +55,9 @@ export class SourceControl extends DropdownControl {
         }
 
         if (keys) {
-            dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass + Wikidata APIs (real time)"));
+            if (keys.length > 1)
+                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass + Wikidata APIs (real time)"));
+
             keys.forEach(key => {
                 const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
                 dropdownItems.push(buildDropdownItem(source, "OSM " + key, "Overpass + Wikidata APIs (real time)"));
