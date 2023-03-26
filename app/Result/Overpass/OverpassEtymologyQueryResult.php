@@ -117,7 +117,10 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         $feature["properties"]["etymologies"] = [];
         foreach ($wikidataEtymologyIDs as $etymologyEtymologyID) {
             $feature["properties"]["etymologies"][] = [
-                self::ETYMOLOGY_WD_ID_KEY => $etymologyEtymologyID
+                self::ETYMOLOGY_WD_ID_KEY => $etymologyEtymologyID,
+                "from_osm" => true,
+                "from_osm_type" => $osmType,
+                "from_osm_id" => $osmID,
             ];
         }
 
