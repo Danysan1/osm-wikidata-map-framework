@@ -1,11 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
+namespace App\Query\PostGIS\Stats;
+
 use App\BoundingBox;
 use App\Config\Wikidata\WikidataConfig;
 use App\Query\BBoxJSONQuery;
 use App\Query\PostGIS\BBoxTextPostGISQuery;
 use App\Result\JSONQueryResult;
 use App\ServerTiming;
+use PDO;
 
 abstract class BBoxStatsPostGISQuery extends BBoxTextPostGISQuery implements BBoxJSONQuery
 {
