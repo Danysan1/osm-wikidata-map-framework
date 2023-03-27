@@ -217,7 +217,6 @@ export class EtymologyMap extends Map {
             this.prepareGlobalLayers(minZoomLevel);
         } else if (enableElementLayers) {
             const queryParams = {
-                onlyCenter: "1",
                 minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1
                 minLon: (Math.floor(minLon * 10) / 10).toString(), // 0.123 => 0.1
                 maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.123 => 0.2
