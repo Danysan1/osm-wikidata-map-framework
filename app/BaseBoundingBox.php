@@ -127,17 +127,22 @@ class BaseBoundingBox implements BoundingBox
         return $this->maxLon;
     }
 
-    public function asBBoxString()
+    public function asBBoxString(): string
     {
         return $this->minLat . "," . $this->minLon . "," . $this->maxLat . "," . $this->maxLon;
     }
 
-    public function isAcrossAntimeridian()
+    public function asArray(): array
+    {
+        return [$this->getMinLon(), $this->getMinLat(), $this->getMaxLon(), $this->getMaxLat()];
+    }
+
+    public function isAcrossAntimeridian(): bool
     {
         return $this->minLat > $this->maxLat;
     }
 
-    public function equals(BoundingBox $other)
+    public function equals(BoundingBox $other): bool
     {
         /**
          * @psalm-suppress RedundantCondition
@@ -149,7 +154,7 @@ class BaseBoundingBox implements BoundingBox
             && $this->maxLon == $other->getMaxLon();
     }
 
-    public function containsOrEquals(BoundingBox $other)
+    public function containsOrEquals(BoundingBox $other): bool
     {
         /**
          * @psalm-suppress TypeDoesNotContainType
@@ -164,7 +169,7 @@ class BaseBoundingBox implements BoundingBox
         return $containsLatitude && $containsLongitude;
     }
 
-    public function strictlyContains(BoundingBox $other)
+    public function strictlyContains(BoundingBox $other): bool
     {
         /**
          * @psalm-suppress RedundantCondition
@@ -181,10 +186,7 @@ class BaseBoundingBox implements BoundingBox
         // abs() should not be necessary as these values should already be positive, but for safety we use it anyway.
     }
 
-    /**
-     * @return BoundingBox|null
-     */
-    public function getOverlapWith(BoundingBox $other)
+    public function getOverlapWith(BoundingBox $other): ?BoundingBox
     {
         $minLat = max($this->minLat, $other->getMinLat());
         $maxLat = min($this->maxLat, $other->getMaxLat());
@@ -200,18 +202,12 @@ class BaseBoundingBox implements BoundingBox
         return new BaseBoundingBox($minLat, $minLon, $maxLat, $maxLon);
     }
 
-    /**
-     * @return float Absolute overlap, >= 0
-     */
     public function getAbsoluteOverlapAreaWith(BoundingBox $other): float
     {
         $overlap = $this->getOverlapWith($other);
         return NULL == $overlap ? 0 : $overlap->getArea();
     }
 
-    /**
-     * @return float Relative overlap, between 0 and 1
-     */
     public function getRelativeOverlapAreaWith(BoundingBox $other): float
     {
         return $this->getAbsoluteOverlapAreaWith($other) / $this->getArea();

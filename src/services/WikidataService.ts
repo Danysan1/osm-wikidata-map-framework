@@ -12,6 +12,7 @@ export class WikidataService {
         const culture = document.documentElement.lang,
             language = culture.split('-')[0],
             wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
+            /** @see FullEtymologyIDListWikidataQueryBuilder::createQueryFromValidIDsString() in FullEtymologyIDListWikidataQueryBuilder.php */
             sparql = `
 SELECT ?wikidata
     (SAMPLE(?name) AS ?name)
@@ -26,8 +27,14 @@ SELECT ?wikidata
     (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
     (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
     (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
+    (SAMPLE(?event_date) AS ?event_date)
+    (SAMPLE(?event_date_precision) AS ?event_date_precision)
+    (SAMPLE(?start_date) AS ?start_date)
+    (SAMPLE(?start_date_precision) AS ?start_date_precision)
     (SAMPLE(?end_date) AS ?end_date)
     (SAMPLE(?end_date_precision) AS ?end_date_precision)
+    (SAMPLE(?birth_date) AS ?birth_date)
+    (SAMPLE(?birth_date_precision) AS ?birth_date_precision)
     (SAMPLE(?death_date) AS ?death_date)
     (SAMPLE(?death_date_precision) AS ?death_date_precision)
     (GROUP_CONCAT(DISTINCT ?event_place_name; SEPARATOR=', ') AS ?event_place)
@@ -37,6 +44,14 @@ SELECT ?wikidata
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
+    # ID and name of the class of the entity
+    OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
+        ?instanceID ^wdt:P31 ?wikidata;
+            rdfs:label ?instance_name.
+        FILTER(lang(?instance_name)='${language}').
+    }
+
+    # Name and description of the entity
     {
         ?name ^rdfs:label ?wikidata.
         FILTER(lang(?name)='${language}').
@@ -63,6 +78,7 @@ WHERE {
         ?name ^rdfs:label ?wikidata.
     }
 
+    # Name of the occupations of this entity
     OPTIONAL {
         ?occupation ^wdt:P106 ?wikidata.
         {
@@ -96,6 +112,7 @@ WHERE {
         FILTER(lang(?occupation_name)='${language}').
     }
 
+    # Pictures of this entity
     OPTIONAL {
         ?picture ^wdt:P18|^wdt:P94|^wdt:P242|^wdt:P15|^wdt:P41 ?wikidata.
 # picture - https://www.wikidata.org/wiki/Property:P18
@@ -105,6 +122,41 @@ WHERE {
 # flag - https://www.wikidata.org/wiki/Property:P41
     }
 
+    # ID and name of the gender of the entity
+    OPTIONAL {
+        ?genderID ^wdt:P21 ?wikidata;
+            rdfs:label ?gender_name.
+        FILTER(lang(?gender_name)='$language').
+    }
+
+    # Date the event represented by this entity took place
+    OPTIONAL {
+        ?wikidata p:P585/psv:P585 [ # event date - https://www.wikidata.org/wiki/Property:P585
+            wikibase:timePrecision ?event_date_precision;
+            wikibase:timeValue ?event_date
+        ].
+        MINUS {
+            ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_event_date_precision.
+            FILTER (?other_event_date_precision > ?event_date_precision).
+        }.
+    }
+
+    # Date the event represented by this entity started
+    OPTIONAL {
+        ?wikidata (p:P580/psv:P580)|(p:P571/psv:P571)|(p:P1619/psv:P1619) [
+# start time - https://www.wikidata.org/wiki/Property:P580
+# inception - https://www.wikidata.org/wiki/Property:P571
+# date of official opening - https://www.wikidata.org/wiki/Property:P1619
+            wikibase:timePrecision ?start_date_precision;
+            wikibase:timeValue ?start_date
+        ].
+        MINUS {
+            ?wikidata (p:P571/psv:P571/wikibase:timePrecision)|(p:P1619/psv:P1619/wikibase:timePrecision)|(p:P569/psv:P569/wikibase:timePrecision) ?other_start_date_precision.
+            FILTER (?other_start_date_precision > ?start_date_precision).
+        }.
+    }
+
+    # Date the event represented by this entity ended
     OPTIONAL {
         ?wikidata (p:P582/psv:P582)|(p:P576/psv:P576)|(p:P3999/psv:P3999) [
 # end time - https://www.wikidata.org/wiki/Property:P582
@@ -119,6 +171,19 @@ WHERE {
         }.
     }
 
+    # Date the person represented by this entity was born in
+    OPTIONAL {
+        ?wikidata p:P569/psv:P569 [ # birth date - https://www.wikidata.org/wiki/Property:P569
+            wikibase:timePrecision ?birth_date_precision;
+            wikibase:timeValue ?birth_date
+        ].
+        MINUS {
+            ?wikidata p:P569/psv:P569/wikibase:timePrecision ?other_birth_date_precision.
+            FILTER (?other_birth_date_precision > ?birth_date_precision).
+        }.
+    }
+
+    # Date the person represented by this entity died in
     OPTIONAL {
         ?wikidata p:P570/psv:P570 [ # death date - https://www.wikidata.org/wiki/Property:P570
             wikibase:timePrecision ?death_date_precision;
@@ -187,24 +252,35 @@ GROUP BY ?wikidata
                 body: new URLSearchParams({ format: "json", query: sparql }).toString(),
             }),
             res = await response.json();
+
         return res?.results?.bindings?.map((x: any): EtymologyDetails => {
             const wdURI = x.wikidata.value as string,
                 wdQID = wdURI.replace("http://www.wikidata.org/entity/", "");
             return {
+                birth_date: x.birth_date?.value,
+                birth_date_precision: x.birth_date_precision?.value ? parseInt(x.birth_date_precision.value) : undefined,
                 birth_place: x.birth_place?.value,
                 citizenship: x.citizenship?.value,
                 commons: x.commons?.value,
                 death_date: x.death_date?.value,
-                death_date_precision: parseInt(x.death_date_precision?.value),
+                death_date_precision: x.death_date_precision?.value ? parseInt(x.death_date_precision.value) : undefined,
                 death_place: x.death_place?.value,
                 description: x.description?.value,
                 end_date: x.end_date?.value,
-                end_date_precision: parseInt(x.end_date_precision?.value),
+                end_date_precision: x.end_date_precision?.value ? parseInt(x.end_date_precision.value) : undefined,
+                event_date: x.event_date?.value,
+                event_date_precision: x.event_date_precision?.value ? parseInt(x.event_date_precision.value) : undefined,
                 event_place: x.event_place?.value,
+                gender: x.gender_name?.value,
+                genderID: x.genderID?.value,
+                instance: x.instance_name?.value,
+                instanceID: x.instanceID?.value,
                 name: x.name?.value,
                 occupations: x.occupations?.value,
                 pictures: x.pictures?.value?.split("||"),
                 prizes: x.prizes?.value,
+                start_date: x.start_date?.value,
+                start_date_precision: parseInt(x.start_date_precision?.value),
                 wikipedia: x.wikipedia?.value,
                 wkt_coords: x.wkt_coords?.value,
                 wikidata: wdQID,

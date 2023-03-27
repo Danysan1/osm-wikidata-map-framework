@@ -32,7 +32,7 @@ INSERT INTO oem.etymology (
     old_et.et_from_el_id,
     -1 AS recursion_depth,
     FALSE,
-    ARRAY['osm_propagated'],
+    ARRAY['propagated'],
     old_et.et_from_osm_wikidata_wd_id,
     old_et.et_from_osm_wikidata_prop_cod
 FROM propagatable_etymology AS pet

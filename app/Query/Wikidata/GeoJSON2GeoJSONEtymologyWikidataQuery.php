@@ -70,16 +70,14 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                         //error_log("Number of etymologies: " . $numEtymologies);
                         for ($j = 0; $j < $numEtymologies; $j++) {
                             $wikidataID = (string)$etymologies[$j][OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY];
-                            $osmType = empty($props["osm_type"]) ? null : (string)$props["osm_type"];
-                            $osmID = empty($props["osm_id"]) ? null : (int)$props["osm_id"];
 
                             $ety = self::buildEtymologyFromID($wikidataID, $matrixData);
                             if ($ety) {
-                                $ety["from_osm"] = !empty($osmType) && !empty($osmID);
-                                if ($osmType)
-                                    $ety["from_osm_type"] = $osmType;
-                                if ($osmID)
-                                    $ety["from_osm_id"] = $osmID;
+                                $ety["from_osm"] = !empty($etymologies[$j]["from_osm"]);
+                                if (!empty($etymologies[$j]["from_osm_type"]) && !empty($etymologies[$j]["from_osm_id"])) {
+                                    $ety["from_osm_type"] = (string)$etymologies[$j]["from_osm_type"];
+                                    $ety["from_osm_id"] = (int)$etymologies[$j]["from_osm_id"];
+                                }
 
                                 $ety["from_wikidata"] = !empty($etymologies[$j]["from_wikidata"]);
                                 if (!empty($etymologies[$j]["from_wikidata_entity"]))

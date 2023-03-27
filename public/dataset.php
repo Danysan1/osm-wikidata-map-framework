@@ -21,7 +21,7 @@ try {
     $lastUpdate = date("Y-m-d");
 }
 
-$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($conf->getWikidataKeys());
+$wikidataKeyIDs = $conf->getWikidataKeyIDs();
 $fromOsmColumnValues = implode(" ", array_map(function (string $keyID): string {
     return "COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND '$keyID' = ANY(ety.et_from_key_ids)) AS \"$keyID\",";
 }, $wikidataKeyIDs));

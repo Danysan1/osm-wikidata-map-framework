@@ -74,7 +74,8 @@ div.detail_container div.grid {
   /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
   display: grid;
   grid-template-rows: auto;
-  align-content: center;
+  margin-left: auto;
+  margin-right: auto;
   align-items: start;
   justify-content: center;
   justify-items: center;
@@ -173,6 +174,7 @@ div.pictures > hr {
   margin-right: max(3em, auto);
 }
 
+.mapboxgl-popup-content .etymology_loading > h3,
 div.info > p {
   margin-left: 1em;
   margin-right: 1em;

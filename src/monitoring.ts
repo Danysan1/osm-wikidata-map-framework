@@ -1,5 +1,5 @@
 import { debugLog, getConfig } from "./config";
-import { init, captureException, captureMessage, SeverityLevel, Replay } from "@sentry/browser";
+import { SeverityLevel } from "@sentry/browser";
 import { Extras, Integration } from '@sentry/types';
 
 /**
@@ -10,38 +10,40 @@ function initSentry() {
     const dsn = getConfig("sentry_js_dsn"),
         environment = getConfig("sentry_js_env");
     if (dsn && environment) {
-        const rawReplaysSessionSampleRate = getConfig("sentry_js_replays_session_sample_rate"),
-            rawReplaysOnErrorSampleRate = getConfig("sentry_js_replays_on_error_sample_rate"),
-            replaysSessionSampleRate = rawReplaysSessionSampleRate ? parseFloat(rawReplaysSessionSampleRate) : 0,
-            replaysOnErrorSampleRate = rawReplaysOnErrorSampleRate ? parseFloat(rawReplaysOnErrorSampleRate) : 0,
-            integrations: Integration[] = [];
+        import("./Sentry").then(({ init, Replay }) => {
+            const rawReplaysSessionSampleRate = getConfig("sentry_js_replays_session_sample_rate"),
+                rawReplaysOnErrorSampleRate = getConfig("sentry_js_replays_on_error_sample_rate"),
+                replaysSessionSampleRate = rawReplaysSessionSampleRate ? parseFloat(rawReplaysSessionSampleRate) : 0,
+                replaysOnErrorSampleRate = rawReplaysOnErrorSampleRate ? parseFloat(rawReplaysOnErrorSampleRate) : 0,
+                enableReplay = replaysSessionSampleRate > 0 || replaysOnErrorSampleRate > 0,
+                integrations: Integration[] = [];
 
-        if (replaysSessionSampleRate > 0 || replaysOnErrorSampleRate > 0)
-            integrations.push(new Replay({ maskAllText: true, blockAllMedia: true }));
+            if (enableReplay)
+                integrations.push(new Replay({ maskAllText: true, blockAllMedia: true }));
 
-        debugLog("Initializing Sentry", {
-            dsn, environment, rawReplaysSessionSampleRate, rawReplaysOnErrorSampleRate, replaysSessionSampleRate, replaysOnErrorSampleRate
-        });
-
-        init({
-            dsn, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, integrations
-        });
+            debugLog("Initializing Sentry", {
+                dsn, environment, rawReplaysOnErrorSampleRate, replaysOnErrorSampleRate, enableReplay
+            });
+            init({ dsn, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, integrations });
+        }).catch((err) => console.error("Failed loading Sentry due to an error", err));
     }
 }
 
 function logErrorMessage(message: string, level: SeverityLevel = "error", extra: object | undefined = undefined) {
-    if (extra instanceof Error) {
-        captureException(extra, {
-            level: level,
-            extra: ({ message } as Extras)
-        });
-    } else {
-        captureMessage(message, {
-            level: level,
-            extra: (extra as Extras)
-        });
-    }
     console.error(message, extra);
+    import("./Sentry").then(({ captureException, captureMessage }) => {
+        if (extra instanceof Error) {
+            captureException(extra, {
+                level: level,
+                extra: ({ message } as Extras)
+            });
+        } else {
+            captureMessage(message, {
+                level: level,
+                extra: (extra as Extras)
+            });
+        }
+    }).catch((err) => console.error("Failed logging Sentry due to an error", err));
 }
 
 /**

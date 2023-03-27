@@ -4,83 +4,50 @@ declare(strict_types=1);
 
 namespace App;
 
-interface BoundingBox {
-    /**
-     * @return float
-     */
+interface BoundingBox
+{
     public function getMinLat(): float;
 
-    /**
-     * @return float
-     */
     public function getMinLon(): float;
 
-    /**
-     * @return float
-     */
     public function getMaxLat(): float;
 
-    /**
-     * @return float
-     */
     public function getMaxLon(): float;
 
-    /**
-     * @return string
-     */
-    public function asBBoxString();
+    public function asBBoxString(): string;
 
     /**
-     * $this has the same values as $other
-     * 
-     * @param BoundingBox $other
-     * @return bool
+     * @see https://www.rfc-editor.org/rfc/rfc7946#section-5
      */
-    public function equals(BoundingBox $other);
+    public function asArray(): array;
+
+    public function equals(BoundingBox $other): bool;
 
     /**
      * $other is a subset of $this.
-     * 
-     * @param BoundingBox $other
-     * @return bool
      */
-    public function containsOrEquals(BoundingBox $other);
+    public function containsOrEquals(BoundingBox $other): bool;
 
     /**
      * $other is a proper subset of $this (subset, not equal and not null).
-     * 
-     * @param BoundingBox $other
-     * @return bool
      */
-    public function strictlyContains(BoundingBox $other);
+    public function strictlyContains(BoundingBox $other): bool;
+
+    public function isAcrossAntimeridian(): bool;
+
+    public function getArea(): float;
+
+    public function getOverlapWith(BoundingBox $other): ?BoundingBox;
 
     /**
-     * @return bool
-     */
-    public function isAcrossAntimeridian();
-
-    /**
-     * @return float
-     */
-    public function getArea();
-
-    /**
-     * @return BoundingBox|null
-     */
-    public function getOverlapWith(BoundingBox $other);
-
-    /**
-     * @return float
+     * Absolute overlap, >= 0
      */
     public function getAbsoluteOverlapAreaWith(BoundingBox $other): float;
 
     /**
-     * @return float
+     * Relative overlap, between 0 and 1
      */
     public function getRelativeOverlapAreaWith(BoundingBox $other): float;
 
-    /**
-     * @return string
-     */
     public function __toString(): string;
 }

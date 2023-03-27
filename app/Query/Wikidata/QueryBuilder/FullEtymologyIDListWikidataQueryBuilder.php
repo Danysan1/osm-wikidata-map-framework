@@ -9,6 +9,7 @@ namespace App\Query\Wikidata\QueryBuilder;
  */
 class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBuilder
 {
+    /** @see WikidataService.fetchEtymologyDetails() in WikidataService.ts */
     protected function createQueryFromValidIDsString(string $wikidataValues, string $language): string
     {
         return "SELECT ?wikidata
@@ -41,12 +42,14 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
             WHERE {
                 VALUES ?wikidata { $wikidataValues }
 
+                # ID and name of the class of the entity
                 OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
                     ?instanceID ^wdt:P31 ?wikidata;
                         rdfs:label ?instance_name.
                     FILTER(lang(?instance_name)='$language').
                 }
 
+                # Name and description of the entity
                 {
                     ?name ^rdfs:label ?wikidata.
                     FILTER(lang(?name)='$language').
@@ -73,6 +76,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                     ?name ^rdfs:label ?wikidata.
                 }
 
+                # Name of the occupations of this entity
                 OPTIONAL {
                     ?occupation ^wdt:P106 ?wikidata.
                     {
@@ -106,6 +110,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                     FILTER(lang(?occupation_name)='$language').
                 }
 
+                # Pictures of this entity
                 OPTIONAL {
                     ?picture ^wdt:P18|^wdt:P94|^wdt:P242|^wdt:P15|^wdt:P41 ?wikidata.
 # picture - https://www.wikidata.org/wiki/Property:P18
@@ -115,12 +120,14 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
 # flag - https://www.wikidata.org/wiki/Property:P41
                 }
 
+                # ID and name of the gender of the entity
                 OPTIONAL {
                     ?genderID ^wdt:P21 ?wikidata;
                         rdfs:label ?gender_name.
                     FILTER(lang(?gender_name)='$language').
                 }
 
+                # Date the event represented by this entity took place
                 OPTIONAL {
                     ?wikidata p:P585/psv:P585 [ # event date - https://www.wikidata.org/wiki/Property:P585
                         wikibase:timePrecision ?event_date_precision;
@@ -132,6 +139,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                     }.
                 }
 
+                # Date the event represented by this entity started
                 OPTIONAL {
                     ?wikidata (p:P580/psv:P580)|(p:P571/psv:P571)|(p:P1619/psv:P1619) [
 # start time - https://www.wikidata.org/wiki/Property:P580
@@ -146,6 +154,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                     }.
                 }
 
+                # Date the event represented by this entity ended
                 OPTIONAL {
                     ?wikidata (p:P582/psv:P582)|(p:P576/psv:P576)|(p:P3999/psv:P3999) [
 # end time - https://www.wikidata.org/wiki/Property:P582
@@ -160,6 +169,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                     }.
                 }
 
+                # Date the person represented by this entity was born in
                 OPTIONAL {
                     ?wikidata p:P569/psv:P569 [ # birth date - https://www.wikidata.org/wiki/Property:P569
                         wikibase:timePrecision ?birth_date_precision;
@@ -171,6 +181,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                     }.
                 }
 
+                # Date the person represented by this entity died in
                 OPTIONAL {
                     ?wikidata p:P570/psv:P570 [ # death date - https://www.wikidata.org/wiki/Property:P570
                         wikibase:timePrecision ?death_date_precision;

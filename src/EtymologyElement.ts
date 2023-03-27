@@ -21,6 +21,8 @@ const enum DatePrecision {
 }
 
 export interface EtymologyDetails {
+    birth_date?: string;
+    birth_date_precision?: DatePrecision;
     birth_place?: string;
     citizenship?: string;
     commons?: string;
@@ -30,36 +32,44 @@ export interface EtymologyDetails {
     description?: string;
     end_date?: string;
     end_date_precision?: DatePrecision;
+    event_date?: string;
+    event_date_precision?: DatePrecision;
     event_place?: string;
+    genderID?: string;
+    gender?: string;
+    instanceID?: string;
+    instance?: string;
     name?: string;
     occupations?: string;
     pictures?: ImageResponse[];
     prizes?: string;
-    wd_id?: string;
+    start_date?: string;
+    start_date_precision?: DatePrecision;
     wikidata?: string;
     wikipedia?: string;
     wkt_coords?: string;
 }
 
 export interface Etymology extends EtymologyDetails {
-    birth_date?: string;
-    birth_date_precision?: DatePrecision;
+    /** Internal ID for the etymology relation (unique within the request but may vary over time) */
     et_id?: number;
-    event_date?: string;
-    event_date_precision?: DatePrecision;
+    /** Whether OpenStreetMap is the original source of this etymology */
     from_osm?: boolean;
+    /** ID (unique only within its type) of the source OpenStreetMap element */
     from_osm_id?: number;
+    /** Type (node/way/relation) of the source OpenStreetMap element */
     from_osm_type?: string;
+    /** Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well */
     from_parts_of_wikidata_cod?: string;
+    /** Whether Wikidata is the original source of this etymology */
     from_wikidata?: boolean;
+    /** Q-ID of the Wikidata entity representing the map element */
     from_wikidata_entity?: string;
+    /** P-ID of the Wikidata property that links from the map element entity to this etymology entity */
     from_wikidata_prop?: string;
-    gender?: string;
-    instanceID?: string;
+    /** Whether this etymology has been obtained through propagation */
     propagated?: boolean;
-    recursion_depth?: number;
-    start_date?: string;
-    start_date_precision?: DatePrecision;
+    /** Internal ID for the etymology Wikidata entity (unique within the request but may vary over time) */
     wd_id?: string;
 }
 
@@ -338,7 +348,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     }
 
     const propagated = etyDomElement.querySelector<HTMLElement>('.etymology_propagated_wrapper');
-    if (propagated && ety.recursion_depth) {
+    if (propagated && ety.propagated) {
         propagated.classList.remove("hiddenElement");
     } else if (propagated) {
         propagated.classList.add("hiddenElement");

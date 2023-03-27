@@ -13,25 +13,28 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
     {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $commonsQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
+        $pictureQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(
             "SELECT DISTINCT
-                ?location
-                ?picture
                 ?etymology
+                ?location
+                ?commons
+                ?picture
                 (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
+                MINUS { ?stmt pq:P582 []. } # Ignore if it has a end date
                 SERVICE wikibase:box {
                     ?stmt pq:P625 ?location.
-                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                    bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
+                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
+                        wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-                $commonsQuery
+                OPTIONAL { ?stmt pq:P373 ?commons. }
+                $pictureQuery
             }
             $limitClause",
             $config

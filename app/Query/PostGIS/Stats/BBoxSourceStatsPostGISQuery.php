@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Query\PostGIS\Stats;
 
-
 use \App\Query\BBoxJSONQuery;
 use \App\Query\PostGIS\BBoxPostGISQuery;
 use \App\Result\JSONQueryResult;
-use \App\Result\JSONLocalQueryResult;
-use \App\Result\QueryResult;
 
 class BBoxSourceStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQuery
 {

@@ -3,7 +3,7 @@
 declare(strict_types=1);
 require_once(__DIR__ . "/../vendor/autoload.php");
 
-define("ISO_LANGUAGE_PATTERN", '/^(\w+)(-\w+)?$/');
+define("ISO_LANGUAGE_PATTERN", '/^(\w+)[-\w]*$/');
 
 use \App\Config\Configuration;
 

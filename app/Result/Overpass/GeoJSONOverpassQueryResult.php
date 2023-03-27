@@ -22,8 +22,12 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
     {
         $elements = $this->getElements();
 
-        $geojson = ["type" => "FeatureCollection", "features" => []];
+        $geojson = [
+            "type" => "FeatureCollection",
+            "features" => [],
+        ];
 
+        $etymologyCount = null;
         foreach ($elements as $index => $row) {
             if (!is_int($index)) {
                 error_log("OverpassQueryResult::getGeoJSONData: malformed array key");
@@ -31,6 +35,8 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
                 $feature = $this->convertElementToGeoJSONFeature($index, $row, $elements);
                 if (!empty($feature)) {
                     $geojson["features"][] = $feature;
+                    if (!empty($feature["properties"]["etymologies"]))
+                        $etymologyCount = ($etymologyCount ?? 0) + count($feature["properties"]["etymologies"]);
                 }
             }
         }
@@ -39,6 +45,8 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
             //error_log(get_class($this) . ": " . json_encode($geojson));
             //error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
         }
+        if ($etymologyCount !== null)
+            $geojson["etymology_count"] = $etymologyCount;
 
         return $geojson;
     }

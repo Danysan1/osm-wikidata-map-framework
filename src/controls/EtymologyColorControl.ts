@@ -1,8 +1,8 @@
-//import { Expression, MapboxEvent } from 'maplibre-gl';
-import { Expression, MapboxEvent } from 'mapbox-gl';
+//import { MaplibreEvent as MapEvent } from 'maplibre-gl';
+import { MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { logErrorMessage } from '../monitoring';
-import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
+import { ChartData } from "chart.js";
+import { getCorrectFragmentParams } from '../fragment';
 import { debugLog } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
@@ -31,11 +31,14 @@ class EtymologyColorControl extends DropdownControl {
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
 
-    constructor(startColorScheme: ColorSchemeID) {
+    constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
             id,
             text: item.text,
-            onSelect: (event) => this.onColorSchemeSelect(id, event)
+            onSelect: (event) => {
+                this.updateChart(event);
+                onSchemeChange(id as ColorSchemeID);
+            }
         }));
         super(
             '📊', //'🎨',
@@ -48,69 +51,7 @@ class EtymologyColorControl extends DropdownControl {
         this._chartXHR = null;
     }
 
-    /**
-     * Get the currently selected color scheme
-     */
-    getColorScheme(): string {
-        const dropdown = this.getDropdown();
-        if (!dropdown)
-            throw new Error("Missing color control dropdown");
-        const colorScheme = dropdown.value;
-        if (typeof colorScheme != 'string')
-            throw new Error("Bad color control dropdown value");
-        return colorScheme;
-    }
-
-    setColorScheme(colorScheme: ColorSchemeID) {
-        debugLog("EtymologyColorControl setColorScheme", { colorScheme });
-        const dropdown = this.getDropdown();
-        if (!dropdown?.options) {
-            console.warn("setColorScheme: dropdown not yet initialized");
-        } else {
-            Array.prototype.forEach(option => {
-                if (option.value === colorScheme) {
-                    option.selected = true;
-                    dropdown.dispatchEvent(new Event("change"));
-                    return;
-                }
-            }, dropdown.options);
-            console.error("EtymologyColorControl setColorScheme: invalid color scheme", { colorScheme });
-        }
-    }
-
-    onColorSchemeSelect(colorSchemeID: string, event: Event) {
-        const colorSchemeObj = colorSchemes[colorSchemeID as ColorSchemeID],
-            map = this.getMap();
-        let color: string | Expression;
-
-        if (colorSchemeObj) {
-            color = colorSchemeObj.color;
-        } else {
-            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
-            color = '#3bb2d0';
-        }
-        debugLog("EtymologyColorControl dropDown click", { event, colorSchemeID, colorSchemeObj, color });
-
-        [
-            ["wikidata_source_layer_point", "circle-color"],
-            ["wikidata_source_layer_lineString", 'line-color'],
-            ["wikidata_source_layer_polygon_fill", 'fill-color'],
-            ["wikidata_source_layer_polygon_border", 'line-color'],
-        ].forEach(([layerID, property]) => {
-            if (map?.getLayer(layerID)) {
-                map.setPaintProperty(layerID, property, color);
-            } else {
-                console.warn("Layer does not exist, can't set property", { layerID, property, color });
-            }
-        });
-
-        this.updateChart(event);
-
-        setFragmentParams(undefined, undefined, undefined, colorSchemeID as ColorSchemeID);
-        //updateDataSource(event);
-    }
-
-    updateChart(event?: MapboxEvent | Event, source?: string) {
+    updateChart(event?: MapEvent | Event, source?: string) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not inizialized", { event });
@@ -136,7 +77,6 @@ class EtymologyColorControl extends DropdownControl {
                     maxLon = northEast.lng,
                     language = document.documentElement.lang,
                     queryParams = {
-                        from: "bbox",
                         to: colorScheme.urlCode,
                         minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
                         minLon: (Math.floor(minLon * 1000) / 1000).toString(),
@@ -157,7 +97,7 @@ class EtymologyColorControl extends DropdownControl {
                                 data: [],
                                 backgroundColor: [],
                             }]
-                        } as import("chart.js").ChartData<"pie">;
+                        } as ChartData<"pie">;
                     if (readyState == XMLHttpRequest.UNSENT || status == 0) {
                         debugLog("XHR aborted", { xhr, readyState, status, e });
                     } else if (readyState == XMLHttpRequest.DONE) {
@@ -196,7 +136,7 @@ class EtymologyColorControl extends DropdownControl {
      * 
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
-    setChartData(data: import('chart.js').ChartData<"pie">) {
+    setChartData(data: ChartData<"pie">) {
         debugLog("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
@@ -218,7 +158,7 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
-    async initChart(data: import('chart.js').ChartData<"pie">) {
+    async initChart(data: ChartData<"pie">) {
         // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
         const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');

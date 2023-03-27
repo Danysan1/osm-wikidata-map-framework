@@ -28,15 +28,15 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (wdt:$wikidataProperty AS ?from_prop)
             WHERE {
                 ?etymology p:$wikidataProperty ?stmt.
-                MINUS { ?stmt pq:P625 []. }
+                MINUS { ?stmt pq:P625|pq:P582 []. }
                 ?stmt ps:$wikidataProperty ?item.
                 SERVICE wikibase:box {
                     ?item wdt:P625 ?location.
-                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
-                    bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
+                    bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
+                        wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-                OPTIONAL { ?item wdt:P373 ?commons }
-                OPTIONAL { ?item wdt:P18 ?picture }
+                OPTIONAL { ?item wdt:P373 ?commons. }
+                OPTIONAL { ?item wdt:P18 ?picture. }
                 OPTIONAL {{
                     ?item rdfs:label ?itemLabel.
                     FILTER(LANG(?itemLabel) = '$language')

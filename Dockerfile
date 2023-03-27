@@ -2,13 +2,13 @@
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
 # https://hub.docker.com/_/php
-FROM php:8.2.3-apache-bullseye AS base
+FROM php:8.2.4-apache-bullseye AS base
 WORKDIR /var/www
 
 RUN a2enmod headers ssl rewrite deflate
 
-COPY ./apache-only-get.conf /etc/apache2/conf-available/only-get.conf
-RUN a2enconf only-get.conf
+COPY ./apache.conf /etc/apache2/conf-available/owmf.conf
+RUN a2enconf owmf.conf
 
 COPY ./composer_install.sh ./composer_install.sh
 RUN chmod +x ./composer_install.sh && ./composer_install.sh
@@ -27,14 +27,14 @@ RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
 COPY ["./composer.json", "./composer.lock", "/var/www/"]
 RUN php composer.phar install
 
-COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.config.js", "/var/www/"]
+COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.common.js", "./webpack.dev.js", "/var/www/"]
 RUN npm install -g npm && \
 	npm install
 
 
 
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:19.6.1-alpine AS npm-install
+FROM node:19.8.1-alpine AS npm-install
 WORKDIR /npm_app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.common.js", "./webpack.prod.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"
@@ -45,9 +45,15 @@ RUN npm install && \
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
-	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache && \
+	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache libapache2-mod-security2 modsecurity-crs && \
 	rm -rf /var/lib/apt/lists/*
-RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+
+# Setup mod_security - https://www.inmotionhosting.com/support/server/apache/install-modsecurity-apache-module/
+RUN cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf && \
+	sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/modsecurity/modsecurity.conf
+
+# Install PHP extensions - https://hub.docker.com/_/php/
+RUN	mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
 	docker-php-ext-install -j$(nproc) pdo_pgsql zip
 
 COPY ["./composer.json", "./composer.lock", "/var/www/"]

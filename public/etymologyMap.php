@@ -28,15 +28,17 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
-$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all_db");
+$downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALIDATE_BOOL, false);
+$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
+
 $wikidataConfig = new BaseWikidataConfig($conf);
 $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
 $eagerFullDownload = $conf->getBool("eager_full_etymology_download");
 
 $enableDB = $conf->getBool("db_enable");
-if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier", "wd_indirect"])) {
+if ($enableDB && str_starts_with($source, "db_")) {
     //error_log("etymologyMap.php using DB");
     $db = new PostGIS_PDO($conf);
 } else {
@@ -45,8 +47,6 @@ if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_
 }
 $textKey = (string)$conf->get('osm_text_key');
 $descriptionKey = (string)$conf->get('osm_description_key');
-$wikidataKeys = $conf->getWikidataKeys();
-$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 
 // "en-US" => "en"
 $langMatches = [];
@@ -61,7 +61,20 @@ $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
-    $query = new BBoxEtymologyPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $textKey, $descriptionKey, $serverTiming, $maxElements, $source, $search);
+    $query = new BBoxEtymologyPostGISQuery(
+        $bbox,
+        $safeLanguage,
+        $db,
+        $wikidataConfig,
+        $textKey,
+        $descriptionKey,
+        $serverTiming,
+        $maxElements,
+        $source,
+        $search,
+        $downloadColors,
+        $eagerFullDownload
+    );
 } else {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
@@ -83,16 +96,20 @@ if ($db != null) {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
         $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
         $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty, $safeLanguage);
-    } elseif ($source == "overpass") {
+    } elseif (str_starts_with($source, "overpass_")) {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
+        $keyID = str_replace("overpass_", "", $source);
+        $wikidataKeys = $conf->getWikidataKeys($keyID);
         $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
     } else {
         throw new Exception("Bad 'source' parameter");
     }
 
-    $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
-    $combinedQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
-    $query = new CSVCachedBBoxGeoJSONQuery($combinedQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);
+    if ($downloadColors || $eagerFullDownload) {
+        $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
+        $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
+    }
+    $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);
 }
 
 $serverTiming->add("3_init");
@@ -107,16 +124,10 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect_to_cache_file")) {
-        $out = "";
-        header("Location: " . $result->getPublicSourcePath());
-    } else {
-        $out = $result->getGeoJSON();
-        header("Cache-Location: " . $result->getPublicSourcePath());
-    }
 } else {
     $out = $result->getGeoJSON();
+    if ($result->hasPublicSourcePath())
+        header("Cache-Location: " . $result->getPublicSourcePath());
 }
 
 $serverTiming->add("5_output");

@@ -13,14 +13,14 @@ class IniFileConfiguration extends BaseConfiguration
 	 */
 	private $config;
 
-	public function __construct(string $iniFilePath = __DIR__ . "/../../open-etymology-map.ini")
+	public function __construct(string $iniFilePath = __DIR__ . "/../../owmf.ini")
 	{
+        if (!file_exists($iniFilePath))
+            throw new Exception(".ini file does not exist: '$iniFilePath'");
+		
 		$this->config = @parse_ini_file($iniFilePath);
-		if (empty($this->config)) {
-			error_log("'$iniFilePath' not found or empty");
-			throw new Exception("Configuration file not found");
-		}
-		//echo json_encode($this->config);
+		if (empty($this->config))
+			throw new Exception("Failed loading .ini configuration: '$iniFilePath'");
 	}
 
 	public function listKeys(): array

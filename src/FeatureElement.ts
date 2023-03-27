@@ -122,7 +122,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
     if (!element_location_button) {
         console.warn("Missing element_location_button");
-    } else if (osm_full_id || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
+    } else if (osm_full_id || properties.commons || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
         let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
         while (Array.isArray(coord) && Array.isArray(coord[0])) {
             coord = coord[0];
@@ -165,30 +165,38 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
 
     const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
         textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
+        textEtyNames = textEtyNameExists ? textEtyName.split(";") : [],
         textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
-        textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr;
-    let textEtyShouldBeShown = textEtyNameExists || textEtyDescrExists;
+        textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr,
+        textEtyDescrs = textEtyDescrExists ? textEtyDescr.split(";") : [];
 
-    if (textEtyNameExists && !textEtyDescrExists) {
-        // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
-        textEtyShouldBeShown = etymologies.some((etymology) =>
-            !etymology?.name?.toLowerCase()?.includes(textEtyName.trim().toLowerCase()) &&
-            !etymology?.description?.toLowerCase()?.includes(textEtyName.trim().toLowerCase())
-        );
+    for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
+        const nthTextEtyNameExists = n < textEtyNames.length,
+            nthTextEtyDescrExists = n < textEtyDescrs.length,
+            // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+            textEtyShouldBeShown = nthTextEtyDescrExists || (
+                nthTextEtyNameExists && etymologies.every((etymology) =>
+                    !etymology?.name?.toLowerCase()?.includes(textEtyNames[n].trim().toLowerCase()) &&
+                    !etymology?.description?.toLowerCase()?.includes(textEtyNames[n].trim().toLowerCase())
+                )
+            ),
+            nthTextEtyName = nthTextEtyNameExists ? textEtyNames[n] : undefined,
+            nthTextEtyDescr = nthTextEtyDescrExists ? textEtyDescrs[n] : undefined;
+        debugLog("showEtymologies: showing text etymology? ", {
+            n, nthTextEtyNameExists, nthTextEtyName, nthTextEtyDescrExists, nthTextEtyDescr, textEtyShouldBeShown, etymologies
+        });
+        if (textEtyShouldBeShown) {
+            etymologies_container.appendChild(etymologyToDomElement({
+                name: nthTextEtyName,
+                description: nthTextEtyDescr,
+                from_osm: true,
+                from_osm_type: properties.osm_type,
+                from_osm_id: properties.osm_id,
+            }, currentZoom));
+        }
     }
 
-    debugLog("showEtymologies: showing text etymology? ", {
-        textEtyName, textEtyNameExists, textEtyShouldBeShown, textEtyDescr, textEtyDescrExists
-    });
-    if (textEtyShouldBeShown) {
-        etymologies_container.appendChild(etymologyToDomElement({
-            name: textEtyName,
-            description: textEtyDescr,
-            from_osm: true,
-            from_osm_type: properties.osm_type,
-            from_osm_id: properties.osm_id,
-        }, currentZoom));
-    }
+    etymologies_container.querySelector<HTMLDivElement>(".etymology_loading")?.classList.add("hiddenElement");
 }
 
 async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100): Promise<Etymology[]> {

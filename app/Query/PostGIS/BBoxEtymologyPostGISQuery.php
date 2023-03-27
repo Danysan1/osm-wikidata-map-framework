@@ -21,9 +21,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     private string $textKey;
     private string $descriptionKey;
 
-    /**
-     * @param array<string> $availableSourceKeyIDs Available source OSM wikidata keys in the DB
-     */
     public function __construct(
         BoundingBox $bbox,
         string $language,
@@ -34,7 +31,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
-        ?string $search = null
+        ?string $search = null,
+        ?bool $downloadColors = false,
+        ?bool $eagerFullDownload = false
     ) {
         parent::__construct(
             $bbox,
@@ -44,7 +43,9 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $serverTiming,
             $maxElements,
             $source,
-            $search
+            $search,
+            $downloadColors,
+            $eagerFullDownload
         );
         $this->textKey = $textKey;
         $this->descriptionKey = $descriptionKey;
@@ -81,6 +82,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
+                'etymology_count', SUM(ele.num_etymologies),
                 'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::json), '[]'::JSON)
                 )
             FROM (
@@ -109,7 +111,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
                         'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,
                         'propagated', et_recursion_depth != 0,
-                        'recursion_depth', et_recursion_depth,
                         'et_id', et_id,
                         'wd_id', wd.wd_id,
                         'birth_date', EXTRACT(epoch FROM wd.wd_birth_date),
@@ -144,7 +145,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wikidata', wd.wd_wikidata_cod,
                         'wikipedia', wdt.wdt_wikipedia_url,
                         'wkt_coords', ST_AsText(wd.wd_position)
-                    )) AS etymologies
+                    )) AS etymologies,
+                    COUNT(wd.wd_id) AS num_etymologies
                 FROM oem.element AS el
                 LEFT JOIN oem.etymology AS et ON et_el_id = el_id
                 LEFT JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id

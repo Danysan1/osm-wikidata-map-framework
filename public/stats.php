@@ -33,7 +33,7 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
-$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "all_db");
+$source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
 $overpassConfig = new RoundRobinOverpassConfig($conf);
@@ -41,7 +41,7 @@ $wikidataConfig = new BaseWikidataConfig($conf);
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $enableDB = $conf->getBool("db_enable");
 
-if ($enableDB && !in_array($source, ["overpass", "wd_direct", "wd_reverse", "wd_qualifier"]))
+if ($enableDB && str_starts_with($source, "db_"))
     $db = new PostGIS_PDO($conf);
 else
     $db = null;
@@ -57,8 +57,6 @@ $safeLanguage = (string)$langMatches[1];
 
 $textKey = (string)$conf->get('osm_text_key');
 $descriptionKey = (string)$conf->get('osm_description_key');
-$wikidataKeys = $conf->getWikidataKeys();
-$wikidataKeyIDs = IniEnvConfiguration::keysToIDs($wikidataKeys);
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
@@ -75,7 +73,9 @@ if ($db != null) {
         throw new Exception("Bad 'to' parameter");
     }
 } else {
-    if ($source == "overpass") {
+    if (str_starts_with($source, "overpass_")) {
+        $keyID = str_replace("overpass_", "", $source);
+        $wikidataKeys = $conf->getWikidataKeys($keyID);
         $sourceQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
         $sourceName = "OpenStreetMap";
         $sourceColor = "#33ff66";
@@ -133,16 +133,10 @@ if (!$result->isSuccessful()) {
     http_response_code(500);
     error_log("Query no result: " . $result);
     $out = '{"error":"Error getting result (bad response)"}';
-} elseif ($result->hasPublicSourcePath()) {
-    if ($conf->getBool("redirect_to_cache_file")) {
-        $out = "";
-        header("Location: " . $result->getPublicSourcePath());
-    } else {
-        $out = $result->getJSON();
-        header("Cache-Location: " . $result->getPublicSourcePath());
-    }
 } else {
     $out = $result->getJSON();
+    if ($result->hasPublicSourcePath())
+        header("Cache-Location: " . $result->getPublicSourcePath());
 }
 
 $serverTiming->add("5_output");
