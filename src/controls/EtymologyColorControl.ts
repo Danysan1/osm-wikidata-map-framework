@@ -1,8 +1,8 @@
-//import { Expression, MapboxEvent } from 'maplibre-gl';
-import { Expression, MapboxEvent } from 'mapbox-gl';
+//import { MaplibreEvent as MapEvent } from 'maplibre-gl';
+import { MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { logErrorMessage } from '../monitoring';
-import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
+import { ChartData } from "chart.js";
+import { getCorrectFragmentParams } from '../fragment';
 import { debugLog } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
@@ -51,7 +51,7 @@ class EtymologyColorControl extends DropdownControl {
         this._chartXHR = null;
     }
 
-    updateChart(event?: MapboxEvent | Event, source?: string) {
+    updateChart(event?: MapEvent | Event, source?: string) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not inizialized", { event });
@@ -97,7 +97,7 @@ class EtymologyColorControl extends DropdownControl {
                                 data: [],
                                 backgroundColor: [],
                             }]
-                        } as import("chart.js").ChartData<"pie">;
+                        } as ChartData<"pie">;
                     if (readyState == XMLHttpRequest.UNSENT || status == 0) {
                         debugLog("XHR aborted", { xhr, readyState, status, e });
                     } else if (readyState == XMLHttpRequest.DONE) {
@@ -136,7 +136,7 @@ class EtymologyColorControl extends DropdownControl {
      * 
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
-    setChartData(data: import('chart.js').ChartData<"pie">) {
+    setChartData(data: ChartData<"pie">) {
         debugLog("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
@@ -158,7 +158,7 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
-    async initChart(data: import('chart.js').ChartData<"pie">) {
+    async initChart(data: ChartData<"pie">) {
         // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
         const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');
