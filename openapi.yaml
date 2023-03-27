@@ -22,7 +22,7 @@ paths:
           content:
             application/geo+json:
               schema:
-                $ref: "#/components/schemas/FeatureCollection"
+                $ref: "#/components/schemas/GlobalMapResponse"
         409:
           description: The DB is not enabled in this instance,
           content:
@@ -60,17 +60,13 @@ paths:
           schema:
             type: number
         - in: query
-          name: "language"
-          required: true
-          schema:
-            type: string
-        - in: query
           name: "source"
           required: false
           schema:
-            type: string
+            $ref: "#/components/schemas/Source"
         - in: query
           name: "search"
+          description: Q-ID of the Wikidata entity to search for
           required: false
           schema:
             type: string
@@ -80,7 +76,7 @@ paths:
           content:
             application/geo+json:
               schema:
-                $ref: "#/components/schemas/FeatureCollection"
+                $ref: "#/components/schemas/ElementResponse"
         409:
           description: The DB is not enabled in this instance,
           content:
@@ -126,9 +122,10 @@ paths:
           name: "source"
           required: false
           schema:
-            type: string
+            $ref: "#/components/schemas/Source"
         - in: query
           name: "search"
+          description: Q-ID of the Wikidata entity to search for
           required: false
           schema:
             type: string
@@ -143,7 +140,7 @@ paths:
           content:
             application/geo+json:
               schema:
-                $ref: "#/components/schemas/FeatureCollection"
+                $ref: "#/components/schemas/EtymologyResponse"
         400:
           description: Bad parameters passed
           content:
@@ -189,9 +186,10 @@ paths:
           name: "source"
           required: false
           schema:
-            type: string
+            $ref: "#/components/schemas/Source"
         - in: query
           name: "search"
+          description: Q-ID of the Wikidata entity to search for
           required: false
           schema:
             type: string
@@ -243,12 +241,16 @@ components:
           - name
           - count
         properties:
-          name:
+          color:
+            type: string
+          count:
+            type: integer
+          descr:
             type: string
           id:
             type: string
-          count:
-            type: number
+          name:
+            type: string
 
     Geometry:
       type: object
@@ -397,10 +399,10 @@ components:
             - Feature
         id:
           type: integer
-        geometry:
-          $ref: "#/components/schemas/GeometryCollection"
-        properties:
-          type: object
+        # geometry:
+        #   $ref: "#/components/schemas/GeometryCollection"
+        # properties:
+        #   type: object
 
     FeatureCollection:
       type: object
@@ -415,7 +417,133 @@ components:
           type: string
           enum:
             - FeatureCollection
-        features:
-          type: array
-          items:
-            $ref: "#/components/schemas/Feature"
+        # features:
+        #   type: array
+        #   items:
+        #     $ref: "#/components/schemas/Feature"
+
+    GlobalMapFeature:
+      allOf:
+        - $ref: "#/components/schemas/Feature"
+        - type: object
+          properties:
+            geometry:
+              $ref: "#/components/schemas/Point"
+            properties:
+              type: object
+              required:
+                - num
+              properties:
+                num:
+                  type: integer
+
+    GlobalMapResponse:
+      allOf:
+        - $ref: "#/components/schemas/FeatureCollection"
+        - type: object
+          properties:
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/GlobalMapFeature"
+
+    ElementFeature:
+      allOf:
+        - $ref: "#/components/schemas/Feature"
+        - type: object
+          properties:
+            geometry:
+              $ref: "#/components/schemas/Point"
+            id:
+              type: string
+
+    ElementResponse:
+      allOf:
+        - $ref: "#/components/schemas/FeatureCollection"
+        - type: object
+          properties:
+            etymology_count:
+              type: integer
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/ElementFeature"
+
+    Etymology:
+      type: object
+      required:
+        - wikidata
+      properties:
+        wikidata:
+          type: string
+          description: Q-ID of the referenced Wikidata entity
+        from_osm:
+          type: boolean
+        from_osm_type:
+          type: string
+        from_osm_id:
+          type: integer
+        from_wikidata:
+          type: boolean
+        from_wikidata_entity:
+          type: string
+          description: Q-ID of the source Wikidata entity
+        from_wikidata_prop:
+          type: string
+          description: P-ID of the source Wikidata property
+
+    EtymologyFeature:
+      allOf:
+        - $ref: "#/components/schemas/Feature"
+        - type: object
+          properties:
+            geometry:
+              $ref: "#/components/schemas/Geometry"
+            id:
+              type: string
+            properties:
+              type: object
+              required:
+                - name
+                - etymologies
+              properties:
+                name:
+                  type: string
+                etymologies:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/Etymology"
+                wikidata:
+                  type: string
+
+    EtymologyResponse:
+      allOf:
+        - $ref: "#/components/schemas/FeatureCollection"
+        - type: object
+          properties:
+            etymology_count:
+              type: integer
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/EtymologyFeature"
+
+    Source:
+      oneOf:
+        - type: string
+        - type: string
+          enum:
+            - db_all
+            - db_osm_name_etymology
+            - db_osm_subject
+            - db_osm_buried
+            - db_osm_wikidata
+            - db_propagated
+            - overpass_all
+            - overpass_osm_name_etymology
+            - overpass_osm_subject
+            - overpass_osm_buried
+            - wd_direct
+            - wd_indirect
+            - wd_qualifier
+            - wd_reverse
