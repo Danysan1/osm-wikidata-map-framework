@@ -183,7 +183,7 @@ class OemDbInitDAG(DAG):
         task_setup_db_ext = SQLExecuteQueryOperator(
             task_id = "setup_db_extensions",
             conn_id = local_db_conn_id,
-            sql = "sql/1-setup-db-extensions.sql",
+            sql = "sql/01-setup-db-extensions.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
@@ -196,7 +196,7 @@ class OemDbInitDAG(DAG):
         task_teardown_schema = SQLExecuteQueryOperator(
             task_id = "teardown_schema",
             conn_id = local_db_conn_id,
-            sql = "sql/2-teardown-schema.sql",
+            sql = "sql/'02-teardown-schema.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
@@ -210,7 +210,7 @@ class OemDbInitDAG(DAG):
         task_setup_schema = SQLExecuteQueryOperator(
             task_id = "setup_schema",
             conn_id = local_db_conn_id,
-            sql = "sql/3-setup-schema.sql",
+            sql = "sql/03-setup-schema.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
@@ -274,7 +274,7 @@ class OemDbInitDAG(DAG):
         task_convert_osm2pgsql = SQLExecuteQueryOperator(
             task_id = "convert_osm2pgsql_data",
             conn_id = local_db_conn_id,
-            sql = "sql/4-convert-osm2pgsql-data.sql",
+            sql = "sql/04-convert-osm2pgsql-data.sql",
             dag = self,
             task_group=group_db_load,
             doc_md = """
@@ -303,7 +303,7 @@ class OemDbInitDAG(DAG):
         task_remove_ele_too_big = SQLExecuteQueryOperator(
             task_id = "remove_elements_too_big",
             conn_id = local_db_conn_id,
-            sql = "sql/5-remove-elements-too-big.sql",
+            sql = "sql/05-remove-elements-too-big.sql",
             parameters = {
                 "osm_key": "{{ var.json.osm_wikidata_keys[0] or '' }}"
             },
@@ -322,7 +322,7 @@ class OemDbInitDAG(DAG):
         task_create_key_index = SQLExecuteQueryOperator(
             task_id = "create_key_index",
             conn_id = local_db_conn_id,
-            sql = "sql/6-create-key-index.sql",
+            sql = "sql/06-create-key-index.sql",
             dag = self,
             task_group=elaborate_group
         )
@@ -331,7 +331,7 @@ class OemDbInitDAG(DAG):
         task_convert_ele_wd_cods = SQLExecuteQueryOperator(
             task_id = "convert_element_wikidata_cods",
             conn_id = local_db_conn_id,
-            sql = "sql/7-convert-element-wikidata-cods.sql",
+            sql = "sql/07-convert-element-wikidata-cods.jinja.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -375,7 +375,7 @@ class OemDbInitDAG(DAG):
         task_convert_wd_ent = SQLExecuteQueryOperator(
             task_id = "convert_wikidata_entities",
             conn_id = local_db_conn_id,
-            sql = "sql/8-convert-wikidata-entities.sql",
+            sql = "sql/08-convert-wikidata-entities.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -389,7 +389,7 @@ class OemDbInitDAG(DAG):
         task_convert_ety = SQLExecuteQueryOperator(
             task_id = "convert_etymologies",
             conn_id = local_db_conn_id,
-            sql = "sql/9-convert-etymologies.sql",
+            sql = "sql/09-convert-etymologies.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -673,7 +673,7 @@ class OemDbInitDAG(DAG):
         task_prepare_upload = SQLExecuteQueryOperator(
             task_id = "prepare_db_for_upload",
             conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
-            sql = "sql/prepare-db-for-upload.sql",
+            sql = "sql/15-prepare-db-for-upload.sql",
             dag = self,
             task_group = group_upload,
             doc_md="""
