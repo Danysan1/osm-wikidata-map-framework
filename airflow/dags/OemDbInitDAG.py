@@ -196,7 +196,7 @@ class OemDbInitDAG(DAG):
         task_teardown_schema = SQLExecuteQueryOperator(
             task_id = "teardown_schema",
             conn_id = local_db_conn_id,
-            sql = "sql/'02-teardown-schema.sql",
+            sql = "sql/02-teardown-schema.sql",
             dag = self,
             task_group = db_prepare_group,
             doc_md = """

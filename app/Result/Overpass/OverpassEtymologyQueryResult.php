@@ -72,7 +72,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 
         if (empty($element["tags"]["name"])) {
             $elementName = null;
-            error_log("Abnormal element with etymology but no name: $osmURL");
+            //error_log("Abnormal element with etymology but no name: $osmURL");
         } else {
             $elementName = (string)$element["tags"]["name"];
         }
