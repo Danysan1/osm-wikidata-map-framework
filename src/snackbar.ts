@@ -11,23 +11,29 @@ const timeoutIDs: Record<string, NodeJS.Timeout> = {};
  * @see https://www.w3schools.com/howto/howto_js_snackbar.asp
  */
 function showSnackbar(message: string, color = "lightcoral", timeout = 3000, id?: string) {
-    let snackbar = !id ? null : document.querySelector<HTMLDivElement>("div.show#" + id);
+    if (id) id = "snackbar_" + id;
+    let snackbar = id ? document.getElementById(id) : null;
 
     if (!snackbar) {
         snackbar = document.createElement("div");
         document.body.appendChild(snackbar);
-        snackbar.innerText = message;
-        snackbar.style.backgroundColor = color;
         if (id) snackbar.id = id;
         debugLog("Showing snackbar", snackbar);
-        snackbar.classList.add("snackbar", "show");
+        snackbar.classList.add("snackbar");
     } else if (id && id in timeoutIDs) {
         clearTimeout(timeoutIDs[id]);
     }
+    snackbar.innerText = message;
+    snackbar.style.backgroundColor = color;
+    snackbar.classList.add("show");
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
-        const timeoutID = setTimeout(function () { snackbar?.classList.remove("show"); }, timeout);
+        const hideSnackbar = () => {
+            debugLog("Hiding snackbar");
+            snackbar?.classList.remove("show");
+        };
+        const timeoutID = setTimeout(hideSnackbar, timeout);
         if (id)
             timeoutIDs[id] = timeoutID;
     }

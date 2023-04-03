@@ -33,6 +33,7 @@ export class EtymologyMap extends Map {
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
     private search: string;
+    private anyDetailShownBefore: boolean;
 
     constructor(
         containerId: string,
@@ -74,6 +75,7 @@ export class EtymologyMap extends Map {
         window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
 
         this.search = new URLSearchParams(window.location.search).get("search") ?? "";
+        this.anyDetailShownBefore = false;
     }
 
     /**
@@ -135,7 +137,12 @@ export class EtymologyMap extends Map {
                 sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
             });
             showLoadingSpinner(false);
-            showSnackbar("Data loaded", "lightgreen", 3000, "data_loaded");
+
+            if (wikidataSourceEvent && !this.anyDetailShownBefore)
+                showSnackbar("Data loaded, click on any highlighted element to show its details", "lightgreen", 10000, "data_loaded");
+            else
+                showSnackbar("Data loaded", "lightgreen", 3000, "data_loaded");
+
             if (wikidataSourceEvent) {
                 const source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source;
                 this.currentEtymologyColorControl?.updateChart(e, source);
@@ -368,7 +375,7 @@ export class EtymologyMap extends Map {
 
                         const colorSchemeObj = colorSchemes[colorSchemeID];
                         let color: string | Expression;
-                
+
                         if (colorSchemeObj) {
                             color = colorSchemeObj.color;
                         } else {
@@ -467,6 +474,7 @@ export class EtymologyMap extends Map {
 
             element_loading.style.display = 'none';
             ev.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
+            this.anyDetailShownBefore = true;
         }
     }
 
