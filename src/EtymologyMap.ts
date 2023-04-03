@@ -277,7 +277,7 @@ export class EtymologyMap extends Map {
                 "filter": ["==", ["geometry-type"], "Point"],
                 "minzoom": minZoom,
                 'paint': {
-                    'circle-radius': 8,
+                    'circle-radius': 12,
                     'circle-stroke-width': 2,
                     'circle-color': colorSchemeColor,
                     'circle-stroke-color': 'white'
@@ -296,7 +296,7 @@ export class EtymologyMap extends Map {
                 'paint': {
                     'line-color': colorSchemeColor,
                     'line-opacity': 0.5,
-                    'line-width': 12
+                    'line-width': 18
                 }
             }, wikidata_layer_point);
             this.initWikidataLayer(wikidata_layer_lineString);
@@ -312,8 +312,8 @@ export class EtymologyMap extends Map {
                 'paint': {
                     'line-color': colorSchemeColor,
                     'line-opacity': 0.5,
-                    'line-width': 6,
-                    'line-offset': 3, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+                    'line-width': 12,
+                    'line-offset': 6, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
                 }
             }, wikidata_layer_lineString);
             this.initWikidataLayer(wikidata_layer_polygon_border);
