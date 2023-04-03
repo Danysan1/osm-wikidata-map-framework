@@ -96,8 +96,13 @@ if ($enableDB) {
 </head>
 
 <body>
-    <div id="map_container">
-        <div id='map'></div>
+    <div id='map'></div>
+    <noscript>
+        <strong>ERROR: you need Javascript enabled to run this web app</strong>
+    </noscript>
+    <div id="snackbar"></div>
+
+    <template id="intro_template">
         <div class="intro">
             <header>
                 <h1><?= $conf->get("info_title") ?></h1>
@@ -153,12 +158,7 @@ if ($enableDB) {
                 <?php } ?>
             </footer>
         </div>
-        <h2>The map is loading...</h2>
-    </div>
-    <noscript>
-        <strong>You need Javascript enabled to run this web app</strong>
-    </noscript>
-    <div id="snackbar"></div>
+    </template>
 
     <template id="detail_template">
         <div class="detail_container">

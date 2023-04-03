@@ -5,10 +5,12 @@ import { IControl, Map, Popup } from 'mapbox-gl';
  * Opens the information intro window
  */
 function openInfoWindow(map: Map) {
+    const intro_template = document.getElementById('intro_template');
+    if (!(intro_template instanceof HTMLTemplateElement))
+        throw new Error("Missing intro template");
+
     const popupPosition = map.unproject([0, 0]),
-        content = document.getElementsByClassName("intro")[0]?.cloneNode(true);
-    if (!content)
-        throw new Error("Failed cloning info popup content");
+        introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
     new Popup({
         closeButton: true,
         closeOnClick: true,
@@ -16,7 +18,7 @@ function openInfoWindow(map: Map) {
         maxWidth: 'none',
         className: "oem_info_popup"
     }).setLngLat(popupPosition)
-        .setDOMContent(content)
+        .setDOMContent(introDomElement)
         .addTo(map);
 }
 
