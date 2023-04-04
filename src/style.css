@@ -52,7 +52,7 @@ div.mapboxgl-popup-content {
   max-width: 100%;
   max-height: 100%;
   overflow: auto;
-  font-family: "Arial Unicode MS Bold", "Open Sans Semibold", sans-serif;
+  font-family: "Segoe UI", "Open Sans Regular", "Arial Unicode MS Regular", sans-serif;
 }
 
 div.intro {

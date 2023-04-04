@@ -626,7 +626,6 @@ export class EtymologyMap extends Map {
                 filter: ['has', countShowFieldName],
                 layout: {
                     'text-field': '{' + countShowFieldName + '}',
-                    'text-font': ['DIN Offc Pro Medium', 'Arial Unicode MS Bold'],
                     'text-size': 12
                 }
             } as SymbolLayer;
