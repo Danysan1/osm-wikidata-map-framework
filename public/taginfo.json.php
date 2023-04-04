@@ -14,6 +14,7 @@ $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
 $textKey = (string)$conf->get("osm_text_key");
 $descriptionKey = (string)$conf->get("osm_description_key");
+$filterKey = (string)$conf->get("osm_filter_key");
 
 $tags = [[
     "key" => "alt_name",
@@ -45,6 +46,11 @@ $tags = [[
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
     "description" => "The value of '$descriptionKey' is used as textual detail information",
+], [
+    "key" => $filterKey,
+    "object_types" => ["node", "way", "relation", "area"],
+    "doc_url" => $contributingURL,
+    "description" => "Elements are shown on the map only if '$filterKey' is present among their tags",
 ]];
 
 if ($conf->getBool("db_enable") && $conf->getBool("propagate_data")) {
