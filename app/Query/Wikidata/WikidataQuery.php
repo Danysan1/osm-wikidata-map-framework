@@ -43,7 +43,6 @@ abstract class WikidataQuery extends CurlQuery
             throw new \Exception("Query minimization led to an empty string");
         } else {
             // error_log("getMinifiedQuery successfully minified the query:");
-            // error_log($original);
             // error_log($minified);
         }
         return $minified;

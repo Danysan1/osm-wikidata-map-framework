@@ -39,7 +39,10 @@ export class SourceControl extends DropdownControl {
             }
 
             if (osmProps && osmProps.length > 0)
-                dropdownItems.push(buildDropdownItem("db_osm_wikidata", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
+
+            if (indirectWdProperty)
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", "OSM wikidata + Wikidata referenced with " + indirectWdProperty, "DB"));
 
             if (propagationEnabled)
                 dropdownItems.push(buildDropdownItem("db_propagated", "Propagated", "DB"));

@@ -13,6 +13,7 @@ class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
     /**
      * @param array<string> $wikidataCods List of wikidata cods for entities to check
      * @param array<string> $relationProps List of wikidata cods for properties to check
+     * @param ?string $elementFilter
      * @param ?array<string> $instanceOfCods 
      */
     public function __construct(
@@ -20,10 +21,11 @@ class RelatedEntitiesCheckWikidataQuery extends RelatedEntitiesBaseWikidataQuery
         array $relationProps,
         ?string $elementFilter,
         ?array $instanceOfCods,
-        WikidataConfig $config
+        WikidataConfig $config,
+        bool $inverse = false
     ) {
-        $wikidataCodsToCheck = self::getWikidataCodsToCheck($wikidataCods);
-        $relationDirectPropsToCheck = self::getDirectPropsToCheck($relationProps);
+        $wikidataCodsToCheck = self::arrayToPrefixedString($wikidataCods, "wd");
+        $relationDirectPropsToCheck = self::arrayToPrefixedString($relationProps, $inverse ? "^wdt" : "wdt");
         $fullInstanceOfFilter = self::getFullInstanceOfFilter($instanceOfCods);
         $fullElementFilter = self::getFullElementFilter($elementFilter);
 

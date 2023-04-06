@@ -46,6 +46,7 @@ function loadWikidataRelatedEntities(
     string $relationName,
     array $relationProps,
     ?array $instanceOfCods,
+    bool $inverse,
     PDO $dbh,
     WikidataConfig $config
 ): int {
@@ -67,7 +68,8 @@ function loadWikidataRelatedEntities(
         "SELECT COUNT(DISTINCT \"$wikidataCodsColumn\")
         FROM $wikidataCodsTable
         WHERE $wikidataCodsFilter";
-    echo "Using TODOs count query:" . PHP_EOL . $todoCountQuery . PHP_EOL;
+    echo "Using TODOs count query:" . PHP_EOL;
+    echo $todoCountQuery . PHP_EOL . PHP_EOL;
 
     $n_todo = $dbh->query($todoCountQuery)->fetchColumn();
     assert(is_int($n_todo));
@@ -78,7 +80,8 @@ function loadWikidataRelatedEntities(
         FROM $wikidataCodsTable
         WHERE $wikidataCodsFilter
         ORDER BY \"$wikidataCodsColumn\"";
-    echo "Using Wikidata cods query:" . PHP_EOL . $wikidataCodsQuery . PHP_EOL;
+    echo "Using Wikidata cods query:" . PHP_EOL;
+    echo $wikidataCodsQuery . PHP_EOL . PHP_EOL;
 
     $insertQuery =
         "INSERT INTO oem.etymology ($insertFields)
@@ -90,7 +93,9 @@ function loadWikidataRelatedEntities(
         WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
         AND $wikidataCodsFilter
         ON CONFLICT (et_el_id, et_wd_id) DO NOTHING";
-    echo "Using insert query:" . PHP_EOL . $insertQuery . PHP_EOL;
+    // This does not work because of multiple rows with same entities but different relation: ON CONFLICT (et_el_id, et_wd_id) DO UPDATE SET et_from_key_ids = etymology.et_from_key_ids || EXCLUDED.et_from_key_ids
+    echo "Using insert query:" . PHP_EOL;
+    echo $insertQuery . PHP_EOL . PHP_EOL;
 
     $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
@@ -99,7 +104,7 @@ function loadWikidataRelatedEntities(
         $wikidataCodsResult = $dbh->query("$wikidataCodsQuery LIMIT $pageSize OFFSET $offset")->fetchAll();
         $wikidataCods = array_column($wikidataCodsResult, "wikidata_cod");
 
-        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config);
+        $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config, $inverse);
         try {
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
         } catch (Exception $e) {
@@ -112,7 +117,7 @@ function loadWikidataRelatedEntities(
             echo "No elements found to fetch details for." . PHP_EOL;
         } else {
             echo "Fetching details for $n_wikidata_cods elements out of $truePageSize..." . PHP_EOL;
-            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config);
+            $wdDetailsQuery = new RelatedEntitiesDetailsWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config, $inverse);
             try {
                 $jsonResult = $wdDetailsQuery->sendAndGetJSONResult()->getJSON();
             } catch (Exception $e) {
@@ -136,59 +141,26 @@ function loadWikidataRelatedEntities(
             $sth_wd->execute();
             $n_wd = $sth_wd->rowCount();
 
-            $sth_wna = $dbh->prepare($insertQuery);
-            $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-            $sth_wna->execute();
-            $n_wna = $sth_wna->rowCount();
-            echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" relationships." . PHP_EOL;
+            if ($n_wd === 0) {
+                echo "WARNING: No Wikidata entities loaded (possible error in the details query)" . PHP_EOL;
+            } else {
+                $sth_wna = $dbh->prepare($insertQuery);
+                try {
+                    $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+                    $sth_wna->execute();
+                    $n_wna = $sth_wna->rowCount();
+                    echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" relationships." . PHP_EOL;
+                } catch (Exception $e) {
+                    echo "Failed to load Wikidata \"$relationName\" data" . PHP_EOL;
+                    throw $e;
+                }
 
-            $total_wd += $n_wd;
-            $total_wna += $n_wna;
+                $total_wd += $n_wd;
+                $total_wna += $n_wna;
+            }
         }
     }
 
     echo "Finished loading $total_wd Wikidata entities and $total_wna \"$relationName\" relationships." . PHP_EOL;
     return $total_wd;
-}
-
-function loadWikidataNamedAfterEntities(PDO $dbh, WikidataConfig $config, array $wikidataProperties): int
-{
-    return loadWikidataRelatedEntities(
-        "oem.element_wikidata_cods",
-        "ew_wikidata_cod",
-        "NOT ew_from_osm",
-        "et_el_id, et_wd_id, et_from_el_id, et_from_osm, et_from_key_ids, et_from_osm_wikidata_wd_id, et_from_osm_wikidata_prop_cod",
-        "ew_el_id, w2.wd_id, ew_el_id, FALSE, ARRAY['db_osm_wikidata'], w1.wd_id, REPLACE(value->'prop'->>'value', 'http://www.wikidata.org/prop/', '')",
-        "JOIN oem.element_wikidata_cods ON ew_wikidata_cod = w1.wd_wikidata_cod",
-        "named_after",
-        $wikidataProperties,
-        null,
-        $dbh,
-        $config
-    );
-}
-
-function loadWikidataPartsOfEntities(PDO $dbh, WikidataConfig $config): int
-{
-    return loadWikidataRelatedEntities(
-        "oem.etymology JOIN oem.wikidata ON wd_id = et_wd_id",
-        "wd_wikidata_cod",
-        "et_from_parts_of_wd_id IS NULL",
-        "et_el_id, et_wd_id, et_from_el_id, et_from_osm, et_from_key_ids, et_from_osm_wikidata_wd_id, et_from_osm_wikidata_prop_cod, et_recursion_depth, et_from_parts_of_wd_id",
-        "et_el_id, w2.wd_id, et_from_el_id, et_from_osm, et_from_key_ids, et_from_osm_wikidata_wd_id, et_from_osm_wikidata_prop_cod, et_recursion_depth, w1.wd_id",
-        "JOIN oem.etymology ON et_wd_id = w1.wd_id",
-        "has_parts",
-        ["P527"], // has part or parts
-        [ // https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
-            "Q16979650", "Q14073567", "Q58603552", // sibling group / duo / trio
-            "Q10648343", "Q16145172", "Q1826687", "Q99241914", // duo / trio / quartet / quintet
-            "Q16334295", // group of humans
-            "Q219160", // couple
-            "Q3046146", // married couple
-            "Q1141470", // double act
-            "Q14756018", // twins
-        ],
-        $dbh,
-        $config
-    );
 }

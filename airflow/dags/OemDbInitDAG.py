@@ -414,7 +414,7 @@ class OemDbInitDAG(DAG):
         task_load_named_after = OemDockerOperator(
             task_id = "download_named_after_wikidata_entities",
             container_name = "osm-wikidata_map_framework-download_named_after_wikidata_entities",
-            command = "php app/loadWikidataNamedAfterEntities.php",
+            command = "php app/loadWikidataDirectRelatedEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,

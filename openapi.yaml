@@ -537,7 +537,8 @@ components:
             - db_osm_name_etymology
             - db_osm_subject
             - db_osm_buried
-            - db_osm_wikidata
+            - db_osm_wikidata_direct
+            - db_osm_wikidata_reverse
             - db_propagated
             - overpass_all
             - overpass_osm_name_etymology
