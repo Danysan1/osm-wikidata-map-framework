@@ -30,7 +30,7 @@ function initSentry() {
 }
 
 function logErrorMessage(message: string, level: SeverityLevel = "error", extra: object | undefined = undefined) {
-    console.error(message, extra);
+    debugLog(message, extra);
     import("./Sentry").then(({ captureException, captureMessage }) => {
         if (extra instanceof Error) {
             captureException(extra, {
@@ -43,7 +43,9 @@ function logErrorMessage(message: string, level: SeverityLevel = "error", extra:
                 extra: (extra as Extras)
             });
         }
-    }).catch((err) => console.error("Failed logging Sentry due to an error", err));
+    }).catch((err) => console.error(
+        "Failed logging to Sentry due to an error", { message, level, extra, err }
+    ));
 }
 
 /**
