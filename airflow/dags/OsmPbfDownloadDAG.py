@@ -295,6 +295,7 @@ class OsmPbfDownloadDAG(DAG):
         task_wait_for_torrent_download = PythonSensor(
             task_id = "wait_torrent_download",
             python_callable = check_if_torrent_is_complete,
+            retries = 3,
             op_kwargs = {
                 "torrent_id": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_id') | int }}"
             },
