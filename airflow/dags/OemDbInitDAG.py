@@ -96,11 +96,11 @@ def choose_load_wikidata_task(**context) -> str:
     from airflow.models import Variable
     direct_properties = Variable.get("osm_wikidata_properties", deserialize_json=True, default_var=None)
     indirect_property = Variable.get("wikidata_indirect_property", default_var=None)
-    if(direct_properties)
+    if direct_properties:
         next_task = "download_wikidata_direct_related"
-    elif(indirect_property)
+    elif indirect_property:
         next_task = "download_wikidata_reverse_related"
-    else
+    else:
         next_task = "choose_propagation_method"
     return f"elaborate_data.{next_task}"
 
