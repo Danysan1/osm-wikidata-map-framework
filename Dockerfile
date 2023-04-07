@@ -5,7 +5,7 @@
 FROM php:8.2.4-apache-bullseye AS base
 WORKDIR /var/www
 
-RUN a2enmod headers ssl rewrite deflate
+RUN a2enmod headers ssl rewrite deflate expires
 
 COPY ./apache.conf /etc/apache2/conf-available/owmf.conf
 RUN a2enconf owmf.conf
