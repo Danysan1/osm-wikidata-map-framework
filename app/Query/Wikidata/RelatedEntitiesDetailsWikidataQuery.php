@@ -12,6 +12,7 @@ class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQue
     /**
      * @param array<string> $wikidataCods List of wikidata cods for entities to check
      * @param array<string> $relationProps List of wikidata cods for properties to check
+     * @param ?string $elementFilter
      * @param ?array<string> $instanceOfCods 
      */
     public function __construct(
@@ -19,11 +20,12 @@ class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQue
         array $relationProps,
         ?string $elementFilter,
         ?array $instanceOfCods,
-        WikidataConfig $config
+        WikidataConfig $config,
+        bool $inverse = false
     ) {
-        $wikidataCodsToCheck = self::getWikidataCodsToCheck($wikidataCods);
-        $relationPropsToCheck = self::getPropsToCheck($relationProps);
-        $relationPropStatementsToCheck = self::getPropStatementsToCheck($relationProps);
+        $wikidataCodsToCheck = self::arrayToPrefixedString($wikidataCods, "wd");
+        $relationPropsToCheck = self::arrayToPrefixedString($relationProps, $inverse ? "^ps" : "p");
+        $relationPropStatementsToCheck = self::arrayToPrefixedString($relationProps, $inverse ? "^p" : "ps");
         $fullInstanceOfFilter = self::getFullInstanceOfFilter($instanceOfCods);
         $fullElementFilter = self::getFullElementFilter($elementFilter);
 
@@ -44,8 +46,7 @@ class RelatedEntitiesDetailsWikidataQuery extends RelatedEntitiesBaseWikidataQue
                 }
                 MINUS { ?relatedStatement pq:P582 []. } # Related statement has ended
                 ?relatedStatement ?propStatement ?related.
-            }
-            # Limiting is already applied at a higher level as paging";
+            } # Limiting is already applied at a higher level as paging";
         parent::__construct($sparqlQuery, $config);
     }
 }

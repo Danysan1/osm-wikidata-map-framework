@@ -36,6 +36,16 @@ div.mapboxgl-popup.oem_info_popup {
   z-index: 1000;
 }
 
+div.mapboxgl-popup.oem_info_popup .contribute_button,
+div.mapboxgl-popup.oem_info_popup .dataset_button {
+  margin-top: 0.2em;
+  margin-bottom: 0.2em;
+}
+
+div.mapboxgl-popup.oem_info_popup table tr td:first-child {
+  text-align: center;
+}
+
 div.button_row {
   display: flex;
   flex-direction: row;
@@ -217,9 +227,8 @@ div.snackbar {
 div.snackbar.show {
   visibility: visible;
   /* Show the snackbar */
-  /* Add animation: Take 0.5 seconds to fade in and out the snackbar. */
-  -webkit-animation: fadein 0.5s;
-  animation: fadein 0.5s;
+  -webkit-animation: fadein 0.2s;
+  animation: fadein 0.2s;
   max-width: 70vw;
 }
 
@@ -429,10 +438,4 @@ p.pic-attr {
   margin-top: 0;
   font-size: x-small;
   text-align: center;
-}
-
-.oem_info_popup .contribute_button,
-.oem_info_popup .dataset_button {
-  margin-top: 0.2em;
-  margin-bottom: 0.2em;
 }

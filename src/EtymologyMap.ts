@@ -11,7 +11,7 @@ import { EtymologyColorControl, getCurrentColorScheme } from './controls/Etymolo
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { debugLog, getConfig } from './config';
+import { debugLog, getBoolConfig, getConfig } from './config';
 import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
@@ -221,7 +221,10 @@ export class EtymologyMap extends Map {
 
             this.prepareWikidataLayers(wikidata_url, thresholdZoomLevel);
         } else if (enableGlobalLayers) {
-            this.prepareGlobalLayers(minZoomLevel);
+            if(getBoolConfig("db_enable"))
+                this.prepareGlobalLayers(minZoomLevel);
+            else
+                showSnackbar("Please zoom in", "wheat", 15_000);
         } else if (enableElementLayers) {
             const queryParams = {
                 minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1

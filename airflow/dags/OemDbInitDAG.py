@@ -85,6 +85,25 @@ def choose_load_osm_data_task(**context) -> str:
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
     return "load_elements_with_osm2pgsql" if use_osm2pgsql else "load_elements_from_pg_file"
 
+def choose_load_wikidata_task(**context) -> str:
+    """
+        # Check whether and how to download data from Wikidata into the DB
+
+        Links:
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+    """
+    from airflow.models import Variable
+    direct_properties = Variable.get("osm_wikidata_properties", deserialize_json=True, default_var=None)
+    indirect_property = Variable.get("wikidata_indirect_property", default_var=None)
+    if direct_properties:
+        next_task = "download_wikidata_direct_related"
+    elif indirect_property:
+        next_task = "download_wikidata_reverse_related"
+    else:
+        next_task = "choose_propagation_method"
+    return f"elaborate_data.{next_task}"
+
 def choose_propagation_method(propagate_data:str) -> str:
     """
         # Check whether and how to propagate
@@ -400,35 +419,52 @@ class OemDbInitDAG(DAG):
         )
         task_convert_wd_ent >> task_convert_ety
 
-        task_check_load_named_after = BranchPythonOperator(
+        task_check_load_wd_related = BranchPythonOperator(
             task_id = "check_whether_to_load_named_after",
-            python_callable = lambda load: "elaborate_data.download_named_after_wikidata_entities" if load=='True' else "elaborate_data.choose_propagation_method",
-            op_kwargs = {
-                "load": '{{ var.value.osm_wikidata_properties is defined and var.value.osm_wikidata_properties|length > 2 }}',
-            },
+            python_callable = choose_load_wikidata_task,
             dag = self,
-            task_group=elaborate_group
+            task_group = elaborate_group,
+            doc_md = choose_load_wikidata_task.__doc__
         )
-        task_convert_ety >> task_check_load_named_after
+        task_convert_ety >> task_check_load_wd_related
 
-        task_load_named_after = OemDockerOperator(
-            task_id = "download_named_after_wikidata_entities",
-            container_name = "osm-wikidata_map_framework-download_named_after_wikidata_entities",
-            command = "php app/loadWikidataNamedAfterEntities.php",
+        task_load_wd_direct = OemDockerOperator(
+            task_id = "download_wikidata_direct_related",
+            container_name = "osm-wikidata_map_framework-download_wikidata_related",
+            command = "php app/loadWikidataDirectRelatedEntities.php",
             postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
             doc_md = dedent("""
-                # Load Wikidata 'named after' entities
+                # Load Wikidata direct related entities
 
                 For each existing Wikidata entity representing an OSM element:
                 * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
-                * load into the `wikidata_named_after` table of the local PostGIS DB the 'named after' relationships
+                * load into the `etymology` table of the local PostGIS DB the direct related relationships
                 
                 Uses the Wikidata SPARQL query service through `OemDockerOperator`:
             """) + dedent(OemDockerOperator.__doc__)
         )
-        task_check_load_named_after >> task_load_named_after
+        task_check_load_wd_related >> task_load_wd_direct
+
+        task_load_wd_reverse = OemDockerOperator(
+            task_id = "download_wikidata_reverse_related",
+            container_name = "osm-wikidata_map_framework-download_wikidata_related",
+            command = "php app/loadWikidataReverseRelatedEntities.php",
+            postgres_conn_id = local_db_conn_id,
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = dedent("""
+                # Load Wikidata reverse related entities
+
+                For each existing Wikidata entity representing an OSM element:
+                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
+                * load into the `etymology` table of the local PostGIS DB the reverse related relationships
+                
+                Uses the Wikidata SPARQL query service through `OemDockerOperator`:
+            """) + dedent(OemDockerOperator.__doc__)
+        )
+        task_check_load_wd_related >> task_load_wd_reverse
 
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
@@ -441,7 +477,7 @@ class OemDbInitDAG(DAG):
             task_group=elaborate_group,
             doc_md = choose_propagation_method.__doc__
         )
-        [task_check_load_named_after,task_load_named_after] >> task_check_propagation
+        [task_check_load_wd_related, task_load_wd_direct, task_load_wd_reverse] >> task_check_propagation
 
         task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",

@@ -37,7 +37,7 @@ if ($enableDB) {
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=10">
 
     <title><?= $conf->get("info_title") ?></title>
     <meta name="description" content="<?= $conf->get("info_description") ?>" />
@@ -109,15 +109,27 @@ if ($enableDB) {
                 <p><?= $conf->get("info_description") ?></p>
             </header>
 
+            <p>Click anywhere on the map to explore.</p>
             <p>
-            <h3>Click anywhere on the map to explore.</h3>
-            Use the controls on the side to see other data:
-            <ul>
-                <li>📊 to see statistics about elements</li>
-                <li>⚙️ to choose which data source to use</li>
-                <li>🌐 to change the background map style</li>
-                <li>ℹ️ to open again this popup</li>
-            </ul>
+                Use the controls on the side to see other data:
+                <table>
+                    <tr>
+                        <td>📊</td>
+                        <td>to see statistics about elements</td>
+                    </tr>
+                    <tr>
+                        <td>⚙️</td>
+                        <td>to choose which data source to use</td>
+                    </tr>
+                    <tr>
+                        <td>🌐</td>
+                        <td>to change the background map style</td>
+                    </tr>
+                    <tr>
+                        <td>ℹ️</td>
+                        <td>to open again this popup</td>
+                    </tr>
+                </table>
             </p>
 
             <p>
