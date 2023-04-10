@@ -1,3 +1,6 @@
+import { use } from "i18next";
+import Backend from "i18next-http-backend";
+
 /**
  * Get the value for a configuration key
  */
@@ -27,4 +30,13 @@ export function setPageLocale() {
     });
 
     document.documentElement.setAttribute("lang", locale);
+
+    const hostNamespace = new URL(document.URL).hostname;
+    use(Backend).init({
+        fallbackLng: "en",
+        lng: locale,
+        ns: ["translation", hostNamespace],
+        fallbackNS: "translation",
+        defaultNS: hostNamespace,
+    });
 }

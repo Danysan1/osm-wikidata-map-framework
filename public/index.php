@@ -105,39 +105,41 @@ if ($enableDB) {
     <template id="intro_template">
         <div class="intro">
             <header>
-                <h1><?= $conf->get("info_title") ?></h1>
-                <p><?= $conf->get("info_description") ?></p>
+                <h1 class="title">OSM-Wikidata Map Framework</h1>
+                <p class="description"></p>
             </header>
 
-            <p>Click anywhere on the map to explore.</p>
-            <p>
-                Use the controls on the side to see other data:
+            <p class="click_anywhere">Click anywhere on the map to explore.</p>
+            <p class="use_controls">Use the controls on the side to see other data:</p>
                 <table>
                     <tr>
                         <td>📊</td>
-                        <td>to see statistics about elements</td>
+                        <td class="to_see_statistics">to see statistics about elements</td>
                     </tr>
                     <tr>
                         <td>⚙️</td>
-                        <td>to choose which data source to use</td>
+                        <td class="to_choose_source">to choose which data source to use</td>
                     </tr>
                     <tr>
                         <td>🌐</td>
-                        <td>to change the background map style</td>
+                        <td class="to_change_background">to change the background map style</td>
                     </tr>
                     <tr>
                         <td>ℹ️</td>
-                        <td>to open again this popup</td>
+                        <td class="to_open_again">to open again this popup</td>
                     </tr>
                 </table>
-            </p>
 
             <p>
                 <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
-                    <span class="button_img">📖</span> Contribute to the map
+                    <span class="button_img">📖</span>
+                    <span class="contribute">Contribute to the map</span>
                 </a>
                 <?php if ($enableDB) { ?>
-                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
+                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php">
+                        <span class="button_img">💾</span>
+                        <span class="download_dataset">Download as dataset</span></p>
+                    </a>
                 <?php } ?>
             </p>
 

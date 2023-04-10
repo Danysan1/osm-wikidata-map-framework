@@ -1,0 +1,16 @@
+{
+    "info_box": {
+        "title": "OSM-Wikidata Map Framework",
+        "description": "Framework per creare mappe interattive che combinano e visualizzano dettagli su entità associate a elementi geografici da OpenStreetMap e Wikidata.",
+        "click_anywhere": "Clicca su un punto qualsiasi della mappa per esplorare.",
+        "use_controls": "Usa i controlli ai lati per visualizzare altri dati:",
+        "to_see_statistics": "per visualizzare statistiche sugli elementi",
+        "to_choose_source": "per scegliere quale fonte di dati visualizzare",
+        "to_change_background": "per cambiare lo sfondo della mappa",
+        "to_open_again": "per riaprire questa finestra",
+        "contribute": "Contribuisci alla mappa",
+        "download_dataset": "Scarica come dataset",
+        "based_on": "Basato su",
+        "report_issue": "Segnala un problema"
+    }
+}

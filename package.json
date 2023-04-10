@@ -47,6 +47,8 @@
         "chart.js": "^3.6.0",
         "css-loader": "^6.7.1",
         "eslint": "^8.23.0",
+        "i18next": "^22.4.14",
+        "i18next-http-backend": "^2.2.0",
         "mapbox-gl": "^2.11.1",
         "mini-css-extract-plugin": "^2.6.1",
         "ts-loader": "^9.4.2",

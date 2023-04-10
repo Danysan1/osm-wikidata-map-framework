@@ -1,0 +1,24 @@
+{
+    "info_box": {
+        "title": "OSM-Wikidata Map Framework",
+        "description": "Framework for creating interactive maps that combine and display details about entities associated with geographic features from OpenStreetMap and Wikidata.",
+        "click_anywhere": "Click anywhere on the map to explore.",
+        "use_controls": "Use the controls on the sides to see other data:",
+        "to_see_statistics": "to see statistics about elements",
+        "to_choose_source": "to choose which data source to use",
+        "to_change_background": "to change the background map style",
+        "to_open_again": "to open again this popup",
+        "contribute": "Contribute to the map",
+        "download_dataset": "Download as dataset",
+        "based_on": "Based on",
+        "report_issue": "Report an issue"
+    },
+    "source": {
+        "db_all": "All sources from DB",
+        "db_osm_wikidata_reverse": "OSM wikidata + Wikidata referenced with {{indirectWdProperty}}",
+        "propagated": "Propagated",
+        "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
+        "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
+        "wd_indirect": "P625 qualifiers & Wikidata entities referenced with {{indirectWdProperty}}"
+    }
+}

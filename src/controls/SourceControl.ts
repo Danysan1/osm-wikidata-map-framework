@@ -1,6 +1,7 @@
 import { getConfig, getBoolConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { setFragmentParams } from '../fragment';
+import { t } from "i18next";
 
 /**
  * Let the user choose the map style.
@@ -29,7 +30,7 @@ export class SourceControl extends DropdownControl {
             });
 
         if (dbEnabled) {
-            dropdownItems.push(buildDropdownItem("db_all", "All sources from DB", "DB"));
+            dropdownItems.push(buildDropdownItem("db_all", t("source.db_all"), "DB"));
 
             if (keys) {
                 keys.forEach(key => {
@@ -42,28 +43,28 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
 
             if (indirectWdProperty)
-                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", "OSM wikidata + Wikidata referenced with " + indirectWdProperty, "DB"));
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", {indirectWdProperty}), "DB"));
 
             if (propagationEnabled)
                 dropdownItems.push(buildDropdownItem("db_propagated", "Propagated", "DB"));
         }
 
         if (osmProps && osmProps.length > 0)
-            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API"));
 
         if (indirectWdProperty) {
-            dropdownItems.push(buildDropdownItem("wd_indirect", "P625 qualifiers & Wikidata entities referenced from " + indirectWdProperty, "Wikidata API (real time)"));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", "P625 qualifiers on " + indirectWdProperty, "Wikidata API (real time)"));
-            dropdownItems.push(buildDropdownItem("wd_reverse", "Wikidata entities referenced with " + indirectWdProperty, "Wikidata API (real time)"));
+            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", {indirectWdProperty}), "Wikidata API"));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", {indirectWdProperty}), "Wikidata API"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", {indirectWdProperty}), "Wikidata API"));
         }
 
         if (keys) {
             if (keys.length > 1)
-                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass + Wikidata APIs (real time)"));
+                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass API"));
 
             keys.forEach(key => {
                 const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
-                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "Overpass + Wikidata APIs (real time)"));
+                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "Overpass API"));
             });
         }
 
