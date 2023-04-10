@@ -1,6 +1,6 @@
 //import { Popup } from 'maplibre-gl';
 import { IControl, Map, Popup } from 'mapbox-gl';
-import { translateContent } from '../config';
+import { loadTranslator, translateContent } from '../config';
 
 /**
  * Opens the information intro window
@@ -13,8 +13,8 @@ function openInfoWindow(map: Map) {
     const popupPosition = map.unproject([0, 0]),
         introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
 
-    translateContent(introDomElement, ".i18n_title", "info_box.title");
-    translateContent(introDomElement, ".i18n_description", "info_box.description");
+    translateContent(introDomElement, ".i18n_title", "title");
+    translateContent(introDomElement, ".i18n_description", "description");
     translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere");
     translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls");
     translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics");
@@ -50,10 +50,11 @@ class InfoControl implements IControl {
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon';
-        ctrlBtn.title = 'Show the info popup';
         ctrlBtn.textContent = 'ℹ️';
         ctrlBtn.onclick = () => openInfoWindow(map);
         container.appendChild(ctrlBtn);
+
+        loadTranslator().then(t => ctrlBtn.title = t("info_box.open_popup"));
 
         return container;
     }

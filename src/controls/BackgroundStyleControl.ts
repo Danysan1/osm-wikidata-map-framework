@@ -46,7 +46,7 @@ export class BackgroundStyleControl extends DropdownControl {
                 }
             })),
             startBackgroundStyleId ? startBackgroundStyleId : backgroundStyles[0]?.id,
-            'Choose background style'
+            'background.choose_style'
         );
     }
 }

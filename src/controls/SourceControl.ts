@@ -20,7 +20,7 @@ export class SourceControl extends DropdownControl {
             dropdownItems: DropdownItem[] = [],
             buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
                 id: sourceID,
-                text: text,
+                text,
                 category: category,
                 onSelect: () => {
                     onSourceChange(sourceID);
@@ -72,7 +72,7 @@ export class SourceControl extends DropdownControl {
             '⚙️',
             dropdownItems,
             startSourceID,
-            t("source.choose_source"),
+            "source.choose_source",
             true
         );
     }

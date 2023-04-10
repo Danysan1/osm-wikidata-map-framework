@@ -35,7 +35,7 @@ class EtymologyColorControl extends DropdownControl {
     constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void, t: TFunction) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
             id,
-            text: item.text,
+            text: t(item.textKey),
             onSelect: (event) => {
                 this.updateChart(event);
                 onSchemeChange(id as ColorSchemeID);
@@ -45,7 +45,7 @@ class EtymologyColorControl extends DropdownControl {
             '📊', //'🎨',
             dropdownItems,
             startColorScheme,
-            t("color_scheme.choose_scheme"),
+            "color_scheme.choose_scheme",
             true
         );
         this._chartInitInProgress = false;

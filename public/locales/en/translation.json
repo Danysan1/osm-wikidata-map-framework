@@ -1,7 +1,8 @@
 {
+    "title": "OSM-Wikidata Map Framework",
+    "description": "Framework for creating interactive maps that combine and display details about entities associated with geographic features from OpenStreetMap and Wikidata",
     "info_box": {
-        "title": "OSM-Wikidata Map Framework",
-        "description": "Framework for creating interactive maps that combine and display details about entities associated with geographic features from OpenStreetMap and Wikidata.",
+        "open_popup": "Open the info popup",
         "click_anywhere": "Click anywhere on the map to explore.",
         "use_controls": "Use the controls on the sides to see other data:",
         "to_see_statistics": "to see statistics about elements",
@@ -28,7 +29,18 @@
         "wd_indirect": "P625 qualifiers & Wikidata entities referenced with {{indirectWdProperty}}"
     },
     "color_scheme": {
-        "choose_scheme": "Choose color scheme and statistics"
+        "choose_scheme": "Choose color scheme and statistics",
+        "blue": "Blue",
+        "source": "By source",
+        "gender": "By gender",
+        "type": "By type",
+        "century": "By century",
+        "black": "Black",
+        "red": "Red",
+        "orange": "Orange"
+    },
+    "background": {
+        "choose_style": "Choose background style"
     },
     "feature_details": {
         "location": "Location",

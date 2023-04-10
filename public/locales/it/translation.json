@@ -1,7 +1,8 @@
 {
+    "title": "OSM-Wikidata Map Framework",
+    "description": "Framework per creare mappe interattive che combinano e visualizzano dettagli su entità associate a elementi geografici da OpenStreetMap e Wikidata.",
     "info_box": {
-        "title": "OSM-Wikidata Map Framework",
-        "description": "Framework per creare mappe interattive che combinano e visualizzano dettagli su entità associate a elementi geografici da OpenStreetMap e Wikidata.",
+        "open_popup": "Apri il popup delle informazioni",
         "click_anywhere": "Clicca su un punto qualsiasi della mappa per esplorare.",
         "use_controls": "Usa i controlli ai lati per visualizzare altri dati:",
         "to_see_statistics": "per visualizzare statistiche sugli elementi",
@@ -25,10 +26,21 @@
         "propagated": "Propagati",
         "wd_reverse": "Entità Wikidata referenziate da {{indirectWdProperty}}",
         "wd_qualifier": "Qualificatori P625 su {{indirectWdProperty}}",
-        "wd_indirect": "Qualificatori P625 & Entità Wikidata referenziate da {{indirectWdProperty}}"
+        "wd_indirect": "Qualificatori P625 & entità Wikidata referenziate da {{indirectWdProperty}}"
     },
     "color_scheme": {
-        "choose_scheme": "Scegli colori e statistiche"
+        "choose_scheme": "Scegli colori e statistiche",
+        "blue": "Blu",
+        "source": "Per fonte",
+        "gender": "Per genere",
+        "type": "Per tipo",
+        "century": "Per secolo",
+        "black": "Nero",
+        "red": "Rosso",
+        "orange": "Arancione"
+    },
+    "background": {
+        "choose_style": "Scegli lo sfondo della mappa"
     },
     "feature_details": {
         "location": "Posizione",

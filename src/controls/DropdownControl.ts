@@ -1,6 +1,6 @@
 import { logErrorMessage } from '../monitoring';
 import { IControl, Map } from 'mapbox-gl';
-import { debugLog } from '../config';
+import { debugLog, loadTranslator } from '../config';
 
 export interface DropdownItem {
     id: string;
@@ -18,8 +18,8 @@ export interface DropdownItem {
 export class DropdownControl implements IControl {
     private _buttonContent: string;
     private _dropdownItems: DropdownItem[];
-    private _startDropdownItemId?: string;
-    private _title?: string;
+    private _startDropdownItemId: string;
+    private _titleKey: string;
     private _map?: Map;
     private _container?: HTMLDivElement;
     private _ctrlDropDown?: HTMLSelectElement;
@@ -29,10 +29,10 @@ export class DropdownControl implements IControl {
         buttonContent: string,
         dropdownItems: DropdownItem[],
         startDropdownItemsId: string,
-        title: string,
+        titleKey: string,
         leftButton = false
     ) {
-        this._title = title;
+        this._titleKey = titleKey;
         this._buttonContent = buttonContent;
         this._startDropdownItemId = startDropdownItemsId;
         this._leftButton = leftButton;
@@ -62,7 +62,6 @@ export class DropdownControl implements IControl {
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'dropdown-ctrl-button';
-        if (this._title) ctrlBtn.title = this._title;
         ctrlBtn.textContent = this._buttonContent;
         // https://stackoverflow.com/questions/36489579/this-within-es6-class-method
         ctrlBtn.onclick = this.btnClickHandler.bind(this);
@@ -71,11 +70,16 @@ export class DropdownControl implements IControl {
 
         const ctrlDropDown = document.createElement('select');
         ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
-        if (this._title)
-            ctrlDropDown.title = this._title;
         ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
         dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell';
+
+        if (this._titleKey) {
+            loadTranslator().then(t => {
+                ctrlBtn.title = t(this._titleKey);
+                ctrlDropDown.title = t(this._titleKey);
+            });
+        }
 
         const okStartID = !!this._startDropdownItemId && this._dropdownItems.map(i => i.id).includes(this._startDropdownItemId),
             actualStartID = okStartID ? this._startDropdownItemId : this._dropdownItems[0].id;
@@ -110,7 +114,7 @@ export class DropdownControl implements IControl {
                 }
             }
             group.appendChild(option);
-        })
+        });
         this._ctrlDropDown = ctrlDropDown;
 
         if (this._dropdownItems.length < 2)
