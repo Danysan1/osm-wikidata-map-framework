@@ -41,8 +41,8 @@ export function loadTranslator() {
             debug: true,
             fallbackLng: "en",
             lng: locale,
-            ns: ["translation", hostNamespace],
-            fallbackNS: "translation",
+            ns: ["common", hostNamespace],
+            fallbackNS: "common",
             defaultNS: hostNamespace,
         });
     }
