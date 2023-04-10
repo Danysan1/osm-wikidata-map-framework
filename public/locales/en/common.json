@@ -14,11 +14,12 @@
         "based_on": "Based on",
         "report_issue": "Report an issue",
         "report_issue_title": "Report a problem or a bug of this application",
-        "about_me": "About the author",
-        "about_me_title": "Personal website of the author"
+        "about_me": "About me",
+        "about_me_title": "Personal website of the author of OSM-Wikidata Map Framework"
     },
     "snackbar": {
         "zoom_in": "Please zoom in to view data",
+        "fetch_error": "An error occurred while fetching the data",
         "data_loaded": "Data loaded",
         "data_loaded_instructions": "Data loaded, click on any highlighted element to show its details"
     },

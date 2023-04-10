@@ -162,7 +162,7 @@ export class EtymologyMap extends Map {
 
         let errorMessage;
         if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
-            showSnackbar("An error occurred while fetching the data");
+            showSnackbar("snackbar.fetch_error");
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
             showSnackbar("A map error occurred");
