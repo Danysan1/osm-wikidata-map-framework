@@ -20,6 +20,7 @@
     "snackbar": {
         "zoom_in": "Please zoom in to view data",
         "fetch_error": "An error occurred while fetching the data",
+        "map_error": "A map error occurred",
         "data_loaded": "Data loaded",
         "data_loaded_instructions": "Data loaded, click on any highlighted element to show its details"
     },
