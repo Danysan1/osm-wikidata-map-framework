@@ -140,13 +140,13 @@ $canonicalURL = $conf->has("home_url") ? $conf->get("home_url") : $thisURL;
                 </table>
             </div>
             <p>
-                <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
-                    <span class="button_img">📖</span>
+                <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href="<?= $conf->get("contributing_url") ?>">
+                    <span class="button_img">📖</span> &nbsp;
                     <span class="i18n_contribute">Contribute to the map</span>
                 </a>
                 <?php if ($enableDB) { ?>
-                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php">
-                        <span class="button_img">💾</span>
+                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
+                        <span class="button_img">💾</span> &nbsp;
                         <span class="i18n_download_dataset">Download as dataset</span>
                     </a>
                 <?php } ?>
@@ -220,9 +220,9 @@ $canonicalURL = $conf->has("home_url") ? $conf->get("home_url") : $thisURL;
                     <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="<?= $conf->get("element_issue_url") ?>">
-                <span class="button_img">⚠️</span>
-                <span class="i18n_report_problem">&nbsp;Report a problem in this element</span>
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= $conf->get("element_issue_url") ?>">
+                <span class="button_img">⚠️</span> &nbsp;
+                <span class="i18n_report_problem">Report a problem in this element</span>
             </a>
         </div>
     </template>

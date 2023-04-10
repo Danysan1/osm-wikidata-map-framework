@@ -43,6 +43,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 
     translateContent(detail_container, ".i18n_loading", "feature_details.loading");
     translateContent(detail_container, ".i18n_report_problem", "feature_details.report_problem");
+    translateTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem");
     translateContent(detail_container, ".i18n_location", "feature_details.location");
     translateTitle(detail_container, ".title_i18n_location", "feature_details.location");
 

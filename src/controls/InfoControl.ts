@@ -22,7 +22,9 @@ function openInfoWindow(map: Map) {
     translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background");
     translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
     translateContent(introDomElement, ".i18n_contribute", "info_box.contribute");
+    translateTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
     translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
+    translateTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
     translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
     translateTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
