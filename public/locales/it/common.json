@@ -12,7 +12,10 @@
         "contribute": "Contribuisci alla mappa",
         "download_dataset": "Scarica come dataset",
         "based_on": "Basato su",
-        "report_issue": "Segnala un problema"
+        "report_issue": "Segnala un problema",
+        "report_issue_title": "Segnala un problema o un bug di questa applicazione",
+        "about_me": "Sull'autore",
+        "about_me_title": "Sito personale dell'autore"
     },
     "snackbar": {
         "zoom_in": "Zoomare per visualizzare i dati",

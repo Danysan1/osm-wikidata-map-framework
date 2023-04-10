@@ -1,6 +1,6 @@
 //import { Popup } from 'maplibre-gl';
 import { IControl, Map, Popup } from 'mapbox-gl';
-import { loadTranslator, translateContent } from '../config';
+import { loadTranslator, translateContent, translateTitle } from '../config';
 
 /**
  * Opens the information intro window
@@ -25,6 +25,9 @@ function openInfoWindow(map: Map) {
     translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
     translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
+    translateTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
+    translateContent(introDomElement, ".i18n_about_me", "info_box.about_me");
+    translateTitle(introDomElement, ".title_i18n_about_me", "info_box.about_me_title");
 
     new Popup({
         closeButton: true,

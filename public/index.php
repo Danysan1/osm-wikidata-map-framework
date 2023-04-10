@@ -148,15 +148,15 @@ if ($enableDB) {
                 <p><?= $lastUpdateString; ?></p>
                 <p>
                     <span class="i18n_based_on">Based on</span>
-                    <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
+                    <a target="_blank" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <p>
                     <?php if ($conf->has("issues_url")) { ?>
-                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
                         |
                     <?php } ?>
-                    <a target="_blank" title="Daniele Santini personal website" class="i18n_about_me" href="https://www.dsantini.it/">About me</a>
+                    <a target="_blank" title="Daniele Santini personal website" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
                     |
                     <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                 </p>

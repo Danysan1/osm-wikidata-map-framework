@@ -12,7 +12,10 @@
         "contribute": "Contribute to the map",
         "download_dataset": "Download as dataset",
         "based_on": "Based on",
-        "report_issue": "Report an issue"
+        "report_issue": "Report an issue",
+        "report_issue_title": "Report a problem or a bug of this application",
+        "about_me": "About the author",
+        "about_me_title": "Personal website of the author"
     },
     "snackbar": {
         "zoom_in": "Please zoom in to view data",
