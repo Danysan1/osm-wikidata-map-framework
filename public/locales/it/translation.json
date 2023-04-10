@@ -5,12 +5,24 @@
         "click_anywhere": "Clicca su un punto qualsiasi della mappa per esplorare.",
         "use_controls": "Usa i controlli ai lati per visualizzare altri dati:",
         "to_see_statistics": "per visualizzare statistiche sugli elementi",
-        "to_choose_source": "per scegliere quale fonte di dati visualizzare",
+        "to_choose_source": "per scegliere quale sorgente dati utilizzare",
         "to_change_background": "per cambiare lo sfondo della mappa",
         "to_open_again": "per riaprire questa finestra",
         "contribute": "Contribuisci alla mappa",
         "download_dataset": "Scarica come dataset",
         "based_on": "Basato su",
         "report_issue": "Segnala un problema"
+    },
+    "source": {
+        "choose_source": "Scegli sorgente dati",
+        "db_all": "Tutte le fonti dal DB",
+        "db_osm_wikidata_reverse": "Entità Wikidata referenziate da OSM wikidata=* e {{indirectWdProperty}}",
+        "propagated": "Propagati",
+        "wd_reverse": "Entità Wikidata referenziate da {{indirectWdProperty}}",
+        "wd_qualifier": "Qualificatori P625 su {{indirectWdProperty}}",
+        "wd_indirect": "Qualificatori P625 & Entità Wikidata referenziate da {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        
     }
 }

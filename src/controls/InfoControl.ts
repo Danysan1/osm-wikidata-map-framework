@@ -1,6 +1,6 @@
 //import { Popup } from 'maplibre-gl';
 import { IControl, Map, Popup } from 'mapbox-gl';
-import { t } from "i18next";
+import { fillTranslatedField } from '../config';
 
 /**
  * Opens the information intro window
@@ -11,28 +11,20 @@ function openInfoWindow(map: Map) {
         throw new Error("Missing intro template");
 
     const popupPosition = map.unproject([0, 0]),
-        introDomElement = intro_template.content.cloneNode(true) as HTMLElement,
-        title = introDomElement.querySelector('.title'),
-        description = introDomElement.querySelector('.description'),
-        click_anywhere = introDomElement.querySelector('.click_anywhere'),
-        use_controls = introDomElement.querySelector('.use_controls'),
-        to_see_statistics = introDomElement.querySelector('.to_see_statistics'),
-        to_choose_source = introDomElement.querySelector('.to_choose_source'),
-        to_change_background = introDomElement.querySelector('.to_change_background'),
-        to_open_again = introDomElement.querySelector('.to_open_again'),
-        contribute = introDomElement.querySelector('.contribute'),
-        download_dataset = introDomElement.querySelector('.download_dataset');
+        introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
 
-    if (title) title.textContent = t('info_box.title');
-    if (description) description.textContent = t('info_box.description');
-    if (click_anywhere) click_anywhere.textContent = t('info_box.click_anywhere');
-    if (use_controls) use_controls.textContent = t('info_box.use_controls');
-    if (to_see_statistics) to_see_statistics.textContent = t('info_box.to_see_statistics');
-    if (to_choose_source) to_choose_source.textContent = t('info_box.to_choose_source');
-    if (to_change_background) to_change_background.textContent = t('info_box.to_change_background');
-    if (to_open_again) to_open_again.textContent = t('info_box.to_open_again');
-    if (contribute) contribute.textContent = t('info_box.contribute');
-    if (download_dataset) download_dataset.textContent = t('info_box.download_dataset');
+    fillTranslatedField(introDomElement, ".title", "info_box.title");
+    fillTranslatedField(introDomElement, ".description", "info_box.description");
+    fillTranslatedField(introDomElement, ".click_anywhere", "info_box.click_anywhere");
+    fillTranslatedField(introDomElement, ".use_controls", "info_box.use_controls");
+    fillTranslatedField(introDomElement, ".to_see_statistics", "info_box.to_see_statistics");
+    fillTranslatedField(introDomElement, ".to_choose_source", "info_box.to_choose_source");
+    fillTranslatedField(introDomElement, ".to_change_background", "info_box.to_change_background");
+    fillTranslatedField(introDomElement, ".to_open_again", "info_box.to_open_again");
+    fillTranslatedField(introDomElement, ".contribute", "info_box.contribute");
+    fillTranslatedField(introDomElement, ".download_dataset", "info_box.download_dataset");
+    fillTranslatedField(introDomElement, ".based_on", "info_box.based_on");
+    fillTranslatedField(introDomElement, ".report_issue", "info_box.report_issue");
 
     new Popup({
         closeButton: true,

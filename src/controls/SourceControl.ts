@@ -1,7 +1,7 @@
 import { getConfig, getBoolConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { setFragmentParams } from '../fragment';
-import { t } from "i18next";
+import { TFunction } from "i18next";
 
 /**
  * Let the user choose the map style.
@@ -9,7 +9,7 @@ import { t } from "i18next";
  * @see https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
  **/
 export class SourceControl extends DropdownControl {
-    constructor(startSourceID: string, onSourceChange: (sourceID: string) => void) {
+    constructor(startSourceID: string, onSourceChange: (sourceID: string) => void, t: TFunction) {
         const rawKeys = getConfig("osm_wikidata_keys"),
             keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
             rawOsmProps = getConfig("osm_wikidata_properties"),
@@ -43,7 +43,7 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
 
             if (indirectWdProperty)
-                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", {indirectWdProperty}), "DB"));
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", { indirectWdProperty }), "DB"));
 
             if (propagationEnabled)
                 dropdownItems.push(buildDropdownItem("db_propagated", "Propagated", "DB"));
@@ -53,9 +53,9 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API"));
 
         if (indirectWdProperty) {
-            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", {indirectWdProperty}), "Wikidata API"));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", {indirectWdProperty}), "Wikidata API"));
-            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", {indirectWdProperty}), "Wikidata API"));
+            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), "Wikidata API"));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), "Wikidata API"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), "Wikidata API"));
         }
 
         if (keys) {

@@ -11,7 +11,7 @@ import { EtymologyColorControl, getCurrentColorScheme } from './controls/Etymolo
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { debugLog, getBoolConfig, getConfig } from './config';
+import { debugLog, getBoolConfig, getConfig, getTranslatorPromise } from './config';
 import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
@@ -221,7 +221,7 @@ export class EtymologyMap extends Map {
 
             this.prepareWikidataLayers(wikidata_url, thresholdZoomLevel);
         } else if (enableGlobalLayers) {
-            if(getBoolConfig("db_enable"))
+            if (getBoolConfig("db_enable"))
                 this.prepareGlobalLayers(minZoomLevel);
             else
                 showSnackbar("Please zoom in", "wheat", 15_000);
@@ -351,18 +351,21 @@ export class EtymologyMap extends Map {
 
     initSourceControl() {
         if (!this.currentSourceControl) {
-            const sourceControl = new SourceControl(
-                getCorrectFragmentParams().source,
-                (sourceID: string) => {
-                    const params = getCorrectFragmentParams();
-                    if (params.source != sourceID) {
-                        setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                        this.updateDataSource();
-                    }
-                }
-            );
-            this.currentSourceControl = sourceControl;
-            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+            getTranslatorPromise().then(t => {
+                const sourceControl = new SourceControl(
+                    getCorrectFragmentParams().source,
+                    (sourceID: string) => {
+                        const params = getCorrectFragmentParams();
+                        if (params.source != sourceID) {
+                            setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                            this.updateDataSource();
+                        }
+                    },
+                    t
+                );
+                this.currentSourceControl = sourceControl;
+                setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+            });
         }
     }
 

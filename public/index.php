@@ -110,7 +110,8 @@ if ($enableDB) {
             </header>
 
             <p class="click_anywhere">Click anywhere on the map to explore.</p>
-            <p class="use_controls">Use the controls on the side to see other data:</p>
+            <div>
+                <span class="use_controls">Use the controls on the side to see other data:</span>
                 <table>
                     <tr>
                         <td>📊</td>
@@ -129,7 +130,7 @@ if ($enableDB) {
                         <td class="to_open_again">to open again this popup</td>
                     </tr>
                 </table>
-
+            </div>
             <p>
                 <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
                     <span class="button_img">📖</span>
@@ -138,7 +139,7 @@ if ($enableDB) {
                 <?php if ($enableDB) { ?>
                     <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php">
                         <span class="button_img">💾</span>
-                        <span class="download_dataset">Download as dataset</span></p>
+                        <span class="download_dataset">Download as dataset</span>
                     </a>
                 <?php } ?>
             </p>
@@ -146,13 +147,13 @@ if ($enableDB) {
             <footer>
                 <p><?= $lastUpdateString; ?></p>
                 <p>
-                    Based on
+                    <span class="based_on">Based on</span>
                     <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <p>
                     <?php if ($conf->has("issues_url")) { ?>
-                        <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+                        <a target="_blank" title="Report a problem or a bug" class="report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
                         |
                     <?php } ?>
                     <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>

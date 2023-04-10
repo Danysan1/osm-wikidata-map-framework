@@ -1,4 +1,4 @@
-import { use } from "i18next";
+import { TFunction, use } from "i18next";
 import Backend from "i18next-http-backend";
 
 /**
@@ -30,13 +30,33 @@ export function setPageLocale() {
     });
 
     document.documentElement.setAttribute("lang", locale);
+}
 
-    const hostNamespace = new URL(document.URL).hostname;
-    use(Backend).init({
-        fallbackLng: "en",
-        lng: locale,
-        ns: ["translation", hostNamespace],
-        fallbackNS: "translation",
-        defaultNS: hostNamespace,
-    });
+let tPromise: Promise<TFunction>;
+export function getTranslatorPromise() {
+    if (!tPromise) {
+        const hostNamespace = new URL(document.URL).hostname,
+            locale = document.documentElement.getAttribute("lang") || 'en-US';
+        tPromise = use(Backend).init({
+            debug: true,
+            fallbackLng: "en",
+            lng: locale,
+            ns: ["translation", hostNamespace],
+            fallbackNS: "translation",
+            defaultNS: hostNamespace,
+        });
+    }
+
+    return tPromise;
+}
+
+export function fillTranslatedField(parent: HTMLElement, selector: string, key: string) {
+    const domElement = parent.querySelector(selector);
+
+    if (!domElement) {
+        debugLog("fillTranslatedField: failed finding element", { parent, selector });
+    } else {
+        getTranslatorPromise().then(t => domElement.textContent = t(key))
+            .catch(e => debugLog("Failed initializing or using i18next", { e, key }));
+    }
 }
