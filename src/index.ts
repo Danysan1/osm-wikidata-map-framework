@@ -10,7 +10,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './controls/BackgroundStyleControl';
-import { debugLog, getConfig, setPageLocale } from './config';
+import { debugLog, getConfig } from './config';
+import { setPageLocale } from './i18n';
 import './style.css';
 
 initSentry();

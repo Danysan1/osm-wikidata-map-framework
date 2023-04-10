@@ -11,11 +11,11 @@ import { EtymologyColorControl, getCurrentColorScheme } from './controls/Etymolo
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { debugLog, getBoolConfig, getConfig, loadTranslator } from './config';
+import { debugLog, getBoolConfig, getConfig } from './config';
 import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
-import { TFunction } from 'i18next';
+import { loadTranslator } from './i18n';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),

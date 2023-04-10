@@ -1,4 +1,5 @@
-import { debugLog, translateContent, translateTitle } from "./config";
+import { debugLog } from "./config";
+import { translateContent, translateTitle } from "./i18n";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
 

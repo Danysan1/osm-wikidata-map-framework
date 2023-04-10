@@ -1,6 +1,7 @@
 import { logErrorMessage } from '../monitoring';
 import { IControl, Map } from 'mapbox-gl';
-import { debugLog, loadTranslator } from '../config';
+import { debugLog } from '../config';
+import { loadTranslator } from '../i18n';
 
 export interface DropdownItem {
     id: string;

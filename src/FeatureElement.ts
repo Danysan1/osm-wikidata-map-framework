@@ -2,7 +2,8 @@ import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
-import { debugLog, translateContent, getBoolConfig, translateTitle } from "./config";
+import { debugLog, getBoolConfig } from "./config";
+import { translateContent, translateTitle } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";

@@ -9,7 +9,7 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-$required_conf = ["mapbox_token", "info_title", "info_description", "home_url"];
+$required_conf = ["mapbox_token"];
 foreach ($required_conf as $key) {
     if (!$conf->has($key)) {
         http_response_code(500);
@@ -29,6 +29,13 @@ if ($enableDB) {
     }
 }
 
+$i18nOverride = $conf->has("i18n_override") ? json_decode((string)$conf->get("i18n_override"), true) : null;
+$title = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"];
+$description = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"];
+
+$thisURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$canonicalURL = $conf->has("home_url") ? $conf->get("home_url") : $thisURL;
+
 ?>
 
 <!DOCTYPE html>
@@ -39,8 +46,8 @@ if ($enableDB) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=10">
 
-    <title><?= $conf->get("info_title") ?></title>
-    <meta name="description" content="<?= $conf->get("info_description") ?>" />
+    <title><?= $title; ?></title>
+    <meta name="description" content="<?= $description; ?>" />
 
     <?php if ($conf->has("google_analytics_id")) {
         $analyticsId = (string)$conf->get("google_analytics_id"); ?>
@@ -50,14 +57,14 @@ if ($enableDB) {
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= $conf->get("home_url") ?>" />
-    <meta property="og:title" content="<?= $conf->get("info_title") ?>" />
-    <meta property="og:site_name" content="<?= $conf->get("info_title") ?>" />
-    <meta property="og:description" content="<?= $conf->get("info_description") ?>" />
+    <meta property="og:url" content="<?= $canonicalURL; ?>" />
+    <meta property="og:title" content="<?= $title; ?>" />
+    <meta property="og:site_name" content="<?= $title; ?>" />
+    <meta property="og:description" content="<?= $description; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
     <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
-    <link rel="canonical" href="<?= $conf->get("home_url") ?>" />
+    <link rel="canonical" href="<?= $canonicalURL; ?>" />
     <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
@@ -93,6 +100,7 @@ if ($enableDB) {
     <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
+    <?= $conf->getMetaTag("i18n_override", true); ?>
 </head>
 
 <body>
@@ -105,7 +113,7 @@ if ($enableDB) {
     <template id="intro_template">
         <div class="intro">
             <header>
-                <h1 class="i18n_title">OSM-Wikidata Map Framework</h1>
+                <h1 class="i18n_title"></h1>
                 <p class="i18n_description"></p>
             </header>
 

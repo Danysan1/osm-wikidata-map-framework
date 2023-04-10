@@ -1,4 +1,5 @@
-import { debugLog, loadTranslator } from "./config";
+import { debugLog } from "./config";
+import { loadTranslator } from "./i18n";
 import { WikimediaCommonsService } from "./services/WikimediaCommonsService";
 
 interface DetailedImage {

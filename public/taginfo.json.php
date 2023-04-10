@@ -71,7 +71,7 @@ foreach ($conf->getWikidataKeys() as $key) {
     ];
 }
 
-if($conf->has("osm_wikidata_properties")) {
+if ($conf->has("osm_wikidata_properties")) {
     $wikidataProps = $conf->getArray("osm_wikidata_properties");
     if (!empty($wikidataProps)) {
         $propsString = implode(", ", $wikidataProps);
@@ -84,12 +84,18 @@ if($conf->has("osm_wikidata_properties")) {
     }
 }
 
+$i18nOverride = json_decode((string)$conf->get("i18n_override"), true);
+if (empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"]))
+    throw new Exception("Missing title in configuration");
+if (empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"]))
+    throw new Exception("Missing description in configuration");
+
 echo json_encode([
     "data_format" => 1,
     "data_url" => $thisURL,
     "project" => [
-        "name" => (string)$conf->get("info_title"),
-        "description" => (string)$conf->get("info_description"),
+        "name" => $i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"],
+        "description" => $i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"],
         "project_url" => $homeURL,
         "doc_url" => $contributingURL,
         "icon_url" => "$homeURL/favicon.ico",

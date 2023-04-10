@@ -1,6 +1,6 @@
 //import { Popup } from 'maplibre-gl';
 import { IControl, Map, Popup } from 'mapbox-gl';
-import { loadTranslator, translateContent, translateTitle } from '../config';
+import { loadTranslator, translateContent, translateTitle } from '../i18n';
 
 /**
  * Opens the information intro window
