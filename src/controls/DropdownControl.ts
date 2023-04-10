@@ -28,8 +28,8 @@ export class DropdownControl implements IControl {
     constructor(
         buttonContent: string,
         dropdownItems: DropdownItem[],
-        startDropdownItemsId?: string,
-        title?: string,
+        startDropdownItemsId: string,
+        title: string,
         leftButton = false
     ) {
         this._title = title;

@@ -11,10 +11,11 @@ import { EtymologyColorControl, getCurrentColorScheme } from './controls/Etymolo
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { debugLog, getBoolConfig, getConfig, getTranslatorPromise } from './config';
+import { debugLog, getBoolConfig, getConfig, loadTranslator } from './config';
 import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
+import { TFunction } from 'i18next';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -138,10 +139,12 @@ export class EtymologyMap extends Map {
             });
             showLoadingSpinner(false);
 
-            if (wikidataSourceEvent && !this.anyDetailShownBefore)
-                showSnackbar("Data loaded, click on any highlighted element to show its details", "lightgreen", 10000, "data_loaded");
-            else
-                showSnackbar("Data loaded", "lightgreen", 3000, "data_loaded");
+            loadTranslator().then(t => {
+                if (wikidataSourceEvent && !this.anyDetailShownBefore)
+                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000, "data_loaded");
+                else
+                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000, "data_loaded");
+            });
 
             if (wikidataSourceEvent) {
                 const source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source;
@@ -160,9 +163,6 @@ export class EtymologyMap extends Map {
         let errorMessage;
         if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
             showSnackbar("An error occurred while fetching the data");
-            errorMessage = "An error occurred while fetching " + err.sourceId;
-        } else if (GLOBAL_SOURCE == err.sourceId && err.error.status == 406) {
-            showSnackbar("Please zoom in", "wheat", 10_000);
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
             showSnackbar("A map error occurred");
@@ -224,7 +224,7 @@ export class EtymologyMap extends Map {
             if (getBoolConfig("db_enable"))
                 this.prepareGlobalLayers(minZoomLevel);
             else
-                showSnackbar("Please zoom in", "wheat", 15_000);
+                loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
         } else if (enableElementLayers) {
             const queryParams = {
                 minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1
@@ -351,7 +351,7 @@ export class EtymologyMap extends Map {
 
     initSourceControl() {
         if (!this.currentSourceControl) {
-            getTranslatorPromise().then(t => {
+            loadTranslator().then(t => {
                 const sourceControl = new SourceControl(
                     getCorrectFragmentParams().source,
                     (sourceID: string) => {
@@ -371,41 +371,44 @@ export class EtymologyMap extends Map {
 
     initEtymologyColorControl() {
         if (!this.currentEtymologyColorControl) {
-            const colorControl = new EtymologyColorControl(
-                getCorrectFragmentParams().colorScheme,
-                (colorSchemeID: ColorSchemeID) => {
-                    const params = getCorrectFragmentParams();
-                    if (params.colorScheme != colorSchemeID) {
-                        setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
-                        this.updateDataSource();
+            loadTranslator().then(t => {
+                const colorControl = new EtymologyColorControl(
+                    getCorrectFragmentParams().colorScheme,
+                    (colorSchemeID: ColorSchemeID) => {
+                        const params = getCorrectFragmentParams();
+                        if (params.colorScheme != colorSchemeID) {
+                            setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                            this.updateDataSource();
 
-                        const colorSchemeObj = colorSchemes[colorSchemeID];
-                        let color: string | Expression;
+                            const colorSchemeObj = colorSchemes[colorSchemeID];
+                            let color: string | Expression;
 
-                        if (colorSchemeObj) {
-                            color = colorSchemeObj.color;
-                        } else {
-                            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
-                            color = '#3bb2d0';
-                        }
-                        debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
-                        [
-                            ["wikidata_source_layer_point", "circle-color"],
-                            ["wikidata_source_layer_lineString", 'line-color'],
-                            ["wikidata_source_layer_polygon_fill", 'fill-color'],
-                            ["wikidata_source_layer_polygon_border", 'line-color'],
-                        ].forEach(([layerID, property]) => {
-                            if (this?.getLayer(layerID)) {
-                                this.setPaintProperty(layerID, property, color);
+                            if (colorSchemeObj) {
+                                color = colorSchemeObj.color;
                             } else {
-                                console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                                logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
+                                color = '#3bb2d0';
                             }
-                        });
-                    }
-                }
-            );
-            this.currentEtymologyColorControl = colorControl;
-            setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+                            debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
+                            [
+                                ["wikidata_source_layer_point", "circle-color"],
+                                ["wikidata_source_layer_lineString", 'line-color'],
+                                ["wikidata_source_layer_polygon_fill", 'fill-color'],
+                                ["wikidata_source_layer_polygon_border", 'line-color'],
+                            ].forEach(([layerID, property]) => {
+                                if (this?.getLayer(layerID)) {
+                                    this.setPaintProperty(layerID, property, color);
+                                } else {
+                                    console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                                }
+                            });
+                        }
+                    },
+                    t
+                );
+                this.currentEtymologyColorControl = colorControl;
+                setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+            });
         }
     }
 

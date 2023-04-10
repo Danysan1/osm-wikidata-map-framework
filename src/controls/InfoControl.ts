@@ -13,18 +13,18 @@ function openInfoWindow(map: Map) {
     const popupPosition = map.unproject([0, 0]),
         introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
 
-    fillTranslatedField(introDomElement, ".title", "info_box.title");
-    fillTranslatedField(introDomElement, ".description", "info_box.description");
-    fillTranslatedField(introDomElement, ".click_anywhere", "info_box.click_anywhere");
-    fillTranslatedField(introDomElement, ".use_controls", "info_box.use_controls");
-    fillTranslatedField(introDomElement, ".to_see_statistics", "info_box.to_see_statistics");
-    fillTranslatedField(introDomElement, ".to_choose_source", "info_box.to_choose_source");
-    fillTranslatedField(introDomElement, ".to_change_background", "info_box.to_change_background");
-    fillTranslatedField(introDomElement, ".to_open_again", "info_box.to_open_again");
-    fillTranslatedField(introDomElement, ".contribute", "info_box.contribute");
-    fillTranslatedField(introDomElement, ".download_dataset", "info_box.download_dataset");
-    fillTranslatedField(introDomElement, ".based_on", "info_box.based_on");
-    fillTranslatedField(introDomElement, ".report_issue", "info_box.report_issue");
+    fillTranslatedField(introDomElement, ".i18n_title", "info_box.title");
+    fillTranslatedField(introDomElement, ".i18n_description", "info_box.description");
+    fillTranslatedField(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere");
+    fillTranslatedField(introDomElement, ".i18n_use_controls", "info_box.use_controls");
+    fillTranslatedField(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics");
+    fillTranslatedField(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source");
+    fillTranslatedField(introDomElement, ".i18n_to_change_background", "info_box.to_change_background");
+    fillTranslatedField(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
+    fillTranslatedField(introDomElement, ".i18n_contribute", "info_box.contribute");
+    fillTranslatedField(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
+    fillTranslatedField(introDomElement, ".i18n_based_on", "info_box.based_on");
+    fillTranslatedField(introDomElement, ".i18n_report_issue", "info_box.report_issue");
 
     new Popup({
         closeButton: true,

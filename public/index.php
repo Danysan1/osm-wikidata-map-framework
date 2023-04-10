@@ -105,41 +105,41 @@ if ($enableDB) {
     <template id="intro_template">
         <div class="intro">
             <header>
-                <h1 class="title">OSM-Wikidata Map Framework</h1>
-                <p class="description"></p>
+                <h1 class="i18n_title">OSM-Wikidata Map Framework</h1>
+                <p class="i18n_description"></p>
             </header>
 
-            <p class="click_anywhere">Click anywhere on the map to explore.</p>
+            <p class="i18n_click_anywhere">Click anywhere on the map to explore.</p>
             <div>
-                <span class="use_controls">Use the controls on the side to see other data:</span>
+                <span class="i18n_use_controls">Use the controls on the side to see other data:</span>
                 <table>
                     <tr>
                         <td>📊</td>
-                        <td class="to_see_statistics">to see statistics about elements</td>
+                        <td class="i18n_to_see_statistics">to see statistics about elements</td>
                     </tr>
                     <tr>
                         <td>⚙️</td>
-                        <td class="to_choose_source">to choose which data source to use</td>
+                        <td class="i18n_to_choose_source">to choose which data source to use</td>
                     </tr>
                     <tr>
                         <td>🌐</td>
-                        <td class="to_change_background">to change the background map style</td>
+                        <td class="i18n_to_change_background">to change the background map style</td>
                     </tr>
                     <tr>
                         <td>ℹ️</td>
-                        <td class="to_open_again">to open again this popup</td>
+                        <td class="i18n_to_open_again">to open again this popup</td>
                     </tr>
                 </table>
             </div>
             <p>
                 <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
                     <span class="button_img">📖</span>
-                    <span class="contribute">Contribute to the map</span>
+                    <span class="i18n_contribute">Contribute to the map</span>
                 </a>
                 <?php if ($enableDB) { ?>
                     <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php">
                         <span class="button_img">💾</span>
-                        <span class="download_dataset">Download as dataset</span>
+                        <span class="i18n_download_dataset">Download as dataset</span>
                     </a>
                 <?php } ?>
             </p>
@@ -147,16 +147,16 @@ if ($enableDB) {
             <footer>
                 <p><?= $lastUpdateString; ?></p>
                 <p>
-                    <span class="based_on">Based on</span>
+                    <span class="i18n_based_on">Based on</span>
                     <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <p>
                     <?php if ($conf->has("issues_url")) { ?>
-                        <a target="_blank" title="Report a problem or a bug" class="report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
                         |
                     <?php } ?>
-                    <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
+                    <a target="_blank" title="Daniele Santini personal website" class="i18n_about_me" href="https://www.dsantini.it/">About me</a>
                     |
                     <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                 </p>
@@ -209,7 +209,7 @@ if ($enableDB) {
 
             <div class="etymologies_container grid grid-auto">
                 <div class="etymology etymology_loading">
-                    <h3>Loading entities...</h3>
+                    <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
             <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="<?= $conf->get("element_issue_url") ?>">
@@ -264,7 +264,7 @@ if ($enableDB) {
                 <div class="ety_pictures column"></div>
             </div>
             <span class="etymology_src_wrapper">
-                Source:
+                <span class="i18n_source">Source:</span>
                 <a title="Etymology OpenStreetMap source" class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
                 <span class="src_osm_plus_wd hiddenElement">&nbsp;+&nbsp;</span>
                 <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>

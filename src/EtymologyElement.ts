@@ -1,4 +1,4 @@
-import { debugLog } from "./config";
+import { debugLog, fillTranslatedField } from "./config";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
 
@@ -122,6 +122,8 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     debugLog("etymologyToDomElement", {
         et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });
+
+    fillTranslatedField(etyDomElement, ".i18n_source", "etymology_details.source");
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {

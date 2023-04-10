@@ -13,6 +13,11 @@
         "based_on": "Based on",
         "report_issue": "Report an issue"
     },
+    "snackbar": {
+        "zoom_in": "Please zoom in to view data",
+        "data_loaded": "Data loaded",
+        "data_loaded_instructions": "Data loaded, click on any highlighted element to show its details"
+    },
     "source": {
         "choose_source": "Choose data source",
         "db_all": "All sources from DB",
@@ -23,6 +28,12 @@
         "wd_indirect": "P625 qualifiers & Wikidata entities referenced with {{indirectWdProperty}}"
     },
     "color_scheme": {
-        
+        "choose_scheme": "Choose color scheme and statistics"
+    },
+    "feature_details": {
+        "loading": "Loading entities..."
+    },
+    "etymology_details": {
+        "source": "Source:"
     }
 }

@@ -7,6 +7,7 @@ import { debugLog } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
+import { TFunction } from 'i18next';
 
 export interface EtymologyStat {
     color: string;
@@ -31,7 +32,7 @@ class EtymologyColorControl extends DropdownControl {
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
 
-    constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void) {
+    constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void, t: TFunction) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
             id,
             text: item.text,
@@ -44,7 +45,7 @@ class EtymologyColorControl extends DropdownControl {
             '📊', //'🎨',
             dropdownItems,
             startColorScheme,
-            'Choose color scheme',
+            t("color_scheme.choose_scheme"),
             true
         );
         this._chartInitInProgress = false;

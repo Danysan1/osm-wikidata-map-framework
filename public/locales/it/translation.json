@@ -13,6 +13,11 @@
         "based_on": "Basato su",
         "report_issue": "Segnala un problema"
     },
+    "snackbar": {
+        "zoom_in": "Zoomare per visualizzare i dati",
+        "data_loaded": "Dati caricati",
+        "data_loaded_instructions": "Dati caricati, cliccare su un elemento evidenziato per visualizzarne i dettagli"
+    },
     "source": {
         "choose_source": "Scegli sorgente dati",
         "db_all": "Tutte le fonti dal DB",
@@ -23,6 +28,12 @@
         "wd_indirect": "Qualificatori P625 & Entità Wikidata referenziate da {{indirectWdProperty}}"
     },
     "color_scheme": {
-        
+        "choose_scheme": "Scegli colori e statistiche"
+    },
+    "feature_details": {
+        "loading": "Caricamento entità..."
+    },
+    "etymology_details": {
+        "source": "Fonte:"
     }
 }

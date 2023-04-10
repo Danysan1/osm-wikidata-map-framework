@@ -72,7 +72,7 @@ export class SourceControl extends DropdownControl {
             '⚙️',
             dropdownItems,
             startSourceID,
-            'Choose source',
+            t("source.choose_source"),
             true
         );
     }

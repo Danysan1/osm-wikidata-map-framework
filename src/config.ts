@@ -33,7 +33,7 @@ export function setPageLocale() {
 }
 
 let tPromise: Promise<TFunction>;
-export function getTranslatorPromise() {
+export function loadTranslator() {
     if (!tPromise) {
         const hostNamespace = new URL(document.URL).hostname,
             locale = document.documentElement.getAttribute("lang") || 'en-US';
@@ -56,7 +56,7 @@ export function fillTranslatedField(parent: HTMLElement, selector: string, key: 
     if (!domElement) {
         debugLog("fillTranslatedField: failed finding element", { parent, selector });
     } else {
-        getTranslatorPromise().then(t => domElement.textContent = t(key))
+        loadTranslator().then(t => domElement.textContent = t(key))
             .catch(e => debugLog("Failed initializing or using i18next", { e, key }));
     }
 }
