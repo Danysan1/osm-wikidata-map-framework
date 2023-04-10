@@ -180,29 +180,29 @@ if ($enableDB) {
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
             <div class="button_row">
-                <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
+                <a title="Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                     <span class="button_text"> Wikipedia</span>
                 </a>
-                <a title="Element on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
+                <a title="Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
                     <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                     <span class="button_text"> Commons</span>
                 </a>
-                <a title="Element on Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
+                <a title="Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
                     <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                     <span class="button_text"> Wikidata</span>
                 </a>
-                <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
+                <a title="OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
                     <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
                     <span class="button_text"> OpenStreetMap</span>
                 </a>
-                <a title="Element on MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
+                <a title="MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
                     <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                     <span class="button_text"> Mapcomplete</span>
                 </a>
-                <a title="Element location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button" target="_self">
+                <a title="Location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
                     <span class="button_img">🎯</span>
-                    <span class="button_text"> Location</span>
+                    <span class="button_text i18n_location"> Location</span>
                 </a>
             </div>
             <?php if ($conf->getBool("show_feature_picture")) { ?><div class="feature_pictures column"></div><?php } ?>
@@ -214,7 +214,7 @@ if ($enableDB) {
             </div>
             <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="<?= $conf->get("element_issue_url") ?>">
                 <span class="button_img">⚠️</span>
-                <span>&nbsp;Report a problem in this element</span>
+                <span class="i18n_report_problem">&nbsp;Report a problem in this element</span>
             </a>
         </div>
     </template>
@@ -229,25 +229,25 @@ if ($enableDB) {
                     </div>
                     <div class="info column">
                         <div class="button_row">
-                            <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
+                            <a title="Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
                                 <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
-                            <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
+                            <a title="Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
                                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>
                             </a>
-                            <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
+                            <a title="Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
                                 <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                                 <span class="button_text"> Wikidata</span>
                             </a>
-                            <a title="Person on EntiTree" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
+                            <a title="EntiTree" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
                                 <img class="button_img" src="img/entitree.png" alt="EntiTree logo">
                                 <span class="button_text"> EntiTree</span>
                             </a>
-                            <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement" target="_self">
+                            <a title="Location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement title_i18n_location" target="_self">
                                 <span class="button_img">🎯</span>
-                                <span class="button_text"> Location</span>
+                                <span class="button_text i18n_location"> Location</span>
                             </a>
                         </div>
 

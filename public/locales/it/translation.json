@@ -31,7 +31,10 @@
         "choose_scheme": "Scegli colori e statistiche"
     },
     "feature_details": {
-        "loading": "Caricamento entità..."
+        "location": "Posizione",
+        "picture_via_commons": "Immagine via Wikimedia Commons",
+        "loading": "Caricamento entità...",
+        "report_problem": "Segnala un problema in questo elemento"
     },
     "etymology_details": {
         "source": "Fonte:"

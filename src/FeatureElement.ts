@@ -2,7 +2,7 @@ import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
-import { debugLog, fillTranslatedField, getBoolConfig } from "./config";
+import { debugLog, translateContent, getBoolConfig, translateTitle } from "./config";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
@@ -40,7 +40,10 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         el_id: properties.el_id, feature, etymologies, detail_container
     });
 
-    fillTranslatedField(detail_container, ".i18n_loading", "feature_details.loading");
+    translateContent(detail_container, ".i18n_loading", "feature_details.loading");
+    translateContent(detail_container, ".i18n_report_problem", "feature_details.report_problem");
+    translateContent(detail_container, ".i18n_location", "feature_details.location");
+    translateTitle(detail_container, ".title_i18n_location", "feature_details.location");
 
     const element_name = detail_container.querySelector<HTMLElement>('.element_name');
     if (!element_name) {

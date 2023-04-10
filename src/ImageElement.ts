@@ -1,4 +1,4 @@
-import { debugLog } from "./config";
+import { debugLog, loadTranslator } from "./config";
 import { WikimediaCommonsService } from "./services/WikimediaCommonsService";
 
 interface DetailedImage {
@@ -62,12 +62,15 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
         const imgUrl = 'https://commons.wikimedia.org/wiki/File:' + encodedImg;
 
         picture.className = 'pic-img';
-        picture.alt = "Etymology picture via Wikimedia Commons";
         picture.src = imgPreviewUrl;
 
         link.className = 'pic-link';
-        link.title = "Etymology picture via Wikimedia Commons";
         link.href = imgUrl;
+
+        loadTranslator().then(t => {
+            picture.alt = t("feature_details.picture_via_commons");
+            link.title = t("feature_details.picture_via_commons");
+        });
 
         link.appendChild(picture);
         imgContainer.appendChild(link);

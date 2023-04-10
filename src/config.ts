@@ -50,13 +50,22 @@ export function loadTranslator() {
     return tPromise;
 }
 
-export function fillTranslatedField(parent: HTMLElement, selector: string, key: string) {
-    const domElement = parent.querySelector(selector);
-
+export function translateContent(parent: HTMLElement, selector: string, key: string) {
+    const domElement = parent.querySelector<HTMLElement>(selector);
     if (!domElement) {
-        debugLog("fillTranslatedField: failed finding element", { parent, selector });
+        debugLog("translateContent: failed finding element", { parent, selector });
     } else {
         loadTranslator().then(t => domElement.textContent = t(key))
+            .catch(e => debugLog("Failed initializing or using i18next", { e, key }));
+    }
+}
+
+export function translateTitle(parent: HTMLElement, selector: string, key: string) {
+    const domElement = parent.querySelector<HTMLAnchorElement>(selector);
+    if (!domElement) {
+        debugLog("translateTitle: failed finding element", { parent, selector });
+    } else {
+        loadTranslator().then(t => domElement.title = t(key))
             .catch(e => debugLog("Failed initializing or using i18next", { e, key }));
     }
 }

@@ -1,6 +1,6 @@
 //import { Popup } from 'maplibre-gl';
 import { IControl, Map, Popup } from 'mapbox-gl';
-import { fillTranslatedField } from '../config';
+import { translateContent } from '../config';
 
 /**
  * Opens the information intro window
@@ -13,18 +13,18 @@ function openInfoWindow(map: Map) {
     const popupPosition = map.unproject([0, 0]),
         introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
 
-    fillTranslatedField(introDomElement, ".i18n_title", "info_box.title");
-    fillTranslatedField(introDomElement, ".i18n_description", "info_box.description");
-    fillTranslatedField(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere");
-    fillTranslatedField(introDomElement, ".i18n_use_controls", "info_box.use_controls");
-    fillTranslatedField(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics");
-    fillTranslatedField(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source");
-    fillTranslatedField(introDomElement, ".i18n_to_change_background", "info_box.to_change_background");
-    fillTranslatedField(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
-    fillTranslatedField(introDomElement, ".i18n_contribute", "info_box.contribute");
-    fillTranslatedField(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
-    fillTranslatedField(introDomElement, ".i18n_based_on", "info_box.based_on");
-    fillTranslatedField(introDomElement, ".i18n_report_issue", "info_box.report_issue");
+    translateContent(introDomElement, ".i18n_title", "info_box.title");
+    translateContent(introDomElement, ".i18n_description", "info_box.description");
+    translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere");
+    translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls");
+    translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics");
+    translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source");
+    translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background");
+    translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
+    translateContent(introDomElement, ".i18n_contribute", "info_box.contribute");
+    translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
+    translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
+    translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
 
     new Popup({
         closeButton: true,
