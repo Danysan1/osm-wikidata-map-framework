@@ -25,6 +25,7 @@ function openInfoWindow(map: Map) {
     translateTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
     translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
     translateTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset");
+    translateContent(introDomElement, ".i18n_last_db_update", "info_box.last_db_update");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
     translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
     translateTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
