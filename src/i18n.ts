@@ -1,4 +1,4 @@
-import { TFunction, use } from "i18next";
+import { TFunction } from "i18next";
 import ChainedBackend from 'i18next-chained-backend'
 import resourcesToBackend from 'i18next-resources-to-backend'
 import HttpBackend from 'i18next-http-backend'
@@ -18,7 +18,7 @@ export function setPageLocale() {
 }
 
 let tPromise: Promise<TFunction>;
-export function loadTranslator() {
+export async function loadTranslator() {
     if (!tPromise) {
         const hostNamespace = new URL(document.URL).hostname,
             locale = document.documentElement.getAttribute("lang") || 'en-US',
@@ -33,7 +33,7 @@ export function loadTranslator() {
                 logErrorMessage("Failed parsing i18n_override", "error", { locale, rawI18nOverride, e });
             }
         }
-        tPromise = use(ChainedBackend).init({
+        tPromise = import("i18next").then(i18next => i18next.use(ChainedBackend).init({
             debug: getBoolConfig("enable_debug_log"),
             fallbackLng: "en",
             lng: locale,
@@ -41,7 +41,7 @@ export function loadTranslator() {
             ns: ["common", hostNamespace],
             fallbackNS: "common",
             defaultNS: hostNamespace
-        });
+        }));
     }
 
     return tPromise;

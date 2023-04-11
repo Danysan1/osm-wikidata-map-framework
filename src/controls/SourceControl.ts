@@ -46,7 +46,7 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", { indirectWdProperty }), "DB"));
 
             if (propagationEnabled)
-                dropdownItems.push(buildDropdownItem("db_propagated", "Propagated", "DB"));
+                dropdownItems.push(buildDropdownItem("db_propagated", t("source.propagated"), "DB"));
         }
 
         if (osmProps && osmProps.length > 0)
