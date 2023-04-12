@@ -32,9 +32,17 @@ if ($enableDB) {
 $i18nOverride = $conf->has("i18n_override") ? json_decode((string)$conf->get("i18n_override"), true) : null;
 $title = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"];
 $description = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"];
+$availableLanguages = [];
+foreach ($i18nOverride as $lang => $langData) {
+    if (!empty($langData[$_SERVER["HTTP_HOST"]]["title"])) {
+        $availableLanguages[] = (string)$lang;
+    }
+}
 
 $thisURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-$canonicalURL = $conf->has("home_url") ? $conf->get("home_url") : $thisURL;
+$canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : $thisURL;
+
+$metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf->get("keywords").'" />' : "";
 
 ?>
 
@@ -63,8 +71,11 @@ $canonicalURL = $conf->has("home_url") ? $conf->get("home_url") : $thisURL;
     <meta property="og:description" content="<?= $description; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
-    <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
+    <?= $metaKeywords; ?>
     <link rel="canonical" href="<?= $canonicalURL; ?>" />
+    <?php foreach($availableLanguages as $lang){ ?>
+        <link rel="alternate" hreflang="<?= $lang; ?>" href="<?= $canonicalURL; ?>?lang=<?= $lang; ?>" />
+    <?php } ?>
     <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
