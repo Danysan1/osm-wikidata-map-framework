@@ -18,14 +18,19 @@ use Exception;
  */
 class EnvFileConfiguration extends BaseConfiguration
 {
-    public function __construct(string $envFileFolderPath = __DIR__ . "/../..", string $envFileName = ".env")
-    {
-        if (!file_exists("$envFileFolderPath/$envFileName"))
-            throw new Exception(".env file does not exist: '$envFileFolderPath/$envFileName'");
+	public function __construct(string $envFileFolderPath = __DIR__ . "/../..", string $envFileName = ".env")
+	{
+		if (!file_exists("$envFileFolderPath/$envFileName"))
+			throw new Exception(".env file does not exist: '$envFileFolderPath/$envFileName'");
 
-        $dotenv = Dotenv::createImmutable($envFileFolderPath);
-        $dotenv->load();
-    }
+		$dotenv = Dotenv::createImmutable($envFileFolderPath);
+		try {
+			$dotenv->load();
+		} catch (Exception $e) {
+			error_log("Failed loading .env file '$envFileFolderPath/$envFileName': " . $e->getMessage());
+			throw $e;
+		}
+	}
 	public function listKeys(): array
 	{
 		return array_keys($_ENV);

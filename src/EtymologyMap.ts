@@ -16,7 +16,6 @@ import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
 import { loadTranslator } from './i18n';
-import { GeoJSONSourceOptions } from 'mapbox-gl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
