@@ -23,6 +23,7 @@
         "fetch_error": "Beim Abrufen der Daten ist ein Fehler aufgetreten",
         "map_error": "Ein Kartenfehler ist aufgetreten",
         "data_loaded": "Geladene Daten",
+        "no_data_in_this_area": "Keine Daten in diesem Gebiet",
         "data_loaded_instructions": "Daten geladen, klicken Sie auf ein hervorgehobenes Element, um dessen Details anzuzeigen"
     },
     "source": {

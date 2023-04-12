@@ -23,6 +23,7 @@
         "fetch_error": "An error occurred while fetching the data",
         "map_error": "A map error occurred",
         "data_loaded": "Data loaded",
+        "no_data_in_this_area": "No data in this area",
         "data_loaded_instructions": "Data loaded, click on any highlighted element to show its details"
     },
     "source": {

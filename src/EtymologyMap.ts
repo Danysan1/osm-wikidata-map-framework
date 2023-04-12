@@ -16,6 +16,7 @@ import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
 import { loadTranslator } from './i18n';
+import { GeoJSONSourceOptions } from 'mapbox-gl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -140,7 +141,9 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(false);
 
             loadTranslator().then(t => {
-                if (wikidataSourceEvent && !this.anyDetailShownBefore)
+                if (wikidataSourceEvent && this.querySourceFeatures(WIKIDATA_SOURCE).length === 0)
+                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000, "data_loaded");
+                else if (wikidataSourceEvent && !this.anyDetailShownBefore)
                     showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000, "data_loaded");
                 else
                     showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000, "data_loaded");
