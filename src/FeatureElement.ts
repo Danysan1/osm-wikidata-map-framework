@@ -158,7 +158,8 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 }
 
 function showEtymologies(properties: FeatureProperties, etymologies: Etymology[], etymologies_container: HTMLElement, currentZoom: number) {
-    etymologies.forEach(function (ety) {
+    // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
+    etymologies.sort((a, b) => (a.wikidata?.length || 0) - (b.wikidata?.length || 0)).forEach((ety) => {
         if (ety?.wikidata) {
             try {
                 etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
@@ -213,7 +214,7 @@ async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100
         return etymologies;
 
     if (etymologyIDs.length > maxItems) {
-        // Too many items, limiting to the first N entities with the shortest Wikidata ID (which usually means most famous)
+        // Too many items, limiting to the first N entities with the shortest Wikidata Q-ID (which usually means most famous)
         etymologyIDs = etymologyIDs.sort((a, b) => a.length - b.length).slice(0, maxItems);
         showSnackbar(`Loading only first ${maxItems} items out of ${etymologies.length}`, "lightsalmon", 10_000);
     }
