@@ -8,13 +8,14 @@ import { logErrorMessage } from "./monitoring";
 
 export function setPageLocale() {
     const langParam = new URLSearchParams(document.location.search).get("lang"),
-        locale = langParam || navigator.languages?.find(x => x.includes("-")) || navigator.language || 'en-US';
+        locale = langParam || navigator.languages?.at(0) || navigator.language,
+        lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || 'en';
 
     debugLog("setPageLocale", {
-        langParam, lang: navigator.language, langs: navigator.languages, locale
+        langParam, locale, lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
-    document.documentElement.setAttribute("lang", locale);
+    document.documentElement.setAttribute("lang", lang);
 }
 
 let tPromise: Promise<TFunction>;
