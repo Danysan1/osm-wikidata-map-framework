@@ -210,6 +210,7 @@ services:
       - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
       - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
       - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+      - ./app/csv:/opt/airflow/csv
       - db-init-work-dir:/workdir:delegated
       # https://devopscube.com/run-docker-in-docker/
       - //var/run/docker.sock:/var/run/docker.sock
