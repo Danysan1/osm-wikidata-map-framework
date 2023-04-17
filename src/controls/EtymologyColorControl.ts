@@ -80,9 +80,6 @@ class EtymologyColorControl extends DropdownControl {
         if (!colorScheme?.urlCode)
             throw new Error("downloadChartData: can't download data for a color scheme with no URL code - " + colorScheme.textKey);
 
-        if (this._chartXHR)
-            this._chartXHR.abort();
-
         const southWest = bounds.getSouthWest(),
             minLat = southWest.lat,
             minLon = southWest.lng,
@@ -104,41 +101,47 @@ class EtymologyColorControl extends DropdownControl {
             xhr = new XMLHttpRequest();
 
         if (this._lastQueryString !== queryString) {
-            this._lastQueryString = queryString;
-            xhr.onreadystatechange = (e) => {
-                const readyState = xhr.readyState,
-                    status = xhr.status,
-                    data = {
-                        labels: [],
-                        datasets: [{
-                            data: [],
-                            backgroundColor: [],
-                        }]
-                    } as ChartData<"pie">;
-                if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-                    debugLog("XHR aborted", { xhr, readyState, status, e });
-                } else if (readyState == XMLHttpRequest.DONE) {
-                    if (status == 200) {
-                        JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
-                            (data.datasets[0].backgroundColor as string[]).push(row.color);
-                            data.labels?.push(row["name"]);
-                            data.datasets[0].data.push(row["count"]);
-                        });
-                        this.setChartData(data);
-                    } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
-                        this.removeChart();
-                        showSnackbar("Statistic not implemented for this source", "lightsalmon");
-                    } else {
-                        console.error("XHR error", { xhr, readyState, status, e });
-                        //if (event.type && event.type == 'change')
-                        //    this.hideDropdown();
-                        this.removeChart();
-                    }
-                }
-            }
+            xhr.onreadystatechange = (e) => this.handleChartXHRStateChange(xhr, e);
             xhr.open('GET', stats_url, true);
             xhr.send();
+
+            if (this._chartXHR)
+                this._chartXHR.abort();
             this._chartXHR = xhr;
+            this._lastQueryString = queryString;
+        }
+    }
+
+    handleChartXHRStateChange(xhr: XMLHttpRequest, e: Event) {
+        const readyState = xhr.readyState,
+            status = xhr.status,
+            data = {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: [],
+                }]
+            } as ChartData<"pie">;
+
+        if (readyState == XMLHttpRequest.UNSENT || status == 0) {
+            debugLog("XHR aborted", { xhr, readyState, status, e });
+        } else if (readyState == XMLHttpRequest.DONE) {
+            if (status == 200) {
+                JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
+                    (data.datasets[0].backgroundColor as string[]).push(row.color);
+                    data.labels?.push(row["name"]);
+                    data.datasets[0].data.push(row["count"]);
+                });
+                this.setChartData(data);
+            } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
+                this.removeChart();
+                showSnackbar("Statistic not implemented for this source", "lightsalmon");
+            } else {
+                console.error("XHR error", { xhr, readyState, status, e });
+                //if (event.type && event.type == 'change')
+                //    this.hideDropdown();
+                this.removeChart();
+            }
         }
     }
 
