@@ -1,5 +1,5 @@
 //import { MaplibreEvent as MapEvent } from 'maplibre-gl';
-import { MapboxEvent as MapEvent } from 'mapbox-gl';
+import { LngLatBounds, MapboxEvent as MapEvent } from 'mapbox-gl';
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
@@ -31,6 +31,7 @@ class EtymologyColorControl extends DropdownControl {
     private _chartXHR: XMLHttpRequest | null;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
+    private _lastQueryString?: string;
 
     constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void, t: TFunction) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
@@ -55,81 +56,89 @@ class EtymologyColorControl extends DropdownControl {
     updateChart(event?: MapEvent | Event, source?: string) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
-            console.error("updateChart: dropdown not inizialized", { event });
+            console.error("updateChart: dropdown not yet initialized", { event });
             return;
         } else {
             const colorSchemeID = dropdown.value as ColorSchemeID,
                 colorScheme = colorSchemes[colorSchemeID],
                 bounds = this.getMap()?.getBounds();
-            debugLog("updateChart", { event, colorSchemeID, colorScheme });
 
             if (!bounds) {
-                console.error("updateChart: missing bounds", { event });
-            } else if (colorScheme && colorScheme.urlCode) {
-                debugLog("updateChart main: colorScheme is ok", { event, colorScheme });
-                if (this._chartXHR)
-                    this._chartXHR.abort();
-
-                const southWest = bounds.getSouthWest(),
-                    minLat = southWest.lat,
-                    minLon = southWest.lng,
-                    northEast = bounds.getNorthEast(),
-                    maxLat = northEast.lat,
-                    maxLon = northEast.lng,
-                    language = document.documentElement.lang,
-                    queryParams = {
-                        to: colorScheme.urlCode,
-                        minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
-                        minLon: (Math.floor(minLon * 1000) / 1000).toString(),
-                        maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
-                        maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
-                        language,
-                        source: source ?? getCorrectFragmentParams().source,
-                    },
-                    queryString = new URLSearchParams(queryParams).toString(),
-                    stats_url = './stats.php?' + queryString,
-                    xhr = new XMLHttpRequest();
-                xhr.onreadystatechange = (e) => {
-                    const readyState = xhr.readyState,
-                        status = xhr.status,
-                        data = {
-                            labels: [],
-                            datasets: [{
-                                data: [],
-                                backgroundColor: [],
-                            }]
-                        } as ChartData<"pie">;
-                    if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-                        debugLog("XHR aborted", { xhr, readyState, status, e });
-                    } else if (readyState == XMLHttpRequest.DONE) {
-                        if (status == 200) {
-                            JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
-                                (data.datasets[0].backgroundColor as string[]).push(row.color);
-                                data.labels?.push(row["name"]);
-                                data.datasets[0].data.push(row["count"]);
-                            });
-                            this.setChartData(data);
-                        } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
-                            this.removeChart();
-                            showSnackbar("Statistic not implemented for this source", "lightsalmon");
-                        } else {
-                            console.error("XHR error", { xhr, readyState, status, e });
-                            //if (event.type && event.type == 'change')
-                            //    this.hideDropdown();
-                            this.removeChart();
-                        }
-                    }
-                }
-                xhr.open('GET', stats_url, true);
-                xhr.send();
-                this._chartXHR = xhr;
-
+                debugLog("updateChart: missing bounds", { event });
+            } else if (colorScheme?.urlCode) {
+                this.downloadChartData(bounds, colorScheme, source);
                 if (event)
                     this.showDropdown();
-            } else if (event?.type && event?.type == 'change') {
-                debugLog("updateChart main: no colorScheme and change event, hiding", { event, colorScheme });
+            } else if (event?.type === 'change') {
+                debugLog("updateChart: change event with no colorScheme URL code, hiding", { event, colorSchemeID, colorScheme });
                 this.showDropdown(false);
             }
+        }
+    }
+
+    downloadChartData(bounds: LngLatBounds, colorScheme: ColorScheme, source?: string) {
+        if (!colorScheme?.urlCode)
+            throw new Error("downloadChartData: can't download data for a color scheme with no URL code - " + colorScheme.textKey);
+
+        if (this._chartXHR)
+            this._chartXHR.abort();
+
+        const southWest = bounds.getSouthWest(),
+            minLat = southWest.lat,
+            minLon = southWest.lng,
+            northEast = bounds.getNorthEast(),
+            maxLat = northEast.lat,
+            maxLon = northEast.lng,
+            language = document.documentElement.lang,
+            queryParams = {
+                to: colorScheme?.urlCode,
+                minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
+                minLon: (Math.floor(minLon * 1000) / 1000).toString(),
+                maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
+                maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
+                language,
+                source: source ?? getCorrectFragmentParams().source,
+            },
+            queryString = new URLSearchParams(queryParams).toString(),
+            stats_url = './stats.php?' + queryString,
+            xhr = new XMLHttpRequest();
+
+        if (this._lastQueryString !== queryString) {
+            this._lastQueryString = queryString;
+            xhr.onreadystatechange = (e) => {
+                const readyState = xhr.readyState,
+                    status = xhr.status,
+                    data = {
+                        labels: [],
+                        datasets: [{
+                            data: [],
+                            backgroundColor: [],
+                        }]
+                    } as ChartData<"pie">;
+                if (readyState == XMLHttpRequest.UNSENT || status == 0) {
+                    debugLog("XHR aborted", { xhr, readyState, status, e });
+                } else if (readyState == XMLHttpRequest.DONE) {
+                    if (status == 200) {
+                        JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
+                            (data.datasets[0].backgroundColor as string[]).push(row.color);
+                            data.labels?.push(row["name"]);
+                            data.datasets[0].data.push(row["count"]);
+                        });
+                        this.setChartData(data);
+                    } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
+                        this.removeChart();
+                        showSnackbar("Statistic not implemented for this source", "lightsalmon");
+                    } else {
+                        console.error("XHR error", { xhr, readyState, status, e });
+                        //if (event.type && event.type == 'change')
+                        //    this.hideDropdown();
+                        this.removeChart();
+                    }
+                }
+            }
+            xhr.open('GET', stats_url, true);
+            xhr.send();
+            this._chartXHR = xhr;
         }
     }
 
