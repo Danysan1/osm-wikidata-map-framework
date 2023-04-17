@@ -37,7 +37,8 @@ export async function loadTranslator() {
         tPromise = import("i18next").then(i18next => i18next.use(ChainedBackend).init({
             debug: getBoolConfig("enable_debug_log"),
             fallbackLng: "en",
-            lng: locale,
+            //lng: locale, // comment to use the language only, UNcomment to use the full locale
+            lng: locale.split("-")[0], // UNcomment to use the language only, comment to use the full locale
             backend: { backends },
             ns: ["common", hostNamespace],
             fallbackNS: "common",
