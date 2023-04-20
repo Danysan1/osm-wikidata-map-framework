@@ -16,9 +16,10 @@ abstract class BBoxStatsPostGISQuery extends BBoxTextPostGISQuery implements BBo
 {
     public function __construct(
         BoundingBox $bbox,
-        string $language,
         PDO $db,
         WikidataConfig $wikidataConfig,
+        string $defaultLanguage,
+        ?string $language = null,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
@@ -26,9 +27,10 @@ abstract class BBoxStatsPostGISQuery extends BBoxTextPostGISQuery implements BBo
     ) {
         parent::__construct(
             $bbox,
-            $language,
             $db,
             $wikidataConfig,
+            $defaultLanguage,
+            $language,
             $serverTiming,
             $maxElements,
             $source,

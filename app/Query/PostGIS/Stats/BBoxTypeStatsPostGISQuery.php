@@ -29,7 +29,8 @@ class BBoxTypeStatsPostGISQuery extends BBoxStatsPostGISQuery
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
                 LEFT JOIN oem.wikidata_text AS instance_text
-                    ON instance.wd_id = instance_text.wdt_wd_id AND instance_text.wdt_language = :lang
+                    ON instance.wd_id = instance_text.wdt_wd_id
+                    AND instance_text.wdt_language = COALESCE(:lang::VARCHAR,:defaultLang::VARCHAR)
                 WHERE instance_text.wdt_name IS NOT NULL
                 $filterClause
                 GROUP BY instance.wd_id, instance_text.wdt_name

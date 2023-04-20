@@ -20,7 +20,8 @@ use Exception;
 
 abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 {
-    private string $language;
+    private string $defaultLanguage;
+    private ?string $language;
     private WikidataConfig $wikidataConfig;
     private ?int $maxElements;
     private bool $downloadColors;
@@ -28,9 +29,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
     public function __construct(
         BoundingBox $bbox,
-        string $language,
         PDO $db,
         WikidataConfig $wikidataConfig,
+        string $defaultLanguage,
+        ?string $language = null,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
@@ -44,16 +46,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             throw new Exception("maxElements must be > 0");
         }
 
+        $this->defaultLanguage = $defaultLanguage;
         $this->language = $language;
         $this->wikidataConfig = $wikidataConfig;
         $this->maxElements = $maxElements;
         $this->downloadColors = $downloadColors;
         $this->eagerFullDownload = $eagerFullDownload;
-    }
-
-    public function getLanguage(): string
-    {
-        return $this->language;
     }
 
     protected function getMaxElements(): int|null
@@ -69,7 +67,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     protected function getQueryParams(): array
     {
         $params = parent::getQueryParams();
-        $params["lang"] = $this->getLanguage();
+        $params["defaultLang"] = $this->defaultLanguage;
+        $params["lang"] = $this->language;
         return $params;
     }
 
@@ -85,6 +84,11 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $downloadDateField = $this->eagerFullDownload ? "wd_full_download_date" : "wd_download_date";
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         $limitClause = $this->getLimitClause();
+        $language = empty($this->language) ? $this->defaultLanguage : $this->language;
+
+        $queryParams = parent::getQueryParams();
+        $queryParams["lang"] = $language;
+
         $sthMissingWikidata = $this->getDB()->prepare(
             "SELECT DISTINCT wd.wd_wikidata_cod
             FROM oem.element AS el
@@ -96,7 +100,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             $filterClause
             $limitClause"
         );
-        $sthMissingWikidata->execute(self::getQueryParams());
+        $sthMissingWikidata->execute($queryParams);
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("missing-wikidata-query");
 
@@ -111,8 +115,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             $queryBuilder = $this->eagerFullDownload ? new FullEtymologyIDListWikidataQueryBuilder() : new BaseEtymologyIDListWikidataQueryBuilder();
             $wikidataQuery = new StringSetJSONWikidataQuery(
                 $searchSet,
-                $this->language,
-                $queryBuilder->createQuery($searchSet, $this->language),
+                $language,
+                $queryBuilder->createQuery($searchSet, $language),
                 $this->wikidataConfig
             );
             $wikidataResult = $wikidataQuery->sendAndGetJSONResult();
@@ -175,7 +179,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 WHERE wdt IS NULL
                 ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );
-            $stInsertGenderText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stInsertGenderText->bindValue("lang", $language, PDO::PARAM_STR);
             $stInsertGenderText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
             //$stInsertGenderText->debugDumpParams();
             $stInsertGenderText->execute();
@@ -261,7 +265,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 AND wdt_wd_id = wd_id
                 AND wdt_language = :lang"
             );
-            $stUpdateText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stUpdateText->bindValue("lang", $language, PDO::PARAM_STR);
             $stUpdateText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
             //$stUpdateText->debugDumpParams();
             $stUpdateText->execute();
@@ -301,7 +305,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
                 ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );
-            $stInsertText->bindValue("lang", $this->language, PDO::PARAM_STR);
+            $stInsertText->bindValue("lang", $language, PDO::PARAM_STR);
             $stInsertText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
             //$stInsertText->debugDumpParams();
             $stInsertText->execute();
@@ -312,6 +316,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
     public function __toString(): string
     {
-        return get_class($this) . ": " . $this->getBBox() . " / " . $this->getLanguage();
+        return get_class($this) . ": " . $this->getBBox() . " / " . $this->language;
     }
 }
