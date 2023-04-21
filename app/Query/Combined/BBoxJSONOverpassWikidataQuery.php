@@ -24,9 +24,6 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
     private BBoxGeoJSONQuery $baseQuery;
     protected StringSetXMLQueryFactory $wikidataFactory;
 
-    /**
-     * @param array<string> $keys OSM wikidata keys to use
-     */
     public function __construct(BBoxGeoJSONQuery $baseQuery, StringSetXMLQueryFactory $wikidataFactory, ServerTiming $timing)
     {
         $this->baseQuery = $baseQuery;

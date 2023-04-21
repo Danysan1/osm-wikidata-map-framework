@@ -36,33 +36,39 @@ class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
         } else {
             $wikidataQuery = new GeoJSON2JSONStatsWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
             $out = $wikidataQuery->sendAndGetJSONResult();
-
-            if (!empty($this->colorCsvFileName)) {
-                $jsonData = $out->getJSONData();
-                $csvFilePath = __DIR__ . "/../../csv/" . $this->colorCsvFileName;
-                $csvFile = @fopen($csvFilePath, "r");
-                if ($csvFile === false) {
-                    error_log("Failed opening Wikidata CSV file - $csvFilePath");
-                } else {
-                    for ($i = 0; $i < count($jsonData); $i++) {
-                        $foundColorForRow = false;
-                        for ($row = fgetcsv($csvFile); $row && !$foundColorForRow; $row = fgetcsv($csvFile)) {
-                            $wikidataQID = (string)($row[0]);
-                            $color = (string)($row[3]);
-                            if ($jsonData[$i]["id"] == $wikidataQID) {
-                                $jsonData[$i]["color"] = $color;
-                                $foundColorForRow = true;
-                            }
-                        }
-                        fseek($csvFile, 0);
-                        if (!$foundColorForRow)
-                            $jsonData[$i]["color"] = "#223b53";
-                    }
-                }
-                $out = new JSONLocalQueryResult(true, $jsonData);
-            }
+            $out = $this->updateResultWithColorsFromCSV($out);
         }
 
         return $out;
+    }
+
+    private function updateResultWithColorsFromCSV(JSONQueryResult $jsonResult): JSONQueryResult
+    {
+        if (empty($this->colorCsvFileName))
+            return $jsonResult;
+
+        $csvFilePath = __DIR__ . "/../../csv/" . $this->colorCsvFileName;
+        $csvFile = @fopen($csvFilePath, "r");
+        if ($csvFile === false) {
+            error_log("Failed opening Wikidata CSV file - $csvFilePath");
+            return $jsonResult;
+        }
+
+        $jsonData = $jsonResult->getJSONData();
+        for ($i = 0; $i < count($jsonData); $i++) {
+            $foundColorForElement = false;
+            for ($row = fgetcsv($csvFile); $row && !$foundColorForElement; $row = fgetcsv($csvFile)) {
+                $wikidataQID = (string)($row[0]);
+                if ($jsonData[$i]["id"] == $wikidataQID) {
+                    $color = (string)($row[3]);
+                    $jsonData[$i]["color"] = $color;
+                    $foundColorForElement = true;
+                }
+            }
+            fseek($csvFile, 0);
+            if (!$foundColorForElement)
+                $jsonData[$i]["color"] = "#223b53";
+        }
+        return new JSONLocalQueryResult(true, $jsonData);
     }
 }
