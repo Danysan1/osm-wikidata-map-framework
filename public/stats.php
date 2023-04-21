@@ -106,10 +106,10 @@ if ($db != null) {
 
     if ($to == "genderStats") {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_genders.csv");
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_types.csv");
     } elseif ($to == "centuryStats") {
         throw new Exception("Not implemented"); // TODO
     } elseif ($to == "sourceStats") {
