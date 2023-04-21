@@ -42,6 +42,8 @@ Q744913,aviation accident,Events,#ff3333
 Q154278,ethnic cleansing,Events,#ff3333
 Q105967822,communist crime,Events,#ff3333
 Q173462,crime against humanity,Events,#ff3333
+Q14795564,recurrent point in time,Events,#ff3333
+Q116741026,constitutive treaty,Events,#ff3333
 Q16560,palace,Buildings,#ffdd33
 Q41176,building,Buildings,#ffdd33
 Q23413,castle,Buildings,#ffdd33
@@ -103,7 +105,7 @@ Q537127,road bridge,Buildings,#ffdd33
 Q52177058,civic building,Buildings,#ffdd33
 Q16831714,government building,Buildings,#ffdd33
 Q25550691,town hall,Buildings,#ffdd33
-Q148837,polis,Buildings,#ffdd33
+Q35112127,historic building,Buildings,#ffdd33
 Q8502,mountain,Nature,#77ff33
 Q46831,mountain range,Nature,#77ff33
 Q3777462,alpine group,Nature,#77ff33
@@ -271,6 +273,7 @@ Q200250,metropolis,Human settlements,#7733ff
 Q2074737,municipality of Spain,Human settlements,#7733ff
 Q5153359,municipality of the Czech Republic,Human settlements,#7733ff
 Q133442,city-state,Human settlements,#7733ff
+Q148837,polis,Human settlements,#7733ff
 Q43229,organization,Organization,#ff33dd
 Q4830453,business,Organization,#ff33dd
 Q6881511,enterprise,Organization,#ff33dd
