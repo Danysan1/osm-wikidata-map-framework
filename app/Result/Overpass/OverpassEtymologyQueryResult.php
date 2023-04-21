@@ -54,6 +54,9 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         $osmID = (int)$element["id"];
         $osmURL = "https://www.openstreetmap.org/$osmType/$osmID";
 
+        $defaultLanguageNameTag = "name:" . $this->defaultLanguage;
+        $languageNameTag = empty($this->language) ? null : "name:" . $this->language;
+
         /**
          * @var string[] $wikidataEtymologyIDs All avaliable Wikidata etymology IDs
          */
@@ -76,10 +79,10 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             return false;
         }
 
-        if (!empty($this->language) && !empty($element["tags"]["name:" . $this->language])) {
-            $elementName = (string)$element["tags"]["name:" . $this->language];
-        } else if (!empty($this->defaultLanguage) && !empty($element["tags"]["name:" . $this->defaultLanguage])) {
-            $elementName = (string)$element["tags"]["name:" . $this->defaultLanguage];
+        if ($languageNameTag && !empty($element["tags"][$languageNameTag])) {
+            $elementName = (string)$element["tags"][$languageNameTag];
+        } else if (!empty($element["tags"][$defaultLanguageNameTag])) {
+            $elementName = (string)$element["tags"][$defaultLanguageNameTag];
         } else if (!empty($element["tags"]["name"])) {
             $elementName = (string)$element["tags"]["name"];
         } else {
