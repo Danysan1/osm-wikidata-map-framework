@@ -10,9 +10,10 @@ import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
 
 export interface EtymologyStat {
-    color: string;
-    name: string;
-    count: number;
+    color?: string;
+    id?: string;
+    name?: string;
+    count?: number;
 }
 
 /**
@@ -128,9 +129,11 @@ class EtymologyColorControl extends DropdownControl {
         } else if (readyState == XMLHttpRequest.DONE) {
             if (status == 200) {
                 JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
-                    (data.datasets[0].backgroundColor as string[]).push(row.color);
-                    data.labels?.push(row["name"]);
-                    data.datasets[0].data.push(row["count"]);
+                    if (row.name && row.count) {
+                        (data.datasets[0].backgroundColor as string[]).push(row.color || '#3bb2d0');
+                        data.labels?.push(row.name);
+                        data.datasets[0].data.push(row.count);
+                    }
                 });
                 this.setChartData(data);
             } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
