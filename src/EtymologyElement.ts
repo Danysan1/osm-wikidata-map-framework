@@ -119,7 +119,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     //etyDomElement.dataset.et_id = ety.et_id?.toString();
     //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
-    const lang = document.documentElement.lang?.split("-")?.at(0);
+    const lang = document.documentElement.lang.split("-").at(0);
     debugLog("etymologyToDomElement", {
         et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });

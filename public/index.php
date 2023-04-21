@@ -112,6 +112,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
     <?= $conf->getMetaTag("i18n_override", true); ?>
+    <?= $conf->getMetaTag("default_language"); ?>
 </head>
 
 <body>

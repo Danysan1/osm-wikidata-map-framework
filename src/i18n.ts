@@ -9,7 +9,7 @@ import { logErrorMessage } from "./monitoring";
 export function setPageLocale() {
     const langParam = new URLSearchParams(document.location.search).get("lang"),
         locale = langParam || navigator.languages?.at(0) || navigator.language,
-        lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || 'en';
+        lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en';
 
     debugLog("setPageLocale", {
         langParam, locale, lang, navLangs: navigator.languages, navLang: navigator.language
@@ -22,23 +22,25 @@ let tPromise: Promise<TFunction>;
 export async function loadTranslator() {
     if (!tPromise) {
         const hostNamespace = new URL(document.URL).hostname,
-            locale = document.documentElement.getAttribute("lang") || 'en-US',
+            defaultLanguage = getConfig("default_language") || 'en',
+            locale = document.documentElement.lang,
+            language = locale.split('-').at(0),
             rawI18nOverride = getConfig("i18n_override"),
             backends: object[] = [HttpBackend];
         if (rawI18nOverride) {
             try {
                 const i18nOverride = JSON.parse(rawI18nOverride);
-                debugLog("loadTranslator: using i18n_override:", { locale, rawI18nOverride, i18nOverride });
+                debugLog("loadTranslator: using i18n_override:", { defaultLanguage, language, rawI18nOverride, i18nOverride });
                 backends.unshift(resourcesToBackend(i18nOverride));
             } catch (e) {
-                logErrorMessage("Failed parsing i18n_override", "error", { locale, rawI18nOverride, e });
+                logErrorMessage("Failed parsing i18n_override", "error", { defaultLanguage, language, rawI18nOverride, e });
             }
         }
         tPromise = import("i18next").then(i18next => i18next.use(ChainedBackend).init({
             debug: getBoolConfig("enable_debug_log"),
-            fallbackLng: "en",
+            fallbackLng: defaultLanguage,
             //lng: locale, // comment to use the language only, UNcomment to use the full locale
-            lng: locale.split("-")[0], // UNcomment to use the language only, comment to use the full locale
+            lng: language, // UNcomment to use the language only, comment to use the full locale
             backend: { backends },
             ns: ["common", hostNamespace],
             fallbackNS: "common",

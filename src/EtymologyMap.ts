@@ -853,7 +853,11 @@ export class EtymologyMap extends Map {
     }
 
     /**
-     * Set the application culture for i18n & l10n
+     * Set the application culture for i18n
+     * 
+     * Mainly, sets the map's query to get labels.
+     * Mapbox vector tiles use the fields name_*.
+     * MapTiler vector tiles use use the fields name:*.
      * 
      * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
      * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
@@ -861,14 +865,21 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
      */
     setCulture() {
-        const culture = document.documentElement.lang,
-            language = culture.split('-')[0];
-
-        const symbolLayerIds = this.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
+        const defaultLanguage = getConfig("default_language"),
+            language = document.documentElement.lang.split('-').at(0),
+            symbolLayerIds = this.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
             nameLayerIds = symbolLayerIds.filter(id => this.isNameSymbolLayer(id)),
             nameLayerOldTextFields = nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field')),
-            newTextField = ['coalesce', ['get', 'name:' + language], ['get', 'name_' + language], ['get', 'name']];
-        debugLog("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
+            newTextField = [
+                'coalesce',
+                ['get', 'name_' + language],
+                ['get', 'name_' + defaultLanguage],
+                ['get', 'name:' + language],
+                ['get', 'name:' + defaultLanguage],
+                ['get', 'name']
+            ];
+
+        debugLog("setCulture", { defaultLanguage, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
         nameLayerIds.forEach(id => this.setLayoutProperty(id, 'text-field', newTextField));
     }
 }
