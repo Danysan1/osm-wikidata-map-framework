@@ -490,8 +490,8 @@ services:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
-      interval: 10s
-      timeout: 10s
+      interval: 20s
+      timeout: 1s
       retries: 5
     restart: unless-stopped
     volumes:
