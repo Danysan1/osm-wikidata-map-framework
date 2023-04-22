@@ -33,7 +33,7 @@
         "propagated": "Vermehrt",
         "wd_reverse": "Wikidata-Entitäten, auf die mit {{indirectWdProperty}}",
         "wd_qualifier": "P625-Qualifikanten am {{indirectWdProperty}}",
-        "wd_indirect": "P625-Qualifikatoren & Wikidata-Entitäten, auf die mit {{indirectWdProperty}}"
+        "wd_indirect": "P625-Qualifikanten am {{indirectWdProperty}} & Entitäten, auf die mit {{indirectWdProperty}}"
     },
     "color_scheme": {
         "choose_scheme": "Farbschema und Statistiken auswählen",

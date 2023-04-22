@@ -33,7 +33,7 @@
         "propagated": "Propagati",
         "wd_reverse": "Entità Wikidata referenziate da {{indirectWdProperty}}",
         "wd_qualifier": "Qualificatori P625 su {{indirectWdProperty}}",
-        "wd_indirect": "Qualificatori P625 & entità Wikidata referenziate da {{indirectWdProperty}}"
+        "wd_indirect": "Qualificatori P625 su {{indirectWdProperty}} & Entità referenziate da {{indirectWdProperty}}"
     },
     "color_scheme": {
         "choose_scheme": "Scegli colori e statistiche",
