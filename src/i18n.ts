@@ -21,7 +21,7 @@ export function setPageLocale() {
 let tPromise: Promise<TFunction>;
 export async function loadTranslator() {
     if (!tPromise) {
-        const hostNamespace = new URL(document.URL).hostname,
+        const defaultNamespace = "app",
             defaultLanguage = getConfig("default_language") || 'en',
             locale = document.documentElement.lang,
             language = locale.split('-').at(0),
@@ -42,9 +42,9 @@ export async function loadTranslator() {
             //lng: locale, // comment to use the language only, UNcomment to use the full locale
             lng: language, // UNcomment to use the language only, comment to use the full locale
             backend: { backends },
-            ns: ["common", hostNamespace],
+            ns: ["common", defaultNamespace],
             fallbackNS: "common",
-            defaultNS: hostNamespace
+            defaultNS: defaultNamespace
         }));
     }
 

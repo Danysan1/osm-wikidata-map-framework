@@ -30,11 +30,16 @@ if ($enableDB) {
 }
 
 $i18nOverride = $conf->has("i18n_override") ? json_decode((string)$conf->get("i18n_override"), true) : null;
-$title = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"];
-$description = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"];
+$defaultLanguage = (string)$conf->get("default_language");
+$defaultNamespace = "app";
+if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))
+    throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
+$i18nStrings = $i18nOverride[$defaultLanguage][$defaultNamespace];
+$title = empty($i18nStrings["title"]) ? "" : (string)$i18nStrings["title"];
+$description = empty($i18nStrings["description"]) ? "" : (string)$i18nStrings["description"];
 $availableLanguages = [];
 foreach ($i18nOverride as $lang => $langData) {
-    if (!empty($langData[$_SERVER["HTTP_HOST"]]["title"])) {
+    if (!empty($langData[$defaultNamespace]["title"])) {
         $availableLanguages[] = (string)$lang;
     }
 }
@@ -69,7 +74,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
     <meta property="og:title" content="<?= $title; ?>" />
     <meta property="og:site_name" content="<?= $title; ?>" />
     <meta property="og:description" content="<?= $description; ?>" />
-    <meta name="author" content="Daniele Santini">
+    <meta name="author" content="Daniele Santini" />
     <meta name="robots" content="index, follow" />
     <?= $metaKeywords; ?>
     <link rel="canonical" href="<?= $canonicalURL; ?>" />
@@ -176,7 +181,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
                         <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
                         |
                     <?php } ?>
-                    <a target="_blank" title="Daniele Santini personal website" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
+                    <a target="_blank" title="Personal website of the author of OSM-Wikidata Map Framework" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
                     |
                     <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                 </p>

@@ -85,17 +85,22 @@ if ($conf->has("osm_wikidata_properties")) {
 }
 
 $i18nOverride = json_decode((string)$conf->get("i18n_override"), true);
-if (empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"]))
-    throw new Exception("Missing title in configuration");
-if (empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"]))
-    throw new Exception("Missing description in configuration");
+$defaultLanguage = (string)$conf->get("default_language");
+$defaultNamespace = "app";
+if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))
+    throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
+$i18nStrings = $i18nOverride[$defaultLanguage][$defaultNamespace];
+if (empty($i18nStrings["title"]))
+    throw new Exception("Missing title in i18n configuration");
+if (empty($i18nStrings["description"]))
+    throw new Exception("Missing description in i18n configuration");
 
 echo json_encode([
     "data_format" => 1,
     "data_url" => $thisURL,
     "project" => [
-        "name" => $i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"],
-        "description" => $i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"],
+        "name" => $i18nStrings["title"],
+        "description" => $i18nStrings["description"],
         "project_url" => $homeURL,
         "doc_url" => $contributingURL,
         "icon_url" => "$homeURL/favicon.ico",
