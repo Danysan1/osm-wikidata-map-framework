@@ -40,9 +40,12 @@ The most basic deployment can be launched by using Docker and executing these sh
 
 For more advanced deployment configurations check [CONTRIBUTING.md](CONTRIBUTING.md#deployment).
 
-By default the user language is used when fetching etymology details.
-You can force the another language by passing the [ISO 639-1 language code](https://www.loc.gov/standards/iso639-2/php/code_list.php) to the `lang` parameter.
+The framework is fully internationalized (assuming the data from Wikidata is available in the current language).
+By default the browser language is used.
+You can force another language by passing the [ISO 639-1 language code](https://www.loc.gov/standards/iso639-2/php/code_list.php) to the `lang` parameter.
 For example https://etymology.dsantini.it/?lang=es passes `es` to require data in spanish.
+The supported languages are listed in [public/locales/](public/locales/).
+Help with translation is welcome!
 
 ## Technologies used for data elaboration and display
 
