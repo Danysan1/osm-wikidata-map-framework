@@ -78,6 +78,14 @@ Any suggestion to improve this documentation page is really appreciated, as it h
 
 You can find below some information useful to contribute to the OSM-Wikidata Map Framework codebase.
 
+### Helping with translation
+
+The translations for the title and description of the application is located in the `i18n_override` configuration. For example, the title and description of Open Etymology Map are located in the [`.env.example` file in its repository](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example).
+
+All other translations are located in the [`public/locales/{LANGUAGE_CODE}/common.json`](public/locales/) files of the framework.
+In order to fix an error to an existing translation you simply need to edit the relevant file.
+In order to create a new translation you can copy one of the existing language folders in [`public/locales`](public/locales/) to a new folder with the ISO 639-1 code of the new language you want to translate and then edit the new `common.json`.
+
 ### Deployment
 
 In order to make a deployed instance function correctly all instance settings must be set in `.env`.

@@ -1,0 +1,63 @@
+{
+    "title": "OSM-Wikidata Map Framework",
+    "description": "Framework per creare mappe interattive che combinano e visualizzano dettagli su entità associate a elementi geografici da OpenStreetMap e Wikidata.",
+    "info_box": {
+        "open_popup": "Apri il popup delle informazioni",
+        "click_anywhere": "Clicca su un punto qualsiasi della mappa per esplorare.",
+        "use_controls": "Usa i controlli ai lati per visualizzare altri dati:",
+        "to_see_statistics": "per visualizzare statistiche sugli elementi",
+        "to_choose_source": "per scegliere quale sorgente dati utilizzare",
+        "to_change_background": "per cambiare lo sfondo della mappa",
+        "to_open_again": "per riaprire questa finestra",
+        "contribute": "Contribuisci alla mappa",
+        "download_dataset": "Scarica come dataset",
+        "last_db_update": "Ultimo aggiornamento del database:",
+        "based_on": "Basato su",
+        "report_issue": "Segnala un problema",
+        "report_issue_title": "Segnala un problema o un bug di questa applicazione",
+        "about_me": "Su di me",
+        "about_me_title": "Sito personale dell'autore di OSM-Wikidata Map Framework"
+    },
+    "snackbar": {
+        "zoom_in": "Zoomare per visualizzare i dati",
+        "fetch_error": "Si è verificato un errore durante il caricamento dei dati",
+        "map_error": "Si è verificato un errore nella mappa",
+        "data_loaded": "Dati caricati",
+        "no_data_in_this_area": "Nessun dato in questa area",
+        "data_loaded_instructions": "Dati caricati, cliccare su un elemento evidenziato per visualizzarne i dettagli"
+    },
+    "source": {
+        "choose_source": "Scegli sorgente dati",
+        "db_all": "Tutte le fonti dal DB",
+        "db_osm_wikidata_reverse": "Entità Wikidata referenziate da OSM wikidata=* e {{indirectWdProperty}}",
+        "propagated": "Propagati",
+        "wd_reverse": "Entità Wikidata referenziate da {{indirectWdProperty}}",
+        "wd_qualifier": "Qualificatori P625 su {{indirectWdProperty}}",
+        "wd_indirect": "Qualificatori P625 su {{indirectWdProperty}} e entità Wikidata referenziate da {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        "choose_scheme": "Scegli colori e statistiche",
+        "blue": "Blu",
+        "source": "Per sorgente",
+        "gender": "Per genere",
+        "type": "Per tipo",
+        "century": "Per secolo",
+        "black": "Nero",
+        "red": "Rosso",
+        "orange": "Arancione"
+    },
+    "background": {
+        "choose_style": "Scegli lo sfondo della mappa"
+    },
+    "feature_details": {
+        "location": "Posizione",
+        "picture_via_commons": "Immagine da Wikimedia Commons",
+        "loading": "Caricamento entità...",
+        "report_problem": "Segnala un problema in questo elemento"
+    },
+    "etymology_details": {
+        "source": "Fonte:",
+        "propagation": "propagazione",
+        "propagation_title": "Descrizione del meccanismo di propagazione"
+    }
+}

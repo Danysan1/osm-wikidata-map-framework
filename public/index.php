@@ -9,7 +9,7 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-$required_conf = ["mapbox_token", "info_title", "info_description", "home_url"];
+$required_conf = ["mapbox_token"];
 foreach ($required_conf as $key) {
     if (!$conf->has($key)) {
         http_response_code(500);
@@ -23,11 +23,26 @@ if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
         $lastUpdate = (string)$dbh->query("SELECT oem.last_data_update()")->fetchColumn();
-        $lastUpdateString = empty($lastUpdate) ? '' : "<p>Last database update: $lastUpdate</p>";
+        $lastUpdateString = empty($lastUpdate) ? '' : "<p><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
     } catch (Exception $e) {
         error_log("Error fetching last update: " . $e->getMessage());
     }
 }
+
+$i18nOverride = $conf->has("i18n_override") ? json_decode((string)$conf->get("i18n_override"), true) : null;
+$title = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["title"];
+$description = empty($i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"]) ? "" : (string)$i18nOverride["en"][$_SERVER["HTTP_HOST"]]["description"];
+$availableLanguages = [];
+foreach ($i18nOverride as $lang => $langData) {
+    if (!empty($langData[$_SERVER["HTTP_HOST"]]["title"])) {
+        $availableLanguages[] = (string)$lang;
+    }
+}
+
+$thisURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+$canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : $thisURL;
+
+$metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf->get("keywords").'" />' : "";
 
 ?>
 
@@ -39,8 +54,8 @@ if ($enableDB) {
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=10">
 
-    <title><?= $conf->get("info_title") ?></title>
-    <meta name="description" content="<?= $conf->get("info_description") ?>" />
+    <title><?= $title; ?></title>
+    <meta name="description" content="<?= $description; ?>" />
 
     <?php if ($conf->has("google_analytics_id")) {
         $analyticsId = (string)$conf->get("google_analytics_id"); ?>
@@ -50,14 +65,17 @@ if ($enableDB) {
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= $conf->get("home_url") ?>" />
-    <meta property="og:title" content="<?= $conf->get("info_title") ?>" />
-    <meta property="og:site_name" content="<?= $conf->get("info_title") ?>" />
-    <meta property="og:description" content="<?= $conf->get("info_description") ?>" />
+    <meta property="og:url" content="<?= $canonicalURL; ?>" />
+    <meta property="og:title" content="<?= $title; ?>" />
+    <meta property="og:site_name" content="<?= $title; ?>" />
+    <meta property="og:description" content="<?= $description; ?>" />
     <meta name="author" content="Daniele Santini">
     <meta name="robots" content="index, follow" />
-    <meta name="keywords" content="etymology, etymologie, etimoloji, hodonyms, odonymy, odonomastica, odonimia, odonimi, Straßenname, odónimo, odonymie, straatnaam, odoniemen, toponym, toponymy, toponimi, toponomastica, toponymie, Ortsname, OpenStreetMap, Wikidata, map, mappa, karte, open data, linked data, structured data, urban, city">
-    <link rel="canonical" href="<?= $conf->get("home_url") ?>" />
+    <?= $metaKeywords; ?>
+    <link rel="canonical" href="<?= $canonicalURL; ?>" />
+    <?php foreach($availableLanguages as $lang){ ?>
+        <link rel="alternate" hreflang="<?= $lang; ?>" href="<?= $canonicalURL; ?>?lang=<?= $lang; ?>" />
+    <?php } ?>
     <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
     <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
@@ -93,6 +111,8 @@ if ($enableDB) {
     <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
+    <?= $conf->getMetaTag("i18n_override", true); ?>
+    <?= $conf->getMetaTag("default_language"); ?>
 </head>
 
 <body>
@@ -105,55 +125,58 @@ if ($enableDB) {
     <template id="intro_template">
         <div class="intro">
             <header>
-                <h1><?= $conf->get("info_title") ?></h1>
-                <p><?= $conf->get("info_description") ?></p>
+                <h1 class="i18n_title"></h1>
+                <p class="i18n_description"></p>
             </header>
 
-            <p>Click anywhere on the map to explore.</p>
-            <p>
-                Use the controls on the side to see other data:
+            <p class="i18n_click_anywhere">Click anywhere on the map to explore.</p>
+            <div>
+                <span class="i18n_use_controls">Use the controls on the side to see other data:</span>
                 <table>
                     <tr>
                         <td>📊</td>
-                        <td>to see statistics about elements</td>
+                        <td class="i18n_to_see_statistics">to see statistics about elements</td>
                     </tr>
                     <tr>
                         <td>⚙️</td>
-                        <td>to choose which data source to use</td>
+                        <td class="i18n_to_choose_source">to choose which data source to use</td>
                     </tr>
                     <tr>
                         <td>🌐</td>
-                        <td>to change the background map style</td>
+                        <td class="i18n_to_change_background">to change the background map style</td>
                     </tr>
                     <tr>
                         <td>ℹ️</td>
-                        <td>to open again this popup</td>
+                        <td class="i18n_to_open_again">to open again this popup</td>
                     </tr>
                 </table>
-            </p>
-
+            </div>
             <p>
-                <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button" href="<?= $conf->get("contributing_url") ?>">
-                    <span class="button_img">📖</span> Contribute to the map
+                <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href="<?= $conf->get("contributing_url") ?>">
+                    <span class="button_img">📖</span> &nbsp;
+                    <span class="i18n_contribute">Contribute to the map</span>
                 </a>
                 <?php if ($enableDB) { ?>
-                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button" href="dataset.php"><span class="button_img">💾</span> Download as dataset</a>
+                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
+                        <span class="button_img">💾</span> &nbsp;
+                        <span class="i18n_download_dataset">Download as dataset</span>
+                    </a>
                 <?php } ?>
             </p>
 
             <footer>
                 <p><?= $lastUpdateString; ?></p>
                 <p>
-                    Based on
-                    <a target="_blank" title="OSM-Wikidata Map Framework homepage" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
+                    <span class="i18n_based_on">Based on</span>
+                    <a target="_blank" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <p>
                     <?php if ($conf->has("issues_url")) { ?>
-                        <a target="_blank" title="Report a problem or a bug" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
+                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= $conf->get("issues_url") ?>">Report a problem</a>
                         |
                     <?php } ?>
-                    <a target="_blank" title="Daniele Santini personal website" href="https://www.dsantini.it/">About me</a>
+                    <a target="_blank" title="Daniele Santini personal website" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
                     |
                     <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                 </p>
@@ -177,41 +200,41 @@ if ($enableDB) {
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
             <div class="button_row">
-                <a title="Element on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
+                <a title="Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                     <span class="button_text"> Wikipedia</span>
                 </a>
-                <a title="Element on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
+                <a title="Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
                     <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                     <span class="button_text"> Commons</span>
                 </a>
-                <a title="Element on Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
+                <a title="Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
                     <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                     <span class="button_text"> Wikidata</span>
                 </a>
-                <a title="Element on OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
+                <a title="OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
                     <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
                     <span class="button_text"> OpenStreetMap</span>
                 </a>
-                <a title="Element on MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
+                <a title="MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
                     <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                     <span class="button_text"> Mapcomplete</span>
                 </a>
-                <a title="Element location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button" target="_self">
+                <a title="Location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
                     <span class="button_img">🎯</span>
-                    <span class="button_text"> Location</span>
+                    <span class="button_text i18n_location"> Location</span>
                 </a>
             </div>
             <?php if ($conf->getBool("show_feature_picture")) { ?><div class="feature_pictures column"></div><?php } ?>
 
             <div class="etymologies_container grid grid-auto">
                 <div class="etymology etymology_loading">
-                    <h3>Loading entities...</h3>
+                    <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button" href="<?= $conf->get("element_issue_url") ?>">
-                <span class="button_img">⚠️</span>
-                <span>&nbsp;Report a problem in this element</span>
+            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= $conf->get("element_issue_url") ?>">
+                <span class="button_img">⚠️</span> &nbsp;
+                <span class="i18n_report_problem">Report a problem in this element</span>
             </a>
         </div>
     </template>
@@ -226,25 +249,25 @@ if ($enableDB) {
                     </div>
                     <div class="info column">
                         <div class="button_row">
-                            <a title="Subject on Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
+                            <a title="Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
                                 <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
-                            <a title="Subject on Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
+                            <a title="Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
                                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>
                             </a>
-                            <a title="Subject on Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
+                            <a title="Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
                                 <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                                 <span class="button_text"> Wikidata</span>
                             </a>
-                            <a title="Person on EntiTree" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
+                            <a title="EntiTree" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
                                 <img class="button_img" src="img/entitree.png" alt="EntiTree logo">
                                 <span class="button_text"> EntiTree</span>
                             </a>
-                            <a title="Subject location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement" target="_self">
+                            <a title="Location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement title_i18n_location" target="_self">
                                 <span class="button_img">🎯</span>
-                                <span class="button_text"> Location</span>
+                                <span class="button_text i18n_location"> Location</span>
                             </a>
                         </div>
 
@@ -261,13 +284,18 @@ if ($enableDB) {
                 <div class="ety_pictures column"></div>
             </div>
             <span class="etymology_src_wrapper">
-                Source:
-                <a title="Etymology OpenStreetMap source" class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
-                <span class="src_osm_plus_wd hiddenElement">&nbsp;+&nbsp;</span>
-                <a title="Etymology Wikidata source" class="etymology_src_wd hiddenElement">Wikidata</a>
-                <span class="etymology_propagated_wrapper hiddenElement"> + <a title="Description of the propagation mechanism" href="<?= $conf->get("propagation_docs_url") ?>">propagation</a></span>
-                <span class="etymology_src_part_of_wd_wrapper hiddenElement"> + <a title="Etymology Wikidata source" class="etymology_src_part_of_wd">Wikidata</a></span>
-            </span>
+                <span class="i18n_source">Source:</span>
+                <a class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
+                <span class="src_osm_plus_wd hiddenElement">+</span>
+                <a class="etymology_src_wd hiddenElement">Wikidata</a>
+                <span class="etymology_propagated_wrapper hiddenElement">
+                    +
+                    <a title="Description of the propagation mechanism" class="i18n_propagation title_i18n_propagation" href="<?= $conf->get("propagation_docs_url") ?>">propagation</a>
+                </span>
+                <span class="etymology_src_part_of_wd_wrapper hiddenElement">
+                    +
+                    <a class="etymology_src_part_of_wd">Wikidata</a>
+                </span> </span>
         </div>
     </template>
 </body>

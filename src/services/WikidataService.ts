@@ -9,8 +9,8 @@ export class WikidataService {
     }
 
     async fetchEtymologyDetails(etymologyIDs: string[]): Promise<EtymologyDetails[]> {
-        const culture = document.documentElement.lang,
-            language = culture.split('-')[0],
+        const defaultLanguage = getConfig("default_language") || 'en',
+            language = document.documentElement.lang.split('-').at(0),
             wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
             /** @see FullEtymologyIDListWikidataQueryBuilder::createQueryFromValidIDsString() in FullEtymologyIDListWikidataQueryBuilder.php */
             sparql = `
@@ -65,15 +65,15 @@ WHERE {
             FILTER(lang(?other_name)='${language}').
         }
         ?name ^rdfs:label ?wikidata.
-        FILTER(lang(?name)='en').
+        FILTER(lang(?name)='${defaultLanguage}').
         OPTIONAL {
             ?description ^schema:description ?wikidata.
-            FILTER(lang(?description)='en').
+            FILTER(lang(?description)='${defaultLanguage}').
         }
     } UNION {
         MINUS {
             ?other_name ^rdfs:label ?wikidata.
-            FILTER(lang(?other_name)='${language}' || lang(?other_name)='en').
+            FILTER(lang(?other_name)='${language}' || lang(?other_name)='${defaultLanguage}').
         }
         ?name ^rdfs:label ?wikidata.
     }

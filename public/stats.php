@@ -35,7 +35,9 @@ $serverTiming->add("2_prepare");
 
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
+
+$defaultLanguage = (string)$conf->get('default_language');
+$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultLanguage);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataConfig = new BaseWikidataConfig($conf);
 $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
@@ -62,11 +64,11 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     if ($to == "genderStats") {
-        $query = new BBoxGenderStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $serverTiming, null, $source);
+        $query = new BBoxGenderStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "typeStats") {
-        $query = new BBoxTypeStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $serverTiming, null, $source);
+        $query = new BBoxTypeStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "centuryStats") {
-        $query = new BBoxCenturyStatsPostGISQuery($bbox, $safeLanguage, $db, $wikidataConfig, $serverTiming, null, $source);
+        $query = new BBoxCenturyStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "sourceStats") {
         $query = new BBoxSourceStatsPostGISQuery($bbox, $db, $serverTiming, $source);
     } else {
@@ -76,7 +78,7 @@ if ($db != null) {
     if (str_starts_with($source, "overpass_")) {
         $keyID = str_replace("overpass_", "", $source);
         $wikidataKeys = $conf->getWikidataKeys($keyID);
-        $sourceQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
+        $sourceQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey, $defaultLanguage, $safeLanguage);
         $sourceName = "OpenStreetMap";
         $sourceColor = "#33ff66";
         $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
@@ -104,10 +106,10 @@ if ($db != null) {
 
     if ($to == "genderStats") {
         $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_genders.csv");
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_types.csv");
     } elseif ($to == "centuryStats") {
         throw new Exception("Not implemented"); // TODO
     } elseif ($to == "sourceStats") {

@@ -29,7 +29,8 @@ class BBoxGenderStatsPostGISQuery extends BBoxStatsPostGISQuery
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
                 LEFT JOIN oem.wikidata_text AS gender_text
-                    ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
+                    ON gender.wd_id = gender_text.wdt_wd_id
+                    AND gender_text.wdt_language = COALESCE(:lang::VARCHAR,:defaultLang::VARCHAR)
                 WHERE gender_text.wdt_name IS NOT NULL
                 $filterClause
                 GROUP BY gender.wd_id, gender_text.wdt_name

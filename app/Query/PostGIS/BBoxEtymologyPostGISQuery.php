@@ -10,10 +10,7 @@ use \App\Query\BBoxGeoJSONQuery;
 use \App\Query\PostGIS\BBoxTextPostGISQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\GeoJSONQueryResult;
-use \App\Result\GeoJSONLocalQueryResult;
-use \App\Result\QueryResult;
 use App\ServerTiming;
-use Exception;
 use PDO;
 
 class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJSONQuery
@@ -23,11 +20,12 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
 
     public function __construct(
         BoundingBox $bbox,
-        string $language,
         PDO $db,
         WikidataConfig $wikidataConfig,
         string $textKey,
         string $descriptionKey,
+        string $defaultLanguage,
+        ?string $language = null,
         ?ServerTiming $serverTiming = null,
         ?int $maxElements = null,
         ?string $source = null,
@@ -37,9 +35,10 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     ) {
         parent::__construct(
             $bbox,
-            $language,
             $db,
             $wikidataConfig,
+            $defaultLanguage,
+            $language,
             $serverTiming,
             $maxElements,
             $source,
@@ -91,7 +90,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_geometry AS geom,
                     el.el_osm_type AS osm_type,
                     el.el_osm_id AS osm_id,
-                    COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>'name') AS name,
+                    COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>CONCAT('name:',:defaultLang), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
                     CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :textKey ELSE NULL END AS text_etymology,
                     CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :descriptionKey ELSE NULL END AS text_etymology_descr,

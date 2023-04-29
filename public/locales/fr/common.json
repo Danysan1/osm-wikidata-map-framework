@@ -1,0 +1,63 @@
+{
+    "title": "OSM-Wikidata Map Framework",
+    "description": "Cadre pour la création de cartes interactives qui combinent et affichent des détails sur les entités associées aux caractéristiques géographiques d'OpenStreetMap et de Wikidata",
+    "info_box": {
+        "open_popup": "Ouvrir la fenêtre contextuelle d'informations",
+        "click_anywhere": "Cliquez n'importe où sur la carte pour explorer.",
+        "use_controls": "Utilisez les contrôles sur les côtés pour voir d'autres données:",
+        "to_see_statistics": "pour voir les statistiques sur les éléments",
+        "to_choose_source": "pour choisir la source de données à utiliser",
+        "to_change_background": "pour changer le style de la carte de fond",
+        "to_open_again": "pour ouvrir à nouveau cette fenêtre contextuelle",
+        "contribute": "Contribuer à la carte",
+        "download_dataset": "Télécharger en tant qu'ensemble de données",
+        "last_db_update": "Dernière mise à jour de la base de données:",
+        "based_on": "Basé sur",
+        "report_issue": "Signaler un problème",
+        "report_issue_title": "Signaler un problème ou un bogue de cette application",
+        "about_me": "À propos de moi",
+        "about_me_title": "Site personnel de l'auteur du cadre de carte OSM-Wikidata"
+    },
+    "snackbar": {
+        "zoom_in": "Veuillez zoomer pour afficher les données",
+        "fetch_error": "Une erreur s'est produite lors de la récupération des données",
+        "map_error": "Une erreur s'est produite dans la carte",
+        "data_loaded": "Données chargées",
+        "no_data_in_this_area": "Aucune donnée dans cette zone",
+        "data_loaded_instructions": "Données chargées, cliquez sur n'importe quel élément en surbrillance pour afficher ses détails"
+    },
+    "source": {
+        "choose_source": "Choisissez la source de données",
+        "db_all": "Toutes les sources de la base de données",
+        "db_osm_wikidata_reverse": "Entités Wikidata référencées avec OSM wikidata=* et {{indirectWdProperty}}",
+        "propagated": "Propagé",
+        "wd_reverse": "Entités Wikidata référencées avec {{indirectWdProperty}}",
+        "wd_qualifier": "Qualificatifs P625 sur {{indirectWdProperty}}",
+        "wd_indirect": "Qualificatifs P625 sur {{indirectWdProperty}} et entités Wikidata référencées avec {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        "choose_scheme": "Choisissez le schéma de couleurs et les statistiques",
+        "blue": "Bleu",
+        "source": "Par source",
+        "gender": "Par sexe",
+        "type": "Par type",
+        "century": "Par siècle",
+        "black": "Noir",
+        "red": "Rouge",
+        "orange": "Orange"
+    },
+    "background": {
+        "choose_style": "Choisissez le style de fond"
+    },
+    "feature_details": {
+        "location": "Emplacement",
+        "picture_via_commons": "Image de Wikimedia Commons",
+        "loading": "Chargement des entités...",
+        "report_problem": "Signaler un problème dans cet élément"
+    },
+    "etymology_details": {
+        "source": "Source:",
+        "propagation": "propagation",
+        "propagation_title": "Description du mécanisme de propagation"
+    }
+}

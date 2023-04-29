@@ -15,6 +15,7 @@ import { debugLog, getBoolConfig, getConfig } from './config';
 import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
+import { loadTranslator } from './i18n';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -138,10 +139,14 @@ export class EtymologyMap extends Map {
             });
             showLoadingSpinner(false);
 
-            if (wikidataSourceEvent && !this.anyDetailShownBefore)
-                showSnackbar("Data loaded, click on any highlighted element to show its details", "lightgreen", 10000, "data_loaded");
-            else
-                showSnackbar("Data loaded", "lightgreen", 3000, "data_loaded");
+            loadTranslator().then(t => {
+                if (wikidataSourceEvent && this.querySourceFeatures(WIKIDATA_SOURCE).length === 0)
+                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000, "data_loaded");
+                else if (wikidataSourceEvent && !this.anyDetailShownBefore)
+                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000, "data_loaded");
+                else
+                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000, "data_loaded");
+            });
 
             if (wikidataSourceEvent) {
                 const source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source;
@@ -159,13 +164,10 @@ export class EtymologyMap extends Map {
 
         let errorMessage;
         if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
-            showSnackbar("An error occurred while fetching the data");
-            errorMessage = "An error occurred while fetching " + err.sourceId;
-        } else if (GLOBAL_SOURCE == err.sourceId && err.error.status == 406) {
-            showSnackbar("Please zoom in", "wheat", 10_000);
+            loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error")));
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
-            showSnackbar("A map error occurred");
+            loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
             errorMessage = "Map error: " + err.sourceId + " - " + err.error.message
         }
         logErrorMessage(errorMessage, "error", err);
@@ -221,10 +223,10 @@ export class EtymologyMap extends Map {
 
             this.prepareWikidataLayers(wikidata_url, thresholdZoomLevel);
         } else if (enableGlobalLayers) {
-            if(getBoolConfig("db_enable"))
+            if (getBoolConfig("db_enable"))
                 this.prepareGlobalLayers(minZoomLevel);
             else
-                showSnackbar("Please zoom in", "wheat", 15_000);
+                loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
         } else if (enableElementLayers) {
             const queryParams = {
                 minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1
@@ -351,58 +353,64 @@ export class EtymologyMap extends Map {
 
     initSourceControl() {
         if (!this.currentSourceControl) {
-            const sourceControl = new SourceControl(
-                getCorrectFragmentParams().source,
-                (sourceID: string) => {
-                    const params = getCorrectFragmentParams();
-                    if (params.source != sourceID) {
-                        setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                        this.updateDataSource();
-                    }
-                }
-            );
-            this.currentSourceControl = sourceControl;
-            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+            loadTranslator().then(t => {
+                const sourceControl = new SourceControl(
+                    getCorrectFragmentParams().source,
+                    (sourceID: string) => {
+                        const params = getCorrectFragmentParams();
+                        if (params.source != sourceID) {
+                            setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                            this.updateDataSource();
+                        }
+                    },
+                    t
+                );
+                this.currentSourceControl = sourceControl;
+                setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+            });
         }
     }
 
     initEtymologyColorControl() {
         if (!this.currentEtymologyColorControl) {
-            const colorControl = new EtymologyColorControl(
-                getCorrectFragmentParams().colorScheme,
-                (colorSchemeID: ColorSchemeID) => {
-                    const params = getCorrectFragmentParams();
-                    if (params.colorScheme != colorSchemeID) {
-                        setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
-                        this.updateDataSource();
+            loadTranslator().then(t => {
+                const colorControl = new EtymologyColorControl(
+                    getCorrectFragmentParams().colorScheme,
+                    (colorSchemeID: ColorSchemeID) => {
+                        const params = getCorrectFragmentParams();
+                        if (params.colorScheme != colorSchemeID) {
+                            setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                            this.updateDataSource();
 
-                        const colorSchemeObj = colorSchemes[colorSchemeID];
-                        let color: string | Expression;
+                            const colorSchemeObj = colorSchemes[colorSchemeID];
+                            let color: string | Expression;
 
-                        if (colorSchemeObj) {
-                            color = colorSchemeObj.color;
-                        } else {
-                            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
-                            color = '#3bb2d0';
-                        }
-                        debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
-                        [
-                            ["wikidata_source_layer_point", "circle-color"],
-                            ["wikidata_source_layer_lineString", 'line-color'],
-                            ["wikidata_source_layer_polygon_fill", 'fill-color'],
-                            ["wikidata_source_layer_polygon_border", 'line-color'],
-                        ].forEach(([layerID, property]) => {
-                            if (this?.getLayer(layerID)) {
-                                this.setPaintProperty(layerID, property, color);
+                            if (colorSchemeObj) {
+                                color = colorSchemeObj.color;
                             } else {
-                                console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                                logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
+                                color = '#3bb2d0';
                             }
-                        });
-                    }
-                }
-            );
-            this.currentEtymologyColorControl = colorControl;
-            setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+                            debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
+                            [
+                                ["wikidata_source_layer_point", "circle-color"],
+                                ["wikidata_source_layer_lineString", 'line-color'],
+                                ["wikidata_source_layer_polygon_fill", 'fill-color'],
+                                ["wikidata_source_layer_polygon_border", 'line-color'],
+                            ].forEach(([layerID, property]) => {
+                                if (this?.getLayer(layerID)) {
+                                    this.setPaintProperty(layerID, property, color);
+                                } else {
+                                    console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                                }
+                            });
+                        }
+                    },
+                    t
+                );
+                this.currentEtymologyColorControl = colorControl;
+                setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+            });
         }
     }
 
@@ -845,7 +853,11 @@ export class EtymologyMap extends Map {
     }
 
     /**
-     * Set the application culture for i18n & l10n
+     * Set the application culture for i18n
+     * 
+     * Mainly, sets the map's query to get labels.
+     * Mapbox vector tiles use the fields name_*.
+     * MapTiler vector tiles use use the fields name:*.
      * 
      * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
      * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
@@ -853,14 +865,21 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
      */
     setCulture() {
-        const culture = document.documentElement.lang,
-            language = culture.split('-')[0];
-
-        const symbolLayerIds = this.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
+        const defaultLanguage = getConfig("default_language"),
+            language = document.documentElement.lang.split('-').at(0),
+            symbolLayerIds = this.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
             nameLayerIds = symbolLayerIds.filter(id => this.isNameSymbolLayer(id)),
             nameLayerOldTextFields = nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field')),
-            newTextField = ['coalesce', ['get', 'name:' + language], ['get', 'name_' + language], ['get', 'name']];
-        debugLog("setCulture", { culture, language, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
+            newTextField = [
+                'coalesce',
+                ['get', 'name_' + language],
+                ['get', 'name_' + defaultLanguage],
+                ['get', 'name:' + language],
+                ['get', 'name:' + defaultLanguage],
+                ['get', 'name']
+            ];
+
+        debugLog("setCulture", { defaultLanguage, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
         nameLayerIds.forEach(id => this.setLayoutProperty(id, 'text-field', newTextField));
     }
 }

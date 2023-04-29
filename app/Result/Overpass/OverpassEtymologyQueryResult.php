@@ -16,6 +16,8 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
     private string $textTag;
     private string $descriptionTag;
     private array $keys;
+    private string $defaultLanguage;
+    private ?string $language;
 
     public const FEATURE_WIKIDATA_KEY = "wikidata";
     public const FEATURE_COMMONS_KEY = "commons";
@@ -31,12 +33,16 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         ?array $result,
         string $textTag,
         string $descriptionTag,
-        array $keys
+        array $keys,
+        string $defaultLanguage,
+        ?string $language = null
     ) {
         parent::__construct($success, $result);
         $this->textTag = $textTag;
         $this->descriptionTag = $descriptionTag;
         $this->keys = $keys;
+        $this->defaultLanguage = $defaultLanguage;
+        $this->language = $language;
     }
 
     protected function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false
@@ -47,6 +53,9 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         $osmType = (string)$element["type"];
         $osmID = (int)$element["id"];
         $osmURL = "https://www.openstreetmap.org/$osmType/$osmID";
+
+        $defaultLanguageNameTag = "name:" . $this->defaultLanguage;
+        $languageNameTag = empty($this->language) ? null : "name:" . $this->language;
 
         /**
          * @var string[] $wikidataEtymologyIDs All avaliable Wikidata etymology IDs
@@ -70,11 +79,15 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             return false;
         }
 
-        if (empty($element["tags"]["name"])) {
+        if ($languageNameTag && !empty($element["tags"][$languageNameTag])) {
+            $elementName = (string)$element["tags"][$languageNameTag];
+        } else if (!empty($element["tags"][$defaultLanguageNameTag])) {
+            $elementName = (string)$element["tags"][$defaultLanguageNameTag];
+        } else if (!empty($element["tags"]["name"])) {
+            $elementName = (string)$element["tags"]["name"];
+        } else {
             $elementName = null;
             //error_log("Abnormal element with etymology but no name: $osmURL");
-        } else {
-            $elementName = (string)$element["tags"]["name"];
         }
 
         $feature = [

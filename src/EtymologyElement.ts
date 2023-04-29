@@ -1,4 +1,5 @@
 import { debugLog } from "./config";
+import { translateContent, translateTitle } from "./i18n";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
 
@@ -118,10 +119,16 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     //etyDomElement.dataset.et_id = ety.et_id?.toString();
     //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
-    const lang = document.documentElement.lang?.split("-")?.at(0);
+    const lang = document.documentElement.lang.split("-").at(0);
     debugLog("etymologyToDomElement", {
         et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });
+
+    translateContent(etyDomElement, ".i18n_source", "etymology_details.source");
+    translateContent(etyDomElement, ".i18n_location", "feature_details.location");
+    translateTitle(etyDomElement, ".title_i18n_location", "feature_details.location");
+    translateContent(etyDomElement, ".i18n_propagation", "etymology_details.propagation");
+    translateTitle(etyDomElement, ".title_i18n_propagation", "etymology_details.propagation_title");
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {

@@ -24,7 +24,7 @@ class BBoxCenturyStatsPostGISQuery extends BBoxStatsPostGISQuery
                 FROM oem.element AS el
                 JOIN oem.etymology AS et ON et_el_id = el_id
                 JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
-                WHERE :lang = :lang -- TODO Refactor class structure to remove necessity to pass :lang
+                WHERE COALESCE(:lang::VARCHAR,:defaultLang::VARCHAR) IS NOT NULL -- TODO Refactor class structure to remove necessity to pass :lang
                 AND COALESCE(wd_event_date, wd_start_date, wd_birth_date) IS NOT NULL
                 $filterClause
                 GROUP BY century

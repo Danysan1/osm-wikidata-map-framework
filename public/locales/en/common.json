@@ -1,0 +1,63 @@
+{
+    "title": "OSM-Wikidata Map Framework",
+    "description": "Framework for creating interactive maps that combine and display details about entities associated with geographic features from OpenStreetMap and Wikidata",
+    "info_box": {
+        "open_popup": "Open the info popup",
+        "click_anywhere": "Click anywhere on the map to explore.",
+        "use_controls": "Use the controls on the sides to see other data:",
+        "to_see_statistics": "to see statistics about elements",
+        "to_choose_source": "to choose which data source to use",
+        "to_change_background": "to change the background map style",
+        "to_open_again": "to open again this popup",
+        "contribute": "Contribute to the map",
+        "download_dataset": "Download as dataset",
+        "last_db_update": "Last database update:",
+        "based_on": "Based on",
+        "report_issue": "Report an issue",
+        "report_issue_title": "Report a problem or a bug of this application",
+        "about_me": "About me",
+        "about_me_title": "Personal website of the author of OSM-Wikidata Map Framework"
+    },
+    "snackbar": {
+        "zoom_in": "Please zoom in to view data",
+        "fetch_error": "An error occurred while fetching the data",
+        "map_error": "A map error occurred",
+        "data_loaded": "Data loaded",
+        "no_data_in_this_area": "No data in this area",
+        "data_loaded_instructions": "Data loaded, click on any highlighted element to show its details"
+    },
+    "source": {
+        "choose_source": "Choose data source",
+        "db_all": "All sources from DB",
+        "db_osm_wikidata_reverse": "Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}",
+        "propagated": "Propagated",
+        "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
+        "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
+        "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        "choose_scheme": "Choose color scheme and statistics",
+        "blue": "Blue",
+        "source": "By source",
+        "gender": "By gender",
+        "type": "By type",
+        "century": "By century",
+        "black": "Black",
+        "red": "Red",
+        "orange": "Orange"
+    },
+    "background": {
+        "choose_style": "Choose background style"
+    },
+    "feature_details": {
+        "location": "Location",
+        "picture_via_commons": "Picture from Wikimedia Commons",
+        "loading": "Loading entities...",
+        "report_problem": "Report a problem in this element"
+    },
+    "etymology_details": {
+        "source": "Source:",
+        "propagation": "propagation",
+        "propagation_title": "Description of the propagation mechanism"
+    }
+}

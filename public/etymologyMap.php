@@ -30,7 +30,9 @@ $serverTiming->add("2_prepare");
 
 $downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALIDATE_BOOL, false);
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, (string)$conf->get('default_language'));
+
+$defaultLanguage = (string)$conf->get('default_language');
+$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultLanguage);
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 
 $wikidataConfig = new BaseWikidataConfig($conf);
@@ -54,7 +56,7 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
     http_response_code(400);
     die('{"error":"Invalid language code."};');
 }
-$safeLanguage = $langMatches[1];
+$safeLanguage = (string)$langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
 $maxArea = (float)$conf->get("wikidata_bbox_max_area");
@@ -63,9 +65,10 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery(
         $bbox,
-        $safeLanguage,
         $db,
         $wikidataConfig,
+        $defaultLanguage,
+        $safeLanguage,
         $textKey,
         $descriptionKey,
         $serverTiming,
@@ -100,14 +103,14 @@ if ($db != null) {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
         $keyID = str_replace("overpass_", "", $source);
         $wikidataKeys = $conf->getWikidataKeys($keyID);
-        $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey);
+        $baseQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey, $defaultLanguage, $safeLanguage);
     } else {
         throw new Exception("Bad 'source' parameter");
     }
 
     if ($downloadColors || $eagerFullDownload) {
         $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
-        $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
+        $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming, "wikidata_genders.csv", "wikidata_types.csv");
     }
     $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);
 }

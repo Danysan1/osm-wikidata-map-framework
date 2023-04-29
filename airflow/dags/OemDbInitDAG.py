@@ -365,17 +365,17 @@ class OemDbInitDAG(DAG):
         )
         task_create_key_index >> task_convert_ele_wd_cods
 
-        wikidata_init_file_path = get_absolute_path('wikidata_init.csv')
-        task_load_wd_ent = PythonOperator(
-            task_id = "load_wikidata_entities",
+        wikidata_genders_file_path = join(dirname(abspath(__file__)), '..', 'csv', 'wikidata_genders.csv')
+        task_load_wd_gender = PythonOperator(
+            task_id = "load_wikidata_genders",
             python_callable = do_postgres_copy,
             op_kwargs = {
                 "postgres_conn_id": local_db_conn_id,
-                "filepath": wikidata_init_file_path,
+                "filepath": wikidata_genders_file_path,
                 "separator": ',',
                 "schema": 'oem',
                 "table": 'wikidata',
-                "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color","wd_type_descr","wd_type_color"],
+                "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color"],
             },
             dag = self,
             task_group=group_db_load,
@@ -389,7 +389,33 @@ class OemDbInitDAG(DAG):
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
             """
         )
-        task_setup_schema >> task_load_wd_ent
+        task_setup_schema >> task_load_wd_gender
+
+        wikidata_types_file_path = join(dirname(abspath(__file__)), '..', 'csv', 'wikidata_types.csv')
+        task_load_wd_gender = PythonOperator(
+            task_id = "load_wikidata_types",
+            python_callable = do_postgres_copy,
+            op_kwargs = {
+                "postgres_conn_id": local_db_conn_id,
+                "filepath": wikidata_types_file_path,
+                "separator": ',',
+                "schema": 'oem',
+                "table": 'wikidata',
+                "columns": ["wd_wikidata_cod","wd_notes","wd_type_descr","wd_type_color"],
+            },
+            dag = self,
+            task_group=group_db_load,
+            doc_md="""
+                # Load default Wikidata entities
+
+                Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/wikidata_init.csv).
+
+                Links:
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
+            """
+        )
+        task_load_wd_gender >> task_load_wd_type
 
         task_convert_wd_ent = SQLExecuteQueryOperator(
             task_id = "convert_wikidata_entities",
@@ -403,7 +429,7 @@ class OemDbInitDAG(DAG):
                 Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `*:wikidata` configured tags).
             """
         )
-        [task_convert_ele_wd_cods, task_load_wd_ent] >> task_convert_wd_ent
+        [task_convert_ele_wd_cods, task_load_wd_type] >> task_convert_wd_ent
 
         task_convert_ety = SQLExecuteQueryOperator(
             task_id = "convert_etymologies",
