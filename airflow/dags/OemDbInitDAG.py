@@ -392,7 +392,7 @@ class OemDbInitDAG(DAG):
         task_setup_schema >> task_load_wd_gender
 
         wikidata_types_file_path = join(dirname(abspath(__file__)), '..', 'csv', 'wikidata_types.csv')
-        task_load_wd_gender = PythonOperator(
+        task_load_wd_type = PythonOperator(
             task_id = "load_wikidata_types",
             python_callable = do_postgres_copy,
             op_kwargs = {

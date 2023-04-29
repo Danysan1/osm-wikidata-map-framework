@@ -307,8 +307,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             );
             $stInsertText->bindValue("lang", $language, PDO::PARAM_STR);
             $stInsertText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
-            //$stInsertText->debugDumpParams();
-            $stInsertText->execute();
+            try {
+                $stInsertText->execute();
+            } catch (Exception $e) {
+                error_log("An error occurred while inserting the text for the language '$language'");
+                throw $e;
+            }
             if ($this->hasServerTiming())
                 $this->getServerTiming()->add("wikidata-text-insert");
         }
