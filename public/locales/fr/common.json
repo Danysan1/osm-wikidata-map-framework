@@ -44,7 +44,8 @@
         "century": "Par siècle",
         "black": "Noir",
         "red": "Rouge",
-        "orange": "Orange"
+        "orange": "Orange",
+        "not_available": "Cette schéma de couleurs n'est pas disponible pour cette source"
     },
     "background": {
         "choose_style": "Choisissez le style de fond"

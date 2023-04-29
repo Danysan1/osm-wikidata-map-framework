@@ -44,7 +44,8 @@
         "century": "Nach Jahrhundert",
         "black": "Schwarz",
         "red": "Rot",
-        "orange": "Orange"
+        "orange": "Orange",
+        "not_available": "Dieses Farbschema ist für diese Quelle nicht verfügbar"
     },
     "background": {
         "choose_style": "Hintergrundstil auswählen"

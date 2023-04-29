@@ -44,7 +44,8 @@
         "century": "By century",
         "black": "Black",
         "red": "Red",
-        "orange": "Orange"
+        "orange": "Orange",
+        "not_available": "This color scheme is not available for this source"
     },
     "background": {
         "choose_style": "Choose background style"

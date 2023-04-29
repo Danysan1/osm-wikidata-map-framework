@@ -33,6 +33,7 @@ class EtymologyColorControl extends DropdownControl {
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
     private _lastQueryString?: string;
+    private _t: TFunction;
 
     constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void, t: TFunction) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
@@ -52,6 +53,7 @@ class EtymologyColorControl extends DropdownControl {
         );
         this._chartInitInProgress = false;
         this._chartXHR = null;
+        this._t = t;
     }
 
     updateChart(event?: MapEvent | Event, source?: string) {
@@ -138,7 +140,7 @@ class EtymologyColorControl extends DropdownControl {
                 this.setChartData(data);
             } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
                 this.removeChart();
-                showSnackbar("Statistic not implemented for this source", "lightsalmon");
+                showSnackbar(this._t("color_scheme.not_available"), "lightsalmon");
             } else {
                 console.error("XHR error", { xhr, readyState, status, e });
                 //if (event.type && event.type == 'change')

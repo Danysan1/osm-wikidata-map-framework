@@ -44,7 +44,8 @@
         "century": "Per secolo",
         "black": "Nero",
         "red": "Rosso",
-        "orange": "Arancione"
+        "orange": "Arancione",
+        "not_available": "Questo schema di colori non è disponibile per questa sorgente"
     },
     "background": {
         "choose_style": "Scegli lo sfondo della mappa"
