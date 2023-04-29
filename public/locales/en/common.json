@@ -33,7 +33,7 @@
         "propagated": "Propagated",
         "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
         "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
-        "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} & Entities referenced with {{indirectWdProperty}}"
+        "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
     },
     "color_scheme": {
         "choose_scheme": "Choose color scheme and statistics",

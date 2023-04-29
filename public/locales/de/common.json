@@ -22,7 +22,7 @@
         "zoom_in": "Bitte zoomen, um die Daten zu sehen",
         "fetch_error": "Beim Abrufen der Daten ist ein Fehler aufgetreten",
         "map_error": "Ein Kartenfehler ist aufgetreten",
-        "data_loaded": "Geladene Daten",
+        "data_loaded": "Daten geladen",
         "no_data_in_this_area": "Keine Daten in diesem Gebiet",
         "data_loaded_instructions": "Daten geladen, klicken Sie auf ein hervorgehobenes Element, um dessen Details anzuzeigen"
     },
@@ -30,10 +30,10 @@
         "choose_source": "Datenquelle wählen",
         "db_all": "Alle Quellen der DB",
         "db_osm_wikidata_reverse": "Wikidata-Entitäten, die mit OSM wikidata=* referenziert werden und {{indirectWdProperty}}",
-        "propagated": "Vermehrt",
+        "propagated": "propagiert",
         "wd_reverse": "Wikidata-Entitäten, auf die mit {{indirectWdProperty}}",
-        "wd_qualifier": "P625-Qualifikanten am {{indirectWdProperty}}",
-        "wd_indirect": "P625-Qualifikanten am {{indirectWdProperty}} & Entitäten, auf die mit {{indirectWdProperty}}"
+        "wd_qualifier": "P625-Qualifikatoren am {{indirectWdProperty}}",
+        "wd_indirect": "P625-Qualifikatoren am {{indirectWdProperty}} und Wikidata-Entitäten, auf die mit {{indirectWdProperty}}"
     },
     "color_scheme": {
         "choose_scheme": "Farbschema und Statistiken auswählen",
@@ -52,7 +52,7 @@
     "feature_details": {
         "location": "Standort",
         "picture_via_commons": "Bild von Wikimedia Commons",
-        "loading": "Laden von Einheiten...",
+        "loading": "Entitäten werden geladen...",
         "report_problem": "Ein Problem mit diesem Element melden"
     },
     "etymology_details": {
