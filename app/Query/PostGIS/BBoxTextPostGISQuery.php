@@ -95,7 +95,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             JOIN oem.etymology AS et ON et.et_el_id = el.el_id
             JOIN oem.wikidata AS wd ON et.et_wd_id = wd.wd_id
             LEFT JOIN oem.wikidata_text AS wdt
-                ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
+                ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
             WHERE (wd.$downloadDateField IS NULL OR wdt.wdt_full_download_date IS NULL)
             $filterClause
             $limitClause"
@@ -263,7 +263,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE wdt_full_download_date IS NULL
                 AND wdt_wd_id = wd_id
-                AND wdt_language = :lang"
+                AND wdt_language = :lang::VARCHAR"
             );
             $stUpdateText->bindValue("lang", $language, PDO::PARAM_STR);
             $stUpdateText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
@@ -289,7 +289,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 )
                 SELECT DISTINCT
                     wd_id,
-                    :lang,
+                    :lang::VARCHAR,
                     CURRENT_TIMESTAMP,
                     response->'name'->>'value',
                     response->'description'->>'value',

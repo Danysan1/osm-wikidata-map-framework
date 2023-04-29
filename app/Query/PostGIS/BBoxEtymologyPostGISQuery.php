@@ -90,7 +90,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_geometry AS geom,
                     el.el_osm_type AS osm_type,
                     el.el_osm_id AS osm_id,
-                    COALESCE(el.el_tags->>CONCAT('name:',:lang), el.el_tags->>CONCAT('name:',:defaultLang), el.el_tags->>'name') AS name,
+                    COALESCE(el.el_tags->>CONCAT('name:',:lang::VARCHAR), el.el_tags->>CONCAT('name:',:defaultLang::VARCHAR), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
                     CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :textKey ELSE NULL END AS text_etymology,
                     CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :descriptionKey ELSE NULL END AS text_etymology_descr,
@@ -150,10 +150,10 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN oem.etymology AS et ON et_el_id = el_id
                 LEFT JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
                 LEFT JOIN oem.wikidata_text AS wdt
-                    ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang
+                    ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 LEFT JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
                 LEFT JOIN oem.wikidata_text AS gender_text
-                    ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang
+                    ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang::VARCHAR
                 LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
                 LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_osm_wikidata_wd_id
                 LEFT JOIN oem.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
