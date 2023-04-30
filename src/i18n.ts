@@ -54,7 +54,7 @@ export async function loadTranslator() {
 export function translateContent(parent: HTMLElement, selector: string, key: string) {
     const domElement = parent.querySelector<HTMLElement>(selector);
     if (!domElement) {
-        logErrorMessage("translateContent: failed finding element", "error", { parent, selector });
+        logErrorMessage("translateContent: failed finding element", "error", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator().then(t => domElement.textContent = t(key))
             .catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
@@ -64,7 +64,7 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
 export function translateTitle(parent: HTMLElement, selector: string, key: string) {
     const domElement = parent.querySelector<HTMLAnchorElement>(selector);
     if (!domElement) {
-        debugLog("translateTitle: failed finding element", { parent, selector });
+        debugLog("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator().then(t => domElement.title = t(key))
             .catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
