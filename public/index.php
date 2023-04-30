@@ -88,7 +88,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
     <link rel="apple-touch-icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
     <link rel="apple-touch-icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
 
-    <?= $conf->getMetaTag("db_enable"); ?>
+    <?= $conf->getMetaTag("db_enable", true); ?>
     <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
     <?= $conf->getMetaTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>
