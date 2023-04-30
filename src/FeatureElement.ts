@@ -3,7 +3,7 @@ import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
 import { debugLog, getBoolConfig } from "./config";
-import { translateContent, translateTitle } from "./i18n";
+import { translateContent, translateTitle, loadTranslator } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
@@ -216,7 +216,11 @@ async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100
     if (etymologyIDs.length > maxItems) {
         // Too many items, limiting to the first N entities with the shortest Wikidata Q-ID (which usually means most famous)
         etymologyIDs = etymologyIDs.sort((a, b) => a.length - b.length).slice(0, maxItems);
-        showSnackbar(`Loading only first ${maxItems} items out of ${etymologies.length}`, "lightsalmon", 10_000);
+        loadTranslator().then(t => showSnackbar(
+            t("feature_details.loading_first_n_items", { partial: maxItems, total: etymologies.length }),
+            "lightsalmon",
+            10_000
+        ));
     }
 
     try {

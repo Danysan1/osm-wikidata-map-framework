@@ -50,6 +50,7 @@
         "choose_style": "Elige el fondo del mapa"
     },
     "feature_details": {
+        "loading_first_n_items": "Cargando solo los primeros {{partial}} elementos de {{total}}...",
         "location": "Posición",
         "picture_via_commons": "Imagen de Wikimedia Commons",
         "loading": "Cargando entidades...",

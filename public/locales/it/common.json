@@ -51,6 +51,7 @@
         "choose_style": "Scegli lo sfondo della mappa"
     },
     "feature_details": {
+        "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",
         "location": "Posizione",
         "picture_via_commons": "Immagine da Wikimedia Commons",
         "loading": "Caricamento entità...",

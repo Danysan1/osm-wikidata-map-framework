@@ -51,6 +51,7 @@
         "choose_style": "Hintergrundstil auswählen"
     },
     "feature_details": {
+        "loading_first_n_items": "Nur die ersten {{partial}} Elemente von {{total}} werden geladen...",
         "location": "Standort",
         "picture_via_commons": "Bild von Wikimedia Commons",
         "loading": "Entitäten werden geladen...",
