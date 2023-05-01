@@ -44,6 +44,8 @@ Q105967822,communist crime,Events,#ff3333
 Q173462,crime against humanity,Events,#ff3333
 Q14795564,recurrent point in time,Events,#ff3333
 Q116741026,constitutive treaty,Events,#ff3333
+Q375011,religious festival,Events,#ff3333
+Q60075825,Christian holy day,Events,#ff3333
 Q16560,palace,Buildings,#ffdd33
 Q41176,building,Buildings,#ffdd33
 Q23413,castle,Buildings,#ffdd33
@@ -283,3 +285,4 @@ Q786820,automobile manufacturer,Organization,#ff33dd
 Q936518,aerospace manufacturer,Organization,#ff33dd
 Q22687,bank,Organization,#ff33dd
 Q2143354,insurance company,Organization,#ff33dd
+Q2401749,telecommunications company,Organization,#ff33dd

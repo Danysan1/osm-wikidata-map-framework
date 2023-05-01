@@ -11,6 +11,7 @@ class OsmiumTagsFilterOperator(OsmDockerOperator):
     * [osmium tags-filter documentation](https://manpages.ubuntu.com/manpages/jammy/man1/osmium-tags-filter.1.html)
     * [beyanora/osmtools Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     """
+
     def __init__(self, source_path:str, dest_path:str, tags:list, invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
         invert_match_str = "--invert-match" if invert_match else ""
         remove_tags_str = "--remove-tags" if remove_tags else ""
