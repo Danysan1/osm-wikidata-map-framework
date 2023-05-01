@@ -35,16 +35,41 @@ class OverpassQuery extends JSONCurlQuery
     public function __construct(array $keys, string $position, string $outputType, OverpassConfig $config)
     {
         $this->keys = $keys;
-        $filterKey = $config->getBaseFilterKey();
+        $filterTags = $config->getBaseFilterTags();
 
         $query = "[out:json][timeout:40]; ( ";
         foreach ($this->keys as $key) {
-            if ($config->shouldFetchNodes())
-                $query .= "node['$filterKey']['$key']($position);";
-            if ($config->shouldFetchWays())
-                $query .= "way['$filterKey']['$key']($position);";
-            if ($config->shouldFetchRelations())
-                $query .= "relation['$filterKey']['$key']($position);";
+            if (empty($filterTags) || in_array($key, $filterTags) || in_array("$key=*", $filterTags)) {
+                // No filter tag configured or condition already satisfied by searching for the given key
+                $filterSuffix = "['$key']($position);";
+                if ($config->shouldFetchNodes())
+                    $query .= "node" . $filterSuffix;
+                if ($config->shouldFetchWays())
+                    $query .= "way" . $filterSuffix;
+                if ($config->shouldFetchRelations())
+                    $query .= "relation" . $filterSuffix;
+            } else {
+                // It's necessary to search for all the filter tags
+                foreach ($filterTags as $filterTag) {
+                    $filterSuffix = "['$key']($position);";
+                    if (!empty($filterTag)) {
+                        $split = explode("=", (string)$filterTag);
+                        if (empty($split) || empty($split[0]))
+                            throw new Exception("Bad filter tags config: '$filterTag'");
+                        $quotedFilterTag = "'" . $split[0] . "'";
+                        if (!empty($split[1]) && $split[1] != "*")
+                            $quotedFilterTag .= "='" . $split[1] . "'";
+                        $filterSuffix = "[$quotedFilterTag]$filterSuffix";
+                    }
+
+                    if ($config->shouldFetchNodes())
+                        $query .= "node" . $filterSuffix;
+                    if ($config->shouldFetchWays())
+                        $query .= "way" . $filterSuffix;
+                    if ($config->shouldFetchRelations())
+                        $query .= "relation" . $filterSuffix;
+                }
+            }
         }
         $query .= " ); $outputType";
         //error_log(get_class($this) . ": $query");

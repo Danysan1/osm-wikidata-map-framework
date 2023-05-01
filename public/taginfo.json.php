@@ -14,7 +14,7 @@ $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
 $textKey = (string)$conf->get("osm_text_key");
 $descriptionKey = (string)$conf->get("osm_description_key");
-$filterKey = (string)$conf->get("osm_filter_key");
+$filterTags = $conf->has("osm_filter_tags") ? (array)json_decode((string)$conf->get("osm_filter_tags"), true) : null;
 
 $tags = [[
     "key" => "alt_name",
@@ -46,12 +46,27 @@ $tags = [[
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
     "description" => "The value of '$descriptionKey' is used as textual detail information",
-], [
-    "key" => $filterKey,
-    "object_types" => ["node", "way", "relation", "area"],
-    "doc_url" => $contributingURL,
-    "description" => "Elements are shown on the map only if '$filterKey' is present among their tags",
 ]];
+
+if (!empty($filterTags)) {
+    $filterTagsStringList = implode(" or ", $filterTags);
+    foreach ($filterTags as $filterTag) {
+        $tagObj = [
+            "object_types" => ["node", "way", "relation", "area"],
+            "doc_url" => $contributingURL,
+            "description" => "Elements are shown on the map only if it contains $filterTagsStringList",
+        ];
+
+        $split = explode("=", (string)$filterTag);
+        if (empty($split) || empty($split[0]))
+            throw new Exception("Bad filter tags config: '$filterTag'");
+        $tagObj["key"] = $split[0];
+        if (!empty($split[1]) && $split[1] != "*")
+            $tagObj["value"] = $split[1];
+
+        $tags[] = $tagObj;
+    }
+}
 
 if ($conf->getBool("db_enable") && $conf->getBool("propagate_data")) {
     $tags[] = [

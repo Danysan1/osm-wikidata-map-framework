@@ -100,7 +100,7 @@ class OemFilterDAG(DAG):
             dag = self,
         )
 
-        task_keep_name = OsmiumTagsFilterOperator(
+        task_keep_name = OsmiumTagsFilterOperator( # TODO Skip if osm_filter_key is missing 
             task_id = "keep_elements_with_name",
             container_name = "osm-wikidata-map-framework-keep_elements_with_name",
             source_path= pbf_path,

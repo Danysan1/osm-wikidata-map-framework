@@ -14,5 +14,5 @@ interface OverpassConfig
     public function shouldFetchNodes(): bool;
     public function shouldFetchWays(): bool;
     public function shouldFetchRelations(): bool;
-    public function getBaseFilterKey(): string;
+    public function getBaseFilterTags(): ?array;
 }

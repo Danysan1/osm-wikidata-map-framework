@@ -11,11 +11,11 @@ use Exception;
 class RoundRobinOverpassConfig implements OverpassConfig
 {
     private array $endpoints;
-    private bool $nodes;
-    private bool $ways;
-    private bool $relations;
+    private bool $fetchNodes;
+    private bool $fetchWays;
+    private bool $fetchRelations;
     private ?int $maxElements;
-    private string $baseFilterKey;
+    private ?array $baseFilterTags;
 
     /**
      * @param Configuration $conf
@@ -29,10 +29,10 @@ class RoundRobinOverpassConfig implements OverpassConfig
             $this->endpoints = $overrideEndpoints;
         }
 
-        $this->nodes = $conf->getBool("fetch_nodes");
-        $this->ways = $conf->getBool("fetch_ways");
-        $this->relations = $conf->getBool("fetch_relations");
-        if (!$this->nodes && !$this->ways && !$this->relations) {
+        $this->fetchNodes = $conf->getBool("fetch_nodes");
+        $this->fetchWays = $conf->getBool("fetch_ways");
+        $this->fetchRelations = $conf->getBool("fetch_relations");
+        if (!$this->fetchNodes && !$this->fetchWays && !$this->fetchRelations) {
             throw new \Exception("No fetching options set");
         }
 
@@ -41,8 +41,8 @@ class RoundRobinOverpassConfig implements OverpassConfig
             throw new Exception("maxElements must be > 0");
         }
         $this->maxElements = $maxElements;
-        
-        $this->baseFilterKey = (string)$conf->get("osm_filter_key");
+
+        $this->baseFilterTags = $conf->has("osm_filter_tags") ? (array)json_decode((string)$conf->get("osm_filter_tags"), true) : null;
     }
 
     public function getEndpoint(): string
@@ -54,17 +54,17 @@ class RoundRobinOverpassConfig implements OverpassConfig
 
     public function shouldFetchNodes(): bool
     {
-        return $this->nodes;
+        return $this->fetchNodes;
     }
 
     public function shouldFetchWays(): bool
     {
-        return $this->ways;
+        return $this->fetchWays;
     }
 
     public function shouldFetchRelations(): bool
     {
-        return $this->relations;
+        return $this->fetchRelations;
     }
 
     public function getMaxElements(): ?int
@@ -72,8 +72,8 @@ class RoundRobinOverpassConfig implements OverpassConfig
         return $this->maxElements;
     }
 
-    public function getBaseFilterKey(): string
+    public function getBaseFilterTags(): ?array
     {
-        return $this->baseFilterKey;
+        return $this->baseFilterTags;
     }
 }
