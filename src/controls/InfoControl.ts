@@ -23,12 +23,14 @@ function openInfoWindow(map: Map) {
     translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
     translateContent(introDomElement, ".i18n_contribute", "info_box.contribute");
     translateTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
-    translateContent(introDomElement, ".i18n_last_db_update", "info_box.last_db_update");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
     translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
     translateTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
     translateContent(introDomElement, ".i18n_about_me", "info_box.about_me");
     translateTitle(introDomElement, ".title_i18n_about_me", "info_box.about_me_title");
+
+    if (introDomElement.querySelector<HTMLElement>(".i18n_last_db_update"))
+        translateContent(introDomElement, ".i18n_last_db_update", "info_box.last_db_update");
 
     if (introDomElement.querySelector<HTMLElement>(".i18n_download_dataset")) {
         translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
