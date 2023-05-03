@@ -81,12 +81,15 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
     <?php foreach($availableLanguages as $lang){ ?>
         <link rel="alternate" hreflang="<?= $lang; ?>" href="<?= $canonicalURL; ?>?lang=<?= $lang; ?>" />
     <?php } ?>
-    <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
-    <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
-    <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
-    <link rel="apple-touch-icon" sizes="16x16" type="image/x-icon" href="./favicon.ico">
-    <link rel="apple-touch-icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png">
-    <link rel="apple-touch-icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png">
+
+    <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico" />
+    <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png" />
+    <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png" />
+    <link rel="apple-touch-icon" sizes="16x16" type="image/x-icon" href="./favicon.ico" />
+    <link rel="apple-touch-icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png" />
+    <link rel="apple-touch-icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png" />
+    
+    <link rel="preload" href="locales/<?=$conf->get("default_language");?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
     <?= $conf->getMetaTag("db_enable", true); ?>
     <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
