@@ -1,8 +1,8 @@
-# Derived from https://airflow.apache.org/docs/apache-airflow/2.5.1/docker-compose.yaml
-# See https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/docker-compose/index.html
+# Derived from https://airflow.apache.org/docs/apache-airflow/2.6.0/docker-compose.yaml
+# See https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/docker-compose/index.html
 # See https://airflow.apache.org/docs/docker-stack/index.html
-# See https://airflow.apache.org/docs/apache-airflow/2.5.1/executor/celery.html?highlight=worker#architecture
-# See https://airflow.apache.org/docs/apache-airflow/2.5.1/production-deployment.html
+# See https://airflow.apache.org/docs/apache-airflow/2.6.0/executor/celery.html?highlight=worker#architecture
+# See https://airflow.apache.org/docs/apache-airflow/2.6.0/production-deployment.html
 
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
@@ -30,7 +30,7 @@
 # The following variables are supported:
 #
 # AIRFLOW_IMAGE_NAME           - Docker image name used to run Airflow.
-#                                Default: apache/airflow:2.5.1
+#                                Default: apache/airflow:2.6.0
 # AIRFLOW_UID                  - User ID in Airflow containers
 #                                Default: 50000
 # AIRFLOW_PROJ_DIR             - Base path to which all the files will be volumed.
@@ -42,24 +42,28 @@
 # _AIRFLOW_WWW_USER_PASSWORD   - Password for the administrator account (if requested).
 #                                Default: airflow
 # _PIP_ADDITIONAL_REQUIREMENTS - Additional PIP requirements to add when starting all containers.
+#                                Use this option ONLY for quick checks. Installing requirements at container
+#                                startup is done EVERY TIME the service is started.
+#                                A better way is to build a custom image or extend the official image
+#                                as described in https://airflow.apache.org/docs/docker-stack/build.html.
 #                                Default: ''
 #
 # Feel free to modify this file to suit your needs.
 ---
-version: '3'
+version: '3.8'
 x-airflow-common:
   &airflow-common
   # In order to add custom dependencies or upgrade provider packages you can use your extended image.
   # Comment the image line, place your Dockerfile in the directory where you placed the docker-compose.yaml
   # and uncomment the "build" line below, Then run `docker-compose build` to build the images.
-  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.5.1}
+  image: ${AIRFLOW_IMAGE_NAME:-apache/airflow:2.6.0}
   build:
     context: .
     dockerfile: airflow.Dockerfile
   environment:
     &airflow-common-env
-    # https://airflow.apache.org/docs/apache-airflow/2.5.1/executor/index.html
-    # https://airflow.apache.org/docs/apache-airflow/2.5.1/core-concepts/executor/celery.html
+    # https://airflow.apache.org/docs/apache-airflow/2.6.0/executor/index.html
+    # https://airflow.apache.org/docs/apache-airflow/2.6.0/core-concepts/executor/celery.html
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@postgres/airflow
     # For backward compatibility, with Airflow <2.3
@@ -70,12 +74,19 @@ x-airflow-common:
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
     AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
+    # yamllint disable rule:line-length
+    # Use simple http server on scheduler for health checks
+    # See https://airflow.apache.org/docs/apache-airflow/stable/administration-and-deployment/logging-monitoring/check-health.html#scheduler-health-check-server
+    # yamllint enable rule:line-length
+    AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: 'true'
+    # WARNING: Use _PIP_ADDITIONAL_REQUIREMENTS option ONLY for a quick checks
+    # for other purpose (development, test and especially production usage) build/extend Airflow image.
+    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
     AIRFLOW__WEBSERVER__EXPOSE_CONFIG: "true"
     AIRFLOW__WEBSERVER__DAG_ORIENTATION: "TB"
-    _PIP_ADDITIONAL_REQUIREMENTS: ${_PIP_ADDITIONAL_REQUIREMENTS:-}
-    # https://airflow.apache.org/docs/apache-airflow/2.5.1/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
+    # https://airflow.apache.org/docs/apache-airflow/2.6.0/faq.html#when-there-are-a-lot-1000-of-dags-files-how-to-speed-up-parsing-of-new-files
     AIRFLOW__SCHEDULER__MIN_FILE_PROCESS_INTERVAL: 90
-    # https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/connection.html#storing-connections-in-environment-variables
+    # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
     AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # docker-compose "oem-postgis" service
@@ -114,8 +125,9 @@ services:
       - airflow-postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "airflow"]
-      interval: 5s
+      interval: 10s
       retries: 5
+      start_period: 5s
     restart: unless-stopped
     networks:
       - airflow-internal
@@ -130,9 +142,10 @@ services:
       - 6379
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s
+      interval: 10s
       timeout: 30s
       retries: 50
+      start_period: 30s
     restart: unless-stopped
     networks:
       - airflow-internal
@@ -144,12 +157,13 @@ services:
     <<: *airflow-common
     command: webserver
     ports:
-      - 8080:8080
+      - "8080:8080"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
-      interval: 10s
+      interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
@@ -161,15 +175,16 @@ services:
     profiles:
       - airflow
 
-  # https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/scheduler.html
+  # https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/scheduler.html
   airflow-scheduler:
     <<: *airflow-common
     command: scheduler
     healthcheck:
-      test: ["CMD-SHELL", 'airflow jobs check --job-type SchedulerJob --hostname "$${HOSTNAME}"']
-      interval: 10s
+      test: ["CMD", "curl", "--fail", "http://localhost:8974/health"]
+      interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
@@ -188,9 +203,10 @@ services:
       test:
         - "CMD-SHELL"
         - 'celery --app airflow.executors.celery_executor.app inspect ping -d "celery@$${HOSTNAME}"'
-      interval: 10s
+      interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     environment:
       <<: *airflow-common-env
       # Required to handle warm shutdown of the celery workers properly
@@ -223,9 +239,10 @@ services:
     command: triggerer
     healthcheck:
       test: ["CMD-SHELL", 'airflow jobs check --job-type TriggererJob --hostname "$${HOSTNAME}"']
-      interval: 10s
+      interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
@@ -342,12 +359,13 @@ services:
     profiles:
       - flower
     ports:
-      - 5555:5555
+      - "5555:5555"
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:5555/"]
-      interval: 10s
+      interval: 30s
       timeout: 10s
       retries: 5
+      start_period: 30s
     restart: always
     depends_on:
       <<: *airflow-common-depends-on
@@ -355,7 +373,7 @@ services:
         condition: service_completed_successfully
 
   torrent-daemon:
-    image: linuxserver/transmission:latest
+    image: linuxserver/transmission:4.0.3
     environment:
       - PUID=${AIRFLOW_UID:-50000}
       - PGID=1000
@@ -381,7 +399,7 @@ services:
 
   oem-postgis:
     image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
-    #image: odidev/postgis:13-3.1-alpine
+    #image: odidev/postgis:13-3.1-alpine # supports arm64
     ports:
       - "${db_port:-5432}:5432"
     environment:
@@ -408,7 +426,7 @@ services:
       - db
 
   pgadmin:
-    image: dpage/pgadmin4:6.20
+    image: dpage/pgadmin4:7.1
     ports:
       - "${pgadmin_port:-8000}:80"
     depends_on:
@@ -502,7 +520,7 @@ services:
       - prod
 
   promtail:
-    image: grafana/promtail:2.7.1
+    image: grafana/promtail:2.8.2
     volumes:
       - ./promtail:/etc/promtail
       - /var/log:/var/log

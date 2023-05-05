@@ -47,9 +47,9 @@ def check_postgre_conn_id(conn_id:str) -> bool:
         The connection ID is passed through the params object to allow customization when triggering the DAG.
 
         Links:
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
-        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html#shortcircuitoperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     connection_is_ok = False
     if not conn_id:
@@ -78,8 +78,8 @@ def choose_load_osm_data_task(**context) -> str:
         The `use_osm2pgsql` parameter is passed through the params object to allow customization when triggering the DAG.
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     p = context["params"]
     use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
@@ -90,8 +90,8 @@ def choose_load_wikidata_task(**context) -> str:
         # Check whether and how to download data from Wikidata into the DB
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     from airflow.models import Variable
     direct_properties = Variable.get("osm_wikidata_properties", deserialize_json=True, default_var=None)
@@ -109,8 +109,8 @@ def choose_propagation_method(propagate_data:str) -> str:
         # Check whether and how to propagate
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/concepts/params.html)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
         * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/variables.html)
     """
 
@@ -146,10 +146,10 @@ class OemDbInitDAG(DAG):
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
-        See https://airflow.apache.org/docs/apache-airflow/2.5.1/index.html
+        See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
         """
 
-        # https://airflow.apache.org/docs/apache-airflow/2.5.1/timezone.html
+        # https://airflow.apache.org/docs/apache-airflow/2.6.0/timezone.html
         # https://pendulum.eustace.io/docs/#instantiation
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
@@ -269,8 +269,8 @@ class OemDbInitDAG(DAG):
                 Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
             """
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_pg
@@ -385,8 +385,8 @@ class OemDbInitDAG(DAG):
                 Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/wikidata_init.csv).
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
             """
         )
         task_setup_schema >> task_load_wd_gender
@@ -411,8 +411,8 @@ class OemDbInitDAG(DAG):
                 Load into the `wikidata` table of the local PostGIS DB the default Wikidata entities (which either represent a gender or a type) from [wikidata_init.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/wikidata_init.csv).
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
             """
         )
         task_load_wd_gender >> task_load_wd_type
@@ -627,7 +627,7 @@ class OemDbInitDAG(DAG):
                 Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
 
                 Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
             """
         )
         task_setup_ety_fk >> task_check_whether_to_drop
@@ -711,8 +711,8 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/bash.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
                 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
@@ -744,8 +744,8 @@ class OemDbInitDAG(DAG):
                 Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the oem schema 
 
                 Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/python.html)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
             """
         )
         task_check_pg_restore >> task_prepare_upload
@@ -770,9 +770,9 @@ class OemDbInitDAG(DAG):
 
                 Links:
                 * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/howto/operator/bash.html)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.1/templates-ref.html)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
             """
         )
         task_prepare_upload >> task_pg_restore
@@ -789,10 +789,10 @@ class OemDbInitDAG(DAG):
                 # Wait for the time to cleanup the temporary files
 
                 Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.5.1/_api/airflow/sensors/date_time/index.html)
+                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
+                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
                 * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.5.1/templates-ref.html)
+                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
             """
         )
         task_pg_dump >> task_wait_cleanup
