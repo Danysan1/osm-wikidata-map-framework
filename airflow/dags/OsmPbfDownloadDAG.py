@@ -77,15 +77,17 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
 
     p = context["params"]
     if not path.exists(date_path):
-        print("Proceding to download (missing date file)")
+        print(f"Proceeding to download (missing date file '{date_path}')")
         procede = True
     else:
         with open(date_path) as date_file:
             existing_date:str = date_file.read().strip()
         skip_if_already_downloaded:bool = "skip_if_already_downloaded" in p and p["skip_if_already_downloaded"]
         new_date = ti.xcom_pull(task_ids='get_source_url', key='last_data_update')
-        print("Existing and new date:", existing_date, new_date)
+        print(f"Existing date: {existing_date} (from date file '{date_path}')")
+        print(f"New date: {new_date}")
         procede = not skip_if_already_downloaded or parse(new_date) > parse(existing_date)
+        print('Proceeding to download' if procede else 'NOT proceeding')
     return procede
 
 def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance, torrent_daemon_conn_id:str="torrent_daemon", **context):
@@ -137,9 +139,9 @@ def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance, t
     conn = context["conn"].get(torrent_daemon_conn_id)
     c = Client(host=conn.host, port=conn.port)
     torrent = c.add_torrent(torrent_url, download_dir=download_dir)
-    ti.xcom_push(key="torrent_id", value=torrent.id)
+    ti.xcom_push(key="torrent_hash", value=torrent.hashString)
 
-def check_if_torrent_is_complete(torrent_id:int, torrent_daemon_conn_id:str="torrent_daemon", **context) -> bool:
+def check_if_torrent_is_complete(torrent_hash:str, torrent_daemon_conn_id:str="torrent_daemon", **context) -> bool:
     """
     ## Check whether the torrent has finished downloading
     
@@ -150,10 +152,10 @@ def check_if_torrent_is_complete(torrent_id:int, torrent_daemon_conn_id:str="tor
     from transmission_rpc import Client
     conn = context["conn"].get(torrent_daemon_conn_id)
     c = Client(host=conn.host, port=conn.port)
-    torrent = c.get_torrent(int(torrent_id))
+    torrent = c.get_torrent(torrent_hash)
     return torrent.status == "seeding"
 
-def remove_torrent(torrent_id:int, torrent_daemon_conn_id:str="torrent_daemon", **context):
+def remove_torrent(torrent_hash:str, torrent_daemon_conn_id:str="torrent_daemon", **context):
     """
     ## Removes the torrent
     
@@ -164,7 +166,7 @@ def remove_torrent(torrent_id:int, torrent_daemon_conn_id:str="torrent_daemon", 
     from transmission_rpc import Client
     conn = context["conn"].get(torrent_daemon_conn_id)
     c = Client(host=conn.host, port=conn.port)
-    c.remove_torrent(int(torrent_id), delete_data=True)
+    c.remove_torrent(torrent_hash, delete_data=True)
 
 class OsmPbfDownloadDAG(DAG):
     def __init__(self,
@@ -297,7 +299,7 @@ class OsmPbfDownloadDAG(DAG):
             python_callable = check_if_torrent_is_complete,
             retries = 3,
             op_kwargs = {
-                "torrent_id": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_id') | int }}"
+                "torrent_hash": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}"
             },
             dag = self,
             doc_md=dedent("""
@@ -361,7 +363,7 @@ class OsmPbfDownloadDAG(DAG):
             task_id = "cleanup_torrent",
             python_callable = remove_torrent,
             op_kwargs = {
-                "torrent_id": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_id') | int }}"
+                "torrent_hash": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}"
             },
             dag = self,
             doc_md = """
