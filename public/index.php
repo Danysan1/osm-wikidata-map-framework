@@ -124,7 +124,6 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
 </head>
 
 <body>
-    <div id='map'></div>
     <noscript>
         <strong>ERROR: you need Javascript enabled to run this web app</strong>
     </noscript>
