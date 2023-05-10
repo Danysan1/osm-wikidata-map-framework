@@ -21,33 +21,15 @@ try {
     $lastUpdate = date("Y-m-d");
 }
 
-$wikidataKeyIDs = $conf->getWikidataKeyIDs();
-$fromOsmColumnValues = implode(" ", array_map(function (string $keyID): string {
-    return "COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND '$keyID' = ANY(ety.et_from_key_ids)) AS \"$keyID\",";
-}, $wikidataKeyIDs));
-$stm = $db->query(
-    "SELECT
-        wd.wd_wikidata_cod AS \"wikidata_id\",
-        ele.el_tags->>'name' AS \"name\",
-        $fromOsmColumnValues
-        COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NULL AND ety.et_from_osm_wikidata_wd_id IS NOT NULL) AS \"wikidata\",
-        COUNT(*) FILTER (WHERE ety.et_recursion_depth = 0 AND ety.et_from_parts_of_wd_id IS NOT NULL) AS \"part_of\",
-        COUNT(*) FILTER (WHERE ety.et_recursion_depth != 0) AS \"propagation\"
-    FROM oem.etymology AS ety
-    JOIN oem.wikidata AS wd ON wd.wd_id = ety.et_wd_id
-    JOIN oem.element AS ele ON ele.el_id = ety.et_el_id
-    GROUP BY wd.wd_id, ele.el_tags->>'name'
-    ORDER BY LENGTH(wd.wd_wikidata_cod), wd.wd_wikidata_cod, ele.el_tags->>'name'"
-);
+$fields = implode(",", [
+    'wikidata_id', 'element_name', 'count_osm', 'count_osm_wikidata', 'count_wikidata', 'count_part_of', 'count_propagation'
+]); // All fields are DB columns and contain no spaces or commas, no escaping necessary
+$stm = $db->query("SELECT $fields FROM oem.vm_dataset");
 
 header("Content-Disposition: attachment; filename=dataset_$lastUpdate.csv");
 
 $output = fopen("php://output", "w");
-fputcsv($output, array_merge( # Print column names
-    ['wikidata_id', 'name'],
-    $wikidataKeyIDs,
-    ['osm_wikidata', 'part_of', 'propagation']
-));
+fputs($output, $fields . PHP_EOL);
 while (
     /** @var Stringable[]|false $row */
     $row = $stm->fetch()
