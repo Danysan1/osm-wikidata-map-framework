@@ -69,8 +69,10 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
         link.href = imgUrl;
 
         loadTranslator().then(t => {
-            picture.alt = t("feature_details.picture_via_commons");
-            link.title = t("feature_details.picture_via_commons");
+            const title = t("feature_details.picture_via_commons");
+            picture.alt = title;
+            link.title = title;
+            link.ariaLabel = title;
         });
 
         link.appendChild(picture);

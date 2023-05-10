@@ -65,7 +65,11 @@ class InfoControl implements IControl {
         ctrlBtn.onclick = () => openInfoWindow(map);
         container.appendChild(ctrlBtn);
 
-        loadTranslator().then(t => ctrlBtn.title = t("info_box.open_popup"));
+        loadTranslator().then(t => {
+            const title = t("info_box.open_popup");
+            ctrlBtn.title = title;
+            ctrlBtn.ariaLabel = title;
+        });
 
         return container;
     }

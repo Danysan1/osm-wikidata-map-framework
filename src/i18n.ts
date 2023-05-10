@@ -66,7 +66,12 @@ export function translateTitle(parent: HTMLElement, selector: string, key: strin
     if (!domElement) {
         debugLog("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
-        loadTranslator().then(t => domElement.title = t(key))
+        loadTranslator()
+            .then(t => {
+                const title = t(key);
+                domElement.title = title;
+                domElement.ariaLabel = title;
+            })
             .catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
     }
 }

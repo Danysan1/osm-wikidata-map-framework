@@ -159,12 +159,12 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
                 </table>
             </div>
             <p>
-                <a title="Contribute to the map" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href="<?= $conf->get("contributing_url") ?>">
+                <a title="Contribute to the map" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href="<?= $conf->get("contributing_url") ?>">
                     <span class="button_img">📖</span> &nbsp;
                     <span class="i18n_contribute">Contribute to the map</span>
                 </a>
                 <?php if ($enableDB) { ?>
-                    <a title="Download as dataset" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
+                    <a title="Download as dataset" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
                         <span class="button_img">💾</span> &nbsp;
                         <span class="i18n_download_dataset">Download as dataset</span>
                     </a>
@@ -175,7 +175,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
                 <p><?= $lastUpdateString; ?></p>
                 <p>
                     <span class="i18n_based_on">Based on</span>
-                    <a target="_blank" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
+                    <a target="_blank" title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . $conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <p>
@@ -207,27 +207,27 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
             <h3 class="element_name"></h3>
             <p class="element_alt_name"></p>
             <div class="button_row">
-                <a title="Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
+                <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                     <span class="button_text"> Wikipedia</span>
                 </a>
-                <a title="Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
+                <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
                     <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                     <span class="button_text"> Commons</span>
                 </a>
-                <a title="Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
+                <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
                     <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                     <span class="button_text"> Wikidata</span>
                 </a>
-                <a title="OpenStreetMap" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
+                <a title="OpenStreetMap" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
                     <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
                     <span class="button_text"> OpenStreetMap</span>
                 </a>
-                <a title="MapComplete" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
+                <a title="MapComplete" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
                     <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                     <span class="button_text"> Mapcomplete</span>
                 </a>
-                <a title="Location" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
+                <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
                     <span class="button_img">🎯</span>
                     <span class="button_text i18n_location"> Location</span>
                 </a>
@@ -239,7 +239,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
                     <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
-            <a title="Report a problem in this element" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= $conf->get("element_issue_url") ?>">
+            <a title="Report a problem in this element" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= $conf->get("element_issue_url") ?>">
                 <span class="button_img">⚠️</span> &nbsp;
                 <span class="i18n_report_problem">Report a problem in this element</span>
             </a>
@@ -256,23 +256,23 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
                     </div>
                     <div class="info column">
                         <div class="button_row">
-                            <a title="Wikipedia" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
+                            <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
                                 <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
-                            <a title="Wikimedia Commons" rel="noopener noreferrer" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
+                            <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
                                 <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>
                             </a>
-                            <a title="Wikidata" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
+                            <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
                                 <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
                                 <span class="button_text"> Wikidata</span>
                             </a>
-                            <a title="EntiTree" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
+                            <a title="EntiTree" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
                                 <img class="button_img" src="img/entitree.png" alt="EntiTree logo">
                                 <span class="button_text"> EntiTree</span>
                             </a>
-                            <a title="Location" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement title_i18n_location" target="_self">
+                            <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 subject_location_button hiddenElement title_i18n_location" target="_self">
                                 <span class="button_img">🎯</span>
                                 <span class="button_text i18n_location"> Location</span>
                             </a>

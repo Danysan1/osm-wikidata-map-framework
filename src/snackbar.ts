@@ -26,6 +26,7 @@ function showSnackbar(message: string, color = "lightcoral", timeout = 3000, id?
     snackbar.innerText = message;
     snackbar.style.backgroundColor = color;
     snackbar.classList.add("show");
+    snackbar.role = "alert";
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV

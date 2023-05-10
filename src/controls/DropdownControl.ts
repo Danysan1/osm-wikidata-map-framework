@@ -77,8 +77,10 @@ export class DropdownControl implements IControl {
 
         if (this._titleKey) {
             loadTranslator().then(t => {
-                ctrlBtn.title = t(this._titleKey);
-                ctrlDropDown.title = t(this._titleKey);
+                const title = t(this._titleKey);
+                ctrlBtn.title = title;
+                ctrlBtn.ariaLabel = title;
+                ctrlDropDown.title = title;
             });
         }
 
