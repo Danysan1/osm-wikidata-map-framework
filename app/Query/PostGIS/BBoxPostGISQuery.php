@@ -69,7 +69,7 @@ abstract class BBoxPostGISQuery extends PostGISQuery implements BBoxQuery
 
     public function send(): QueryResult
     {
-        $stRes = $this->getDB()->prepare($this->getQuery());
+        $stRes = $this->getDB()->prepare($this->getSqlQuery());
         $stRes->execute($this->getQueryParams());
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("postgis-query");

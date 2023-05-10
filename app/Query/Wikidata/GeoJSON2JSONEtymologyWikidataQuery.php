@@ -32,11 +32,6 @@ abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
         $this->wikidataQuery = new GeoJSON2XMLEtymologyWikidataQuery($geoJSONData, $queryFactory);
     }
 
-    public function getQuery(): string
-    {
-        return $this->wikidataQuery->getQuery();
-    }
-
     public function send(): QueryResult
     {
         $response = $this->wikidataQuery->sendAndGetXMLResult();

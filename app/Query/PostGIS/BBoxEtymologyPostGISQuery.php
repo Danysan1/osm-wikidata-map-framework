@@ -74,7 +74,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         return $out;
     }
 
-    public function getQuery(): string
+    public function getSqlQuery(): string
     {
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         $limitClause = $this->getLimitClause();

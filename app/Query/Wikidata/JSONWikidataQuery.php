@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Query\Wikidata;
 
 use App\Config\Wikidata\WikidataConfig;
-use \App\Query\Wikidata\WikidataQuery;
+use \App\Query\Wikidata\BaseWikidataQuery;
 use \App\Query\JSONQuery;
 use \App\Result\JSONQueryResult;
 use \App\Result\QueryResult;
@@ -14,7 +14,7 @@ use \App\Result\JSONRemoteQueryResult;
 /**
  * Wikidata query sent via HTTP  request.
  */
-class JSONWikidataQuery extends WikidataQuery implements JSONQuery
+class JSONWikidataQuery extends BaseWikidataQuery implements JSONQuery
 {
     public function __construct(string $query, WikidataConfig $config)
     {

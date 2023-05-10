@@ -14,13 +14,12 @@ use \App\Result\GeoJSONQueryResult;
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology in the vicinity of a central point.
  */
-class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
+class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQuery
 {
-    private float $lat;
-    private float $lon;
-    private float $radius;
     private string $textTag;
     private string $descriptionTag;
+    private string $defaultLanguage;
+    private ?string $language;
 
     /**
      * @param array<string> $keys OSM wikidata keys to use
@@ -32,7 +31,9 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
         OverpassConfig $config,
         string $textTag,
         string $descriptionTag,
-        array $keys
+        array $keys,
+        string $defaultLanguage,
+        ?string $language = null
     ) {
         parent::__construct(
             $keys,
@@ -40,35 +41,10 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
             "out body; >; out skel qt;",
             $config
         );
-        $this->lat = $lat;
-        $this->lon = $lon;
-        $this->radius = $radius;
         $this->textTag = $textTag;
         $this->descriptionTag = $descriptionTag;
-    }
-
-    /**
-     * @return float
-     */
-    public function getCenterLat(): float
-    {
-        return $this->lat;
-    }
-
-    /**
-     * @return float
-     */
-    public function getCenterLon(): float
-    {
-        return $this->lon;
-    }
-
-    /**
-     * @return float
-     */
-    public function getRadius(): float
-    {
-        return $this->radius;
+        $this->defaultLanguage = $defaultLanguage;
+        $this->language = $language;
     }
 
     public function send(): QueryResult
@@ -79,7 +55,10 @@ class CenterEtymologyOverpassQuery extends OverpassQuery implements GeoJSONQuery
             $res->getArray(),
             $this->textTag,
             $this->descriptionTag,
-            $this->getKeys()
+            $this->getKeys(),
+            $this->defaultLanguage,
+            $this->language,
+            $this->getOverpassQlQuery()
         );
     }
 

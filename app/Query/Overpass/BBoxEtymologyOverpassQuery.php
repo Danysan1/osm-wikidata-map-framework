@@ -7,7 +7,6 @@ namespace App\Query\Overpass;
 
 use \App\BoundingBox;
 use \App\Query\BaseQuery;
-use \App\Query\Overpass\OverpassQuery;
 use \App\Query\Overpass\BBoxOverpassQuery;
 use \App\Config\Overpass\OverpassConfig;
 use \App\Query\BBoxGeoJSONQuery;
@@ -73,18 +72,14 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
             $this->descriptionKey,
             $this->baseQuery->getKeys(),
             $this->defaultLanguage,
-            $this->language
+            $this->language,
+            $this->baseQuery->getOverpassQlQuery()
         );
     }
 
     public function getBBox(): BoundingBox
     {
         return $this->baseQuery->getBBox();
-    }
-
-    public function getQuery(): string
-    {
-        return $this->baseQuery->getQuery();
     }
 
     public function getQueryTypeCode(): string

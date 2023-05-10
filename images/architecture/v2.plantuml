@@ -24,7 +24,7 @@ frame oem as "OSM-Wikidata Map Framework v2" {
                 package Wikidata {
                     card EtymologyIDListJSONWikidataQuery
                     card JSONWikidataQuery
-                    card WikidataQuery
+                    card BaseWikidataQuery
                 }
             }
         }
@@ -54,13 +54,13 @@ BBoxTypeStatsPostGISQuery --|> BBoxTextPostGISQuery
 BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 
 EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
-JSONWikidataQuery --|> WikidataQuery
+JSONWikidataQuery --|> BaseWikidataQuery
 
 globalMap ..> PostGIS_PDO
 PostGISQuery ..> PostGIS_PDO
 PostGIS_PDO --(0- db
 BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
 
-WikidataQuery -(0- wikidata
+BaseWikidataQuery -(0- wikidata
 
 @enduml

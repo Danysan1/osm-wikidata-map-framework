@@ -31,7 +31,7 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
         return $out;
     }
 
-    public function getQuery(): string
+    public function getSqlQuery(): string
     {
         $elementFilterClause = $this->getElementFilterClause();
         $etymologyFilterClause = $this->getetymologyFilterClause();

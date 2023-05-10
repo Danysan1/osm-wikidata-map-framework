@@ -18,7 +18,7 @@ class BBoxSourceStatsPostGISQuery extends BBoxPostGISQuery implements BBoxJSONQu
         return $out;
     }
 
-    public function getQuery(): string
+    public function getSqlQuery(): string
     {
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         return

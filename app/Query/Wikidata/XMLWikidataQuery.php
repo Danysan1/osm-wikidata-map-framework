@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Query\Wikidata;
 
 use App\Config\Wikidata\WikidataConfig;
-use \App\Query\Wikidata\WikidataQuery;
+use \App\Query\Wikidata\BaseWikidataQuery;
 use \App\Query\XMLQuery;
 use \App\Result\QueryResult;
 use \App\Result\XMLQueryResult;
@@ -14,7 +14,7 @@ use \App\Result\XMLRemoteQueryResult;
 /**
  * Wikidata query sent via HTTP  request.
  */
-class XMLWikidataQuery extends WikidataQuery implements XMLQuery
+class XMLWikidataQuery extends BaseWikidataQuery implements XMLQuery
 {
     public function __construct(string $query, WikidataConfig $config)
     {

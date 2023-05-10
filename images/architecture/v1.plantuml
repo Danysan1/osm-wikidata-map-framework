@@ -15,13 +15,13 @@ frame oem as "OSM-Wikidata Map Framework v1" {
             card BBoxJSONOverpassWikidataQuery
         }
         package "App\Query\Wikidata" {
-            card WikidataQuery
+            card BaseWikidataQuery
             card EtymologyIDListXMLWikidataQuery
             card TypeStatsWikidataQuery
             card GenderStatsWikidataQuery
         }
         package "App\Query\Overpass" {
-            card OverpassQuery
+            card BaseOverpassQuery
             card BBoxEtymologyOverpassQuery
             card BBoxEtymologyCenterOverpassQuery
         }
@@ -57,19 +57,19 @@ stats --> BBoxStatsOverpassWikidataQuery
 BBoxGeoJSONEtymologyQuery --|> BBoxJSONOverpassWikidataQuery
 BBoxStatsOverpassWikidataQuery --|> BBoxJSONOverpassWikidataQuery
 
-BBoxEtymologyOverpassQuery --|> OverpassQuery
-BBoxEtymologyCenterOverpassQuery --|> OverpassQuery
+BBoxEtymologyOverpassQuery --|> BaseOverpassQuery
+BBoxEtymologyCenterOverpassQuery --|> BaseOverpassQuery
 
-EtymologyIDListXMLWikidataQuery --|> WikidataQuery
-TypeStatsWikidataQuery --|> WikidataQuery
-GenderStatsWikidataQuery --|> WikidataQuery
+EtymologyIDListXMLWikidataQuery --|> BaseWikidataQuery
+TypeStatsWikidataQuery --|> BaseWikidataQuery
+GenderStatsWikidataQuery --|> BaseWikidataQuery
 
 BBoxJSONOverpassWikidataQuery --> BBoxEtymologyOverpassQuery
 BBoxGeoJSONEtymologyQuery --> EtymologyIDListXMLWikidataQuery
 BBoxStatsOverpassWikidataQuery --> GenderStatsWikidataQuery
 BBoxStatsOverpassWikidataQuery --> TypeStatsWikidataQuery
 
-OverpassQuery --(0- overpass
-WikidataQuery --(0- wikidata
+BaseOverpassQuery --(0- overpass
+BaseWikidataQuery --(0- wikidata
 
 @enduml

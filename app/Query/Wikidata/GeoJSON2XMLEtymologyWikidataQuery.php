@@ -74,14 +74,6 @@ class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
         return $res;
     }
 
-    public function getQuery(): string
-    {
-        return $this->query->getQuery();
-    }
-
-    /**
-     * @return array
-     */
     public function getGeoJSONInputData(): array
     {
         return $this->geoJSONInputData;

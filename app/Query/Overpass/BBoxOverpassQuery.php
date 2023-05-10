@@ -12,7 +12,7 @@ use \App\Config\Overpass\OverpassConfig;
 /**
  * Overpass query which saves the detail of the bounding box.
  */
-class BBoxOverpassQuery extends OverpassQuery implements BBoxQuery
+class BBoxOverpassQuery extends BaseOverpassQuery implements BBoxQuery
 {
     private BoundingBox $bbox;
 

@@ -52,11 +52,6 @@ class StaticStatsQuery extends BaseQuery implements BBoxJSONQuery
         return $this->baseQuery->getBBox();
     }
 
-    public function getQuery(): string
-    {
-        return $this->baseQuery->getQuery();
-    }
-
     public function getQueryTypeCode(): string
     {
         return parent::getQueryTypeCode() . "_" . $this->baseQuery->getQueryTypeCode();

@@ -12,25 +12,16 @@ use \Exception;
 
 abstract class PostGISQuery implements Query
 {
-    /**
-     * @var PDO $db
-     */
-    private $db;
+    private PDO $db;
+    private ?ServerTiming $serverTiming;
 
-    /**
-     * @var ServerTiming|null $serverTiming
-     */
-    private $serverTiming;
-
-    /**
-     * @param PDO $db
-     * @param ServerTiming|null $serverTiming
-     */
-    public function __construct($db, $serverTiming = null)
+    public function __construct(PDO $db, ?ServerTiming $serverTiming = null)
     {
         $this->db = $db;
         $this->serverTiming = $serverTiming;
     }
+
+    public abstract function getSqlQuery(): string;
 
     protected function getDB(): PDO
     {

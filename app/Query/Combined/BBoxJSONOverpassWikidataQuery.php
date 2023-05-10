@@ -67,11 +67,6 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         return $this->baseQuery->getBBox();
     }
 
-    public function getQuery(): string
-    {
-        return $this->baseQuery->getQuery();
-    }
-
     public function getQueryTypeCode(): string
     {
         $thisClassName = get_class($this);

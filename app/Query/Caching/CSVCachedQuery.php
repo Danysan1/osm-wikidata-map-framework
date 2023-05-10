@@ -38,11 +38,6 @@ abstract class CSVCachedQuery implements Query
         return $this->baseQuery;
     }
 
-    public function getQuery(): string
-    {
-        return $this->getBaseQuery()->getQuery();
-    }
-
     protected function getCacheFileBasePath(): string
     {
         return $this->cacheFileBasePath;

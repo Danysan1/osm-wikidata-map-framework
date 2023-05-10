@@ -13,6 +13,14 @@ use \App\Result\GeoJSONQueryResult;
  */
 abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements GeoJSONQueryResult
 {
+    private ?string $overpassQuery;
+
+    public function __construct(bool $success, ?array $result, ?string $overpassQuery = null)
+    {
+        parent::__construct($success, $result);
+        $this->overpassQuery = $overpassQuery;
+    }
+
     protected abstract function convertElementToGeoJSONFeature(int $index, array $element, array $allElements): array|false;
 
     /**
@@ -45,8 +53,12 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
             //error_log(get_class($this) . ": " . json_encode($geojson));
             //error_log(get_class($this) . ": " . json_encode(debug_backtrace()));
         }
+
         if ($etymologyCount !== null)
             $geojson["etymology_count"] = $etymologyCount;
+
+        if (!empty($this->overpassQuery))
+            $geojson["overpass_query"] = $this->overpassQuery;
 
         return $geojson;
     }

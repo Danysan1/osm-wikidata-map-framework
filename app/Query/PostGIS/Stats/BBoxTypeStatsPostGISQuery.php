@@ -6,7 +6,7 @@ namespace App\Query\PostGIS\Stats;
 
 class BBoxTypeStatsPostGISQuery extends BBoxStatsPostGISQuery
 {
-    public function getQuery(): string
+    public function getSqlQuery(): string
     {
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         return

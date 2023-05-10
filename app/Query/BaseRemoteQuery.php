@@ -12,37 +12,13 @@ use \App\Query\BaseQuery;
  */
 abstract class BaseRemoteQuery extends BaseQuery
 {
-    /**
-     * @var string $query
-     */
-    private $query;
-
-    /**
-     * @var string $endpointURL
-     */
     private $endpointURL;
 
-    /**
-     * @param string $query
-     * @param string $endpointURL
-     */
-    public function __construct(string $query, string $endpointURL)
+    public function __construct(string $endpointURL)
     {
-        $this->query = $query;
         $this->endpointURL = $endpointURL;
     }
 
-    /**
-     * @return string
-     */
-    public function getQuery(): string
-    {
-        return $this->query;
-    }
-
-    /**
-     * @return string
-     */
     public function getEndpointURL(): string
     {
         return $this->endpointURL;

@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Result\Overpass;
 
 
-use \App\Query\Overpass\OverpassQuery;
 use \App\Result\Overpass\GeoJSONOverpassQueryResult;
 
 /**
@@ -35,9 +34,10 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         string $descriptionTag,
         array $keys,
         string $defaultLanguage,
-        ?string $language = null
+        ?string $language = null,
+        ?string $overpassQuery = null
     ) {
-        parent::__construct($success, $result);
+        parent::__construct($success, $result, $overpassQuery);
         $this->textTag = $textTag;
         $this->descriptionTag = $descriptionTag;
         $this->keys = $keys;

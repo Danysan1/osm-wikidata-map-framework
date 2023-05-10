@@ -11,18 +11,19 @@ use \App\Result\QueryResult;
 abstract class CurlQuery extends BaseRemoteQuery
 {
     private array $curlOptions;
+    private string $httpRequestQuery;
 
     public function __construct(array|string $query, string $endpointURL, ?string $method = "GET", ?string $userAgent = null)
     {
-        $requestQuery = is_array($query) ? http_build_query($query) : urlencode($query);
-        parent::__construct($requestQuery, $endpointURL);
+        $this->httpRequestQuery = is_array($query) ? http_build_query($query) : urlencode($query);
+        parent::__construct($endpointURL);
 
         $url = $endpointURL;
         if ($method == "GET")
-            $url .= "?" . $requestQuery;
+            $url .= "?" . $this->httpRequestQuery;
 
         $post = $method == "POST";
-        $postData = $post ? $requestQuery : null;
+        $postData = $post ? $this->httpRequestQuery : null;
         /*error_log(
             get_class($this) . " CurlQuery : $method $url"
                 . PHP_EOL . json_encode($query)
@@ -37,6 +38,11 @@ abstract class CurlQuery extends BaseRemoteQuery
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_SSL_VERIFYPEER => false,
         ];
+    }
+
+    public function getHttpQuery(): string
+    {
+        return $this->httpRequestQuery;
     }
 
     /**
