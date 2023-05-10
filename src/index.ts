@@ -93,7 +93,7 @@ function initMap() {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
  */
 function initPage() {
-    if (supported()) {
+    if (!supported()) {
         const errorMessage = document.createElement("strong");
         errorMessage.innerHTML = 'Your browser does not support Mapbox GL JS, which is needed to render the map. You can find out the minimum requirements <a href="https://docs.mapbox.com/help/troubleshooting/mapbox-browser-support/">here</a>.';
         document.body.appendChild(errorMessage);
