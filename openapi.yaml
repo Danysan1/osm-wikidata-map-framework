@@ -1,6 +1,6 @@
-openapi: "3.0.0"
+openapi: "3.1.0"
 info:
-  version: "1.3.0"
+  version: "1.6.1"
   title: "OSM-Wikidata Map Framework API"
   description: Programmatically interact with a site based on OSM-Wikidata Map Framework
 
@@ -457,13 +457,26 @@ components:
             id:
               type: string
 
-    ElementResponse:
+    DetailedFeatureCollection:
       allOf:
         - $ref: "#/components/schemas/FeatureCollection"
         - type: object
           properties:
             etymology_count:
               type: integer
+              description: Total number of etymologies linked to the features
+            wikidata_query:
+              type: string
+              description: Wikidata SPARQL query used to fetch the features
+            overpass_query:
+              type: string
+              description: OverpassQL query used to fetch the features
+
+    ElementResponse:
+      allOf:
+        - $ref: "#/components/schemas/DetailedFeatureCollection"
+        - type: object
+          properties:
             features:
               type: array
               items:
@@ -518,11 +531,9 @@ components:
 
     EtymologyResponse:
       allOf:
-        - $ref: "#/components/schemas/FeatureCollection"
+        - $ref: "#/components/schemas/DetailedFeatureCollection"
         - type: object
           properties:
-            etymology_count:
-              type: integer
             features:
               type: array
               items:

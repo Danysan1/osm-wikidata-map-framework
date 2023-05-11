@@ -9,6 +9,7 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 
 prepareHTML($conf);
+header("Cache-Control: no-cache", true);
 
 if (!$conf->has("mapbox_token")) {
     http_response_code(500);
