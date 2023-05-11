@@ -16,6 +16,7 @@ import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
 import { loadTranslator } from './i18n';
+import { LinkControl } from './controls/LinkControl';
 
 const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
     minZoomLevel_raw = getConfig("min_zoom_level"),
@@ -811,6 +812,8 @@ export class EtymologyMap extends Map {
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
+        this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service"), 'top-right');
+        this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo"), 'top-right');
 
         this.on('sourcedata', this.mapSourceDataHandler);
 

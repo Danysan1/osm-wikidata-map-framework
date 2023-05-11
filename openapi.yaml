@@ -490,10 +490,12 @@ components:
         wikidata:
           type: string
           description: Q-ID of the referenced Wikidata entity
+          example: Q1
         from_osm:
           type: boolean
         from_osm_type:
           type: string
+          example: node
         from_osm_id:
           type: integer
         from_wikidata:
@@ -501,9 +503,11 @@ components:
         from_wikidata_entity:
           type: string
           description: Q-ID of the source Wikidata entity
+          example: Q1
         from_wikidata_prop:
           type: string
           description: P-ID of the source Wikidata property
+          example: P123
 
     EtymologyFeature:
       allOf:
@@ -528,6 +532,8 @@ components:
                     $ref: "#/components/schemas/Etymology"
                 wikidata:
                   type: string
+                  description: Q-ID of the Wikidata entity for this feature
+                  example: Q1
 
     EtymologyResponse:
       allOf:
