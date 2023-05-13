@@ -404,6 +404,7 @@ services:
     #image: odidev/postgis:13-3.1-alpine # supports arm64
     ports:
       - "${db_port:-5432}:5432"
+    shm_size: 100m
     environment:
       - POSTGRES_USER=${db_user}
       - POSTGRES_PASSWORD=${db_password}
