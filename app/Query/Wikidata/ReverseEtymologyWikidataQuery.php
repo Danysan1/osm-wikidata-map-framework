@@ -9,11 +9,17 @@ use App\Config\Wikidata\WikidataConfig;
 
 class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
 {
-    public function __construct(BoundingBox $bbox, string $wikidataProperty, WikidataConfig $config, ?string $language = null)
-    {
+    public function __construct(
+        BoundingBox $bbox,
+        string $wikidataProperty,
+        WikidataConfig $config,
+        ?string $defaultLanguage = null,
+        ?string $language = null
+    ) {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
         $maxElements = $config->getMaxElements();
+        $labelQuery = EtymologyWikidataQuery::generateItemLabelQuery($defaultLanguage, $language);
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(
@@ -37,21 +43,12 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                 OPTIONAL { ?item wdt:P373 ?commons. }
                 OPTIONAL { ?item wdt:P18 ?picture. }
-                OPTIONAL {{
-                    ?item rdfs:label ?itemLabel.
-                    FILTER(LANG(?itemLabel) = '$language')
-                } UNION {
-                    MINUS {
-                        ?item rdfs:label ?otherLabel.
-                        FILTER(LANG(?otherLabel) = '$language')
-                    }
-                    ?item rdfs:label ?itemLabel.
-                }}
+                $labelQuery
             }
             GROUP BY ?item ?etymology
             $limitClause",
             $config
         );
-        parent::__construct($bbox, $baseQuery, $language);
+        parent::__construct($bbox, $baseQuery, empty($language) ? $defaultLanguage : $language);
     }
 }

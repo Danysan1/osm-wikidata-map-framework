@@ -9,11 +9,18 @@ use App\Config\Wikidata\WikidataConfig;
 
 class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
 {
-    public function __construct(BoundingBox $bbox, string $wikidataProperty, WikidataConfig $config, ?string $imageProperty = null, ?string $language = null)
-    {
+    public function __construct(
+        BoundingBox $bbox,
+        string $wikidataProperty,
+        WikidataConfig $config,
+        ?string $imageProperty = null,
+        ?string $defaultLanguage = null,
+        ?string $language = null
+    ) {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
         $pictureQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
+        $labelQuery = EtymologyWikidataQuery::generateItemLabelQuery($defaultLanguage, $language);
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
@@ -55,16 +62,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
                     OPTIONAL { ?item wdt:P373 ?commons. }
                     OPTIONAL { ?item wdt:P18 ?picture. }
-                    OPTIONAL {{
-                        ?item rdfs:label ?itemLabel.
-                        FILTER(LANG(?itemLabel) = '$language')
-                    } UNION {
-                        MINUS {
-                            ?item rdfs:label ?otherLabel.
-                            FILTER(LANG(?otherLabel) = '$language')
-                        }
-                        ?item rdfs:label ?itemLabel.
-                    }}
+                    $labelQuery
                 }
                 $limitClause
             } AS %reverse
@@ -75,6 +73,6 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
             $limitClause",
             $config
         );
-        parent::__construct($bbox, $baseQuery, $language);
+        parent::__construct($bbox, $baseQuery, empty($language) ? $defaultLanguage : $language);
     }
 }

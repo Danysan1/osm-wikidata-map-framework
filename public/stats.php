@@ -89,16 +89,16 @@ if ($db != null) {
 
         if ($source == "wd_direct") {
             $wikidataProps = $conf->getArray("osm_wikidata_properties");
-            $sourceQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
+            $sourceQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig, $defaultLanguage);
         } else if ($source == "wd_reverse") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $sourceQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+            $sourceQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $defaultLanguage);
         } else if ($source == "wd_qualifier") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
             $sourceQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
         } elseif ($source == "wd_indirect") {
             $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-            $sourceQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+            $sourceQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $defaultLanguage);
         } else {
             throw new Exception("Bad 'source' parameter");
         }

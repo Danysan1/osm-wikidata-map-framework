@@ -48,18 +48,21 @@ if ($db != null) {
     $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);
 } else {
     $wikidataConfig = new BaseWikidataConfig($conf);
+    $defaultLanguage = (string)$conf->get('default_language');
+    $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
+
     if ($source == "wd_direct") {
         $wikidataProps = $conf->getArray("osm_wikidata_properties");
-        $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig);
+        $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig, $defaultLanguage);
     } elseif ($source == "wd_reverse") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-        $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $defaultLanguage);
     } elseif ($source == "wd_qualifier") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-        $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
     } elseif ($source == "wd_indirect") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-        $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig);
+        $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty, $defaultLanguage);
     } elseif (str_starts_with($source, "overpass_")) {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
         $keyID = str_replace("overpass_", "", $source);

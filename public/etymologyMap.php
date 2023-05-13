@@ -83,22 +83,21 @@ if ($db != null) {
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $overpassCacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
     $wikidataCacheTimeoutHours = (int)$conf->get("wikidata_cache_timeout_hours");
+    $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
 
     if ($source == "wd_direct") {
         $wikidataProps = $conf->getArray("osm_wikidata_properties");
-        $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig, $safeLanguage);
+        $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig, $defaultLanguage, $safeLanguage);
     } elseif ($source == "wd_reverse") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
         $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-        $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $safeLanguage);
+        $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $defaultLanguage, $safeLanguage);
     } elseif ($source == "wd_qualifier") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-        $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
         $baseQuery = new QualifierEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty);
     } elseif ($source == "wd_indirect") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-        $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
-        $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty, $safeLanguage);
+        $baseQuery = new AllIndirectEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $imageProperty, $defaultLanguage, $safeLanguage);
     } elseif (str_starts_with($source, "overpass_")) {
         $overpassConfig = new RoundRobinOverpassConfig($conf);
         $keyID = str_replace("overpass_", "", $source);

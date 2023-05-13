@@ -9,14 +9,19 @@ use App\Config\Wikidata\WikidataConfig;
 
 class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
 {
-    public function __construct(BoundingBox $bbox, array $wikidataProps, WikidataConfig $config, ?string $language = null)
-    {
+    public function __construct(
+        BoundingBox $bbox,
+        array $wikidataProps,
+        WikidataConfig $config,
+        ?string $defaultLanguage = null,
+        ?string $language = null
+    ) {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
         $directProperties = implode(" ", array_map(function (string $prop): string {
             return "wdt:$prop";
         }, $wikidataProps));
-        $labelQuery = empty($language) ? "" : "OPTIONAL { ?item rdfs:label ?itemLabel FILTER(lang(?itemLabel)='$language') }";
+        $labelQuery = EtymologyWikidataQuery::generateItemLabelQuery($defaultLanguage, $language);
         $maxElements = $config->getMaxElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
@@ -45,6 +50,6 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
             $limitClause",
             $config
         );
-        parent::__construct($bbox, $baseQuery, $language);
+        parent::__construct($bbox, $baseQuery, empty($language) ? $defaultLanguage : $language);
     }
 }

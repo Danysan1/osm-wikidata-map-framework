@@ -24,11 +24,50 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
     private JSONWikidataQuery $baseQuery;
     private ?string $language;
 
-    public function __construct(BoundingBox $bbox, JSONWikidataQuery $baseQuery, ?string $language = null, ?string $wikidataQuery = null)
+    public function __construct(BoundingBox $bbox, JSONWikidataQuery $baseQuery, ?string $language = null)
     {
         $this->bbox = $bbox;
         $this->baseQuery = $baseQuery;
         $this->language = $language;
+    }
+
+    protected static function generateItemLabelQuery(?string $defaultLanguage = null, ?string $language = null): string
+    {
+        if (empty($defaultLanguage) && empty($language)) {
+            $clause = "?item rdfs:label ?itemLabel.";
+        } elseif (!empty($defaultLanguage) && !empty($language) && $defaultLanguage != $language) {
+            $clause = "{
+                    ?item rdfs:label ?itemLabel.
+                    FILTER(LANG(?itemLabel) = '$language')
+                } UNION {
+                    MINUS {
+                        ?item rdfs:label ?otherLabel.
+                        FILTER(LANG(?otherLabel) = '$language')
+                    }
+                    ?item rdfs:label ?itemLabel.
+                    FILTER(LANG(?otherLabel) = '$defaultLanguage')
+                } UNION {
+                    MINUS {
+                        ?item rdfs:label ?otherLabel.
+                        FILTER(LANG(?otherLabel) = '$language' OR LANG(?otherLabel) = '$defaultLanguage')
+                    }
+                    ?item rdfs:label ?itemLabel.
+                }";
+        } else {
+            $lang = empty($language) ? $defaultLanguage : $language;
+            $clause = "{
+                    ?item rdfs:label ?itemLabel.
+                    FILTER(LANG(?itemLabel) = '$lang')
+                } UNION {
+                    MINUS {
+                        ?item rdfs:label ?otherLabel.
+                        FILTER(LANG(?otherLabel) = '$lang')
+                    }
+                    ?item rdfs:label ?itemLabel.
+                }";
+        }
+
+        return "OPTIONAL{ $clause }";
     }
 
     public function getBBox(): BoundingBox
