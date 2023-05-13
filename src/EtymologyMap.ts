@@ -36,6 +36,7 @@ export class EtymologyMap extends Map {
     private geocoderControl: IControl | null;
     private search: string;
     private anyDetailShownBefore: boolean;
+    private wikidataControlsInitialized: boolean;
 
     constructor(
         containerId: string,
@@ -78,6 +79,7 @@ export class EtymologyMap extends Map {
 
         this.search = new URLSearchParams(window.location.search).get("search") ?? "";
         this.anyDetailShownBefore = false;
+        this.wikidataControlsInitialized = false;
     }
 
     /**
@@ -348,71 +350,70 @@ export class EtymologyMap extends Map {
             this.initWikidataLayer(wikidata_layer_polygon_fill);
         }
 
-        this.initSourceControl();
-        this.initEtymologyColorControl();
+        this.initWikidataControls();
     }
 
-    initSourceControl() {
-        if (!this.currentSourceControl) {
-            loadTranslator().then(t => {
-                const sourceControl = new SourceControl(
-                    getCorrectFragmentParams().source,
-                    (sourceID: string) => {
-                        const params = getCorrectFragmentParams();
-                        if (params.source != sourceID) {
-                            setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                            this.updateDataSource();
+    initWikidataControls() {
+        if (this.wikidataControlsInitialized)
+            return;
+
+        this.wikidataControlsInitialized = true;
+        loadTranslator().then(t => {
+            const sourceControl = new SourceControl(
+                getCorrectFragmentParams().source,
+                (sourceID: string) => {
+                    const params = getCorrectFragmentParams();
+                    if (params.source != sourceID) {
+                        setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                        this.updateDataSource();
+                    }
+                },
+                t
+            );
+            this.currentSourceControl = sourceControl;
+            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+
+            const colorControl = new EtymologyColorControl(
+                getCorrectFragmentParams().colorScheme,
+                (colorSchemeID: ColorSchemeID) => {
+                    const params = getCorrectFragmentParams();
+                    if (params.colorScheme != colorSchemeID) {
+                        setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                        this.updateDataSource();
+
+                        const colorSchemeObj = colorSchemes[colorSchemeID];
+                        let color: string | Expression;
+
+                        if (colorSchemeObj) {
+                            color = colorSchemeObj.color;
+                        } else {
+                            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
+                            color = '#3bb2d0';
                         }
-                    },
-                    t
-                );
-                this.currentSourceControl = sourceControl;
-                setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
-            });
-        }
-    }
-
-    initEtymologyColorControl() {
-        if (!this.currentEtymologyColorControl) {
-            loadTranslator().then(t => {
-                const colorControl = new EtymologyColorControl(
-                    getCorrectFragmentParams().colorScheme,
-                    (colorSchemeID: ColorSchemeID) => {
-                        const params = getCorrectFragmentParams();
-                        if (params.colorScheme != colorSchemeID) {
-                            setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
-                            this.updateDataSource();
-
-                            const colorSchemeObj = colorSchemes[colorSchemeID];
-                            let color: string | Expression;
-
-                            if (colorSchemeObj) {
-                                color = colorSchemeObj.color;
+                        debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
+                        [
+                            ["wikidata_source_layer_point", "circle-color"],
+                            ["wikidata_source_layer_lineString", 'line-color'],
+                            ["wikidata_source_layer_polygon_fill", 'fill-color'],
+                            ["wikidata_source_layer_polygon_border", 'line-color'],
+                        ].forEach(([layerID, property]) => {
+                            if (this?.getLayer(layerID)) {
+                                this.setPaintProperty(layerID, property, color);
                             } else {
-                                logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
-                                color = '#3bb2d0';
+                                console.warn("Layer does not exist, can't set property", { layerID, property, color });
                             }
-                            debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
-                            [
-                                ["wikidata_source_layer_point", "circle-color"],
-                                ["wikidata_source_layer_lineString", 'line-color'],
-                                ["wikidata_source_layer_polygon_fill", 'fill-color'],
-                                ["wikidata_source_layer_polygon_border", 'line-color'],
-                            ].forEach(([layerID, property]) => {
-                                if (this?.getLayer(layerID)) {
-                                    this.setPaintProperty(layerID, property, color);
-                                } else {
-                                    console.warn("Layer does not exist, can't set property", { layerID, property, color });
-                                }
-                            });
-                        }
-                    },
-                    t
-                );
-                this.currentEtymologyColorControl = colorControl;
-                setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
-            });
-        }
+                        });
+                    }
+                },
+                t
+            );
+            this.currentEtymologyColorControl = colorControl;
+            setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+
+            this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", WIKIDATA_SOURCE, "wikidata_query"), 'top-right');
+
+            this.addControl(new LinkControl("img/wikidata_query.svg", "Overpass Turbo", WIKIDATA_SOURCE, "overpass_query"), 'top-right');
+        });
     }
 
     /**
@@ -524,7 +525,7 @@ export class EtymologyMap extends Map {
             maxZoom
         );
 
-        this.initSourceControl();
+        this.initWikidataControls();
     }
 
     addGeoJSONSource(id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
@@ -812,8 +813,6 @@ export class EtymologyMap extends Map {
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
-        this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service"), 'top-right');
-        this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo"), 'top-right');
 
         this.on('sourcedata', this.mapSourceDataHandler);
 
