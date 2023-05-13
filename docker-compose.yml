@@ -336,6 +336,8 @@ services:
       - db-init-work-dir:/workdir
     networks:
       - airflow-internal
+    profiles:
+      - airflow-init
 
   airflow-cli:
     <<: *airflow-common
