@@ -1,17 +1,19 @@
-import { IControl, Map, MapSourceDataEvent } from 'mapbox-gl';
+import { IControl, Map, MapSourceDataEvent, MapboxEvent } from 'mapbox-gl';
+import { debugLog } from '../config';
 
 export class LinkControl implements IControl {
     private container?: HTMLDivElement;
     private anchor?: HTMLAnchorElement;
     private iconUrl: string;
     private title: string;
-    private sourceDataHandler?: (e: MapSourceDataEvent) => void;
+    private sourceDataHandler: (e: MapSourceDataEvent) => void;
+    private moveEndHandler: (e: MapboxEvent) => void;
 
-    constructor(iconUrl: string, title: string, sourceId?: string, mapEventField?: string) {
+    constructor(iconUrl: string, title: string, sourceId: string, mapEventField: string, baseUrl: string, minZoom: number) {
         this.iconUrl = iconUrl;
         this.title = title;
-        if (sourceId && mapEventField)
-            this.sourceDataHandler = this.createSourceDataHandler(sourceId, mapEventField).bind(this);
+        this.sourceDataHandler = this.createSourceDataHandler(sourceId, mapEventField, baseUrl).bind(this);
+        this.moveEndHandler = this.createMoveEndHandler(minZoom).bind(this);
     }
 
     onAdd(map: Map): HTMLElement {
@@ -32,15 +34,15 @@ export class LinkControl implements IControl {
 
         this.show(false);
 
-        if (this.sourceDataHandler)
-            map.on("sourcedata", this.sourceDataHandler);
+        map.on("sourcedata", this.sourceDataHandler);
+        map.on("moveend", this.moveEndHandler);
 
         return this.container;
     }
 
     onRemove(map: Map) {
-        if (this.sourceDataHandler)
-            map.off("sourcedata", this.sourceDataHandler);
+        map.off("sourcedata", this.sourceDataHandler);
+        map.off("moveend", this.moveEndHandler);
     }
 
     setURL(url: string) {
@@ -55,13 +57,41 @@ export class LinkControl implements IControl {
             this.container?.classList?.add("hiddenElement");
     }
 
-    createSourceDataHandler(sourceId: string, mapEventField: string) {
-        return (e: MapSourceDataEvent) => {
+    createSourceDataHandler(sourceId: string, mapEventField: string, baseUrl: string) {
+        return async (e: MapSourceDataEvent) => {
             if (!e.isSourceLoaded || e.dataType != "source" || e.sourceId != sourceId)
                 return;
 
-            console.info(mapEventField, e);
-            //TODO
+            try {
+                const response = await fetch((e.source as any).data, {
+                    mode: "same-origin",
+                    cache: "only-if-cached",
+                });
+                const content = await response.json();
+                if (!content.metadata) {
+                    debugLog("Missing metadata, hiding");
+                    this.show(false);
+                } else if (!content.metadata[mapEventField]) {
+                    debugLog("Missing query field, hiding", { content, mapEventField });
+                    this.show(false);
+                } else {
+                    const encodedQuery = encodeURIComponent(content.metadata[mapEventField]),
+                        linkUrl = baseUrl + encodedQuery;
+                    debugLog("Query field found, showing URL", { linkUrl, mapEventField });
+                    this.setURL(linkUrl);
+                    this.show();
+                }
+            } catch (err) {
+                console.error(err);
+                this.show(false);
+            }
+        }
+    }
+
+    createMoveEndHandler(minZoomLevel: number) {
+        return (e: MapboxEvent) => {
+            if (e.target.getZoom() < minZoomLevel)
+                this.show(false);
         }
     }
 }

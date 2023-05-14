@@ -410,9 +410,10 @@ export class EtymologyMap extends Map {
             this.currentEtymologyColorControl = colorControl;
             setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
 
-            this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", WIKIDATA_SOURCE, "wikidata_query"), 'top-right');
-
-            this.addControl(new LinkControl("img/wikidata_query.svg", "Overpass Turbo", WIKIDATA_SOURCE, "overpass_query"), 'top-right');
+            const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
+                thresholdZoomLevel = thresholdZoomLevel_raw ? parseInt(thresholdZoomLevel_raw) : 14;
+            this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", WIKIDATA_SOURCE, "overpass_query", "https://overpass-turbo.eu/?Q=", thresholdZoomLevel), 'top-right');
+            this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service", WIKIDATA_SOURCE, "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", thresholdZoomLevel), 'top-right');
         });
     }
 
