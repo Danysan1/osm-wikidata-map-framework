@@ -34,8 +34,12 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
     protected static function generateItemLabelQuery(?string $defaultLanguage = null, ?string $language = null): string
     {
         if (empty($defaultLanguage) && empty($language)) {
+            // Neither the preferred nor the fallback language are given
+            // Get a random label
             $clause = "?item rdfs:label ?itemLabel.";
         } elseif (!empty($defaultLanguage) && !empty($language) && $defaultLanguage != $language) {
+            // Both the preferred and the fallback language are given
+            // Get the label in the preferred language if available, othewise fallback to the fallback language if available, otherwise fallback to a random label
             $clause = "{
                     ?item rdfs:label ?itemLabel.
                     FILTER(LANG(?itemLabel) = '$language')
@@ -54,6 +58,8 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                     ?item rdfs:label ?itemLabel.
                 }";
         } else {
+            // Only the preferred language XOR the fallback language is given
+            // Get the label in the given language if available, otherwise fallback to a random label
             $lang = empty($language) ? $defaultLanguage : $language;
             $clause = "{
                     ?item rdfs:label ?itemLabel.
@@ -67,7 +73,7 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                 }";
         }
 
-        return "OPTIONAL{ $clause }";
+        return $clause;
     }
 
     public function getBBox(): BoundingBox
