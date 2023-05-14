@@ -10,10 +10,10 @@ export class LinkControl implements IControl {
     private sourceDataHandler: (e: MapSourceDataEvent) => void;
     private moveEndHandler: (e: MapboxEvent) => void;
 
-    constructor(iconUrl: string, title: string, sourceId: string, mapEventField: string, baseUrl: string, minZoom: number) {
+    constructor(iconUrl: string, title: string, sourceIds: string[], mapEventField: string, baseUrl: string, minZoom: number) {
         this.iconUrl = iconUrl;
         this.title = title;
-        this.sourceDataHandler = this.createSourceDataHandler(sourceId, mapEventField, baseUrl).bind(this);
+        this.sourceDataHandler = this.createSourceDataHandler(sourceIds, mapEventField, baseUrl).bind(this);
         this.moveEndHandler = this.createMoveEndHandler(minZoom).bind(this);
     }
 
@@ -58,9 +58,9 @@ export class LinkControl implements IControl {
             this.container?.classList?.add("hiddenElement");
     }
 
-    createSourceDataHandler(sourceId: string, mapEventField: string, baseUrl: string) {
+    createSourceDataHandler(sourceIds: string[], mapEventField: string, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType != "source" || e.sourceId != sourceId)
+            if (!e.isSourceLoaded || e.dataType != "source" || !sourceIds.includes(e.sourceId))
                 return;
 
             try {

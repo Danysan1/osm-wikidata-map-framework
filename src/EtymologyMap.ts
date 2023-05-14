@@ -359,6 +359,7 @@ export class EtymologyMap extends Map {
 
         this.wikidataControlsInitialized = true;
         loadTranslator().then(t => {
+            debugLog("Initializing source & color controls");
             const sourceControl = new SourceControl(
                 getCorrectFragmentParams().source,
                 (sourceID: string) => {
@@ -371,7 +372,7 @@ export class EtymologyMap extends Map {
                 t
             );
             this.currentSourceControl = sourceControl;
-            setTimeout(() => this.addControl(sourceControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+            setTimeout(() => this.addControl(sourceControl, 'top-left'), 25); // Delay needed to make sure the dropdown is always under the search bar
 
             const colorControl = new EtymologyColorControl(
                 getCorrectFragmentParams().colorScheme,
@@ -408,12 +409,13 @@ export class EtymologyMap extends Map {
                 t
             );
             this.currentEtymologyColorControl = colorControl;
-            setTimeout(() => this.addControl(colorControl, 'top-left'), 100); // Delay needed to make sure the dropdown is always under the search bar
+            setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
 
-            const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
-                thresholdZoomLevel = thresholdZoomLevel_raw ? parseInt(thresholdZoomLevel_raw) : 14;
-            this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", WIKIDATA_SOURCE, "overpass_query", "https://overpass-turbo.eu/?Q=", thresholdZoomLevel), 'top-right');
-            this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service", WIKIDATA_SOURCE, "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", thresholdZoomLevel), 'top-right');
+            const minZoomLevel_raw = getConfig("min_zoom_level"),
+                minZoomLevel = minZoomLevel_raw ? parseInt(minZoomLevel_raw) : 14;
+            debugLog("Initializing link controls", { minZoomLevel });
+            this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel), 'top-right');
+            this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", minZoomLevel), 'top-right');
         });
     }
 
