@@ -403,6 +403,18 @@ components:
         #   $ref: "#/components/schemas/GeometryCollection"
         # properties:
         #   type: object
+        bbox:
+          $ref: "#/components/schemas/BoundingBox"
+
+    BoundingBox:
+      type: array
+      description: Bounding box of the features
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7946#section-5
+      minItems: 4
+      maxItems: 6
+      items:
+        type: number
 
     FeatureCollection:
       type: object
@@ -417,10 +429,12 @@ components:
           type: string
           enum:
             - FeatureCollection
-        # features:
-        #   type: array
-        #   items:
-        #     $ref: "#/components/schemas/Feature"
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feature"
+        bbox:
+          $ref: "#/components/schemas/BoundingBox"
 
     GlobalMapFeature:
       allOf:
@@ -462,15 +476,20 @@ components:
         - $ref: "#/components/schemas/FeatureCollection"
         - type: object
           properties:
-            etymology_count:
-              type: integer
-              description: Total number of etymologies linked to the features
-            wikidata_query:
-              type: string
-              description: Wikidata SPARQL query used to fetch the features
-            overpass_query:
-              type: string
-              description: OverpassQL query used to fetch the features
+            metadata:
+              type: object
+              properties:
+                etymology_count:
+                  type: integer
+                  description: Total number of etymologies linked to the features
+                wikidata_query:
+                  type: string
+                  description: Wikidata SPARQL query used to fetch the features
+                  example: 'SELECT ... WHERE { ... }'
+                overpass_query:
+                  type: string
+                  description: OverpassQL query used to fetch the features
+                  example: '[out:json]; ...; out;'
 
     ElementResponse:
       allOf:
