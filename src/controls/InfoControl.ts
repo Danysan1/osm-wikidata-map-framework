@@ -21,6 +21,8 @@ function openInfoWindow(map: Map) {
     translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source");
     translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background");
     translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
+    translateContent(introDomElement, ".i18n_to_overpass_query", "info_box.to_overpass_query");
+    translateContent(introDomElement, ".i18n_to_wikidata_query", "info_box.to_wikidata_query");
     translateContent(introDomElement, ".i18n_contribute", "info_box.contribute");
     translateTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
@@ -42,7 +44,7 @@ function openInfoWindow(map: Map) {
         closeOnClick: true,
         closeOnMove: true,
         maxWidth: 'none',
-        className: "oem_info_popup"
+        className: "owmf_info_popup"
     }).setLngLat(popupPosition)
         .setDOMContent(introDomElement)
         .addTo(map);

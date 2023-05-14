@@ -5,8 +5,10 @@
         "open_popup": "Apri il popup delle informazioni",
         "click_anywhere": "Clicca su un punto qualsiasi della mappa per esplorare.",
         "use_controls": "Usa i controlli ai lati per visualizzare altri dati:",
-        "to_see_statistics": "per visualizzare statistiche sugli elementi",
-        "to_choose_source": "per scegliere quale sorgente dati utilizzare",
+        "to_see_statistics": "per visualizzare statistiche sugli elementi (solo ad alto zoom)",
+        "to_choose_source": "per scegliere quale fonte dati utilizzare (solo ad alto zoom)",
+        "to_overpass_query": "per visualizzare la query OverpassQL di origine (solo con la fonte Overpass ad alto zoom)",
+        "to_wikidata_query": "per visualizzare la query SPARQL di origine (solo con la fonte Wikidata ad alto zoom)",
         "to_change_background": "per cambiare lo sfondo della mappa",
         "to_open_again": "per riaprire questa finestra",
         "contribute": "Contribuisci alla mappa",
@@ -27,7 +29,7 @@
         "data_loaded_instructions": "Dati caricati, cliccare su un elemento evidenziato per visualizzarne i dettagli"
     },
     "source": {
-        "choose_source": "Scegli sorgente dati",
+        "choose_source": "Scegli fonte dati",
         "db_all": "Tutte le fonti dal DB",
         "db_osm_wikidata_reverse": "Entità Wikidata referenziate da OSM wikidata=* e {{indirectWdProperty}}",
         "propagated": "Propagati",
@@ -38,7 +40,7 @@
     "color_scheme": {
         "choose_scheme": "Scegli colori e statistiche",
         "blue": "Blu",
-        "source": "Per sorgente",
+        "source": "Per fonte",
         "gender": "Per genere",
         "type": "Per tipo",
         "century": "Per secolo",

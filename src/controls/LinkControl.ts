@@ -1,5 +1,6 @@
 import { IControl, Map, MapSourceDataEvent, MapboxEvent } from 'mapbox-gl';
 import { debugLog } from '../config';
+import { logErrorMessage } from '../monitoring';
 
 export class LinkControl implements IControl {
     private container?: HTMLDivElement;
@@ -82,7 +83,7 @@ export class LinkControl implements IControl {
                     this.show();
                 }
             } catch (err) {
-                console.error(err);
+                logErrorMessage("Failed retrieving last etymologyMap response, make sure cache is enabled", "error", { err });
                 this.show(false);
             }
         }

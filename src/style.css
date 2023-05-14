@@ -21,9 +21,9 @@ div#map {
 }
 
 div.maplibregl-popup.oem_etymology_popup,
-div.maplibregl-popup.oem_info_popup,
+div.maplibregl-popup.owmf_info_popup,
 div.mapboxgl-popup.oem_etymology_popup,
-div.mapboxgl-popup.oem_info_popup {
+div.mapboxgl-popup.owmf_info_popup {
   min-width: 15em;
   max-width: 80%;
   min-height: 15em;
@@ -36,13 +36,13 @@ div.mapboxgl-popup.oem_info_popup {
   z-index: 1000;
 }
 
-div.mapboxgl-popup.oem_info_popup .contribute_button,
-div.mapboxgl-popup.oem_info_popup .dataset_button {
+div.mapboxgl-popup.owmf_info_popup .contribute_button,
+div.mapboxgl-popup.owmf_info_popup .dataset_button {
   margin-top: 0.2em;
   margin-bottom: 0.2em;
 }
 
-div.mapboxgl-popup.oem_info_popup table tr td:first-child {
+div.mapboxgl-popup.owmf_info_popup table tr td:first-child {
   text-align: center;
 }
 
@@ -76,7 +76,7 @@ div.intro {
   font-size: medium;
 }
 
-div.intro > footer {
+div.intro>footer {
   font-size: small;
 }
 
@@ -132,7 +132,7 @@ div.detail_container a.k-button {
   margin: 0.5em;
 }
 
-div.detail_container a.k-button > .button_img {
+div.detail_container a.k-button>.button_img {
   max-width: 1.25em;
   max-height: 1.25em;
   /* margin-right: 0.5em; */
@@ -155,17 +155,17 @@ div#welcome_board {
   opacity: 0.8;
 }
 
-div.custom-ctrl > table {
+div.custom-ctrl>table {
   border-collapse: collapse;
   border-spacing: 0;
   width: 100%;
 }
 
-div.custom-ctrl > table > tr > td.button-cell {
+div.custom-ctrl>table>tr>td.button-cell {
   width: 1em;
 }
 
-div.custom-ctrl > table > tr > td {
+div.custom-ctrl>table>tr>td {
   padding: 0;
   text-align: left;
   /*text-align: right;*/
@@ -184,15 +184,15 @@ div.custom-ctrl > table > tr > td {
   max-width: 40em;
 }
 
-div.info > hr,
-div.pictures > hr {
+div.info>hr,
+div.pictures>hr {
   max-width: 3em;
   margin-left: max(3em, auto);
   margin-right: max(3em, auto);
 }
 
-.mapboxgl-popup-content .etymology_loading > h3,
-div.info > p {
+.mapboxgl-popup-content .etymology_loading>h3,
+div.info>p {
   margin-left: 1em;
   margin-right: 1em;
 }
@@ -330,8 +330,8 @@ span.legend-key {
   margin-right: 0.5em;
 }
 
-body > div#map > div.maplibregl-popup,
-body > div#map > div.mapboxgl-popup {
+body>div#map>div.maplibregl-popup,
+body>div#map>div.mapboxgl-popup {
   max-height: 90vh !important;
   /*max-height: 99vh !important;*/
   max-width: 95vw !important;
@@ -416,7 +416,7 @@ span.button_text {
   display: none;
 }
 
-div.pictures > div.pic-container {
+div.pictures>div.pic-container {
   /*border-width: 0.5px;*/
   /*border-style: solid;*/
   /*border-color: #ccc;*/
@@ -429,9 +429,9 @@ div.pictures > div.pic-container {
 }
 
 .hiddenElement,
-div.pictures > div.pic-container.hiddenElement,
-div.detail_container > a.k-button.hiddenElement,
-div.info > a.k-button.hiddenElement,
+div.pictures>div.pic-container.hiddenElement,
+div.detail_container>a.k-button.hiddenElement,
+div.info>a.k-button.hiddenElement,
 select.dropdown-ctrl-dropdown.hiddenElement,
 table.dropdown-ctrl-table.hiddenElement,
 canvas.chart.hiddenElement {
@@ -466,4 +466,9 @@ p.pic-attr {
   height: 23px;
   width: 23px;
   margin: 3px;
+}
+
+.owmf_info_popup .intro td>img {
+  width: 1em;
+  max-height: 1em;
 }
