@@ -45,11 +45,11 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                         FILTER(LANG(?otherLabel) = '$language')
                     }
                     ?item rdfs:label ?itemLabel.
-                    FILTER(LANG(?otherLabel) = '$defaultLanguage')
+                    FILTER(LANG(?itemLabel) = '$defaultLanguage')
                 } UNION {
                     MINUS {
                         ?item rdfs:label ?otherLabel.
-                        FILTER(LANG(?otherLabel) = '$language' OR LANG(?otherLabel) = '$defaultLanguage')
+                        FILTER(LANG(?otherLabel) = '$language' || LANG(?otherLabel) = '$defaultLanguage')
                     }
                     ?item rdfs:label ?itemLabel.
                 }";
@@ -169,7 +169,8 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
     {
         $wdResult = $this->baseQuery->sendAndGetJSONResult();
         if (!$wdResult->isSuccessful()) {
-            error_log($this->baseQuery->__toString());
+            error_log("Wikidata query failed: " . $this->baseQuery->__toString());
+            error_log($this->baseQuery->getWikidataQuery());
             throw new Exception("Wikidata query failed");
         }
         $rows = $wdResult->getJSONData()["results"]["bindings"];

@@ -47,8 +47,7 @@ abstract class BaseWikidataQuery extends CurlQuery implements WikidataQuery
         $minified = preg_replace('/\n\s+/m', " ", $minified);
         if (empty($minified)) {
             error_log($fullQuery);
-            error_log($minified);
-            throw new \Exception("Query minimization led to an empty string");
+            throw new \Exception("SPARQL query minimization led to an empty string");
         } else {
             // error_log("minifyWikidataQuery successfully minified the query:");
             // error_log($minified);
