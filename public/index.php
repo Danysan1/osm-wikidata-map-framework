@@ -46,7 +46,7 @@ foreach ($i18nOverride as $lang => $langData) {
 
 $canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : getCurrentURL();
 
-$metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf->get("keywords").'" />' : "";
+$metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . $conf->get("keywords") . '" />' : "";
 
 ?>
 
@@ -77,18 +77,16 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
     <meta name="robots" content="index, follow" />
     <?= $metaKeywords; ?>
     <link rel="canonical" href="<?= $canonicalURL; ?>" />
-    <?php foreach($availableLanguages as $lang){ ?>
+    <?php foreach ($availableLanguages as $lang) { ?>
         <link rel="alternate" hreflang="<?= $lang; ?>" href="<?= $canonicalURL; ?>?lang=<?= $lang; ?>" />
     <?php } ?>
 
-    <link rel="icon" sizes="16x16" type="image/x-icon" href="./favicon.ico" />
-    <link rel="icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png" />
-    <link rel="icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png" />
-    <link rel="apple-touch-icon" sizes="16x16" type="image/x-icon" href="./favicon.ico" />
-    <link rel="apple-touch-icon" sizes="32x32" type="image/png" href="./icons8-quest-32.png" />
-    <link rel="apple-touch-icon" sizes="96x96" type="image/png" href="./icons8-quest-96.png" />
-    
-    <link rel="preload" href="locales/<?=$conf->get("default_language");?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="icon" type="image/x-icon" sizes="32x32" href="favicon.ico" />
+    <link rel="apple-touch-icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="apple-touch-icon" type="image/x-icon" href="apple-touch-icon.png">
+
+    <link rel="preload" href="locales/<?= $conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
     <?= $conf->getMetaTag("db_enable", true); ?>
     <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
@@ -184,8 +182,6 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf
                         |
                     <?php } ?>
                     <a target="_blank" title="Personal website of the author of OSM-Wikidata Map Framework" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
-                    |
-                    <a target="_blank" href="https://icons8.com/icon/EiUNiE6hQ3RI/quest">Quest</a> icon by <a target="_blank" href="https://icons8.com">Icons8</a>
                 </p>
 
                 <?php if ($conf->has("paypal_id")) { ?>
