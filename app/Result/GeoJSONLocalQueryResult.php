@@ -10,12 +10,7 @@ use \App\Result\GeoJSONQueryResult;
 
 class GeoJSONLocalQueryResult extends JSONLocalQueryResult implements GeoJSONQueryResult
 {
-    /**
-     * @param boolean $success
-     * @param mixed $result
-     * @param string|null $sourcePath
-     */
-    public function __construct($success, $result, $sourcePath = null)
+    public function __construct(bool $success, mixed $result, ?string $sourcePath = null)
     {
         if ($success && is_array($result) && empty($result["type"])) {
             error_log(get_class($this) . ": " . json_encode($result));

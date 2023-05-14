@@ -55,11 +55,6 @@ abstract class LocalQueryResult implements QueryResult
         return $this->sourcePath !== null;
     }
 
-    protected function setPublicSourcePath(string $sourcePath): void
-    {
-        $this->sourcePath = $sourcePath;
-    }
-
     public function getPublicSourcePath(): string
     {
         if ($this->sourcePath === null) {

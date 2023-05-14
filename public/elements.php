@@ -38,8 +38,6 @@ if ($enableDB && str_starts_with($source, "db_")) {
     //error_log("elements.php NOT using DB");
     $db = null;
 }
-$textTag = (string)$conf->get('osm_text_key');
-$descriptionTag = (string)$conf->get('osm_description_key');
 
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);

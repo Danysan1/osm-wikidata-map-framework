@@ -44,8 +44,7 @@ foreach ($i18nOverride as $lang => $langData) {
     }
 }
 
-$thisURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
-$canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : $thisURL;
+$canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : getCurrentURL();
 
 $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="'.$conf->get("keywords").'" />' : "";
 

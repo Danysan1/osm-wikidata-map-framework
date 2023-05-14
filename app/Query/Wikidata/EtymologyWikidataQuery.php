@@ -81,11 +81,6 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         return $this->bbox;
     }
 
-    protected function getBaseQuery(): JSONQuery
-    {
-        return $this->baseQuery;
-    }
-
     private function convertRowToEtymology(array $row): array
     {
         if (empty($row["etymology"]["value"])) {
@@ -185,10 +180,12 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         $ret = new GeoJSONLocalQueryResult(true, [
             "type" => "FeatureCollection",
             "bbox" => $this->getBBox()->asArray(),
-            "etymology_count" => count($rows),
             //"features" => array_map([$this, "convertRowToGeoJsonFeature"], $rows),
             "features" => array_reduce($rows, [$this, "reduceRowToGeoJsonFeatures"], []),
-            "wikidata_query" => $this->baseQuery->getWikidataQuery(),
+            "metadata" => [
+                "etymology_count" => count($rows),
+                "wikidata_query" => $this->baseQuery->getWikidataQuery()
+            ],
         ]);
 
         //error_log("EtymologyWikidataQuery result: $ret");

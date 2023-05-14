@@ -40,7 +40,6 @@ $defaultLanguage = (string)$conf->get('default_language');
 $language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultLanguage);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataConfig = new BaseWikidataConfig($conf);
-$cacheFileBasePath = (string)$conf->get("cache_file_base_path");
 $enableDB = $conf->getBool("db_enable");
 
 if ($enableDB && str_starts_with($source, "db_"))
@@ -54,6 +53,9 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
     http_response_code(400);
     die('{"error":"Invalid language code."};');
 }
+/**
+ * @psalm-suppress RedundantCastGivenDocblockType
+ */
 $safeLanguage = (string)$langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 

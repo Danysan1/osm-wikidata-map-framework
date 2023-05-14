@@ -110,16 +110,6 @@ class ServerTiming
         header($this->getHeader());
     }
 
-    /**
-     * Get the raw timestamps
-     *
-     * @return array<array{string|null,float}>
-     */
-    public function getTimestamps()
-    {
-        return $this->times;
-    }
-
     public function __toString(): string
     {
         $timeArr = array_map(function ($t) {
@@ -131,10 +121,9 @@ class ServerTiming
     /**
      * Print the timestamps into the PHP log file
      *
-     * @param string $label
-     * @return void
+     * @psalm-suppress PossiblyUnusedMethod
      */
-    public function logTimes($label = "")
+    public function logTimes(string $label = ""): void
     {
         error_log("$label ServerTiming: $this");
     }

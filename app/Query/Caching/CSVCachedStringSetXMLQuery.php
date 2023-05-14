@@ -16,7 +16,7 @@ use \App\Config\Configuration;
 /**
  * A query which searches objects in a given string set caching the result in a file.
  * 
- * @author Daniele Santini <daniele@dsantini.it>
+ * @psalm-suppress UnusedClass
  */
 class CSVCachedStringSetXMLQuery extends CSVCachedStringSetQuery implements StringSetXMLQuery
 {
@@ -31,15 +31,15 @@ class CSVCachedStringSetXMLQuery extends CSVCachedStringSetQuery implements Stri
             throw new \Exception("Result is not a XMLQueryResult");
         }
 
-        $xml = $result->getXML();
-        $hash = sha1($xml);
-        $xmlRelativePath = $hash . ".xml";
-        $xmlAbsolutePath = $this->cacheFileBasePath . $xmlRelativePath;
-        $writtenBytes = @file_put_contents($xmlAbsolutePath, $xml);
+        $xmlContent = $result->getXML();
+        $hash = sha1($xmlContent);
+        $fileRelativePath = $hash . ".xml";
+        $fileAbsolutePath = $this->getCacheFileBasePath() . $fileRelativePath;
+        $writtenBytes = @file_put_contents($fileAbsolutePath, $xmlContent);
         if (!$writtenBytes)
-            error_log("Failed writing cache to $xmlAbsolutePath");
+            error_log("Failed writing cache to $fileAbsolutePath");
 
-        return $xmlRelativePath;
+        return $fileRelativePath;
     }
 
     public function sendAndGetXMLResult(): XMLQueryResult

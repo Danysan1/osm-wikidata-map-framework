@@ -13,12 +13,7 @@ use \App\Result\JSONQueryResult;
  */
 class JSONLocalQueryResult extends LocalQueryResult implements JSONQueryResult
 {
-    /**
-     * @param boolean $success
-     * @param mixed $result
-     * @param string|null $sourcePath
-     */
-    public function __construct($success, $result, $sourcePath = null)
+    public function __construct(bool $success, mixed $result, ?string $sourcePath = null)
     {
         $emptyResult = empty($result) && $result !== [];
         $resultFromResult = $success && !$emptyResult;
@@ -39,11 +34,6 @@ class JSONLocalQueryResult extends LocalQueryResult implements JSONQueryResult
         return is_array($res) ? $res : (array)json_decode((string)$res, true);
     }
 
-    public function getGeoJSONData(): array
-    {
-        return $this->getJSONData();
-    }
-
     public function getArray(): array
     {
         return $this->getJSONData();
@@ -53,10 +43,5 @@ class JSONLocalQueryResult extends LocalQueryResult implements JSONQueryResult
     {
         $res = $this->getResult();
         return is_array($res) ? json_encode($res) : (string)$res;
-    }
-
-    public function getGeoJSON(): string
-    {
-        return $this->getJSON();
     }
 }

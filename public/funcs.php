@@ -7,12 +7,12 @@ define("ISO_LANGUAGE_PATTERN", '/^(\w+)[-\w]*$/');
 
 use \App\Config\Configuration;
 
+/**
+ * @psalm-suppress UndefinedClass
+ */
 function handleException(Throwable $t): never
 {
-	error_log(
-		$t->getMessage() . PHP_EOL .
-			$t->getTraceAsString()
-	);
+	error_log($t->getMessage() . PHP_EOL . $t->getTraceAsString());
 	if (function_exists('\Sentry\captureException')) \Sentry\captureException($t);
 	http_response_code(500);
 	//die('{"success":false, "error":"An internal error occurred"}');
@@ -87,7 +87,7 @@ function prepareHTML(Configuration $conf)
 
 	$wikimediaImgSrcs = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
 	$wikimediaConnectSrcs = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php";
-	
+
 	$payPalImgSrcs = "https://www.paypal.com https://www.paypalobjects.com";
 
 	header(
@@ -196,4 +196,13 @@ function getFilteredParamOrDefault($paramName, $filter = FILTER_DEFAULT, $defaul
 		$paramValue = $defaultValue;
 	}
 	return $paramValue;
+}
+
+function getCurrentURL(): string
+{
+	if (empty($_SERVER["HTTP_HOST"]) || empty($_SERVER["REQUEST_URI"]))
+		throw new Exception("Empty host or URI");
+
+	$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http";
+	return "$protocol://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 }

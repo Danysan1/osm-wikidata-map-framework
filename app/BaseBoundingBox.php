@@ -18,39 +18,25 @@ class BaseBoundingBox implements BoundingBox
 {
     /**
      * [-90,90[
-     * 
-     * @var float
      */
-    private $minLat;
+    private float $minLat;
 
     /**
      * ]$minLat,90]
-     * 
-     * @var float
      */
-    private $maxLat;
+    private float $maxLat;
 
     /**
      * ]-180,180]
-     * 
-     * @var float
      */
-    private $minLon;
+    private float $minLon;
 
     /**
      * ]-180,180] - {$minLon}
-     * 
-     * @var float $maxLon
      */
-    private $maxLon;
+    private float $maxLon;
 
-    /**
-     * @param float $minLat
-     * @param float $minLon
-     * @param float $maxLat
-     * @param float $maxLon
-     */
-    public function __construct($minLat, $minLon, $maxLat, $maxLon)
+    public function __construct(float $minLat, float $minLon, float $maxLat, float $maxLon)
     {
         $this->minLat = self::correctLatitude($minLat);
         $this->maxLat = self::correctLatitude($maxLat);
@@ -67,16 +53,9 @@ class BaseBoundingBox implements BoundingBox
         }
     }
 
-    /**
-     * @param float $lon
-     * @return float
-     */
-    private static function correctLongitude($lon)
+    private static function correctLongitude(float $lon): float
     {
-        /**
-         * @psalm-suppress DocblockTypeContradiction
-         */
-        if ($lon === null || !is_float($lon) || is_nan($lon)) {
+        if (is_nan($lon)) {
             throw new \InvalidArgumentException("Invalid longitude");
         }
 
@@ -91,18 +70,10 @@ class BaseBoundingBox implements BoundingBox
         return $lon;
     }
 
-    /**
-     * @param float $lat
-     * @return float
-     */
-    private static function correctLatitude($lat)
+    private static function correctLatitude(float $lat): float
     {
-        /**
-         * @psalm-suppress DocblockTypeContradiction
-         */
-        if ($lat === null || !is_float($lat) || is_nan($lat)) {
+        if (is_nan($lat))
             throw new \InvalidArgumentException("Invalid longitude");
-        }
 
         return $lat;
     }

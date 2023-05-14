@@ -16,7 +16,7 @@ use \App\Config\Configuration;
 /**
  * A query which searches objects in a given string set caching the result in a file.
  * 
- * @author Daniele Santini <daniele@dsantini.it>
+ * @psalm-suppress UnusedClass
  */
 class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements StringSetJSONQuery
 {
@@ -31,15 +31,15 @@ class CSVCachedStringSetJSONQuery extends CSVCachedStringSetQuery implements Str
             throw new \Exception("Result is not a JSONQueryResult");
         }
 
-        $xml = $result->getJSON();
-        $hash = sha1($xml);
-        $xmlRelativePath = $hash . ".xml";
-        $xmlAbsolutePath = $this->cacheFileBasePath . $xmlRelativePath;
-        $writtenBytes = @file_put_contents($xmlAbsolutePath, $xml);
+        $jsonContent = $result->getJSON();
+        $hash = sha1($jsonContent);
+        $fileRelativePath = $hash . ".json";
+        $fileAbsolutePath = $this->getCacheFileBasePath() . $fileRelativePath;
+        $writtenBytes = @file_put_contents($fileAbsolutePath, $jsonContent);
         if (!$writtenBytes)
-            error_log("Failed writing cache to $xmlAbsolutePath");
+            error_log("Failed writing cache to $fileAbsolutePath");
 
-        return $xmlRelativePath;
+        return $fileRelativePath;
     }
 
     public function sendAndGetJSONResult(): JSONQueryResult

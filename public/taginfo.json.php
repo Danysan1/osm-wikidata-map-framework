@@ -9,7 +9,6 @@ $conf = new IniEnvConfiguration();
 
 prepareJSON($conf);
 
-$thisURL = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? "https" : "http") . "://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
 $textKey = (string)$conf->get("osm_text_key");
@@ -58,7 +57,7 @@ if (!empty($filterTags)) {
         ];
 
         $split = explode("=", (string)$filterTag);
-        if (empty($split) || empty($split[0]))
+        if (empty($split[0]))
             throw new Exception("Bad filter tags config: '$filterTag'");
         $tagObj["key"] = $split[0];
         if (!empty($split[1]) && $split[1] != "*")
@@ -112,7 +111,7 @@ if (empty($i18nStrings["description"]))
 
 echo json_encode([
     "data_format" => 1,
-    "data_url" => $thisURL,
+    "data_url" => getCurrentURL(),
     "project" => [
         "name" => $i18nStrings["title"],
         "description" => $i18nStrings["description"],

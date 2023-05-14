@@ -37,8 +37,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
-        ?bool $downloadColors = false,
-        ?bool $eagerFullDownload = false
+        bool $downloadColors = false,
+        bool $eagerFullDownload = false
     ) {
         parent::__construct($bbox, $db, $serverTiming, $source, $search);
 
@@ -52,11 +52,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $this->maxElements = $maxElements;
         $this->downloadColors = $downloadColors;
         $this->eagerFullDownload = $eagerFullDownload;
-    }
-
-    protected function getMaxElements(): int|null
-    {
-        return $this->maxElements;
     }
 
     protected function getLimitClause(): string

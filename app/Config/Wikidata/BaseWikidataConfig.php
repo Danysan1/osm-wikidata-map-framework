@@ -13,10 +13,6 @@ class BaseWikidataConfig implements WikidataConfig
     private string $endpoint;
     private ?int $maxElements;
 
-    /**
-     * @param Configuration $conf
-     * @param null|array<string> $overrideEndpoints
-     */
     public function __construct(Configuration $conf)
     {
         $this->endpoint = (string)$conf->get('wikidata_endpoint');

@@ -13,10 +13,12 @@ use \App\Result\GeoJSONQueryResult;
 
 /**
  * OverpassQL query that retrieves all the details of any item which has an etymology in the vicinity of a central point.
+ * 
+ * @psalm-suppress UnusedClass
  */
 class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQuery
 {
-    private string $textTag;
+    private string $textKey;
     private string $descriptionTag;
     private string $defaultLanguage;
     private ?string $language;
@@ -29,7 +31,7 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
         float $lon,
         float $radius,
         OverpassConfig $config,
-        string $textTag,
+        string $textKey,
         string $descriptionTag,
         array $keys,
         string $defaultLanguage,
@@ -41,7 +43,7 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
             "out body; >; out skel qt;",
             $config
         );
-        $this->textTag = $textTag;
+        $this->textKey = $textKey;
         $this->descriptionTag = $descriptionTag;
         $this->defaultLanguage = $defaultLanguage;
         $this->language = $language;
@@ -53,7 +55,7 @@ class CenterEtymologyOverpassQuery extends BaseOverpassQuery implements GeoJSONQ
         return new OverpassEtymologyQueryResult(
             $res->isSuccessful(),
             $res->getArray(),
-            $this->textTag,
+            $this->textKey,
             $this->descriptionTag,
             $this->getKeys(),
             $this->defaultLanguage,

@@ -9,16 +9,21 @@
     findUnusedCode="true"
 >
     <projectFiles>
-        <file name="sample.php" />
         <directory name="public" />
         <directory name="app" />
-        <ignoreFiles>
+        <ignoreFiles allowMissingFiles="true">
             <directory name="src" />
             <directory name="airflow" />
             <directory name="node_modules" />
             <directory name="out" />
             <directory name="pgadmin-data" />
+        </ignoreFiles>
+        <ignoreFiles>
             <directory name="vendor" />
         </ignoreFiles>
     </projectFiles>
+    <forbiddenFunctions>
+        <function name="var_dump" />
+        <function name="dd" />
+    </forbiddenFunctions>
 </psalm>

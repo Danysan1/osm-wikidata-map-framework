@@ -89,8 +89,9 @@ abstract class BaseConfiguration implements Configuration
 
     /**
      * @return array<string> Configured OSM wikidata key IDs
+     * @psalm-suppress PossiblyUnusedMethod
      */
-    public function getWikidataKeyIDs(?string $keyID = "all"): array
+    public function getWikidataKeyIDs(string $keyID = "all"): array
     {
         $allIDs = array_map([$this, "keyToID"], $this->getWikidataKeys());
         if ($keyID == "all") {

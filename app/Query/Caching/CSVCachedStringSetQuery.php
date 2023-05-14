@@ -7,7 +7,6 @@ namespace App\Query\Caching;
 
 use \App\Query\Caching\CSVCachedQuery;
 use \App\Query\StringSetQuery;
-use \App\Query\Caching\CachedStringSetQuery;
 use \App\BaseStringSet;
 use \App\Result\QueryResult;
 use \App\StringSet;
@@ -17,7 +16,7 @@ use \App\StringSet;
  * 
  * @author Daniele Santini <daniele@dsantini.it>
  */
-abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements CachedStringSetQuery
+abstract class CSVCachedStringSetQuery extends CSVCachedQuery implements StringSetQuery
 {
     public const STRING_SET_CACHE_COLUMN_TIMESTAMP = 0;
     public const STRING_SET_CACHE_COLUMN_SITE = 1;

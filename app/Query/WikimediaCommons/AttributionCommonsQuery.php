@@ -19,7 +19,7 @@ define("COMMONS_ATTRIBUTION_FIELD", "Artist");
  */
 class AttributionCommonsQuery extends JSONCurlQuery
 {
-    public function __construct(array $titles, ?string $endpointURL = COMMONS_DEFAULT_ENDPOINT_URL)
+    public function __construct(array $titles, string $endpointURL = COMMONS_DEFAULT_ENDPOINT_URL)
     {
         parent::__construct([
             "action" => "query",
@@ -59,7 +59,7 @@ class AttributionCommonsQuery extends JSONCurlQuery
      */
     private static function responseToAttributionsReducer(array $returnArray, array $page): array
     {
-        $title = $page["title"];
+        $title = (string)$page["title"];
         if (empty($page["imageinfo"])) {
             throw new Exception("responseToAttributionsReducer: missing image info in response");
         } elseif (!empty($page["imageinfo"][0]["extmetadata"])) {
@@ -89,6 +89,7 @@ class AttributionCommonsQuery extends JSONCurlQuery
     /**
      * @param array<string> $titles
      * @return array<array{picture:string,attribution:string}>
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public static function splitTitlesInChunksAndGetAttributions(array $titles): array
     {

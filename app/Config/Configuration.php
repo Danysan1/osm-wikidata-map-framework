@@ -12,6 +12,7 @@ interface Configuration
 
 	/**
 	 * @param array<string> $keys
+	 * @psalm-suppress PossiblyUnusedMethod
 	 */
 	public function hasAll(array $keys): bool;
 

@@ -43,9 +43,12 @@ class EnvFileConfiguration extends BaseConfiguration
 
 	public function get(string $key): mixed
 	{
-		if (!$this->has($key)) {
+		if (empty($key))
+			throw new Exception("Invalid empty configuration key");
+
+		if (!$this->has($key))
 			throw new Exception("Configuration not found: $key");
-		}
+
 		return $_ENV[$key];
 	}
 }

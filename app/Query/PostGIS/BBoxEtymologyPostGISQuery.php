@@ -30,8 +30,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
-        ?bool $downloadColors = false,
-        ?bool $eagerFullDownload = false
+        bool $downloadColors = false,
+        bool $eagerFullDownload = false
     ) {
         parent::__construct(
             $bbox,
@@ -81,8 +81,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
-                'etymology_count', SUM(ele.num_etymologies),
-                'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::json), '[]'::JSON)
+                'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::json), '[]'::JSON),
+                'metadata', JSON_BUILD_OBJECT('etymology_count', SUM(ele.num_etymologies))
                 )
             FROM (
                 SELECT

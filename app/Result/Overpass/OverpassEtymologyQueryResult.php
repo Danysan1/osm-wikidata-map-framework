@@ -12,8 +12,8 @@ use \App\Result\Overpass\GeoJSONOverpassQueryResult;
  */
 class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 {
-    private string $textTag;
-    private string $descriptionTag;
+    private string $textKey;
+    private string $descriptionKey;
     private array $keys;
     private string $defaultLanguage;
     private ?string $language;
@@ -30,16 +30,16 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
     public function __construct(
         bool $success,
         ?array $result,
-        string $textTag,
-        string $descriptionTag,
+        string $textKey,
+        string $descriptionKey,
         array $keys,
         string $defaultLanguage,
         ?string $language = null,
         ?string $overpassQuery = null
     ) {
         parent::__construct($success, $result, $overpassQuery);
-        $this->textTag = $textTag;
-        $this->descriptionTag = $descriptionTag;
+        $this->textKey = $textKey;
+        $this->descriptionKey = $descriptionKey;
         $this->keys = $keys;
         $this->defaultLanguage = $defaultLanguage;
         $this->language = $language;
@@ -106,11 +106,11 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         if (!empty($element["tags"]["alt_name"]))
             $feature["properties"]["alt_name"] = (string)$element["tags"]["alt_name"];
 
-        if (!empty($element["tags"][$this->textTag]))
-            $feature["properties"]["text_etymology"] = (string)$element["tags"][$this->textTag];
+        if (!empty($element["tags"][$this->textKey]))
+            $feature["properties"]["text_etymology"] = (string)$element["tags"][$this->textKey];
 
-        if (!empty($element["tags"][$this->descriptionTag]))
-            $feature["properties"]["text_etymology_descr"] = (string)$element["tags"][$this->descriptionTag];
+        if (!empty($element["tags"][$this->descriptionKey]))
+            $feature["properties"]["text_etymology_descr"] = (string)$element["tags"][$this->descriptionKey];
 
         if (!empty($element["tags"]["wikipedia"]))
             $feature["properties"]["wikipedia"] = (string)$element["tags"]["wikipedia"];

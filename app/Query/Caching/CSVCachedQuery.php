@@ -15,7 +15,7 @@ use \App\Query\Query;
  */
 abstract class CSVCachedQuery implements Query
 {
-    protected string $cacheFileBasePath;
+    private string $cacheFileBasePath;
     private Query $baseQuery;
     private ?ServerTiming $serverTiming;
     protected int $timeoutThresholdTimestamp;
@@ -91,7 +91,7 @@ abstract class CSVCachedQuery implements Query
             // Row too old, delete it
             error_log("Trashing old row ( $rowTimestamp < $this->timeoutThresholdTimestamp ) in " . get_class($this));
             $ret = false;
-        } elseif (!empty($_SERVER["SERVER_NAME"]) || $rowSite == $_SERVER["SERVER_NAME"]) {
+        } elseif (!empty($_SERVER["SERVER_NAME"]) && $rowSite == $_SERVER["SERVER_NAME"]) {
             // Cache row is from another site, don't delete it
             $ret = true;
         } elseif ($this->shouldTrashRow($row)) {
@@ -125,12 +125,12 @@ abstract class CSVCachedQuery implements Query
         $result = null;
         $newCache = [];
         if (empty($cacheFile)) {
-            error_log("CachedQuery: Cache registry file not found, skipping cache search ( $cacheFile )");
+            error_log("CSVCachedQuery: Cache registry file not found, skipping cache search ( $cacheFile )");
         } else {
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-search-prepare");
             while ($result == null && (($row = fgetcsv($cacheFile)) !== false)) {
-                //error_log("CachedQuery: ".json_encode($row));
+                //error_log("CSVCachedQuery: ".json_encode($row));
                 try {
                     $shouldKeep = $this->shouldKeepRow($row);
                     if ($shouldKeep) {
@@ -139,7 +139,7 @@ abstract class CSVCachedQuery implements Query
                     }
                 } catch (\Exception $e) {
                     error_log(
-                        "CachedQuery: trashing bad row:" . PHP_EOL .
+                        "CSVCachedQuery: trashing bad row:" . PHP_EOL .
                             $e->getMessage() . PHP_EOL .
                             json_encode($row)
                     );
@@ -151,12 +151,12 @@ abstract class CSVCachedQuery implements Query
         }
 
         if ($result !== null) {
-            //error_log("CachedQuery: cache hit for " . $this->baseQuery);
+            //error_log("CSVCachedQuery: cache hit for " . $this->baseQuery);
         } else {
             // Cache miss, send query
-            //error_log("CachedQuery: cache miss for " . $this->baseQuery);
+            //error_log("CSVCachedQuery: cache miss for " . $this->baseQuery);
             $result = $this->baseQuery->send();
-            //error_log("CachedQuery: received " . get_class($result));
+            //error_log("CSVCachedQuery: received " . get_class($result));
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-missed-query");
 
@@ -164,17 +164,17 @@ abstract class CSVCachedQuery implements Query
                 try {
                     // Write the result to the cache registry file
                     $newRow = $this->getRowFromResult($result);
-                    //error_log("CachedQuery: add new row for " . $this->getBBox());
-                    //error_log("CachedQuery new row: ".json_encode($newRow));
+                    //error_log("CSVCachedQuery: add new row for " . $this->getBBox());
+                    //error_log("CSVCachedQuery new row: ".json_encode($newRow));
                     if (empty($newRow)) {
                         error_log(get_class($this) . ": new row is empty, skipping cache save");
                     }
                     array_unshift($newCache, $newRow);
 
-                    error_log("CachedQuery: save cache of " . count($newCache) . " rows for $className");
+                    error_log("CSVCachedQuery: save cache of " . count($newCache) . " rows for $className");
                     $cacheFile = @fopen($cacheFilePath, "w+");
                     if (empty($cacheFile)) {
-                        error_log("CachedQuery: failed to open cache registry file for writing: $cacheFilePath");
+                        error_log("CSVCachedQuery: failed to open cache registry file for writing: $cacheFilePath");
                     } else {
                         foreach ($newCache as $row) {
                             fputcsv($cacheFile, $row);
@@ -182,10 +182,10 @@ abstract class CSVCachedQuery implements Query
                         fclose($cacheFile);
                     }
                 } catch (\Exception $e) {
-                    error_log("CachedQuery: failed to write cache registry file: " . $e->getMessage());
+                    error_log("CSVCachedQuery: failed to write cache registry file: " . $e->getMessage());
                 }
             } else {
-                error_log("CachedQuery: unsuccessful request, discarding cache changes");
+                error_log("CSVCachedQuery: unsuccessful request, discarding cache changes");
             }
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-write");

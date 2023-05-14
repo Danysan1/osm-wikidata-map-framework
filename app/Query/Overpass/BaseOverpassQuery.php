@@ -56,7 +56,7 @@ class BaseOverpassQuery extends JSONCurlQuery implements OverpassQuery
                     $filterSuffix = "['$key']($position);";
                     if (!empty($filterTag)) {
                         $split = explode("=", (string)$filterTag);
-                        if (empty($split) || empty($split[0]))
+                        if (empty($split[0]))
                             throw new Exception("Bad filter tags config: '$filterTag'");
                         $quotedFilterTag = "'" . $split[0] . "'";
                         if (!empty($split[1]) && $split[1] != "*")

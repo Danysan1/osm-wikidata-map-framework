@@ -33,6 +33,7 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
         $geojson = [
             "type" => "FeatureCollection",
             "features" => [],
+            "metadata" => [],
         ];
 
         $etymologyCount = null;
@@ -43,7 +44,7 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
                 $feature = $this->convertElementToGeoJSONFeature($index, $row, $elements);
                 if (!empty($feature)) {
                     $geojson["features"][] = $feature;
-                    if (!empty($feature["properties"]["etymologies"]))
+                    if (!empty($feature["properties"]["etymologies"]) && is_array($feature["properties"]["etymologies"]))
                         $etymologyCount = ($etymologyCount ?? 0) + count($feature["properties"]["etymologies"]);
                 }
             }
@@ -55,10 +56,10 @@ abstract class GeoJSONOverpassQueryResult extends OverpassQueryResult implements
         }
 
         if ($etymologyCount !== null)
-            $geojson["etymology_count"] = $etymologyCount;
+            $geojson["metadata"]["etymology_count"] = $etymologyCount;
 
         if (!empty($this->overpassQuery))
-            $geojson["overpass_query"] = $this->overpassQuery;
+            $geojson["metadata"]["overpass_query"] = $this->overpassQuery;
 
         return $geojson;
     }

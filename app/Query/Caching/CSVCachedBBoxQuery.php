@@ -83,7 +83,7 @@ abstract class CSVCachedBBoxQuery extends CSVCachedQuery implements BBoxQuery
         $rowData = $this->getRowDataFromResult($result);
         $hash = sha1($rowData);
         $fileRelativePath = $hash . "." . $this->getExtension();
-        $fileAbsolutePath = $this->cacheFileBasePath . $fileRelativePath;
+        $fileAbsolutePath = $this->getCacheFileBasePath() . $fileRelativePath;
         $writtenBytes = @file_put_contents($fileAbsolutePath, $rowData);
         if (!$writtenBytes)
             error_log("Failed writing cache to $fileAbsolutePath");

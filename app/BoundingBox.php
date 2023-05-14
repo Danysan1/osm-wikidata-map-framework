@@ -46,6 +46,8 @@ interface BoundingBox
 
     /**
      * Relative overlap, between 0 and 1
+     * 
+     * @psalm-suppress PossiblyUnusedMethod
      */
     public function getRelativeOverlapAreaWith(BoundingBox $other): float;
 

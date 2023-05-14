@@ -40,6 +40,9 @@ abstract class CurlQuery extends BaseRemoteQuery
         ];
     }
 
+    /**
+     * @psalm-suppress PossiblyUnusedMethod
+     */
     public function getHttpQuery(): string
     {
         return $this->httpRequestQuery;

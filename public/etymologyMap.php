@@ -56,6 +56,9 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
     http_response_code(400);
     die('{"error":"Invalid language code."};');
 }
+/**
+ * @psalm-suppress RedundantCastGivenDocblockType
+ */
 $safeLanguage = (string)$langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
@@ -90,7 +93,6 @@ if ($db != null) {
         $baseQuery = new DirectEtymologyWikidataQuery($bbox, $wikidataProps, $wikidataConfig, $defaultLanguage, $safeLanguage);
     } elseif ($source == "wd_reverse") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
-        $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
         $baseQuery = new ReverseEtymologyWikidataQuery($bbox, $wikidataProperty, $wikidataConfig, $defaultLanguage, $safeLanguage);
     } elseif ($source == "wd_qualifier") {
         $wikidataProperty = (string)$conf->get("wikidata_indirect_property");
