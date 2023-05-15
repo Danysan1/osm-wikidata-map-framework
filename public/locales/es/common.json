@@ -5,8 +5,10 @@
         "open_popup": "Abre la ventana emergente de información",
         "click_anywhere": "Haga clic en cualquier parte del mapa para explorar.",
         "use_controls": "Utilice los controles laterales para ver más datos:",
-        "to_see_statistics": "para ver las estadísticas del artículo",
+        "to_see_statistics": "para ver las estadísticas del artículo (solo con zoom alto)",
         "to_choose_source": "para elegir qué fuente de datos utilizar",
+        "to_overpass_query": "para ver la consulta OverpassQL de origen (solo con la fuente de Overpass)",
+        "to_wikidata_query": "para ver la consulta SPARQL de origen (solo con la fuente de Wikidata)",
         "to_change_background": "para cambiar el fondo del mapa",
         "to_open_again": "para reabrir esta ventana",
         "contribute": "Contribuir al mapa",
@@ -44,7 +46,8 @@
         "century": "Por siglo",
         "black": "Negro",
         "red": "Rojo",
-        "orange": "Naranja"
+        "orange": "Naranja",
+        "not_available": "Este esquema de color no está disponible para esta fuente"
     },
     "background": {
         "choose_style": "Elige el fondo del mapa"

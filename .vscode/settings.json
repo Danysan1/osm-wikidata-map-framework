@@ -21,5 +21,8 @@
     "wikibase"
   ],
   "python.linting.enabled": true,
-  "dotenv.enableAutocloaking": false
+  "dotenv.enableAutocloaking": false,
+  "i18n-ally.localesPaths": [
+    "public/locales"
+  ]
 }
