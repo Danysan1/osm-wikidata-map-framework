@@ -115,7 +115,7 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             throw new Exception("Bad wikidata result row");
         }
         $matches = [];
-        if (!preg_match('/^Point\(([-\d.]+) ([-\d.]+)\)$/', (string)$row["location"]["value"], $matches)) {
+        if (!preg_match('/^Point\(([-\dE.]+) ([-\dE.]+)\)$/', (string)$row["location"]["value"], $matches)) {
             error_log((string)$row["location"]["value"]);
             throw new Exception("Bad location result from Wikidata");
         }

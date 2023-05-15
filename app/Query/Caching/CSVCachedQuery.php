@@ -48,6 +48,9 @@ abstract class CSVCachedQuery implements Query
     protected abstract function getRowFromResult(QueryResult $result): array;
 
     /**
+     * There are only two hard things in Computer Science: cache invalidation and naming things.
+     * -- Phil Karlton
+     * 
      * Check whether a cache row should be kept.
      * Return true if and only if the row should be kept (it should NOT be trashed).
      */
@@ -110,9 +113,6 @@ abstract class CSVCachedQuery implements Query
     }
 
     /**
-     * There are only two hard things in Computer Science: cache invalidation and naming things.
-     * -- Phil Karlton
-     * 
      * Read the cache registry file to find a cache content file usable for the given query.
      * If the cache content file exists and is not expired, return its content.
      * Otherwise, execute the query and cache the result.
@@ -162,6 +162,7 @@ abstract class CSVCachedQuery implements Query
 
             if ($result->isSuccessful()) {
                 try {
+                    //file_put_contents("CSVCachedQuery.json", json_encode($result->getArray()));
                     // Write the result to the cache registry file
                     $newRow = $this->getRowFromResult($result);
                     //error_log("CSVCachedQuery: add new row for " . $this->getBBox());
@@ -171,7 +172,7 @@ abstract class CSVCachedQuery implements Query
                     }
                     array_unshift($newCache, $newRow);
 
-                    error_log("CSVCachedQuery: save cache of " . count($newCache) . " rows for $className");
+                    //error_log("CSVCachedQuery: save cache of " . count($newCache) . " rows for $className");
                     $cacheFile = @fopen($cacheFilePath, "w+");
                     if (empty($cacheFile)) {
                         error_log("CSVCachedQuery: failed to open cache registry file for writing: $cacheFilePath");

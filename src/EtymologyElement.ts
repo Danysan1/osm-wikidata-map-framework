@@ -196,7 +196,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     } else {
         let ety_lat = NaN, ety_lon = NaN;
         if (ety.wkt_coords) {
-            const coords = /Point\(([-\d.]+) ([-\d.]+)\)/i.exec(ety.wkt_coords),
+            const coords = /Point\(([-\dE.]+) ([-\dE.]+)\)/i.exec(ety.wkt_coords),
                 coordsOk = !!coords && coords.length == 3,
                 strLon = coordsOk ? coords.at(1) : null,
                 strLat = coordsOk ? coords.at(2) : null;
