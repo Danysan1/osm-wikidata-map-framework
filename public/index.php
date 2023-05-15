@@ -84,7 +84,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="icon" type="image/x-icon" sizes="32x32" href="favicon.ico" />
     <link rel="apple-touch-icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="apple-touch-icon" type="image/x-icon" href="apple-touch-icon.png">
+    <link rel="apple-touch-icon" type="image/png" href="apple-touch-icon.png" />
 
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
