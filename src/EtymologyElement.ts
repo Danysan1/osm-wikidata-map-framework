@@ -82,15 +82,19 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     let dateObject: Date;
     const options: Intl.DateTimeFormatOptions = {};
 
-    if (date instanceof Date)
+    if (date instanceof Date) {
         dateObject = date;
-    else if (typeof date === 'string')
+    } else if (typeof date === 'string' && date.startsWith('-')) {
+        dateObject = new Date(date.slice(1));
+        dateObject.setFullYear(-dateObject.getFullYear());
+    } else if (typeof date === 'string') {
         dateObject = new Date(date);
-    else if (typeof date === 'number')
+    } else if (typeof date === 'number') {
         // Convert the epoch timestamp to a Date: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
         dateObject = new Date(date * 1000);
-    else
+    } else {
         throw new Error("Invalid date parameter");
+    }
 
     if (precision) {
         if (precision >= DatePrecision.second) options.second = 'numeric';
