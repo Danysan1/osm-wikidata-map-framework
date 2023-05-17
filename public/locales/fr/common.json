@@ -7,7 +7,7 @@
         "use_controls": "Utilisez les contrôles sur les côtés pour voir d'autres données:",
         "to_see_statistics": "pour voir les statistiques sur les éléments (uniquement à zoom élevé)",
         "to_choose_source": "pour choisir la source de données à utiliser",
-        "to_overpass_query": "pour visualiser la requête OverpassQL source (uniquement avec la source Overpass)",
+        "to_overpass_query": "pour voir la requête OverpassQL source (uniquement avec la source Overpass)",
         "to_wikidata_query": "pour voir la requête SPARQL source (uniquement avec la source Wikidata)",
         "to_change_background": "pour changer le style de la carte de fond",
         "to_open_again": "pour ouvrir à nouveau cette fenêtre contextuelle",
