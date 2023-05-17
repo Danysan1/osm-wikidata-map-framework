@@ -10,11 +10,18 @@ export class LinkControl implements IControl {
     private sourceDataHandler: (e: MapSourceDataEvent) => void;
     private moveEndHandler: (e: MapboxEvent) => void;
 
-    constructor(iconUrl: string, title: string, sourceIds: string[], mapEventField: string, baseUrl: string, minZoom: number) {
+    constructor(
+        iconUrl: string,
+        title: string,
+        sourceIds: string[],
+        mapEventField: string,
+        baseUrl: string,
+        minZoomLevel = 0
+    ) {
         this.iconUrl = iconUrl;
         this.title = title;
         this.sourceDataHandler = this.createSourceDataHandler(sourceIds, mapEventField, baseUrl).bind(this);
-        this.moveEndHandler = this.createMoveEndHandler(minZoom).bind(this);
+        this.moveEndHandler = this.createMoveEndHandler(minZoomLevel).bind(this);
     }
 
     onAdd(map: Map): HTMLElement {
@@ -42,6 +49,7 @@ export class LinkControl implements IControl {
     }
 
     onRemove(map: Map) {
+        this.container?.remove();
         map.off("sourcedata", this.sourceDataHandler);
         map.off("moveend", this.moveEndHandler);
     }
@@ -73,7 +81,7 @@ export class LinkControl implements IControl {
                     debugLog("Missing metadata, hiding");
                     this.show(false);
                 } else if (!content.metadata[mapEventField]) {
-                    debugLog("Missing query field, hiding", { content, mapEventField });
+                    //debugLog("Missing query field, hiding", { content, mapEventField });
                     this.show(false);
                 } else {
                     const encodedQuery = encodeURIComponent(content.metadata[mapEventField]),

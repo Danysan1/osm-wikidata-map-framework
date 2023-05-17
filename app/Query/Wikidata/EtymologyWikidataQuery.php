@@ -177,11 +177,14 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         $rows = $wdResult->getJSONData()["results"]["bindings"];
         if (!is_array($rows))
             throw new Exception("Bad result from Wikidata");
+        $features = array_reduce($rows, [$this, "reduceRowToGeoJsonFeatures"], []);
+        #file_put_contents("EtymologyWikidataQuery.json", json_encode($features));
+
         $ret = new GeoJSONLocalQueryResult(true, [
             "type" => "FeatureCollection",
             "bbox" => $this->getBBox()->asArray(),
             //"features" => array_map([$this, "convertRowToGeoJsonFeature"], $rows),
-            "features" => array_reduce($rows, [$this, "reduceRowToGeoJsonFeatures"], []),
+            "features" => $features,
             "metadata" => [
                 "etymology_count" => count($rows),
                 "wikidata_query" => $this->baseQuery->getWikidataQuery()
