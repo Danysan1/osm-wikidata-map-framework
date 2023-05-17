@@ -30,7 +30,7 @@ function getFragmentParams(): FragmentParams {
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
             source: (hashParams && hashParams[4]) ? hashParams[4] : null,
         } as FragmentParams;
-    debugLog("getFragmentParams", { hashParams, out });
+    //debugLog("getFragmentParams", { hashParams, out });
     return out;
 }
 
@@ -41,17 +41,21 @@ function getFragmentParams(): FragmentParams {
  */
 function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, source?: string): string {
     const currentParams = getCorrectFragmentParams(),
-        p = currentParams;
+        pos = { ...currentParams };
 
-    if (typeof lon == 'number') p.lon = parseFloat(lon.toFixed(3));
-    if (typeof lat == 'number') p.lat = parseFloat(lat.toFixed(3));
-    if (typeof zoom == 'number') p.zoom = parseFloat(zoom.toFixed(1));
-    if (typeof colorScheme == 'string') p.colorScheme = colorScheme;
-    if (typeof source == 'string') p.source = source;
+    if (typeof lon == 'number') pos.lon = parseFloat(lon.toFixed(3));
+    if (typeof lat == 'number') pos.lat = parseFloat(lat.toFixed(3));
+    if (typeof zoom == 'number') pos.zoom = parseFloat(zoom.toFixed(1));
+    if (typeof colorScheme == 'string') pos.colorScheme = colorScheme;
+    if (typeof source == 'string') pos.source = source;
 
-    const fragment = `#${p.lon},${p.lat},${p.zoom},${p.colorScheme},${p.source}`;
-    window.location.hash = fragment;
-    debugLog("setFragmentParams", { currentParams, p, fragment, lon, lat, zoom, colorScheme, source });
+    const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.source}`;
+    if (window.location.hash !== fragment) {
+        debugLog("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
+        window.location.hash = fragment;
+    } else {
+        debugLog("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
+    }
     return fragment;
 }
 

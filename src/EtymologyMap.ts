@@ -18,12 +18,7 @@ import { ColorSchemeID, colorSchemes } from './colorScheme.model';
 import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
 
-const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
-    minZoomLevel_raw = getConfig("min_zoom_level"),
-    thresholdZoomLevel = thresholdZoomLevel_raw ? parseInt(thresholdZoomLevel_raw) : 14,
-    minZoomLevel = minZoomLevel_raw ? parseInt(minZoomLevel_raw) : 9,
-    defaultBackgroundStyle_raw = getConfig("default_background_style"),
-    defaultBackgroundStyle = defaultBackgroundStyle_raw ? defaultBackgroundStyle_raw : 'mapbox_streets',
+const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
     ELEMENTS_SOURCE = "elements_source",
     GLOBAL_SOURCE = "global_source";
@@ -31,7 +26,6 @@ const thresholdZoomLevel_raw = getConfig("threshold_zoom_level"),
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private currentEtymologyColorControl?: EtymologyColorControl;
-    private currentSourceControl?: SourceControl;
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
     private search: string;
@@ -100,8 +94,7 @@ export class EtymologyMap extends Map {
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
             currZoom = this.getZoom(),
-            currColorScheme = this.currentEtymologyColorControl?.getCurrentID(),
-            currSource = this.currentSourceControl?.getCurrentID();
+            currColorScheme = this.currentEtymologyColorControl?.getCurrentID();
         debugLog("hashChangeHandler", {
             newParams, currLat, currLon, currZoom, currColorScheme
         });
@@ -119,9 +112,6 @@ export class EtymologyMap extends Map {
 
         if (currColorScheme != newParams.colorScheme)
             this.currentEtymologyColorControl?.setCurrentID(newParams.colorScheme);
-
-        if (currSource != newParams.source)
-            this.currentSourceControl?.setCurrentID(newParams.source);
     }
 
     /**
@@ -152,7 +142,7 @@ export class EtymologyMap extends Map {
             });
 
             if (wikidataSourceEvent) {
-                const source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source;
+                const source = getCorrectFragmentParams().source;
                 this.currentEtymologyColorControl?.updateChart(e, source);
             }
         }
@@ -191,10 +181,13 @@ export class EtymologyMap extends Map {
             maxLat = northEast.lat + bbox_margin,
             maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
-            colorScheme = this.currentEtymologyColorControl?.getCurrentID() ?? getCorrectFragmentParams().colorScheme,
+            fragmentParams = getCorrectFragmentParams(),
+            colorScheme = this.currentEtymologyColorControl?.getCurrentID() ?? fragmentParams.colorScheme,
             downloadColors = ["gender", "type", "century"].includes(colorScheme),
-            source = this.currentSourceControl?.getCurrentID() ?? getCorrectFragmentParams().source,
+            source = fragmentParams.source,
             language = document.documentElement.lang,
+            minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
+            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
             enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
             enableGlobalLayers = zoomLevel < minZoomLevel;
@@ -359,19 +352,15 @@ export class EtymologyMap extends Map {
 
         this.wikidataControlsInitialized = true;
         loadTranslator().then(t => {
-            debugLog("Initializing source & color controls");
+            const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
+                thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
+            debugLog("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
             const sourceControl = new SourceControl(
                 getCorrectFragmentParams().source,
-                (sourceID: string) => {
-                    const params = getCorrectFragmentParams();
-                    if (params.source != sourceID) {
-                        setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                        this.updateDataSource();
-                    }
-                },
-                t
+                this.updateDataSource.bind(this),
+                t,
+                minZoomLevel
             );
-            this.currentSourceControl = sourceControl;
             setTimeout(() => this.addControl(sourceControl, 'top-left'), 25); // Delay needed to make sure the dropdown is always under the search bar
 
             const colorControl = new EtymologyColorControl(
@@ -406,13 +395,12 @@ export class EtymologyMap extends Map {
                         });
                     }
                 },
-                t
+                t,
+                thresholdZoomLevel
             );
             this.currentEtymologyColorControl = colorControl;
             setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
 
-            const minZoomLevel_raw = getConfig("min_zoom_level"),
-                minZoomLevel = minZoomLevel_raw ? parseInt(minZoomLevel_raw) : 14;
             debugLog("Initializing link controls", { minZoomLevel });
             this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel), 'top-right');
             this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", minZoomLevel), 'top-right');
@@ -743,9 +731,6 @@ export class EtymologyMap extends Map {
         debugLog("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
         setFragmentParams(lon, lat, zoom);
-
-        this.currentSourceControl?.show(zoom > minZoomLevel);
-        this.currentEtymologyColorControl?.show(zoom > thresholdZoomLevel);
     }
 
     /**

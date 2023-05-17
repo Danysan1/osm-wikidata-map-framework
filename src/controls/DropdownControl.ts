@@ -1,5 +1,5 @@
 import { logErrorMessage } from '../monitoring';
-import { IControl, Map } from 'mapbox-gl';
+import { IControl, Map, MapboxEvent } from 'mapbox-gl';
 import { debugLog } from '../config';
 import { loadTranslator } from '../i18n';
 
@@ -25,13 +25,17 @@ export class DropdownControl implements IControl {
     private _container?: HTMLDivElement;
     private _ctrlDropDown?: HTMLSelectElement;
     private _leftButton: boolean;
+    private hashChangeHandler?: (e: HashChangeEvent) => void;
+    private moveEndHandler: (e: MapboxEvent) => void;
 
     constructor(
         buttonContent: string,
         dropdownItems: DropdownItem[],
         startDropdownItemsId: string,
         titleKey: string,
-        leftButton = false
+        leftButton = false,
+        minZoomLevel = 0,
+        onHashChange?: (e: HashChangeEvent) => void
     ) {
         this._titleKey = titleKey;
         this._buttonContent = buttonContent;
@@ -41,6 +45,8 @@ export class DropdownControl implements IControl {
         if (dropdownItems.length == 0)
             throw new Error("Tried to instantiate DropdownControl with no items");
         this._dropdownItems = dropdownItems;
+        this.moveEndHandler = this.createMoveEndHandler(minZoomLevel).bind(this);
+        this.hashChangeHandler = onHashChange;
     }
 
     onAdd(map: Map): HTMLElement {
@@ -123,11 +129,19 @@ export class DropdownControl implements IControl {
         if (this._dropdownItems.length < 2)
             this._container.classList.add("hiddenElement");
 
+        this.moveEndHandler({ target: map, type: "moveend", originalEvent: undefined });
+        map.on("moveend", this.moveEndHandler);
+        if (this.hashChangeHandler)
+            window.addEventListener("hashchange", this.hashChangeHandler);
+
         return this._container;
     }
 
     onRemove() {
-        this._container?.parentNode?.removeChild(this._container);
+        this._map?.off("moveend", this.moveEndHandler);
+        if (this.hashChangeHandler)
+            window.removeEventListener("hashchange", this.hashChangeHandler);
+        this._container?.remove();
         this._map = undefined;
     }
 
@@ -142,8 +156,8 @@ export class DropdownControl implements IControl {
             throw new Error("Bad event target dropdown");
         const dropdownItemId = dropDown.value,
             dropdownItemObj = this._dropdownItems.find(item => item.id === dropdownItemId);
-        debugLog("DropdownControl select", { dropdownItemObj, event });
         if (dropdownItemObj) {
+            debugLog("DropdownControl select", { dropdownItemObj, event });
             dropdownItemObj.onSelect(event)
         } else {
             logErrorMessage("Invalid selected dropdown item", "error", { dropdownItemId });
@@ -173,26 +187,12 @@ export class DropdownControl implements IControl {
      * Selects a new value of the dropdown by its ID
      */
     setCurrentID(id: string) {
-        debugLog("setCurrentID", { id });
         const dropdown = this.getDropdown();
         if (!dropdown?.options) {
-            console.warn("setCurrentID: dropdown not yet initialized");
+            console.warn("setCurrentID: dropdown not yet initialized", { id });
         } else {
-            Array.prototype.forEach(option => {
-                if (option.value === id) {
-                    if (option.selected) {
-                        debugLog("setCurrentID: ID already active");
-                    } else {
-                        option.selected = true;
-                        dropdown.dispatchEvent(new Event("change"));
-                    }
-                    return;
-                }
-            }, dropdown.options);
-            console.error("setCurrentID: invalid ID", {
-                id,
-                validIDs: Array.prototype.map(option => option.value, dropdown.options)
-            });
+            dropdown.value = id;
+            dropdown.dispatchEvent(new Event("change"));
         }
     }
 
@@ -220,6 +220,15 @@ export class DropdownControl implements IControl {
             console.warn("Missing control dropdown, failed toggling it");
         } else {
             this.showDropdown(this._ctrlDropDown.classList.contains("hiddenElement"));
+        }
+    }
+
+    createMoveEndHandler(minZoomLevel: number) {
+        return (e: MapboxEvent) => {
+            const zoomLevel = e.target.getZoom(),
+                show = zoomLevel >= minZoomLevel;
+            debugLog("moveend", { zoomLevel, minZoomLevel, show });
+            this.show(show);
         }
     }
 }

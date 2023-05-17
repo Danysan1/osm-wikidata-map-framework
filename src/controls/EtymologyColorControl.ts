@@ -35,7 +35,12 @@ class EtymologyColorControl extends DropdownControl {
     private _lastQueryString?: string;
     private _t: TFunction;
 
-    constructor(startColorScheme: ColorSchemeID, onSchemeChange: (colorScheme: ColorSchemeID) => void, t: TFunction) {
+    constructor(
+        startColorScheme: ColorSchemeID,
+        onSchemeChange: (colorScheme: ColorSchemeID) => void,
+        t: TFunction,
+        minZoomLevel:number
+    ) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
             id,
             text: t(item.textKey),
@@ -49,7 +54,8 @@ class EtymologyColorControl extends DropdownControl {
             dropdownItems,
             startColorScheme,
             "color_scheme.choose_scheme",
-            true
+            true,
+            minZoomLevel
         );
         this._chartInitInProgress = false;
         this._chartXHR = null;

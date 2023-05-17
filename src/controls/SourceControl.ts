@@ -1,6 +1,6 @@
-import { getConfig, getBoolConfig } from '../config';
+import { getConfig, getBoolConfig, debugLog } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { setFragmentParams } from '../fragment';
+import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
 
 /**
@@ -9,7 +9,11 @@ import { TFunction } from "i18next";
  * @see https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
  **/
 export class SourceControl extends DropdownControl {
-    constructor(startSourceID: string, onSourceChange: (sourceID: string) => void, t: TFunction) {
+    constructor(
+        startSourceID: string, onSourceChange: (sourceID: string) => void,
+        t: TFunction,
+        minZoomLevel: number
+    ) {
         const rawKeys = getConfig("osm_wikidata_keys"),
             keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
             rawOsmProps = getConfig("osm_wikidata_properties"),
@@ -23,8 +27,16 @@ export class SourceControl extends DropdownControl {
                 text,
                 category: category,
                 onSelect: () => {
-                    onSourceChange(sourceID);
+                    debugLog("Source selected", { sourceID });
+
+                    // If the change came from a manual interaction, update the fragment params
                     setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                    
+                    // If the change came from a fragment change, update the dropdown
+                    // Regardless of the source, update the map
+                    onSourceChange(sourceID);
+
+                    // Hide the dropdown to leave more space for the map
                     this.showDropdown(false);
                 }
             });
@@ -73,7 +85,9 @@ export class SourceControl extends DropdownControl {
             dropdownItems,
             startSourceID,
             "source.choose_source",
-            true
+            true,
+            minZoomLevel,
+            () => this.setCurrentID(getCorrectFragmentParams().source)
         );
     }
 }
