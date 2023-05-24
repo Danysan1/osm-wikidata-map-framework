@@ -1,6 +1,6 @@
 //import { Popup } from 'maplibre-gl';
 import { IControl, Map, Popup } from 'mapbox-gl';
-import { loadTranslator, translateContent, translateTitle } from '../i18n';
+import { getLocale, loadTranslator, translateContent, translateTitle } from '../i18n';
 
 /**
  * Opens the information intro window
@@ -39,7 +39,7 @@ function openInfoWindow(map: Map) {
         translateTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset");
     }
 
-    new Popup({
+    const popup = new Popup({
         closeButton: true,
         closeOnClick: true,
         closeOnMove: true,
@@ -48,6 +48,22 @@ function openInfoWindow(map: Map) {
     }).setLngLat(popupPosition)
         .setDOMContent(introDomElement)
         .addTo(map);
+
+    const donateImg = popup.getElement().querySelector<HTMLInputElement>("input.paypal_donate_img");
+    if (donateImg) {
+        const locale = getLocale(),
+            lang = document.documentElement.lang,
+            originalUrl = donateImg.src,
+            urlWithLocale = originalUrl.replace("en_US", locale.replace("-", "_")),
+            urlWithLang = originalUrl.replace("en_US", lang + "_" + lang.toUpperCase()),
+            onUrlWithLangFailed = () => donateImg.src = originalUrl,
+            onUrlWithLocaleFailed = () => {
+                donateImg.addEventListener("error", onUrlWithLangFailed, { once: true });
+                donateImg.src = urlWithLang;
+            };
+        donateImg.addEventListener("error", onUrlWithLocaleFailed, { once: true });
+        donateImg.src = urlWithLocale;
+    }
 }
 
 /**

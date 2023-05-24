@@ -5,14 +5,17 @@ import HttpBackend from 'i18next-http-backend'
 import { debugLog, getBoolConfig, getConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
+export function getLocale() {
+    const langParam = new URLSearchParams(document.location.search).get("lang");
+    return langParam || navigator.languages?.at(0) || navigator.language;
+}
 
 export function setPageLocale() {
-    const langParam = new URLSearchParams(document.location.search).get("lang"),
-        locale = langParam || navigator.languages?.at(0) || navigator.language,
+    const locale = getLocale(),
         lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en';
 
     debugLog("setPageLocale", {
-        langParam, locale, lang, navLangs: navigator.languages, navLang: navigator.language
+        locale, lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
     document.documentElement.setAttribute("lang", lang);

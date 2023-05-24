@@ -198,7 +198,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
                         <input type="hidden" name="no_recurring" value="0" />
                         <input type="hidden" name="item_name" value="This donation will help this project to stay up and running. Thank you!" />
                         <input type="hidden" name="currency_code" value="EUR" />
-                        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+                        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" class="paypal_donate_img" />
                         <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
                     </form>
                 <?php } ?>
