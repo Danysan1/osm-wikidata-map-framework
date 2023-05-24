@@ -73,6 +73,7 @@ function initMap() {
         geocoderControl = new MapboxGeocoder({
             accessToken: mapbox_token,
             collapsed: true,
+            language: document.documentElement.lang,
             mapboxgl: mapboxgl
         });
     } /*else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
