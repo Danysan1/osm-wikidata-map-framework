@@ -3,14 +3,14 @@
     "description": "Cadre pour la création de cartes interactives qui combinent et affichent des détails sur les entités associées aux caractéristiques géographiques d'OpenStreetMap et de Wikidata",
     "info_box": {
         "open_popup": "Ouvrir la fenêtre contextuelle d'informations",
-        "click_anywhere": "Cliquez n'importe où sur la carte pour explorer.",
-        "use_controls": "Utilisez les contrôles sur les côtés pour voir d'autres données:",
-        "to_see_statistics": "pour voir les statistiques sur les éléments (uniquement à zoom élevé)",
-        "to_choose_source": "pour choisir la source de données à utiliser",
+        "click_anywhere": "Cliquez et faites glisser la carte pour mieux visualiser la région qui vous intéresse. Explorer l'endroit qui vous intéresse en y cliquant dessus.",
+        "use_controls": "Utilisez les boutons à droite et à gauche de l'écran:",
+        "to_see_statistics": "pour obtenir des statistiques sur les éléments (uniquement à zoom élevé)",
+        "to_choose_source": "pour choisir la source de données à afficher",
         "to_overpass_query": "pour voir la requête OverpassQL source (uniquement avec la source Overpass)",
         "to_wikidata_query": "pour voir la requête SPARQL source (uniquement avec la source Wikidata)",
-        "to_change_background": "pour changer le style de la carte de fond",
-        "to_open_again": "pour ouvrir à nouveau cette fenêtre contextuelle",
+        "to_change_background": "pour changer la couche de la carte",
+        "to_open_again": "pour rouvrir la légende",
         "contribute": "Contribuer à la carte",
         "download_dataset": "Télécharger en tant qu'ensemble de données",
         "last_db_update": "Dernière mise à jour de la base de données:",
@@ -57,7 +57,7 @@
         "location": "Emplacement",
         "picture_via_commons": "Image de Wikimedia Commons",
         "loading": "Chargement des entités...",
-        "report_problem": "Signaler un problème dans cet élément"
+        "report_problem": "Signaler un problème relatif à cet élément"
     },
     "etymology_details": {
         "source": "Source:",
