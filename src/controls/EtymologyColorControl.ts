@@ -60,7 +60,7 @@ class EtymologyColorControl extends DropdownControl {
             () => this.setCurrentID(getCorrectFragmentParams().colorScheme),
             (e: MapSourceDataEvent) => {
                 if (e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId)
-                    this.updateChart(e, e.sourceId);
+                    this.updateChart(e, getCorrectFragmentParams().source);
             }
         );
         this._chartInitInProgress = false;
