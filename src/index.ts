@@ -70,11 +70,18 @@ function initMap() {
     let geocoderControl: IControl | null;
     if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
         debugLog("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
-        geocoderControl = new MapboxGeocoder({
+        const ctrl = new MapboxGeocoder({
             accessToken: mapbox_token,
             collapsed: true,
             language: document.documentElement.lang,
             mapboxgl: mapboxgl
+        });
+        geocoderControl = ctrl;
+        document.addEventListener("keydown", (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key == "f") {
+                ctrl.clear();
+                e.preventDefault();
+            }
         });
     } /*else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
         debugLog("Using MaptilerGeocoderControl", { maplibregl, MaptilerGeocoderControl, maptiler_key });
