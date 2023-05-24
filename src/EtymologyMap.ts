@@ -25,7 +25,6 @@ const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
-    private currentEtymologyColorControl?: EtymologyColorControl;
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl: IControl | null;
     private search: string;
@@ -93,11 +92,8 @@ export class EtymologyMap extends Map {
         const newParams = getCorrectFragmentParams(),
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
-            currZoom = this.getZoom(),
-            currColorScheme = this.currentEtymologyColorControl?.getCurrentID();
-        debugLog("hashChangeHandler", {
-            newParams, currLat, currLon, currZoom, currColorScheme
-        });
+            currZoom = this.getZoom();
+        debugLog("hashChangeHandler", { newParams, currLat, currLon, currZoom });
 
         // Check if the position has changed in order to avoid unnecessary map movements
         if (Math.abs(currLat - newParams.lat) > 0.001 ||
@@ -109,9 +105,6 @@ export class EtymologyMap extends Map {
                 zoom: newParams.zoom,
             });
         }
-
-        if (currColorScheme != newParams.colorScheme)
-            this.currentEtymologyColorControl?.setCurrentID(newParams.colorScheme);
     }
 
     /**
@@ -140,11 +133,6 @@ export class EtymologyMap extends Map {
                 else
                     showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000, "data_loaded");
             });
-
-            if (wikidataSourceEvent) {
-                const source = getCorrectFragmentParams().source;
-                this.currentEtymologyColorControl?.updateChart(e, source);
-            }
         }
     }
 
@@ -182,7 +170,7 @@ export class EtymologyMap extends Map {
             maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
             fragmentParams = getCorrectFragmentParams(),
-            colorScheme = this.currentEtymologyColorControl?.getCurrentID() ?? fragmentParams.colorScheme,
+            colorScheme = fragmentParams.colorScheme,
             downloadColors = ["gender", "type", "century"].includes(colorScheme),
             source = fragmentParams.source,
             language = document.documentElement.lang,
@@ -396,9 +384,9 @@ export class EtymologyMap extends Map {
                     }
                 },
                 t,
+                WIKIDATA_SOURCE,
                 thresholdZoomLevel
             );
-            this.currentEtymologyColorControl = colorControl;
             setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
 
             debugLog("Initializing link controls", { minZoomLevel });

@@ -1,7 +1,8 @@
 import { logErrorMessage } from '../monitoring';
-import { IControl, Map, MapboxEvent } from 'mapbox-gl';
+import { IControl, Map, MapSourceDataEvent, MapboxEvent } from 'mapbox-gl';
 import { debugLog } from '../config';
 import { loadTranslator } from '../i18n';
+import { mapboxBackgroundStyle } from './BackgroundStyleControl';
 
 export interface DropdownItem {
     id: string;
@@ -26,6 +27,7 @@ export class DropdownControl implements IControl {
     private _ctrlDropDown?: HTMLSelectElement;
     private _leftButton: boolean;
     private hashChangeHandler?: (e: HashChangeEvent) => void;
+    private sourceDataHandler?: (e: MapSourceDataEvent) => void;
     private moveEndHandler: (e: MapboxEvent) => void;
 
     constructor(
@@ -35,7 +37,8 @@ export class DropdownControl implements IControl {
         titleKey: string,
         leftButton = false,
         minZoomLevel = 0,
-        onHashChange?: (e: HashChangeEvent) => void
+        onHashChange?: (e: HashChangeEvent) => void,
+        onSourceData?: (e: MapSourceDataEvent) => void
     ) {
         this._titleKey = titleKey;
         this._buttonContent = buttonContent;
@@ -47,6 +50,7 @@ export class DropdownControl implements IControl {
         this._dropdownItems = dropdownItems;
         this.moveEndHandler = this.createMoveEndHandler(minZoomLevel).bind(this);
         this.hashChangeHandler = onHashChange;
+        this.sourceDataHandler = onSourceData;
     }
 
     onAdd(map: Map): HTMLElement {
@@ -131,14 +135,18 @@ export class DropdownControl implements IControl {
 
         this.moveEndHandler({ target: map, type: "moveend", originalEvent: undefined });
         map.on("moveend", this.moveEndHandler);
+        if (this.sourceDataHandler)
+            map.on("sourcedata", this.sourceDataHandler);
         if (this.hashChangeHandler)
             window.addEventListener("hashchange", this.hashChangeHandler);
 
         return this._container;
     }
 
-    onRemove() {
-        this._map?.off("moveend", this.moveEndHandler);
+    onRemove(map: Map) {
+        map.off("moveend", this.moveEndHandler);
+        if (this.sourceDataHandler)
+            map.off("sourcedata", this.sourceDataHandler);
         if (this.hashChangeHandler)
             window.removeEventListener("hashchange", this.hashChangeHandler);
         this._container?.remove();

@@ -1,5 +1,5 @@
 //import { MaplibreEvent as MapEvent } from 'maplibre-gl';
-import { LngLatBounds, MapboxEvent as MapEvent } from 'mapbox-gl';
+import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent } from 'mapbox-gl';
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
@@ -39,7 +39,8 @@ class EtymologyColorControl extends DropdownControl {
         startColorScheme: ColorSchemeID,
         onSchemeChange: (colorScheme: ColorSchemeID) => void,
         t: TFunction,
-        minZoomLevel:number
+        sourceId: string,
+        minZoomLevel: number
     ) {
         const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
             id,
@@ -55,7 +56,12 @@ class EtymologyColorControl extends DropdownControl {
             startColorScheme,
             "color_scheme.choose_scheme",
             true,
-            minZoomLevel
+            minZoomLevel,
+            () => this.setCurrentID(getCorrectFragmentParams().colorScheme),
+            (e: MapSourceDataEvent) => {
+                if (e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId)
+                    this.updateChart(e, e.sourceId);
+            }
         );
         this._chartInitInProgress = false;
         this._chartXHR = null;
