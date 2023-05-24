@@ -2,7 +2,6 @@ import { logErrorMessage } from '../monitoring';
 import { IControl, Map, MapSourceDataEvent, MapboxEvent } from 'mapbox-gl';
 import { debugLog } from '../config';
 import { loadTranslator } from '../i18n';
-import { mapboxBackgroundStyle } from './BackgroundStyleControl';
 
 export interface DropdownItem {
     id: string;
