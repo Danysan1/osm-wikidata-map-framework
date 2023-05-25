@@ -2,7 +2,7 @@
     "name": "osm-wikidata-map-framework",
     "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
     "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
-    "version": "1.5.0",
+    "version": "1.7.0",
     "repository": {
         "type": "git",
         "url": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git"
