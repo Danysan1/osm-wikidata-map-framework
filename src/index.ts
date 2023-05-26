@@ -26,21 +26,26 @@ const maptiler_key = getConfig("maptiler_key"),
 
 if (mapbox_token) {
     backgroundStyles.push(
-        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v10', mapbox_token),
-        mapboxBackgroundStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v10', mapbox_token),
-        mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v12', mapbox_token),
+        mapboxBackgroundStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v12', mapbox_token),
+        mapboxBackgroundStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v12', mapbox_token),
     );
 }
 
 if (maptiler_key) {
     backgroundStyles.push(
-        maptilerBackgroundStyle('maptiler_streets', 'Maptiler Streets', 'streets', maptiler_key),
-        maptilerBackgroundStyle('maptiler_bright', 'Maptiler Bright', 'bright', maptiler_key),
-        maptilerBackgroundStyle('maptiler_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
-        maptilerBackgroundStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor', maptiler_key),
+        maptilerBackgroundStyle('maptiler_backdrop', 'Maptiler Backdrop', 'backdrop', maptiler_key),
+        maptilerBackgroundStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
+        maptilerBackgroundStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
         maptilerBackgroundStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
+        maptilerBackgroundStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor-v2', maptiler_key),
+        maptilerBackgroundStyle('maptiler_satellite_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
+        maptilerBackgroundStyle('maptiler_streets', 'Maptiler Streets', 'streets-v2', maptiler_key),
+        maptilerBackgroundStyle('maptiler_toner', 'Maptiler Toner', 'toner-v2', maptiler_key),
+        maptilerBackgroundStyle('maptiler_topo', 'Maptiler Topo', 'topo-v2', maptiler_key),
+        maptilerBackgroundStyle('maptiler_winter', 'Maptiler Winter', "winter-v2", maptiler_key),
     );
 }
 

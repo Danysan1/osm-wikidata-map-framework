@@ -813,21 +813,19 @@ export class EtymologyMap extends Map {
     }
 
     /**
-     * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
-     */
-    static someArrayItemStartWithName(arr: any): boolean {
-        return Array.isArray(arr) && arr.some(
-            x => (typeof x === 'string' && x.startsWith('name')) || EtymologyMap.someArrayItemStartWithName(x)
-        );
-    }
-
-    /**
      * Checks if a map symbol layer is also a name layer
      */
     isNameSymbolLayer(layerId: string): boolean {
-        const textField = this.getLayoutProperty(layerId, 'text-field'),
-            isSimpleName = textField === '{name:latin}';
-        return isSimpleName || EtymologyMap.someArrayItemStartWithName(textField);
+        /**
+         * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
+         */
+        const someArrayItemStartWithName = (array: any): boolean => Array.isArray(array) && array.some(
+            x => (typeof x === 'string' && x.startsWith('name')) || someArrayItemStartWithName(x)
+        );
+
+        const field = this.getLayoutProperty(layerId, 'text-field'),
+            isSimpleName = field === '{name}' || (typeof field === "string" && field.startsWith('{name:latin}'));
+        return isSimpleName || someArrayItemStartWithName(field);
     }
 
     /**
