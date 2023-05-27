@@ -843,19 +843,25 @@ export class EtymologyMap extends Map {
     setCulture() {
         const defaultLanguage = getConfig("default_language"),
             language = document.documentElement.lang.split('-').at(0),
-            symbolLayerIds = this.getStyle().layers.filter(layer => layer.type == 'symbol').map(layer => layer.id),
-            nameLayerIds = symbolLayerIds.filter(id => this.isNameSymbolLayer(id)),
-            nameLayerOldTextFields = nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field')),
+            nameLayerIds = this.getStyle().layers
+                .filter(layer => layer.type === 'symbol' && this.isNameSymbolLayer(layer.id))
+                .map(layer => layer.id),
             newTextField = [
                 'coalesce',
                 ['get', 'name_' + language],
-                ['get', 'name_' + defaultLanguage],
                 ['get', 'name:' + language],
+                ['get', 'name_' + defaultLanguage],
                 ['get', 'name:' + defaultLanguage],
                 ['get', 'name']
             ];
 
-        debugLog("setCulture", { defaultLanguage, symbolLayerIds, nameLayerIds, nameLayerOldTextFields });
+        debugLog("setCulture", {
+            language,
+            defaultLanguage,
+            newTextField,
+            nameLayerIds,
+            oldTextFields: nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field'))
+        });
         nameLayerIds.forEach(id => this.setLayoutProperty(id, 'text-field', newTextField));
     }
 }
