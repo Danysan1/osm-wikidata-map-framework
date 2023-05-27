@@ -126,7 +126,7 @@ WHERE {
     OPTIONAL {
         ?genderID ^wdt:P21 ?wikidata;
             rdfs:label ?gender_name.
-        FILTER(lang(?gender_name)='$language').
+        FILTER(lang(?gender_name)='${language}').
     }
 
     # Date the event represented by this entity took place
