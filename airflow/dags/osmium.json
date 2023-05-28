@@ -9,6 +9,7 @@
         "highway",
         "name",
         "alt_name",
+        "official_name",
         "name:*",
         "wikipedia",
         "wikimedia_commons",

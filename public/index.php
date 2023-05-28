@@ -209,7 +209,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
     <template id="detail_template">
         <div class="detail_container">
             <h3 class="element_name"></h3>
-            <p class="element_alt_name"></p>
+            <p class="element_alt_names"></p>
             <div class="button_row">
                 <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">

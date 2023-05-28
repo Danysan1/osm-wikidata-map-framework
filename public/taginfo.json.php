@@ -19,7 +19,12 @@ $tags = [[
     "key" => "alt_name",
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
-    "description" => "The value of 'alt_name' is used to display the object's name alongside its details",
+    "description" => "The value of 'alt_name' is shown among the object's alternative names alongside its details",
+], [
+    "key" => "official_name",
+    "object_types" => ["node", "way", "relation", "area"],
+    "doc_url" => $contributingURL,
+    "description" => "The value of 'official_name' is shown among the object's alternative names alongside its details",
 ], [
     "key" => "name",
     "object_types" => ["node", "way", "relation", "area"],

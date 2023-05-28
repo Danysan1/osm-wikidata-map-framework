@@ -545,6 +545,10 @@ components:
               properties:
                 name:
                   type: string
+                alt_name:
+                  type: string
+                official_name:
+                  type: string
                 etymologies:
                   type: array
                   items:

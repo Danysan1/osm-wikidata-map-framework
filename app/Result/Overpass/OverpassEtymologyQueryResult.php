@@ -106,6 +106,9 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         if (!empty($element["tags"]["alt_name"]))
             $feature["properties"]["alt_name"] = (string)$element["tags"]["alt_name"];
 
+        if (!empty($element["tags"]["official_name"]))
+            $feature["properties"]["official_name"] = (string)$element["tags"]["official_name"];
+
         if (!empty($element["tags"][$this->textKey]))
             $feature["properties"]["text_etymology"] = (string)$element["tags"][$this->textKey];
 

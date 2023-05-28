@@ -10,6 +10,7 @@ import { imageToDomElement } from "./ImageElement";
 
 interface FeatureProperties {
     alt_name?: string;
+    official_name?: string;
     commons?: string;
     el_id?: number;
     etymologies: Etymology[] | string; // Even though it is received as an array, for some reason Mapbox GL JS stringifies it as JSON
@@ -54,11 +55,15 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         element_name.innerText = '📍 ' + properties.name;
     }
 
-    const element_alt_name = detail_container.querySelector<HTMLElement>('.element_alt_name');
-    if (!element_alt_name) {
-        console.warn("Missing element_alt_name");
-    } else if (properties.alt_name && properties.alt_name != 'null') {
-        element_alt_name.innerText = '("' + properties.alt_name + '")';
+    const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
+        alt_names = [properties.official_name, properties.alt_name].filter(
+            name => name && name !== 'null' && name !== properties.name
+        );
+    if (!element_alt_names) {
+        console.warn("Missing element_alt_names");
+    } else if (alt_names.length > 0) {
+        element_alt_names.innerText =
+            "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
     }
 
     const feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
