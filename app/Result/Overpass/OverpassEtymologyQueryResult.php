@@ -12,8 +12,13 @@ use \App\Result\Overpass\GeoJSONOverpassQueryResult;
  */
 class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 {
-    private string $textKey;
-    private string $descriptionKey;
+    /**
+     * @var array<string,string> $passthroughKeyMapping List of OSM keys to pass through with their respective keys to map to 
+     */
+    private array $passthroughKeyMapping;
+    /**
+     * @var array<string> $keys OSM wikidata keys to use
+     */
     private array $keys;
     private string $defaultLanguage;
     private ?string $language;
@@ -38,8 +43,14 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
         ?string $overpassQuery = null
     ) {
         parent::__construct($success, $result, $overpassQuery);
-        $this->textKey = $textKey;
-        $this->descriptionKey = $descriptionKey;
+        $this->passthroughKeyMapping = [
+            $textKey => "text_etymology",
+            $descriptionKey => "text_etymology_descr",
+            "alt_name" => "alt_name",
+            "official_name" => "official_name",
+            "wikipedia" => "wikipedia",
+            "wikimedia_commons" => self::FEATURE_COMMONS_KEY,
+        ];
         $this->keys = $keys;
         $this->defaultLanguage = $defaultLanguage;
         $this->language = $language;
@@ -103,23 +114,10 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             ],
         ];
 
-        if (!empty($element["tags"]["alt_name"]))
-            $feature["properties"]["alt_name"] = (string)$element["tags"]["alt_name"];
-
-        if (!empty($element["tags"]["official_name"]))
-            $feature["properties"]["official_name"] = (string)$element["tags"]["official_name"];
-
-        if (!empty($element["tags"][$this->textKey]))
-            $feature["properties"]["text_etymology"] = (string)$element["tags"][$this->textKey];
-
-        if (!empty($element["tags"][$this->descriptionKey]))
-            $feature["properties"]["text_etymology_descr"] = (string)$element["tags"][$this->descriptionKey];
-
-        if (!empty($element["tags"]["wikipedia"]))
-            $feature["properties"]["wikipedia"] = (string)$element["tags"]["wikipedia"];
-
-        if (!empty($element["tags"]["wikimedia_commons"]))
-            $feature["properties"][self::FEATURE_COMMONS_KEY] = (string)$element["tags"]["wikimedia_commons"];
+        foreach ($this->passthroughKeyMapping as $osmKey => $responseKey) {
+            if (!empty($element["tags"][$osmKey]))
+                $feature["properties"][$responseKey] = (string)$element["tags"][$osmKey];
+        }
 
         if (!empty($element["tags"]["wikidata"])) {
             $wikidataTag = (string)$element["tags"]["wikidata"];

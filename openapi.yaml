@@ -509,7 +509,7 @@ components:
         wikidata:
           type: string
           description: Q-ID of the referenced Wikidata entity
-          example: Q1
+          example: Q42
         from_osm:
           type: boolean
         from_osm_type:
