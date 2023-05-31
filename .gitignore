@@ -1,7 +1,6 @@
 samples/*/*-output.json
 samples/*/*-output.xml
 airflow/logs/
-airflow/plugins/
 airflow/airflow.cfg
 airflow/webserver_config.py
 

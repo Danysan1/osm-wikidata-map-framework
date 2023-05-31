@@ -9,6 +9,9 @@ from airflow.sensors.python import PythonSensor
 from airflow.sensors.time_delta import TimeDeltaSensorAsync
 from datetime import timedelta
 from get_last_pbf_url import get_last_pbf_url, get_pbf_date
+from TransmissionStartTorrentOperator import TransmissionStartTorrentOperator
+from TransmissionWaitTorrentSensor import TransmissionWaitTorrentSensor
+from TransmissionRemoveTorrentOperator import TransmissionRemoveTorrentOperator
 
 def get_source_url(ti:TaskInstance, **context) -> str:
     """
@@ -89,84 +92,6 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         procede = not skip_if_already_downloaded or parse(new_date) > parse(existing_date)
         print('Proceeding to download' if procede else 'NOT proceeding')
     return procede
-
-def start_torrent_download(torrent_url:str, download_dir:str, ti:TaskInstance, torrent_daemon_conn_id:str="torrent_daemon", **context):
-    """
-    ## Download the PBF source file through torrent
-
-    Start the download of the source PBF file from the torrent URL calculated by get_source_url.
-    
-    Links:
-    * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
-
-    
-    Torrent download method explored before choosing this one:
-
-    1. Download using DockerOperator + lftp
-        * Docker image: `minidocks/lftp:latest`
-        * Command: `lftp -c torrent -O '{dest_folder}' '{torrent_url}'`
-        * Documentation: http://lftp.yar.ru/lftp-man.html
-        * Problems:
-            * it fails with 'Not saving nodes, DHT not ready'
-    2. Download using DockerOperator + aria2c
-        * Docker image: `207m/aria2c:latest`
-        * Command: `aria2c --dir '{dest_folder}' '{torrent_url}'`
-        * Documentation: https://aria2.github.io/manual/en/html/aria2c.html#bittorrent-metalink-options
-        * Problems:
-            * it fails
-    3. Download using DockerOperator + transmission-cli
-        * Docker image: `mikesplain/transmission-cli`
-        * Command: `transmission-cli --download-dir '{dest_folder}' '{torrent_url}'`
-        * Documentation: https://manpages.ubuntu.com/manpages/bionic/man1/transmission-cli.1.html
-        * Problems:
-            * transmission-cli is deprecated in favor of transmission-remote
-            * it fails with 'Not saving nodes, DHT not ready'
-            * even if it fails it returns a success return code
-    4. Download using DockerOperator + transmission-remote (+ transmission-daemon)
-        * Docker image: `linuxserver/transmission`
-        * Command: `transmission-remote torrent-daemon:9091 --download-dir '{dest_folder}' --add '{torrent_url}'`
-        * Documentation: https://linux.die.net/man/1/transmission-remote
-        * Notes:
-            * requires transmission-daemon (see torrent-daemon service in docker-compose.yml)
-        * Problems:
-            * adds the torrent to the download queue but doesn't return the torrent id, making it really hard to check the status
-    5. Download using PythonOperator + transmission-rpc (+ transmission-daemon)
-        * Current implementation
-        * Notes:
-            * requires transmission-daemon (see torrent-daemon service in docker-compose.yml)
-    """
-    from transmission_rpc import Client
-    conn = context["conn"].get(torrent_daemon_conn_id)
-    c = Client(host=conn.host, port=conn.port)
-    torrent = c.add_torrent(torrent_url, download_dir=download_dir)
-    ti.xcom_push(key="torrent_hash", value=torrent.hashString)
-
-def check_if_torrent_is_complete(torrent_hash:str, torrent_daemon_conn_id:str="torrent_daemon", **context) -> bool:
-    """
-    ## Check whether the torrent has finished downloading
-    
-    Links:
-    * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
-    * [transmission-rpc Torrent documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
-    """
-    from transmission_rpc import Client
-    conn = context["conn"].get(torrent_daemon_conn_id)
-    c = Client(host=conn.host, port=conn.port)
-    torrent = c.get_torrent(torrent_hash)
-    return torrent.status == "seeding"
-
-def remove_torrent(torrent_hash:str, torrent_daemon_conn_id:str="torrent_daemon", **context):
-    """
-    ## Removes the torrent
-    
-    Links:
-    * [transmission-rpc Client documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/client.html)
-    * [transmission-rpc Torrent documentation](https://transmission-rpc.readthedocs.io/en/v3.4.0/torrent.html)
-    """
-    from transmission_rpc import Client
-    conn = context["conn"].get(torrent_daemon_conn_id)
-    c = Client(host=conn.host, port=conn.port)
-    c.remove_torrent(torrent_hash, delete_data=True)
 
 class OsmPbfDownloadDAG(DAG):
     def __init__(self,
@@ -282,25 +207,25 @@ class OsmPbfDownloadDAG(DAG):
         )
         task_choose_download_method >> task_download_pbf
 
-        task_download_torrent = PythonOperator(
+        task_download_torrent = TransmissionStartTorrentOperator(
             task_id = "download_torrent",
-            python_callable = start_torrent_download,
-            op_kwargs = {
-                "torrent_url": "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
-                "download_dir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}"
-            },
+            torrent_url = "{{ ti.xcom_pull(task_ids='get_source_url', key='source_url') }}",
+            download_dir = "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}",
+            torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
-            doc_md=dedent(start_torrent_download.__doc__)
+            doc_md="""
+                ## Download the PBF source file through torrent
+
+                Start the download of the source PBF file from the torrent URL calculated by get_source_url.
+            """
         )
         task_choose_download_method >> task_download_torrent
 
-        task_wait_for_torrent_download = PythonSensor(
+        task_wait_for_torrent_download = TransmissionWaitTorrentSensor(
             task_id = "wait_torrent_download",
-            python_callable = check_if_torrent_is_complete,
             retries = 3,
-            op_kwargs = {
-                "torrent_hash": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}"
-            },
+            torrent_hash = "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}",
+            torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
             doc_md=dedent("""
                 # Wait for the torrent download to complete 
@@ -359,12 +284,10 @@ class OsmPbfDownloadDAG(DAG):
         )
         task_wait_cleanup >> task_choose_cleanup_method
     
-        task_cleanup_torrent = PythonOperator(
+        task_cleanup_torrent = TransmissionRemoveTorrentOperator(
             task_id = "cleanup_torrent",
-            python_callable = remove_torrent,
-            op_kwargs = {
-                "torrent_hash": "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}"
-            },
+            torrent_hash = "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}",
+            torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
             doc_md = """
                 # Remove the torrent
