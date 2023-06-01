@@ -19,17 +19,17 @@ $tags = [[
     "key" => "alt_name",
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
-    "description" => "The value of 'alt_name' is shown among the object's alternative names alongside its details",
+    "description" => "The value of 'alt_name' is shown among the object's alternative names",
 ], [
     "key" => "official_name",
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
-    "description" => "The value of 'official_name' is shown among the object's alternative names alongside its details",
+    "description" => "The value of 'official_name' is shown among the object's alternative names",
 ], [
     "key" => "name",
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
-    "description" => "The value of 'name' is used to display the object's name alongside its details",
+    "description" => "The value of 'name' is used to display the object's name",
 ], [
     "key" => "wikimedia_commons",
     "object_types" => ["node", "way", "relation", "area"],
@@ -58,7 +58,7 @@ if (!empty($filterTags)) {
         $tagObj = [
             "object_types" => ["node", "way", "relation", "area"],
             "doc_url" => $contributingURL,
-            "description" => "Elements are shown on the map only if it contains $filterTagsStringList",
+            "description" => "Elements are shown on the map only if they contain $filterTagsStringList",
         ];
 
         $split = explode("=", (string)$filterTag);
