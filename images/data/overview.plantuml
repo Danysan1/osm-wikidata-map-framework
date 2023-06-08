@@ -1,0 +1,91 @@
+@startuml overview
+
+package OpenStreetMap {
+    map "Way 32761515" as osm_g #95d5b2 {
+        name => Rue Pierre et Marie Curie
+        name:etymology:wikidata => Q11297474
+    }
+
+    map "Way 30922758" as osm_c #95d5b2 {
+        name => Via Marie Curie
+        name:etymology:wikidata => Q7186
+    }
+
+    map "Way 291879720" as osm_d #95d5b2 {
+        name => Marie-Curie-Gymnasium
+        wikidata => Q1548496
+    }
+}
+
+package Wikidata {
+    map "wd:Q7186" as wd_a #a2d2ff {
+        label => Marie Curie
+    }
+    map "wd:Q37463" as wd_b #a2d2ff {
+        label => Pierre Curie
+    }
+    map "wd:Q11297474" as wd_c #a2d2ff {
+        label => Pierre and Marie Curie
+    }
+
+    map "wd:Q1548496" as wd_d #a2d2ff {
+        label => Marie-Curie-Gymnasium Dresden
+    }
+
+    map "wd:Q5" as wd_e #a2d2ff {
+        label => Human
+    }
+
+    map "wd:Q3046146" as wd_f #a2d2ff {
+        label => Married couple
+    }
+
+    map "wd:Q96391995" as wd_g #a2d2ff {
+        label => Marie Curie Monument in Lublin
+        **P625 (coordinate location)** => **51.24552°, 22.54164°**
+    }
+
+    map "ps:..." as wd_h #a2d2ff {
+        **P625 (coordinate location)** => **48.846198°, 2.346105°**
+    }
+    map "wd:Q96391995" as wd_i #a2d2ff {
+        label => Pantheon
+    }
+}
+
+package "Wikipedia italiano" {
+    object "Marie Curie" as itwiki_a
+}
+
+package "Wikipedia inglese" {
+    object "Marie Curie" as enwiki_a
+}
+
+package "Wikimedia Commons" {
+    object "Maria Skłodowska-Curie" as commons_a
+}
+
+osm_c --> wd_a : name:etymology:wikidata
+osm_d --> wd_d : wikidata
+osm_g --> wd_c : name:etymology:wikidata
+
+wd_g --> wd_a : wdt:P547 (commemorates)
+
+wd_d --> osm_d : wdt:P10689 (OSM way ID)
+wd_d --> wd_a : wdt:P138 (named after)
+
+wd_c --> wd_a : wdt:P527 (has part)
+wd_c --> wd_b : wdt:P527 (has part)
+
+wd_a --> wd_e : wdt:P31 (instance of)
+wd_b --> wd_e : wdt:P31 (instance of)
+wd_c --> wd_f : wdt:P31 (instance of)
+
+wd_a --> wd_h : ps:P119 (luogo di sepoltura)
+wd_h --> wd_i : p:P119 (luogo di sepoltura)
+
+wd_a -> itwiki_a
+wd_a --> enwiki_a
+wd_a --> commons_a
+
+@enduml
