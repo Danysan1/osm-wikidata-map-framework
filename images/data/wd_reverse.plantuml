@@ -11,7 +11,7 @@ map "Wikidata item Q24265482" as wikie #a2d2ff {
   **P625 (coordinate location)** => **51.24552°, 22.54164°**
 }
 
-wikie -[bold]-> wikia : Etymology
-wikie <.. wikia : Data flow
+wikie -[bold]-> wikia : (etymology)
+wikie <.. wikia : (data flow)
 
 @enduml

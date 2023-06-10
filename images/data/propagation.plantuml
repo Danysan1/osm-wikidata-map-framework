@@ -20,10 +20,10 @@ map "**OSM element**" as osmc #95d5b2 {
   name => Via Roma
 }
 
-osma -> wikia : existing
-osmb -> wikia : existing
-osmc -[bold]-> wikia : new
-osma ..> osmc
-osmb ..> osmc
+osma -> wikia : name:etymology:wikidata
+osmb -> wikia : name:etymology:wikidata
+osmc -[bold]-> wikia : (derived)
+osma ..> osmc : (homonym)
+osmb ..> osmc : (homonym)
 
 @enduml

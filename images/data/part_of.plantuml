@@ -17,11 +17,11 @@ map "**OSM element**" as osmg #95d5b2 {
   name:etymology:wikidata => Q11297474
 }
 
-osmg -[bold]-> wikia : new
-osmg -[bold]-> wikib : new
-osmg --> wikic : existing
+osmg -[bold]-> wikia : (derived)
+osmg -[bold]-> wikib : (derived)
+osmg --> wikic : name:etymology:wikidata
 
-wikic ..> wikia
-wikic ..> wikib
+wikic ..> wikia : P527
+wikic ..> wikib : P527
 
 @enduml

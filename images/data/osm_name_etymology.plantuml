@@ -12,7 +12,7 @@ map "**Wikidata item Q37463**" as wikib #a2d2ff {
   label => Pierre Curie
 }
 
-osmc -[bold]-> wikia
-osmc -[bold]-> wikib
+osmc -[bold]-> wikia : name:etymology:wikidata
+osmc -[bold]-> wikib : name:etymology:wikidata
 
 @enduml
