@@ -47,8 +47,8 @@ if ($enableDB && str_starts_with($source, "db_")) {
     //error_log("etymologyMap.php NOT using DB");
     $db = null;
 }
-$textKey = (string)$conf->get('osm_text_key');
-$descriptionKey = (string)$conf->get('osm_description_key');
+$textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
+$descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
 
 // "en-US" => "en"
 $langMatches = [];

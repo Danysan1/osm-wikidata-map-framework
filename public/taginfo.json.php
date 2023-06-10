@@ -11,8 +11,8 @@ prepareJSON($conf);
 
 $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
-$textKey = (string)$conf->get("osm_text_key");
-$descriptionKey = (string)$conf->get("osm_description_key");
+$textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
+$descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
 $filterTags = $conf->has("osm_filter_tags") ? (array)json_decode((string)$conf->get("osm_filter_tags"), true) : null;
 
 $tags = [[

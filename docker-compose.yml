@@ -72,7 +72,7 @@ x-airflow-common:
     AIRFLOW__CELERY__BROKER_URL: redis://:@redis:6379/0
     AIRFLOW__CORE__FERNET_KEY: ''
     AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: 'true'
-    AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    AIRFLOW__CORE__LOAD_EXAMPLES: 'true'
     AIRFLOW__API__AUTH_BACKENDS: 'airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session'
     # yamllint disable rule:line-length
     # Use simple http server on scheduler for health checks
@@ -94,8 +94,8 @@ x-airflow-common:
     AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}
-    AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key}
-    AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key}
+    AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key:-}
+    AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key:-}
     AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
     AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}

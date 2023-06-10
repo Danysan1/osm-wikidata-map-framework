@@ -35,8 +35,8 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
     public function __construct(
         bool $success,
         ?array $result,
-        string $textKey,
-        string $descriptionKey,
+        ?string $textKey,
+        ?string $descriptionKey,
         array $keys,
         string $defaultLanguage,
         ?string $language = null,
@@ -44,13 +44,15 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
     ) {
         parent::__construct($success, $result, $overpassQuery);
         $this->passthroughKeyMapping = [
-            $textKey => "text_etymology",
-            $descriptionKey => "text_etymology_descr",
             "alt_name" => "alt_name",
             "official_name" => "official_name",
             "wikipedia" => "wikipedia",
             "wikimedia_commons" => self::FEATURE_COMMONS_KEY,
         ];
+        if (!empty($textKey))
+            $this->passthroughKeyMapping[$textKey] = "text_etymology";
+        if (!empty($descriptionKey))
+            $this->passthroughKeyMapping[$descriptionKey] = "text_etymology_descr";
         $this->keys = $keys;
         $this->defaultLanguage = $defaultLanguage;
         $this->language = $language;

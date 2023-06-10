@@ -21,8 +21,8 @@ use \App\Result\GeoJSONQueryResult;
 class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
 {
     private BBoxOverpassQuery $baseQuery;
-    private string $textKey;
-    private string $descriptionKey;
+    private ?string $textKey;
+    private ?string $descriptionKey;
     private string $defaultLanguage;
     private ?string $language;
 
@@ -33,8 +33,8 @@ class BBoxEtymologyOverpassQuery extends BaseQuery implements BBoxGeoJSONQuery
         array $keys,
         BoundingBox $bbox,
         OverpassConfig $config,
-        string $textKey,
-        string $descriptionKey,
+        ?string $textKey,
+        ?string $descriptionKey,
         string $defaultLanguage,
         ?string $language = null
     ) {

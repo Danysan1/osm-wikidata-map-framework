@@ -59,8 +59,8 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
 $safeLanguage = (string)$langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
-$textKey = (string)$conf->get('osm_text_key');
-$descriptionKey = (string)$conf->get('osm_description_key');
+$textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
+$descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
 $maxArea = (float)$conf->get("elements_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 

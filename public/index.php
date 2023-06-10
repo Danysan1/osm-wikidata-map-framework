@@ -29,11 +29,17 @@ if ($enableDB) {
     }
 }
 
-$i18nOverride = $conf->has("i18n_override") ? json_decode((string)$conf->get("i18n_override"), true) : null;
+if (!$conf->has("i18n_override"))
+    throw new Exception("Missing i18n_override configuration");
+$i18nOverride = json_decode((string)$conf->get("i18n_override"), true);
+if (empty($i18nOverride))
+    throw new Exception("Empty i18n_override configuration");
 $defaultLanguage = (string)$conf->get("default_language");
+if (empty($i18nOverride[$defaultLanguage]))
+    throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
 $defaultNamespace = "app";
 if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))
-    throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
+    throw new Exception("Missing i18n configuration for the default language ($defaultLanguage) and namespace ($defaultNamespace)");
 $i18nStrings = (array)$i18nOverride[$defaultLanguage][$defaultNamespace];
 $title = empty($i18nStrings["title"]) ? "" : (string)$i18nStrings["title"];
 $description = empty($i18nStrings["description"]) ? "" : (string)$i18nStrings["description"];

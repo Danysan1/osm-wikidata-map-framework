@@ -15,15 +15,15 @@ use PDO;
 
 class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJSONQuery
 {
-    private string $textKey;
-    private string $descriptionKey;
+    private ?string $textKey;
+    private ?string $descriptionKey;
 
     public function __construct(
         BoundingBox $bbox,
         PDO $db,
         WikidataConfig $wikidataConfig,
-        string $textKey,
-        string $descriptionKey,
+        ?string $textKey,
+        ?string $descriptionKey,
         string $defaultLanguage,
         ?string $language = null,
         ?ServerTiming $serverTiming = null,
@@ -53,8 +53,10 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     protected function getQueryParams(): array
     {
         $params = parent::getQueryParams();
-        $params["textKey"] = $this->textKey;
-        $params["descriptionKey"] = $this->descriptionKey;
+        if (!empty($this->textKey))
+            $params["textKey"] = $this->textKey;
+        if (!empty($this->descriptionKey))
+            $params["descriptionKey"] = $this->descriptionKey;
         return $params;
     }
 
@@ -78,6 +80,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
     {
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         $limitClause = $this->getLimitClause();
+        $textEty = empty($this->textKey) ? "NULL" : "CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :textKey ELSE NULL END";
+        $textEtyDescr = empty($this->descriptionKey) ? "NULL" : "CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :descriptionKey ELSE NULL END";
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
@@ -93,8 +97,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     COALESCE(el.el_tags->>CONCAT('name:',:lang::VARCHAR), el.el_tags->>CONCAT('name:',:defaultLang::VARCHAR), el.el_tags->>'name') AS name,
                     el.el_tags->>'alt_name' AS alt_name,
                     el.el_tags->>'official_name' AS official_name,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :textKey ELSE NULL END AS text_etymology,
-                    CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :descriptionKey ELSE NULL END AS text_etymology_descr,
+                    $textEty AS text_etymology,
+                    $textEtyDescr AS text_etymology_descr,
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
