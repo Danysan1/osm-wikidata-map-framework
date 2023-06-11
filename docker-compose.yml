@@ -99,6 +99,7 @@ x-airflow-common:
     AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
     AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
+    AIRFLOW_VAR_GLOBAL_MAP_THRESHOLD: ${global_map_threshold:-0}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
     AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
     AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network

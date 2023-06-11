@@ -566,17 +566,13 @@ class OemDbInitDAG(DAG):
         task_check_text_ety = SQLExecuteQueryOperator(
             task_id = "check_text_etymology",
             conn_id = local_db_conn_id,
-            sql = "sql/11-check-text-etymology.sql",
-            parameters = {
-                "text_key": "{{ var.value.osm_text_key or '' }}",
-                "description_key": "{{ var.value.osm_description_key or '' }}",
-            },
+            sql = "sql/11-check-text-etymology.jinja.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
                 # Check elements with a text etymology
 
-                Check elements with an etymology that comes from `name:etymology`.
+                Check elements with an etymology that comes from the key configured in 'osm_text_key' or 'osm_description_key'.
             """
         )
         task_remove_ele_too_big >> task_check_text_ety
@@ -649,7 +645,7 @@ class OemDbInitDAG(DAG):
         task_global_map = SQLExecuteQueryOperator(
             task_id = "setup_global_map",
             conn_id = local_db_conn_id,
-            sql = "sql/13-global-map-view.sql",
+            sql = "sql/13-global-map-view.jinja.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md="""

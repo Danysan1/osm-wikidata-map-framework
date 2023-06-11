@@ -4,4 +4,4 @@ SELECT
     COUNT(DISTINCT LOWER(el_tags->>'name')) AS num
 FROM oem.element
 GROUP BY geom
-HAVING COUNT(DISTINCT LOWER(el_tags->>'name')) > 10;
+HAVING COUNT(DISTINCT LOWER(el_tags->>'name')) > {{var.value.global_map_threshold}}
