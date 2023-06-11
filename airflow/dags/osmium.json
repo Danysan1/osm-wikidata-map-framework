@@ -14,7 +14,6 @@
         "wikipedia",
         "wikimedia_commons",
         "wikidata",
-        "subject:wikidata",
-        "buried:wikidata"
+        "*:wikidata"
     ]
 }

@@ -105,7 +105,7 @@ class OemFilterDAG(DAG):
             container_name = "osm-wikidata-map-framework-keep_elements_with_name",
             source_path= pbf_path,
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/with_name.osm.pbf",
-            tags=['{{ var.json.osm_filter_tags|join(" ") }}'],
+            tags='{{ var.json.osm_filter_tags|join(" ") }}',
             remove_tags= True,
             dag = self,
             doc_md = dedent("""
