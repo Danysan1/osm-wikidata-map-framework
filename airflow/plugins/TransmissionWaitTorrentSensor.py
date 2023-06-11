@@ -11,7 +11,7 @@ class TransmissionWaitTorrentSensor(PythonSensor):
 
     def __init__(self, torrent_hash:str, torrent_daemon_conn_id:str, **kwargs) -> None:
         super().__init__(
-            python_callable = self.check_if_torrent_is_complete,
+            python_callable = check_if_torrent_is_complete,
             op_kwargs = {
                 "torrent_hash": torrent_hash,
                 "torrent_daemon_conn_id": torrent_daemon_conn_id
@@ -19,9 +19,9 @@ class TransmissionWaitTorrentSensor(PythonSensor):
             **kwargs
         )
 
-    def check_if_torrent_is_complete(torrent_hash:str, torrent_daemon_conn_id:str, **context) -> bool:
-        from transmission_rpc import Client
-        conn = context["conn"].get(torrent_daemon_conn_id)
-        c = Client(host=conn.host, port=conn.port)
-        torrent = c.get_torrent(torrent_hash)
-        return torrent.status == "seeding"
+def check_if_torrent_is_complete(torrent_hash:str, torrent_daemon_conn_id:str, **context) -> bool:
+    from transmission_rpc import Client
+    conn = context["conn"].get(torrent_daemon_conn_id)
+    c = Client(host=conn.host, port=conn.port)
+    torrent = c.get_torrent(torrent_hash)
+    return torrent.status == "seeding"

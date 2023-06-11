@@ -11,7 +11,7 @@ class TransmissionRemoveTorrentOperator(PythonOperator):
 
     def __init__(self, torrent_hash:str, torrent_daemon_conn_id:str, **kwargs) -> None:
         super().__init__(
-            python_callable = self.remove_torrent,
+            python_callable = remove_torrent,
             op_kwargs = {
                 "torrent_hash": torrent_hash,
                 "torrent_daemon_conn_id": torrent_daemon_conn_id
@@ -19,8 +19,8 @@ class TransmissionRemoveTorrentOperator(PythonOperator):
             **kwargs
         )
 
-    def remove_torrent(torrent_hash:str, torrent_daemon_conn_id:str, **context):
-        from transmission_rpc import Client
-        conn = context["conn"].get(torrent_daemon_conn_id)
-        c = Client(host=conn.host, port=conn.port)
-        c.remove_torrent(torrent_hash, delete_data=True)
+def remove_torrent(torrent_hash:str, torrent_daemon_conn_id:str, **context):
+    from transmission_rpc import Client
+    conn = context["conn"].get(torrent_daemon_conn_id)
+    c = Client(host=conn.host, port=conn.port)
+    c.remove_torrent(torrent_hash, delete_data=True)

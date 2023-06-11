@@ -47,7 +47,7 @@ class TransmissionStartTorrentOperator(PythonOperator):
     
     def __init__(self, torrent_url:str, download_dir:str, torrent_daemon_conn_id:str, **kwargs) -> None:
         super().__init__(
-            python_callable = self.start_torrent_download,
+            python_callable = start_torrent_download,
             op_kwargs = {
                 "torrent_url": torrent_url,
                 "download_dir": download_dir,
@@ -56,9 +56,9 @@ class TransmissionStartTorrentOperator(PythonOperator):
             **kwargs
         )
 
-    def start_torrent_download(torrent_url:str, download_dir:str, torrent_daemon_conn_id:str, ti:TaskInstance, **context):
-        from transmission_rpc import Client
-        conn = context["conn"].get(torrent_daemon_conn_id)
-        c = Client(host=conn.host, port=conn.port)
-        torrent = c.add_torrent(torrent_url, download_dir=download_dir)
-        ti.xcom_push(key="torrent_hash", value=torrent.hashString)
+def start_torrent_download(torrent_url:str, download_dir:str, torrent_daemon_conn_id:str, ti:TaskInstance, **context):
+    from transmission_rpc import Client
+    conn = context["conn"].get(torrent_daemon_conn_id)
+    c = Client(host=conn.host, port=conn.port)
+    torrent = c.add_torrent(torrent_url, download_dir=download_dir)
+    ti.xcom_push(key="torrent_hash", value=torrent.hashString)
