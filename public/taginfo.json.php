@@ -13,7 +13,7 @@ $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
 $textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
 $descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
-$filterTags = $conf->has("osm_filter_tags") ? (array)json_decode((string)$conf->get("osm_filter_tags"), true) : null;
+$filterTags = $conf->has("osm_filter_tags") ? $conf->getArray("osm_filter_tags") : null;
 
 $tags = [[
     "key" => "alt_name",
@@ -103,7 +103,7 @@ if ($conf->has("osm_wikidata_properties")) {
     }
 }
 
-$i18nOverride = json_decode((string)$conf->get("i18n_override"), true);
+$i18nOverride = $conf->getArray("i18n_override");
 $defaultLanguage = (string)$conf->get("default_language");
 $defaultNamespace = "app";
 if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))

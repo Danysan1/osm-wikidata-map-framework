@@ -30,12 +30,32 @@ abstract class BaseConfiguration implements Configuration
             return self::lowLevelMetaTag($key, (string)$this->get($key));
     }
 
+    /**
+     * Parses a JSON encoded parameter to a PHP array or associative array
+     * 
+     * Multiple configuration method handle differently JSON quoting:
+     * - envirnoment variables parsed from .env file by docker-compose 'env_file' parameter: quoting is optional and already handled (the JSON encoded string is passed correctly, without the quotes, despite https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file saying otherwise)
+     * - envirnoment variables parsed from .env file by docker CLI '--env_file' parameter: quoting is required (passing a JSON encoded string containing spaces without quotes will result in a JSON parsing error) but NOT handled by Docker (the JSON encoded string is passed as-is, with the quotes, as described in https://github.com/docker/compose/issues/8388 )
+     * - .env file loaded with DotEnv (in EnvFileConfiguration): quoting is required (passing a JSON encoded string containing spaces without quotes will result in a JSON parsing error) and already handled by DotEnv (the JSON encoded string is passed correctly, without the quotes)
+     * @see https://docs.docker.com/compose/compose-file/compose-file-v2/#env_file
+     * @see https://docs.docker.com/compose/compose-file/compose-file-v3/#env_file
+     * @see https://docs.docker.com/engine/reference/commandline/run/#env
+     * @see https://github.com/docker/compose/issues/8388
+     * @see https://github.com/vlucas/phpdotenv
+     */
     public function getArray(string $key): array
     {
         $raw = (string)$this->get($key);
-        $parsed = json_decode($raw);
+
+        $isQuotedObject = str_starts_with($raw, "'{") && str_ends_with($raw, "}'");
+        $isQuotedArray = str_starts_with($raw, "'[") && str_ends_with($raw, "]'");
+        if ($isQuotedObject || $isQuotedArray)
+            $raw = substr($raw, 1, strlen($raw) - 2); // Remove the quotes (if any)
+
+        $parsed = json_decode($raw, true);
         if (!is_array($parsed))
-            throw new Exception("The configured value for '$key' is not a JSON array: $raw");
+            throw new Exception("The configured value for '$key' is not valid JSON: $raw");
+
         return $parsed;
     }
 

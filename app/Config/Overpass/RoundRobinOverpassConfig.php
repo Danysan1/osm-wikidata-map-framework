@@ -42,7 +42,7 @@ class RoundRobinOverpassConfig implements OverpassConfig
         }
         $this->maxElements = $maxElements;
 
-        $this->baseFilterTags = $conf->has("osm_filter_tags") ? (array)json_decode((string)$conf->get("osm_filter_tags"), true) : null;
+        $this->baseFilterTags = $conf->has("osm_filter_tags") ? $conf->getArray("osm_filter_tags") : null;
     }
 
     public function getEndpoint(): string

@@ -31,7 +31,7 @@ if ($enableDB) {
 
 if (!$conf->has("i18n_override"))
     throw new Exception("Missing i18n_override configuration");
-$i18nOverride = json_decode((string)$conf->get("i18n_override"), true);
+$i18nOverride = $conf->getArray("i18n_override");
 if (empty($i18nOverride))
     throw new Exception("Empty i18n_override configuration");
 $defaultLanguage = (string)$conf->get("default_language");

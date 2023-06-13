@@ -46,7 +46,7 @@ class MultiConfiguration extends BaseConfiguration
 				$mapKey = $key . "_map";
 				if (!empty($_SERVER["SERVER_NAME"]) && $config->has($mapKey)) {
 					$domain = $_SERVER["SERVER_NAME"];
-					$domain_value_map = json_decode((string)$config->get($mapKey), true);
+					$domain_value_map = $config->getArray($mapKey);
 
 					if (!is_array($domain_value_map))
 						throw new Exception("Bad $mapKey configuration");
@@ -66,7 +66,7 @@ class MultiConfiguration extends BaseConfiguration
 		for ($i = 0; $i < count($this->configs); $i++) {
 			if (!empty($_SERVER["SERVER_NAME"]) && $this->configs[$i]->has($mapKey)) {
 				$domain = $_SERVER["SERVER_NAME"];
-				$domain_value_map = json_decode((string)$this->configs[$i]->get($mapKey), true);
+				$domain_value_map = $this->configs[$i]->getArray($mapKey);
 
 				if (!is_array($domain_value_map))
 					throw new Exception("Bad $mapKey configuration");
