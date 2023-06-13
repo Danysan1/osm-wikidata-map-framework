@@ -94,7 +94,12 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_geometry AS geom,
                     el.el_osm_type AS osm_type,
                     el.el_osm_id AS osm_id,
-                    COALESCE(el.el_tags->>CONCAT('name:',:lang::VARCHAR), el.el_tags->>CONCAT('name:',:defaultLang::VARCHAR), el.el_tags->>'name') AS name,
+                    COALESCE(
+                        el.el_tags->>CONCAT('name:',:lang::VARCHAR),
+                        el.el_tags->>'name',
+                        -- Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+                        el.el_tags->>CONCAT('name:',:defaultLang::VARCHAR)
+                    ) AS name,
                     el.el_tags->>'alt_name' AS alt_name,
                     el.el_tags->>'official_name' AS official_name,
                     $textEty AS text_etymology,

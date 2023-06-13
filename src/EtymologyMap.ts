@@ -848,11 +848,11 @@ export class EtymologyMap extends Map {
                 .map(layer => layer.id),
             newTextField = [
                 'coalesce',
-                ['get', 'name_' + language],
-                ['get', 'name:' + language],
-                ['get', 'name_' + defaultLanguage],
-                ['get', 'name:' + defaultLanguage],
-                ['get', 'name']
+                ['get', 'name_' + language], // Main language name in Mapbox vector tiles
+                ['get', 'name:' + language], // Main language name in MapTiler vector tiles
+                ['get', 'name'],
+                ['get', 'name_' + defaultLanguage], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
+                ['get', 'name:' + defaultLanguage] // Default language name in MapTiler vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
             ];
 
         debugLog("setCulture", {

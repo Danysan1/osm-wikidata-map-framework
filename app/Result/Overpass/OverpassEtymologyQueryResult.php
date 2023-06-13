@@ -94,10 +94,11 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
 
         if ($languageNameTag && !empty($element["tags"][$languageNameTag])) {
             $elementName = (string)$element["tags"][$languageNameTag];
-        } else if (!empty($element["tags"][$defaultLanguageNameTag])) {
-            $elementName = (string)$element["tags"][$defaultLanguageNameTag];
         } else if (!empty($element["tags"]["name"])) {
             $elementName = (string)$element["tags"]["name"];
+        } else if (!empty($element["tags"][$defaultLanguageNameTag])) {
+            // Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+            $elementName = (string)$element["tags"][$defaultLanguageNameTag];
         } else {
             $elementName = null;
             //error_log("Abnormal element with etymology but no name: $osmURL");
