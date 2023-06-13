@@ -163,6 +163,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     /**
+     * Initializes or updates the chart with the given data
      * 
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
@@ -173,23 +174,28 @@ class EtymologyColorControl extends DropdownControl {
             data
         });
         if (this._chartJsObject && this._chartDomElement) {
-            // https://www.chartjs.org/docs/latest/developers/updates.html
-            this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
-            this._chartJsObject.data.labels = data.labels;
-            this._chartJsObject.data.datasets[0].data = data.datasets[0].data;
-
-            this._chartJsObject.update();
+            this.updateChartObject(data);
         } else if (this._chartInitInProgress) {
             debugLog("setChartData: chart already loading");
         } else {
-            this._chartInitInProgress = true;
             debugLog("setChartData: Loading chart.js and initializing the chart");
-            this.initChart(data);
+            this.initChartObject(data);
         }
     }
 
-    async initChart(data: ChartData<"pie">) {
-        // https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
+    /**
+     * Imports chart.js and initializes the chart with the given data
+     * 
+     * @see https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
+     * @see https://www.chartjs.org/docs/latest/charts/doughnut.html#pie
+     */
+    async initChartObject(data: ChartData<"pie">) {
+        this._chartInitInProgress = true
+        if (this._chartJsObject)
+            throw new Error("initChartObject: chart already initialized");
+        if (this._chartInitInProgress)
+            throw new Error("initChartObject: chart initialization already in progress");
+
         const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
@@ -213,6 +219,21 @@ class EtymologyColorControl extends DropdownControl {
             }*/
         });
         this._chartInitInProgress = false;
+    }
+
+    /**
+     * Updates the (already initialized) chart.js chart with the given data
+     * 
+     * @see https://www.chartjs.org/docs/latest/developers/updates.html
+     */
+    updateChartObject(data: ChartData<"pie">) {
+        if (!this._chartJsObject)
+            throw new Error("updateChartObject: chart not yet initialized");
+
+        this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
+        this._chartJsObject.data.labels = data.labels;
+        this._chartJsObject.data.datasets[0].data = data.datasets[0].data;
+        this._chartJsObject.update();
     }
 
     removeChart() {
