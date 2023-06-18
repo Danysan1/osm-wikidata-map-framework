@@ -177,12 +177,19 @@ CREATE OR REPLACE FUNCTION owmf.et_century_color(century NUMERIC)
     VOLATILE PARALLEL UNSAFE
 AS $BODY$
 DECLARE
-    color_ratio INT := CASE
-        WHEN century IS NULL
-        THEN NULL
-        ELSE (LEAST(GREATEST(century,5), 21) - 5) / 16.0 * 255 -- color mapping [5, 21] => [0, 255]
+    red INT := CASE
+        WHEN century IS NULL THEN NULL
+        ELSE LEAST(GREATEST((century-13)*255/4, 0), 255) -- color mapping (-inf,5,9,13,17,21,inf)=>(0,0,0,0,255,255,255)
+    END;
+    green INT := CASE
+        WHEN century IS NULL THEN NULL
+        ELSE LEAST(GREATEST(512-(ABS(century-13)*255/4), 0), 255) -- color mapping (-inf,5,9,13,17,21,inf)=>(0,0,255,255,255,0,0)
+    END;
+    blue INT := CASE
+        WHEN century IS NULL THEN NULL
+        ELSE LEAST(GREATEST((13-century)*255/4, 0), 255) -- color mapping (-inf,5,9,13,17,21,inf)=>(255,255,255,0,0,0,0)
     END;
 BEGIN
-    RETURN 'rgb('|| color_ratio ||',50,' || 255-color_ratio || ')';
+    RETURN 'rgb('||red||','||green||','||blue||')';
 END
 $BODY$;
