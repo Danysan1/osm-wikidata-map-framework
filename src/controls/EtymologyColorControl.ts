@@ -190,12 +190,12 @@ class EtymologyColorControl extends DropdownControl {
      * @see https://www.chartjs.org/docs/latest/charts/doughnut.html#pie
      */
     async initChartObject(data: ChartData<"pie">) {
-        this._chartInitInProgress = true
         if (this._chartJsObject)
             throw new Error("initChartObject: chart already initialized");
         if (this._chartInitInProgress)
             throw new Error("initChartObject: chart initialization already in progress");
 
+        this._chartInitInProgress = true
         const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
