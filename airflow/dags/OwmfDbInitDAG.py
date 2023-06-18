@@ -212,20 +212,6 @@ class OwmfDbInitDAG(DAG):
             """
         )
 
-        task_teardown_schema = SQLExecuteQueryOperator(
-            task_id = "teardown_schema",
-            conn_id = local_db_conn_id,
-            sql = "sql/02-teardown-schema.sql",
-            dag = self,
-            task_group = db_prepare_group,
-            doc_md = """
-                # Teardown the OWMF DB schema
-
-                Reset the schema 'owmf' on the local PostGIS DB to start from scratch.
-            """
-        )
-        task_setup_db_ext >> task_teardown_schema
-
         task_setup_schema = SQLExecuteQueryOperator(
             task_id = "setup_schema",
             conn_id = local_db_conn_id,
@@ -235,10 +221,10 @@ class OwmfDbInitDAG(DAG):
             doc_md = """
                 # Setup the OWMF DB schema
 
-                Setup the schema 'owmf' on the local PostGIS DB.
+                Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
             """
         )
-        task_teardown_schema >> task_setup_schema
+        task_setup_db_ext >> task_setup_schema
 
         group_db_load = TaskGroup("load_data_on_db", prefix_group_id=False, tooltip="Load the data on the DB", dag=self)
 
@@ -704,7 +690,7 @@ class OwmfDbInitDAG(DAG):
         task_pg_dump = BashOperator(
             task_id = "pg_dump",
             trigger_rule = TriggerRule.NONE_FAILED,
-            bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="oem" --verbose --no-owner --no-privileges --no-tablespaces',
+            bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="owmf" --verbose --no-owner --no-privileges --no-tablespaces',
             env= {
                 "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
                 "host": f'{{{{ conn["{local_db_conn_id}"].host }}}}',
@@ -762,7 +748,7 @@ class OwmfDbInitDAG(DAG):
 
         task_pg_restore = BashOperator(
             task_id = "pg_restore",
-            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "oem" --verbose "$backupFilePath"',
+            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "owmf" --verbose "$backupFilePath"',
             env= {
                 "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
                 "host": f"{{{{ conn['{upload_db_conn_id}'].host }}}}", # "{{ conn[params.upload_db_conn_id].host }}",

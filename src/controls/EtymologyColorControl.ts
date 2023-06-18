@@ -144,7 +144,7 @@ class EtymologyColorControl extends DropdownControl {
             if (status == 200) {
                 JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
                     if (row.name && row.count) {
-                        (data.datasets[0].backgroundColor as string[]).push(row.color || '#3bb2d0');
+                        (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
                         data.labels?.push(row.name);
                         data.datasets[0].data.push(row.count);
                     }

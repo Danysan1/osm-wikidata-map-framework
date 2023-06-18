@@ -1,22 +1,5 @@
-CREATE SCHEMA IF NOT EXISTS owmf;
-
-DROP TABLE IF EXISTS owmf.wikidata_text;
-
-DROP TABLE IF EXISTS owmf.wikidata_picture;
-
-DROP TABLE IF EXISTS owmf.etymology;
-
-DROP TABLE IF EXISTS owmf.wikidata;
-
-DROP TABLE IF EXISTS owmf.element_wikidata_cods;
-
-DROP TABLE IF EXISTS owmf.element;
-
-DROP TABLE IF EXISTS owmf.osmdata;
-
-DROP FUNCTION IF EXISTS owmf.parse_timestamp;
-
-DROP MATERIALIZED VIEW IF EXISTS owmf.vm_global_map;
+DROP SCHEMA IF EXISTS owmf CASCADE;
+CREATE SCHEMA owmf;
 
 CREATE OR REPLACE FUNCTION owmf.parse_timestamp(txt TEXT)
     RETURNS timestamp without time zone
@@ -159,7 +142,7 @@ CREATE TABLE owmf.wikidata_text (
 
 CREATE INDEX wikidata_text_id_idx ON owmf.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
 
-CREATE OR REPLACE FUNCTION owmf.et_source_color(et owmf.etymology)
+CREATE FUNCTION owmf.et_source_color(et owmf.etymology)
     RETURNS text
     LANGUAGE 'sql'
     COST 100
