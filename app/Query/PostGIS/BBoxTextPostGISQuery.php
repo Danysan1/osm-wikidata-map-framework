@@ -86,10 +86,10 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
         $sthMissingWikidata = $this->getDB()->prepare(
             "SELECT DISTINCT wd.wd_wikidata_cod
-            FROM oem.element AS el
-            JOIN oem.etymology AS et ON et.et_el_id = el.el_id
-            JOIN oem.wikidata AS wd ON et.et_wd_id = wd.wd_id
-            LEFT JOIN oem.wikidata_text AS wdt
+            FROM owmf.element AS el
+            JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
+            JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
+            LEFT JOIN owmf.wikidata_text AS wdt
                 ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
             WHERE (wd.$downloadDateField IS NULL OR wdt.wdt_full_download_date IS NULL)
             $filterClause
@@ -125,16 +125,16 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             }
 
             $stInsertGender = $this->getDB()->prepare(
-                "INSERT INTO oem.wikidata (wd_wikidata_cod)
+                "INSERT INTO owmf.wikidata (wd_wikidata_cod)
                 SELECT DISTINCT REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
                 FROM json_array_elements((:result::JSON)->'results'->'bindings')
-                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                LEFT JOIN owmf.wikidata ON wd_wikidata_cod = REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE LEFT(value->'genderID'->>'value', 31) = 'http://www.wikidata.org/entity/'
                 AND wikidata IS NULL
                 UNION
                 SELECT DISTINCT REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 FROM json_array_elements((:result::JSON)->'results'->'bindings')
-                LEFT JOIN oem.wikidata ON wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                LEFT JOIN owmf.wikidata ON wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE LEFT(value->'instanceID'->>'value', 31) = 'http://www.wikidata.org/entity/'
                 AND wikidata IS NULL
                 ON CONFLICT (wd_wikidata_cod) DO NOTHING"
@@ -146,7 +146,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 $this->getServerTiming()->add("wikidata-insert-gender");
 
             $stInsertGenderText = $this->getDB()->prepare(
-                "INSERT INTO oem.wikidata_text (wdt_wd_id, wdt_language, wdt_name)
+                "INSERT INTO owmf.wikidata_text (wdt_wd_id, wdt_language, wdt_name)
                 WITH gender AS (
                         SELECT DISTINCT
                             value->'gender'->>'value' AS text,
@@ -161,15 +161,15 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     )
                 SELECT DISTINCT wd.wd_id, :lang::VARCHAR, gender.text
                 FROM gender
-                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = gender.cod
-                LEFT JOIN oem.wikidata_text AS wdt
+                JOIN owmf.wikidata AS wd ON wd.wd_wikidata_cod = gender.cod
+                LEFT JOIN owmf.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 WHERE wdt IS NULL
                 UNION
                 SELECT DISTINCT wd.wd_id, :lang::VARCHAR, instance.text
                 FROM instance
-                JOIN oem.wikidata AS wd ON wd.wd_wikidata_cod = instance.cod
-                LEFT JOIN oem.wikidata_text AS wdt
+                JOIN owmf.wikidata AS wd ON wd.wd_wikidata_cod = instance.cod
+                LEFT JOIN owmf.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 WHERE wdt IS NULL
                 ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
@@ -183,17 +183,17 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
             $downloadDateExtraUpdate = $this->eagerFullDownload ? "wd_download_date = CURRENT_TIMESTAMP," : "";
             $stInsertWikidata = $this->getDB()->prepare(
-                "UPDATE oem.wikidata 
+                "UPDATE owmf.wikidata 
                 SET wd_position = ST_GeomFromText(response->'wkt_coords'->>'value', 4326),
-                    wd_event_date = oem.parse_timestamp(response->'event_date'->>'value'),
+                    wd_event_date = owmf.parse_timestamp(response->'event_date'->>'value'),
                     wd_event_date_precision = (response->'event_date_precision'->>'value')::INT,
-                    wd_start_date = oem.parse_timestamp(response->'start_date'->>'value'),
+                    wd_start_date = owmf.parse_timestamp(response->'start_date'->>'value'),
                     wd_start_date_precision = (response->'start_date_precision'->>'value')::INT,
-                    wd_end_date = oem.parse_timestamp(response->'end_date'->>'value'),
+                    wd_end_date = owmf.parse_timestamp(response->'end_date'->>'value'),
                     wd_end_date_precision = (response->'end_date_precision'->>'value')::INT,
-                    wd_birth_date = oem.parse_timestamp(response->'birth_date'->>'value'),
+                    wd_birth_date = owmf.parse_timestamp(response->'birth_date'->>'value'),
                     wd_birth_date_precision = (response->'birth_date_precision'->>'value')::INT,
-                    wd_death_date = oem.parse_timestamp(response->'death_date'->>'value'),
+                    wd_death_date = owmf.parse_timestamp(response->'death_date'->>'value'),
                     wd_death_date_precision = (response->'death_date_precision'->>'value')::INT,
                     wd_commons = response->'commons'->>'value',
                     wd_gender_id = gender.wd_id,
@@ -201,8 +201,8 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     $downloadDateExtraUpdate
                     $downloadDateField = CURRENT_TIMESTAMP
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
-                LEFT JOIN oem.wikidata AS gender ON gender.wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
-                LEFT JOIN oem.wikidata AS instance ON instance.wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                LEFT JOIN owmf.wikidata AS gender ON gender.wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
+                LEFT JOIN owmf.wikidata AS instance ON instance.wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE wikidata.$downloadDateField IS NULL
                 AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
@@ -215,16 +215,16 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             if ($this->eagerFullDownload) {
                 try {
                     $stInsertPicture = $this->getDB()->prepare(
-                        "INSERT INTO oem.wikidata_picture (wdp_wd_id, wdp_picture)
+                        "INSERT INTO owmf.wikidata_picture (wdp_wd_id, wdp_picture)
                         SELECT DISTINCT wd.wd_id, REPLACE(pic.picture,'http://commons.wikimedia.org/wiki/Special:FilePath/','')
-                        FROM oem.wikidata AS wd
+                        FROM owmf.wikidata AS wd
                         JOIN (
                             SELECT
                                 REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_cod,
                                 REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '||') AS picture
                             FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                         ) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
-                        LEFT JOIN oem.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
+                        LEFT JOIN owmf.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
                         WHERE pic.picture IS NOT NULL
                         AND pic.picture != ''
                         AND wdp IS NULL
@@ -242,7 +242,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             }
 
             $stUpdateText = $this->getDB()->prepare(
-                "UPDATE oem.wikidata_text
+                "UPDATE owmf.wikidata_text
                 SET wdt_full_download_date = CURRENT_TIMESTAMP,
                     wdt_name = response.value->'name'->>'value',
                     wdt_description = response.value->'description'->>'value',
@@ -254,7 +254,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     wdt_birth_place = response.value->'birth_place'->>'value',
                     wdt_death_place = response.value->'death_place'->>'value'
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
-                JOIN oem.wikidata AS wd
+                JOIN owmf.wikidata AS wd
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE wdt_full_download_date IS NULL
                 AND wdt_wd_id = wd_id
@@ -268,7 +268,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 $this->getServerTiming()->add("wikidata-text-update");
 
             $stInsertText = $this->getDB()->prepare(
-                "INSERT INTO oem.wikidata_text (
+                "INSERT INTO owmf.wikidata_text (
                     wdt_wd_id,
                     wdt_language,
                     wdt_full_download_date,
@@ -296,7 +296,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     response->'birth_place'->>'value',
                     response->'death_place'->>'value'
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
-                JOIN oem.wikidata AS wd
+                JOIN owmf.wikidata AS wd
                     ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
                 ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );

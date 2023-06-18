@@ -17,7 +17,7 @@ if ($conf->getBool("db_enable")) {
             'type', 'FeatureCollection',
             'features', JSON_AGG(ST_AsGeoJSON(vm_global_map.*)::json)
         )
-        FROM oem.vm_global_map"
+        FROM owmf.vm_global_map"
     )->fetchColumn();
 } else {
     http_response_code(406);

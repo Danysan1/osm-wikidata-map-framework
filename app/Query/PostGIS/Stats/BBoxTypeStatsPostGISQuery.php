@@ -24,11 +24,11 @@ class BBoxTypeStatsPostGISQuery extends BBoxStatsPostGISQuery
                     instance.wd_type_descr,
                     instance.wd_type_color,
                     instance_text.wdt_name
-                FROM oem.element AS el
-                JOIN oem.etymology AS et ON et_el_id = el_id
-                JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
-                JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
-                LEFT JOIN oem.wikidata_text AS instance_text
+                FROM owmf.element AS el
+                JOIN owmf.etymology AS et ON et_el_id = el_id
+                JOIN owmf.wikidata AS wd ON et_wd_id = wd.wd_id
+                JOIN owmf.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
+                LEFT JOIN owmf.wikidata_text AS instance_text
                     ON instance.wd_id = instance_text.wdt_wd_id
                     AND instance_text.wdt_language = COALESCE(:lang::VARCHAR,:defaultLang::VARCHAR)
                 WHERE instance_text.wdt_name IS NOT NULL

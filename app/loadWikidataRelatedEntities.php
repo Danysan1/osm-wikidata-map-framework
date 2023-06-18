@@ -53,7 +53,7 @@ function loadWikidataRelatedEntities(
     if ($dbh->query(
         "SELECT EXISTS (
             SELECT FROM pg_tables
-            WHERE schemaname = 'oem'
+            WHERE schemaname = 'owmf'
             AND tablename  = 'vm_global_map'
         )"
     )->fetchColumn())
@@ -84,11 +84,11 @@ function loadWikidataRelatedEntities(
     echo $wikidataCodsQuery . PHP_EOL . PHP_EOL;
 
     $insertQuery =
-        "INSERT INTO oem.etymology ($insertFields)
+        "INSERT INTO owmf.etymology ($insertFields)
         SELECT DISTINCT $insertValues
         FROM json_array_elements((:response::JSON)->'results'->'bindings')
-        JOIN oem.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-        JOIN oem.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+        JOIN owmf.wikidata AS w1 ON w1.wd_wikidata_cod = REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+        JOIN owmf.wikidata AS w2 ON w2.wd_wikidata_cod = REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
         $insertExtraJoins
         WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
         AND $wikidataCodsFilter
@@ -127,7 +127,7 @@ function loadWikidataRelatedEntities(
 
             echo "Loading Wikidata \"$relationName\" data..." . PHP_EOL;
             $sth_wd = $dbh->prepare(
-                "INSERT INTO oem.wikidata (wd_wikidata_cod)
+                "INSERT INTO owmf.wikidata (wd_wikidata_cod)
                 SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
                 FROM json_array_elements((:response::JSON)->'results'->'bindings')
                 WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'

@@ -1,24 +1,24 @@
-CREATE SCHEMA IF NOT EXISTS oem;
+CREATE SCHEMA IF NOT EXISTS owmf;
 
-DROP TABLE IF EXISTS oem.wikidata_text;
+DROP TABLE IF EXISTS owmf.wikidata_text;
 
-DROP TABLE IF EXISTS oem.wikidata_picture;
+DROP TABLE IF EXISTS owmf.wikidata_picture;
 
-DROP TABLE IF EXISTS oem.etymology;
+DROP TABLE IF EXISTS owmf.etymology;
 
-DROP TABLE IF EXISTS oem.wikidata;
+DROP TABLE IF EXISTS owmf.wikidata;
 
-DROP TABLE IF EXISTS oem.element_wikidata_cods;
+DROP TABLE IF EXISTS owmf.element_wikidata_cods;
 
-DROP TABLE IF EXISTS oem.element;
+DROP TABLE IF EXISTS owmf.element;
 
-DROP TABLE IF EXISTS oem.osmdata;
+DROP TABLE IF EXISTS owmf.osmdata;
 
-DROP FUNCTION IF EXISTS oem.parse_timestamp;
+DROP FUNCTION IF EXISTS owmf.parse_timestamp;
 
-DROP MATERIALIZED VIEW IF EXISTS oem.vm_global_map;
+DROP MATERIALIZED VIEW IF EXISTS owmf.vm_global_map;
 
-CREATE OR REPLACE FUNCTION oem.parse_timestamp(txt TEXT)
+CREATE OR REPLACE FUNCTION owmf.parse_timestamp(txt TEXT)
     RETURNS timestamp without time zone
     LANGUAGE 'plpgsql'
     COST 100
@@ -37,14 +37,14 @@ BEGIN
 END;
 $BODY$;
 
-COMMENT ON FUNCTION oem.parse_timestamp(text) IS '
+COMMENT ON FUNCTION owmf.parse_timestamp(text) IS '
 Takes as input an ISO 8601 timestamp string and returns a TIMESTAMP, unless the string is not representable (e.g. it overflows).
 Documentation:
 - https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-DATETIME-TABLE
 - https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT
 ';
 
-CREATE TABLE oem.osmdata (
+CREATE TABLE owmf.osmdata (
     osm_id BIGSERIAL NOT NULL PRIMARY KEY,
     osm_geometry GEOMETRY(Geometry,4326) NOT NULL,
     osm_osm_type VARCHAR(8) NOT NULL CHECK (osm_osm_type IN ('node','way','relation')),
@@ -53,7 +53,7 @@ CREATE TABLE oem.osmdata (
     osm_has_text_etymology BOOLEAN DEFAULT FALSE
 );
 
-CREATE TABLE oem.element_wikidata_cods (
+CREATE TABLE owmf.element_wikidata_cods (
     --ew_id BIGSERIAL NOT NULL PRIMARY KEY,
     ew_el_id BIGINT NOT NULL,
     ew_wikidata_cod VARCHAR(15) NOT NULL CHECK (ew_wikidata_cod  ~* '^Q\d+$'),
@@ -62,7 +62,7 @@ CREATE TABLE oem.element_wikidata_cods (
     ew_from_key_id VARCHAR
 );
 
-CREATE TABLE oem.wikidata (
+CREATE TABLE owmf.wikidata (
     wd_id SERIAL NOT NULL PRIMARY KEY,
     wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
     wd_position GEOMETRY(Point,4326),
@@ -77,8 +77,8 @@ CREATE TABLE oem.wikidata (
     wd_death_date TIMESTAMP,
     wd_death_date_precision INT,
     wd_commons VARCHAR,
-    wd_gender_id INT REFERENCES oem.wikidata(wd_id),
-    wd_instance_id INT REFERENCES oem.wikidata(wd_id),
+    wd_gender_id INT REFERENCES owmf.wikidata(wd_id),
+    wd_instance_id INT REFERENCES owmf.wikidata(wd_id),
     wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     wd_download_date TIMESTAMP DEFAULT NULL,
     wd_full_download_date TIMESTAMP DEFAULT NULL,
@@ -89,11 +89,11 @@ CREATE TABLE oem.wikidata (
     wd_type_color VARCHAR
 );
 
-CREATE UNIQUE INDEX wikidata_id_idx ON oem.wikidata (wd_id) WITH (fillfactor='100');
+CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='100');
 
-CREATE UNIQUE INDEX wikidata_cod_idx ON oem.wikidata (wd_wikidata_cod) WITH (fillfactor='100');
+CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fillfactor='100');
 
-CREATE TABLE oem.element (
+CREATE TABLE owmf.element (
     el_id BIGINT NOT NULL PRIMARY KEY,
     el_geometry GEOMETRY(Geometry,4326) NOT NULL,
     el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
@@ -106,30 +106,30 @@ CREATE TABLE oem.element (
     --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
 );
 
-CREATE UNIQUE INDEX element_id_idx ON oem.element (el_id) WITH (fillfactor='100');
+CREATE UNIQUE INDEX element_id_idx ON owmf.element (el_id) WITH (fillfactor='100');
 
-CREATE INDEX element_geometry_idx ON oem.element USING GIST (el_geometry) WITH (fillfactor='100');
+CREATE INDEX element_geometry_idx ON owmf.element USING GIST (el_geometry) WITH (fillfactor='100');
 
-CREATE TABLE oem.etymology (
+CREATE TABLE owmf.etymology (
     et_id SERIAL NOT NULL PRIMARY KEY,
-    --et_el_id BIGINT NOT NULL REFERENCES oem.element(el_id), -- element is populated only at the end
+    --et_el_id BIGINT NOT NULL REFERENCES owmf.element(el_id), -- element is populated only at the end
     et_el_id BIGINT NOT NULL,
-    et_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+    et_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
     et_from_el_id BIGINT,
     et_recursion_depth INT DEFAULT 0,
     et_from_osm BOOLEAN DEFAULT FALSE,
     et_from_key_ids VARCHAR ARRAY,
-    et_from_osm_wikidata_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
-    et_from_parts_of_wd_id INT REFERENCES oem.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from whose P527 (has parts) property this etymology has been derived
+    et_from_osm_wikidata_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
+    et_from_parts_of_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from whose P527 (has parts) property this etymology has been derived
     et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- Wikidata property through which the etymology is derived
     CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );
 
-CREATE INDEX etymology_el_id_idx ON oem.etymology (et_el_id) WITH (fillfactor='100');
+CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='100');
 
-CREATE TABLE oem.wikidata_picture (
+CREATE TABLE owmf.wikidata_picture (
     wdp_id SERIAL NOT NULL PRIMARY KEY,
-    wdp_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+    wdp_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
     wdp_picture VARCHAR NOT NULL,
     wdp_attribution VARCHAR,
     wdp_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -137,11 +137,11 @@ CREATE TABLE oem.wikidata_picture (
     CONSTRAINT wdp_unique_wikidata_picture UNIQUE (wdp_wd_id, wdp_picture)
 );
 
-CREATE INDEX wikidata_picture_id_idx ON oem.wikidata_picture (wdp_wd_id) WITH (fillfactor='100');
+CREATE INDEX wikidata_picture_id_idx ON owmf.wikidata_picture (wdp_wd_id) WITH (fillfactor='100');
 
-CREATE TABLE oem.wikidata_text (
+CREATE TABLE owmf.wikidata_text (
     wdt_id SERIAL NOT NULL PRIMARY KEY,
-    wdt_wd_id INT NOT NULL REFERENCES oem.wikidata(wd_id),
+    wdt_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
     wdt_language CHAR(3) NOT NULL,
     wdt_name VARCHAR,
     wdt_description VARCHAR,
@@ -157,9 +157,9 @@ CREATE TABLE oem.wikidata_text (
     CONSTRAINT wdt_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
 );
 
-CREATE INDEX wikidata_text_id_idx ON oem.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
+CREATE INDEX wikidata_text_id_idx ON owmf.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
 
-CREATE OR REPLACE FUNCTION oem.et_source_color(et oem.etymology)
+CREATE OR REPLACE FUNCTION owmf.et_source_color(et owmf.etymology)
     RETURNS text
     LANGUAGE 'sql'
     COST 100
@@ -173,7 +173,7 @@ SELECT CASE
 END
 $BODY$;
 
-CREATE OR REPLACE FUNCTION oem.et_source_name(et oem.etymology)
+CREATE OR REPLACE FUNCTION owmf.et_source_name(et owmf.etymology)
     RETURNS text
     LANGUAGE 'sql'
     COST 100
@@ -187,7 +187,7 @@ SELECT CASE
 END
 $BODY$;
 
-CREATE OR REPLACE FUNCTION oem.et_century_color(century NUMERIC)
+CREATE OR REPLACE FUNCTION owmf.et_century_color(century NUMERIC)
     RETURNS text
     LANGUAGE 'plpgsql'
     COST 100

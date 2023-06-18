@@ -42,12 +42,12 @@ class BBoxEtymologyCenterPostGISQuery extends BBoxPostGISQuery implements BBoxGe
             )
         FROM (
             SELECT ST_Centroid(ST_Collect(el_geometry)) AS geom
-            FROM oem.element AS el
+            FROM owmf.element AS el
             WHERE TRUE $elementFilterClause
             AND el_id IN (
                 SELECT et_el_id
-                FROM oem.etymology AS et
-                JOIN oem.wikidata AS wd ON wd.wd_id = et.et_wd_id
+                FROM owmf.etymology AS et
+                JOIN owmf.wikidata AS wd ON wd.wd_id = et.et_wd_id
                 WHERE TRUE
                 $etymologyFilterClause
             )

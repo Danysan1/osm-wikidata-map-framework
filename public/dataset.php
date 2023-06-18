@@ -16,7 +16,7 @@ if (!$conf->getBool("db_enable")) { // The dataset is not available without the 
 
 $db = new PostGIS_PDO($conf);
 try {
-    $lastUpdate = (string)$db->query("SELECT oem.last_data_update()")->fetchColumn();
+    $lastUpdate = (string)$db->query("SELECT owmf.last_data_update()")->fetchColumn();
 } catch (Exception $e) {
     $lastUpdate = date("Y-m-d");
 }
@@ -24,7 +24,7 @@ try {
 $fields = implode(",", [
     'wikidata_id', 'element_name', 'count_osm', 'count_osm_wikidata', 'count_wikidata', 'count_part_of', 'count_propagation'
 ]); // All fields are DB columns and contain no spaces or commas, no escaping necessary
-$stm = $db->query("SELECT $fields FROM oem.vm_dataset");
+$stm = $db->query("SELECT $fields FROM owmf.vm_dataset");
 
 header("Content-Disposition: attachment; filename=dataset_$lastUpdate.csv");
 

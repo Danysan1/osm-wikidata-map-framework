@@ -13,7 +13,7 @@ class BBoxCenturyStatsPostGISQuery extends BBoxStatsPostGISQuery
             "SELECT COALESCE(JSON_AGG(JSON_BUILD_OBJECT(
                     'count', count,
                     'id', century,
-                    'color', COALESCE(oem.et_century_color(century), '#223b53'),
+                    'color', COALESCE(owmf.et_century_color(century), '#223b53'),
                     'name', COALESCE(century::VARCHAR, 'Other')
                 )), '[]'::JSON)
             FROM (
@@ -21,9 +21,9 @@ class BBoxCenturyStatsPostGISQuery extends BBoxStatsPostGISQuery
                     COUNT(DISTINCT wd.wd_id) AS count,
                     --EXTRACT(CENTURY FROM COALESCE(wd_event_date, wd_start_date, wd_birth_date)) AS century_name,
                     EXTRACT(CENTURY FROM COALESCE(wd_event_date, wd_start_date, wd_birth_date)) AS century
-                FROM oem.element AS el
-                JOIN oem.etymology AS et ON et_el_id = el_id
-                JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
+                FROM owmf.element AS el
+                JOIN owmf.etymology AS et ON et_el_id = el_id
+                JOIN owmf.wikidata AS wd ON et_wd_id = wd.wd_id
                 WHERE COALESCE(:lang::VARCHAR,:defaultLang::VARCHAR) IS NOT NULL -- TODO Refactor class structure to remove necessity to pass :lang
                 AND COALESCE(wd_event_date, wd_start_date, wd_birth_date) IS NOT NULL
                 $filterClause

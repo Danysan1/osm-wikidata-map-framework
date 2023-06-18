@@ -1,1 +1,1 @@
-CREATE INDEX etymology_source_idx ON oem.etymology USING GIN (et_from_key_ids);
+CREATE INDEX etymology_source_idx ON owmf.etymology USING GIN (et_from_key_ids);

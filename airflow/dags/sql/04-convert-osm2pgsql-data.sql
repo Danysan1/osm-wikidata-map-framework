@@ -1,4 +1,4 @@
-INSERT INTO oem.osmdata (osm_osm_type, osm_osm_id, osm_tags, osm_geometry)
+INSERT INTO owmf.osmdata (osm_osm_type, osm_osm_id, osm_tags, osm_geometry)
 SELECT 'node', osm_id, hstore_to_jsonb(tags), way
 FROM planet_osm_point
 UNION

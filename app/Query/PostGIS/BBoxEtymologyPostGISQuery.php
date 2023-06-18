@@ -107,10 +107,10 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
-                    COALESCE(MIN(oem.et_source_color(et)), '#223b53') AS source_color,
+                    COALESCE(MIN(owmf.et_source_color(et)), '#223b53') AS source_color,
                     COALESCE(MIN(gender.wd_gender_color), '#223b53') AS gender_color,
                     COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
-                    COALESCE(MIN(oem.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_event_date, wd.wd_start_date, wd.wd_birth_date)))), '#223b53') AS century_color,
+                    COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_event_date, wd.wd_start_date, wd.wd_birth_date)))), '#223b53') AS century_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'from_osm', et_from_osm,
                         'from_osm_type', from_el.el_osm_type,
@@ -145,7 +145,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                                 'picture', wdp_picture,
                                 'attribution', wdp_attribution
                             ))
-                            FROM oem.wikidata_picture
+                            FROM owmf.wikidata_picture
                             WHERE wdp_wd_id = wd.wd_id
                         ),
                         'prizes', wdt.wdt_prizes,
@@ -156,18 +156,18 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'wkt_coords', ST_AsText(wd.wd_position)
                     )) AS etymologies,
                     COUNT(wd.wd_id) AS num_etymologies
-                FROM oem.element AS el
-                LEFT JOIN oem.etymology AS et ON et_el_id = el_id
-                LEFT JOIN oem.wikidata AS wd ON et_wd_id = wd.wd_id
-                LEFT JOIN oem.wikidata_text AS wdt
+                FROM owmf.element AS el
+                LEFT JOIN owmf.etymology AS et ON et_el_id = el_id
+                LEFT JOIN owmf.wikidata AS wd ON et_wd_id = wd.wd_id
+                LEFT JOIN owmf.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
-                LEFT JOIN oem.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
-                LEFT JOIN oem.wikidata_text AS gender_text
+                LEFT JOIN owmf.wikidata AS gender ON wd.wd_gender_id = gender.wd_id
+                LEFT JOIN owmf.wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang::VARCHAR
-                LEFT JOIN oem.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
-                LEFT JOIN oem.wikidata AS from_wd ON from_wd.wd_id = et_from_osm_wikidata_wd_id
-                LEFT JOIN oem.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
-                LEFT JOIN oem.element AS from_el ON from_el.el_id = et_from_el_id
+                LEFT JOIN owmf.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
+                LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et_from_osm_wikidata_wd_id
+                LEFT JOIN owmf.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
+                LEFT JOIN owmf.element AS from_el ON from_el.el_id = et_from_el_id
                 WHERE (el.el_has_text_etymology OR wd.wd_id IS NOT NULL)
                 $filterClause
                 GROUP BY el.el_id

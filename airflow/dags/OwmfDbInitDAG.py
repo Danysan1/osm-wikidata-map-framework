@@ -219,9 +219,9 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
-                # Teardown the oem DB schema
+                # Teardown the OWMF DB schema
 
-                Reset the oem (OSM-Wikidata Map Framework) schema on the local PostGIS DB to start from scratch.
+                Reset the schema 'owmf' on the local PostGIS DB to start from scratch.
             """
         )
         task_setup_db_ext >> task_teardown_schema
@@ -233,9 +233,9 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
-                # Setup the oem DB schema
+                # Setup the OWMF DB schema
 
-                Setup the oem (OSM-Wikidata Map Framework) schema on the local PostGIS DB.
+                Setup the schema 'owmf' on the local PostGIS DB.
             """
         )
         task_teardown_schema >> task_setup_schema
@@ -257,7 +257,7 @@ class OwmfDbInitDAG(DAG):
                 "postgres_conn_id": local_db_conn_id,
                 "filepath": pg_path,
                 "separator": '\t',
-                "schema": 'oem',
+                "schema": 'owmf',
                 "table": 'osmdata',
                 "columns": ["osm_id","osm_geometry","osm_osm_type","osm_osm_id","osm_tags"],
             },
@@ -373,7 +373,7 @@ class OwmfDbInitDAG(DAG):
                 "postgres_conn_id": local_db_conn_id,
                 "filepath": wikidata_genders_file_path,
                 "separator": ',',
-                "schema": 'oem',
+                "schema": 'owmf',
                 "table": 'wikidata',
                 "columns": ["wd_wikidata_cod","wd_notes","wd_gender_descr","wd_gender_color"],
             },
@@ -399,7 +399,7 @@ class OwmfDbInitDAG(DAG):
                 "postgres_conn_id": local_db_conn_id,
                 "filepath": wikidata_types_file_path,
                 "separator": ',',
-                "schema": 'oem',
+                "schema": 'owmf',
                 "table": 'wikidata',
                 "columns": ["wd_wikidata_cod","wd_notes","wd_type_descr","wd_type_color"],
             },
@@ -682,7 +682,7 @@ class OwmfDbInitDAG(DAG):
             task_id = "save_last_data_update",
             conn_id = local_db_conn_id,
             sql = """
-                CREATE OR REPLACE FUNCTION oem.last_data_update()
+                CREATE OR REPLACE FUNCTION owmf.last_data_update()
                     RETURNS character varying
                     LANGUAGE 'sql'
                 AS $BODY$

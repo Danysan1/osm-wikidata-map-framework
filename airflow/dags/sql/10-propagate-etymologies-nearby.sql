@@ -1,4 +1,4 @@
-INSERT INTO oem.etymology (
+INSERT INTO owmf.etymology (
     et_el_id,
     et_wd_id,
     et_from_el_id,
@@ -16,11 +16,11 @@ INSERT INTO oem.etymology (
     ARRAY['propagated'],
     old_et.et_from_osm_wikidata_wd_id,
     old_et.et_from_osm_wikidata_prop_cod
-FROM oem.etymology AS old_et
-JOIN oem.osmdata AS old_el
+FROM owmf.etymology AS old_et
+JOIN owmf.osmdata AS old_el
     ON old_et.et_el_id = old_el.osm_id
     AND old_el.osm_tags ?? 'highway' -- As of PHP 7.4.0, question marks can be escaped by doubling them. That means that the ?? string will be translated to ? when sending the query to the database.
-JOIN oem.osmdata AS new_el
+JOIN owmf.osmdata AS new_el
     ON old_el.osm_id < new_el.osm_id
     AND new_el.osm_tags ?? 'highway'
     AND new_el.osm_tags ?? 'name'

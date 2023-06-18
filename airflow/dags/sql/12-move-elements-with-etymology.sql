@@ -1,4 +1,4 @@
-INSERT INTO oem.element (
+INSERT INTO owmf.element (
     el_id,
     el_geometry,
     el_osm_type,
@@ -18,8 +18,8 @@ INSERT INTO oem.element (
     SUBSTRING(osm_tags->>'wikidata' FROM '^(Q\d+)'),
     SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
-FROM oem.osmdata
-LEFT JOIN oem.etymology ON osm_id = et_el_id
+FROM owmf.osmdata
+LEFT JOIN owmf.etymology ON osm_id = et_el_id
 WHERE osm_has_text_etymology
 OR etymology.et_id IS NOT NULL
 ON CONFLICT (el_id) DO NOTHING

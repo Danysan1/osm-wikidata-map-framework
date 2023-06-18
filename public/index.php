@@ -22,7 +22,7 @@ $enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
-        $lastUpdate = (string)$dbh->query("SELECT oem.last_data_update()")->fetchColumn();
+        $lastUpdate = (string)$dbh->query("SELECT owmf.last_data_update()")->fetchColumn();
         $lastUpdateString = empty($lastUpdate) ? '' : "<p><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
     } catch (Exception $e) {
         error_log("Error fetching last update: " . $e->getMessage());
