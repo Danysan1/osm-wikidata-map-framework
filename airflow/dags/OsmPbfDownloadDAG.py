@@ -53,10 +53,11 @@ def get_source_url(ti:TaskInstance, **context) -> str:
     source_basename = path.basename(source_url) # https://linuxhint.com/fetch-basename-python/
     file_basename = re.sub('\.torrent$', '', source_basename)
     last_data_update = get_pbf_date(source_basename)
+    md5_url = f'{source_url}.md5' if params["verify_md5"] else None
     
     ti.xcom_push(key='work_dir', value=work_dir)
     ti.xcom_push(key='source_url', value=source_url)
-    ti.xcom_push(key='md5_url', value=f'{source_url}.md5')
+    ti.xcom_push(key='md5_url', value=md5_url)
     ti.xcom_push(key='source_basename', value=source_basename)
     ti.xcom_push(key='file_basename', value=file_basename)
     ti.xcom_push(key='source_file_path', value=f"{work_dir}/{source_basename}")
@@ -77,6 +78,7 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
     """
     from pendulum import parse
     from os import path
+    import re
 
     p = context["params"]
     if not path.exists(date_path):
@@ -84,13 +86,19 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         procede = True
     else:
         with open(date_path) as date_file:
-            existing_date:str = date_file.read().strip()
+            existing_date_str:str = date_file.read().strip()
         skip_if_already_downloaded:bool = "skip_if_already_downloaded" in p and p["skip_if_already_downloaded"]
-        new_date = ti.xcom_pull(task_ids='get_source_url', key='last_data_update')
-        print(f"Existing date: {existing_date} (from date file '{date_path}')")
-        print(f"New date: {new_date}")
-        procede = not skip_if_already_downloaded or parse(new_date) > parse(existing_date)
-        print('Proceeding to download' if procede else 'NOT proceeding')
+        new_date_str = ti.xcom_pull(task_ids='get_source_url', key='last_data_update')
+        print(f"Existing date: {existing_date_str} (from date file '{date_path}')")
+        print(f"New date: {new_date_str}")
+        if skip_if_already_downloaded:
+            new_date = parse(new_date_str if re.match('^\d{2}-',new_date_str) == None else '20'+new_date_str)
+            existing_date = parse(existing_date_str if re.match('^\d{2}-',new_date_str) == None else '20'+existing_date_str)
+            procede = new_date > existing_date
+            print('Proceeding to download' if procede else 'NOT proceeding')
+        else:
+            procede = True
+            print("Skipping is disabled, proceeding to download")
     return procede
 
 class OsmPbfDownloadDAG(DAG):
@@ -101,6 +109,7 @@ class OsmPbfDownloadDAG(DAG):
             prefix:str=None,
             skip_if_already_downloaded:bool=True,
             days_before_cleanup:int=1,
+            verify_md5:bool=True,
             **kwargs
         ):
         """
@@ -118,6 +127,8 @@ class OsmPbfDownloadDAG(DAG):
             prefix to search in the PBF filename 
         skip_if_already_downloaded: bool
             if True, if the OSM data has already been downloaded it will not be downloaded again
+        verify_md5: bool
+            Whether to check the md5 checksum of the osm.pbf file
 
         See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
         """
@@ -131,6 +142,7 @@ class OsmPbfDownloadDAG(DAG):
             "html_url": html_url,
             "prefix": prefix,
             "skip_if_already_downloaded": skip_if_already_downloaded,
+            "verify_md5": verify_md5,
         }
 
         super().__init__(
@@ -177,13 +189,19 @@ class OsmPbfDownloadDAG(DAG):
         task_download_pbf = BashOperator(
             task_id = "download_pbf",
             bash_command = """
+                echo "Downloading $sourceUrl"
                 curl --fail --verbose --location --max-redirs 5 --progress-bar -o "$sourceFilePath" "$sourceUrl"
-                curl --fail --verbose --location --max-redirs 5 -o "$md5FilePath" "$md5Url"
-                if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
-                    echo "The md5 sum doesn't match:"
-                    cat "$md5FilePath"
-                    md5sum "$sourceFilePath"
-                    exit 1
+                if [ -z "$md5Url"  -o "$md5Url" = 'None' ]; then
+                    echo "Empty MD5 checksum URL ('$md5Url'), skipping MD5 verification"
+                else
+                    echo "Downloading $md5Url"
+                    curl --fail --verbose --location --max-redirs 5 -o "$md5FilePath" "$md5Url"
+                    if [[ $(cat "$md5FilePath" | cut -f 1 -d ' ') != $(md5sum "$sourceFilePath" | cut -f 1 -d ' ') ]] ; then
+                        echo "The md5 sum doesn't match:"
+                        cat "$md5FilePath"
+                        md5sum "$sourceFilePath"
+                        exit 1
+                    fi
                 fi
             """,
             env = {
