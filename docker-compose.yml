@@ -89,8 +89,8 @@ x-airflow-common:
     # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
-    AIRFLOW_CONN_LOCAL_OEM_POSTGRES: postgres://${db_user}:${db_password}@oem-postgis:5432/${db_database} # docker-compose "oem-postgis" service
-    AIRFLOW_CONN_LOCAL_OEM_POSTGRES_PLANET: postgres://${db_user}:${db_password}@oem-postgis:5432/planet # docker-compose "oem-postgis" service
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${db_user}:${db_password}@owmf-postgis:5432/${db_database} # docker-compose "owmf-postgis" service
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${db_user}:${db_password}@owmf-postgis:5432/planet # docker-compose "owmf-postgis" service
     AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}
@@ -401,7 +401,7 @@ services:
       - torrent
       - airflow
 
-  oem-postgis:
+  owmf-postgis:
     image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     #image: odidev/postgis:13-3.1-alpine # supports arm64
     ports:
@@ -414,7 +414,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
-      - oem-internal
+      - owmf-internal
       - airflow-postgis-bridge
     logging:
       driver: json-file
@@ -435,7 +435,7 @@ services:
     ports:
       - "${pgadmin_port:-8000}:80"
     depends_on:
-      - oem-postgis
+      - owmf-postgis
     environment:
       PGADMIN_DEFAULT_EMAIL: "app@app.app"
       PGADMIN_DEFAULT_PASSWORD: "app"
@@ -443,7 +443,7 @@ services:
       - pgadmin-data:/var/lib/pgadmin:delegated
       - ./pgadmin_init.json:/pgadmin4/servers.json
     networks:
-      - oem-internal
+      - owmf-internal
       - pgadmin-bridge
     healthcheck:
       test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
@@ -454,7 +454,7 @@ services:
     profiles:
       - dev
 
-  oem-web-dev:
+  owmf-web-dev:
     build:
       context: .
       dockerfile: Dockerfile
@@ -464,10 +464,8 @@ services:
       - .env
     ports:
       - "${web_http_port:-80}:80"
-    depends_on:
-      - oem-postgis
     networks:
-      - oem-internal
+      - owmf-internal
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
       interval: 10s
@@ -480,7 +478,7 @@ services:
     profiles:
       - dev
 
-  oem-web-prod:
+  owmf-web-prod:
     build:
       context: .
       dockerfile: Dockerfile
@@ -506,7 +504,7 @@ services:
       - "${web_http_port:-80}:80"
       - "${web_https_port:-443}:443"
     networks:
-      - oem-internal
+      - owmf-internal
     logging:
       driver: json-file
       options:
@@ -545,7 +543,7 @@ volumes:
   torrent-daemon-config:
 
 networks:
-  oem-internal:
+  owmf-internal:
   airflow-internal:
   airflow-postgis-bridge:
   airflow-torrent-bridge:

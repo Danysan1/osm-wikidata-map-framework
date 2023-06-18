@@ -5,7 +5,7 @@ rectangle "Docker Compose profile 'dev'" as docker {
   port "8000" as 8000docker
   port "5432" as 5432docker
   port "80" as 80docker
-  node "oem-postgis" {
+  node "owmf-postgis" {
     port 5432 as 5432db
     database "PostGIS DB" as db
   }
@@ -13,7 +13,7 @@ rectangle "Docker Compose profile 'dev'" as docker {
     port "80" as 80pgAdmin
     component pgAdmin
   }
-  node "oem-web-dev" {
+  node "owmf-web-dev" {
     port "80" as 80webDev
     component Apache
     folder "/var/www/app" as appRem

@@ -13,7 +13,7 @@ component Server {
       folder "/var/log" as logRem
       folder "/var/lib/docker/containers" as contRem
     }
-    node "oem-web-prod" {
+    node "owmf-web-prod" {
       port "80" as 80webProd
       component Apache
     }

@@ -59,7 +59,7 @@ In order to display the etymology of an element you need to create one of these 
 1. Find the element of interest on [OpenStreetMap](https://www.openstreetmap.org/)
 2. Check out the element's tags:
    - If the element has a `name:etymology:wikidata`, `subject:wikidata` or `buried:wikidata` tag and two weeks have passed from their addition, then the element should already be available on OSM-Wikidata Map Framework.
-     - If one of these tags is present and the time period has passed but the element isn't available on OEM, then the tag value may contain an error (like not being a valid Wikidata ID).
+     - If one of these tags is present and the time period has passed but the element isn't available on OWMF, then the tag value may contain an error (like not being a valid Wikidata ID).
      - If one of these tags is available but liks to the wrong etymology/subject, search on Wikidata the ID for the correct etymology/subject and edit the incorrect tag with the new ID.
    - If the element has a `wikidata` tag check the referenced Wikidata element.
      - If it does not represent the same real world object of the OSM element, search the correct one and change it.
@@ -110,9 +110,9 @@ During development you can run a local instance of OSM-Wikidata Map Framework wi
 | Local folder                 | Destination folder   | Development service                                                             | Production service                                |
 | ---------------------------- | -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------- |
 | [airflow/dags](airflow/dags) | `/opt/airflow/dags`  | `airflow-webserver`, `airflow-scheduler`, `airflow-worker`, `airflow-triggerer` |                                                   |
-| [app](app)                   | `/var/www/app`       | `oem-web-dev` (mapped via volume)                                               | `oem-web-prod` (copied during build)              |
-| [public](public)             | `/var/www/html`      | `oem-web-dev` (mapped via volume)                                               | `oem-web-prod` (copied during build)              |
-| [src](src)                   | `/var/www/html/dist` | `oem-web-dev` (compiled)                                                        | `oem-web-prod` (compiled and copied during build) |
+| [app](app)                   | `/var/www/app`       | `owmf-web-dev` (mapped via volume)                                               | `owmf-web-prod` (copied during build)              |
+| [public](public)             | `/var/www/html`      | `owmf-web-dev` (mapped via volume)                                               | `owmf-web-prod` (copied during build)              |
+| [src](src)                   | `/var/www/html/dist` | `owmf-web-dev` (compiled)                                                        | `owmf-web-prod` (compiled and copied during build) |
 | [promtail](promtail)         | `/etc/promtail`      |                                                                                 | `promtail` (mapped via volume)                    |
 
 </details>
@@ -201,7 +201,7 @@ To run the database initialization:
 3. start Apache Airflow with `docker-compose --profile airflow up -d`
 4. from the Apache Airflow configuration menu in the dashboard located at http://localhost:8080 create the Pool `data_filtering`
 5. run/enable an existing DAG pipeline (if necessary customising the launch config)
-6. the data for OSM-Wikidata Map Framework will be stored in the `oem` schema of the DB you configured in `.env` (and, if specified in the destination DB)
+6. the data for OSM-Wikidata Map Framework will be stored in the `owmf` schema of the DB you configured in `.env` (and, if specified in the destination DB)
 
 IMPORTANT NOTE: If you use the planet file I suggest to use a machine with 16GB of RAM (and a lot of patience, it will require more than 6 hours; use a local extract in development to use less RAM and time, for an example see [db-init-italy-nord-ovest.py](airflow/dags/db-init-italy-nord-ovest.py)).
 

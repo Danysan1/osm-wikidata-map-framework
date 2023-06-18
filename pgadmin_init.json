@@ -4,8 +4,8 @@
             "Name": "Local PostGIS",
             "Group": "Servers",
             "Port": 5432,
-            "Username": "oem",
-            "Host": "oem-postgis",
+            "Username": "owmf",
+            "Host": "owmf-postgis",
             "SSLMode": "prefer",
             "MaintenanceDB": "postgres"
         },

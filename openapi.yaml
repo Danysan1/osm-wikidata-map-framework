@@ -9,7 +9,9 @@ servers:
     description: Open Etymology Map
   - url: https://burial.dsantini.it
     description: Open Burial Map
-  - url: http://oem-web-dev
+  - url: http://owmf-web-prod
+    description: Local instance
+  - url: http://owmf-web-dev
     description: Local development instance
 
 paths:

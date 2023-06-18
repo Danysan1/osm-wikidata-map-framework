@@ -1,3 +1,3 @@
 #!/bin/sh
 cd $(dirname "$0")
-docker buildx bake oem-web-prod --pull --push
+docker buildx bake owmf-web-prod --pull --push

@@ -4,11 +4,11 @@ actor Browser
 component Server {
   port "80" as 80docker
   rectangle "Docker Compose profiles 'prod'+'db'" as docker {
-    node "oem-postgis" {
+    node "owmf-postgis" {
       port 5432 as 5432db
       database "PostGIS DB" as db
     }
-    node "oem-web-prod" {
+    node "owmf-web-prod" {
       port "80" as 80webProd
       component Apache
     }

@@ -123,7 +123,7 @@ def choose_propagation_method(propagate_data:str) -> str:
 
 class OemDbInitDAG(DAG):
     def __init__(self,
-            local_db_conn_id:str="local_oem_postgres",
+            local_db_conn_id:str="local_owmf_postgis_db",
             upload_db_conn_id:str=None,
             prefix:str=None,
             use_osm2pgsql:bool=False,

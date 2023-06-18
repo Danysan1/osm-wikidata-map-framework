@@ -1,2 +1,2 @@
 cd /D "%~dp0"
-docker buildx bake oem-web-prod --pull --push
+docker buildx bake owmf-web-prod --pull --push
