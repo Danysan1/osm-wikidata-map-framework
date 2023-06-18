@@ -138,7 +138,7 @@ class OsmPbfDownloadDAG(DAG):
                 # https://pendulum.eustace.io/docs/#instantiation
                 start_date=datetime(year=2022, month=9, day=15, tz='local'),
                 catchup=False,
-                tags=['oem', f'oem-{prefix}', 'pbf-download', 'produces'],
+                tags=['owmf', f'owmf-{prefix}', 'pbf-download', 'produces'],
                 params=default_params,
                 doc_md="""
                     # OSM-Wikidata Map Framework DB initialization

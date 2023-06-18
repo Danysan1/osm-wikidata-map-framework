@@ -25,7 +25,7 @@ def do_copy_file(source_path:str, dest_path:str) -> None:
     from shutil import copyfile
     copyfile(source_path, dest_path)
 
-class OemFilterDAG(DAG):
+class OwmfFilterDAG(DAG):
     def __init__(self,
             upload_db_conn_id:str=None,
             prefix:str=None,
@@ -78,7 +78,7 @@ class OemFilterDAG(DAG):
             start_date=start_date,
             catchup=False,
             schedule = [pbf_dataset],
-            tags=['oem', f'oem-{prefix}', 'oem-filter', 'consumes', 'produces'],
+            tags=['owmf', f'owmf-{prefix}', 'owmf-filter', 'consumes', 'produces'],
             params=default_params,
             doc_md = """
                 # OSM-Wikidata Map Framework OSM data filtering

@@ -1,6 +1,6 @@
 from OsmPbfDownloadDAG import OsmPbfDownloadDAG
-from OemFilterDAG import OemFilterDAG
-from OemDbInitDAG import OemDbInitDAG
+from OwmfFilterDAG import OwmfFilterDAG
+from OwmfDbInitDAG import OwmfDbInitDAG
 from airflow.models import DAG #! Don't delete, necessary for Airflow to recognize this file as containing DAGs
 
 download_planet_pbf = OsmPbfDownloadDAG(
@@ -30,13 +30,13 @@ download_planet_rss = OsmPbfDownloadDAG(
     prefix="planet"
 )
 
-filter_planet = OemFilterDAG(
+filter_planet = OwmfFilterDAG(
     dag_id="filter-planet",
     days_before_cleanup=8,
     prefix="planet"
 )
 
-db_init_planet = OemDbInitDAG(
+db_init_planet = OwmfDbInitDAG(
     dag_id="db-init-planet",
     days_before_cleanup=8,
     prefix="planet",

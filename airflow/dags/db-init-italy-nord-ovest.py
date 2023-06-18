@@ -1,6 +1,6 @@
 from OsmPbfDownloadDAG import OsmPbfDownloadDAG
-from OemFilterDAG import OemFilterDAG
-from OemDbInitDAG import OemDbInitDAG
+from OwmfFilterDAG import OwmfFilterDAG
+from OwmfDbInitDAG import OwmfDbInitDAG
 from airflow.models import DAG #! Don't delete, necessary for Airflow to recognize this file as containing DAGs
 
 download_nord_ovest_pbf = OsmPbfDownloadDAG(
@@ -17,12 +17,12 @@ download_nord_ovest_html = OsmPbfDownloadDAG(
     prefix="nord-ovest"
 )
 
-filter_nord_ovest = OemFilterDAG(
+filter_nord_ovest = OwmfFilterDAG(
     dag_id="filter-italy-nord-ovest",
     prefix="nord-ovest"
 )
 
-db_init_nord_ovest = OemDbInitDAG(
+db_init_nord_ovest = OwmfDbInitDAG(
     dag_id="db-init-italy-nord-ovest",
     prefix="nord-ovest"
 )

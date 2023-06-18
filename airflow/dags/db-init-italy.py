@@ -1,6 +1,6 @@
 from OsmPbfDownloadDAG import OsmPbfDownloadDAG
-from OemFilterDAG import OemFilterDAG
-from OemDbInitDAG import OemDbInitDAG
+from OwmfFilterDAG import OwmfFilterDAG
+from OwmfDbInitDAG import OwmfDbInitDAG
 from airflow.models import DAG #! Don't delete, necessary for Airflow to recognize this file as containing DAGs
 
 download_italy_pbf = OsmPbfDownloadDAG(
@@ -17,12 +17,12 @@ download_italy_html = OsmPbfDownloadDAG(
     prefix="italy"
 )
 
-filter_italy = OemFilterDAG(
+filter_italy = OwmfFilterDAG(
     dag_id="filter-italy",
     prefix="italy"
 )
 
-db_init_italy = OemDbInitDAG(
+db_init_italy = OwmfDbInitDAG(
     dag_id="db-init-italy",
     prefix="italy",
     upload_db_conn_id="nord_ovest-postgres"

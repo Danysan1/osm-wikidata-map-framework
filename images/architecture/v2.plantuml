@@ -1,7 +1,7 @@
 @startuml v2
 
 actor user as "User"
-frame oem as "OSM-Wikidata Map Framework v2" {
+frame owmf as "OSM-Wikidata Map Framework v2" {
     database db as "PostgreSQL DB"
     node fe as "Front-end"
     node be as "Back-end" {

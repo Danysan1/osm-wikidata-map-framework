@@ -121,7 +121,7 @@ def choose_propagation_method(propagate_data:str) -> str:
     else:
         return "elaborate_data.join_post_propagation"
 
-class OemDbInitDAG(DAG):
+class OwmfDbInitDAG(DAG):
     def __init__(self,
             local_db_conn_id:str="local_owmf_postgis_db",
             upload_db_conn_id:str=None,
@@ -184,7 +184,7 @@ class OemDbInitDAG(DAG):
             start_date=start_date,
             catchup=False,
             schedule = [pg_dataset],
-            tags=['oem', f'oem-{prefix}', 'oem-db-init', 'consumes'],
+            tags=['owmf', f'owmf-{prefix}', 'owmf-db-init', 'consumes'],
             params=default_params,
             doc_md = doc_md,
             **kwargs
