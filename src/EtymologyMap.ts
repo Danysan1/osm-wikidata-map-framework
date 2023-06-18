@@ -443,7 +443,7 @@ export class EtymologyMap extends Map {
                     closeOnClick: true,
                     closeOnMove: true,
                     maxWidth: "none",
-                    className: "oem_etymology_popup"
+                    className: "owmf_etymology_popup"
                 })
                     .setLngLat(popupPosition)
                     //.setMaxWidth('95vw')

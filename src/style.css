@@ -20,9 +20,9 @@ div#map {
   right: 0;
 }
 
-div.maplibregl-popup.oem_etymology_popup,
+div.maplibregl-popup.owmf_etymology_popup,
 div.maplibregl-popup.owmf_info_popup,
-div.mapboxgl-popup.oem_etymology_popup,
+div.mapboxgl-popup.owmf_etymology_popup,
 div.mapboxgl-popup.owmf_info_popup {
   min-width: 15em;
   max-width: 80%;
