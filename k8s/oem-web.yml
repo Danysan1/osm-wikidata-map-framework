@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: oem-web
-  name: oem-web
+    app: owmf-web
+  name: owmf-web
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: oem-web
+      app: owmf-web
   template:
     metadata:
       labels:
-        app: oem-web
+        app: owmf-web
     spec:
       containers:
       - image: "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework"
-        name: oem-web
+        name: owmf-web
         ports:
         - containerPort: 80
           name: http

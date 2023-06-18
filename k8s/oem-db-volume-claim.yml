@@ -2,9 +2,9 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: oem-db-volume-claim
+  name: owmf-db-volume-claim
   labels:
-    app: oem-db
+    app: owmf-db
 spec:
   storageClassName: manual
   accessModes:

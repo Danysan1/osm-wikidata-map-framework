@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: oem-db
+  name: owmf-db
   labels:
-    app: oem-db
+    app: owmf-db
 spec:
   selector:
     matchLabels:
-      app: oem-db
-  serviceName: oem-db-service
+      app: owmf-db
+  serviceName: owmf-db-service
   replicas: 1
   template:
     metadata:
       labels:
-        app: oem-db
+        app: owmf-db
     spec:
       containers:
-      - name: oem-db
+      - name: owmf-db
         #image: postgis/postgis:13-3.2-alpine #arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
         image: odidev/postgis:13-3.1-alpine
         resources:
@@ -27,9 +27,9 @@ spec:
         - containerPort: 5432
           name: postgres
         volumeMounts:
-        - name: oem-db-data
+        - name: owmf-db-data
           mountPath: /var/lib/postgresql/data
       volumes:
-        - name: oem-db-data
+        - name: owmf-db-data
           persistentVolumeClaim:
-            claimName: oem-db-volume-claim
+            claimName: owmf-db-volume-claim
