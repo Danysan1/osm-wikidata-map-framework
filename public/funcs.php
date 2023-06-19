@@ -86,7 +86,7 @@ function prepareHTML(Configuration $conf)
 	}
 
 	$wikimediaImgSrcs = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
-	$wikimediaConnectSrcs = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php";
+	$wikimediaConnectSrcs = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
 	$payPalImgSrcs = "https://www.paypal.com https://www.paypalobjects.com";
 

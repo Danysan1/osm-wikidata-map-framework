@@ -2,10 +2,15 @@ import { getConfig } from "../config";
 import { EtymologyDetails } from "../EtymologyElement";
 
 export class WikidataService {
-    private baseURL: string;
-
-    constructor(baseURL?: string) {
-        this.baseURL = baseURL || getConfig("wikidata_endpoint") || "https://query.wikidata.org/sparql";
+    async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
+        const url = `https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/${wikidataID}/statements?property=P18`,
+            response = await fetch(url),
+            res = await response.json();
+        if (res?.P18?.at(0)?.value?.content) {
+            return res.P18.at(0).value.content as string;
+        } else {
+            return null;
+        }
     }
 
     async fetchEtymologyDetails(etymologyIDs: string[]): Promise<EtymologyDetails[]> {
@@ -246,7 +251,8 @@ WHERE {
 }
 GROUP BY ?wikidata
             `,
-            response = await fetch(this.baseURL, {
+            baseURL = getConfig("wikidata_endpoint") || "https://query.wikidata.org/sparql",
+            response = await fetch(baseURL, {
                 method: "POST",
                 headers: { "Content-Type": "application/x-www-form-urlencoded" },
                 body: new URLSearchParams({ format: "json", query: sparql }).toString(),

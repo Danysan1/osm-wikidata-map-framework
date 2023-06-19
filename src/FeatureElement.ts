@@ -7,6 +7,7 @@ import { translateContent, translateTitle, loadTranslator } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
+import { logErrorMessage } from "./monitoring";
 
 interface FeatureProperties {
     alt_name?: string;
@@ -50,7 +51,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 
     const element_name = detail_container.querySelector<HTMLElement>('.element_name');
     if (!element_name) {
-        console.warn("Missing element_name");
+        debugLog("Missing element_name");
     } else if (properties.name && properties.name != 'null') {
         element_name.innerText = '📍 ' + properties.name;
     }
@@ -60,27 +61,42 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
             name => name && name !== 'null' && name !== properties.name
         );
     if (!element_alt_names) {
-        console.warn("Missing element_alt_names");
+        debugLog("Missing element_alt_names");
     } else if (alt_names.length > 0) {
         element_alt_names.innerText =
             "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
     }
 
-    const feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
+    const wikidata = properties.wikidata,
+        commons = properties.commons,
+        picture = properties.picture,
+        feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
     if (!feature_pictures) {
-        console.warn("Missing pictures");
-    } else if (properties.picture) {
-        feature_pictures.appendChild(imageToDomElement(properties.picture))
-    } else if (properties.commons?.includes("File:")) {
-        feature_pictures.appendChild(imageToDomElement(properties.commons))
+        debugLog("Missing pictures element");
+    } else if (picture && picture !== 'null') {
+        debugLog("Using picture from feature 'picture' property", { picture });
+        feature_pictures.appendChild(imageToDomElement(picture))
+    } else if (commons?.includes("File:")) {
+        debugLog("Using picture from feature 'commons' property", { commons });
+        feature_pictures.appendChild(imageToDomElement(commons))
+    } else if (wikidata && wikidata !== 'null') {
+        debugLog("Using picture from feature 'wikidata' property", { wikidata });
+        new WikidataService().getCommonsImageFromWikidataID(wikidata).then(img => {
+            if (img)
+                feature_pictures.appendChild(imageToDomElement(img));
+            else
+                feature_pictures.style.display = 'none';
+        }).catch(err => {
+            logErrorMessage("Failed getting image from Wikidata", 'error', err);
+            feature_pictures.style.display = 'none';
+        });
     } else {
         feature_pictures.style.display = 'none';
     }
 
-    const wikidata = properties.wikidata,
-        element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
+    const element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
     if (!element_wikidata_button) {
-        console.warn("Missing element_wikidata_button");
+        debugLog("Missing element_wikidata_button");
     } else if (wikidata && wikidata != 'null') {
         element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
         element_wikidata_button.classList.remove("hiddenElement");
@@ -91,7 +107,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     const wikipedia = properties.wikipedia,
         element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
     if (!element_wikipedia_button) {
-        console.warn("Missing element_wikipedia_button");
+        debugLog("Missing element_wikipedia_button");
     } else if (wikipedia && wikipedia != 'null') {
         element_wikipedia_button.href = `https://www.wikipedia.org/wiki/${wikipedia}`;
         element_wikipedia_button.classList.remove("hiddenElement");
@@ -99,10 +115,9 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
         element_wikipedia_button.classList.add("hiddenElement");
     }
 
-    const commons = properties.commons,
-        element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
+    const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
     if (!element_commons_button) {
-        console.warn("Missing element_commons_button");
+        debugLog("Missing element_commons_button");
     } else if (commons && commons != 'null') {
         element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
         element_commons_button.classList.remove("hiddenElement");
@@ -112,7 +127,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 
     const element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
     if (!element_osm_button) {
-        console.warn("Missing element_osm_button");
+        debugLog("Missing element_osm_button");
     } else if (osm_full_id) {
         element_osm_button.href = 'https://www.openstreetmap.org/' + osm_full_id;
         element_osm_button.classList.remove("hiddenElement");
@@ -123,7 +138,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     const show_feature_mapcomplete = getBoolConfig("show_feature_mapcomplete"),
         element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
-        console.warn("Missing element_mapcomplete_button");
+        debugLog("Missing element_mapcomplete_button");
     } else if (show_feature_mapcomplete && osm_full_id) {
         element_mapcomplete_button.href = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id;
         element_mapcomplete_button.classList.remove("hiddenElement");
@@ -133,7 +148,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 
     const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
     if (!element_location_button) {
-        console.warn("Missing element_location_button");
+        debugLog("Missing element_location_button");
     } else if (osm_full_id || properties.commons || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
         let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
         while (Array.isArray(coord) && Array.isArray(coord[0])) {
@@ -148,7 +163,7 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
 
     const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
     if (!etymologies_container) {
-        console.warn("Missing etymologies_container");
+        debugLog("Missing etymologies_container");
     } else if (getBoolConfig("eager_full_etymology_download")) {
         showEtymologies(properties, etymologies, etymologies_container, currentZoom);
     } else {
