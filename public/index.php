@@ -153,11 +153,11 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
                         <td class="i18n_to_choose_source">to choose which data source to use (only at high zoom)</td>
                     </tr>
                     <tr>
-                        <td><img src="img/overpass.svg" /></td>
+                        <td><img src="img/overpass.svg" width="16" height="16" /></td>
                         <td class="i18n_to_overpass_query">to view the source OverpassQL query (only with the Overpass source at high zoom)</td>
                     </tr>
                     <tr>
-                        <td><img src="img/wikidata_query.svg" /></td>
+                        <td><img src="img/wikidata_query.svg" width="16" height="16" /></td>
                         <td class="i18n_to_wikidata_query">to view the source SPARQL query (only with the Wikidata source at high zoom)</td>
                     </tr>
                     <tr>
