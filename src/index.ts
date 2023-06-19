@@ -26,11 +26,16 @@ const maptiler_key = getConfig("maptiler_key"),
 
 if (mapbox_token) {
     backgroundStyles.push(
-        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v12', mapbox_token),
-        mapboxBackgroundStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v12', mapbox_token),
-        mapboxBackgroundStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v12', mapbox_token),
+        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_streets_globe', 'Mapbox Streets (globe)', 'mapbox', 'streets-v12', mapbox_token),
+        mapboxBackgroundStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_outdoors_globe', 'Mapbox Outdoors (globe)', 'mapbox', 'outdoors-v12', mapbox_token),
+        mapboxBackgroundStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v10', mapbox_token),
+        mapboxBackgroundStyle('mapbox_light_globe', 'Mapbox Light (globe)', 'mapbox', 'light-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v10', mapbox_token),
+        mapboxBackgroundStyle('mapbox_dark_globe', 'Mapbox Dark (globe)', 'mapbox', 'dark-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
+        mapboxBackgroundStyle('mapbox_satellite_streets_globe', 'Mapbox Satellite (globe)', 'mapbox', 'satellite-streets-v12', mapbox_token),
     );
 }
 
