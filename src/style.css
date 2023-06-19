@@ -471,6 +471,7 @@ p.pic-attr {
 .owmf_info_popup .intro td>img {
   width: auto;
   height: auto;
+  aspect-ratio: auto;
   max-width: 1em;
   max-height: 1em;
 }
