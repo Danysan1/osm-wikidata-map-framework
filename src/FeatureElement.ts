@@ -76,22 +76,26 @@ export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12
     } else if (picture && picture !== 'null') {
         debugLog("Using picture from feature 'picture' property", { picture });
         feature_pictures.appendChild(imageToDomElement(picture))
+        feature_pictures.classList.remove("hiddenElement");
     } else if (commons?.includes("File:")) {
         debugLog("Using picture from feature 'commons' property", { commons });
-        feature_pictures.appendChild(imageToDomElement(commons))
+        feature_pictures.appendChild(imageToDomElement(commons));
+        feature_pictures.classList.remove("hiddenElement");
     } else if (wikidata && wikidata !== 'null') {
         debugLog("Using picture from feature 'wikidata' property", { wikidata });
         new WikidataService().getCommonsImageFromWikidataID(wikidata).then(img => {
-            if (img)
+            if (img) {
                 feature_pictures.appendChild(imageToDomElement(img));
-            else
-                feature_pictures.style.display = 'none';
+                feature_pictures.classList.remove("hiddenElement");
+            } else {
+                feature_pictures.classList.add("hiddenElement");
+            }
         }).catch(err => {
             logErrorMessage("Failed getting image from Wikidata", 'error', err);
-            feature_pictures.style.display = 'none';
+            feature_pictures.classList.add("hiddenElement");
         });
     } else {
-        feature_pictures.style.display = 'none';
+        feature_pictures.classList.add("hiddenElement");
     }
 
     const element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
