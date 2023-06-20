@@ -496,7 +496,6 @@ services:
           - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache
         cache-to:
           - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache,mode=max
-        pull: true
     image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${framework_image_tag:-latest}
     env_file:
       - .env
