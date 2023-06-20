@@ -62,7 +62,7 @@ docker-build:
     - docker buildx create --use
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - cat docker-compose.yml
-    - docker buildx bake owmf-web-prod --print
+    - docker buildx bake --print
   script:
     - docker buildx bake owmf-web-prod --pull --push
     #- docker pull "$CI_REGISTRY_IMAGE" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE , BUILDING FROM SCRATCH"
