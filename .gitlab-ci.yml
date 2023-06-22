@@ -51,15 +51,18 @@ psalm:
 # https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
 docker-build:
   stage: deploy
-  image: docker:20.10.22-git
+  image: docker:24.0-git
   services:
     - docker:dind
+  variables:
+    COMPOSE_PROFILES: "*"
   before_script:
     - cp .env.example .env
     - sed -i "s/framework_image_tag=latest/framework_image_tag=${CI_COMMIT_REF_NAME}/" .env
+    - docker version
+    - docker buildx version
     - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes # https://forum.gitlab.com/t/build-multi-arch-docker-image/23569/4
     #- docker run --privileged --rm tonistiigi/binfmt --install all # https://docs.docker.com/build/building/multi-platform/#building-multi-platform-images
-    - docker buildx version
     - docker buildx create --use
     - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - cat docker-compose.yml
