@@ -70,6 +70,8 @@ Q1426271,route nationale,Buildings,#ffdd33
 Q19796778,route départementale,Buildings,#ffdd33
 Q3950,villa,Buildings,#ffdd33
 Q24354,theater,Buildings,#ffdd33
+Q153562,opera house,Buildings,#ffdd33
+Q18225059,Italian theater,Buildings,#ffdd33
 Q14752696,ancient Roman structure,Buildings,#ffdd33
 Q82117,city gate,Buildings,#ffdd33
 Q11303,skyscraper,Buildings,#ffdd33
@@ -228,6 +230,9 @@ Q205985,goddess,People,#3399ff
 Q11688446,Roman deity,People,#3399ff
 Q22988604,mythological Greek character,People,#3399ff
 Q3658341,literary character,People,#3399ff
+Q14756018,twins,People,#3399ff
+Q28914,patron saint,People,#3399ff
+Q43115,saint,People,#3399ff
 Q515,city,Human settlements,#7733ff
 Q1549591,big city,Human settlements,#7733ff
 Q1187811,college town,Human settlements,#7733ff
@@ -287,3 +292,5 @@ Q22687,bank,Organization,#ff33dd
 Q2143354,insurance company,Organization,#ff33dd
 Q2401749,telecommunications company,Organization,#ff33dd
 Q4387609,architectural firm,Organization,#ff33dd
+Q222836,music publisher,Organization,#ff33dd
+Q1917775,music publishing company,Organization,#ff33dd
