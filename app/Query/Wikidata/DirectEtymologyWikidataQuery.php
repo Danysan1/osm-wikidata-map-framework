@@ -43,6 +43,7 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                     bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral .
                     bd:serviceParam wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral .
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+                FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
                 OPTIONAL { ?item wdt:P373 ?commons }
                 OPTIONAL { ?item wdt:P18 ?picture }
                 $labelQuery

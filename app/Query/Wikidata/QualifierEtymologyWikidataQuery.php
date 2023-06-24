@@ -33,6 +33,7 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
                     bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
                         wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
                 } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+                FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
                 OPTIONAL { ?stmt pq:P373 ?commons. }
                 $pictureQuery
             }

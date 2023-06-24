@@ -12,6 +12,7 @@ use \App\BaseStringSet;
 use App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\XMLQueryResult;
+use Exception;
 
 /**
  * Wikidata query that takes in input a GeoJSON etymologies object and gathers the information for its features.
@@ -36,28 +37,39 @@ class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
         }
         $this->geoJSONInputData = $geoJSONData;
 
-        $etymologyIDSet = [];
-        foreach ($geoJSONData["features"] as $feature) {
-            if (empty($feature)) {
-                throw new \Exception("Feature is empty");
-            } elseif (empty($feature["properties"]["etymologies"])) {
-                throw new \Exception("Feature does not contain any etymology IDs");
-            } else {
-                /**
-                 * @psalm-suppress MixedArrayAccess
-                 */
-                $etymologies = $feature["properties"]["etymologies"];
-                if (!is_array($etymologies)) {
-                    throw new \Exception("Etymology IDs is not an array");
-                }
-                foreach ($etymologies as $etymology) {
-                    $etymologyIDSet[(string)$etymology[OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY]] = true; // Using array keys guarantees uniqueness
-                }
-            }
-        }
+        $etymologyIDSet = array_reduce($geoJSONData["features"], [$this, "etymologyIDSetReducer"], []);
         $etymologyIDs = new BaseStringSet(array_keys($etymologyIDSet));
 
         $this->query = $queryFactory->create($etymologyIDs);
+    }
+
+    private function etymologyIDSetReducer(array $etymologyIDSet, array $feature): array
+    {
+        if (empty($feature)) {
+            throw new \Exception("Feature is empty");
+        } elseif (empty($feature["properties"]["etymologies"])) {
+            throw new \Exception("Feature does not contain any etymology IDs");
+        } else {
+            /**
+             * @psalm-suppress MixedArrayAccess
+             */
+            $etymologies = $feature["properties"]["etymologies"];
+            if (!is_array($etymologies)) {
+                throw new \Exception("Etymology IDs is not an array");
+            }
+            foreach ($etymologies as $etymology) {
+                if (empty($etymology[OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY]))
+                    throw new Exception("Etymology with no Q-ID: " . json_encode($etymology));
+
+                $QID = (string)$etymology[OverpassEtymologyQueryResult::ETYMOLOGY_WD_ID_KEY];
+                if ($QID[0] != 'Q')
+                    throw new Exception("Etymology with bad Q-ID: " . json_encode($etymology));
+
+                $etymologyIDSet[$QID] = true;
+                // Using PHP array keys guarantees uniqueness (set, not array)
+            }
+        }
+        return $etymologyIDSet;
     }
 
     public function send(): QueryResult
