@@ -453,6 +453,25 @@ services:
     restart: unless-stopped
     profiles:
       - dev
+  
+  swagger-ui:
+    image: swaggerapi/swagger-ui:v5.1.0
+    ports:
+      - "${swagger_port:-8001}:8080"
+    volumes:
+      - ./openapi.yaml:/usr/share/nginx/html/owmf_openapi.yaml
+    environment:
+      - API_URL=owmf_openapi.yaml
+    networks:
+      - owmf-internal
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:80/"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    profiles:
+      - dev
 
   owmf-web-dev:
     build:
