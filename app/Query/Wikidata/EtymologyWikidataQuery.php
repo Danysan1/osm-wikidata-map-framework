@@ -24,6 +24,20 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
     private JSONWikidataQuery $baseQuery;
     private ?string $language;
 
+    /**
+     * This query expects all rows in the result of the $baseQuery to have the following variables:
+     * - item: The URI of the item
+     * - itemLabel: The label of the item
+     * - location: The WKT Point location of the item
+     * - etymology: The URI of the etymology item
+     * - from_entity: The URI of the entity from which the etymology originates
+     * - from_prop: The URI of the property from which the etymology originates in the above entity
+     * - commons: The name of the Wikimedia Commons category of the item (optional)
+     * - picture: The name of the Wikimedia Commons picture of the item (optional)
+     * - osmNode: The OSM node ID of the item (optional)
+     * - osmWay: The OSM way ID of the item (optional)
+     * - osmRelation: The OSM relation ID of the item (optional)
+     */
     public function __construct(BoundingBox $bbox, JSONWikidataQuery $baseQuery, ?string $language = null)
     {
         $this->bbox = $bbox;
@@ -125,6 +139,31 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         $name = empty($row["itemLabel"]["value"]) ? null : (string)$row["itemLabel"]["value"];
         $commons = empty($row["commons"]["value"]) ? null : "Category:" . (string)$row["commons"]["value"];
         $picture = empty($row["picture"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["picture"]["value"]);
+
+        $properties = [
+            "name" => $name,
+            "gender_color" => "#3bb2d0",
+            "source_color" => "#3399ff",
+            "type_color" => "#3bb2d0",
+            OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY => $itemQID,
+            OverpassEtymologyQueryResult::FEATURE_COMMONS_KEY => $commons,
+            "picture" => $picture,
+            "etymologies" => [
+                $this->convertRowToEtymology($row)
+            ]
+        ];
+
+        if (!empty($row["osmRelation"]["value"])) {
+            $properties["osm_type"] = "relation";
+            $properties["osm_id"] = (int)$row["osmRelation"]["value"];
+        } else if (!empty($row["osmWay"]["value"])) {
+            $properties["osm_type"] = "way";
+            $properties["osm_id"] = (int)$row["osmWay"]["value"];
+        } else if (!empty($row["osmNode"]["value"])) {
+            $properties["osm_type"] = "node";
+            $properties["osm_id"] = (int)$row["osmNode"]["value"];
+        }
+
         return [
             "type" => "Feature", // https://www.rfc-editor.org/rfc/rfc7946#section-3.2
             "id" => $itemQID ? $itemQID : $lon . "," . $lat,
@@ -132,18 +171,7 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
                 "type" => "Point",
                 "coordinates" => [$lon, $lat]
             ],
-            "properties" => [
-                "name" => $name,
-                "gender_color" => "#3bb2d0",
-                "source_color" => "#3399ff",
-                "type_color" => "#3bb2d0",
-                OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY => $itemQID,
-                OverpassEtymologyQueryResult::FEATURE_COMMONS_KEY => $commons,
-                "picture" => $picture,
-                "etymologies" => [
-                    $this->convertRowToEtymology($row)
-                ]
-            ]
+            "properties" => $properties
         ];
     }
 

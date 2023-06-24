@@ -32,6 +32,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?location) AS ?location)
                 (SAMPLE(?commons) AS ?commons)
                 (SAMPLE(?picture) AS ?picture)
+                (SAMPLE(?osmRelation) AS ?osmRelation)
                 (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
             WITH { 
@@ -51,7 +52,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 $limitClause
             } AS %qualifier
             WITH {
-                SELECT ?etymology ?location ?item ?itemLabel ?commons ?picture
+                SELECT ?etymology ?location ?item ?itemLabel ?commons ?picture ?osmRelation
                 WHERE {
                     ?etymology p:$wikidataProperty ?stmt.
                     MINUS { ?stmt pq:P625|pq:P582 []. }
@@ -64,6 +65,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
                     OPTIONAL { ?item wdt:P373 ?commons. }
                     OPTIONAL { ?item wdt:P18 ?picture. }
+                    OPTIONAL { ?item wdt:P402 ?osmRelation }
                     $labelQuery
                 }
                 $limitClause

@@ -32,6 +32,7 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 ?location
                 ?commons
                 ?picture
+                ?osmRelation
                 ?etymology
                 (?item AS ?from_entity)
                 ?from_prop
@@ -46,6 +47,7 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
                 FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
                 OPTIONAL { ?item wdt:P373 ?commons }
                 OPTIONAL { ?item wdt:P18 ?picture }
+                OPTIONAL { ?item wdt:P402 ?osmRelation }
                 $labelQuery
             }
             $limitClause",

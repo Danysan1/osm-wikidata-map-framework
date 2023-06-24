@@ -29,6 +29,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 (SAMPLE(?location) AS ?location)
                 (SAMPLE(?commons) AS ?commons)
                 (SAMPLE(?picture) AS ?picture)
+                (SAMPLE(?osmRelation) AS ?osmRelation)
                 ?etymology
                 (?etymology AS ?from_entity)
                 (wdt:$wikidataProperty AS ?from_prop)
@@ -44,6 +45,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
                 FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
                 OPTIONAL { ?item wdt:P373 ?commons. }
                 OPTIONAL { ?item wdt:P18 ?picture. }
+                OPTIONAL { ?item wdt:P402 ?osmRelation }
                 $labelQuery
             }
             GROUP BY ?item ?etymology
