@@ -1,7 +1,7 @@
 .git
 samples/
 airflow/
-map-cache/
+public/map-cache/
 
 *.geojson
 *.gz
