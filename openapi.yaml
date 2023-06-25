@@ -61,7 +61,7 @@ paths:
             $ref: "#/components/schemas/Longitude"
         - in: query
           name: "source"
-          required: false
+          required: true
           schema:
             $ref: "#/components/schemas/Source"
         - in: query
@@ -120,7 +120,7 @@ paths:
             $ref: "#/components/schemas/Language"
         - in: query
           name: "source"
-          required: false
+          required: true
           schema:
             $ref: "#/components/schemas/Source"
         - in: query
@@ -183,8 +183,13 @@ paths:
           schema:
             $ref: "#/components/schemas/Language"
         - in: query
+          name: "to"
+          required: true
+          schema:
+            $ref: "#/components/schemas/StatisticsType"
+        - in: query
           name: "source"
-          required: false
+          required: true
           schema:
             $ref: "#/components/schemas/Source"
         - in: query
@@ -501,11 +506,11 @@ components:
                 wikidata_query:
                   type: string
                   description: Wikidata SPARQL query used to fetch the features
-                  example: 'SELECT ... WHERE { ... }'
+                  example: "SELECT ... WHERE { ... }"
                 overpass_query:
                   type: string
                   description: OverpassQL query used to fetch the features
-                  example: '[out:json]; ...; out;'
+                  example: "[out:json]; ...; out;"
 
     ElementResponse:
       allOf:
@@ -585,22 +590,28 @@ components:
                 $ref: "#/components/schemas/EtymologyFeature"
 
     Source:
-      oneOf:
-        - type: string
-        - type: string
-          enum:
-            - db_all
-            - db_osm_name_etymology
-            - db_osm_subject
-            - db_osm_buried
-            - db_osm_wikidata_direct
-            - db_osm_wikidata_reverse
-            - db_propagated
-            - overpass_all
-            - overpass_osm_name_etymology
-            - overpass_osm_subject
-            - overpass_osm_buried
-            - wd_direct
-            - wd_indirect
-            - wd_qualifier
-            - wd_reverse
+      type: string
+      enum:
+        - db_all
+        - db_osm_name_etymology
+        - db_osm_subject
+        - db_osm_buried
+        - db_osm_wikidata_direct
+        - db_osm_wikidata_reverse
+        - db_propagated
+        - overpass_all
+        - overpass_osm_name_etymology
+        - overpass_osm_subject
+        - overpass_osm_buried
+        - wd_direct
+        - wd_indirect
+        - wd_qualifier
+        - wd_reverse
+
+    StatisticsType:
+      type: string
+      enum:
+        - sourceStats
+        - genderStats
+        - typeStats
+        - centuryStats
