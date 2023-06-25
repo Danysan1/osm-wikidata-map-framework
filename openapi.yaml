@@ -577,7 +577,22 @@ components:
                 wikidata:
                   type: string
                   description: Q-ID of the Wikidata entity for this feature
-                  example: Q1
+                  example: "Q1"
+                source_color:
+                  type: string
+                  example: "#33ff66"
+                gender_color:
+                  type: string
+                  example: "#33ff66"
+                type_color:
+                  type: string
+                  example: "#33ff66"
+                start_century_color:
+                  type: string
+                  example: "#33ff66"
+                end_century_color:
+                  type: string
+                  example: "#33ff66"
 
     EtymologyResponse:
       allOf:
@@ -614,4 +629,5 @@ components:
         - sourceStats
         - genderStats
         - typeStats
-        - centuryStats
+        - startCenturyStats
+        - endCenturyStats

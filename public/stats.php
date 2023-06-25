@@ -21,7 +21,8 @@ use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use App\Query\StaticStatsQuery;
-use App\Query\PostGIS\Stats\BBoxCenturyStatsPostGISQuery;
+use App\Query\PostGIS\Stats\BBoxStartCenturyStatsPostGISQuery;
+use App\Query\PostGIS\Stats\BBoxEndCenturyStatsPostGISQuery;
 use App\Query\Wikidata\AllIndirectEtymologyWikidataQuery;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
@@ -69,8 +70,10 @@ if ($db != null) {
         $query = new BBoxGenderStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "typeStats") {
         $query = new BBoxTypeStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
-    } elseif ($to == "centuryStats") {
-        $query = new BBoxCenturyStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
+    } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
+        $query = new BBoxStartCenturyStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
+    } elseif ($to == "endCenturyStats") {
+        $query = new BBoxEndCenturyStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "sourceStats") {
         $query = new BBoxSourceStatsPostGISQuery($bbox, $db, $serverTiming, $source);
     } else {
@@ -112,7 +115,9 @@ if ($db != null) {
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_types.csv");
-    } elseif ($to == "centuryStats") {
+    } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
+        throw new Exception("Not implemented"); // TODO
+    } elseif ($to == "endCenturyStats") {
         throw new Exception("Not implemented"); // TODO
     } elseif ($to == "sourceStats") {
         $baseQuery = new StaticStatsQuery($sourceQuery, $sourceName, $sourceColor);
