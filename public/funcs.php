@@ -40,6 +40,9 @@ function preparePage(Configuration $conf)
 	ini_set('session.cookie_secure', 'true');
 	ini_set('session.cookie_path', '/; samesite=Strict');
 	ini_set('session.use_strict_mode', 'true');
+
+	if (!empty($_SERVER['HTTP_ORIGIN']) && $_SERVER['HTTP_ORIGIN'] === 'http://localhost:8001')
+		header("Access-Control-Allow-Origin: http://localhost:8001");
 }
 
 /**

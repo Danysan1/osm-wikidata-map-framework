@@ -415,6 +415,7 @@ services:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
       - owmf-internal
+      - pgadmin-bridge
       - airflow-postgis-bridge
     logging:
       driver: json-file
@@ -443,7 +444,6 @@ services:
       - pgadmin-data:/var/lib/pgadmin:delegated
       - ./pgadmin_init.json:/pgadmin4/servers.json
     networks:
-      - owmf-internal
       - pgadmin-bridge
     healthcheck:
       test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
@@ -462,8 +462,6 @@ services:
       - ./openapi.yaml:/usr/share/nginx/html/owmf_openapi.yaml
     environment:
       - API_URL=owmf_openapi.yaml
-    networks:
-      - owmf-internal
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/"]
       interval: 10s

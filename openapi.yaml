@@ -5,14 +5,12 @@ info:
   description: Programmatically interact with a site based on OSM-Wikidata Map Framework
 
 servers:
+  - url: http://localhost
+    description: Local instance
   - url: https://etymology.dsantini.it
     description: Open Etymology Map
   - url: https://burial.dsantini.it
     description: Open Burial Map
-  - url: http://owmf-web-prod
-    description: Local instance
-  - url: http://owmf-web-dev
-    description: Local development instance
 
 paths:
   /global-map.php:
@@ -45,22 +43,22 @@ paths:
           name: "minLat"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Latitude"
         - in: query
           name: "minLon"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Longitude"
         - in: query
           name: "maxLat"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Latitude"
         - in: query
           name: "maxLon"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Longitude"
         - in: query
           name: "source"
           required: false
@@ -99,27 +97,27 @@ paths:
           name: "minLat"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Latitude"
         - in: query
           name: "minLon"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Longitude"
         - in: query
           name: "maxLat"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Latitude"
         - in: query
           name: "maxLon"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Longitude"
         - in: query
           name: "language"
           required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/Language"
         - in: query
           name: "source"
           required: false
@@ -163,27 +161,27 @@ paths:
           name: "minLat"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Latitude"
         - in: query
           name: "minLon"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Longitude"
         - in: query
           name: "maxLat"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Latitude"
         - in: query
           name: "maxLon"
           required: true
           schema:
-            type: number
+            $ref: "#/components/schemas/Longitude"
         - in: query
           name: "language"
           required: true
           schema:
-            type: string
+            $ref: "#/components/schemas/Language"
         - in: query
           name: "source"
           required: false
@@ -229,6 +227,22 @@ paths:
 
 components:
   schemas:
+    Latitude:
+      type: number
+      minimum: -90
+      maximum: 90
+      example: 45.464
+
+    Longitude:
+      type: number
+      minimum: -180
+      maximum: 180
+      example: 9.19
+
+    Language:
+      type: string
+      example: en
+
     Error:
       required:
         - error
