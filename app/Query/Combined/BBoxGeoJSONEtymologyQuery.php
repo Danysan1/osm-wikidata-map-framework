@@ -22,14 +22,9 @@ use App\ServerTiming;
  */
 class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements BBoxGeoJSONQuery
 {
-    private ?string $genderColorCsvFileName;
-    private ?string $typeColorCsvFileName;
-
-    public function __construct(BBoxGeoJSONQuery $baseQuery, StringSetXMLQueryFactory $wikidataFactory, ServerTiming $timing, ?string $genderColorCsvFileName = null, ?string $typeColorCsvFileName = null)
+    public function __construct(BBoxGeoJSONQuery $baseQuery, StringSetXMLQueryFactory $wikidataFactory, ServerTiming $timing)
     {
         parent::__construct($baseQuery, $wikidataFactory, $timing);
-        $this->genderColorCsvFileName = $genderColorCsvFileName;
-        $this->typeColorCsvFileName = $typeColorCsvFileName;
     }
 
     protected function createResult(array $overpassGeoJSONData): JSONQueryResult
@@ -41,10 +36,9 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
         } else {
             $wikidataQuery = new GeoJSON2GeoJSONEtymologyWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
             $out = $wikidataQuery->sendAndGetGeoJSONResult();
-            if (!empty($this->genderColorCsvFileName))
-                $out = $this->updateResultWithColorsFromCSV($out, "genderID", "gender_color", $this->genderColorCsvFileName);
-            if (!empty($this->typeColorCsvFileName))
-                $out = $this->updateResultWithColorsFromCSV($out, "instanceID", "type_color", $this->typeColorCsvFileName);
+            $out = $this->updateResultWithColorsFromCSV($out, "genderID", "gender_color", "wikidata_genders.csv");
+            $out = $this->updateResultWithColorsFromCSV($out, "instanceID", "type_color", "wikidata_types.csv");
+            $out = $this->updateResultWithColorsFromCSV($out, "countryID", "country_color", "wikidata_countries.csv");
         }
         return $out;
     }
@@ -72,7 +66,9 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
                     $etymologies = $geoJsonData["features"][$i]["properties"]["etymologies"];
                     $etymologyCount = count($etymologies);
                     for ($j = 0; !$foundColorForFeature && $j < $etymologyCount; $j++) {
-                        if ($etymologies[$j][$etymologyField] == $wikidataQID) {
+                        if (empty($etymologies[$j][$etymologyField])) {
+                            error_log("Empty etymology field '$etymologyField' for feature $i");
+                        } else if ($etymologies[$j][$etymologyField] == $wikidataQID) {
                             $color = (string)($row[3]);
                             $geoJsonData["features"][$i]["properties"][$colorField] = $color;
                             $foundColorForFeature = true;

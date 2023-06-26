@@ -13,6 +13,7 @@ class BaseEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 (SAMPLE(?instance_name) AS ?instance)
                 (SAMPLE(?genderID) AS ?genderID)
                 (SAMPLE(?gender_name) AS ?gender)
+                (SAMPLE(?countryID) AS ?countryID)
                 (SAMPLE(?event_date) AS ?event_date)
                 (SAMPLE(?event_date_precision) AS ?event_date_precision)
                 (SAMPLE(?start_date) AS ?start_date)
@@ -103,6 +104,10 @@ class BaseEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                         ?wikidata p:P570/psv:P570/wikibase:timePrecision ?other_death_date_precision.
                         FILTER (?other_death_date_precision > ?death_date_precision).
                     }.
+                }
+
+                OPTIONAL {
+                    ?countryID ^wdt:P27 ?wikidata.
                 }
             }
             GROUP BY ?wikidata";

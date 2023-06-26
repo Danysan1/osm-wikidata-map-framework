@@ -18,6 +18,7 @@ use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
 use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
+use \App\Query\Wikidata\Stats\CountryStatsWikidataFactory;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use App\Query\StaticStatsQuery;
@@ -115,6 +116,9 @@ if ($db != null) {
     } elseif ($to == "typeStats") {
         $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_types.csv");
+    } elseif ($to == "countryStats") {
+        $wikidataFactory = new CountryStatsWikidataFactory($safeLanguage, $wikidataConfig);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_countries.csv");
     } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
         throw new Exception("Not implemented"); // TODO
     } elseif ($to == "endCenturyStats") {

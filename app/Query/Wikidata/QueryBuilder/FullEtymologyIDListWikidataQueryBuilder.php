@@ -22,6 +22,7 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 (SAMPLE(?wikipedia) AS ?wikipedia)
                 (SAMPLE(?commons) AS ?commons)
                 (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
+                (SAMPLE(?countryID) AS ?countryID)
                 (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
                 (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
                 (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
@@ -238,8 +239,8 @@ class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 }
 
                 OPTIONAL {
-                    ?citizenship_name ^rdfs:label/^wdt:P27 ?wikidata.
-                    FILTER(lang(?citizenship_name)='$language').
+                    ?countryID ^wdt:P27 ?wikidata;
+                        rdfs:label ?citizenship_name FILTER(lang(?citizenship_name)='$language').
                 }
             }
             GROUP BY ?wikidata";

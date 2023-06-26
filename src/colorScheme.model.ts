@@ -1,6 +1,6 @@
 import { Expression } from "mapbox-gl";
 
-export type ColorSchemeID = "blue" | "gender" | "type" | "startCentury" | "endCentury" | "source" | "black" | "red" | "orange";
+export type ColorSchemeID = "blue" | "gender" | "type" | "country" | "startCentury" | "endCentury" | "source" | "black" | "red" | "orange";
 
 export interface ColorScheme {
     textKey: string;
@@ -24,6 +24,11 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
         textKey: 'color_scheme.type',
         color: ['get', 'type_color'],
         urlCode: "typeStats",
+    },
+    country: {
+        textKey: 'color_scheme.country',
+        color: ['get', 'country_color'],
+        urlCode: "countryStats",
     },
     startCentury: {
         textKey: 'color_scheme.start_century',

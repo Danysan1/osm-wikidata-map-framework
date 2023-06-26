@@ -43,6 +43,7 @@
         "source": "Nach Quelle",
         "gender": "Nach Geschlecht",
         "type": "Nach Typ",
+        "country": "Nach Ländern",
         "start_century": "Nach Gründungs-/Geburtsjahrhundert",
         "end_century": "Nach Jahrhundert des Endes/Todes",
         "black": "Schwarz",

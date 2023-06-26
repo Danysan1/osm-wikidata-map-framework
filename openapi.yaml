@@ -629,5 +629,6 @@ components:
         - sourceStats
         - genderStats
         - typeStats
+        - countryStats
         - startCenturyStats
         - endCenturyStats

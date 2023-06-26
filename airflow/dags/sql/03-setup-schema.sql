@@ -69,7 +69,9 @@ CREATE TABLE owmf.wikidata (
     wd_gender_descr VARCHAR,
     wd_gender_color VARCHAR,
     wd_type_descr VARCHAR,
-    wd_type_color VARCHAR
+    wd_type_color VARCHAR,
+    wd_country_descr VARCHAR,
+    wd_country_color VARCHAR
 );
 
 CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='100');

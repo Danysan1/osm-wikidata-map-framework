@@ -114,6 +114,7 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
                 "gender_color" => "#3bb2d0",
                 "source_color" => "#33ff66",
                 "type_color" => "#3bb2d0",
+                "country_color" => "#3bb2d0",
             ],
         ];
 

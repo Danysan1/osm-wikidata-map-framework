@@ -57,6 +57,7 @@ class XMLWikidataEtymologyQueryResult extends XMLWikidataQueryResult
             "birth_place" => "wd:literal",
             "death_place" => "wd:literal",
             "prizes" => "wd:literal",
+            "countryID" => "wd:uri",
             "citizenship" => "wd:literal",
             //"wkt_coords" => "geo:wktLiteral",
             "wkt_coords" => "wd:literal",
@@ -76,6 +77,6 @@ class XMLWikidataEtymologyQueryResult extends XMLWikidataQueryResult
      */
     protected function getEntityXMLFields(): array
     {
-        return ["wikidata", "instanceID", "genderID"];
+        return ["wikidata", "instanceID", "genderID", "countryID"];
     }
 }

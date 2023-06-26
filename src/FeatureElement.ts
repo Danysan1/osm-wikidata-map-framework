@@ -10,6 +10,7 @@ import { imageToDomElement } from "./ImageElement";
 import { logErrorMessage } from "./monitoring";
 
 interface FeatureProperties {
+    country_color?: string;
     alt_name?: string;
     official_name?: string;
     commons?: string;
