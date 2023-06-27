@@ -19,7 +19,8 @@ Q217196,Crown of Castile,Spain,#F1BF00
 Q204920,Crown of Aragon,Spain,#F1BF00
 Q175276,Kingdom of León,Spain,#F1BF00
 Q30,United States of America,USA,#B22234
-Q31,Belgium,Belgium,#000000
+Q31,Belgium,Belgium,#C8102E
+Q157070,County of Flanders,Belgium,#C8102E
 Q32,Luxembourg,Luxembourg,#00A1DE
 Q33,Finland,Finland,#003580
 Q34,Sweden,Sweden,#006aa7
@@ -47,12 +48,15 @@ Q12560,Ottoman Empire,Ottoman Empire,#ff0000
 Q45,Portugal,Portugal,#006600
 Q45670,Kingdom of Portugal,Portugal,#006600
 Q55,Netherlands,Netherlands,#FF9B00
+Q700283,Austrian Netherlands,Netherlands,#FF9B00
+Q622783,Spanish Netherlands,Netherlands,#FF9B00
+Q6581823,Southern Netherlands,Netherlands,#FF9B00
+Q29999,Kingdom of the Netherlands,Netherlands,#FF9B00
+Q170072,Dutch Republic,Netherlands,#FF9B00
 Q79,Egypt,Egypt,#000000
 Q370173,Sultanate of Egypt,Egypt,#000000
 Q3087763,Republic of Egypt,Egypt,#000000
 Q96,México,Mexico,#006847
-Q29999,Kingdom of the Netherlands,Netherlands,#FF9B00
-Q170072,Dutch Republic,Netherlands,#FF9B00
 Q142,France,France,#002395
 Q70802,French Third Republic,France,#002395
 Q71084,First French Empire,France,#002395
@@ -64,7 +68,6 @@ Q2184,Russian Soviet Federative Socialist Republic,Russia,#d52b1e
 Q34266,Russian Empire,Russia,#d52b1e
 Q139319,Russian Republic,Russia,#d52b1e
 Q2305208,Soviet Russia,Russia,#d52b1e
-Q801,Israel,Israel,#0038a8
 Q183,Germany,Germany,#000000
 Q713750,West Germany,Germany,#000000
 Q16957,East Germany,Germany,#000000
@@ -74,6 +77,7 @@ Q27306,Kingdom of Prussia,Germany,#000000
 Q7318,Nazi Germany,Germany,#000000
 Q33496,Czechoslovakia,Czechoslovakia,#0000ff
 Q212,Ukraine,Ukraine,#005bbb
+Q222,Albania,Albania,#DA291C
 Q243610,Ukrainian People's Republic,Ukraine,#005bbb
 Q213,Czech Republic,Czech Republic,#e8000d
 Q214,Slovakia,Slovakia,#e8000d
@@ -81,10 +85,17 @@ Q237,Vatican City,Vatican City,#FFE000
 Q170174,Papal States,Vatican City,#FFE000
 Q241,Cuba,Cuba,#002a8f
 Q414,Argentina,Argentina,#75AADB
+Q408,Australia,Australia,#FFCD00
+Q664,New Zealand,New Zealand,#000000
+Q668,India,India,#000080
+Q1775277,Dominion of India,India,#000080
+Q129286,British Raj,India,#000080
+Q83618,Maratha Empire,India,#000080
 Q794,Iran,Iran,#da0000
 Q63158027,Qajar Iran,Iran,#da0000
 Q107258515,Pahlavi Iran,Iran,#da0000
 Q18234383,Safavid Iran,Iran,#da0000
+Q801,Israel,Israel,#0038a8
 Q865,Taiwan,Taiwan,#ff0000
 Q928,Philippines,Philippines,#0038a8
 Q15180,Soviet Union,Soviet Union,#ff0000

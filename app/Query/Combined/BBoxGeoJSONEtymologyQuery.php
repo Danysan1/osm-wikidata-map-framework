@@ -69,7 +69,7 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
                     $etymologyCount = count($etymologies);
                     for ($j = 0; !$foundColorForFeature && $j < $etymologyCount; $j++) {
                         if (empty($etymologies[$j][$etymologyField])) {
-                            error_log("Empty etymology field '$etymologyField' for feature $i");
+                            //error_log("Empty etymology field '$etymologyField' for feature $i");
                         } else if ($etymologies[$j][$etymologyField] == $wikidataQID) {
                             $color = (string)($row[3]);
                             $geoJsonData["features"][$i]["properties"][$colorField] = $color;
