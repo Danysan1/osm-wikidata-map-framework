@@ -13,6 +13,7 @@ Q161885,Great Britain,United Kingdom,#006600
 Q179876,Kingdom of England,United Kingdom,#006600
 Q27,Republic of Ireland,Ireland,#169b62
 Q28,Hungary,Hungary,#436F4D
+Q171150,Kingdom of Hungary,Hungary,#436F4D
 Q29,Spain,Spain,#F1BF00
 Q80702,Kingdom of Spain,Spain,#F1BF00
 Q217196,Crown of Castile,Spain,#F1BF00
@@ -80,13 +81,23 @@ Q27306,Kingdom of Prussia,Germany,#000000
 Q7318,Nazi Germany,Germany,#000000
 Q33496,Czechoslovakia,Czechoslovakia,#0000ff
 Q212,Ukraine,Ukraine,#005bbb
-Q222,Albania,Albania,#DA291C
 Q243610,Ukrainian People's Republic,Ukraine,#005bbb
+Q133356,Ukrainian Soviet Socialist Republic,Ukraine,#005bbb
+Q1508143,Ukrainian State,Ukraine,#005bbb
+Q215,Slovenia,Slovenia,#005da4
+Q218,Romania,Romania,#002B7F
+Q222,Albania,Albania,#DA291C
+Q224,Croatia,Croatia,#FF0000
 Q213,Czech Republic,Czech Republic,#e8000d
 Q214,Slovakia,Slovakia,#e8000d
 Q237,Vatican City,Vatican City,#FFE000
 Q170174,Papal States,Vatican City,#FFE000
 Q241,Cuba,Cuba,#002a8f
+Q298,Chile,Chile,#0039a6
+Q403,Serbia,Serbia,#0c4076
+Q684030,Principality of Serbia,Serbia,#0c4076
+Q241748,Kingdom of Serbia,Serbia,#0c4076
+Q2415003,Kingdom of Serbia,Serbia,#0c4076
 Q414,Argentina,Argentina,#75AADB
 Q408,Australia,Australia,#FFCD00
 Q664,New Zealand,New Zealand,#000000

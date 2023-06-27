@@ -14,6 +14,7 @@ class BaseEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 (SAMPLE(?genderID) AS ?genderID)
                 (SAMPLE(?gender_name) AS ?gender)
                 (SAMPLE(?countryID) AS ?countryID)
+                (SAMPLE(?country_name) AS ?country)
                 (SAMPLE(?event_date) AS ?event_date)
                 (SAMPLE(?event_date_precision) AS ?event_date_precision)
                 (SAMPLE(?start_date) AS ?start_date)
@@ -107,7 +108,8 @@ class BaseEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 }
 
                 OPTIONAL {
-                    ?countryID ^wdt:P17|^wdt:P27 ?wikidata.
+                    ?countryID ^wdt:P17|^wdt:P27 ?wikidata;
+                        rdfs:label ?country_name FILTER(lang(?country_name)='$language').
                 }
             }
             GROUP BY ?wikidata";

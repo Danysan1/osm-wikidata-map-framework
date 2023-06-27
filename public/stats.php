@@ -13,8 +13,7 @@ use \App\PostGIS_PDO;
 use \App\Query\Caching\CSVCachedBBoxJSONQuery;
 use \App\Query\Combined\BBoxStatsOverpassWikidataQuery;
 use App\Query\Overpass\BBoxEtymologyOverpassQuery;
-use \App\Query\PostGIS\Stats\BBoxGenderStatsPostGISQuery;
-use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
+use App\Query\PostGIS\Stats\BBoxWikidataStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
 use \App\Query\Wikidata\Stats\GenderStatsWikidataQuery;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataQuery;
@@ -70,9 +69,11 @@ $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     if ($to == "genderStats") {
-        $query = new BBoxGenderStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
+        $query = new BBoxWikidataStatsPostGISQuery("wd_gender_id", "wd_gender_color", "wd_gender_descr", $bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "typeStats") {
-        $query = new BBoxTypeStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
+        $query = new BBoxWikidataStatsPostGISQuery("wd_instance_id", "wd_type_color", "wd_type_descr", $bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
+    } elseif ($to == "countryStats") {
+        $query = new BBoxWikidataStatsPostGISQuery("wd_country_id", "wd_country_color", "wd_country_descr", $bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
         $query = new BBoxStartCenturyStatsPostGISQuery($bbox, $db, $wikidataConfig, $defaultLanguage, $safeLanguage, $serverTiming, null, $source);
     } elseif ($to == "endCenturyStats") {

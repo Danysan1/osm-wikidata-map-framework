@@ -124,6 +124,9 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 throw new Exception("Wikidata request failed");
             }
 
+            $responseJSON = $wikidataResult->getJSON();
+            file_put_contents("wikidata.json", $responseJSON);
+
             $stInsertGender = $this->getDB()->prepare(
                 "INSERT INTO owmf.wikidata (wd_wikidata_cod)
                 SELECT DISTINCT REPLACE(value->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
@@ -137,9 +140,15 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 LEFT JOIN owmf.wikidata ON wd_wikidata_cod = REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE LEFT(value->'instanceID'->>'value', 31) = 'http://www.wikidata.org/entity/'
                 AND wikidata IS NULL
+                UNION
+                SELECT DISTINCT REPLACE(value->'countryID'->>'value', 'http://www.wikidata.org/entity/', '')
+                FROM json_array_elements((:result::JSON)->'results'->'bindings')
+                LEFT JOIN owmf.wikidata ON wd_wikidata_cod = REPLACE(value->'countryID'->>'value', 'http://www.wikidata.org/entity/', '')
+                WHERE LEFT(value->'countryID'->>'value', 31) = 'http://www.wikidata.org/entity/'
+                AND wikidata IS NULL
                 ON CONFLICT (wd_wikidata_cod) DO NOTHING"
             );
-            $stInsertGender->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            $stInsertGender->bindValue("result", $responseJSON, PDO::PARAM_LOB);
             //$stInsertGender->debugDumpParams();
             $stInsertGender->execute();
             if ($this->hasServerTiming())
@@ -158,6 +167,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                             value->'instance'->>'value' AS text,
                             REPLACE(value->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
                         FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
+                    ),
+                    country AS (
+                        SELECT DISTINCT
+                            value->'country'->>'value' AS text,
+                            REPLACE(value->'countryID'->>'value', 'http://www.wikidata.org/entity/', '') AS cod
+                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS res
                     )
                 SELECT DISTINCT wd.wd_id, :lang::VARCHAR, gender.text
                 FROM gender
@@ -172,10 +187,17 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 LEFT JOIN owmf.wikidata_text AS wdt
                     ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
                 WHERE wdt IS NULL
+                UNION
+                SELECT DISTINCT wd.wd_id, :lang::VARCHAR, country.text
+                FROM country
+                JOIN owmf.wikidata AS wd ON wd.wd_wikidata_cod = country.cod
+                LEFT JOIN owmf.wikidata_text AS wdt
+                    ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
+                WHERE wdt IS NULL
                 ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );
             $stInsertGenderText->bindValue("lang", $language, PDO::PARAM_STR);
-            $stInsertGenderText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            $stInsertGenderText->bindValue("result", $responseJSON, PDO::PARAM_LOB);
             //$stInsertGenderText->debugDumpParams();
             $stInsertGenderText->execute();
             if ($this->hasServerTiming())
@@ -198,15 +220,17 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                     wd_commons = response->'commons'->>'value',
                     wd_gender_id = gender.wd_id,
                     wd_instance_id = instance.wd_id,
+                    wd_country_id = country.wd_id,
                     $downloadDateExtraUpdate
                     $downloadDateField = CURRENT_TIMESTAMP
                 FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
                 LEFT JOIN owmf.wikidata AS gender ON gender.wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
                 LEFT JOIN owmf.wikidata AS instance ON instance.wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
+                LEFT JOIN owmf.wikidata AS country ON country.wd_wikidata_cod = REPLACE(response->'countryID'->>'value', 'http://www.wikidata.org/entity/', '')
                 WHERE wikidata.$downloadDateField IS NULL
                 AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
             );
-            $stInsertWikidata->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            $stInsertWikidata->bindValue("result", $responseJSON, PDO::PARAM_LOB);
             //$stInsertWikidata->debugDumpParams();
             $stInsertWikidata->execute();
             if ($this->hasServerTiming())
@@ -231,7 +255,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                         ON CONFLICT (wdp_wd_id, wdp_picture) DO NOTHING
                         RETURNING CONCAT('File:',wdp_picture) AS picture"
                     );
-                    $stInsertPicture->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+                    $stInsertPicture->bindValue("result", $responseJSON, PDO::PARAM_LOB);
                     //$stInsertPicture->debugDumpParams();
                     $stInsertPicture->execute();
                     if ($this->hasServerTiming())
@@ -261,7 +285,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 AND wdt_language = :lang::VARCHAR"
             );
             $stUpdateText->bindValue("lang", $language, PDO::PARAM_STR);
-            $stUpdateText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            $stUpdateText->bindValue("result", $responseJSON, PDO::PARAM_LOB);
             //$stUpdateText->debugDumpParams();
             $stUpdateText->execute();
             if ($this->hasServerTiming())
@@ -301,7 +325,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
             );
             $stInsertText->bindValue("lang", $language, PDO::PARAM_STR);
-            $stInsertText->bindValue("result", $wikidataResult->getJSON(), PDO::PARAM_LOB);
+            $stInsertText->bindValue("result", $responseJSON, PDO::PARAM_LOB);
             try {
                 $stInsertText->execute();
             } catch (Exception $e) {

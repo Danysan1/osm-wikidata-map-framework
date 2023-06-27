@@ -29,7 +29,9 @@ SELECT ?wikidata
     (SAMPLE(?wikipedia) AS ?wikipedia)
     (SAMPLE(?commons) AS ?commons)
     (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
-    (GROUP_CONCAT(DISTINCT ?citizenship_name; SEPARATOR=', ') AS ?citizenship)
+    (SAMPLE(?countryID) AS ?countryID)
+    (SAMPLE(?country_name) AS ?country)
+    (GROUP_CONCAT(DISTINCT ?country_name; SEPARATOR=', ') AS ?citizenship)
     (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
     (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
     (SAMPLE(?event_date) AS ?event_date)
@@ -246,7 +248,7 @@ WHERE {
 
     OPTIONAL {
         ?countryID ^wdt:P17|^wdt:P27 ?wikidata;
-            rdfs:label ?citizenship_name FILTER(lang(?citizenship_name)='${language}').
+            rdfs:label ?country_name FILTER(lang(?country_name)='${language}').
     }
 }
 GROUP BY ?wikidata

@@ -110,6 +110,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     COALESCE(MIN(owmf.et_source_color(et)), '#223b53') AS source_color,
                     COALESCE(MIN(gender.wd_gender_color), '#223b53') AS gender_color,
                     COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
+                    COALESCE(MIN(country.wd_country_color), '#223b53') AS country_color,
                     COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_start_date, wd.wd_birth_date, wd.wd_event_date)))), '#223b53') AS start_century_color,
                     COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_end_date, wd.wd_death_date, wd.wd_event_date)))), '#223b53') AS end_century_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
@@ -166,6 +167,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                 LEFT JOIN owmf.wikidata_text AS gender_text
                     ON gender.wd_id = gender_text.wdt_wd_id AND gender_text.wdt_language = :lang::VARCHAR
                 LEFT JOIN owmf.wikidata AS instance ON wd.wd_instance_id = instance.wd_id
+                LEFT JOIN owmf.wikidata AS country ON wd.wd_country_id = country.wd_id
                 LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et_from_osm_wikidata_wd_id
                 LEFT JOIN owmf.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et_from_parts_of_wd_id
                 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et_from_el_id

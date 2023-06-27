@@ -62,6 +62,7 @@ CREATE TABLE owmf.wikidata (
     wd_commons VARCHAR,
     wd_gender_id INT REFERENCES owmf.wikidata(wd_id),
     wd_instance_id INT REFERENCES owmf.wikidata(wd_id),
+    wd_country_id INT REFERENCES owmf.wikidata(wd_id),
     wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     wd_download_date TIMESTAMP DEFAULT NULL,
     wd_full_download_date TIMESTAMP DEFAULT NULL,
