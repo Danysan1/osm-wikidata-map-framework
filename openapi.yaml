@@ -548,6 +548,38 @@ components:
           type: string
           description: P-ID of the source Wikidata property
           example: P123
+        instanceID:
+          type: string
+          description: Q-ID of the Wikidata element representing the class this element is instance of
+          example: Q5
+        genderID:
+          type: string
+          description: Q-ID of the Wikidata element representing the gender of this element
+          example: Q6581097
+        countryID:
+          type: string
+          description: Q-ID of the Wikidata element representing the country of this element
+          example: Q38
+        start_date:
+          type: string
+          description: Start date of this item
+          example: "2020-01-01"
+        end_date:
+          type: string
+          description: End date of this item
+          example: "2020-01-01"
+        birth_date:
+          type: string
+          description: Birth date of this item
+          example: "2020-01-01"
+        death_date:
+          type: string
+          description: Death date of this item
+          example: "2020-01-01"
+        event_date:
+          type: string
+          description: Point in time where this event happened
+          example: "2020-01-01"
 
     EtymologyFeature:
       allOf:

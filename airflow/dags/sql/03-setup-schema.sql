@@ -172,6 +172,10 @@ SELECT CASE
 END
 $BODY$;
 
+-- Color mapping from century to RGB
+-- Red:   (-inf,5,9,13,17,21,inf) => (0,0,0,0,255,255,255)
+-- Green: (-inf,5,9,13,17,21,inf) => (0,0,255,255,255,0,0)
+-- Blue:  (-inf,5,9,13,17,21,inf) => (255,255,255,0,0,0,0)
 CREATE OR REPLACE FUNCTION owmf.et_century_color(century NUMERIC)
     RETURNS text
     LANGUAGE 'plpgsql'
@@ -181,15 +185,15 @@ AS $BODY$
 DECLARE
     red INT := CASE
         WHEN century IS NULL THEN NULL
-        ELSE LEAST(GREATEST((century-13)*255/4, 0), 255) -- color mapping (-inf,5,9,13,17,21,inf)=>(0,0,0,0,255,255,255)
+        ELSE LEAST(GREATEST((century-13)*255/4, 0), 255)
     END;
     green INT := CASE
         WHEN century IS NULL THEN NULL
-        ELSE LEAST(GREATEST(512-(ABS(century-13)*255/4), 0), 255) -- color mapping (-inf,5,9,13,17,21,inf)=>(0,0,255,255,255,0,0)
+        ELSE LEAST(GREATEST(512-(ABS(century-13)*255/4), 0), 255)
     END;
     blue INT := CASE
         WHEN century IS NULL THEN NULL
-        ELSE LEAST(GREATEST((13-century)*255/4, 0), 255) -- color mapping (-inf,5,9,13,17,21,inf)=>(255,255,255,0,0,0,0)
+        ELSE LEAST(GREATEST((13-century)*255/4, 0), 255)
     END;
 BEGIN
     RETURN 'rgb('||red||','||green||','||blue||')';

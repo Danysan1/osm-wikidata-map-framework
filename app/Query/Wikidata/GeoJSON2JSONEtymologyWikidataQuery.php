@@ -20,14 +20,9 @@ use \App\Result\XMLQueryResult;
  */
 abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
 {
-    /** @var GeoJSON2XMLEtymologyWikidataQuery $wikidataQuery */
-    protected $wikidataQuery;
+    protected GeoJSON2XMLEtymologyWikidataQuery $wikidataQuery;
 
-    /**
-     * @param array $geoJSONData
-     * @param StringSetXMLQueryFactory $queryFactory
-     */
-    public function __construct($geoJSONData, $queryFactory)
+    public function __construct(array $geoJSONData, StringSetXMLQueryFactory $queryFactory)
     {
         $this->wikidataQuery = new GeoJSON2XMLEtymologyWikidataQuery($geoJSONData, $queryFactory);
     }

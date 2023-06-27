@@ -87,4 +87,18 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
     {
         return get_class($this) . ": " . $this->baseQuery;
     }
+
+    /**
+     * Color mapping from century to RGB
+     * Red:   (-inf,5,9,13,17,21,inf) => (0,0,0,0,255,255,255)
+     * Green: (-inf,5,9,13,17,21,inf) => (0,0,255,255,255,0,0)
+     * Blue:  (-inf,5,9,13,17,21,inf) => (255,255,255,0,0,0,0)
+     */
+    public static function getCenturyColor(int $century): string
+    {
+        $red = (int)min(max(($century - 13) * 255 / 4, 0), 255);
+        $green = (int)min(max(512 - (abs($century - 13) * 255 / 4), 0), 255);
+        $blue = (int)min(max((13 - $century) * 255 / 4, 0), 255);
+        return "rgb($red,$green,$blue)";
+    }
 }

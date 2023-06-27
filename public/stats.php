@@ -19,17 +19,17 @@ use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
 use \App\Query\Wikidata\Stats\GenderStatsWikidataQuery;
 use \App\Query\Wikidata\Stats\TypeStatsWikidataQuery;
 use \App\Query\Wikidata\Stats\CountryStatsWikidataQuery;
-use \App\Query\Wikidata\Stats\StartCenturyStatsWikidataQuery;
-use \App\Query\Wikidata\Stats\EndCenturyStatsWikidataQuery;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use App\Query\StaticStatsQuery;
 use App\Query\PostGIS\Stats\BBoxStartCenturyStatsPostGISQuery;
 use App\Query\PostGIS\Stats\BBoxEndCenturyStatsPostGISQuery;
 use App\Query\Wikidata\AllIndirectEtymologyWikidataQuery;
+use App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
 use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
+use App\Query\Wikidata\Stats\CenturyStatsWikidataQuery;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -83,17 +83,19 @@ if ($db != null) {
         throw new Exception("Bad 'to' parameter");
     }
 } else {
+    $overpassCacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $wikidataCacheTimeoutHours = (int)$conf->get("wikidata_cache_timeout_hours");
     if (str_starts_with($source, "overpass_")) {
         $keyID = str_replace("overpass_", "", $source);
         $wikidataKeys = $conf->getWikidataKeys($keyID);
         $sourceQuery = new BBoxEtymologyOverpassQuery($wikidataKeys, $bbox, $overpassConfig, $textKey, $descriptionKey, $defaultLanguage, $safeLanguage);
         $sourceName = "OpenStreetMap";
         $sourceColor = "#33ff66";
-        $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+        $cacheTimeoutHours = $overpassCacheTimeoutHours;
     } else {
         $sourceName = "Wikidata";
         $sourceColor = "#3399ff";
-        $cacheTimeoutHours = (int)$conf->get("wikidata_cache_timeout_hours");
+        $cacheTimeoutHours = $wikidataCacheTimeoutHours;
 
         if ($source == "wd_direct") {
             $wikidataProps = $conf->getArray("osm_wikidata_properties");
@@ -112,6 +114,8 @@ if ($db != null) {
         }
     }
 
+    $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
+    $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     if ($to == "genderStats") {
         $wikidataFactory = GenderStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_genders.csv");
@@ -122,19 +126,17 @@ if ($db != null) {
         $wikidataFactory = CountryStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_countries.csv");
     } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
-        $wikidataFactory = StartCenturyStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
+        $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, false, $serverTiming);
+        $baseQuery = new CenturyStatsWikidataQuery(['start_date', 'birth_date', 'event_date'], $sourceQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "endCenturyStats") {
-        $wikidataFactory = EndCenturyStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
-        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
+        $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, false, $serverTiming);
+        $baseQuery = new CenturyStatsWikidataQuery(['end_date', 'death_date', 'event_date'], $sourceQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "sourceStats") {
         $baseQuery = new StaticStatsQuery($sourceQuery, $sourceName, $sourceColor);
     } else {
         throw new Exception("Bad 'to' parameter");
     }
 
-    $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
-    $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $query = new CSVCachedBBoxJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
 }
 
