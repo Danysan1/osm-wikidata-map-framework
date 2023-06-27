@@ -107,7 +107,7 @@ class BaseEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBui
                 }
 
                 OPTIONAL {
-                    ?countryID ^wdt:P27 ?wikidata.
+                    ?countryID ^wdt:P17|^wdt:P27 ?wikidata.
                 }
             }
             GROUP BY ?wikidata";

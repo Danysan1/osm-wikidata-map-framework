@@ -245,8 +245,8 @@ WHERE {
     }
 
     OPTIONAL {
-        ?citizenship_name ^rdfs:label/^wdt:P27 ?wikidata.
-        FILTER(lang(?citizenship_name)='${language}').
+        ?countryID ^wdt:P17|^wdt:P27 ?wikidata;
+            rdfs:label ?citizenship_name FILTER(lang(?citizenship_name)='${language}').
     }
 }
 GROUP BY ?wikidata

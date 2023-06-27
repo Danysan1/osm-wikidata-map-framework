@@ -13,7 +13,7 @@ class CountryStatsIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBuil
                 VALUES ?wikidata { $wikidataValues }
             
                 OPTIONAL {
-                    ?id ^wdt:P27 ?wikidata;
+                    ?id ^wdt:P17|^wdt:P27 ?wikidata;
                         rdfs:label ?name FILTER(lang(?name)='$language').
                 }
             }
