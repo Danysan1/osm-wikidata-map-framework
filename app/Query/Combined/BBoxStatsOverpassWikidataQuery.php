@@ -8,6 +8,7 @@ use App\Query\BBoxGeoJSONQuery;
 use \App\Query\Combined\BBoxJSONOverpassWikidataQuery;
 use App\Query\StringSetXMLQueryFactory;
 use \App\Query\Wikidata\GeoJSON2JSONStatsWikidataQuery;
+use App\Result\GeoJSONQueryResult;
 use \App\Result\JSONLocalQueryResult;
 use \App\Result\JSONQueryResult;
 use App\ServerTiming;
@@ -27,8 +28,9 @@ class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
         $this->colorCsvFileName = $colorCsvFileName;
     }
 
-    protected function createResult(array $overpassGeoJSONData): JSONQueryResult
+    protected function createResult(GeoJSONQueryResult $overpassResult): JSONQueryResult
     {
+        $overpassGeoJSONData = $overpassResult->getGeoJSONData();
         if (!isset($overpassGeoJSONData["features"])) {
             throw new \Exception("Invalid GeoJSON data (no features array)");
         } elseif (empty($overpassGeoJSONData["features"])) {

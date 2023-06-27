@@ -27,12 +27,14 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
         parent::__construct($baseQuery, $wikidataFactory, $timing);
     }
 
-    protected function createResult(array $overpassGeoJSONData): JSONQueryResult
+    protected function createResult(GeoJSONQueryResult $overpassResult): JSONQueryResult
     {
+        $overpassGeoJSONData = $overpassResult->getGeoJSONData();
         if (!isset($overpassGeoJSONData["features"])) {
             throw new \Exception("Invalid GeoJSON data (no features array)");
         } elseif (empty($overpassGeoJSONData["features"])) {
-            $out = new GeoJSONLocalQueryResult(true, ["type" => "FeatureCollection", "features" => []]);
+            error_log("Empty features, returning directly input GeoJSON result");
+            $out = $overpassResult;
         } else {
             $wikidataQuery = new GeoJSON2GeoJSONEtymologyWikidataQuery($overpassGeoJSONData, $this->wikidataFactory);
             $out = $wikidataQuery->sendAndGetGeoJSONResult();

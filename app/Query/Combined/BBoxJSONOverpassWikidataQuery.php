@@ -11,6 +11,7 @@ use \App\ServerTiming;
 use \App\Query\BBoxJSONQuery;
 use \App\Result\QueryResult;
 use \App\Result\JSONQueryResult;
+use \App\Result\GeoJSONQueryResult;
 use \App\Query\StringSetXMLQueryFactory;
 
 /**
@@ -42,9 +43,7 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
             throw new \Exception("Overpass query didn't return any result");
         }
 
-        $overpassGeoJSON = $overpassResult->getGeoJSONData();
-        $wikidataResult = $this->createResult($overpassGeoJSON);
-        $out = $wikidataResult;
+        $out = $this->createResult($overpassResult);
         $this->timing->add("wikidata_query");
 
         return $out;
@@ -60,7 +59,7 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
         return $ret;
     }
 
-    protected abstract function createResult(array $overpassGeoJSONData): JSONQueryResult;
+    protected abstract function createResult(GeoJSONQueryResult $overpassResult): JSONQueryResult;
 
     public function getBBox(): BoundingBox
     {
