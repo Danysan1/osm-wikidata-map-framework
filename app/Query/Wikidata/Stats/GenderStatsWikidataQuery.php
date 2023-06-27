@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Query\Wikidata\Stats;
 
 use App\Config\Wikidata\WikidataConfig;
+use App\Query\StringSetXMLQuery;
+use App\Query\StringSetXMLQueryFactory;
 use App\Query\Wikidata\QueryBuilder\GenderStatsIDListWikidataQueryBuilder;
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
 use \App\Result\XMLQueryResult;
@@ -29,5 +31,16 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
     public function sendAndGetXMLResult(): XMLQueryResult
     {
         return XMLWikidataStatsQueryResult::fromXMLResult(parent::sendAndGetXMLResult());
+    }
+
+    public static function Factory(string $language, WikidataConfig $config): StringSetXMLQueryFactory
+    {
+        return new class($language, $config) extends StatsWikidataQueryFactory
+        {
+            public function create(StringSet $input): StringSetXMLQuery
+            {
+                return new GenderStatsWikidataQuery($input, $this->language, $this->config);
+            }
+        };
     }
 }

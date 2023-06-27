@@ -16,9 +16,11 @@ use App\Query\Overpass\BBoxEtymologyOverpassQuery;
 use \App\Query\PostGIS\Stats\BBoxGenderStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxTypeStatsPostGISQuery;
 use \App\Query\PostGIS\Stats\BBoxSourceStatsPostGISQuery;
-use \App\Query\Wikidata\Stats\GenderStatsWikidataFactory;
-use \App\Query\Wikidata\Stats\TypeStatsWikidataFactory;
-use \App\Query\Wikidata\Stats\CountryStatsWikidataFactory;
+use \App\Query\Wikidata\Stats\GenderStatsWikidataQuery;
+use \App\Query\Wikidata\Stats\TypeStatsWikidataQuery;
+use \App\Query\Wikidata\Stats\CountryStatsWikidataQuery;
+use \App\Query\Wikidata\Stats\StartCenturyStatsWikidataQuery;
+use \App\Query\Wikidata\Stats\EndCenturyStatsWikidataQuery;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use App\Query\StaticStatsQuery;
@@ -111,18 +113,20 @@ if ($db != null) {
     }
 
     if ($to == "genderStats") {
-        $wikidataFactory = new GenderStatsWikidataFactory($safeLanguage, $wikidataConfig);
+        $wikidataFactory = GenderStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_genders.csv");
     } elseif ($to == "typeStats") {
-        $wikidataFactory = new TypeStatsWikidataFactory($safeLanguage, $wikidataConfig);
+        $wikidataFactory = TypeStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_types.csv");
     } elseif ($to == "countryStats") {
-        $wikidataFactory = new CountryStatsWikidataFactory($safeLanguage, $wikidataConfig);
+        $wikidataFactory = CountryStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_countries.csv");
     } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
-        throw new Exception("Not implemented"); // TODO
+        $wikidataFactory = StartCenturyStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "endCenturyStats") {
-        throw new Exception("Not implemented"); // TODO
+        $wikidataFactory = EndCenturyStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
+        $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming);
     } elseif ($to == "sourceStats") {
         $baseQuery = new StaticStatsQuery($sourceQuery, $sourceName, $sourceColor);
     } else {

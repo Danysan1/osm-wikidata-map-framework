@@ -9,6 +9,7 @@ use \App\ServerTiming;
 use \App\Config\Configuration;
 use \App\Result\QueryResult;
 use \App\Query\Query;
+use Throwable;
 
 /**
  * A query which searches objects in a given bounding box caching the result in a file.
@@ -119,9 +120,14 @@ abstract class CSVCachedQuery implements Query
      */
     public function send(): QueryResult
     {
-        $className = $this->baseQuery->getQueryTypeCode();
+        $className = str_replace("\0", "_", $this->baseQuery->getQueryTypeCode());
         $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
-        $cacheFile = @fopen($cacheFilePath, "r");
+        try {
+            $cacheFile = @fopen($cacheFilePath, "r");
+        } catch (Throwable $e) {
+            error_log("Error while opening for reading ".json_encode($cacheFilePath));
+            $cacheFile = null;
+        }
         $result = null;
         $newCache = [];
         if (empty($cacheFile)) {
