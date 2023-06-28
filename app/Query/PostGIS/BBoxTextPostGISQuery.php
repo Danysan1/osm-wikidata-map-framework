@@ -125,7 +125,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             }
 
             $responseJSON = $wikidataResult->getJSON();
-            file_put_contents("wikidata.json", $responseJSON);
+            //file_put_contents("wikidata.json", $responseJSON);
 
             $stInsertGender = $this->getDB()->prepare(
                 "INSERT INTO owmf.wikidata (wd_wikidata_cod)
