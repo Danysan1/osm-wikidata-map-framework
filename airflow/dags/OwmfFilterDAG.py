@@ -159,9 +159,12 @@ class OwmfFilterDAG(DAG):
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
             tags=[
                 'man_made=flagpole', # Flag poles
-                'n/place=region','n/place=state','n/place=country','n/place=continent', # Label nodes
-                'r/admin_level=5','r/admin_level=4','r/admin_level=3', # Region/province borders
-                'r/admin_level=2', # Country borders
+                'place=region','place=state','place=country','place=continent', # Label nodes and big areas
+                'place=sea', 'place=archipelago', 'place=island', # Islands
+                'admin_level=5','admin_level=4','admin_level=3', 'admin_level=2', # Country/region/province borders
+                'boundary=continent', 'boundary=timezone', 'boundary=maritime', 'boundary=region', 'boundary=military_district', 'boundary=economic', # Big boundaries
+                'boundary=national_park', 'leisure=nature_reserve', # Big national areas
+                'r/sqkm=*', # Typically very big areas
                 'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],
             invert_match= True,
