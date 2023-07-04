@@ -25,7 +25,7 @@ if (empty($i18nStrings["description"]))
     throw new Exception("Missing description in i18n configuration");
 
 echo json_encode([
-    "name" => preg_replace('\s+', '_', strtolower($i18nStrings["title"])),
+    "name" => preg_replace('/\s+/', '_', strtolower($i18nStrings["title"])),
     "title" => $i18nStrings["title"],
     "description" => $i18nStrings["description"],
     "url" => (string)$conf->get("home_url"),
