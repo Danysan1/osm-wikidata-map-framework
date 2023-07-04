@@ -59,7 +59,10 @@ class EtymologyColorControl extends DropdownControl {
             minZoomLevel,
             () => this.setCurrentID(getCorrectFragmentParams().colorScheme),
             (e: MapSourceDataEvent) => {
-                if (e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId)
+                const zoomLevel = e.target.getZoom(),
+                    validZoomLevel = zoomLevel >= minZoomLevel,
+                    sourceLoaded = e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId;
+                if (validZoomLevel && sourceLoaded)
                     this.updateChart(e, getCorrectFragmentParams().source);
             }
         );
