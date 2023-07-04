@@ -1,6 +1,6 @@
 <?php
 /**
- * Generates the toolinfo.json file for this OWMF-based project, ready to be used by Hay's Wikidata Tools Directory.
+ * Generates the toolinfo.json file for this OWMF-based project, ready to be used by Hay's Wikimedia-related tool directory.
  * @see https://hay.toolforge.org/directory/
  */
 
