@@ -1,4 +1,9 @@
 <?php
+/**
+ * Generates the taginfo.json file for this OWMF-based project, ready to be used by OpenStreetMap Taginfo.
+ * @see https://wiki.openstreetmap.org/wiki/Taginfo/Projects
+ * @see https://wiki.openstreetmap.org/wiki/Taginfo
+ */
 
 declare(strict_types=1);
 require_once(__DIR__ . "/funcs.php");
@@ -58,7 +63,7 @@ if (!empty($filterTags)) {
         $tagObj = [
             "object_types" => ["node", "way", "relation", "area"],
             "doc_url" => $contributingURL,
-            "description" => "Elements are shown on the map only if they contain $filterTagsStringList",
+            "description" => "Elements are shown on the map only if they contain the tag $filterTagsStringList",
         ];
 
         $split = explode("=", (string)$filterTag);
@@ -104,7 +109,7 @@ if ($conf->has("osm_wikidata_properties")) {
 }
 
 $i18nOverride = $conf->getArray("i18n_override");
-$defaultLanguage = (string)$conf->get("default_language");
+$defaultLanguage = "en"; // (string)$conf->get("default_language");
 $defaultNamespace = "app";
 if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))
     throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
