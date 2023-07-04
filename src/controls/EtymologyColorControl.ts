@@ -62,8 +62,10 @@ class EtymologyColorControl extends DropdownControl {
                 const zoomLevel = e.target.getZoom(),
                     validZoomLevel = zoomLevel >= minZoomLevel,
                     sourceLoaded = e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId;
-                if (validZoomLevel && sourceLoaded)
+                if (validZoomLevel && sourceLoaded) {
+                    debugLog("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel });
                     this.updateChart(e, getCorrectFragmentParams().source);
+                }
             }
         );
         this._chartInitInProgress = false;

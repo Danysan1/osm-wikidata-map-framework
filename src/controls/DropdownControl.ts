@@ -187,7 +187,7 @@ export class DropdownControl implements IControl {
      * Gets the ID of the currently selected dropdown value
      */
     getCurrentID() {
-        return this._ctrlDropDown?.value;
+        return this.getDropdown()?.value;
     }
 
     /**
@@ -197,7 +197,10 @@ export class DropdownControl implements IControl {
         const dropdown = this.getDropdown();
         if (!dropdown?.options) {
             console.warn("setCurrentID: dropdown not yet initialized", { id });
+        } else if (dropdown.value === id) {
+            debugLog("setCurrentID: skipping change to same value", { id });
         } else {
+            debugLog("setCurrentID: updating", { old: dropdown.value, next: id });
             dropdown.value = id;
             dropdown.dispatchEvent(new Event("change"));
         }
