@@ -64,7 +64,8 @@ $safeLanguage = (string)$langMatches[1];
 
 $textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
 $descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
-$maxArea = (float)$conf->get("elements_bbox_max_area");
+
+$maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
