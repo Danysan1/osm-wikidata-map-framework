@@ -28,6 +28,9 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
+$maxArea = (float)$conf->get("wikidata_bbox_max_area");
+$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
+
 $downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALIDATE_BOOL, false);
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 
@@ -61,9 +64,6 @@ if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMat
  */
 $safeLanguage = (string)$langMatches[1];
 //error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
-
-$maxArea = (float)$conf->get("wikidata_bbox_max_area");
-$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery(

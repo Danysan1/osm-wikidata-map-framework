@@ -36,6 +36,9 @@ $serverTiming->add("1_readConfig");
 prepareJSON($conf);
 $serverTiming->add("2_prepare");
 
+$maxArea = (float)$conf->get("wikidata_bbox_max_area");
+$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
+
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
 
@@ -64,9 +67,6 @@ $safeLanguage = (string)$langMatches[1];
 
 $textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
 $descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
-
-$maxArea = (float)$conf->get("wikidata_bbox_max_area");
-$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     if ($to == "genderStats") {

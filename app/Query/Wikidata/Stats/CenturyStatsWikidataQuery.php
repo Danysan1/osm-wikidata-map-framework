@@ -73,7 +73,7 @@ class GeoJSON2JSONCenturyStatsWikidataQuery extends GeoJSON2JSONEtymologyWikidat
             for ($fieldIndex = 0; !$foundCenturyForRow && $fieldIndex < $fieldCount; $fieldIndex++) {
                 $dateField = $this->dateFields[$fieldIndex];
                 if (empty($row[$dateField])) {
-                    error_log("Empty date field '$dateField' for row $rowIndex");
+                    //error_log("Empty date field '$dateField' for row $rowIndex");
                 } else {
                     $isoDate = (string)($row[$dateField]);
                     $matches = [];

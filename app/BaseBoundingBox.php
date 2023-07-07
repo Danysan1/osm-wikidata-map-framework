@@ -196,16 +196,24 @@ class BaseBoundingBox implements BoundingBox
     {
         $args = filter_input_array($inputType, [
             "minLat" => [
-                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -90, "max_range" => 90]
+                "filter" => FILTER_VALIDATE_FLOAT,
+                "flags" => FILTER_REQUIRE_SCALAR,
+                "options" => ["decimal" => ".", "min_range" => -90, "max_range" => 90]
             ],
             "minLon" => [
-                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -180, "max_range" => 180]
+                "filter" => FILTER_VALIDATE_FLOAT,
+                "flags" => FILTER_REQUIRE_SCALAR,
+                "options" => ["decimal" => ".", "min_range" => -180, "max_range" => 180]
             ],
             "maxLat" => [
-                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -90, "max_range" => 90]
+                "filter" => FILTER_VALIDATE_FLOAT,
+                "flags" => FILTER_REQUIRE_SCALAR,
+                "options" => ["decimal" => ".", "min_range" => -90, "max_range" => 90]
             ],
             "maxLon" => [
-                "filter" => FILTER_VALIDATE_FLOAT, "flags" => FILTER_REQUIRE_SCALAR, "options" => ["decimal" => ".", "min_range" => -180, "max_range" => 180]
+                "filter" => FILTER_VALIDATE_FLOAT,
+                "flags" => FILTER_REQUIRE_SCALAR,
+                "options" => ["decimal" => ".", "min_range" => -180, "max_range" => 180]
             ],
         ]);
 
@@ -224,8 +232,11 @@ class BaseBoundingBox implements BoundingBox
             $args["maxLon"]
         );
 
-        if ($maxArea > 0 && $bbox->getArea() > $maxArea)
+        $area = $bbox->getArea();
+        if ($maxArea > 0 && $area > $maxArea) {
+            //error_log("Requested area too large: $area > $maxArea");
             throw new Exception("The requested area is too large. Please use a smaller area.");
+        }
 
         return $bbox;
     }

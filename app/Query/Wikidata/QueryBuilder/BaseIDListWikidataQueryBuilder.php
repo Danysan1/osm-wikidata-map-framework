@@ -22,7 +22,7 @@ abstract class BaseIDListWikidataQueryBuilder implements IDListWikidataQueryBuil
             return "wd:$id";
         }, $wikidataIDs->toArray()));
 
-        error_log("BaseIDListWikidataQueryBuilder: building from " . $wikidataIDs->size() . " IDs"); // TODO Comment out if not debugging
+        //error_log("BaseIDListWikidataQueryBuilder: building from " . $wikidataIDs->size() . " IDs");
         return $this->createQueryFromValidIDsString($wikidataValues, $language);
     }
 }

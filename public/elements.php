@@ -27,6 +27,9 @@ $serverTiming->add("1_readConfig");
 prepareGeoJSON($conf);
 $serverTiming->add("2_prepare");
 
+$maxArea = (float)$conf->get("elements_bbox_max_area");
+$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
+
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 
@@ -38,9 +41,6 @@ if ($enableDB && str_starts_with($source, "db_")) {
     //error_log("elements.php NOT using DB");
     $db = null;
 }
-
-$maxArea = (float)$conf->get("elements_bbox_max_area");
-$bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
 if ($db != null) {
     $query = new BBoxEtymologyCenterPostGISQuery($bbox, $db, $serverTiming, $source, $search);

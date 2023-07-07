@@ -44,7 +44,7 @@ class JSONRemoteQueryResult extends BaseRemoteQueryResult implements JSONQueryRe
             error_log("Bad JSON: " . $body);
             throw new \Exception("JSONRemoteQueryResult::getResult: Not a valid JSON response, can't parse");
         }
-        error_log("JSONRemoteQueryResult body size: " . strlen($body)); // TODO Comment out if not debugging
+        //error_log("JSONRemoteQueryResult body size: " . strlen($body));
         return $body;
     }
 }
