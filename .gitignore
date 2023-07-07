@@ -4,6 +4,8 @@ airflow/logs/
 airflow/airflow.cfg
 airflow/webserver_config.py
 
+public/map-cache/*
+!public/map-cache/.gitkeep
 *.geojson
 *.gz
 *.mvt

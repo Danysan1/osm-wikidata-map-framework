@@ -1,8 +1,9 @@
 .git
 samples/
 airflow/
-public/map-cache/
 
+public/map-cache/*
+!public/map-cache/.gitkeep
 *.geojson
 *.gz
 *.mvt
