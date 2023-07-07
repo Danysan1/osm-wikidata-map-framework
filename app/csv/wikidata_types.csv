@@ -233,6 +233,7 @@ Q3658341,literary character,People,#3399ff
 Q14756018,twins,People,#3399ff
 Q28914,patron saint,People,#3399ff
 Q43115,saint,People,#3399ff
+Q3117863,isolated human group,People,#3399ff
 Q515,city,Human settlements,#7733ff
 Q1549591,big city,Human settlements,#7733ff
 Q1187811,college town,Human settlements,#7733ff
@@ -281,6 +282,8 @@ Q2074737,municipality of Spain,Human settlements,#7733ff
 Q5153359,municipality of the Czech Republic,Human settlements,#7733ff
 Q133442,city-state,Human settlements,#7733ff
 Q148837,polis,Human settlements,#7733ff
+Q51929311,largest city,Human settlements,#7733ff
+Q50330360,second largest city,Human settlements,#7733ff
 Q43229,organization,Organization,#ff33dd
 Q4830453,business,Organization,#ff33dd
 Q6881511,enterprise,Organization,#ff33dd
@@ -295,3 +298,5 @@ Q4387609,architectural firm,Organization,#ff33dd
 Q222836,music publisher,Organization,#ff33dd
 Q1917775,music publishing company,Organization,#ff33dd
 Q157031,foundation,Organization,#ff33dd
+Q79913,non-governmental organization,Organization,#ff33dd
+Q1194093,international non-governmental organization,Organization,#ff33dd
