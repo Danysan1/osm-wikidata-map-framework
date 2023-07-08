@@ -129,7 +129,7 @@ CREATE TABLE owmf.wikidata_text (
     wdt_id SERIAL NOT NULL PRIMARY KEY,
     wdt_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
     wdt_language CHAR(3) NOT NULL,
-    wdt_name VARCHAR,
+    wdt_name VARCHAR NOT NULL,
     wdt_description VARCHAR,
     wdt_wikipedia_url VARCHAR,
     wdt_occupations VARCHAR,

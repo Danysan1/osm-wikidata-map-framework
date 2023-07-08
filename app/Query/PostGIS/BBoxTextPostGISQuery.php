@@ -275,21 +275,22 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $stUpdateText = $this->getDB()->prepare(
             "UPDATE owmf.wikidata_text
             SET wdt_full_download_date = CURRENT_TIMESTAMP,
-                wdt_name = response.value->'name'->>'value',
-                wdt_description = response.value->'description'->>'value',
-                wdt_wikipedia_url = response.value->'wikipedia'->>'value',
-                wdt_occupations = response.value->'occupations'->>'value',
-                wdt_citizenship = response.value->'citizenship'->>'value',
-                wdt_prizes = response.value->'prizes'->>'value',
-                wdt_event_place = response.value->'event_place'->>'value',
-                wdt_birth_place = response.value->'birth_place'->>'value',
-                wdt_death_place = response.value->'death_place'->>'value'
+                wdt_name = response->'name'->>'value',
+                wdt_description = response->'description'->>'value',
+                wdt_wikipedia_url = response->'wikipedia'->>'value',
+                wdt_occupations = response->'occupations'->>'value',
+                wdt_citizenship = response->'citizenship'->>'value',
+                wdt_prizes = response->'prizes'->>'value',
+                wdt_event_place = response->'event_place'->>'value',
+                wdt_birth_place = response->'birth_place'->>'value',
+                wdt_death_place = response->'death_place'->>'value'
             FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
             JOIN owmf.wikidata AS wd
                 ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
             WHERE wdt_full_download_date IS NULL
             AND wdt_wd_id = wd_id
-            AND wdt_language = :lang::VARCHAR"
+            AND wdt_language = :lang::VARCHAR
+            AND response->'name'->>'value' IS NOT NULL"
         );
         $stUpdateText->bindValue("lang", $language, PDO::PARAM_STR);
         $stUpdateText->bindValue("result", $responseJSON, PDO::PARAM_LOB);
@@ -329,6 +330,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
             JOIN owmf.wikidata AS wd
                 ON wd.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')
+            WHERE response->'name'->>'value' IS NOT NULL
             ON CONFLICT (wdt_wd_id, wdt_language) DO NOTHING"
         );
         $stInsertText->bindValue("lang", $language, PDO::PARAM_STR);
