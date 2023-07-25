@@ -1,12 +1,14 @@
-<Files "owmf.ini">  
-  Require all denied
-</Files>
+# THIS FILE IS IGNORED in the standard dockerized version of OWMF
+# To configure it, edit apache.conf
+# This file may be used only if you run OWMF without docker in a custom deployemnt (ex. managed server or custom-configured VPS)
 
-<Files "owmf.log">  
-  Require all denied
-</Files>
-
-RedirectMatch 403 ^.*map-cache/.*csv$
+# Block spam or malicious requests
+# A WAF and/or mod_security should also be enabled alongside this
+RedirectMatch 403 owmf\.ini
+RedirectMatch 403 owmf\.log
+RedirectMatch 403 map-cache/.*csv
+RedirectMatch 403 wp-
+RedirectMatch 403 wordpress
 
 AddCharset UTF-8 .json
 AddCharset UTF-8 .geojson
