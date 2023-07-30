@@ -63,14 +63,23 @@ function prepareHTML(Configuration $conf)
 		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
 	}
 
-	$mapboxScriptSrcs = 'https://api.mapbox.com';
-	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+	$mapboxScriptSrcs = '';
+	$mapboxConnectSrcs = '';
+	if ($conf->has("mapbox_token")) {
+		$mapboxScriptSrcs = 'https://api.mapbox.com';
+		$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+	}
 
 	$maptilerConnectSrcs = '';
 	$maptilerImgSrcs = '';
 	if ($conf->has("maptiler_key")) {
 		$maptilerConnectSrcs = 'https://api.maptiler.com';
 		$maptilerImgSrcs = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
+	}
+
+	$stadiaConnectSrcs = '';
+	if ($conf->getBool("enable_stadia_maps")) {
+		$stadiaConnectSrcs = 'https://tiles.stadiamaps.com/';
 	}
 
 	$googleAnalyticsConnectSrcs = '';
@@ -110,7 +119,7 @@ function prepareHTML(Configuration $conf)
 			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $wikimediaConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $wikimediaConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $stadiaConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

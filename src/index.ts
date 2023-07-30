@@ -9,8 +9,8 @@ import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-trans
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
-import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle } from './controls/BackgroundStyleControl';
-import { debugLog, getConfig } from './config';
+import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle, stadiaMapsBackgroundStyle } from './controls/BackgroundStyleControl';
+import { debugLog, getBoolConfig, getConfig } from './config';
 import { setPageLocale } from './i18n';
 import './style.css';
 
@@ -23,6 +23,7 @@ setPageLocale();
 let requestTransformFunc: RequestTransformFunction | undefined;
 const maptiler_key = getConfig("maptiler_key"),
     mapbox_token = getConfig("mapbox_token"),
+    enable_stadia_maps = getBoolConfig("enable_stadia_maps"),
     backgroundStyles: BackgroundStyle[] = [];
 
 if (mapbox_token) {
@@ -56,6 +57,16 @@ if (maptiler_key) {
         maptilerBackgroundStyle('maptiler_topo', 'Maptiler Topo', 'topo-v2', maptiler_key),
         maptilerBackgroundStyle('maptiler_winter', 'Maptiler Winter', "winter-v2", maptiler_key),
     );
+}
+
+if (enable_stadia_maps) {
+    backgroundStyles.push(
+        stadiaMapsBackgroundStyle('stadia_alidade_dark', "Stadia Alidade smooth dark", 'alidade_smooth_dark'),
+        stadiaMapsBackgroundStyle('stadia_alidade', "Stadia Alidade smooth", 'alidade_smooth'),
+        stadiaMapsBackgroundStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
+        stadiaMapsBackgroundStyle('stadia_outdoors', "Stadia Outdoors", 'outdoors'),
+        stadiaMapsBackgroundStyle('stadia_osm_bright', "Stadia OSM Bright", 'osm_bright'),
+    )
 }
 
 document.addEventListener("DOMContentLoaded", initPage);

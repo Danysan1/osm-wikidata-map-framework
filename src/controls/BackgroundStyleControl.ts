@@ -18,6 +18,18 @@ export function maptilerBackgroundStyle(id: string, text: string, maptilerId: st
 }
 
 /**
+ * @see https://tiles.stadiamaps.com/data/openmaptiles.json
+ * @see https://docs.stadiamaps.com/themes/
+ */
+export function stadiaMapsBackgroundStyle(id: string, text: string, stadiaId: string): BackgroundStyle {
+    return {
+        id: id,
+        text: text,
+        styleUrl: 'https://tiles.stadiamaps.com/styles/' + stadiaId + '.json'
+    };
+}
+
+/**
  * @see https://docs.mapbox.com/api/maps/vector-tiles/
  * @see https://docs.mapbox.com/api/maps/styles/#mapbox-styles
  */

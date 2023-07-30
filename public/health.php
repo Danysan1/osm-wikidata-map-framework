@@ -11,9 +11,9 @@ $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 header("Cache-Control: no-cache", true);
 
-if (!$conf->has("mapbox_token")) {
+if (!$conf->has("mapbox_token") && !$conf->has("maplibre_token") && !$conf->getBool("enable_stadia_maps")) {
     http_response_code(500);
-    die('<html><body>Missing Mapbox token from configuration</body></html>');
+    die('<html><body>Missing map token from configuration</body></html>');
 } else if ($conf->getBool("db_enable")) {
     try {
         new PostGIS_PDO($conf);
