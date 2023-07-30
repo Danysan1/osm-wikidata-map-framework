@@ -1,8 +1,8 @@
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MaplibreGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent } from 'maplibre-gl';
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw, LngLatLike, CircleLayer, SymbolLayer, MapMouseEvent, MapboxGeoJSONFeature as MapGeoJSONFeature, CirclePaint, IControl, MapSourceDataEvent, MapDataEvent, Expression } from 'mapbox-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, SourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-//import 'maplibre-gl/dist/maplibre-gl.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as SourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
+//import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
@@ -26,7 +26,7 @@ const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private startBackgroundStyle: BackgroundStyle;
-    private geocoderControl: IControl | null;
+    private geocoderControl?: IControl;
     private search: string;
     private anyDetailShownBefore: boolean;
     private wikidataControlsInitialized: boolean;
@@ -34,7 +34,7 @@ export class EtymologyMap extends Map {
     constructor(
         containerId: string,
         backgroundStyles: BackgroundStyle[],
-        geocoderControl: IControl | null
+        geocoderControl?: IControl
     ) {
         let backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
         if (!backgroundStyleObj) {
@@ -361,7 +361,7 @@ export class EtymologyMap extends Map {
                         this.updateDataSource();
 
                         const colorSchemeObj = colorSchemes[colorSchemeID];
-                        let color: string | Expression;
+                        let color: string | ExpressionSpecification;
 
                         if (colorSchemeObj) {
                             color = colorSchemeObj.color;
@@ -429,13 +429,13 @@ export class EtymologyMap extends Map {
      * @see https://maplibre.org/maplibre-gl-js-docs/example/popup-on-click/
      * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
      */
-    onWikidataLayerClick(ev: MapMouseEvent & { features?: MapGeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
+    onWikidataLayerClick(ev: MapMouseEvent & { features?: GeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
         if (ev.popupAlreadyShown) {
             debugLog("onWikidataLayerClick: etymology popup already shown", ev);
         } else if (!ev.features) {
             console.warn("onWikidataLayerClick: missing or empty clicked features list", ev);
         } else {
-            const feature = ev.features[0] as MapGeoJSONFeature,
+            const feature = ev.features[0] as GeoJSONFeature,
                 //popupPosition = e.lngLat,
                 //popupPosition = this.getBounds().getNorthWest(),
                 popupPosition = this.unproject([0, 0]),
@@ -471,27 +471,6 @@ export class EtymologyMap extends Map {
         }
     }
 
-    static clusterPaintFromField(field: string, minThreshold = 3000, maxThreshold = 40000): CirclePaint {
-        return {
-            // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
-            // with three steps to implement three types of circles:
-            'circle-color': [
-                'step', ['get', field],
-                '#51bbd6', minThreshold, // count < minThreshold => Blue circle
-                '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
-                '#f28cb1' // count > maxThreshold => Pink circle
-            ],
-            'circle-opacity': 0.7,
-            'circle-radius': [
-                'interpolate', ['linear'],
-                ['get', field],
-                0, 15,
-                minThreshold, 30,
-                maxThreshold, 45,
-            ]
-        };
-    }
-
     /**
      * Initializes the mid-zoom-level clustered layer.
      * 
@@ -508,8 +487,8 @@ export class EtymologyMap extends Map {
         this.initWikidataControls();
     }
 
-    addGeoJSONSource(id: string, config: GeoJSONSourceRaw, sourceDataURL: string): GeoJSONSource {
-        let sourceObject = this.getSource(id) as GeoJSONSource & { _data?: string | undefined } | null;
+    addGeoJSONSource(id: string, config: SourceSpecification, sourceDataURL: string): GeoJSONSource {
+        let sourceObject = this.getSource(id) as GeoJSONSource | null;
         const oldSourceDataURL = (sourceObject && sourceObject._data) ? sourceObject._data : null,
             sourceUrlChanged = oldSourceDataURL != sourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
@@ -577,15 +556,34 @@ export class EtymologyMap extends Map {
             );
 
         if (!this.getLayer(clusterLayerName)) {
-            const layerDefinition = {
-                id: clusterLayerName,
-                source: sourceName,
-                type: 'circle',
-                maxzoom: maxZoom,
-                minzoom: minZoom,
-                filter: ['has', countFieldName],
-                paint: EtymologyMap.clusterPaintFromField(countFieldName),
-            } as CircleLayer;
+            const minThreshold = 3000,
+                maxThreshold = 40000,
+                layerDefinition = {
+                    id: clusterLayerName,
+                    source: sourceName,
+                    type: 'circle',
+                    maxzoom: maxZoom,
+                    minzoom: minZoom,
+                    filter: ['has', countFieldName],
+                    paint: {
+                        // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
+                        // with three steps to implement three types of circles:
+                        'circle-color': [
+                            'step', ['get', countFieldName],
+                            '#51bbd6', minThreshold, // count < minThreshold => Blue circle
+                            '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
+                            '#f28cb1' // count > maxThreshold => Pink circle
+                        ],
+                        'circle-opacity': 0.7,
+                        'circle-radius': [
+                            'interpolate', ['linear'],
+                            ['get', countFieldName],
+                            0, 15,
+                            minThreshold, 30,
+                            maxThreshold, 45,
+                        ]
+                    },
+                } as CircleLayerSpecification;
             this.addLayer(layerDefinition);
 
 
@@ -597,7 +595,7 @@ export class EtymologyMap extends Map {
                     center = EtymologyMap.getClusterFeatureCenter(feature),
                     defaultZoom = maxZoom ? maxZoom + 0.5 : 9;
                 sourceObject.getClusterExpansionZoom(
-                    clusterId, (err, zoom) => this.easeToClusterCenter(err, zoom, defaultZoom, center)
+                    clusterId, (err, zoom) => this.easeToClusterCenter(err, zoom || 1, defaultZoom, center)
                 );
             });
 
@@ -621,7 +619,7 @@ export class EtymologyMap extends Map {
                     'text-field': '{' + countShowFieldName + '}',
                     'text-size': 12
                 }
-            } as SymbolLayer;
+            } as SymbolLayerSpecification;
             this.addLayer(layerDefinition);
             debugLog("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
         }
@@ -641,7 +639,7 @@ export class EtymologyMap extends Map {
                     //'circle-stroke-width': 1,
                     //'circle-stroke-color': '#fff'
                 }
-            } as CircleLayer;
+            } as CircleLayerSpecification;
             this.addLayer(layerDefinition);
 
             this.on('click', pointLayerName, (e) => {
@@ -662,7 +660,7 @@ export class EtymologyMap extends Map {
         }
     }
 
-    getClickedClusterFeature(layerId: string, event: MapMouseEvent): MapGeoJSONFeature {
+    getClickedClusterFeature(layerId: string, event: MapMouseEvent): GeoJSONFeature {
         const features = this.queryRenderedFeatures(event.point, { layers: [layerId] }),
             feature = features[0];
         if (!feature)
@@ -670,14 +668,14 @@ export class EtymologyMap extends Map {
         return feature;
     }
 
-    static getClusterFeatureId(feature: MapGeoJSONFeature): number {
+    static getClusterFeatureId(feature: GeoJSONFeature): number {
         const clusterId = feature.properties?.cluster_id;
         if (typeof clusterId != 'number')
             throw new Error("No valid cluster ID found");
         return clusterId;
     }
 
-    static getClusterFeatureCenter(feature: MapGeoJSONFeature): LngLatLike {
+    static getClusterFeatureCenter(feature: GeoJSONFeature): LngLatLike {
         return (feature.geometry as any).coordinates as LngLatLike;
     }
 
@@ -778,7 +776,7 @@ export class EtymologyMap extends Map {
             // When active the map will receive updates to the device's location as it changes.
             trackUserLocation: false,
             // Draw an arrow next to the location dot to indicate which direction the device is heading.
-            showUserHeading: true
+            //showUserHeading: true
         }), 'top-right');
 
         // https://docs.mapbox.com/mapbox-gl-js/api/markers/#scalecontrol

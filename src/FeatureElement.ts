@@ -1,4 +1,5 @@
-import { MapboxGeoJSONFeature as MapGeoJSONFeature } from "mapbox-gl";
+import { GeoJSONFeature } from "maplibre-gl";
+//import { MapboxGeoJSONFeature as GeoJSONFeature } from "mapbox-gl";
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
@@ -29,7 +30,7 @@ interface FeatureProperties {
     wikipedia?: string;
 }
 
-export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12.5): HTMLElement {
+export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");

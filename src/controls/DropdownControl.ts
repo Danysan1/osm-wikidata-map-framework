@@ -1,5 +1,7 @@
+import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
+//import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
+
 import { logErrorMessage } from '../monitoring';
-import { IControl, Map, MapSourceDataEvent, MapboxEvent } from 'mapbox-gl';
 import { debugLog } from '../config';
 import { loadTranslator } from '../i18n';
 
@@ -27,7 +29,7 @@ export class DropdownControl implements IControl {
     private _leftButton: boolean;
     private hashChangeHandler?: (e: HashChangeEvent) => void;
     private sourceDataHandler?: (e: MapSourceDataEvent) => void;
-    private moveEndHandler: (e: MapboxEvent) => void;
+    private moveEndHandler: (e: MapEvent) => void;
 
     constructor(
         buttonContent: string,
@@ -234,7 +236,7 @@ export class DropdownControl implements IControl {
     }
 
     createMoveEndHandler(minZoomLevel: number) {
-        return (e: MapboxEvent) => {
+        return (e: MapEvent) => {
             const zoomLevel = e.target.getZoom(),
                 show = zoomLevel >= minZoomLevel;
             debugLog("moveend", { zoomLevel, minZoomLevel, show });

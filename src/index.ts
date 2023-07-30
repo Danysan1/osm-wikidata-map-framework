@@ -1,11 +1,10 @@
-/* import maplibregl, { supported, setRTLTextPlugin, IControl } from 'maplibre-gl';
-import { MaptilerGeocoderControl } from './MaptilerGeocoderControl';
-import 'maplibre-gl/dist/maplibre-gl.css'; */
+import { IControl } from 'maplibre-gl';
+import { GeocodingControl } from "@maptiler/geocoding-control/maplibregl";
+import "@maptiler/geocoding-control/style.css";
 
-import mapboxgl, { supported, setRTLTextPlugin, IControl } from 'mapbox-gl';
-import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
-import 'mapbox-gl/dist/mapbox-gl.css';
+// import { default as mapLibrary, setRTLTextPlugin, IControl } from 'mapbox-gl';
+// import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+// import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
@@ -65,43 +64,59 @@ document.addEventListener("DOMContentLoaded", initPage);
  */
 function initMap() {
     debugLog("Initializing the map");
+    let geocoderControl: IControl | undefined;
 
-    if (typeof mapboxgl == 'object' && typeof mapbox_token == 'string') {
-        mapboxgl.accessToken = mapbox_token;
-    }
+    // /* Start of Mapbox GL JS specific code */
+    // mapLibrary.accessToken = mapbox_token;
+    // debugLog("Using MapboxGeocoder", { mapbox_token });
+    // const ctrl = new MapboxGeocoder({
+    //     accessToken: mapbox_token,
+    //     collapsed: true,
+    //     language: document.documentElement.lang,
+    //     mapboxgl: mapboxgl
+    // });
+    // geocoderControl = ctrl;
+    // document.addEventListener("keydown", (e) => {
+    //     if ((e.ctrlKey || e.metaKey) && e.key == "f") {
+    //         ctrl.clear();
+    //         e.preventDefault();
+    //     }
+    // });
+    // setRTLTextPlugin(
+    //     'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
+    //     err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
+    //     true // Lazy load the plugin
+    // );
+    // /* End of Mapbox GL JS specific code */
 
-    // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
-    setRTLTextPlugin(
-        'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
-        err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
-        true // Lazy load the plugin
-    );
-
-    let geocoderControl: IControl | null;
-    if (typeof mapboxgl == 'object' && typeof MapboxGeocoder == 'function' && typeof mapbox_token == 'string') {
-        debugLog("Using MapboxGeocoder", { mapboxgl, MapboxGeocoder, mapbox_token });
-        const ctrl = new MapboxGeocoder({
-            accessToken: mapbox_token,
-            collapsed: true,
-            language: document.documentElement.lang,
-            mapboxgl: mapboxgl
-        });
-        geocoderControl = ctrl;
-        document.addEventListener("keydown", (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.key == "f") {
-                ctrl.clear();
-                e.preventDefault();
-            }
-        });
-    } /*else if (typeof maplibregl == 'object' && typeof MaptilerGeocoderControl == 'function' && typeof maptiler_key == 'string') {
-        debugLog("Using MaptilerGeocoderControl", { maplibregl, MaptilerGeocoderControl, maptiler_key });
-        geocoderControl = new MaptilerGeocoderControl(maptiler_key);
-    }*/ else {
-        geocoderControl = null;
-        console.warn("No geocoding plugin available");
-    }
+    /* Start of Maplibre GL JS specific code */
+    debugLog("Using Maptiler GeocoderControl", { maptiler_key });
+    if (maptiler_key)
+        geocoderControl = new GeocodingControl({ apiKey: maptiler_key });
+    /* End of Maplibre GL JS specific code */
 
     new EtymologyMap('map', backgroundStyles, geocoderControl);
+}
+
+/**
+ * @see https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
+ */
+function isWebglSupported() {
+    if (window.WebGLRenderingContext) {
+        const canvas = document.createElement('canvas');
+        try {
+            const context =
+          canvas.getContext('webgl2') || canvas.getContext('webgl');
+            if (context && typeof context.getParameter == 'function') {
+                return true;
+            }
+        } catch (e) {
+            // WebGL is supported, but disabled
+        }
+        return false;
+    }
+    // WebGL not supported
+    return false;
 }
 
 
@@ -111,15 +126,15 @@ function initMap() {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/check-for-support/
  */
 function initPage() {
-    if (!supported()) {
+    if (isWebglSupported()) {
+        document.getElementById("map")?.classList.remove("hiddenElement");
+        initMap();
+    } else {
         const errorMessage = document.createElement("strong");
         errorMessage.innerHTML = 'Your browser does not support Mapbox GL JS, which is needed to render the map. You can find out the minimum requirements <a href="https://docs.mapbox.com/help/troubleshooting/mapbox-browser-support/">here</a>.';
         document.body.appendChild(errorMessage);
 
         logErrorMessage("Device/Browser does not support Mapbox GL JS");
-    } else {
-        document.getElementById("map")?.classList.remove("hiddenElement");
-        initMap();
     }
 
     Array.from(document.getElementsByClassName("dataset_button")).forEach(

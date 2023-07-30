@@ -1,4 +1,5 @@
-import { IControl, Map, MapSourceDataEvent, MapboxEvent } from 'mapbox-gl';
+import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
+//import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 import { debugLog } from '../config';
 import { logErrorMessage } from '../monitoring';
 
@@ -8,7 +9,7 @@ export class LinkControl implements IControl {
     private iconUrl: string;
     private title: string;
     private sourceDataHandler: (e: MapSourceDataEvent) => void;
-    private moveEndHandler: (e: MapboxEvent) => void;
+    private moveEndHandler: (e: MapEvent) => void;
 
     constructor(
         iconUrl: string,
@@ -98,7 +99,7 @@ export class LinkControl implements IControl {
     }
 
     createMoveEndHandler(minZoomLevel: number) {
-        return (e: MapboxEvent) => {
+        return (e: MapEvent) => {
             if (e.target.getZoom() < minZoomLevel)
                 this.show(false);
         }
