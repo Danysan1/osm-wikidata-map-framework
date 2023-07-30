@@ -67,7 +67,6 @@ document.addEventListener("DOMContentLoaded", initPage);
  */
 function initMap() {
     debugLog("Initializing the map");
-    let geocoderControl: IControl | undefined;
 
     /********** Start of Mapbox GL JS specific code **********/
     // mapLibrary.accessToken = mapbox_token;
@@ -78,12 +77,6 @@ function initMap() {
     //     language: document.documentElement.lang,
     //     mapboxgl: mapboxgl
     // });
-    // document.addEventListener("keydown", (e) => {
-    //     if ((e.ctrlKey || e.metaKey) && e.key == "f") {
-    //         geocoderControl.clear();
-    //         e.preventDefault();
-    //     }
-    // });
     // setRTLTextPlugin(
     //     'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
     //     err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
@@ -93,9 +86,17 @@ function initMap() {
 
     /********** Start of Maplibre GL JS specific code **********/
     debugLog("Using Maptiler GeocoderControl", { maptiler_key });
+    let geocoderControl: GeocodingControl | undefined;
     if (maptiler_key)
         geocoderControl = new GeocodingControl({ apiKey: maptiler_key });
     /********** End of Maplibre GL JS specific code **********/
+
+    document.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key == "f") {
+            geocoderControl?.focus();
+            e.preventDefault();
+        }
+    });
 
     new EtymologyMap('map', backgroundStyles, geocoderControl, requestTransformFunc);
 }

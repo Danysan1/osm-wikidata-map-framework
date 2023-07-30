@@ -758,9 +758,7 @@ export class EtymologyMap extends Map {
      * Handles the completion of map loading
      */
     mapLoadedHandler() {
-        this.setCulture();
-        this.on("style.load", this.mapStyleLoadHandler)
-        //openInfoWindow(map);
+        this.on("style.load", this.mapStyleLoadHandler);
 
         this.updateDataForMapPosition();
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
