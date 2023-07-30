@@ -78,13 +78,32 @@ export class EtymologyMap extends Map {
     }
 
     /**
+     * Handles the 'styledata' event
+     * This event is executed very often, mupltiple times per base map change
+     * However it's the only reliable event for intercepting base map changes
      * 
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
     mapStyleDataHandler(e: MapDataEvent) {
-        debugLog("Map style data loaded", e);
-        //setCulture(e.sender); //! Not here, this event is executed too often
+        debugLog("mapStyleDataHandler", e);
+        this.setCulture();
+        this.updateDataSource();
+    }
+
+    /**
+     * Handles the 'style.load' event
+     * This event should handle the change of base map
+     * It fires only one time but it's not reliable
+     * 
+     * @see https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
+     * @see https://github.com/mapbox/mapbox-gl-js/issues/3979
+     * @see https://github.com/mapbox/mapbox-gl-js/issues/7579
+     */
+    mapStyleLoadHandler() {
+        // debugLog("mapStyleLoadHandler");
+        // this.setCulture();
+        // this.updateDataSource();
     }
 
     /**
@@ -733,17 +752,6 @@ export class EtymologyMap extends Map {
         if (this.geocoderControl) {
             this.addControl(this.geocoderControl, 'top-left');
         }
-    }
-
-    /**
-     * Handles the change of base map
-     * 
-     * @see https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
-     * @see https://github.com/mapbox/mapbox-gl-js/issues/3979
-     */
-    mapStyleLoadHandler() {
-        this.setCulture();
-        this.updateDataSource();
     }
 
     /**
