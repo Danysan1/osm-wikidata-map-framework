@@ -1,9 +1,9 @@
-import { IControl, RequestTransformFunction } from 'maplibre-gl';
+import { default as mapLibrary, RequestTransformFunction } from 'maplibre-gl';
 import { GeocodingControl } from "@maptiler/geocoding-control/maplibregl";
 import "@maptiler/geocoding-control/style.css";
-import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer'
+import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer';
 
-// import { default as mapLibrary, setRTLTextPlugin, IControl, RequestTransformFunction } from 'mapbox-gl';
+// import { default as mapLibrary, RequestTransformFunction } from 'mapbox-gl';
 // import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 // import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
@@ -46,6 +46,8 @@ if (maptiler_key) {
         maptilerBackgroundStyle('maptiler_backdrop', 'Maptiler Backdrop', 'backdrop', maptiler_key),
         maptilerBackgroundStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
         maptilerBackgroundStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
+        maptilerBackgroundStyle('maptiler_dataviz', 'Maptiler Dataviz', 'dataviz', maptiler_key),
+        maptilerBackgroundStyle('maptiler_ocean', 'Maptiler Ocean', 'ocean', maptiler_key),
         maptilerBackgroundStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
         maptilerBackgroundStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor-v2', maptiler_key),
         maptilerBackgroundStyle('maptiler_satellite_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
@@ -77,11 +79,6 @@ function initMap() {
     //     language: document.documentElement.lang,
     //     mapboxgl: mapboxgl
     // });
-    // setRTLTextPlugin(
-    //     'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
-    //     err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
-    //     true // Lazy load the plugin
-    // );
     /********** End of Mapbox GL JS specific code **********/
 
     /********** Start of Maplibre GL JS specific code **********/
@@ -97,6 +94,13 @@ function initMap() {
             e.preventDefault();
         }
     });
+
+    // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
+    mapLibrary.setRTLTextPlugin(
+        'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
+        err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
+        true // Lazy load the plugin
+    );
 
     new EtymologyMap('map', backgroundStyles, geocoderControl, requestTransformFunc);
 }
