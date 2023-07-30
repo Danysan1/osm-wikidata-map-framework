@@ -67,7 +67,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  */
 function initMap() {
     debugLog("Initializing the map");
-    let geocoderControl: IControl;
+    let geocoderControl: IControl | undefined;
 
     /********** Start of Mapbox GL JS specific code **********/
     // mapLibrary.accessToken = mapbox_token;
