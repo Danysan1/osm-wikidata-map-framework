@@ -1,8 +1,9 @@
-import { IControl } from 'maplibre-gl';
+import { IControl, RequestTransformFunction } from 'maplibre-gl';
 import { GeocodingControl } from "@maptiler/geocoding-control/maplibregl";
 import "@maptiler/geocoding-control/style.css";
+import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer'
 
-// import { default as mapLibrary, setRTLTextPlugin, IControl } from 'mapbox-gl';
+// import { default as mapLibrary, setRTLTextPlugin, IControl, RequestTransformFunction } from 'mapbox-gl';
 // import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 // import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
@@ -19,6 +20,7 @@ initMatomo();
 
 setPageLocale();
 
+let requestTransformFunc: RequestTransformFunction | undefined;
 const maptiler_key = getConfig("maptiler_key"),
     mapbox_token = getConfig("mapbox_token"),
     backgroundStyles: BackgroundStyle[] = [];
@@ -36,6 +38,7 @@ if (mapbox_token) {
         mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
         mapboxBackgroundStyle('mapbox_satellite_streets_globe', 'Mapbox Satellite (globe)', 'mapbox', 'satellite-streets-v12', mapbox_token),
     );
+    requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
 }
 
 if (maptiler_key) {
@@ -64,21 +67,20 @@ document.addEventListener("DOMContentLoaded", initPage);
  */
 function initMap() {
     debugLog("Initializing the map");
-    let geocoderControl: IControl | undefined;
+    let geocoderControl: IControl;
 
-    // /* Start of Mapbox GL JS specific code */
+    /********** Start of Mapbox GL JS specific code **********/
     // mapLibrary.accessToken = mapbox_token;
     // debugLog("Using MapboxGeocoder", { mapbox_token });
-    // const ctrl = new MapboxGeocoder({
+    // const geocoderControl = new MapboxGeocoder({
     //     accessToken: mapbox_token,
     //     collapsed: true,
     //     language: document.documentElement.lang,
     //     mapboxgl: mapboxgl
     // });
-    // geocoderControl = ctrl;
     // document.addEventListener("keydown", (e) => {
     //     if ((e.ctrlKey || e.metaKey) && e.key == "f") {
-    //         ctrl.clear();
+    //         geocoderControl.clear();
     //         e.preventDefault();
     //     }
     // });
@@ -87,15 +89,15 @@ function initMap() {
     //     err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
     //     true // Lazy load the plugin
     // );
-    // /* End of Mapbox GL JS specific code */
+    /********** End of Mapbox GL JS specific code **********/
 
-    /* Start of Maplibre GL JS specific code */
+    /********** Start of Maplibre GL JS specific code **********/
     debugLog("Using Maptiler GeocoderControl", { maptiler_key });
     if (maptiler_key)
         geocoderControl = new GeocodingControl({ apiKey: maptiler_key });
-    /* End of Maplibre GL JS specific code */
+    /********** End of Maplibre GL JS specific code **********/
 
-    new EtymologyMap('map', backgroundStyles, geocoderControl);
+    new EtymologyMap('map', backgroundStyles, geocoderControl, requestTransformFunc);
 }
 
 /**
@@ -106,7 +108,7 @@ function isWebglSupported() {
         const canvas = document.createElement('canvas');
         try {
             const context =
-          canvas.getContext('webgl2') || canvas.getContext('webgl');
+                canvas.getContext('webgl2') || canvas.getContext('webgl');
             if (context && typeof context.getParameter == 'function') {
                 return true;
             }

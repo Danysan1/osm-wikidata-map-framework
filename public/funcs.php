@@ -67,8 +67,10 @@ function prepareHTML(Configuration $conf)
 	$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 
 	$maptilerConnectSrcs = '';
+	$maptilerImgSrcs = '';
 	if ($conf->has("maptiler_key")) {
 		$maptilerConnectSrcs = 'https://api.maptiler.com';
+		$maptilerImgSrcs = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
 	}
 
 	$googleAnalyticsConnectSrcs = '';
@@ -102,7 +104,7 @@ function prepareHTML(Configuration $conf)
 			"default-src 'self'; " .
 			"worker-src blob: ; " .
 			"child-src blob: ; " .
-			"img-src 'self' data: blob: $wikimediaImgSrcs $payPalImgSrcs $googleAnalyticsConnectSrcs ; " .
+			"img-src 'self' data: blob: $wikimediaImgSrcs $payPalImgSrcs $googleAnalyticsConnectSrcs $maptilerImgSrcs ; " .
 			"font-src 'self'; " .
 			"style-src 'self' https://fonts.googleapis.com; " .
 			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .

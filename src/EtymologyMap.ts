@@ -1,7 +1,7 @@
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, SourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, SourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as SourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as SourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, RequestTransformFunction } from 'mapbox-gl';
 //import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
@@ -34,7 +34,8 @@ export class EtymologyMap extends Map {
     constructor(
         containerId: string,
         backgroundStyles: BackgroundStyle[],
-        geocoderControl?: IControl
+        geocoderControl?: IControl,
+        requestTransformFunc?: RequestTransformFunction
     ) {
         let backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
         if (!backgroundStyleObj) {
@@ -49,6 +50,7 @@ export class EtymologyMap extends Map {
             style: backgroundStyleObj.styleUrl,
             center: [startParams.lon, startParams.lat], // starting position [lon, lat]
             zoom: startParams.zoom, // starting zoom
+            transformRequest: requestTransformFunc
         });
         this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
