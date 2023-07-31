@@ -87,6 +87,11 @@ function prepareHTML(Configuration $conf)
 		$stadiaConnectSrcs = 'https://tiles.stadiamaps.com/';
 	}
 
+	$jawgConnectSrcs = '';
+	if($conf->has("jawg_token")) {
+		$jawgConnectSrcs = 'https://api.jawg.io/ https://tile.jawg.io/';
+	}
+
 	$googleAnalyticsConnectSrcs = '';
 	$googleAnalyticsScriptSrcs = '';
 	if ($conf->has('google_analytics_id')) {
@@ -124,7 +129,7 @@ function prepareHTML(Configuration $conf)
 			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $wikimediaConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $stadiaConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $wikimediaConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $stadiaConnectSrcs $jawgConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
