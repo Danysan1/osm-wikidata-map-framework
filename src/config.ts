@@ -11,6 +11,11 @@ export function getBoolConfig(key: string): boolean {
     return !!rawValue && rawValue != "0" && rawValue != "false";
 }
 
+export function getJsonConfig(key: string): string | null {
+    const configElement = document.head.querySelector<HTMLScriptElement>(`script#config_${key}`);
+    return configElement ? configElement.textContent : null;
+}
+
 let enable_debug_log: boolean | null = null;
 export function debugLog(msg: string, extra?: object) {
     if (enable_debug_log === null)

@@ -2,7 +2,7 @@ import { TFunction } from "i18next";
 import ChainedBackend from 'i18next-chained-backend'
 import resourcesToBackend from 'i18next-resources-to-backend'
 import HttpBackend from 'i18next-http-backend'
-import { debugLog, getBoolConfig, getConfig } from "./config";
+import { debugLog, getBoolConfig, getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
 export function getLocale() {
@@ -19,6 +19,19 @@ export function setPageLocale() {
     });
 
     document.documentElement.setAttribute("lang", lang);
+
+    loadTranslator().then(t => {
+        const title = document.head.querySelector<HTMLTitleElement>("title"),
+            descr = document.head.querySelector<HTMLMetaElement>('meta[name="description"]'),
+            og_title = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]'),
+            og_name = document.head.querySelector<HTMLMetaElement>('meta[property="og:site_name"]'),
+            og_description = document.head.querySelector<HTMLMetaElement>('meta[property="og:description"]');
+        if (title) title.innerText = t("title");
+        if (descr) descr.content = t("description");
+        if (og_title) og_title.content = t("title");
+        if (og_name) og_name.content = t("title");
+        if (og_description) og_description.content = t("description");
+    });
 }
 
 let tPromise: Promise<TFunction>;
@@ -28,7 +41,7 @@ export async function loadTranslator() {
             defaultLanguage = getConfig("default_language") || 'en',
             locale = document.documentElement.lang,
             language = locale.split('-').at(0),
-            rawI18nOverride = getConfig("i18n_override"),
+            rawI18nOverride = getJsonConfig("i18n_override"),
             backends: object[] = [HttpBackend];
         if (rawI18nOverride) {
             try {
@@ -64,7 +77,7 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
     }
 }
 
-export function translateTitle(parent: HTMLElement, selector: string, key: string) {
+export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string) {
     const domElement = parent.querySelector<HTMLAnchorElement>(selector);
     if (!domElement) {
         debugLog("translateTitle: failed finding element", { parentClasses: parent.classList, selector });

@@ -30,6 +30,14 @@ abstract class BaseConfiguration implements Configuration
             return self::lowLevelMetaTag($key, (string)$this->get($key));
     }
 
+    public function getJsonScriptTag(string $key, ?bool $optional = false): string
+    {
+        if ($optional && !$this->has($key))
+            return "";
+        else
+            return '<script type="application/json" id="config_'.$key.'">'.(string)$this->get($key).'</script>';
+    }
+
     /**
      * Parses a JSON encoded parameter to a PHP array or associative array
      * 

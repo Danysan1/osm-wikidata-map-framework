@@ -87,8 +87,8 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
     <?= $conf->getMetaTag("db_enable", true); ?>
-    <?= $conf->getMetaTag("osm_wikidata_keys", true); ?>
-    <?= $conf->getMetaTag("osm_wikidata_properties", true); ?>
+    <?= $conf->getJsonScriptTag("osm_wikidata_keys", true); ?>
+    <?= $conf->getJsonScriptTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>
     <?= $conf->getMetaTag("wikidata_indirect_property", true); ?>
     <?= $conf->getMetaTag("wikidata_image_property", true); ?>
@@ -116,7 +116,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
     <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
-    <?= $conf->getMetaTag("i18n_override", true); ?>
+    <?= $conf->getJsonScriptTag("i18n_override", true); ?>
     <?= $conf->getMetaTag("default_language"); ?>
 </head>
 

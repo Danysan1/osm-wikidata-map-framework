@@ -1,4 +1,4 @@
-import { getConfig, getBoolConfig, debugLog } from '../config';
+import { getConfig, getBoolConfig, debugLog, getJsonConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
@@ -14,9 +14,9 @@ export class SourceControl extends DropdownControl {
         t: TFunction,
         minZoomLevel: number
     ) {
-        const rawKeys = getConfig("osm_wikidata_keys"),
+        const rawKeys = getJsonConfig("osm_wikidata_keys"),
             keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
-            rawOsmProps = getConfig("osm_wikidata_properties"),
+            rawOsmProps = getJsonConfig("osm_wikidata_properties"),
             osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getBoolConfig("propagate_data"),

@@ -1,6 +1,6 @@
 import { IControl, Map, Popup } from 'maplibre-gl';
 //import { IControl, Map, Popup } from 'mapbox-gl';
-import { getLocale, loadTranslator, translateContent, translateTitle } from '../i18n';
+import { getLocale, loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
 
 /**
  * Opens the information intro window
@@ -24,19 +24,19 @@ function openInfoWindow(map: Map) {
     translateContent(introDomElement, ".i18n_to_overpass_query", "info_box.to_overpass_query");
     translateContent(introDomElement, ".i18n_to_wikidata_query", "info_box.to_wikidata_query");
     translateContent(introDomElement, ".i18n_contribute", "info_box.contribute");
-    translateTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
+    translateAnchorTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
     translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
-    translateTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
+    translateAnchorTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
     translateContent(introDomElement, ".i18n_about_me", "info_box.about_me");
-    translateTitle(introDomElement, ".title_i18n_about_me", "info_box.about_me_title");
+    translateAnchorTitle(introDomElement, ".title_i18n_about_me", "info_box.about_me_title");
 
     if (introDomElement.querySelector<HTMLElement>(".i18n_last_db_update"))
         translateContent(introDomElement, ".i18n_last_db_update", "info_box.last_db_update");
 
     if (introDomElement.querySelector<HTMLElement>(".i18n_download_dataset")) {
         translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
-        translateTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset");
+        translateAnchorTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset");
     }
 
     const popup = new Popup({

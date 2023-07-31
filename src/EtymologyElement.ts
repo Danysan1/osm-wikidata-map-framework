@@ -1,5 +1,5 @@
 import { debugLog } from "./config";
-import { translateContent, translateTitle } from "./i18n";
+import { translateContent, translateAnchorTitle } from "./i18n";
 import { ImageResponse, imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
 
@@ -130,9 +130,9 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
 
     translateContent(etyDomElement, ".i18n_source", "etymology_details.source");
     translateContent(etyDomElement, ".i18n_location", "feature_details.location");
-    translateTitle(etyDomElement, ".title_i18n_location", "feature_details.location");
+    translateAnchorTitle(etyDomElement, ".title_i18n_location", "feature_details.location");
     translateContent(etyDomElement, ".i18n_propagation", "etymology_details.propagation");
-    translateTitle(etyDomElement, ".title_i18n_propagation", "etymology_details.propagation_title");
+    translateAnchorTitle(etyDomElement, ".title_i18n_propagation", "etymology_details.propagation_title");
 
     const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
     if (!etymology_name) {
