@@ -55,6 +55,11 @@ function preparePage(Configuration $conf)
  */
 function prepareHTML(Configuration $conf)
 {
+	if (!$conf->has("mapbox_token") && !$conf->has("maplibre_token") && !$conf->getBool("enable_stadia_maps") && !$conf->has("jawg_token")) {
+		http_response_code(500);
+		die('<html><body>No background map has been enabled in the configuration. See the configuration file (.env) for more details.</body></html>');
+	}
+
 	preparePage($conf);
 	header("Content-Type: text/html; charset=utf-8");
 

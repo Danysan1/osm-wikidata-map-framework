@@ -9,7 +9,7 @@ import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-trans
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
-import { BackgroundStyle, maptilerBackgroundStyle, mapboxBackgroundStyle, stadiaMapsBackgroundStyle } from './controls/BackgroundStyleControl';
+import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './controls/BackgroundStyleControl';
 import { debugLog, getBoolConfig, getConfig } from './config';
 import { setPageLocale } from './i18n';
 import './style.css';
@@ -22,51 +22,62 @@ setPageLocale();
 
 let requestTransformFunc: RequestTransformFunction | undefined;
 const maptiler_key = getConfig("maptiler_key"),
-    mapbox_token = getConfig("mapbox_token"),
     enable_stadia_maps = getBoolConfig("enable_stadia_maps"),
+    jawg_token = getConfig("jawg_token"),
+    mapbox_token = getConfig("mapbox_token"),
     backgroundStyles: BackgroundStyle[] = [];
 
 if (mapbox_token) {
     backgroundStyles.push(
-        mapboxBackgroundStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_streets_globe', 'Mapbox Streets (globe)', 'mapbox', 'streets-v12', mapbox_token),
-        mapboxBackgroundStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_outdoors_globe', 'Mapbox Outdoors (globe)', 'mapbox', 'outdoors-v12', mapbox_token),
-        mapboxBackgroundStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v10', mapbox_token),
-        mapboxBackgroundStyle('mapbox_light_globe', 'Mapbox Light (globe)', 'mapbox', 'light-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v10', mapbox_token),
-        mapboxBackgroundStyle('mapbox_dark_globe', 'Mapbox Dark (globe)', 'mapbox', 'dark-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
-        mapboxBackgroundStyle('mapbox_satellite_streets_globe', 'Mapbox Satellite (globe)', 'mapbox', 'satellite-streets-v12', mapbox_token),
+        mapboxStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v11', mapbox_token),
+        mapboxStyle('mapbox_streets_globe', 'Mapbox Streets (globe)', 'mapbox', 'streets-v12', mapbox_token),
+        mapboxStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v11', mapbox_token),
+        mapboxStyle('mapbox_outdoors_globe', 'Mapbox Outdoors (globe)', 'mapbox', 'outdoors-v12', mapbox_token),
+        mapboxStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v10', mapbox_token),
+        mapboxStyle('mapbox_light_globe', 'Mapbox Light (globe)', 'mapbox', 'light-v11', mapbox_token),
+        mapboxStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v10', mapbox_token),
+        mapboxStyle('mapbox_dark_globe', 'Mapbox Dark (globe)', 'mapbox', 'dark-v11', mapbox_token),
+        mapboxStyle('mapbox_satellite_streets', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
+        mapboxStyle('mapbox_satellite_streets_globe', 'Mapbox Satellite (globe)', 'mapbox', 'satellite-streets-v12', mapbox_token),
     );
     requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
 }
 
-if (maptiler_key) {
+if (enable_stadia_maps) {
     backgroundStyles.push(
-        maptilerBackgroundStyle('maptiler_backdrop', 'Maptiler Backdrop', 'backdrop', maptiler_key),
-        maptilerBackgroundStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
-        maptilerBackgroundStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
-        maptilerBackgroundStyle('maptiler_dataviz', 'Maptiler Dataviz', 'dataviz', maptiler_key),
-        maptilerBackgroundStyle('maptiler_ocean', 'Maptiler Ocean', 'ocean', maptiler_key),
-        maptilerBackgroundStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
-        maptilerBackgroundStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor-v2', maptiler_key),
-        maptilerBackgroundStyle('maptiler_satellite_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
-        maptilerBackgroundStyle('maptiler_streets', 'Maptiler Streets', 'streets-v2', maptiler_key),
-        maptilerBackgroundStyle('maptiler_toner', 'Maptiler Toner', 'toner-v2', maptiler_key),
-        maptilerBackgroundStyle('maptiler_topo', 'Maptiler Topo', 'topo-v2', maptiler_key),
-        maptilerBackgroundStyle('maptiler_winter', 'Maptiler Winter', "winter-v2", maptiler_key),
+        stadiaStyle('stadia_alidade_dark', "Stadia Alidade smooth dark", 'alidade_smooth_dark'),
+        stadiaStyle('stadia_alidade', "Stadia Alidade smooth", 'alidade_smooth'),
+        stadiaStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
+        stadiaStyle('stadia_outdoors', "Stadia Outdoors", 'outdoors'),
+        stadiaStyle('stadia_osm_bright', "Stadia OSM Bright", 'osm_bright'),
     );
 }
 
-if (enable_stadia_maps) {
+if(jawg_token) {
     backgroundStyles.push(
-        stadiaMapsBackgroundStyle('stadia_alidade_dark', "Stadia Alidade smooth dark", 'alidade_smooth_dark'),
-        stadiaMapsBackgroundStyle('stadia_alidade', "Stadia Alidade smooth", 'alidade_smooth'),
-        stadiaMapsBackgroundStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
-        stadiaMapsBackgroundStyle('stadia_outdoors', "Stadia Outdoors", 'outdoors'),
-        stadiaMapsBackgroundStyle('stadia_osm_bright', "Stadia OSM Bright", 'osm_bright'),
-    )
+        jawgStyle('jawg_streets', 'Jawg Streets', 'jawg-streets', jawg_token),
+        jawgStyle('jawg_sunny', 'Jawg Sunny', 'jawg-sunny', jawg_token),
+        jawgStyle('jawg_light', 'Jawg Light', 'jawg-light', jawg_token),
+        jawgStyle('jawg_terrain', 'Jawg Terrain', 'jawg-terrain', jawg_token),
+        jawgStyle('jawg_dark', 'Jawg Dark', 'jawg-dark', jawg_token),
+    );
+}
+
+if (maptiler_key) {
+    backgroundStyles.push(
+        maptilerStyle('maptiler_backdrop', 'Maptiler Backdrop', 'backdrop', maptiler_key),
+        maptilerStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
+        maptilerStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
+        maptilerStyle('maptiler_dataviz', 'Maptiler Dataviz', 'dataviz', maptiler_key),
+        maptilerStyle('maptiler_ocean', 'Maptiler Ocean', 'ocean', maptiler_key),
+        maptilerStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
+        maptilerStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor-v2', maptiler_key),
+        maptilerStyle('maptiler_satellite_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
+        maptilerStyle('maptiler_streets', 'Maptiler Streets', 'streets-v2', maptiler_key),
+        maptilerStyle('maptiler_toner', 'Maptiler Toner', 'toner-v2', maptiler_key),
+        maptilerStyle('maptiler_topo', 'Maptiler Topo', 'topo-v2', maptiler_key),
+        maptilerStyle('maptiler_winter', 'Maptiler Winter', "winter-v2", maptiler_key),
+    );
 }
 
 document.addEventListener("DOMContentLoaded", initPage);

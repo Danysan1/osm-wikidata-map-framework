@@ -9,11 +9,11 @@ export interface BackgroundStyle {
 /**
  * @see https://cloud.maptiler.com/maps/
  */
-export function maptilerBackgroundStyle(id: string, text: string, maptilerId: string, maptilerKey: string): BackgroundStyle {
+export function maptilerStyle(id: string, text: string, maptilerId: string, maptilerKey: string): BackgroundStyle {
     return {
         id: id,
         text: text,
-        styleUrl: 'https://api.maptiler.com/maps/' + maptilerId + '/style.json?key=' + maptilerKey
+        styleUrl: `https://api.maptiler.com/maps/${maptilerId}/style.json?key=${maptilerKey}`
     };
 }
 
@@ -21,11 +21,11 @@ export function maptilerBackgroundStyle(id: string, text: string, maptilerId: st
  * @see https://tiles.stadiamaps.com/data/openmaptiles.json
  * @see https://docs.stadiamaps.com/themes/
  */
-export function stadiaMapsBackgroundStyle(id: string, text: string, stadiaId: string): BackgroundStyle {
+export function stadiaStyle(id: string, text: string, stadiaId: string): BackgroundStyle {
     return {
         id: id,
         text: text,
-        styleUrl: 'https://tiles.stadiamaps.com/styles/' + stadiaId + '.json'
+        styleUrl: `https://tiles.stadiamaps.com/styles/${stadiaId}.json`
     };
 }
 
@@ -33,11 +33,24 @@ export function stadiaMapsBackgroundStyle(id: string, text: string, stadiaId: st
  * @see https://docs.mapbox.com/api/maps/vector-tiles/
  * @see https://docs.mapbox.com/api/maps/styles/#mapbox-styles
  */
-export function mapboxBackgroundStyle(id: string, text: string, mapboxUser: string, mapboxId: string, mapboxToken: string): BackgroundStyle {
+export function mapboxStyle(id: string, text: string, mapboxUser: string, mapboxId: string, mapboxToken: string): BackgroundStyle {
     return {
         id: id,
         text: text,
-        styleUrl: 'https://api.mapbox.com/styles/v1/' + mapboxUser + '/' + mapboxId + '/?access_token=' + mapboxToken
+        styleUrl: `https://api.mapbox.com/styles/v1/${mapboxUser}/${mapboxId}/?access_token=${mapboxToken}`
+    };
+}
+
+/**
+ * @see https://www.jawg.io/en/maps/
+ * @see https://www.jawg.io/lab/styles
+ * @see https://www.jawg.io/docs/integration/maplibre-gl-js/change-style/
+ */
+export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: string): BackgroundStyle {
+    return {
+        id: id,
+        text: text,
+        styleUrl: `https://api.jawg.io/styles/${jawgId}.json?access-token=${jawgToken}`
     };
 }
 

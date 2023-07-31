@@ -9,11 +9,6 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-if (!$conf->has("mapbox_token") && !$conf->has("maplibre_token") && !$conf->getBool("enable_stadia_maps")) {
-    http_response_code(500);
-    die('<html><body>Missing map token from configuration</body></html>');
-}
-
 $lastUpdateString = '';
 $enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
@@ -100,6 +95,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
     <?= $conf->getMetaTag("mapbox_token", true); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
     <?= $conf->getMetaTag("enable_stadia_maps", true); ?>
+    <?= $conf->getMetaTag("jawg_token", true); ?>
     <?= $conf->getMetaTag("default_center_lat"); ?>
     <?= $conf->getMetaTag("default_center_lon"); ?>
     <?= $conf->getMetaTag("default_zoom"); ?>
