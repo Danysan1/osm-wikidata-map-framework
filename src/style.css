@@ -36,12 +36,15 @@ div.mapboxgl-popup.owmf_info_popup {
   z-index: 1000;
 }
 
+div.maplibregl-popup.owmf_info_popup .contribute_button,
+div.maplibregl-popup.owmf_info_popup .dataset_button,
 div.mapboxgl-popup.owmf_info_popup .contribute_button,
 div.mapboxgl-popup.owmf_info_popup .dataset_button {
   margin-top: 0.2em;
   margin-bottom: 0.2em;
 }
 
+div.maplibregl-popup.owmf_info_popup table tr td:first-child,
 div.mapboxgl-popup.owmf_info_popup table tr td:first-child {
   text-align: center;
 }
@@ -65,8 +68,8 @@ div.mapboxgl-popup-content {
 }
 
 div.maplibregl-popup-content,
-div.mapboxgl-popup-content,
 div.maplibregl-ctrl select,
+div.mapboxgl-popup-content,
 div.mapboxgl-ctrl select,
 div.snackbar {
   font-family: "Segoe UI", "Open Sans Regular", "Arial Unicode MS Regular", sans-serif;
@@ -171,8 +174,8 @@ div.custom-ctrl>table>tr>td {
   /*text-align: right;*/
 }
 
-.mapboxgl-ctrl-icon,
 .maplibregl-ctrl-icon,
+.mapboxgl-ctrl-icon,
 .dropdown-ctrl .dropdown-ctrl-button {
   font-size: large;
 }
@@ -191,6 +194,7 @@ div.pictures>hr {
   margin-right: max(3em, auto);
 }
 
+.maplibregl-popup-content .etymology_loading>h3,
 .mapboxgl-popup-content .etymology_loading>h3,
 div.info>p {
   margin-left: 1em;
@@ -447,6 +451,8 @@ p.pic-attr {
   text-align: center;
 }
 
+.maplibregl-ctrl-group>button,
+.maplibregl-ctrl-group>a,
 .mapboxgl-ctrl-group>button,
 .mapboxgl-ctrl-group>a {
   background-color: transparent;
@@ -461,6 +467,8 @@ p.pic-attr {
   width: 29px;
 }
 
+.maplibregl-ctrl-group>button img,
+.maplibregl-ctrl-group>a img,
 .mapboxgl-ctrl-group>button img,
 .mapboxgl-ctrl-group>a img {
   height: 23px;
