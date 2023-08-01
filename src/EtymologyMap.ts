@@ -1,8 +1,8 @@
-// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
-// import 'maplibre-gl/dist/maplibre-gl.css';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
+// import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
@@ -12,11 +12,11 @@ import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debugLog, getBoolConfig, getConfig } from './config';
-import './style.css';
 import { SourceControl } from './controls/SourceControl';
 import { ColorSchemeID, colorSchemes } from './colorScheme.model';
 import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
+import './style.css';
 
 const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -508,7 +508,7 @@ export class EtymologyMap extends Map {
     }
 
     addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
-        let sourceObject = this.getSource(id) as GeoJSONSource & { _data?: string | undefined } | null;
+        let sourceObject = this.getSource(id) as GeoJSONSource | null;
         const newSourceDataURL = typeof config.data === 'string' ? config.data : null,
             oldSourceDataURL = sourceObject?._data,
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;

@@ -1,5 +1,5 @@
-//import { ExpressionSpecification } from 'maplibre-gl';
-import { Expression as ExpressionSpecification } from 'mapbox-gl';
+import { ExpressionSpecification } from 'maplibre-gl';
+// import { Expression as ExpressionSpecification } from 'mapbox-gl';
 
 export type ColorSchemeID = "blue" | "gender" | "type" | "country" | "startCentury" | "endCentury" | "source" | "black" | "red" | "orange";
 
