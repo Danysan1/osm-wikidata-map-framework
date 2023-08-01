@@ -1,7 +1,7 @@
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, SourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as SourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, RequestTransformFunction } from 'mapbox-gl';
+//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, RequestTransformFunction } from 'mapbox-gl';
 //import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
@@ -276,15 +276,14 @@ export class EtymologyMap extends Map {
             wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
             wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill';
 
-        this.addGeoJSONSource(
+        this.addOrUpdateGeoJSONSource(
             WIKIDATA_SOURCE,
             {
                 type: 'geojson',
                 //buffer: 512, // This only works on already downloaded data
                 data: wikidata_url,
                 attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
-            },
-            wikidata_url
+            }
         );
 
         if (!this.getLayer(wikidata_layer_point)) {
@@ -508,15 +507,17 @@ export class EtymologyMap extends Map {
         this.initWikidataControls();
     }
 
-    addGeoJSONSource(id: string, config: SourceSpecification, sourceDataURL: string): GeoJSONSource {
+    addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
         let sourceObject = this.getSource(id) as GeoJSONSource | null;
-        const oldSourceDataURL = (sourceObject && sourceObject._data) ? sourceObject._data : null,
-            sourceUrlChanged = oldSourceDataURL != sourceDataURL;
+        const newSourceDataURL = config.data as string,
+            oldSourceDataURL = sourceObject?._data,
+            sourceUrlChanged = oldSourceDataURL !== newSourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
             showLoadingSpinner(true);
-            debugLog("prepareClusteredLayers: updating source", { id, sourceObject, sourceDataURL, oldSourceDataURL });
-            sourceObject.setData(sourceDataURL);
+            debugLog("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });
+            sourceObject.setData(newSourceDataURL);
         } else if (!sourceObject) {
+            debugLog("addGeoJSONSource: adding source", { id, newSourceDataURL });
             showLoadingSpinner(true);
             this.addSource(id, config);
             sourceObject = this.getSource(id) as GeoJSONSource;
@@ -527,7 +528,7 @@ export class EtymologyMap extends Map {
                 throw new Error("Failed adding source");
             }
         } else {
-            debugLog("Skipping source update", { id, sourceDataURL });
+            debugLog("Skipping source update", { id, newSourceDataURL });
         }
         return sourceObject;
     }
@@ -560,7 +561,7 @@ export class EtymologyMap extends Map {
         const clusterLayerName = sourceName + '_layer_cluster',
             countLayerName = sourceName + '_layer_count',
             pointLayerName = sourceName + '_layer_point',
-            sourceObject = this.addGeoJSONSource(
+            sourceObject = this.addOrUpdateGeoJSONSource(
                 sourceName,
                 {
                     type: 'geojson',
@@ -572,8 +573,7 @@ export class EtymologyMap extends Map {
                     clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
                     clusterProperties: clusterProperties,
                     clusterMinPoints: 1
-                },
-                sourceDataURL
+                }
             );
 
         if (!this.getLayer(clusterLayerName)) {
