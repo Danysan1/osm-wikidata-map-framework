@@ -1,5 +1,5 @@
-import { GeoJSONFeature } from "maplibre-gl";
-//import { MapboxGeoJSONFeature as GeoJSONFeature } from "mapbox-gl";
+//import { GeoJSONFeature } from 'maplibre-gl';
+import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";

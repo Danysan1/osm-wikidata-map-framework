@@ -1,8 +1,8 @@
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
+// import 'maplibre-gl/dist/maplibre-gl.css';
 
-//import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, RequestTransformFunction } from 'mapbox-gl';
-//import 'mapbox-gl/dist/mapbox-gl.css';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
+import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
@@ -508,10 +508,10 @@ export class EtymologyMap extends Map {
     }
 
     addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
-        let sourceObject = this.getSource(id) as GeoJSONSource | null;
-        const newSourceDataURL = config.data as string,
+        let sourceObject = this.getSource(id) as GeoJSONSource & { _data?: string | undefined } | null;
+        const newSourceDataURL = typeof config.data === 'string' ? config.data : null,
             oldSourceDataURL = sourceObject?._data,
-            sourceUrlChanged = oldSourceDataURL !== newSourceDataURL;
+            sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
             showLoadingSpinner(true);
             debugLog("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });

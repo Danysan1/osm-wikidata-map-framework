@@ -1,5 +1,5 @@
-import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent } from 'maplibre-gl';
-//import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent } from 'mapbox-gl';
+// import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent } from 'maplibre-gl';
+import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent } from 'mapbox-gl';
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
