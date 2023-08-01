@@ -35,7 +35,7 @@ $downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALI
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 
 $defaultLanguage = (string)$conf->get('default_language');
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultLanguage);
+$safeLanguage = getSafeLanguage($defaultLanguage);
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 
 $wikidataConfig = new BaseWikidataConfig($conf);
@@ -52,18 +52,6 @@ if ($enableDB && str_starts_with($source, "db_")) {
 }
 $textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
 $descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
-
-// "en-US" => "en"
-$langMatches = [];
-if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMatches[1])) {
-    http_response_code(400);
-    die('{"error":"Invalid language code."};');
-}
-/**
- * @psalm-suppress RedundantCastGivenDocblockType
- */
-$safeLanguage = (string)$langMatches[1];
-//error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
 if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery(

@@ -43,7 +43,7 @@ $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CH
 $to = (string)getFilteredParamOrDefault("to", FILTER_UNSAFE_RAW, "geojson");
 
 $defaultLanguage = (string)$conf->get('default_language');
-$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultLanguage);
+$safeLanguage = getSafeLanguage($defaultLanguage);
 $overpassConfig = new RoundRobinOverpassConfig($conf);
 $wikidataConfig = new BaseWikidataConfig($conf);
 $enableDB = $conf->getBool("db_enable");
@@ -52,18 +52,6 @@ if ($enableDB && str_starts_with($source, "db_"))
     $db = new PostGIS_PDO($conf);
 else
     $db = null;
-
-// "en-US" => "en"
-$langMatches = [];
-if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMatches[1])) {
-    http_response_code(400);
-    die('{"error":"Invalid language code."};');
-}
-/**
- * @psalm-suppress RedundantCastGivenDocblockType
- */
-$safeLanguage = (string)$langMatches[1];
-//error_log($language." => ".json_encode($langMatches)." => ".$safeLanguage);
 
 $textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
 $descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;

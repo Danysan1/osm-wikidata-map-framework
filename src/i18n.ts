@@ -5,9 +5,10 @@ import HttpBackend from 'i18next-http-backend'
 import { debugLog, getBoolConfig, getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
-export function getLocale() {
-    const langParam = new URLSearchParams(document.location.search).get("lang");
-    return langParam || navigator.languages?.at(0) || navigator.language;
+export function getLocale(): string | undefined {
+    const langParam = new URLSearchParams(document.location.search).get("lang"),
+        locale = langParam || navigator.languages?.at(0) || navigator.language;
+    return locale.match(/^[a-zA-Z_-]+/)?.at(0);
 }
 
 export function setPageLocale() {

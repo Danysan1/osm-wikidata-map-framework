@@ -3,8 +3,6 @@
 declare(strict_types=1);
 require_once(__DIR__ . "/../vendor/autoload.php");
 
-define("ISO_LANGUAGE_PATTERN", '/^(\w+)[-\w]*$/');
-
 use \App\Config\Configuration;
 
 /**
@@ -88,7 +86,7 @@ function prepareHTML(Configuration $conf)
 	}
 
 	$jawgConnectSrcs = '';
-	if($conf->has("jawg_token")) {
+	if ($conf->has("jawg_token")) {
 		$jawgConnectSrcs = 'https://api.jawg.io/ https://tile.jawg.io/';
 	}
 
@@ -224,6 +222,23 @@ function getFilteredParamOrDefault($paramName, $filter = FILTER_DEFAULT, $defaul
 		$paramValue = $defaultValue;
 	}
 	return $paramValue;
+}
+
+define("ISO_LANGUAGE_PATTERN", '/^(\w+)[-\w]*$/');
+function getSafeLanguage(string $defaultValue): string
+{
+	$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultValue); // "en-GB-oxendict"
+
+	$langMatches = [];
+	if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMatches[1])) { // ["en-GB-oxendict","en","GB","oxendict"]
+		http_response_code(400);
+		die('{"error":"Invalid language code."};');
+	}
+
+	$safeLanguage = (string)$langMatches[1]; // "en"
+	error_log($language . " => " . $safeLanguage);
+
+	return $safeLanguage;
 }
 
 function getCurrentURL(): string

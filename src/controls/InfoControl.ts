@@ -54,15 +54,19 @@ function openInfoWindow(map: Map) {
         const locale = getLocale(),
             lang = document.documentElement.lang,
             originalUrl = donateImg.src,
-            urlWithLocale = originalUrl.replace("en_US", locale.replace("-", "_")),
             urlWithLang = originalUrl.replace("en_US", lang + "_" + lang.toUpperCase()),
             onUrlWithLangFailed = () => donateImg.src = originalUrl,
             onUrlWithLocaleFailed = () => {
                 donateImg.addEventListener("error", onUrlWithLangFailed, { once: true });
                 donateImg.src = urlWithLang;
             };
-        donateImg.addEventListener("error", onUrlWithLocaleFailed, { once: true });
-        donateImg.src = urlWithLocale;
+        if (locale) {
+            const urlWithLocale = originalUrl.replace("en_US", locale.replace("-", "_"));
+            donateImg.addEventListener("error", onUrlWithLocaleFailed, { once: true });
+            donateImg.src = urlWithLocale;
+        } else {
+            onUrlWithLocaleFailed();
+        }
     }
 }
 
