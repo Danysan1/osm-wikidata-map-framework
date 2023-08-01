@@ -58,10 +58,9 @@ export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: s
  * Let the user choose the map style.
  **/
 export class BackgroundStyleControl extends DropdownControl {
-
     constructor(backgroundStyles: BackgroundStyle[], startBackgroundStyleId?: string) {
         super(
-            '🌐',
+            '🌍',
             backgroundStyles.map(style => ({
                 id: style.id,
                 text: style.text,
@@ -71,7 +70,7 @@ export class BackgroundStyleControl extends DropdownControl {
                 }
             })),
             startBackgroundStyleId ? startBackgroundStyleId : backgroundStyles[0]?.id,
-            'background.choose_style'
+            'choose_basemap'
         );
     }
 }

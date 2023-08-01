@@ -1,5 +1,7 @@
-import { IControl, Map, Popup } from 'maplibre-gl';
-// import { IControl, Map, Popup } from 'mapbox-gl';
+// import { IControl, Map, Popup } from 'maplibre-gl';
+
+import { IControl, Map, Popup } from 'mapbox-gl';
+
 import { getLocale, loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
 
 /**

@@ -1,11 +1,12 @@
-import { default as mapLibrary, RequestTransformFunction } from 'maplibre-gl';
-import { GeocodingControl } from "@maptiler/geocoding-control/maplibregl";
-import "@maptiler/geocoding-control/style.css";
-import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer';
+// import { default as mapLibrary, RequestTransformFunction } from 'maplibre-gl';
+// import { GeocodingControl } from "@maptiler/geocoding-control/maplibregl";
+// import "@maptiler/geocoding-control/style.css";
+// import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer';
 
-// import { default as mapLibrary, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
-// import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
-// import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
+import { default as mapLibrary, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
+import { ProjectionControl } from './controls/ProjectionControl';
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
+import '@mapbox/mapbox-gl-geocoder/dist/mapbox-gl-geocoder.css';
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
@@ -20,7 +21,6 @@ initMatomo();
 
 setPageLocale();
 
-let requestTransformFunc: RequestTransformFunction | undefined;
 const maptiler_key = getConfig("maptiler_key"),
     enable_stadia_maps = getBoolConfig("enable_stadia_maps"),
     jawg_token = getConfig("jawg_token"),
@@ -29,18 +29,12 @@ const maptiler_key = getConfig("maptiler_key"),
 
 if (mapbox_token) {
     backgroundStyles.push(
-        mapboxStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v11', mapbox_token),
-        // mapboxStyle('mapbox_streets_globe', 'Mapbox Streets (globe)', 'mapbox', 'streets-v12', mapbox_token),
-        mapboxStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v11', mapbox_token),
-        // mapboxStyle('mapbox_outdoors_globe', 'Mapbox Outdoors (globe)', 'mapbox', 'outdoors-v12', mapbox_token),
-        mapboxStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v10', mapbox_token),
-        // mapboxStyle('mapbox_light_globe', 'Mapbox Light (globe)', 'mapbox', 'light-v11', mapbox_token),
-        mapboxStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v10', mapbox_token),
-        // mapboxStyle('mapbox_dark_globe', 'Mapbox Dark (globe)', 'mapbox', 'dark-v11', mapbox_token),
-        mapboxStyle('mapbox_satellite', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v11', mapbox_token),
-        // mapboxStyle('mapbox_satellite_globe', 'Mapbox Satellite (globe)', 'mapbox', 'satellite-streets-v12', mapbox_token),
+        mapboxStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v12', mapbox_token),
+        mapboxStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v12', mapbox_token),
+        mapboxStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v11', mapbox_token),
+        mapboxStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v11', mapbox_token),
+        mapboxStyle('mapbox_satellite', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v12', mapbox_token),
     );
-    requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
 }
 
 if (enable_stadia_maps) {
@@ -91,27 +85,32 @@ document.addEventListener("DOMContentLoaded", initPage);
  */
 function initMap() {
     debugLog("Initializing the map");
+    let requestTransformFunc: RequestTransformFunction | undefined;
 
     /********** Start of Mapbox GL JS specific code **********/
-    // if (!mapbox_token)
-    //     throw new Error("Missing Mapbox token");
-    // mapLibrary.accessToken = mapbox_token;
-    // debugLog("Using MapboxGeocoder", { mapbox_token });
-    // const geocoderControl = new MapboxGeocoder({
-    //     accessToken: mapbox_token,
-    //     collapsed: true,
-    //     language: document.documentElement.lang,
-    //     mapboxgl: mapLibrary
-    // });
-    // const focusOnGeocoder = () => geocoderControl.clear();
+    if (!mapbox_token)
+        throw new Error("Missing Mapbox token");
+    mapLibrary.accessToken = mapbox_token;
+    debugLog("Using MapboxGeocoder", { mapbox_token });
+    const geocoderControl = new MapboxGeocoder({
+        accessToken: mapbox_token,
+        collapsed: true,
+        language: document.documentElement.lang,
+        mapboxgl: mapLibrary
+    });
+    const focusOnGeocoder = () => geocoderControl.clear(),
+        projectionControl = new ProjectionControl('mercator');
     /********** End of Mapbox GL JS specific code **********/
 
     /********** Start of Maplibre GL JS specific code **********/
-    debugLog("Using Maptiler GeocoderControl", { maptiler_key });
-    let geocoderControl: GeocodingControl | undefined;
-    if (maptiler_key)
-        geocoderControl = new GeocodingControl({ apiKey: maptiler_key });
-    const focusOnGeocoder = () => geocoderControl?.focus();
+    // debugLog("Using Maptiler GeocoderControl", { maptiler_key });
+    // let geocoderControl: GeocodingControl | undefined;
+    // if(mapbox_token)
+    //     requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
+    // if (maptiler_key)
+    //     geocoderControl = new GeocodingControl({ apiKey: maptiler_key });
+    // const focusOnGeocoder = () => geocoderControl?.focus(),
+    //     projectionControl = undefined;
     /********** End of Maplibre GL JS specific code **********/
 
     document.addEventListener("keydown", (e) => {
@@ -128,7 +127,7 @@ function initMap() {
         true // Lazy load the plugin
     );
 
-    new EtymologyMap('map', backgroundStyles, geocoderControl, requestTransformFunc);
+    new EtymologyMap('map', backgroundStyles, geocoderControl, projectionControl, requestTransformFunc);
 }
 
 /**

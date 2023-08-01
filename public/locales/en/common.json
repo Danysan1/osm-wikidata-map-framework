@@ -51,9 +51,6 @@
         "orange": "Orange",
         "not_available": "This color scheme is not available for this source"
     },
-    "background": {
-        "choose_style": "Choose background style"
-    },
     "feature_details": {
         "loading_first_n_items": "Loading only first {{partial}} items out of {{total}}...",
         "location": "Location",
@@ -65,5 +62,7 @@
         "source": "Source:",
         "propagation": "propagation",
         "propagation_title": "Description of the propagation mechanism"
-    }
+    },
+    "choose_basemap": "Choose background style",
+    "choose_projection": "Choose map projection"
 }

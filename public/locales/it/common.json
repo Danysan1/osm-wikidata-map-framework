@@ -51,9 +51,6 @@
         "orange": "Arancione",
         "not_available": "Questo schema di colori non è disponibile per questa sorgente"
     },
-    "background": {
-        "choose_style": "Scegli lo sfondo della mappa"
-    },
     "feature_details": {
         "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",
         "location": "Posizione",
@@ -65,5 +62,7 @@
         "source": "Fonte:",
         "propagation": "propagazione",
         "propagation_title": "Descrizione del meccanismo di propagazione"
-    }
+    },
+    "choose_basemap": "Scegli lo sfondo della mappa",
+    "choose_projection": "Scegli la proiezione della mappa"
 }

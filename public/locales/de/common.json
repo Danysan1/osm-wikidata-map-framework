@@ -51,9 +51,6 @@
         "orange": "Orange",
         "not_available": "Dieses Farbschema ist für diese Quelle nicht verfügbar"
     },
-    "background": {
-        "choose_style": "Hintergrundstil auswählen"
-    },
     "feature_details": {
         "loading_first_n_items": "Nur die ersten {{partial}} Elemente von {{total}} werden geladen...",
         "location": "Standort",
@@ -65,5 +62,7 @@
         "source": "Quelle:",
         "propagation": "vermehrung",
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
-    }
+    },
+    "choose_basemap": "Hintergrundstil auswählen",
+    "choose_projection": "Wählen Sie Kartenprojektion"
 }
