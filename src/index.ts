@@ -41,7 +41,7 @@ if (enable_stadia_maps) {
     backgroundStyles.push(
         stadiaStyle('stadia_alidade_dark', "Stadia Alidade smooth dark", 'alidade_smooth_dark'),
         stadiaStyle('stadia_alidade', "Stadia Alidade smooth", 'alidade_smooth'),
-        stadiaStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
+        //stadiaStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
         stadiaStyle('stadia_outdoors', "Stadia Outdoors", 'outdoors'),
         stadiaStyle('stadia_osm_bright', "Stadia OSM Bright", 'osm_bright'),
     );
