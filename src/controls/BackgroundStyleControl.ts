@@ -1,9 +1,12 @@
+import { debugLog } from '../config';
 import { DropdownControl } from './DropdownControl';
 
 export interface BackgroundStyle {
     id: string;
     text: string;
     styleUrl: string;
+    keyPlaceholder?: string;
+    key?: string
 }
 
 /**
@@ -64,13 +67,22 @@ export class BackgroundStyleControl extends DropdownControl {
             backgroundStyles.map(style => ({
                 id: style.id,
                 text: style.text,
-                onSelect: () => {
-                    this.getMap()?.setStyle(style.styleUrl);
-                    this.showDropdown(false);
-                }
+                onSelect: () => this.setBackgroundStyle(style)
             })),
             startBackgroundStyleId ? startBackgroundStyleId : backgroundStyles[0]?.id,
             'choose_basemap'
         );
+    }
+
+    async setBackgroundStyle(style: BackgroundStyle) {
+        if (style.keyPlaceholder && style.key) {
+            const resp = await fetch(style.styleUrl),
+                rawJSON = await resp.text(),
+                json = rawJSON.replaceAll(style.keyPlaceholder, style.key);
+            this.getMap()?.setStyle(JSON.parse(json))
+        } else {
+            this.getMap()?.setStyle(style.styleUrl);
+        }
+        this.showDropdown(false);
     }
 }

@@ -76,7 +76,7 @@ function prepareHTML(Configuration $conf)
 	$maptilerConnectSrcs = '';
 	$maptilerImgSrcs = '';
 	if ($conf->has("maptiler_key")) {
-		$maptilerConnectSrcs = 'https://api.maptiler.com';
+		$maptilerConnectSrcs = 'https://api.maptiler.com https://maputnik.github.io/osm-liberty/ https://klokantech.github.io/naturalearthtiles/';
 		$maptilerImgSrcs = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
 	}
 

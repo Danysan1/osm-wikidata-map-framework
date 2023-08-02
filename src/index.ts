@@ -59,6 +59,7 @@ if (jawg_token) {
 
 if (maptiler_key) {
     backgroundStyles.push(
+        { id: "maputnik_osm_liberty", text: "Maputnik OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
         maptilerStyle('maptiler_backdrop', 'Maptiler Backdrop', 'backdrop', maptiler_key),
         maptilerStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
         maptilerStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
