@@ -89,8 +89,8 @@ x-airflow-common:
     # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${db_user}:${db_password}@owmf-postgis:5432/${db_database} # docker-compose "owmf-postgis" service
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${db_user}:${db_password}@owmf-postgis:5432/planet # docker-compose "owmf-postgis" service
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${db_user}:${db_password}@${db_host}:5432/${db_database} # connection to the configured OWMF PostGIS DB
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${db_user}:${db_password}@${db_host}:5432/planet # connection to the configured OWMF PostGIS DB
     AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}

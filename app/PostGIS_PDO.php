@@ -23,13 +23,16 @@ class PostGIS_PDO extends PDO
             throw new Exception("The usage of the DB is disabled in the configuration");
 
         $host = $host ?: (string)$conf->get("db_host");
+        $endpoint = explode(".", $host)[0];
         $port = $port ?: (int)$conf->get("db_port");
         $dbname = $dbname ?: (string)$conf->get("db_database");
         $user = $user ?: (string)$conf->get("db_user");
         $password = $password ?: (string)$conf->get("db_password");
 
+        // https://www.php.net/manual/en/ref.pdo-pgsql.connection.php
+        // https://neon.tech/docs/connect/connection-errors#the-endpoint-id-is-not-specified
         parent::__construct(
-            "pgsql:host=$host;port=$port;dbname=$dbname;options=--application_name=open_etymology_map",
+            "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require;application_name=owmf;options=endpoint=$endpoint",
             $user,
             $password,
             [
