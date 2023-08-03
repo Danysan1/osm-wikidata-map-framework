@@ -10,9 +10,8 @@ RUN a2enmod headers ssl rewrite deflate expires
 COPY ./apache.conf /etc/apache2/conf-available/owmf.conf
 RUN a2enconf owmf.conf
 
-COPY ./composer_install.sh /composer_install.sh
-RUN chmod u+x /composer_install.sh && \
-	/composer_install.sh
+# https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
+RUN curl -s https://raw.githubusercontent.com/composer/getcomposer.org/76a7060ccb93902cd7576b67264ad91c8a2700e2/web/installer | php
 
 
 
@@ -75,37 +74,11 @@ COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/
 
 
 
+# https://aws.amazon.com/it/blogs/compute/building-php-lambda-functions-with-docker-container-images/
+# https://bref.sh/docs/web-apps/docker
 # https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-types
 # https://gallery.ecr.aws/lambda/provided
-FROM public.ecr.aws/lambda/provided:al2.2023.08.02.09 as aws-lambda
-
-# Install PHP + Apache httpd - https://dev.to/andreaolivato/install-php-8-on-aws-amazon-linux-2-2mdl
-RUN yum update -y && \
-	yum install -y yum-utils https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm  https://rpms.remirepo.net/enterprise/remi-release-7.rpm && \
-	yum-config-manager --enable remi-php82 && \
-	yum install -y httpd mod_security php82 php82-php-pdo php82-php-curl php82-php-zip php82-php-mbstring && \
-	yum clean all && \
-	ln /usr/bin/php82 /usr/bin/php
-RUN systemctl enable httpd
-
-# Setup mod_security - https://www.spokenlikeageek.com/2015/12/29/installing-modsecurity-owasp-core-rule-set-on-an-amazon-ec2-linux-centos-instance/
-RUN sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/httpd/conf.d/mod_security.conf
-
-WORKDIR /var/www
-COPY ./composer_install.sh /composer_install.sh
-RUN chmod u+x /composer_install.sh && \
-	/composer_install.sh
-
-# Install dependencies with Composer
-COPY ["./composer.json", "./composer.lock", "/var/www/"]
-RUN php composer.phar install --no-dev --no-scripts --no-plugins
-
-# Optimize PHP autoloader
-COPY --chown=www-data:www-data ./app /var/www/app
-RUN php composer.phar dump-autoload --optimize --apcu && \
-	rm composer.json composer.lock composer.phar
-
-USER www-data
-
-COPY --chown=www-data:www-data ./public /var/www/html
-COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/html/dist
+FROM bref/php-82-fpm:2 as aws-lambda
+COPY --from=prod /var/www /var/task
+COPY --from=bref/extra-pgsql-php-82 /opt /opt
+CMD ["html/index.php"]
