@@ -9,30 +9,29 @@ use PDO;
 use Exception;
 use \App\Config\Configuration;
 
+/**
+ * Represents a connection between PHP and a PostGIS database server.
+ * 
+ * @see https://www.postgresql.org/docs/current/
+ * @see https://www.php.net/manual/en/ref.pdo-pgsql.connection.php
+ */
 class PostGIS_PDO extends PDO
 {
-    public function __construct(
-        Configuration $conf,
-        ?string $host = null,
-        ?int $port = null,
-        ?string $dbname = null,
-        ?string $user = null,
-        ?string $password = null
-    ) {
+    public function __construct(Configuration $conf)
+    {
         if (!$conf->getBool("db_enable"))
             throw new Exception("The usage of the DB is disabled in the configuration");
 
-        $host = $host ?: (string)$conf->get("db_host");
-        $endpoint = explode(".", $host)[0];
-        $port = $port ?: (int)$conf->get("db_port");
-        $dbname = $dbname ?: (string)$conf->get("db_database");
-        $user = $user ?: (string)$conf->get("db_user");
-        $password = $password ?: (string)$conf->get("db_password");
+        $host = (string) $conf->get("db_host");
+        $port = (int) $conf->get("db_port");
+        $dbname = (string) $conf->get("db_database");
+        $user = (string) $conf->get("db_user");
+        $password = (string) $conf->get("db_password");
+        $sslmode = $conf->has("db_sslmode") ? (string) $conf->get("db_sslmode") : "prefer";
+        $options = $conf->has("db_endpoint") ? ";options=endpoint=".$conf->get("db_sslmode") : "";
 
-        // https://www.php.net/manual/en/ref.pdo-pgsql.connection.php
-        // https://neon.tech/docs/connect/connection-errors#the-endpoint-id-is-not-specified
         parent::__construct(
-            "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require;application_name=owmf;options=endpoint=$endpoint",
+            "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=$sslmode;application_name=owmf$options",
             $user,
             $password,
             [
