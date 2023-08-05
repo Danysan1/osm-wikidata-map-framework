@@ -32,7 +32,8 @@
         }
     ],
     "require": {
-        "php": "^8.0",
+        "php": "^8.2",
+        "bref/bref": "^2.1",
         "sentry/sdk": "^3.1"
     },
     "require-dev": {

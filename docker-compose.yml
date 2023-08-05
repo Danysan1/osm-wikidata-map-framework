@@ -538,6 +538,38 @@ services:
     profiles:
       - prod
 
+  owmf-lambda-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: lambda-dev
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda-dev:${framework_image_tag:-latest}
+    env_file:
+      - .env
+    ports:
+      - "9000:8080"
+    networks:
+      - owmf-internal
+    restart: unless-stopped
+    profiles:
+      - lambda-dev
+
+  owmf-lambda-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: lambda-dev
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda:${framework_image_tag:-latest}
+    env_file:
+      - .env
+    ports:
+      - "9000:8080"
+    networks:
+      - owmf-internal
+    restart: unless-stopped
+    profiles:
+      - lambda-prod
+
   promtail:
     image: grafana/promtail:2.8.2
     volumes:

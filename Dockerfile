@@ -78,7 +78,12 @@ COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/
 # https://bref.sh/docs/web-apps/docker
 # https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-types
 # https://gallery.ecr.aws/lambda/provided
-FROM bref/php-82-fpm:2 as aws-lambda
-COPY --from=prod /var/www /var/task
+FROM bref/php-82-fpm-dev:2 as lambda-dev
 COPY --from=bref/extra-pgsql-php-82 /opt /opt
-CMD ["html/index.php"]
+COPY --from=prod /var/www /var/task
+ENV HANDLER=html/lambda.php
+
+FROM bref/php-82-fpm:2 as lambda-prod
+COPY --from=bref/extra-pgsql-php-82 /opt /opt
+COPY --from=prod /var/www /var/task
+CMD ["html/lambda.php"]
