@@ -1,0 +1,28 @@
+service: app
+
+provider:
+    name: aws
+    region: us-east-1
+
+plugins:
+    - ./vendor/bref/bref
+
+functions:
+    owmf:
+        handler: html/lambda.php
+        description: 'OSM-Wikidata Map Framework lambda interface'
+        runtime: php-82-fpm
+        timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
+        events:
+            -   httpApi: 'GET /'
+            -   httpApi: 'GET /index.php'
+            -   httpApi: 'GET /elements.php'
+            -   httpApi: 'GET /etymologyMap.php'
+            -   httpApi: 'GET /stats.php'
+            -   httpApi: 'GET /health.php'
+
+# Exclude files from deployment
+package:
+    patterns:
+        - '!node_modules/**'
+        - '!tests/**'

@@ -80,7 +80,7 @@ COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/
 # https://gallery.ecr.aws/lambda/provided
 FROM bref/php-82-fpm-dev:2 as lambda-dev
 COPY --from=bref/extra-pgsql-php-82 /opt /opt
-COPY --from=prod /var/www /var/task
+COPY --from=dev /var/www /var/task
 ENV HANDLER=html/lambda.php
 
 FROM bref/php-82-fpm:2 as lambda-prod

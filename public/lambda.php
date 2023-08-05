@@ -2,21 +2,29 @@
 
 require_once(__DIR__ . "/../vendor/autoload.php");
 
-echo 'Hello Lambda world!';
-error_log("Hello Lambda world!");
-
-/*$routeWhitelist = [
-    "/" => "index.php",
-    "" => "index.php",
-    "/index.php" => "index.php",
-    "index.php" => "index.php",
-    "/health.php" => "health.php",
-    "health.php" => "health.php",
+$routeWhitelist = [
+    "/^\/$/" => ["index.php", "text/html"],
+    "/^\/((?:health|index|elements|etymologyMap|stats).php)$/" => ['$1', "text/html"],
+    "/^\/(dist\/[\d\w]+.js)$/" => ['$1', "application/javascript"],
+    "/^\/(dist\/[\d\w]+.css)$/" => ['$1', "text/css"],
+    "/^\/((?:stats|taginfo|toolinfo).json)$/" => ['$1.php', "application/json"],
+    "/^\/((?:elements|etymologyMap).geojson)$/" => ['$1.php', "application/geo+json"],
+    "/^\/lambda.php$/" => ["health.php", "text/html"],
 ];
 
-if (in_array($_SERVER["SCRIPT_NAME"], $routeWhitelist)) {
-    require $routeWhitelist[$_SERVER["SCRIPT_NAME"]];
-} else {
-    echo "Bad route:" . $event["name"];
-    throw new InvalidArgumentException("Route not found");
-}*/
+$route = $_SERVER["REQUEST_URI"];
+foreach ($routeWhitelist as $pattern => $routeInfo) {
+    if (preg_match($pattern, $route)) {
+        $file = $routeInfo[0];
+        $mimeType = $routeInfo[1];
+        error_log("Route $route => Serving $file as $mimeType");
+
+        header("Content-Type: $mimeType");
+        require $file;
+
+        return;
+    }
+}
+
+error_log("Bad route: $route");
+http_response_code(403);

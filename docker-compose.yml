@@ -428,6 +428,7 @@ services:
     restart: unless-stopped
     profiles:
       - dev
+      - lambda-dev
       - airflow
       - db
 
@@ -453,6 +454,7 @@ services:
     restart: unless-stopped
     profiles:
       - dev
+      - lambda-dev
   
   swagger-ui:
     image: swaggerapi/swagger-ui:v5.1.0
@@ -470,6 +472,7 @@ services:
     restart: unless-stopped
     profiles:
       - dev
+      - lambda-dev
 
   owmf-web-dev:
     build:
@@ -538,6 +541,16 @@ services:
     profiles:
       - prod
 
+  promtail:
+    image: grafana/promtail:2.8.2
+    volumes:
+      - ./promtail:/etc/promtail
+      - /var/log:/var/log
+      - /var/lib/docker/containers:/var/lib/docker/containers
+    command: -config.file=/etc/promtail/config.yaml
+    profiles:
+      - promtail
+
   owmf-lambda-dev:
     build:
       context: .
@@ -551,6 +564,9 @@ services:
     networks:
       - owmf-internal
     restart: unless-stopped
+    volumes:
+      - ./public:/var/task/html
+      - ./app:/var/task/app
     profiles:
       - lambda-dev
 
@@ -569,16 +585,6 @@ services:
     restart: unless-stopped
     profiles:
       - lambda-prod
-
-  promtail:
-    image: grafana/promtail:2.8.2
-    volumes:
-      - ./promtail:/etc/promtail
-      - /var/log:/var/log
-      - /var/lib/docker/containers:/var/lib/docker/containers
-    command: -config.file=/etc/promtail/config.yaml
-    profiles:
-      - promtail
 
 volumes:
   db-init-work-dir:
