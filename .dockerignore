@@ -2,6 +2,7 @@
 samples/
 airflow/
 
+public/*.json
 public/map-cache/*
 !public/map-cache/.gitkeep
 *.geojson
