@@ -42,7 +42,7 @@ class BaseStringSet implements StringSet
         return new self(json_decode($json));
     }
 
-    public function size(): int
+    public function count(): int
     {
         return count($this->stringArray);
     }
@@ -52,9 +52,14 @@ class BaseStringSet implements StringSet
         return $this->stringArray;
     }
 
+    public function jsonSerialize(): mixed
+    {
+        return $this->stringArray;
+    }
+
     public function toJson(): string
     {
-        return json_encode($this->stringArray);
+        return json_encode($this->jsonSerialize());
     }
 
     private function countEqualElements(StringSet $other): int
@@ -65,19 +70,19 @@ class BaseStringSet implements StringSet
     public function equals(StringSet $other): bool
     {
         $countEquals = $this->countEqualElements($other);
-        return $this->size() == $countEquals && $other->size() == $countEquals;
+        return $this->count() == $countEquals && $other->count() == $countEquals;
     }
 
     public function strictlyContains(StringSet $other): bool
     {
         $countEquals = $this->countEqualElements($other);
-        return $this->size() > $countEquals && $other->size() <= $countEquals;
+        return $this->count() > $countEquals && $other->count() <= $countEquals;
     }
 
     public function containsOrEquals(StringSet $other): bool
     {
         $countEquals = $this->countEqualElements($other);
-        return $this->size() >= $countEquals && $other->size() <= $countEquals;
+        return $this->count() >= $countEquals && $other->count() <= $countEquals;
     }
 
     public function __toString(): string

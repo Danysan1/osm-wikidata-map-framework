@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App;
 
+use Countable;
+use JsonSerializable;
+
 /**
  * Set of strings
  */
-interface StringSet
+interface StringSet extends Countable, JsonSerializable
 {
-    public function size(): int;
-
     /**
      * @return array<string>
      */
