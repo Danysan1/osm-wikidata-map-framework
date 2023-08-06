@@ -21,7 +21,7 @@ class AllIndirectEtymologyWikidataQuery extends EtymologyWikidataQuery
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
         $pictureQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
         $labelQuery = EtymologyWikidataQuery::generateItemLabelQuery($defaultLanguage, $language);
-        $maxElements = $config->getMaxElements();
+        $maxElements = $config->getMaxMapElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(

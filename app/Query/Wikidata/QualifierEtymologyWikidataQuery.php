@@ -14,7 +14,7 @@ class QualifierEtymologyWikidataQuery extends EtymologyWikidataQuery
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
         $pictureQuery = empty($imageProperty) ? "" : "OPTIONAL { ?etymology wdt:$imageProperty ?picture. }";
-        $maxElements = $config->getMaxElements();
+        $maxElements = $config->getMaxMapElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(

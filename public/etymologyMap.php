@@ -31,7 +31,6 @@ $serverTiming->add("2_prepare");
 $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
-$downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALIDATE_BOOL, false);
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 
 $defaultLanguage = (string)$conf->get('default_language');
@@ -39,7 +38,10 @@ $safeLanguage = getSafeLanguage($defaultLanguage);
 $search = (string)getFilteredParamOrDefault("search", FILTER_SANITIZE_SPECIAL_CHARS, null);
 
 $wikidataConfig = new BaseWikidataConfig($conf);
-$maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
+$maxElements = $conf->has("max_map_elements") ? (int)$conf->get("max_map_elements") : null;
+if ($maxElements !== null && $maxElements <= 0) {
+    throw new Exception("The max_map_elements configuration must be > 0 or empty");
+}
 $eagerFullDownload = $conf->getBool("eager_full_etymology_download");
 
 $enableDB = $conf->getBool("db_enable");
@@ -66,7 +68,6 @@ if ($db != null) {
         $maxElements,
         $source,
         $search,
-        $downloadColors,
         $eagerFullDownload
     );
 } else {
@@ -97,7 +98,7 @@ if ($db != null) {
         throw new Exception("Bad 'source' parameter");
     }
 
-    if ($downloadColors || $eagerFullDownload) {
+    if ($eagerFullDownload) {
         $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
         $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
     }

@@ -197,7 +197,6 @@ export class EtymologyMap extends Map {
             fragmentParams = getCorrectFragmentParams(),
             colorSchemeID = fragmentParams.colorScheme,
             colorScheme = colorSchemes[colorSchemeID],
-            downloadColors = Array.isArray(colorScheme.color) && colorScheme.color[0] === "get",
             source = fragmentParams.source,
             language = document.documentElement.lang,
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
@@ -219,7 +218,6 @@ export class EtymologyMap extends Map {
 
         if (enableWikidataLayers) {
             const queryParams = {
-                download_colors: downloadColors ? "1" : "0",
                 language,
                 minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
                 minLon: (Math.floor(minLon * 100) / 100).toString(),

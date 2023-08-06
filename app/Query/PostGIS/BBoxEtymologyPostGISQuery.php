@@ -17,7 +17,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
 {
     private ?string $textKey;
     private ?string $descriptionKey;
-    private bool $downloadColors;
 
     public function __construct(
         BoundingBox $bbox,
@@ -31,7 +30,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
-        bool $downloadColors = false,
         bool $eagerFullDownload = false
     ) {
         parent::__construct(
@@ -44,12 +42,10 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $maxElements,
             $source,
             $search,
-            $downloadColors,
             $eagerFullDownload
         );
         $this->textKey = $textKey;
         $this->descriptionKey = $descriptionKey;
-        $this->downloadColors = $downloadColors;
     }
 
     protected function getQueryParams(): array
@@ -85,22 +81,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         $textEty = empty($this->textKey) ? "NULL" : "CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :textKey ELSE NULL END";
         $textEtyDescr = empty($this->descriptionKey) ? "NULL" : "CASE WHEN el.el_has_text_etymology THEN el.el_tags ->> :descriptionKey ELSE NULL END";
 
-        $colorColumns = $this->downloadColors ? "
-                COALESCE(MIN(owmf.et_source_color(et)), '#223b53') AS source_color,
-                COALESCE(MIN(gender.wd_gender_color), '#223b53') AS gender_color,
-                COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
-                COALESCE(MIN(country.wd_country_color), '#223b53') AS country_color,
-                COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_start_date, wd.wd_birth_date, wd.wd_event_date)))), '#223b53') AS start_century_color,
-                COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_end_date, wd.wd_death_date, wd.wd_event_date)))), '#223b53') AS end_century_color,
-            " : "
-                '#3bb2d0' AS source_color,
-                '#3bb2d0' AS gender_color,
-                '#3bb2d0' AS type_color,
-                '#3bb2d0' AS country_color,
-                '#3bb2d0' AS start_century_color,
-                '#3bb2d0' AS end_century_color,
-            ";
-
         return
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
@@ -126,7 +106,12 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_commons AS commons,
                     el.el_wikidata_cod AS wikidata,
                     el.el_wikipedia AS wikipedia,
-                    $colorColumns
+                    COALESCE(MIN(owmf.et_source_color(et)), '#223b53') AS source_color,
+                    COALESCE(MIN(gender.wd_gender_color), '#223b53') AS gender_color,
+                    COALESCE(MIN(instance.wd_type_color), '#223b53') AS type_color,
+                    COALESCE(MIN(country.wd_country_color), '#223b53') AS country_color,
+                    COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_start_date, wd.wd_birth_date, wd.wd_event_date)))), '#223b53') AS start_century_color,
+                    COALESCE(MIN(owmf.et_century_color(EXTRACT(CENTURY FROM COALESCE(wd.wd_end_date, wd.wd_death_date, wd.wd_event_date)))), '#223b53') AS end_century_color,
                     JSON_AGG(JSON_BUILD_OBJECT(
                         'from_osm', et_from_osm,
                         'from_osm_type', from_el.el_osm_type,

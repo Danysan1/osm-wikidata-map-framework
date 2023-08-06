@@ -19,6 +19,14 @@ abstract class StringSetXMLWikidataQuery extends XMLWikidataQuery implements Str
 
     public function __construct(StringSet $wikidataIDList, string $language, string $query, WikidataConfig $config)
     {
+        $size = $wikidataIDList->count();
+        $maxSize = $config->getMaxWikidataElements();
+        if ($size === 0)
+            throw new \InvalidArgumentException("The given ID list is empty");
+        if ($maxSize && $size > $maxSize)
+            throw new \InvalidArgumentException("The given ID list is too big ($size > $maxSize)");
+        error_log("Querying Wikidata for $size items");
+        
         parent::__construct($query, $config);
 
         $this->wikidataIDList = $wikidataIDList;

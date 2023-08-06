@@ -10,5 +10,6 @@ namespace App\Config\Wikidata;
 interface WikidataConfig
 {
     public function getEndpoint(): string;
-    public function getMaxElements(): ?int;
+    public function getMaxMapElements(): ?int;
+    public function getMaxWikidataElements(): ?int;
 }

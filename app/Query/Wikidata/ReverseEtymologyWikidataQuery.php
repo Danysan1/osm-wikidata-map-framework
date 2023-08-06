@@ -18,7 +18,7 @@ class ReverseEtymologyWikidataQuery extends EtymologyWikidataQuery
     ) {
         $southWest = $bbox->getMinLon() . " " . $bbox->getMinLat();
         $northEast = $bbox->getMaxLon() . " " . $bbox->getMaxLat();
-        $maxElements = $config->getMaxElements();
+        $maxElements = $config->getMaxMapElements();
         $labelQuery = EtymologyWikidataQuery::generateItemLabelQuery($defaultLanguage, $language);
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 

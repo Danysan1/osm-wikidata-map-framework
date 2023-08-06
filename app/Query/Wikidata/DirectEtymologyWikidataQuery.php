@@ -22,7 +22,7 @@ class DirectEtymologyWikidataQuery extends EtymologyWikidataQuery
             return "wdt:$prop";
         }, $wikidataProps));
         $labelQuery = EtymologyWikidataQuery::generateItemLabelQuery($defaultLanguage, $language);
-        $maxElements = $config->getMaxElements();
+        $maxElements = $config->getMaxMapElements();
         $limitClause = $maxElements ? "LIMIT $maxElements" : "";
 
         $baseQuery = new JSONWikidataQuery(

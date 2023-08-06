@@ -11,17 +11,24 @@ use Exception;
 class BaseWikidataConfig implements WikidataConfig
 {
     private string $endpoint;
-    private ?int $maxElements;
+    private ?int $maxMapElements;
+    private ?int $maxWikidataElements;
 
     public function __construct(Configuration $conf)
     {
         $this->endpoint = (string)$conf->get('wikidata_endpoint');
 
-        $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
-        if ($maxElements !== null && $maxElements <= 0) {
-            throw new Exception("maxElements must be > 0");
+        $maxMapElements = $conf->has("max_map_elements") ? (int)$conf->get("max_map_elements") : null;
+        if ($maxMapElements !== null && $maxMapElements <= 0) {
+            throw new Exception("The max_map_elements configuration must be > 0 or empty");
         }
-        $this->maxElements = $maxElements;
+        $this->maxMapElements = $maxMapElements;
+
+        $maxWikidataElements = $conf->has("max_wikidata_elements") ? (int)$conf->get("max_wikidata_elements") : null;
+        if ($maxWikidataElements !== null && $maxWikidataElements <= 0) {
+            throw new Exception("The max_wikidata_elements configuration must be > 0 or empty");
+        }
+        $this->maxWikidataElements = $maxWikidataElements;
     }
 
     public function getEndpoint(): string
@@ -29,8 +36,13 @@ class BaseWikidataConfig implements WikidataConfig
         return $this->endpoint;
     }
 
-    public function getMaxElements(): ?int
+    public function getMaxMapElements(): ?int
     {
-        return $this->maxElements;
+        return $this->maxMapElements;
+    }
+
+    public function getMaxWikidataElements(): ?int
+    {
+        return $this->maxWikidataElements;
     }
 }

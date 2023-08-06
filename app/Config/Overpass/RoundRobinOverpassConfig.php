@@ -33,12 +33,12 @@ class RoundRobinOverpassConfig implements OverpassConfig
         $this->fetchWays = $conf->getBool("fetch_ways");
         $this->fetchRelations = $conf->getBool("fetch_relations");
         if (!$this->fetchNodes && !$this->fetchWays && !$this->fetchRelations) {
-            throw new \Exception("No fetching options set");
+            throw new Exception("All fetching options (fetch_nodes, fetch_ways, fetch_relations) are false");
         }
 
-        $maxElements = $conf->has("max_elements") ? (int)$conf->get("max_elements") : null;
+        $maxElements = $conf->has("max_map_elements") ? (int)$conf->get("max_map_elements") : null;
         if ($maxElements !== null && $maxElements <= 0) {
-            throw new Exception("maxElements must be > 0");
+            throw new Exception("The max_map_elements configuration must be > 0 or empty");
         }
         $this->maxElements = $maxElements;
 
