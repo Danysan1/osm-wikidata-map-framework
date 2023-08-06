@@ -25,5 +25,5 @@ filter_italy = OwmfFilterDAG(
 db_init_italy = OwmfDbInitDAG(
     dag_id="db-init-italy",
     prefix="italy",
-    upload_db_conn_id="nord_ovest-postgres"
+    upload_db_conn_id="italy-postgres"
 )

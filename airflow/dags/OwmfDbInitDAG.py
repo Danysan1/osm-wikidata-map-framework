@@ -40,9 +40,9 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
 
 def check_postgre_conn_id(conn_id:str) -> bool:
     """
-        # Check upload DB connecton ID
+        # Check DB connecton ID
 
-        Check whether the connecton ID to the destination PostGIS DB is available: if it is, proceed to restore the data, otherwise stop here.
+        Check whether the connection ID to the DB is available: if it is, proceed to restore the data, otherwise stop here.
 
         The connection ID is passed through the params object to allow customization when triggering the DAG.
 
@@ -58,7 +58,7 @@ def check_postgre_conn_id(conn_id:str) -> bool:
         pg_hook = PostgresHook(conn_id)
         with pg_hook.get_conn() as pg_conn:
             with pg_conn.cursor() as cursor:
-                cursor.execute("SELECT PostGIS_Version()")
+                cursor.execute("SELECT version()")
                 postgis_version = cursor.fetchone()
                 connection_is_ok = True
                 print(f"conn_id available, PostGIS version {postgis_version}")
@@ -192,6 +192,17 @@ class OwmfDbInitDAG(DAG):
 
         db_prepare_group = TaskGroup("prepare_db", tooltip="Prepare the DB", dag=self)
 
+        task_check_pg_local = ShortCircuitOperator(
+            task_id = "check_local_conn_id",
+            python_callable=check_postgre_conn_id,
+            op_kwargs = {
+                "conn_id": local_db_conn_id,
+            },
+            dag = self,
+            task_group = db_prepare_group,
+            doc_md=check_postgre_conn_id.__doc__
+        )
+
         task_create_work_dir = BashOperator(
             task_id = "create_work_dir",
             bash_command = 'mkdir -p "$workDir"',
@@ -211,6 +222,7 @@ class OwmfDbInitDAG(DAG):
                 Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
             """
         )
+        task_check_pg_local >> task_setup_db_ext
 
         task_setup_schema = SQLExecuteQueryOperator(
             task_id = "setup_schema",
@@ -753,6 +765,20 @@ class OwmfDbInitDAG(DAG):
             doc_md=check_postgre_conn_id.__doc__
         )
         task_pg_dump >> task_check_pg_restore
+        
+        task_setup_db_ext = SQLExecuteQueryOperator(
+            task_id = "setup_upload_db_extensions",
+            conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
+            sql = "sql/01-setup-db-extensions.sql",
+            dag = self,
+            task_group = group_upload,
+            doc_md = """
+                # Setup the necessary extensions on the remote DB
+
+                Setup PostGIS and HSTORE on the remote DB configured in upload_db_conn_id if they are not already set up.
+            """
+        )
+        task_check_pg_restore >> task_setup_db_ext
 
         task_prepare_upload = SQLExecuteQueryOperator(
             task_id = "prepare_db_for_upload",
@@ -763,18 +789,18 @@ class OwmfDbInitDAG(DAG):
             doc_md="""
                 # Prepare the remote DB for uploading
 
-                Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the oem schema 
+                Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the owmf schema 
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
             """
         )
-        task_check_pg_restore >> task_prepare_upload
+        task_setup_db_ext >> task_prepare_upload
 
         task_pg_restore = BashOperator(
             task_id = "pg_restore",
-            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "owmf" --verbose "$backupFilePath"',
+            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "owmf" --verbose --no-owner --no-privileges --no-tablespaces "$backupFilePath"',
             env= {
                 "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
                 "host": f"{{{{ conn['{upload_db_conn_id}'].host }}}}", # "{{ conn[params.upload_db_conn_id].host }}",
