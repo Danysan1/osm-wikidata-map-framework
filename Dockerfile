@@ -2,7 +2,7 @@
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
 # https://hub.docker.com/_/php
-FROM php:8.2.8-apache-bullseye AS base
+FROM php:8.2.8-apache-bookworm AS base
 WORKDIR /var/www
 
 RUN a2enmod headers ssl rewrite deflate expires
