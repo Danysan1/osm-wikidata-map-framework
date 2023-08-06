@@ -29,8 +29,9 @@ export class EtymologyMap extends Map {
     private geocoderControl?: IControl;
     private projectionControl?: IControl;
     private search: string;
-    private anyDetailShownBefore: boolean;
-    private wikidataControlsInitialized: boolean;
+    private anyDetailShownBefore: boolean = false;
+    private wikidataControlsInitialized: boolean = false;
+    private wikidataSourceInitialized: boolean = false;
 
     constructor(
         containerId: string,
@@ -68,6 +69,7 @@ export class EtymologyMap extends Map {
 
         this.on('load', this.mapLoadedHandler);
         this.on('styledata', this.mapStyleDataHandler);
+        this.on('sourcedata', this.mapSourceDataHandler);
 
         //this.dragRotate.disable(); // disable map rotation using right click + drag
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
@@ -77,8 +79,6 @@ export class EtymologyMap extends Map {
         window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
 
         this.search = new URLSearchParams(window.location.search).get("search") ?? "";
-        this.anyDetailShownBefore = false;
-        this.wikidataControlsInitialized = false;
     }
 
     /**
@@ -150,13 +150,17 @@ export class EtymologyMap extends Map {
             });
             showLoadingSpinner(false);
 
+            const wikidataFeatureCount = this.querySourceFeatures(WIKIDATA_SOURCE).length;
             loadTranslator().then(t => {
-                if (wikidataSourceEvent && this.querySourceFeatures(WIKIDATA_SOURCE).length === 0)
-                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000, "data_loaded");
+                if (!this.wikidataSourceInitialized)
+                    this.wikidataSourceInitialized = true;
+                else if (wikidataSourceEvent && wikidataFeatureCount === 0)
+                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000);
                 else if (wikidataSourceEvent && !this.anyDetailShownBefore)
-                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000, "data_loaded");
+                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
                 else
-                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000, "data_loaded");
+                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
+
             });
         }
     }
@@ -800,8 +804,6 @@ export class EtymologyMap extends Map {
             this.addControl(this.projectionControl, 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
-
-        this.on('sourcedata', this.mapSourceDataHandler);
 
         this.on('error', this.mapErrorHandler);
     }

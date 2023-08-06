@@ -125,7 +125,6 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
     <noscript>
         <strong>ERROR: you need Javascript enabled to run this web app</strong>
     </noscript>
-    <div id="snackbar"></div>
 
     <template id="intro_template">
         <div class="intro">
