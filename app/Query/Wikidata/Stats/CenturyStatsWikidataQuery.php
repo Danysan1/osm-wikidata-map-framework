@@ -85,7 +85,7 @@ class GeoJSON2JSONCenturyStatsWikidataQuery extends GeoJSON2JSONEtymologyWikidat
                             $centuryCounts[$century] = 1;
                         else
                             $centuryCounts[$century]++;
-                        error_log("$rowIndex: $isoDate => $year => $century");
+                        //error_log("Date elaboration for row $rowIndex: $isoDate => $year => $century");
                         $foundCenturyForRow = true;
                     }
                 }

@@ -236,7 +236,6 @@ function getSafeLanguage(string $defaultValue): string
 	}
 
 	$safeLanguage = (string)$langMatches[1]; // "en"
-	error_log($language . " => " . $safeLanguage);
 
 	return $safeLanguage;
 }

@@ -17,7 +17,7 @@ foreach ($routeWhitelist as $pattern => $routeInfo) {
     if (preg_match($pattern, $route)) {
         $file = $routeInfo[0];
         $mimeType = $routeInfo[1];
-        error_log("Route $route => Serving $file as $mimeType");
+        //error_log("Route $route => Serving $file as $mimeType");
 
         header("Content-Type: $mimeType");
         require $file;
