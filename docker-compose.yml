@@ -132,7 +132,7 @@ services:
     restart: unless-stopped
     networks:
       - airflow-internal
-      - pgadmin-bridge
+      - pgadmin-db-bridge
     profiles:
       - airflow-init
       - airflow-minimal
@@ -169,8 +169,8 @@ services:
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+      # airflow-init:
+      #   condition: service_completed_successfully
     networks:
       - airflow-internal
       - airflow-postgis-bridge
@@ -190,8 +190,8 @@ services:
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+      # airflow-init:
+      #   condition: service_completed_successfully
     networks:
       - airflow-internal
     profiles:
@@ -217,8 +217,8 @@ services:
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+      # airflow-init:
+      #   condition: service_completed_successfully
     networks:
       - airflow-internal
       - airflow-postgis-bridge
@@ -250,8 +250,8 @@ services:
     restart: unless-stopped
     depends_on:
       <<: *airflow-common-depends-on
-      airflow-init:
-        condition: service_completed_successfully
+      # airflow-init:
+      #   condition: service_completed_successfully
     networks:
       - airflow-internal
     profiles:
@@ -415,7 +415,7 @@ services:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
       - owmf-internal
-      - pgadmin-bridge
+      - pgadmin-db-bridge
       - airflow-postgis-bridge
     logging:
       driver: json-file
@@ -445,7 +445,7 @@ services:
       - pgadmin-data:/var/lib/pgadmin:delegated
       - ./pgadmin_init.json:/pgadmin4/servers.json
     networks:
-      - pgadmin-bridge
+      - pgadmin-db-bridge
     healthcheck:
       test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
       interval: 10s
@@ -601,4 +601,4 @@ networks:
   airflow-internal:
   airflow-postgis-bridge:
   airflow-torrent-bridge:
-  pgadmin-bridge:
+  pgadmin-db-bridge:
