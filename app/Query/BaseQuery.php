@@ -12,11 +12,22 @@ use \App\Query\Query;
  */
 abstract class BaseQuery implements Query
 {
+    protected function getSimplifiedClassName(mixed $object): string
+    {
+        $className = get_class($object);
+
+        $startPos = strrpos($className, "\\");
+        $offset = $startPos === false ? 0 : $startPos + 1;
+
+        $endPos = strpos($className, "@");
+        $length = $endPos === false ? null : $endPos - $offset;
+
+        return str_replace("\0", "_", substr($className, $offset, $length));
+    }
+
     public function getQueryTypeCode(): string
     {
-        $className = get_class($this);
-        $startPos = strrpos($className, "\\");
-        return substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
+        return $this->getSimplifiedClassName($this);
     }
 
     public function __toString(): string

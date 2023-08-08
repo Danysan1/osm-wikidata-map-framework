@@ -6,6 +6,7 @@ namespace App\Query\Combined;
 
 
 use \App\BoundingBox;
+use App\Query\BaseQuery;
 use App\Query\BBoxGeoJSONQuery;
 use \App\ServerTiming;
 use \App\Query\BBoxJSONQuery;
@@ -19,7 +20,7 @@ use \App\Query\StringSetXMLQueryFactory;
  * It expects a bounding box and a language.
  * Fetches the objects in the given bounding box and its etymologies in the given language.
  */
-abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
+abstract class BBoxJSONOverpassWikidataQuery extends BaseQuery implements BBoxJSONQuery
 {
     protected ServerTiming $timing;
     private BBoxGeoJSONQuery $baseQuery;
@@ -68,17 +69,13 @@ abstract class BBoxJSONOverpassWikidataQuery implements BBoxJSONQuery
 
     public function getQueryTypeCode(): string
     {
-        $thisClassName = get_class($this);
-        $thisStartPos = strrpos($thisClassName, "\\");
-        $thisClass = substr($thisClassName, $thisStartPos ? $thisStartPos + 1 : 0); // class_basename();
+        $thisClass = parent::getQueryTypeCode();
 
         $baseQueryClass = $this->baseQuery->getQueryTypeCode();
 
         $factoryLanguage = $this->wikidataFactory->getLanguage();
 
-        $factoryClassName = get_class($this->wikidataFactory);
-        $factoryStartPos = strrpos($factoryClassName, "\\");
-        $factoryClass = substr($factoryClassName, $factoryStartPos ? $factoryStartPos + 1 : 0);
+        $factoryClass = $this->getSimplifiedClassName($this->wikidataFactory);
 
         return $thisClass . "_" . $baseQueryClass . "_" . $factoryLanguage . "_" . $factoryClass;
     }

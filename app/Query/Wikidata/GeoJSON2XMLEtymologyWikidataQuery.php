@@ -9,6 +9,7 @@ use \App\Query\XMLQuery;
 use \App\Query\StringSetXMLQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\BaseStringSet;
+use App\Query\BaseQuery;
 use App\Result\Overpass\OverpassEtymologyQueryResult;
 use \App\Result\QueryResult;
 use \App\Result\XMLQueryResult;
@@ -19,7 +20,7 @@ use Exception;
  * The GeoJSON must be a feature collection where each feature has the property "etymology" which is an array of associative arrays where the field "id" contains the Wikidata IDs.
  * The query will then gather the information for each of the Wikidata IDs and add return in a matrix form.
  */
-class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
+class GeoJSON2XMLEtymologyWikidataQuery extends BaseQuery implements XMLQuery
 {
     private array $geoJSONInputData;
     private StringSetXMLQuery $query;
@@ -93,14 +94,12 @@ class GeoJSON2XMLEtymologyWikidataQuery implements XMLQuery
 
     public function getQueryTypeCode(): string
     {
-        $className = get_class($this);
-        $startPos = strrpos($className, "\\");
-        $thisClass = substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
+        $thisClass = parent::getQueryTypeCode();
         return $thisClass . empty($this->query) ? "" : ("_" . $this->query->getQueryTypeCode());
     }
 
     public function __toString(): string
     {
-        return get_class($this) . ": " . $this->query;
+        return parent::__toString() . ": " . $this->query;
     }
 }

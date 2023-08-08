@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Query\Wikidata;
 
-
+use App\Query\BaseQuery;
 use \App\Query\JSONQuery;
 use \App\Query\StringSetXMLQueryFactory;
 use \App\Query\Wikidata\GeoJSON2XMLEtymologyWikidataQuery;
@@ -18,7 +18,7 @@ use \App\Result\XMLQueryResult;
  * The GeoJSON must be a feature collection where each feature has the property "etymology" which is an array of associative arrays where the field "id" contains the Wikidata IDs.
  * The query will then gather the information for each of the Wikidata IDs and add it to the feature.
  */
-abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
+abstract class GeoJSON2JSONEtymologyWikidataQuery extends BaseQuery implements JSONQuery
 {
     protected GeoJSON2XMLEtymologyWikidataQuery $wikidataQuery;
 
@@ -51,14 +51,12 @@ abstract class GeoJSON2JSONEtymologyWikidataQuery implements JSONQuery
 
     public function getQueryTypeCode(): string
     {
-        $className = get_class($this);
-        $startPos = strrpos($className, "\\");
-        $thisClass = substr($className, $startPos ? $startPos + 1 : 0); // class_basename();
+        $thisClass = parent::getQueryTypeCode();
         return $thisClass . "_" . $this->wikidataQuery->getQueryTypeCode();
     }
 
     public function __toString(): string
     {
-        return get_class($this) . ": " . $this->wikidataQuery;
+        return parent::__toString() . ": " . $this->wikidataQuery;
     }
 }

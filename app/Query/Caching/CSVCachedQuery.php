@@ -120,7 +120,7 @@ abstract class CSVCachedQuery implements Query
      */
     public function send(): QueryResult
     {
-        $className = str_replace("\0", "_", $this->baseQuery->getQueryTypeCode());
+        $className = $this->baseQuery->getQueryTypeCode();
         $cacheFilePath = $this->cacheFileBasePath . $className . "_cache.csv";
         try {
             $cacheFile = @fopen($cacheFilePath, "r");

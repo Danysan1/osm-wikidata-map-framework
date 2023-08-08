@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Query\PostGIS;
 
-
+use App\Query\BaseQuery;
 use \PDO;
 use \App\ServerTiming;
 use \App\Query\Query;
 use \Exception;
 
-abstract class PostGISQuery implements Query
+abstract class PostGISQuery extends BaseQuery implements Query
 {
     private PDO $db;
     private ?ServerTiming $serverTiming;
@@ -39,15 +39,5 @@ abstract class PostGISQuery implements Query
             throw new Exception("getServerTiming(): No ServerTiming available");
 
         return $this->serverTiming;
-    }
-
-    public function getQueryTypeCode(): string
-    {
-        return get_class($this);
-    }
-
-    public function __toString(): string
-    {
-        return get_class($this);
     }
 }
