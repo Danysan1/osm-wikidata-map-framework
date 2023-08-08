@@ -25,6 +25,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     private ?string $language;
     private WikidataConfig $wikidataConfig;
     private ?int $maxElements;
+    private bool $downloadColors;
     private bool $eagerFullDownload;
 
     public function __construct(
@@ -37,6 +38,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
+        bool $downloadColors = false,
         bool $eagerFullDownload = false
     ) {
         parent::__construct($bbox, $db, $serverTiming, $source, $search);
@@ -49,6 +51,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $this->language = $language;
         $this->wikidataConfig = $wikidataConfig;
         $this->maxElements = $maxElements;
+        $this->downloadColors = $downloadColors;
         $this->eagerFullDownload = $eagerFullDownload;
     }
 
@@ -67,7 +70,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
     public function send(): QueryResult
     {
-        if ($this->eagerFullDownload)
+        if ($this->downloadColors || $this->eagerFullDownload)
             $this->downloadMissingTextIfNecessary();
         return parent::send();
     }

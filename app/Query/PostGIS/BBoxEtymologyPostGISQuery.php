@@ -30,6 +30,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
+        bool $downloadColors = false,
         bool $eagerFullDownload = false
     ) {
         parent::__construct(
@@ -42,6 +43,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $maxElements,
             $source,
             $search,
+            $downloadColors,
             $eagerFullDownload
         );
         $this->textKey = $textKey;

@@ -31,6 +31,7 @@ $serverTiming->add("2_prepare");
 $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
+$downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALIDATE_BOOL, false);
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 
 $defaultLanguage = (string)$conf->get('default_language');
@@ -68,6 +69,7 @@ if ($db != null) {
         $maxElements,
         $source,
         $search,
+        $downloadColors,
         $eagerFullDownload
     );
 } else {
@@ -98,7 +100,7 @@ if ($db != null) {
         throw new Exception("Bad 'source' parameter");
     }
 
-    if ($eagerFullDownload) {
+    if ($downloadColors || $eagerFullDownload) {
         $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
         $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
     }
