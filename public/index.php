@@ -146,15 +146,15 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
                         <td class="i18n_to_choose_source">to choose which data source to use (only at high zoom)</td>
                     </tr>
                     <tr>
-                        <td><img src="img/overpass.svg" width="16" height="16" alt="Overpass Turbo logo" /></td>
+                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" /></td>
                         <td class="i18n_to_overpass_query">to view the source OverpassQL query (only with the Overpass source at high zoom)</td>
                     </tr>
                     <tr>
-                        <td><img src="img/wikidata_query.svg" width="16" height="16" alt="Wikidata Query Service logo" /></td>
+                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg" width="16" height="16" alt="Wikidata Query Service logo" /></td>
                         <td class="i18n_to_wikidata_query">to view the source SPARQL query (only with the Wikidata source at high zoom)</td>
                     </tr>
                     <tr>
-                        <td>🌐</td>
+                        <td>🌍</td>
                         <td class="i18n_to_change_background">to change the background map style</td>
                     </tr>
                     <tr>
@@ -211,19 +211,19 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
             <p class="element_alt_names"></p>
             <div class="button_row">
                 <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
-                    <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
+                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                     <span class="button_text"> Wikipedia</span>
                 </a>
                 <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
-                    <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
+                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
                     <span class="button_text"> Commons</span>
                 </a>
                 <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
-                    <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
+                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
                     <span class="button_text"> Wikidata</span>
                 </a>
                 <a title="OpenStreetMap" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
-                    <img class="button_img" src="img/osm.svg" alt="OpenStreetMap logo">
+                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
                     <span class="button_text"> OpenStreetMap</span>
                 </a>
                 <a title="MapComplete" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
@@ -260,15 +260,15 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
                     <div class="info column">
                         <div class="button_row">
                             <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
-                                <img class="button_img" src="img/wikipedia.png" alt="Wikipedia logo">
+                                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
                             <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
-                                <img class="button_img" src="img/commons.svg" alt="Wikimedia Commons logo">
+                                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>
                             </a>
                             <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
-                                <img class="button_img" src="img/wikidata.svg" alt="Wikidata logo">
+                                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
                                 <span class="button_text"> Wikidata</span>
                             </a>
                             <a title="EntiTree" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">

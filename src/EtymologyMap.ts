@@ -417,8 +417,8 @@ export class EtymologyMap extends Map {
             setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
 
             debugLog("Initializing link controls", { minZoomLevel });
-            this.addControl(new LinkControl("img/overpass.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel), 'top-right');
-            this.addControl(new LinkControl("img/wikidata_query.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", minZoomLevel), 'top-right');
+            this.addControl(new LinkControl("https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel), 'top-right');
+            this.addControl(new LinkControl("https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", minZoomLevel), 'top-right');
         });
     }
 
