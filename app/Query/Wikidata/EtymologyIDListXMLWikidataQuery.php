@@ -8,7 +8,6 @@ namespace App\Query\Wikidata;
 use \App\Query\Wikidata\StringSetXMLWikidataQuery;
 use \App\Result\XMLQueryResult;
 use \App\Result\Wikidata\XMLWikidataEtymologyQueryResult;
-use \App\Query\Wikidata\EtymologyIDListWikidataQueryBuilder;
 
 /**
  * Wikidata SPARQL query which retrieves information about some items for which the ID is given.

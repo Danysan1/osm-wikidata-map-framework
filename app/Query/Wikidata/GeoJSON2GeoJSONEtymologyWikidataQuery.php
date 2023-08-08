@@ -42,8 +42,8 @@ class GeoJSON2GeoJSONEtymologyWikidataQuery extends GeoJSON2JSONEtymologyWikidat
             }
         }
 
-        error_log("Etymology information NOT found for $wikidataID");
-        return null;
+        //error_log("Etymology information NOT found for $wikidataID");
+        return ["wikidata" => $wikidataID];
     }
 
     protected function createQueryResult(XMLQueryResult $wikidataResult): JSONQueryResult

@@ -79,8 +79,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     {
         $downloadDateField = $this->eagerFullDownload ? "wd_full_download_date" : "wd_download_date";
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
-        $maxIDs = $this->wikidataConfig->getMaxWikidataElements();
-        $limitClause = $maxIDs > 0 ? " LIMIT $maxIDs " : " ";
         $language = empty($this->language) ? $this->defaultLanguage : $this->language;
 
         $queryParams = parent::getQueryParams();
@@ -94,8 +92,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             LEFT JOIN owmf.wikidata_text AS wdt
                 ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
             WHERE (wd.$downloadDateField IS NULL OR wdt.wdt_full_download_date IS NULL)
-            $filterClause
-            $limitClause"
+            $filterClause"
         );
         $sthMissingWikidata->execute($queryParams);
         if ($this->hasServerTiming())
@@ -119,7 +116,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $wikidataQuery = new StringSetJSONWikidataQuery(
             $searchSet,
             $language,
-            $queryBuilder->createQuery($searchSet, $language),
+            $queryBuilder->createQuery($searchSet, $language, $this->wikidataConfig->getMaxWikidataElements()),
             $this->wikidataConfig
         );
         $wikidataResult = $wikidataQuery->sendAndGetJSONResult();

@@ -21,7 +21,7 @@ class CountryStatsWikidataQuery extends StringSetXMLWikidataQuery
         parent::__construct(
             $wikidataIDList,
             $language,
-            (new CountryStatsIDListWikidataQueryBuilder())->createQuery($wikidataIDList, $language),
+            (new CountryStatsIDListWikidataQueryBuilder())->createQuery($wikidataIDList, $language, $config->getMaxWikidataElements()),
             $config
         );
     }

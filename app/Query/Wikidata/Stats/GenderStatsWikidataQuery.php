@@ -21,7 +21,7 @@ class GenderStatsWikidataQuery extends StringSetXMLWikidataQuery
         parent::__construct(
             $wikidataIDList,
             $language,
-            (new GenderStatsIDListWikidataQueryBuilder())->createQuery($wikidataIDList, $language),
+            (new GenderStatsIDListWikidataQueryBuilder())->createQuery($wikidataIDList, $language, $config->getMaxWikidataElements()),
             $config
         );
     }

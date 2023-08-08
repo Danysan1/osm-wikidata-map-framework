@@ -48,7 +48,7 @@ class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
         $baseQuery = new EtymologyIDListXMLWikidataQuery(
             $input,
             $this->language,
-            $this->queryBuilder->createQuery($input, $this->language),
+            $this->queryBuilder->createQuery($input, $this->language, $this->config->getMaxWikidataElements()),
             $this->config
         );
         return new CSVCachedStringSetXMLQuery(

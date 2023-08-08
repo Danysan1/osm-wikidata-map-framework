@@ -21,7 +21,7 @@ class TypeStatsWikidataQuery extends StringSetXMLWikidataQuery
         parent::__construct(
             $wikidataIDList,
             $language,
-            (new TypeStatsIDListWikidataQueryBuilder())->createQuery($wikidataIDList, $language),
+            (new TypeStatsIDListWikidataQueryBuilder())->createQuery($wikidataIDList, $language, $config->getMaxWikidataElements()),
             $config
         );
     }

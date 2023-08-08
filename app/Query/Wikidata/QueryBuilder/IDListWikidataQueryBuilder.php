@@ -8,5 +8,5 @@ use App\StringSet;
 
 interface IDListWikidataQueryBuilder
 {
-    function createQuery(StringSet $wikidataIDs, string $language): string;
+    function createQuery(StringSet $wikidataIDs, string $language, int $maxSize): string;
 }
