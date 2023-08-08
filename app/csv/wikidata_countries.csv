@@ -45,6 +45,7 @@ Q173065,Kingdom of Naples,Italy,#007FFF
 Q154849,Grand Duchy of Tuscany,Italy,#007FFF
 Q153529,Duchy of Milan,Italy,#007FFF
 Q174306,Republic of Genoa,Italy,#007FFF
+Q180393,Kingdom of the Two Sicilies,Italy,#007FFF
 Q39,Switzerland,Switzerland,#da291c
 Q40,Austria,Austria,#ed2939
 Q131964,Austrian Empire,Austria,#ed2939
@@ -82,14 +83,14 @@ Q2184,Russian Soviet Federative Socialist Republic,Russia,#d52b1e
 Q34266,Russian Empire,Russia,#d52b1e
 Q139319,Russian Republic,Russia,#d52b1e
 Q2305208,Soviet Russia,Russia,#d52b1e
-Q183,Germany,Germany,FFCC00
-Q713750,West Germany,Germany,FFCC00
-Q16957,East Germany,Germany,FFCC00
-Q41304,Weimar Republic,Germany,FFCC00
-Q43287,German Empire,Germany,FFCC00
-Q27306,Kingdom of Prussia,Germany,FFCC00
-Q7318,Nazi Germany,Germany,FFCC00
-Q151624,German Confederation,Germany,FFCC00
+Q183,Germany,Germany,#FFCC00
+Q713750,West Germany,Germany,#FFCC00
+Q16957,East Germany,Germany,#FFCC00
+Q41304,Weimar Republic,Germany,#FFCC00
+Q43287,German Empire,Germany,#FFCC00
+Q27306,Kingdom of Prussia,Germany,#FFCC00
+Q7318,Nazi Germany,Germany,#FFCC00
+Q151624,German Confederation,Germany,#FFCC00
 Q33496,Czechoslovakia,Czechoslovakia,#0000ff
 Q212,Ukraine,Ukraine,#005bbb
 Q243610,Ukrainian People's Republic,Ukraine,#005bbb
