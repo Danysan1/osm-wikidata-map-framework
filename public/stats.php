@@ -29,6 +29,9 @@ use App\Query\Wikidata\DirectEtymologyWikidataQuery;
 use App\Query\Wikidata\QualifierEtymologyWikidataQuery;
 use App\Query\Wikidata\ReverseEtymologyWikidataQuery;
 use App\Query\Wikidata\Stats\CenturyStatsWikidataQuery;
+use App\Query\Wikidata\Stats\CountryStatsWikidataQueryFactory;
+use App\Query\Wikidata\Stats\GenderStatsWikidataQueryFactory;
+use App\Query\Wikidata\Stats\TypeStatsWikidataQueryFactory;
 
 $conf = new IniEnvConfiguration();
 $serverTiming->add("1_readConfig");
@@ -107,13 +110,13 @@ if ($db != null) {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     if ($to == "genderStats") {
-        $wikidataFactory = GenderStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
+        $wikidataFactory = new GenderStatsWikidataQueryFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_genders.csv");
     } elseif ($to == "typeStats") {
-        $wikidataFactory = TypeStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
+        $wikidataFactory = new TypeStatsWikidataQueryFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_types.csv");
     } elseif ($to == "countryStats") {
-        $wikidataFactory = CountryStatsWikidataQuery::Factory($safeLanguage, $wikidataConfig);
+        $wikidataFactory = new CountryStatsWikidataQueryFactory($safeLanguage, $wikidataConfig);
         $baseQuery = new BBoxStatsOverpassWikidataQuery($sourceQuery, $wikidataFactory, $serverTiming, "wikidata_countries.csv");
     } elseif ($to == "startCenturyStats" || $to == "centuryStats") {
         $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, false, $serverTiming);
