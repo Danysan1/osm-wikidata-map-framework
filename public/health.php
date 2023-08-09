@@ -11,7 +11,7 @@ $conf = new IniEnvConfiguration();
 header("Cache-Control: no-cache", true);
 prepareHTML($conf);
 
-if ($conf->getBool("db_enable")) {
+if (!empty($_GET["check_db"]) && $conf->getBool("db_enable")) {
     try {
         new PostGIS_PDO($conf);
     } catch (Throwable $e) {
