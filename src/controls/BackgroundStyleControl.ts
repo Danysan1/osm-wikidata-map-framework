@@ -24,11 +24,11 @@ export function maptilerStyle(id: string, text: string, maptilerId: string, mapt
  * @see https://tiles.stadiamaps.com/data/openmaptiles.json
  * @see https://docs.stadiamaps.com/themes/
  */
-export function stadiaStyle(id: string, text: string, stadiaId: string): BackgroundStyle {
+export function stadiaStyle(id: string, text: string, stadiaId: string, beta = false): BackgroundStyle {
     return {
         id: id,
         text: text,
-        styleUrl: `https://tiles.stadiamaps.com/styles/${stadiaId}.json`
+        styleUrl: `https://tiles${beta?'-beta':''}.stadiamaps.com/styles/${stadiaId}.json`
     };
 }
 

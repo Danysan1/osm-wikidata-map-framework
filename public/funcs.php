@@ -82,7 +82,7 @@ function prepareHTML(Configuration $conf)
 
 	$stadiaConnectSrcs = '';
 	if ($conf->getBool("enable_stadia_maps")) {
-		$stadiaConnectSrcs = 'https://tiles.stadiamaps.com/';
+		$stadiaConnectSrcs = 'https://tiles.stadiamaps.com/ https://tiles-beta.stadiamaps.com/';
 	}
 
 	$jawgConnectSrcs = '';
