@@ -12,7 +12,7 @@ abstract class BaseIDListWikidataQueryBuilder implements IDListWikidataQueryBuil
 {
     protected abstract function createQueryFromValidIDsString(string $wikidataValues, string $language): string;
 
-    function createQuery(StringSet $wikidataIDs, string $language, int $maxSize): string
+    function createQuery(StringSet $wikidataIDs, string $language, ?int $maxSize): string
     {
         $size = $wikidataIDs->count();
         if ($size === 0) {

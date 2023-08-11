@@ -37,3 +37,4 @@ vscode:
     - bmewburn.vscode-intelephense-client
     - mhutchie.git-graph
     - eamodio.gitlens
+    - vemonet.stardog-rdf-grammars

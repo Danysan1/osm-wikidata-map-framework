@@ -29,9 +29,9 @@ export class EtymologyMap extends Map {
     private geocoderControl?: IControl;
     private projectionControl?: IControl;
     private search: string;
-    private anyDetailShownBefore: boolean = false;
-    private wikidataControlsInitialized: boolean = false;
-    private wikidataSourceInitialized: boolean = false;
+    private anyDetailShownBefore = false;
+    private wikidataControlsInitialized = false;
+    private wikidataSourceInitialized = false;
 
     constructor(
         containerId: string,

@@ -1,0 +1,10 @@
+#defaultView:BarChart
+SELECT ?name (COUNT(DISTINCT ?wikidata) AS ?count) ?id
+WHERE {
+    VALUES ?wikidata { ${wikidataValues} }
+
+    ?id ^wdt:P31|^wdt:P279 ?wikidata;
+        rdfs:label ?name FILTER(lang(?name)='${language}').
+}
+GROUP BY ?name ?id
+ORDER BY DESC(?count)

@@ -36,7 +36,7 @@ abstract class BBoxJSONOverpassWikidataQuery extends BaseQuery implements BBoxJS
     public function send(): QueryResult
     {
         $overpassResult = $this->baseQuery->sendAndGetGeoJSONResult();
-        $this->timing->add("overpass_query");
+        $this->timing->add("map_features_query");
         if (!$overpassResult->isSuccessful()) {
             error_log("BBoxJSONOverpassWikidataQuery: Overpass query failed: $overpassResult");
             throw new \Exception("Overpass query failed");

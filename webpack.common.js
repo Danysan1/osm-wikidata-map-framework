@@ -10,6 +10,11 @@ module.exports = {
         use: [MiniCssExtractPlugin.loader, "css-loader"],
       },
       {
+        test: /\.sparql$/,
+        type: 'asset/source',
+        exclude: /node_modules/,
+      },
+      {
         test: /\.tsx?$/,
         use: "ts-loader",
         exclude: /node_modules/,

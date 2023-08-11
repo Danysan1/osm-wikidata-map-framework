@@ -1,0 +1,10 @@
+#defaultView:BarChart
+SELECT (?century AS ?name) (COUNT(DISTINCT ?wikidata) AS ?count) (?century AS ?id)
+WHERE {
+    VALUES ?wikidata { ${wikidataValues} }
+
+    ?wikidata wdt:P569|wdt:P571|wdt:P580|wdt:P1619|wdt:P585 ?date.
+    BIND(CEIL(YEAR(?date)/100.0) AS ?century)
+}
+GROUP BY ?century
+ORDER BY DESC(?count)

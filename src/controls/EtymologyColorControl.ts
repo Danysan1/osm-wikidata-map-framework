@@ -9,6 +9,8 @@ import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
+import { WikidataService, statsQueries } from '../services/WikidataService';
+import { Etymology } from '../EtymologyElement';
 
 export interface EtymologyStat {
     color?: string;
@@ -34,7 +36,17 @@ class EtymologyColorControl extends DropdownControl {
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
     private _lastQueryString?: string;
+    private _lastWikidataIDs?: string[];
+    private _lastColorSchemeID?: string;
     private _t: TFunction;
+
+    private baseChartData = {
+        labels: [],
+        datasets: [{
+            data: [],
+            backgroundColor: [],
+        }]
+    } as ChartData<"pie">;
 
     constructor(
         startColorScheme: ColorSchemeID,
@@ -84,20 +96,91 @@ class EtymologyColorControl extends DropdownControl {
                 colorScheme = colorSchemes[colorSchemeID],
                 bounds = this.getMap()?.getBounds();
 
-            if (!bounds) {
-                debugLog("updateChart: missing bounds", { event });
-            } else if (colorScheme?.urlCode) {
-                this.downloadChartData(bounds, colorScheme, source);
+            if (colorSchemeID === 'source') {
+                this.loadSourceChartData();
+            } else if (statsQueries[colorSchemeID]) {
+                this.downloadChartDataFromWikidata(colorSchemeID);
+                if (event)
+                    this.showDropdown();
+            } else if (bounds && colorScheme?.urlCode) {
+                this.downloadChartDataFromBackend(bounds, colorScheme, source);
                 if (event)
                     this.showDropdown();
             } else if (event?.type === 'change') {
-                debugLog("updateChart: change event with no colorScheme URL code, hiding", { event, colorSchemeID, colorScheme });
+                debugLog("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
                 this.showDropdown(false);
             }
         }
     }
 
-    downloadChartData(bounds: LngLatBounds, colorScheme: ColorScheme, source?: string) {
+    mapStatsToChartData(stats: EtymologyStat[]): ChartData<"pie"> {
+        const data = structuredClone(this.baseChartData);
+        stats.forEach((row: EtymologyStat) => {
+            if (row.name && row.count) {
+                data.labels?.push(row.name);
+                (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
+                data.datasets[0].data.push(row.count);
+            }
+        });
+        return data;
+    }
+
+    loadSourceChartData() {
+        const features = this.getMap()?.querySourceFeatures("wikidata_source");
+        if (features) {
+            const counts = {
+                osm_wikidata: 0,
+                osm_text: 0,
+                wikidata: 0,
+                propagation: 0,
+            };
+            features.forEach(feature => {
+                const rawEtymologies = feature.properties?.etymologies,
+                    etymologies = (typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) : rawEtymologies) as Etymology[];
+                if (etymologies.some(etymology => !etymology.propagated && etymology.from_osm))
+                    counts.osm_wikidata++;
+                else if (etymologies.some(etymology => !etymology.propagated && etymology.from_wikidata))
+                    counts.wikidata++;
+                else if (etymologies.some(etymology => etymology.propagated))
+                    counts.propagation++;
+                else
+                    counts.osm_text++;
+            });
+            const stats: EtymologyStat[] = [
+                { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: counts.osm_wikidata },
+                { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: counts.wikidata },
+                { name: "Propagation", color: '#ff3333', id: 'propagation', count: counts.propagation },
+                { name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: counts.osm_text }
+            ]
+            //console.info("Source stats:", stats);
+            this.setChartData(this.mapStatsToChartData(stats));
+        }
+    }
+
+    async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
+        const sparqlQuery = statsQueries[colorSchemeID];
+        if (!sparqlQuery)
+            throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
+
+        const wikidataIDs = this.getMap()
+            ?.querySourceFeatures("wikidata_source")
+            ?.map(feature => feature.properties?.etymologies)
+            ?.flatMap(etymologies => (typeof etymologies === 'string' ? JSON.parse(etymologies) : etymologies) as Etymology[])
+            ?.map(etymology => etymology.wikidata)
+            ?.filter(id => typeof id === 'string')
+            ?.sort() as string[] || []
+        if (colorSchemeID === this._lastColorSchemeID && wikidataIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => wikidataIDs[i] === id)) {
+            console.info("Skipping stats update");
+        } else {
+            this._lastColorSchemeID = colorSchemeID;
+            this._lastWikidataIDs = wikidataIDs;
+            const statsData = await new WikidataService().fetchStats(wikidataIDs, sparqlQuery),
+                data = this.mapStatsToChartData(statsData);
+            this.setChartData(data);
+        }
+    }
+
+    downloadChartDataFromBackend(bounds: LngLatBounds, colorScheme: ColorScheme, source?: string) {
         if (!colorScheme?.urlCode)
             throw new Error("downloadChartData: can't download data for a color scheme with no URL code - " + colorScheme.textKey);
 
@@ -122,6 +205,7 @@ class EtymologyColorControl extends DropdownControl {
             xhr = new XMLHttpRequest();
 
         if (this._lastQueryString !== queryString) {
+            this._lastQueryString = queryString;
             xhr.onreadystatechange = (e) => this.handleChartXHRStateChange(xhr, e);
             xhr.open('GET', stats_url, true);
             xhr.send();
@@ -129,38 +213,20 @@ class EtymologyColorControl extends DropdownControl {
             if (this._chartXHR)
                 this._chartXHR.abort();
             this._chartXHR = xhr;
-            this._lastQueryString = queryString;
         }
     }
 
     handleChartXHRStateChange(xhr: XMLHttpRequest, e: Event) {
-        const readyState = xhr.readyState,
-            status = xhr.status,
-            data = {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [],
-                }]
-            } as ChartData<"pie">;
-
-        if (readyState == XMLHttpRequest.UNSENT || status == 0) {
-            debugLog("XHR aborted", { xhr, readyState, status, e });
-        } else if (readyState == XMLHttpRequest.DONE) {
-            if (status == 200) {
-                JSON.parse(xhr.responseText).forEach((row: EtymologyStat) => {
-                    if (row.name && row.count) {
-                        (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
-                        data.labels?.push(row.name);
-                        data.datasets[0].data.push(row.count);
-                    }
-                });
-                this.setChartData(data);
-            } else if (status == 500 && xhr.responseText.includes("Not implemented")) {
+        if (xhr.readyState === XMLHttpRequest.UNSENT || xhr.status === 0) {
+            debugLog("XHR aborted", { xhr, e });
+        } else if (xhr.readyState == XMLHttpRequest.DONE) {
+            if (xhr.status === 200) {
+                this.setChartData(this.mapStatsToChartData(JSON.parse(xhr.responseText)));
+            } else if (xhr.status === 500 && xhr.responseText.includes("Not implemented")) {
                 this.removeChart();
                 showSnackbar(this._t("color_scheme.not_available"), "lightsalmon");
             } else {
-                console.error("XHR error", { xhr, readyState, status, e });
+                console.error("XHR error", { xhr, e });
                 //if (event.type && event.type == 'change')
                 //    this.hideDropdown();
                 this.removeChart();
