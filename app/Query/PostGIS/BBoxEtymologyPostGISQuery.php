@@ -95,6 +95,8 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                     el.el_geometry AS geom,
                     el.el_osm_type AS osm_type,
                     el.el_osm_id AS osm_id,
+                    TRUE as from_osm,
+                    FALSE as from_wikidata,
                     COALESCE(
                         el.el_tags->>CONCAT('name:',:lang::VARCHAR),
                         el.el_tags->>'name',
@@ -118,7 +120,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'from_osm', et_from_osm,
                         'from_osm_type', from_el.el_osm_type,
                         'from_osm_id', from_el.el_osm_id,
-                        'from_wikidata', FALSE,
+                        'from_wikidata', et_from_osm_wikidata_wd_id IS NOT NULL,
                         'from_wikidata_entity', from_wd.wd_wikidata_cod,
                         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
                         'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,

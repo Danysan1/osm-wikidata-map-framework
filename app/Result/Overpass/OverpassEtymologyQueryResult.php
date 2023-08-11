@@ -109,6 +109,8 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
             "geometry" => [],
             "properties" => [
                 "name" => $elementName,
+                "from_osm" => true,
+                "from_wikidata" => false,
                 "osm_type" => $osmType,
                 "osm_id" => $osmID,
                 "gender_color" => "#3bb2d0",
