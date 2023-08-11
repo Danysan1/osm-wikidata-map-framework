@@ -1,13 +1,7 @@
 import { getConfig } from "../config";
 import { EtymologyStat } from "../controls/EtymologyColorControl";
-import { EtymologyDetails } from "../EtymologyElement";
 import detailsQuery from "./query/etymology-details.sparql";
-import typeStatsQuery from "./query/type-stats.sparql";
-import genderStatsQuery from "./query/gender-stats.sparql";
-import countryStatsQuery from "./query/country-stats.sparql";
-import startCenturyStatsQuery from "./query/start-century-stats.sparql";
-import endCenturyStatsQuery from "./query/end-century-stats.sparql";
-import { ColorSchemeID } from "../colorScheme.model";
+import { EtymologyDetails } from "../feature.model";
 
 export class WikidataService {
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
@@ -85,17 +79,4 @@ export class WikidataService {
             };
         });
     }
-}
-
-export const statsQueries: Record<ColorSchemeID, string | null> = {
-    blue: null,
-    source: null,
-    black: null,
-    red: null,
-    orange: null,
-    type: typeStatsQuery,
-    gender: genderStatsQuery,
-    country: countryStatsQuery,
-    startCentury: startCenturyStatsQuery,
-    endCentury: endCenturyStatsQuery,
 }

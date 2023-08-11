@@ -50,7 +50,7 @@ class BBoxStatsOverpassWikidataQuery extends BBoxJSONOverpassWikidataQuery
         if (empty($this->colorCsvFileName))
             return $jsonResult;
 
-        $csvFilePath = __DIR__ . "/../../csv/" . $this->colorCsvFileName;
+        $csvFilePath = "csv/" . $this->colorCsvFileName;
         $csvFile = @fopen($csvFilePath, "r");
         if ($csvFile === false) {
             error_log("Failed opening Wikidata CSV file - $csvFilePath");

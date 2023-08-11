@@ -9,8 +9,8 @@ import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
-import { WikidataService, statsQueries } from '../services/WikidataService';
 import { Etymology, FeatureProperties } from '../feature.model';
+import { StatsService, statsQueries } from '../services/StatsService';
 
 export interface EtymologyStat {
     color?: string;
@@ -147,10 +147,6 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
-        const sparqlQuery = statsQueries[colorSchemeID];
-        if (!sparqlQuery)
-            throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
-
         const wikidataIDs = this.getMap()
             ?.querySourceFeatures("wikidata_source")
             ?.map(feature => feature.properties?.etymologies)
@@ -165,7 +161,7 @@ class EtymologyColorControl extends DropdownControl {
         } else {
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = wikidataIDs;
-            new WikidataService().fetchStats(wikidataIDs, sparqlQuery).then(
+            new StatsService().fetchStats(wikidataIDs, colorSchemeID).then(
                 stats => this.setChartStats(stats)
             ).catch(
                 e => { console.error("XHR error", e); this.removeChart(); }

@@ -2,7 +2,7 @@
     "name": "osm-wikidata-map-framework",
     "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
     "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
-    "version": "1.8.2",
+    "version": "1.10.0",
     "repository": {
         "type": "git",
         "url": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git"
@@ -43,6 +43,7 @@
         "@types/gtag.js": "^0.0.11",
         "@types/mapbox__mapbox-gl-geocoder": "^4.7.3",
         "@types/mapbox-gl": "^2.7.12",
+        "@types/papaparse": "^5.3.7",
         "@typescript-eslint/eslint-plugin": "^5.36.2",
         "@typescript-eslint/parser": "^5.36.2",
         "chart.js": "^3.6.0",
@@ -56,6 +57,7 @@
         "maplibre-gl": "^3.2.1",
         "maplibregl-mapbox-request-transformer": "^0.0.2",
         "mini-css-extract-plugin": "^2.6.1",
+        "papaparse": "^5.4.1",
         "ts-loader": "^9.4.2",
         "typescript": "^4.9.5",
         "webpack": "^5.74.0",

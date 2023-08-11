@@ -380,7 +380,7 @@ class OwmfDbInitDAG(DAG):
             doc_md="""
                 # Load Wikidata gender entities
 
-                Load into the `wikidata` table of the local PostGIS DB the Wikidata gender entities from [wikidata_genders.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/app/csv/wikidata_genders.csv).
+                Load into the `wikidata` table of the local PostGIS DB the Wikidata gender entities from [wikidata_genders.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/public/csv/wikidata_genders.csv).
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
@@ -406,7 +406,7 @@ class OwmfDbInitDAG(DAG):
             doc_md="""
                 # Load Wikidata country entities
 
-                Load into the `wikidata` table of the local PostGIS DB the Wikidata country entities from [wikidata_countries.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/app/csv/wikidata_countries.csv).
+                Load into the `wikidata` table of the local PostGIS DB the Wikidata country entities from [wikidata_countries.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/public/csv/wikidata_countries.csv).
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
@@ -432,7 +432,7 @@ class OwmfDbInitDAG(DAG):
             doc_md="""
                 # Load Wikidata type entities
 
-                Load into the `wikidata` table of the local PostGIS DB the Wikidata type entities from [wikidata_types.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/app/csv/wikidata_types.csv).
+                Load into the `wikidata` table of the local PostGIS DB the Wikidata type entities from [wikidata_types.csv](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/public/csv/wikidata_types.csv).
 
                 Links:
                 * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)

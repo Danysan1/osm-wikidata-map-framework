@@ -99,7 +99,7 @@ class BBoxGeoJSONEtymologyQuery extends BBoxJSONOverpassWikidataQuery implements
         string $colorField,
         string $colorCsvFileName
     ): array {
-        $csvFilePath = __DIR__ . "/../../csv/" . $colorCsvFileName;
+        $csvFilePath = "csv/" . $colorCsvFileName;
         $csvFile = @fopen($csvFilePath, "r");
         if ($csvFile === false) {
             error_log("Failed opening Wikidata CSV file - $csvFilePath");
