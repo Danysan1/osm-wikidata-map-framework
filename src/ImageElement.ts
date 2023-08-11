@@ -1,13 +1,7 @@
 import { debugLog } from "./config";
+import { ImageResponse } from "./feature.model";
 import { loadTranslator } from "./i18n";
 import { WikimediaCommonsService } from "./services/WikimediaCommonsService";
-
-interface DetailedImage {
-    picture: string,
-    attribution?: string,
-}
-
-export type ImageResponse = string | DetailedImage;
 
 export function imageToDomElement(img: ImageResponse): HTMLDivElement {
     const link = document.createElement('a'),

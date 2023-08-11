@@ -10,7 +10,7 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
 import { WikidataService, statsQueries } from '../services/WikidataService';
-import { Etymology } from '../EtymologyElement';
+import { Etymology, FeatureProperties } from '../feature.model';
 
 export interface EtymologyStat {
     color?: string;
@@ -113,48 +113,37 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
-    mapStatsToChartData(stats: EtymologyStat[]): ChartData<"pie"> {
-        const data = structuredClone(this.baseChartData);
-        stats.forEach((row: EtymologyStat) => {
-            if (row.name && row.count) {
-                data.labels?.push(row.name);
-                (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
-                data.datasets[0].data.push(row.count);
-            }
-        });
-        return data;
-    }
-
     loadSourceChartData() {
-        const features = this.getMap()?.querySourceFeatures("wikidata_source");
-        if (features) {
-            const counts = {
-                osm_wikidata: 0,
-                osm_text: 0,
-                wikidata: 0,
-                propagation: 0,
-            };
-            features.forEach(feature => {
-                const rawEtymologies = feature.properties?.etymologies,
+        const osm_wikidata_IDs = new Set(),
+            osm_text_names = new Set(),
+            wikidata_IDs = new Set(),
+            propagation_IDs = new Set();
+        this.getMap()
+            ?.querySourceFeatures("wikidata_source")
+            ?.forEach(feature => {
+                const props = feature.properties as FeatureProperties,
+                    rawEtymologies = props.etymologies,
                     etymologies = (typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) : rawEtymologies) as Etymology[];
-                if (etymologies.some(etymology => !etymology.propagated && etymology.from_osm))
-                    counts.osm_wikidata++;
-                else if (etymologies.some(etymology => !etymology.propagated && etymology.from_wikidata))
-                    counts.wikidata++;
-                else if (etymologies.some(etymology => etymology.propagated))
-                    counts.propagation++;
-                else
-                    counts.osm_text++;
+
+                etymologies.forEach(etymology => {
+                    if (etymology.propagated)
+                        propagation_IDs.add(etymology.wikidata);
+                    else if (!etymology.propagated && etymology.from_wikidata)
+                        wikidata_IDs.add(etymology.wikidata);
+                    else if (!etymology.propagated && etymology.from_osm)
+                        osm_wikidata_IDs.add(etymology.wikidata);
+                    else if (props.text_etymology)
+                        osm_text_names.add(props.text_etymology);
+                });
             });
-            const stats: EtymologyStat[] = [
-                { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: counts.osm_wikidata },
-                { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: counts.wikidata },
-                { name: "Propagation", color: '#ff3333', id: 'propagation', count: counts.propagation },
-                { name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: counts.osm_text }
-            ]
-            //console.info("Source stats:", stats);
-            this.setChartData(this.mapStatsToChartData(stats));
-        }
+        const stats: EtymologyStat[] = [
+            { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size },
+            { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size },
+            { name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size },
+            { name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size }
+        ]
+        //console.info("Source stats:", stats);
+        this.setChartStats(stats);
     }
 
     async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
@@ -168,15 +157,19 @@ class EtymologyColorControl extends DropdownControl {
             ?.flatMap(etymologies => (typeof etymologies === 'string' ? JSON.parse(etymologies) : etymologies) as Etymology[])
             ?.map(etymology => etymology.wikidata)
             ?.filter(id => typeof id === 'string')
-            ?.sort() as string[] || []
-        if (colorSchemeID === this._lastColorSchemeID && wikidataIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => wikidataIDs[i] === id)) {
-            console.info("Skipping stats update");
+            ?.sort() as string[] || [];
+        if (wikidataIDs.length === 0) {
+            console.info("Skipping stats update for 0 IDs");
+        } else if (colorSchemeID === this._lastColorSchemeID && wikidataIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => wikidataIDs[i] === id)) {
+            console.info("Skipping stats update for already downloaded IDs");
         } else {
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = wikidataIDs;
-            const statsData = await new WikidataService().fetchStats(wikidataIDs, sparqlQuery),
-                data = this.mapStatsToChartData(statsData);
-            this.setChartData(data);
+            new WikidataService().fetchStats(wikidataIDs, sparqlQuery).then(
+                stats => this.setChartStats(stats)
+            ).catch(
+                e => { console.error("XHR error", e); this.removeChart(); }
+            );
         }
     }
 
@@ -221,7 +214,7 @@ class EtymologyColorControl extends DropdownControl {
             debugLog("XHR aborted", { xhr, e });
         } else if (xhr.readyState == XMLHttpRequest.DONE) {
             if (xhr.status === 200) {
-                this.setChartData(this.mapStatsToChartData(JSON.parse(xhr.responseText)));
+                this.setChartStats(JSON.parse(xhr.responseText));
             } else if (xhr.status === 500 && xhr.responseText.includes("Not implemented")) {
                 this.removeChart();
                 showSnackbar(this._t("color_scheme.not_available"), "lightsalmon");
@@ -232,6 +225,21 @@ class EtymologyColorControl extends DropdownControl {
                 this.removeChart();
             }
         }
+    }
+
+    /**
+     * Initializes or updates the chart with the given sttistics
+     */
+    setChartStats(stats: EtymologyStat[]) {
+        const data = structuredClone(this.baseChartData);
+        stats.forEach((row: EtymologyStat) => {
+            if (row.name && row.count) {
+                data.labels?.push(row.name);
+                (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
+                data.datasets[0].data.push(row.count);
+            }
+        });
+        this.setChartData(data);
     }
 
     /**

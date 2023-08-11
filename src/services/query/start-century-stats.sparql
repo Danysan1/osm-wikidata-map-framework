@@ -1,10 +1,18 @@
 #defaultView:BarChart
-SELECT (?century AS ?name) (COUNT(DISTINCT ?wikidata) AS ?count) (?century AS ?id)
+SELECT (?century AS ?name) (COUNT(DISTINCT ?wikidata) AS ?count) (?century AS ?id) (CONCAT('rgb(',?red,',',?green,',',?blue,')') AS ?color)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
     ?wikidata wdt:P569|wdt:P571|wdt:P580|wdt:P1619|wdt:P585 ?date.
     BIND(CEIL(YEAR(?date)/100.0) AS ?century)
+
+    BIND(ROUND((?century-13)*255/4) AS ?rawRed)
+    BIND(STR(IF(?rawRed > 0, ?rawRed, 0)) AS ?red)
+    BIND(ROUND(512-(ABS(?century-13)*255/4)) AS ?rawGreen)
+    BIND(STR(IF(?rawGreen > 0, ?rawGreen, 0)) AS ?green)
+    BIND(ROUND((13-?century)*255/4) AS ?rawBlue)
+    BIND(STR(IF(?rawBlue > 0, ?rawBlue, 0)) AS ?blue)
 }
-GROUP BY ?century
+GROUP BY ?century ?red ?green ?blue
 ORDER BY DESC(?count)
+LIMIT 30

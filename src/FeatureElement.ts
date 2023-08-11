@@ -3,33 +3,14 @@
 import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
-import { Etymology, EtymologyDetails, etymologyToDomElement } from "./EtymologyElement";
+import { etymologyToDomElement } from "./EtymologyElement";
 import { debugLog, getBoolConfig } from "./config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
 import { logErrorMessage } from "./monitoring";
-
-interface FeatureProperties {
-    country_color?: string;
-    alt_name?: string;
-    official_name?: string;
-    commons?: string;
-    el_id?: number;
-    etymologies: Etymology[] | string; // Even though it is received as an array, for some reason Mapbox GL JS stringifies it as JSON
-    gender_color?: string;
-    name?: string;
-    osm_id?: number;
-    osm_type?: string;
-    picture?: string;
-    source_color?: string;
-    text_etymology?: string;
-    text_etymology_descr?: string;
-    type_color?: string;
-    wikidata?: string;
-    wikipedia?: string;
-}
+import { Etymology, EtymologyDetails, FeatureProperties } from './feature.model';
 
 export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');

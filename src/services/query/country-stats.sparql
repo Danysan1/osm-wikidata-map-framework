@@ -8,3 +8,4 @@ WHERE {
 }
 GROUP BY ?name ?id
 ORDER BY DESC(?count)
+LIMIT 30
