@@ -53,10 +53,10 @@ export class StatsService {
             const csvResponse = await fetch(csvPath),
                 csvText = await csvResponse.text(),
                 csv = parse(csvText, { download: false, header: false });
-            console.info("Loaded CSV:")
-            console.table(csv.data);
-            console.info("Applying to stats:")
-            console.table(stats);
+            // console.info("Loaded CSV:")
+            // console.table(csv.data);
+            // console.info("Applying to stats:")
+            // console.table(stats);
             stats.forEach(stat => stat.color = (csv.data as string[][]).find(row => row[0] === stat.id)?.at(3));
         }
         return stats;

@@ -131,7 +131,7 @@ abstract class CSVCachedQuery implements Query
         $result = null;
         $newCache = [];
         if (empty($cacheFile)) {
-            error_log("CSVCachedQuery: Cache registry file not found, skipping cache search ( $cacheFile )");
+            error_log("CSVCachedQuery: Cache registry file not found, skipping cache search ( $cacheFilePath )");
         } else {
             if ($this->serverTiming)
                 $this->serverTiming->add("cache-search-prepare");
