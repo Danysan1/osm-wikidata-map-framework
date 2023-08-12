@@ -646,6 +646,7 @@ export class EtymologyMap extends Map {
                 minzoom: minZoom,
                 filter: ['has', countShowFieldName],
                 layout: {
+                    'text-font': ["Open Sans Regular"],
                     'text-field': '{' + countShowFieldName + '}',
                     'text-size': 12
                 }
