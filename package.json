@@ -37,7 +37,7 @@
     },
     "devDependencies": {
         "@mapbox/mapbox-gl-geocoder": "^5.0.1",
-        "@maptiler/geocoding-control": "^0.0.97",
+        "@maptiler/geocoding-control": "^0.0.98",
         "@sentry/browser": "^7.34.0",
         "@types/chart.js": "^2.9.37",
         "@types/gtag.js": "^0.0.11",

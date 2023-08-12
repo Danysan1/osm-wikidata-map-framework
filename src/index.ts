@@ -108,10 +108,10 @@ function initMap() {
     /********** Start of Maplibre GL JS specific code **********/
     debugLog("Using Maptiler GeocoderControl", { maptiler_key });
     let geocoderControl: GeocodingControl | undefined;
-    if(mapbox_token)
+    if (mapbox_token)
         requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
     if (maptiler_key)
-        geocoderControl = new GeocodingControl({ apiKey: maptiler_key });
+        geocoderControl = new GeocodingControl({ apiKey: maptiler_key, marker: false });
     const focusOnGeocoder = () => geocoderControl?.focus(),
         projectionControl = undefined;
     /********** End of Maplibre GL JS specific code **********/
