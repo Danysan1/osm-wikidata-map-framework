@@ -39,7 +39,7 @@ class BaseStringSet implements StringSet
      */
     public static function fromJSON($json): self
     {
-        return new self(json_decode($json));
+        return new self((array)json_decode($json));
     }
 
     public function count(): int

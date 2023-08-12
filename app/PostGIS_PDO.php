@@ -28,7 +28,7 @@ class PostGIS_PDO extends PDO
         $user = (string) $conf->get("db_user");
         $password = (string) $conf->get("db_password");
         $sslmode = $conf->has("db_sslmode") ? (string) $conf->get("db_sslmode") : "prefer";
-        $options = $conf->has("db_endpoint") ? ";options=endpoint=".$conf->get("db_endpoint") : "";
+        $options = $conf->has("db_endpoint") ? ";options=endpoint=" . (string) $conf->get("db_endpoint") : "";
 
         parent::__construct(
             "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=$sslmode;application_name=owmf$options",

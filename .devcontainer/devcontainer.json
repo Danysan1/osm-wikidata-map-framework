@@ -23,6 +23,10 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
+				"dbaeumer.vscode-eslint",
+				"mhutchie.git-graph",
+				"eamodio.gitlens",
+				"vemonet.stardog-rdf-grammars",
 				"bmewburn.vscode-intelephense-client",
 				"getpsalm.psalm-vscode-plugin"
 			]

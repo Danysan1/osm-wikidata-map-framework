@@ -34,7 +34,8 @@ ports:
 vscode:
   extensions:
     - dbaeumer.vscode-eslint
-    - bmewburn.vscode-intelephense-client
     - mhutchie.git-graph
     - eamodio.gitlens
     - vemonet.stardog-rdf-grammars
+    - bmewburn.vscode-intelephense-client
+    - getpsalm.psalm-vscode-plugin
