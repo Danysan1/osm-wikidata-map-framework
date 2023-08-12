@@ -31,7 +31,7 @@ export class ProjectionControl extends DropdownControl {
                 id: projection.id,
                 text: projection.text,
                 onSelect: () => {
-                    this.getMap()?.setProjection(projection.id); // Currently not available in Maplibre GL JS
+                    (this.getMap() as any)?.setProjection(projection.id); // Currently not available in Maplibre GL JS
                     this.showDropdown(false);
                 }
             })),

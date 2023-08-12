@@ -29,8 +29,7 @@ The most basic deployment can be launched by using Docker and executing these sh
    ```
 2. Edit the file `.env` to configure your map
    - set the OSM keys and Wikidata properties you want to use (as documented [above](#available-data-source-patterns)) in the "Data source" section
-   - set a valid [Mapbox access token](https://docs.mapbox.com/help/getting-started/access-tokens/) (needed for the map) in `mapbox_token`
-   - other configuration keys should be fine but can be edited to customize the web application
+   - other configuration keys should be fine but can be edited to customize the web application. If you expose your app on a domain/address different than localhost or 127.0.0.1 you will also need to specify a token/key for the background map (either `mapbox_token`, `maptiler_key`, `enable_stadia_maps` or `jawg_token`)
    - take inspiration from configurations of other projects like [Open Etymology Map](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example), [Open Burial Map](https://gitlab.com/openetymologymap/open-burial-map/-/blob/main/.env.example), ...
 3. Launch the docker image of the framework
    ```sh
@@ -54,7 +53,7 @@ Help with translation is welcome!
 - [Wikimedia REST API](https://en.wikipedia.org/api/rest_v1/)
 - Python + [Apache Airflow](https://airflow.apache.org/)
 - PHP + PostGIS
-- Typescript + [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs)
+- Typescript + [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/)
 
 ## Screenshots
 

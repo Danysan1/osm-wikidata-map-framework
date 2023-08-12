@@ -1,8 +1,8 @@
-// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
-// import 'maplibre-gl/dist/maplibre-gl.css';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
+import 'maplibre-gl/dist/maplibre-gl.css';
 
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
+// import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
@@ -53,7 +53,7 @@ export class EtymologyMap extends Map {
             style: backgroundStyleObj.styleUrl,
             center: [startParams.lon, startParams.lat], // starting position [lon, lat]
             zoom: startParams.zoom, // starting zoom
-            projection: { name: 'mercator' },
+            //projection: { name: 'mercator' },
             transformRequest: requestTransformFunc
         });
         this.startBackgroundStyle = backgroundStyleObj;

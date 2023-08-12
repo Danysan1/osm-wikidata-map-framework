@@ -82,7 +82,7 @@ export interface FeatureProperties {
     official_name?: string;
     commons?: string;
     el_id?: number;
-    etymologies: Etymology[] | string; // Even though it is received as an array, for some reason Mapbox GL JS stringifies it as JSON
+    etymologies: Etymology[] | string; // Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
     gender_color?: string;
     name?: string;
     osm_id?: number;

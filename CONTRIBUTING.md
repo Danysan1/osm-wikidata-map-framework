@@ -2,8 +2,10 @@
 
 ## How to contribute to the background map
 
-The background maps are provided by Mapbox and Maptiler, which are based on OpenStreetMap. You can improve the map on [openstreetmap.org](https://www.openstreetmap.org/).
-You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/). Keep in mind that they doen't update the map immediately so if you edit something on OpenStreetMap it may take some time to appear in the map.
+The background maps are provided by external providers which are based on OpenStreetMap such as [Maptiler](https://www.maptiler.com/), [Stadia Maps](https://stadiamaps.com/), [Jawg](https://www.jawg.io/en/) and [Mapbox](https://www.mapbox.com/).
+You can improve OpenStreetMap data on [openstreetmap.org](https://www.openstreetmap.org/).
+You can learn how to map on [the official welcome page](https://www.openstreetmap.org/welcome) and on [LearnOSM](https://learnosm.org/).
+Keep in mind that these external providers doen't update the map immediately so if you edit something on OpenStreetMap it may take some time to appear in the map.
 
 ## How to report a problem in the etymology of an element
 
@@ -90,7 +92,9 @@ In order to create a new translation you can copy one of the existing language f
 
 In order to make a deployed instance function correctly all instance settings must be set in `.env`.
 
-You can copy the template file [`.env.example`](.env.example), you must set `mapbox_token` while other options should already be ok as a starting point.
+You can copy the template file [`.env.example`](.env.example), while other options should already be ok as a starting point.
+
+If you expose your app on a domain/address different than localhost or 127.0.0.1 you will also need to specify a token/key for the background map (either `mapbox_token`, `maptiler_key`, `enable_stadia_maps` or `jawg_token`).
 
 If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 
@@ -122,31 +126,28 @@ Visual Studio Code users [can use Dev Containers](https://code.visualstudio.com/
 #### Production deployment with Docker
 
 The latest version can be deployed through Docker using the image [`registry.gitlab.com/openetymologymap/osm-wikidata-map-framework`](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/container_registry/3032190).
-
 ```sh
 docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
 ```
 
 A full installation without DB (using Overpass) can be deployed with docker-compose:
-
 ```sh
 git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
 cd osm-wikidata-map-framework
 cp ".env.example" ".env"
-# At this point edit the file .env adding the correct mapbox_token
+# At this point edit the .env file with the desired settings
 docker-compose --profile "prod" up -d
 ```
 
 A full installation complete with DB can be deployed with docker-compose:
-
 ```sh
 git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
 cd osm-wikidata-map-framework
 cp ".env.example" ".env"
-# At this point edit the file .env adding the correct mapbox_token and setting db_enable=true
+# At this point edit the .env file with the desired settings and set db_enable=true
 COMPOSE_PROFILES=prod,db docker-compose up -d
-# At this point you need to load a dump of the DB on the DB exposed on port 5432
 ```
+At this point you need to load a dump of the DB on the DB exposed on localhost:5432 or initialize it [through the Airflow pipeline](#database-initialization)
 
 <details>
 <summary>Deployment diagram</summary>
@@ -163,8 +164,8 @@ COMPOSE_PROFILES=prod,db docker-compose up -d
 
 #### Front-end
 
-The front-end is composed by [index.php](public/index.php), [style.css](src/style.css) and index.js (built from [index.ts](src/index.ts)).
-The map is created using [Mapbox GL JS](https://www.mapbox.com/mapbox-gljs) (a tentative implementation with its FOSS fork, [Maplibre GL JS](https://maplibre.org/maplibre-gl-js-docs/api/), is WIP with no ETA) and the charts are created using [chart.js](https://www.chartjs.org/).
+The front-end code is composed by [index.php](public/index.php) and the Typescript code under the [src folder](src/).
+The map is created using [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/) and the charts are created using [chart.js](https://www.chartjs.org/).
 
 At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from `global-map.php` (for example https://etymology.dsantini.it/global-map.php ).
 
