@@ -70,6 +70,7 @@ export class EtymologyMap extends Map {
         this.on('load', this.mapLoadedHandler);
         this.on('styledata', this.mapStyleDataHandler);
         this.on('sourcedata', this.mapSourceDataHandler);
+        this.on('error', this.mapErrorHandler);
 
         //this.dragRotate.disable(); // disable map rotation using right click + drag
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
@@ -173,7 +174,7 @@ export class EtymologyMap extends Map {
         showLoadingSpinner(false);
 
         let errorMessage;
-        if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
+        if ([GLOBAL_SOURCE, ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
             loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error")));
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
@@ -806,8 +807,6 @@ export class EtymologyMap extends Map {
             this.addControl(this.projectionControl, 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
-
-        this.on('error', this.mapErrorHandler);
     }
 
     /**

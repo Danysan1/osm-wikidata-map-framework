@@ -5,16 +5,15 @@ require_once(__DIR__ . "/../vendor/autoload.php");
 
 use \App\Config\Configuration;
 
-/**
- * @psalm-suppress UndefinedClass
- */
 function handleException(Throwable $t): never
 {
 	error_log($t->getMessage() . PHP_EOL . $t->getTraceAsString());
 	if (function_exists('\Sentry\captureException')) \Sentry\captureException($t);
 	http_response_code(500);
-	//die('{"success":false, "error":"An internal error occurred"}');
-	die(json_encode(["success" => false, "error" => $t->getMessage()]));
+	die(json_encode([
+		"success" => false,
+		"error" => $t instanceof PDOException ? "An internal error occurred." : $t->getMessage()
+	]));
 }
 
 /**
@@ -40,7 +39,7 @@ function preparePage(Configuration $conf)
 	ini_set('session.use_strict_mode', 'true');
 
 	if (!empty($_SERVER['HTTP_ORIGIN']) && $conf->has('allowed_origins')) {
-		$origin = (string)$_SERVER['HTTP_ORIGIN'];
+		$origin = $_SERVER['HTTP_ORIGIN'];
 		$allowedOrigins = $conf->getArray('allowed_origins');
 		if (in_array($origin, $allowedOrigins))
 			header("Access-Control-Allow-Origin: $origin");
@@ -235,9 +234,7 @@ function getSafeLanguage(string $defaultValue): string
 		die('{"error":"Invalid language code."};');
 	}
 
-	$safeLanguage = (string)$langMatches[1]; // "en"
-
-	return $safeLanguage;
+	return $langMatches[1]; // "en"
 }
 
 function getCurrentURL(): string
