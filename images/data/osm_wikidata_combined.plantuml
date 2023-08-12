@@ -1,21 +1,22 @@
 @startuml osm_wikidata_combined
 
-map "**Wikidata item Q7186**" as wikia #a2d2ff {
+map "**Wikidata Q7186**" as wikia #a2d2ff {
   label => Marie Curie
 }
 
-map "Wikidata item Q1548496" as wikid #a2d2ff {
+map "Wikidata Q1548496" as wikid #a2d2ff {
   label => Marie-Curie-Gymnasium Dresden
   P138 (named after) => Q7186
 }
 
-map "**OSM element**" as osmd #95d5b2 {
+map "**OSM Way 291879720**" as osmd #95d5b2 {
   name => Marie-Curie-Gymnasium
   wikidata => Q1548496
 }
 
 osmd ..> wikid : wikidata
-wikid ..> wikia : P138
-osmd -[bold]-> wikia
+wikid ..> wikia : P138 (named after)
+osmd -[bold]-> wikia : named after
+note on link: inferred
 
 @enduml

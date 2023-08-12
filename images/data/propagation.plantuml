@@ -10,7 +10,6 @@ map "**Wikidata item Q220**" as wikia #a2d2ff {
 }
 
 map "OSM element" as osmb #95d5b2 {
-  highway => ...
   name => Via Roma
   name:etymology:wikidata => Q220
 }
@@ -22,8 +21,13 @@ map "**OSM element**" as osmc #95d5b2 {
 
 osma -> wikia : name:etymology:wikidata
 osmb -> wikia : name:etymology:wikidata
-osmc -[bold]-> wikia : (derived)
 osma ..> osmc : (homonym)
 osmb ..> osmc : (homonym)
+osmc -[bold]-> wikia : named after
+note on link
+inferred if and only if the *:wikidata
+tags in all (at least two) homonyms
+point to the same wikidata item
+end note
 
 @enduml

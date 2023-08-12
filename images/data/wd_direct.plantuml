@@ -10,6 +10,6 @@ map "Wikidata item Q96391995" as wikie #a2d2ff {
   P547 (commemorates) => Q7186
 }
 
-wikie -[bold]-> wikia : P547
+wikie -[bold]-> wikia : P547 (commemorates)
 
 @enduml

@@ -45,8 +45,8 @@ package Wikidata {
         **P625 (coordinate location)** => **51.24552°, 22.54164°**
     }
 
-    map "ps:..." as wd_h #a2d2ff {
-        **P625 (coordinate location)** => **48.846198°, 2.346105°**
+    map "p:P119" as wd_h #a2d2ff {
+        pq:**P625 (coordinate location)** => **48.846198°, 2.346105°**
     }
     map "wd:Q96391995" as wd_i #a2d2ff {
         label => Pantheon
@@ -81,8 +81,8 @@ wd_a --> wd_e : wdt:P31 (instance of)
 wd_b --> wd_e : wdt:P31 (instance of)
 wd_c --> wd_f : wdt:P31 (instance of)
 
-wd_a --> wd_h : ps:P119 (luogo di sepoltura)
-wd_h --> wd_i : p:P119 (luogo di sepoltura)
+wd_a --> wd_h : p:P119 (place of burial)
+wd_h --> wd_i : ps:P119 (place of burial)
 
 wd_a -> itwiki_a
 wd_a --> enwiki_a

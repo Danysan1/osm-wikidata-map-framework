@@ -12,6 +12,6 @@ map "**OSM Way 291879720**" as osmd #95d5b2 {
 }
 
 osmd --> wikid : wikidata
-wikid --> osmd : P10689
+wikid --> osmd : P10689 (OSM way ID)
 
 @enduml
