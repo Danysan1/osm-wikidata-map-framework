@@ -29,6 +29,7 @@ module.exports = {
   },
   output: {
     path: path.resolve(__dirname, "public", "dist"),
+    filename: "[name]-[contenthash].js"
   },
   plugins: [new MiniCssExtractPlugin()],
 };

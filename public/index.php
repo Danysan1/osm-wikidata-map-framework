@@ -63,7 +63,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
         $analyticsId = (string)$conf->get("google_analytics_id"); ?>
         <script defer src="<?= "https://www.googletagmanager.com/gtag/js?id=$analyticsId"; ?>"></script>
     <?php } ?>
-    <script defer src="./dist/main.js" type="application/javascript"></script>
+    <script defer src="./<?=glob("dist/main-*.js")[0];?>" type="application/javascript"></script>
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
     <meta property="og:type" content="website" />
