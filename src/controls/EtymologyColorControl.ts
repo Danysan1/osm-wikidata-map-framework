@@ -97,12 +97,18 @@ class EtymologyColorControl extends DropdownControl {
                 bounds = this.getMap()?.getBounds();
 
             if (colorSchemeID === 'source') {
+                this._lastColorSchemeID = colorSchemeID;
+                this._lastWikidataIDs = undefined;
+                this._lastQueryString = undefined;
                 this.loadSourceChartData();
             } else if (statsQueries[colorSchemeID]) {
+                this._lastQueryString = undefined;
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
                     this.showDropdown();
             } else if (bounds && colorScheme?.urlCode) {
+                this._lastColorSchemeID = colorSchemeID;
+                this._lastWikidataIDs = undefined;
                 this.downloadChartDataFromBackend(bounds, colorScheme, source);
                 if (event)
                     this.showDropdown();
@@ -162,11 +168,18 @@ class EtymologyColorControl extends DropdownControl {
             debugLog("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = wikidataIDs;
-            new StatsService().fetchStats(wikidataIDs, colorSchemeID).then(
-                stats => this.setChartStats(stats)
-            ).catch(
-                e => { console.error("XHR error", e); this.removeChart(); }
-            );
+            try {
+                const stats = await new StatsService().fetchStats(wikidataIDs, colorSchemeID);
+                if (stats.length > 0) {
+                    this.setChartStats(stats)
+                } else {
+                    throw new Error("Empty stats result");
+                }
+            } catch (e) {
+                console.error("Stats fetch error", e);
+                this._lastWikidataIDs = undefined;
+                this.removeChart();
+            }
         }
     }
 
