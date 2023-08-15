@@ -66,7 +66,7 @@ function prepareHTML(Configuration $conf)
 	}
 
 	$mapboxScriptSrcs = '';
-	$mapboxConnectSrcs = '';
+	$mapboxConnectSrcs = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/';
 	if ($conf->has("mapbox_token")) {
 		$mapboxScriptSrcs = 'https://api.mapbox.com';
 		$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';

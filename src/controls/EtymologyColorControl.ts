@@ -155,10 +155,11 @@ class EtymologyColorControl extends DropdownControl {
             ?.filter(id => typeof id === 'string')
             ?.sort() as string[] || [];
         if (wikidataIDs.length === 0) {
-            console.info("Skipping stats update for 0 IDs");
+            debugLog("Skipping stats update for 0 IDs");
         } else if (colorSchemeID === this._lastColorSchemeID && wikidataIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => wikidataIDs[i] === id)) {
-            console.info("Skipping stats update for already downloaded IDs");
+            debugLog("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
         } else {
+            debugLog("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = wikidataIDs;
             new StatsService().fetchStats(wikidataIDs, colorSchemeID).then(
