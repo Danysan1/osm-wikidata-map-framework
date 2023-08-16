@@ -23,7 +23,7 @@ App\loadWikidataRelatedEntities(
     [ // https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#how-to-contribute-to-the-etymology-data
         "Q16979650", "Q14073567", "Q58603552", // sibling group / duo / trio
         "Q10648343", "Q16145172", "Q1826687", "Q99241914", // duo / trio / quartet / quintet
-        "Q9212979", // musical duo
+        "Q9212979", "Q85942930", // artistic duo
         "Q16334295", "Q109288828", "Q109288863", // group of humans
         "Q219160", // couple
         "Q3046146", // married couple

@@ -46,6 +46,7 @@ Q154849,Grand Duchy of Tuscany,Italy,#007FFF
 Q153529,Duchy of Milan,Italy,#007FFF
 Q174306,Republic of Genoa,Italy,#007FFF
 Q180393,Kingdom of the Two Sicilies,Italy,#007FFF
+Q2252973,Duchy of Florence,Italy,#007FFF
 Q39,Switzerland,Switzerland,#da291c
 Q40,Austria,Austria,#ed2939
 Q131964,Austrian Empire,Austria,#ed2939
@@ -106,6 +107,7 @@ Q237,Vatican City,Vatican City,#FFE000
 Q170174,Papal States,Vatican City,#FFE000
 Q241,Cuba,Cuba,#002a8f
 Q298,Chile,Chile,#0039a6
+Q334,Singapore,Singapore,#C73b3C
 Q403,Serbia,Serbia,#0c4076
 Q684030,Principality of Serbia,Serbia,#0c4076
 Q241748,Kingdom of Serbia,Serbia,#0c4076
@@ -122,7 +124,10 @@ Q63158027,Qajar Iran,Iran,#da0000
 Q107258515,Pahlavi Iran,Iran,#da0000
 Q18234383,Safavid Iran,Iran,#da0000
 Q801,Israel,Israel,#0038a8
+Q833,Malaysia,Malaysia,#FFD100
 Q865,Taiwan,Taiwan,#ff0000
+Q869,Thailand,Thailand,#00247D
+Q1081620,Siam,Thailand,#00247D
 Q928,Philippines,Philippines,#0038a8
 Q15180,Soviet Union,Soviet Union,#ff0000
 Q1747689,Ancient Rome,Ancient Rome,#ff0000
