@@ -11,6 +11,11 @@ $conf = new IniEnvConfiguration();
 header("Cache-Control: no-cache", true);
 prepareHTML($conf);
 
+if (!$conf->has("i18n_override")) {
+    http_response_code(500);
+    die('<html><body>Missing i18n_override configuration</body></html>');
+}
+
 if (!empty($_GET["check_db"]) && $conf->getBool("db_enable")) {
     try {
         new PostGIS_PDO($conf);
