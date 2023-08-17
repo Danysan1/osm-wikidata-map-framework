@@ -1,5 +1,5 @@
 import { debugLog } from "./config";
-import { DatePrecision, Etymology, ImageResponse } from "./feature.model";
+import { DatePrecision, EtymologyDetails, ImageResponse } from "./feature.model";
 import { translateContent, translateAnchorTitle } from "./i18n";
 import { imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
@@ -44,7 +44,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     return out;
 }
 
-export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
+export function etymologyToDomElement(ety: EtymologyDetails, currentZoom = 12.5): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
     if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");

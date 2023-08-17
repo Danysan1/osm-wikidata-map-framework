@@ -9,9 +9,8 @@ import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
-import { Etymology, FeatureProperties } from '../feature.model';
 import { StatsService, statsQueries } from '../services/StatsService';
-import { EtymologyStat } from '../generated';
+import { Etymology, EtymologyFeatureProperties, EtymologyStat } from '../generated';
 
 /**
  * Let the user choose a color scheme
@@ -121,7 +120,7 @@ class EtymologyColorControl extends DropdownControl {
         this.getMap()
             ?.querySourceFeatures("wikidata_source")
             ?.forEach(feature => {
-                const props = feature.properties as FeatureProperties,
+                const props = feature.properties as EtymologyFeatureProperties,
                     rawEtymologies = props.etymologies,
                     etymologies = (typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) : rawEtymologies) as Etymology[];
 

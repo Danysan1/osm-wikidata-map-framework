@@ -254,6 +254,6 @@ Data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in
 
 #### Output
 
-The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in the interfaces [`FeatureProperties`](src/FeatureElement.ts#L7), [`Etymology`](src/EtymologyElement.ts#L4) and [`ImageResponse`](src/ImageElement.ts#L3).
+The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in [`openapi-owmf.yaml`](openapi-owmf.yaml).
 
 The content of the output of [stats.php](public/stats.php) is defined in the [`EtymologyStat`](src/EtymologyColorControl.ts#L47) interface.

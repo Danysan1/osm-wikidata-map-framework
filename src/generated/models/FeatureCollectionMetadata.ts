@@ -24,19 +24,19 @@ export interface FeatureCollectionMetadata {
      * @type {number}
      * @memberof FeatureCollectionMetadata
      */
-    etymologyCount?: number;
+    etymology_count?: number;
     /**
      * Wikidata SPARQL query used to fetch the features
      * @type {string}
      * @memberof FeatureCollectionMetadata
      */
-    wikidataQuery?: string;
+    wikidata_query?: string;
     /**
      * OverpassQL query used to fetch the features
      * @type {string}
      * @memberof FeatureCollectionMetadata
      */
-    overpassQuery?: string;
+    overpass_query?: string;
 }
 
 /**
@@ -58,9 +58,9 @@ export function FeatureCollectionMetadataFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
-        'etymologyCount': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
-        'wikidataQuery': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
-        'overpassQuery': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
+        'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
+        'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
+        'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
     };
 }
 
@@ -73,9 +73,9 @@ export function FeatureCollectionMetadataToJSON(value?: FeatureCollectionMetadat
     }
     return {
         
-        'etymology_count': value.etymologyCount,
-        'wikidata_query': value.wikidataQuery,
-        'overpass_query': value.overpassQuery,
+        'etymology_count': value.etymology_count,
+        'wikidata_query': value.wikidata_query,
+        'overpass_query': value.overpass_query,
     };
 }
 

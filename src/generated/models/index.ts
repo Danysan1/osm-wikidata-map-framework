@@ -9,7 +9,7 @@ export * from './ErrorDetails';
 export * from './Etymology';
 export * from './EtymologyFeature';
 export * from './EtymologyFeatureDetails';
-export * from './EtymologyFeatureDetailsProperties';
+export * from './EtymologyFeatureProperties';
 export * from './EtymologyResponse';
 export * from './EtymologyResponseFeatures';
 export * from './EtymologyStat';

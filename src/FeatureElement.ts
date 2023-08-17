@@ -10,15 +10,16 @@ import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
 import { logErrorMessage } from "./monitoring";
-import { Etymology, EtymologyDetails, FeatureProperties } from './feature.model';
+import { EtymologyDetails } from './feature.model';
+import { Etymology, EtymologyFeatureDetailsProperties } from './generated';
 
 export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
 
-    const properties = feature.properties as FeatureProperties,
-        etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as Etymology[] : properties?.etymologies,
+    const properties = feature.properties as EtymologyFeatureDetailsProperties,
+        etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
         detail_container = detail_template.content.cloneNode(true) as HTMLElement,
         osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
     //detail_container.dataset.el_id = properties.el_id?.toString();
@@ -190,7 +191,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     return detail_container;
 }
 
-function showEtymologies(properties: FeatureProperties, etymologies: Etymology[], etymologies_container: HTMLElement, currentZoom: number) {
+function showEtymologies(properties: EtymologyFeatureDetailsProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
     // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
     etymologies.sort((a, b) => (a.wikidata?.length || 0) - (b.wikidata?.length || 0)).forEach((ety) => {
         if (ety?.wikidata) {

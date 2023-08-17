@@ -20,95 +20,77 @@ import { exists, mapValues } from '../runtime';
  */
 export interface Etymology {
     /**
-     * Q-ID of the referenced Wikidata entity
-     * @type {string}
-     * @memberof Etymology
-     */
-    wikidata: string;
-    /**
-     * 
-     * @type {boolean}
-     * @memberof Etymology
-     */
-    fromOsm?: boolean;
-    /**
-     * 
-     * @type {string}
-     * @memberof Etymology
-     */
-    fromOsmType?: string;
-    /**
-     * 
+     * Internal ID for the etymology relation (unique within the request but may vary after DB updates)
      * @type {number}
      * @memberof Etymology
      */
-    fromOsmId?: number;
+    et_id?: number;
     /**
-     * 
+     * Whether OpenStreetMap is the original source of this etymology
      * @type {boolean}
      * @memberof Etymology
      */
-    fromWikidata?: boolean;
+    from_osm?: boolean;
     /**
-     * Q-ID of the source Wikidata entity
+     * Type (node/way/relation) of the source OpenStreetMap element
      * @type {string}
      * @memberof Etymology
      */
-    fromWikidataEntity?: string;
+    from_osm_type?: string;
     /**
-     * P-ID of the source Wikidata property
+     * ID (unique only within its type) of the source OpenStreetMap element
+     * @type {number}
+     * @memberof Etymology
+     */
+    from_osm_id?: number;
+    /**
+     * Whether Wikidata is the original source of this etymology
+     * @type {boolean}
+     * @memberof Etymology
+     */
+    from_wikidata?: boolean;
+    /**
+     * Q-ID of the source Wikidata entity this etymology has been extracted from
      * @type {string}
      * @memberof Etymology
      */
-    fromWikidataProp?: string;
+    from_wikidata_entity?: string;
     /**
-     * Q-ID of the Wikidata element representing the class this element is instance of
+     * P-ID of the Wikidata property that links from the source Wikidata entity to this etymology entity
      * @type {string}
      * @memberof Etymology
      */
-    instanceID?: string;
+    from_wikidata_prop?: string;
     /**
-     * Q-ID of the Wikidata element representing the gender of this element
+     * Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
      * @type {string}
      * @memberof Etymology
      */
-    genderID?: string;
+    from_parts_of_wikidata_cod?: string;
     /**
-     * Q-ID of the Wikidata element representing the country of this element
-     * @type {string}
+     * Whether this etymology has been obtained through propagation
+     * @type {boolean}
      * @memberof Etymology
      */
-    countryID?: string;
+    propagated?: boolean;
     /**
      * Start date of this item
      * @type {string}
      * @memberof Etymology
      */
-    startDate?: string;
+    start_date?: string;
     /**
-     * End date of this item
+     * Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
+     * @type {number}
+     * @memberof Etymology
+     */
+    wd_id?: number;
+    /**
+     * Q-ID of this etymology Wikidata item
      * @type {string}
      * @memberof Etymology
      */
-    endDate?: string;
-    /**
-     * Birth date of this item
-     * @type {string}
-     * @memberof Etymology
-     */
-    birthDate?: string;
-    /**
-     * Death date of this item
-     * @type {string}
-     * @memberof Etymology
-     */
-    deathDate?: string;
-    /**
-     * Point in time where this event happened
-     * @type {string}
-     * @memberof Etymology
-     */
-    eventDate?: string;
+    wikidata?: string;
 }
 
 /**
@@ -116,7 +98,6 @@ export interface Etymology {
  */
 export function instanceOfEtymology(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "wikidata" in value;
 
     return isInstance;
 }
@@ -131,21 +112,18 @@ export function EtymologyFromJSONTyped(json: any, ignoreDiscriminator: boolean):
     }
     return {
         
-        'wikidata': json['wikidata'],
-        'fromOsm': !exists(json, 'from_osm') ? undefined : json['from_osm'],
-        'fromOsmType': !exists(json, 'from_osm_type') ? undefined : json['from_osm_type'],
-        'fromOsmId': !exists(json, 'from_osm_id') ? undefined : json['from_osm_id'],
-        'fromWikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
-        'fromWikidataEntity': !exists(json, 'from_wikidata_entity') ? undefined : json['from_wikidata_entity'],
-        'fromWikidataProp': !exists(json, 'from_wikidata_prop') ? undefined : json['from_wikidata_prop'],
-        'instanceID': !exists(json, 'instanceID') ? undefined : json['instanceID'],
-        'genderID': !exists(json, 'genderID') ? undefined : json['genderID'],
-        'countryID': !exists(json, 'countryID') ? undefined : json['countryID'],
-        'startDate': !exists(json, 'start_date') ? undefined : json['start_date'],
-        'endDate': !exists(json, 'end_date') ? undefined : json['end_date'],
-        'birthDate': !exists(json, 'birth_date') ? undefined : json['birth_date'],
-        'deathDate': !exists(json, 'death_date') ? undefined : json['death_date'],
-        'eventDate': !exists(json, 'event_date') ? undefined : json['event_date'],
+        'et_id': !exists(json, 'et_id') ? undefined : json['et_id'],
+        'from_osm': !exists(json, 'from_osm') ? undefined : json['from_osm'],
+        'from_osm_type': !exists(json, 'from_osm_type') ? undefined : json['from_osm_type'],
+        'from_osm_id': !exists(json, 'from_osm_id') ? undefined : json['from_osm_id'],
+        'from_wikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
+        'from_wikidata_entity': !exists(json, 'from_wikidata_entity') ? undefined : json['from_wikidata_entity'],
+        'from_wikidata_prop': !exists(json, 'from_wikidata_prop') ? undefined : json['from_wikidata_prop'],
+        'from_parts_of_wikidata_cod': !exists(json, 'from_parts_of_wikidata_cod') ? undefined : json['from_parts_of_wikidata_cod'],
+        'propagated': !exists(json, 'propagated') ? undefined : json['propagated'],
+        'start_date': !exists(json, 'start_date') ? undefined : json['start_date'],
+        'wd_id': !exists(json, 'wd_id') ? undefined : json['wd_id'],
+        'wikidata': !exists(json, 'wikidata') ? undefined : json['wikidata'],
     };
 }
 
@@ -158,21 +136,18 @@ export function EtymologyToJSON(value?: Etymology | null): any {
     }
     return {
         
+        'et_id': value.et_id,
+        'from_osm': value.from_osm,
+        'from_osm_type': value.from_osm_type,
+        'from_osm_id': value.from_osm_id,
+        'from_wikidata': value.from_wikidata,
+        'from_wikidata_entity': value.from_wikidata_entity,
+        'from_wikidata_prop': value.from_wikidata_prop,
+        'from_parts_of_wikidata_cod': value.from_parts_of_wikidata_cod,
+        'propagated': value.propagated,
+        'start_date': value.start_date,
+        'wd_id': value.wd_id,
         'wikidata': value.wikidata,
-        'from_osm': value.fromOsm,
-        'from_osm_type': value.fromOsmType,
-        'from_osm_id': value.fromOsmId,
-        'from_wikidata': value.fromWikidata,
-        'from_wikidata_entity': value.fromWikidataEntity,
-        'from_wikidata_prop': value.fromWikidataProp,
-        'instanceID': value.instanceID,
-        'genderID': value.genderID,
-        'countryID': value.countryID,
-        'start_date': value.startDate,
-        'end_date': value.endDate,
-        'birth_date': value.birthDate,
-        'death_date': value.deathDate,
-        'event_date': value.eventDate,
     };
 }
 

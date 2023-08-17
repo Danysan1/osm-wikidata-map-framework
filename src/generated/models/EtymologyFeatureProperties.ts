@@ -13,151 +13,151 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { Etymology } from './Etymology';
+import type { Array<Etymology> | string } from './Array&lt;Etymology&gt; | string';
 import {
-    EtymologyFromJSON,
-    EtymologyFromJSONTyped,
-    EtymologyToJSON,
-} from './Etymology';
+    Array&lt;Etymology&gt; | stringFromJSON,
+    Array&lt;Etymology&gt; | stringFromJSONTyped,
+    Array&lt;Etymology&gt; | stringToJSON,
+} from './Array&lt;Etymology&gt; | string';
 
 /**
  * 
  * @export
- * @interface EtymologyFeatureDetailsProperties
+ * @interface EtymologyFeatureProperties
  */
-export interface EtymologyFeatureDetailsProperties {
+export interface EtymologyFeatureProperties {
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     country_color?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     alt_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     commons?: string;
     /**
      * 
      * @type {number}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     el_id?: number;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     end_century_color?: string;
     /**
      * 
-     * @type {Array<Etymology>}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @type {Array<Etymology> | string}
+     * @memberof EtymologyFeatureProperties
      */
-    etymologies: Array<Etymology>;
+    etymologies: Array<Etymology> | string | null;
     /**
      * 
      * @type {boolean}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     from_osm?: boolean;
     /**
      * 
      * @type {boolean}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     from_wikidata?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     gender_color?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     name: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     official_name?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     osm_type?: string;
     /**
      * 
      * @type {number}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     osm_id?: number;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     picture?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     source_color?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     start_century_color?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     text_etymology?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     text_etymology_descr?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     type_color?: string;
     /**
      * Q-ID of the Wikidata entity for this feature
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     wikidata?: string;
     /**
      * 
      * @type {string}
-     * @memberof EtymologyFeatureDetailsProperties
+     * @memberof EtymologyFeatureProperties
      */
     wikipedia?: string;
 }
 
 /**
- * Check if a given object implements the EtymologyFeatureDetailsProperties interface.
+ * Check if a given object implements the EtymologyFeatureProperties interface.
  */
-export function instanceOfEtymologyFeatureDetailsProperties(value: object): boolean {
+export function instanceOfEtymologyFeatureProperties(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "etymologies" in value;
     isInstance = isInstance && "name" in value;
@@ -165,11 +165,11 @@ export function instanceOfEtymologyFeatureDetailsProperties(value: object): bool
     return isInstance;
 }
 
-export function EtymologyFeatureDetailsPropertiesFromJSON(json: any): EtymologyFeatureDetailsProperties {
-    return EtymologyFeatureDetailsPropertiesFromJSONTyped(json, false);
+export function EtymologyFeaturePropertiesFromJSON(json: any): EtymologyFeatureProperties {
+    return EtymologyFeaturePropertiesFromJSONTyped(json, false);
 }
 
-export function EtymologyFeatureDetailsPropertiesFromJSONTyped(json: any, ignoreDiscriminator: boolean): EtymologyFeatureDetailsProperties {
+export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscriminator: boolean): EtymologyFeatureProperties {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -180,7 +180,7 @@ export function EtymologyFeatureDetailsPropertiesFromJSONTyped(json: any, ignore
         'commons': !exists(json, 'commons') ? undefined : json['commons'],
         'el_id': !exists(json, 'el_id') ? undefined : json['el_id'],
         'end_century_color': !exists(json, 'end_century_color') ? undefined : json['end_century_color'],
-        'etymologies': ((json['etymologies'] as Array<any>).map(EtymologyFromJSON)),
+        'etymologies': Array&lt;Etymology&gt; | stringFromJSON(json['etymologies']),
         'from_osm': !exists(json, 'from_osm') ? undefined : json['from_osm'],
         'from_wikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
         'gender_color': !exists(json, 'gender_color') ? undefined : json['gender_color'],
@@ -199,7 +199,7 @@ export function EtymologyFeatureDetailsPropertiesFromJSONTyped(json: any, ignore
     };
 }
 
-export function EtymologyFeatureDetailsPropertiesToJSON(value?: EtymologyFeatureDetailsProperties | null): any {
+export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeatureProperties | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -213,7 +213,7 @@ export function EtymologyFeatureDetailsPropertiesToJSON(value?: EtymologyFeature
         'commons': value.commons,
         'el_id': value.el_id,
         'end_century_color': value.end_century_color,
-        'etymologies': ((value.etymologies as Array<any>).map(EtymologyToJSON)),
+        'etymologies': Array&lt;Etymology&gt; | stringToJSON(value.etymologies),
         'from_osm': value.from_osm,
         'from_wikidata': value.from_wikidata,
         'gender_color': value.gender_color,

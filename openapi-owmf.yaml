@@ -555,62 +555,49 @@ components:
 
     Etymology:
       type: object
-      required:
-        - wikidata
+      title: EtymologyBaseData
       properties:
-        wikidata:
-          type: string
-          description: Q-ID of the referenced Wikidata entity
-          example: Q42
+        et_id:
+          type: integer
+          description: Internal ID for the etymology relation (unique within the request but may vary after DB updates)
         from_osm:
           type: boolean
+          description: Whether OpenStreetMap is the original source of this etymology
         from_osm_type:
           type: string
+          description: Type (node/way/relation) of the source OpenStreetMap element
           example: node
         from_osm_id:
           type: integer
+          description: ID (unique only within its type) of the source OpenStreetMap element
         from_wikidata:
           type: boolean
+          description: Whether Wikidata is the original source of this etymology
         from_wikidata_entity:
           type: string
-          description: Q-ID of the source Wikidata entity
+          description: Q-ID of the source Wikidata entity this etymology has been extracted from
           example: Q1
         from_wikidata_prop:
           type: string
-          description: P-ID of the source Wikidata property
+          description: P-ID of the Wikidata property that links from the source Wikidata entity to this etymology entity
           example: P123
-        instanceID:
+        from_parts_of_wikidata_cod:
           type: string
-          description: Q-ID of the Wikidata element representing the class this element is instance of
-          example: Q5
-        genderID:
-          type: string
-          description: Q-ID of the Wikidata element representing the gender of this element
-          example: Q6581097
-        countryID:
-          type: string
-          description: Q-ID of the Wikidata element representing the country of this element
-          example: Q38
+          description: Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
+        propagated:
+          type: boolean
+          description: Whether this etymology has been obtained through propagation
         start_date:
           type: string
           description: Start date of this item
           example: "2020-01-01"
-        end_date:
+        wd_id:
+          type: integer
+          description: Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
+        wikidata:
           type: string
-          description: End date of this item
-          example: "2020-01-01"
-        birth_date:
-          type: string
-          description: Birth date of this item
-          example: "2020-01-01"
-        death_date:
-          type: string
-          description: Death date of this item
-          example: "2020-01-01"
-        event_date:
-          type: string
-          description: Point in time where this event happened
-          example: "2020-01-01"
+          description: Q-ID of this etymology Wikidata item
+          example: Q42
 
     EtymologyFeature:
       allOf:
@@ -624,6 +611,7 @@ components:
               type: string
             properties:
               type: object
+              title: EtymologyFeatureProperties
               required:
                 - name
                 - etymologies
@@ -642,9 +630,13 @@ components:
                   type: string
                   example: "#33ff66"
                 etymologies:
-                  type: array
-                  items:
-                    $ref: "#/components/schemas/Etymology"
+                  oneOf:
+                    - type: array
+                      title: EtymologyFeatureEtymologies
+                      items:
+                        $ref: "#/components/schemas/Etymology"
+                    - type: string
+                      description: Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
                 from_osm:
                   type: boolean
                 from_wikidata:

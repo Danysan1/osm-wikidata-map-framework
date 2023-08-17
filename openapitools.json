@@ -7,7 +7,10 @@
       "owmf": {
         "glob": "./*.yaml",
         "output": "./src/generated",
-        "generatorName": "typescript-fetch"
+        "generatorName": "typescript-fetch",
+        "additionalProperties": {
+          "modelPropertyNaming": "original"
+        }
       }
     }
   }

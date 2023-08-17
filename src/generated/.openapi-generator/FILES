@@ -13,7 +13,7 @@ models/ErrorDetails.ts
 models/Etymology.ts
 models/EtymologyFeature.ts
 models/EtymologyFeatureDetails.ts
-models/EtymologyFeatureDetailsProperties.ts
+models/EtymologyFeatureProperties.ts
 models/EtymologyResponse.ts
 models/EtymologyResponseFeatures.ts
 models/EtymologyStat.ts

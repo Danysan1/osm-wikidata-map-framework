@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { EtymologyFeatureDetailsProperties } from './EtymologyFeatureDetailsProperties';
+import type { EtymologyFeatureProperties } from './EtymologyFeatureProperties';
 import {
-    EtymologyFeatureDetailsPropertiesFromJSON,
-    EtymologyFeatureDetailsPropertiesFromJSONTyped,
-    EtymologyFeatureDetailsPropertiesToJSON,
-} from './EtymologyFeatureDetailsProperties';
+    EtymologyFeaturePropertiesFromJSON,
+    EtymologyFeaturePropertiesFromJSONTyped,
+    EtymologyFeaturePropertiesToJSON,
+} from './EtymologyFeatureProperties';
 import type { GeoJSONGeometry } from './GeoJSONGeometry';
 import {
     GeoJSONGeometryFromJSON,
@@ -58,10 +58,10 @@ export interface EtymologyFeature {
     bbox?: Array<number>;
     /**
      * 
-     * @type {EtymologyFeatureDetailsProperties}
+     * @type {EtymologyFeatureProperties}
      * @memberof EtymologyFeature
      */
-    properties?: EtymologyFeatureDetailsProperties;
+    properties?: EtymologyFeatureProperties;
 }
 
 
@@ -100,7 +100,7 @@ export function EtymologyFeatureFromJSONTyped(json: any, ignoreDiscriminator: bo
         'id': json['id'],
         'geometry': GeoJSONGeometryFromJSON(json['geometry']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
-        'properties': !exists(json, 'properties') ? undefined : EtymologyFeatureDetailsPropertiesFromJSON(json['properties']),
+        'properties': !exists(json, 'properties') ? undefined : EtymologyFeaturePropertiesFromJSON(json['properties']),
     };
 }
 
@@ -117,7 +117,7 @@ export function EtymologyFeatureToJSON(value?: EtymologyFeature | null): any {
         'id': value.id,
         'geometry': GeoJSONGeometryToJSON(value.geometry),
         'bbox': value.bbox,
-        'properties': EtymologyFeatureDetailsPropertiesToJSON(value.properties),
+        'properties': EtymologyFeaturePropertiesToJSON(value.properties),
     };
 }
 
