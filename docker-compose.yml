@@ -91,7 +91,7 @@ x-airflow-common:
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
     AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${db_user}:${db_password}@${db_host}:5432/${db_database} # connection to the configured OWMF PostGIS DB
     AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${db_user}:${db_password}@${db_host}:5432/planet # connection to the configured OWMF PostGIS DB
-    AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}
+    AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}/sparql
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}
     AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key:-}

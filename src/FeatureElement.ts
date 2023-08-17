@@ -11,14 +11,14 @@ import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
 import { logErrorMessage } from "./monitoring";
 import { EtymologyDetails } from './feature.model';
-import { Etymology, EtymologyFeatureDetailsProperties } from './generated';
+import { Etymology, EtymologyFeatureProperties } from './generated/owmf';
 
 export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
 
-    const properties = feature.properties as EtymologyFeatureDetailsProperties,
+    const properties = feature.properties as EtymologyFeatureProperties,
         etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
         detail_container = detail_template.content.cloneNode(true) as HTMLElement,
         osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
@@ -191,7 +191,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     return detail_container;
 }
 
-function showEtymologies(properties: EtymologyFeatureDetailsProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
+function showEtymologies(properties: EtymologyFeatureProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
     // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
     etymologies.sort((a, b) => (a.wikidata?.length || 0) - (b.wikidata?.length || 0)).forEach((ety) => {
         if (ety?.wikidata) {

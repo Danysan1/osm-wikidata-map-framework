@@ -1,0 +1,9 @@
+.openapi-generator-ignore
+apis/SparqlApi.ts
+apis/index.ts
+index.ts
+models/SparqlResponse.ts
+models/SparqlResponseHead.ts
+models/SparqlResponseResults.ts
+models/index.ts
+runtime.ts

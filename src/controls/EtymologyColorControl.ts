@@ -10,7 +10,7 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
 import { StatsService, statsQueries } from '../services/StatsService';
-import { Etymology, EtymologyFeatureProperties, EtymologyStat } from '../generated';
+import { Etymology, EtymologyFeatureProperties, EtymologyStat } from '../generated/owmf';
 
 /**
  * Let the user choose a color scheme

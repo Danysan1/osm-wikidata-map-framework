@@ -16,7 +16,7 @@ class BaseWikidataConfig implements WikidataConfig
 
     public function __construct(Configuration $conf)
     {
-        $this->endpoint = (string)$conf->get('wikidata_endpoint');
+        $this->endpoint = (string)$conf->get('wikidata_endpoint') . "/sparql";
 
         $maxMapElements = $conf->has("max_map_elements") ? (int)$conf->get("max_map_elements") : null;
         if ($maxMapElements !== null && $maxMapElements <= 0) {

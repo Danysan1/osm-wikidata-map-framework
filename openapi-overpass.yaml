@@ -18,13 +18,17 @@ paths:
         - overpass
       summary: Run Overpass QL query via POST
       operationId: post_overpass_query
-      parameters:
-        - name: query
-          in: query
-          description: The Overpass QL query
-          required: true
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - "data"
+              properties:
+                data:
+                  type: string
+                  description: The Overpass QL query
       responses:
         '200':
           description: The Overpass QL query has been processed successfully.

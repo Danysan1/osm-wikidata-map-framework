@@ -1,8 +1,17 @@
 import { getConfig } from "../config";
 import detailsQuery from "./query/etymology-details.sparql";
 import { EtymologyDetails } from "../feature.model";
+import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
 
 export class WikidataService {
+    private _api;
+
+    public constructor() {
+        this._api = new SparqlApi(new Configuration({
+            basePath: getConfig("wikidata_endpoint") || "https://query.wikidata.org"
+        }));
+    }
+
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
         const url = `https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/${wikidataID}/statements?property=P18`,
             response = await fetch(url),
@@ -14,24 +23,23 @@ export class WikidataService {
         }
     }
 
-    async etymologyIDsQuery(etymologyIDs: string[], sparqlQueryTemplate: string): Promise<any> {
+    async etymologyIDsQuery(etymologyIDs: string[], sparqlQueryTemplate: string): Promise<SparqlResponse> {
         const defaultLanguage = getConfig("default_language") || 'en',
             language = document.documentElement.lang.split('-').at(0),
             wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
-            sparqlQuery = sparqlQueryTemplate.replaceAll('${wikidataValues}', wikidataValues).replaceAll('${language}', language || '').replaceAll('${defaultLanguage}', defaultLanguage),
-            baseURL = getConfig("wikidata_endpoint") || "https://query.wikidata.org/sparql",
-            response = await fetch(baseURL, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams({ format: "json", query: sparqlQuery }).toString(),
-            });
-        return response.json();
+            sparqlQuery = sparqlQueryTemplate.replaceAll('${wikidataValues}', wikidataValues).replaceAll('${language}', language || '').replaceAll('${defaultLanguage}', defaultLanguage);
+        return await this._api.postSparqlQuery({ format: "json", query: sparqlQuery });
     }
 
     async fetchEtymologyDetails(etymologyIDs: string[]): Promise<EtymologyDetails[]> {
         const res = await this.etymologyIDsQuery(etymologyIDs, detailsQuery);
 
-        return res?.results?.bindings?.map((x: any): EtymologyDetails => {
+        if (!res?.results?.bindings?.length) {
+            console.warn("fetchEtymologyDetails: no results");
+            return [];
+        }
+
+        return res.results.bindings.map((x: any): EtymologyDetails => {
             const wdURI = x.wikidata.value as string,
                 wdQID = wdURI.replace("http://www.wikidata.org/entity/", "");
             return {

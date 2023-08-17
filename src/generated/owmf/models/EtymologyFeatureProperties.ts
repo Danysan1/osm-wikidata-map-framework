@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { Array<Etymology> | string } from './Array&lt;Etymology&gt; | string';
+import type { Etymology } from './Etymology';
 import {
-    Array&lt;Etymology&gt; | stringFromJSON,
-    Array&lt;Etymology&gt; | stringFromJSONTyped,
-    Array&lt;Etymology&gt; | stringToJSON,
-} from './Array&lt;Etymology&gt; | string';
+    EtymologyFromJSON,
+    EtymologyFromJSONTyped,
+    EtymologyToJSON,
+} from './Etymology';
 
 /**
  * 
@@ -58,10 +58,10 @@ export interface EtymologyFeatureProperties {
     end_century_color?: string;
     /**
      * 
-     * @type {Array<Etymology> | string}
+     * @type {Array<Etymology>}
      * @memberof EtymologyFeatureProperties
      */
-    etymologies: Array<Etymology> | string | null;
+    etymologies: Array<Etymology>;
     /**
      * 
      * @type {boolean}
@@ -180,7 +180,7 @@ export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscrim
         'commons': !exists(json, 'commons') ? undefined : json['commons'],
         'el_id': !exists(json, 'el_id') ? undefined : json['el_id'],
         'end_century_color': !exists(json, 'end_century_color') ? undefined : json['end_century_color'],
-        'etymologies': Array&lt;Etymology&gt; | stringFromJSON(json['etymologies']),
+        'etymologies': ((json['etymologies'] as Array<any>).map(EtymologyFromJSON)),
         'from_osm': !exists(json, 'from_osm') ? undefined : json['from_osm'],
         'from_wikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
         'gender_color': !exists(json, 'gender_color') ? undefined : json['gender_color'],
@@ -213,7 +213,7 @@ export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeaturePropert
         'commons': value.commons,
         'el_id': value.el_id,
         'end_century_color': value.end_century_color,
-        'etymologies': Array&lt;Etymology&gt; | stringToJSON(value.etymologies),
+        'etymologies': ((value.etymologies as Array<any>).map(EtymologyToJSON)),
         'from_osm': value.from_osm,
         'from_wikidata': value.from_wikidata,
         'gender_color': value.gender_color,

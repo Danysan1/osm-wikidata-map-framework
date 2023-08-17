@@ -14,6 +14,13 @@
 
 
 import * as runtime from '../runtime';
+import type {
+  SparqlResponse,
+} from '../models';
+import {
+    SparqlResponseFromJSON,
+    SparqlResponseToJSON,
+} from '../models';
 
 export interface GetSparqlQueryRequest {
     query: string;
@@ -21,6 +28,7 @@ export interface GetSparqlQueryRequest {
 
 export interface PostSparqlQueryRequest {
     query: string;
+    format?: string;
 }
 
 /**
@@ -65,33 +73,52 @@ export class SparqlApi extends runtime.BaseAPI {
     /**
      * Run SPARQL query via POST
      */
-    async postSparqlQueryRaw(requestParameters: PostSparqlQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
+    async postSparqlQueryRaw(requestParameters: PostSparqlQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SparqlResponse>> {
         if (requestParameters.query === null || requestParameters.query === undefined) {
             throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling postSparqlQuery.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'application/x-www-form-urlencoded' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
         }
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        if (requestParameters.query !== undefined) {
+            formParams.append('query', requestParameters.query as any);
+        }
+
+        if (requestParameters.format !== undefined) {
+            formParams.append('format', requestParameters.format as any);
+        }
 
         const response = await this.request({
             path: `/sparql`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: formParams,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse<any>(response);
+        return new runtime.JSONApiResponse(response, (jsonValue) => SparqlResponseFromJSON(jsonValue));
     }
 
     /**
      * Run SPARQL query via POST
      */
-    async postSparqlQuery(requestParameters: PostSparqlQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<object> {
+    async postSparqlQuery(requestParameters: PostSparqlQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<SparqlResponse> {
         const response = await this.postSparqlQueryRaw(requestParameters, initOverrides);
         return await response.value();
     }

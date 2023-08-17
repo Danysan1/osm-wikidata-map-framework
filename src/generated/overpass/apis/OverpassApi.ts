@@ -16,7 +16,7 @@
 import * as runtime from '../runtime';
 
 export interface PostOverpassQueryRequest {
-    query: string;
+    data: string;
 }
 
 /**
@@ -28,23 +28,38 @@ export class OverpassApi extends runtime.BaseAPI {
      * Run Overpass QL query via POST
      */
     async postOverpassQueryRaw(requestParameters: PostOverpassQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<object>> {
-        if (requestParameters.query === null || requestParameters.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling postOverpassQuery.');
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling postOverpassQuery.');
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const consumes: runtime.Consume[] = [
+            { contentType: 'application/x-www-form-urlencoded' },
+        ];
+        // @ts-ignore: canConsumeForm may be unused
+        const canConsumeForm = runtime.canConsumeForm(consumes);
+
+        let formParams: { append(param: string, value: any): any };
+        let useForm = false;
+        if (useForm) {
+            formParams = new FormData();
+        } else {
+            formParams = new URLSearchParams();
         }
 
-        const headerParameters: runtime.HTTPHeaders = {};
+        if (requestParameters.data !== undefined) {
+            formParams.append('data', requestParameters.data as any);
+        }
 
         const response = await this.request({
             path: `/interpreter`,
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,
+            body: formParams,
         }, initOverrides);
 
         return new runtime.JSONApiResponse<any>(response);

@@ -1,4 +1,4 @@
-import { Etymology } from "./generated";
+import { Etymology } from "./generated/owmf";
 
 interface DetailedImage {
     picture: string,

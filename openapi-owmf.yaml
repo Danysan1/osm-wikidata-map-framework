@@ -630,13 +630,10 @@ components:
                   type: string
                   example: "#33ff66"
                 etymologies:
-                  oneOf:
-                    - type: array
-                      title: EtymologyFeatureEtymologies
-                      items:
-                        $ref: "#/components/schemas/Etymology"
-                    - type: string
-                      description: Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
+                  type: array
+                  title: EtymologyFeatureEtymologies
+                  items:
+                    $ref: "#/components/schemas/Etymology" # Beware: Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
                 from_osm:
                   type: boolean
                 from_wikidata:

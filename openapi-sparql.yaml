@@ -41,21 +41,55 @@ paths:
         - sparql
       summary: Run SPARQL query via POST
       operationId: post_sparql_query
-      parameters:
-        - name: query
-          in: query
-          description: The SPARQL query
-          required: true
-          schema:
-            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - "query"
+              properties:
+                query:
+                  type: string
+                  description: The SPARQL query
+                format:
+                  type: string
+                  description: The SPARQL query
       responses:
         '200':
           description: The SPARQL query has been processed successfully.
           content:
             application/sparql-results+json:
               schema:
-                type: object
+                $ref: '#/components/schemas/SparqlResponse'
+            application/sparql-results+xml:
+              schema:
+                $ref: '#/components/schemas/SparqlResponse'
         '400':
           description: Bad request or malformed query
         '500':
           description: Fatal error
+
+components:
+  schemas:
+    SparqlResponse:
+      type: object
+      properties:
+        head:
+          type: object
+          title: SparqlResponseHead
+          properties:
+            vars:
+              type: array
+              items:
+                type: string
+        results:
+          type: object
+          title: SparqlResponseResults
+          properties:
+            bindings:
+              type: array
+              title: SparqlResponseBindings
+              items:
+                type: object
+                title: SparqlResponseBinding

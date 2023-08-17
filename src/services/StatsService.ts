@@ -6,7 +6,7 @@ import startCenturyStatsQuery from "./query/start-century-stats.sparql";
 import endCenturyStatsQuery from "./query/end-century-stats.sparql";
 import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
-import { EtymologyStat } from "../generated";
+import { EtymologyStat } from "../generated/owmf";
 
 export const statsCSVPaths: Record<ColorSchemeID, string | null> = {
     blue: null,
