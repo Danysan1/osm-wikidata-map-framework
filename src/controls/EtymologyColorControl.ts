@@ -11,13 +11,7 @@ import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
 import { Etymology, FeatureProperties } from '../feature.model';
 import { StatsService, statsQueries } from '../services/StatsService';
-
-export interface EtymologyStat {
-    color?: string;
-    id?: string;
-    name?: string;
-    count?: number;
-}
+import { EtymologyStat } from '../generated';
 
 /**
  * Let the user choose a color scheme
@@ -243,11 +237,9 @@ class EtymologyColorControl extends DropdownControl {
     setChartStats(stats: EtymologyStat[]) {
         const data = structuredClone(this.baseChartData);
         stats.forEach((row: EtymologyStat) => {
-            if (row.name && row.count) {
-                data.labels?.push(row.name);
-                (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
-                data.datasets[0].data.push(row.count);
-            }
+            data.labels?.push(row.name);
+            (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
+            data.datasets[0].data.push(row.count);
         });
         this.setChartData(data);
     }

@@ -29,82 +29,48 @@ import {
 /**
  * 
  * @export
- * @interface GlobalMapFeature
+ * @interface GlobalMapFeatureDetails
  */
-export interface GlobalMapFeature {
-    /**
-     * 
-     * @type {string}
-     * @memberof GlobalMapFeature
-     */
-    type: GlobalMapFeatureTypeEnum;
-    /**
-     * 
-     * @type {number}
-     * @memberof GlobalMapFeature
-     */
-    id: number;
+export interface GlobalMapFeatureDetails {
     /**
      * 
      * @type {GeoJSONPoint}
-     * @memberof GlobalMapFeature
+     * @memberof GlobalMapFeatureDetails
      */
-    geometry: GeoJSONPoint;
-    /**
-     * Bounding box of the features
-     * @type {Array<number>}
-     * @memberof GlobalMapFeature
-     */
-    bbox?: Array<number>;
+    geometry?: GeoJSONPoint;
     /**
      * 
      * @type {GlobalMapFeatureDetailsProperties}
-     * @memberof GlobalMapFeature
+     * @memberof GlobalMapFeatureDetails
      */
     properties?: GlobalMapFeatureDetailsProperties;
 }
 
-
 /**
- * @export
+ * Check if a given object implements the GlobalMapFeatureDetails interface.
  */
-export const GlobalMapFeatureTypeEnum = {
-    Feature: 'Feature'
-} as const;
-export type GlobalMapFeatureTypeEnum = typeof GlobalMapFeatureTypeEnum[keyof typeof GlobalMapFeatureTypeEnum];
-
-
-/**
- * Check if a given object implements the GlobalMapFeature interface.
- */
-export function instanceOfGlobalMapFeature(value: object): boolean {
+export function instanceOfGlobalMapFeatureDetails(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "id" in value;
-    isInstance = isInstance && "geometry" in value;
 
     return isInstance;
 }
 
-export function GlobalMapFeatureFromJSON(json: any): GlobalMapFeature {
-    return GlobalMapFeatureFromJSONTyped(json, false);
+export function GlobalMapFeatureDetailsFromJSON(json: any): GlobalMapFeatureDetails {
+    return GlobalMapFeatureDetailsFromJSONTyped(json, false);
 }
 
-export function GlobalMapFeatureFromJSONTyped(json: any, ignoreDiscriminator: boolean): GlobalMapFeature {
+export function GlobalMapFeatureDetailsFromJSONTyped(json: any, ignoreDiscriminator: boolean): GlobalMapFeatureDetails {
     if ((json === undefined) || (json === null)) {
         return json;
     }
     return {
         
-        'type': json['type'],
-        'id': json['id'],
-        'geometry': GeoJSONPointFromJSON(json['geometry']),
-        'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
+        'geometry': !exists(json, 'geometry') ? undefined : GeoJSONPointFromJSON(json['geometry']),
         'properties': !exists(json, 'properties') ? undefined : GlobalMapFeatureDetailsPropertiesFromJSON(json['properties']),
     };
 }
 
-export function GlobalMapFeatureToJSON(value?: GlobalMapFeature | null): any {
+export function GlobalMapFeatureDetailsToJSON(value?: GlobalMapFeatureDetails | null): any {
     if (value === undefined) {
         return undefined;
     }
@@ -113,10 +79,7 @@ export function GlobalMapFeatureToJSON(value?: GlobalMapFeature | null): any {
     }
     return {
         
-        'type': value.type,
-        'id': value.id,
         'geometry': GeoJSONPointToJSON(value.geometry),
-        'bbox': value.bbox,
         'properties': GlobalMapFeatureDetailsPropertiesToJSON(value.properties),
     };
 }

@@ -72,11 +72,11 @@ export class SourceControl extends DropdownControl {
 
         if (keys) {
             if (keys.length > 1)
-                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass API"));
+                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "OSM (Overpass API)"));
 
             keys.forEach(key => {
                 const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
-                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "Overpass API"));
+                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "OSM (Overpass API)"));
             });
         }
 

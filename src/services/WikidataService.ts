@@ -1,7 +1,7 @@
 import { getConfig } from "../config";
-import { EtymologyStat } from "../controls/EtymologyColorControl";
 import detailsQuery from "./query/etymology-details.sparql";
 import { EtymologyDetails } from "../feature.model";
+import { EtymologyStat } from "../generated";
 
 export class WikidataService {
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
@@ -71,11 +71,13 @@ export class WikidataService {
         const res = await this.etymologyIDsQuery(etymologyIDs, sparqlQueryTemplate);
 
         return res?.results?.bindings?.map((x: any): EtymologyStat => {
+            if (!x.count?.value || !x.name?.value)
+                throw new Error("Invalid response from Wikidata (empty count or name)");
             return {
                 color: x.color?.value,
-                count: x.count?.value ? parseInt(x.count.value) : undefined,
+                count: parseInt(x.count.value),
                 id: x.id?.value?.replace("http://www.wikidata.org/entity/", ""),
-                name: x.name?.value,
+                name: x.name.value,
             };
         });
     }

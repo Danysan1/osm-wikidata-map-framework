@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: Overpass API
+  version: 1.0.0
+
+servers: # https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
+  - url: http://overpass-api.de/api
+    description: Main Overpass API endpoint
+    
+tags:
+  - name: overpass
+    description: Perform an Overpass QL query against the data
+
+paths:
+  /interpreter:
+    post:
+      tags:
+        - overpass
+      summary: Run Overpass QL query via POST
+      operationId: post_overpass_query
+      parameters:
+        - name: query
+          in: query
+          description: The Overpass QL query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The Overpass QL query has been processed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Bad request or malformed query
+        '500':
+          description: Fatal error

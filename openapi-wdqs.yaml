@@ -1,0 +1,61 @@
+openapi: 3.0.3
+info:
+  title: Wikidata Query Service (WDQS)
+  version: 1.0.0
+
+servers:
+  - url: https://query.wikidata.org
+    description: Wikidata Query Service
+    
+tags:
+  - name: sparql
+    description: Perform a SPARQL query against the data
+
+paths:
+  /sparql:
+    get:
+      tags:
+        - sparql
+      summary: Run SPARQL query via GET
+      operationId: get_sparql_query
+      parameters:
+        - name: query
+          in: query
+          description: The SPARQL query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The SPARQL query has been processed successfully.
+          content:
+            application/sparql-results+json:
+              schema:
+                type: object
+        '400':
+          description: Bad request or malformed SPARQL
+        '500':
+          description: Fatal error
+    post:
+      tags:
+        - sparql
+      summary: Run SPARQL query via POST
+      operationId: post_sparql_query
+      parameters:
+        - name: query
+          in: query
+          description: The SPARQL query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: The SPARQL query has been processed successfully.
+          content:
+            application/sparql-results+json:
+              schema:
+                type: object
+        '400':
+          description: Bad request or malformed query
+        '500':
+          description: Fatal error

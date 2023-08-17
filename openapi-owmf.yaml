@@ -1,6 +1,6 @@
 openapi: "3.0.3"
 info:
-  version: "1.6.1"
+  version: 1.13.0
   title: "OSM-Wikidata Map Framework API"
   description: Programmatically interact with a site based on OSM-Wikidata Map Framework
 
@@ -11,12 +11,24 @@ servers:
     description: Open Etymology Map
   - url: https://burial.dsantini.it
     description: Open Burial Map
+  - url: https://artist.dsantini.it
+    description: Open Artist Map
+    
+tags:
+  - name: clusters
+    description: Fetch clusters of features
+  - name: features
+    description: Fetch map features with their details and etymologies
+  - name: statistics
+    description: Fetch statistics about features
 
 paths:
   /global-map.php:
     get:
       operationId: get_global_map
-      summary: Get count of etymologies worldwide
+      tags:
+        - clusters
+      summary: Get clusters of etymologies worldwide
       responses:
         200:
           description: The GeoJSON response containing the features and etymologies
@@ -39,6 +51,8 @@ paths:
   /elements.php:
     get:
       operationId: get_elements
+      tags:
+        - clusters
       summary: Get centroids of features having an etymology in an area
       parameters:
         - in: query
@@ -94,6 +108,8 @@ paths:
   /etymologyMap.php:
     get:
       operationId: get_etymologies
+      tags:
+        - features
       summary: Get features and relative etymologies in an area
       parameters:
         - in: query
@@ -159,6 +175,8 @@ paths:
   /stats.php:
     get:
       operationId: get_stats
+      tags:
+        - statistics
       summary: Get statistics about objects in an area
       parameters:
         - in: query
@@ -468,6 +486,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/GeoJSONFeature"
         - type: object
+          title: GlobalMapFeatureDetails
           properties:
             geometry:
               $ref: "#/components/schemas/GeoJSONPoint"
@@ -483,6 +502,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/GeoJSONFeatureCollection"
         - type: object
+          title: GlobalMapFeatures
           properties:
             features:
               type: array

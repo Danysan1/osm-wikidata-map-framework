@@ -1,4 +1,7 @@
+apis/ClustersApi.ts
 apis/DefaultApi.ts
+apis/FeaturesApi.ts
+apis/StatisticsApi.ts
 apis/index.ts
 index.ts
 models/DetailedFeatureCollection.ts
@@ -31,10 +34,10 @@ models/GeoJSONPointAllOf.ts
 models/GeoJSONPolygon.ts
 models/GeoJSONPolygonAllOf.ts
 models/GlobalMapFeature.ts
-models/GlobalMapFeatureAllOf.ts
-models/GlobalMapFeatureAllOfProperties.ts
+models/GlobalMapFeatureDetails.ts
+models/GlobalMapFeatureDetailsProperties.ts
+models/GlobalMapFeatures.ts
 models/GlobalMapResponse.ts
-models/GlobalMapResponseAllOf.ts
 models/Source.ts
 models/StatisticsType.ts
 models/index.ts
