@@ -263,6 +263,8 @@ components:
     StatisticsResponse:
       type: array
       items:
+        type: object
+        title: EtymologyStat
         required:
           - name
           - count
@@ -502,10 +504,11 @@ components:
       allOf:
         - $ref: "#/components/schemas/GeoJSONFeatureCollection"
         - type: object
-          title: DetailedFeatureCollectionDetails
+          title: FeatureCollectionDetails
           properties:
             metadata:
               type: object
+              title: FeatureCollectionMetadata
               properties:
                 etymology_count:
                   type: integer

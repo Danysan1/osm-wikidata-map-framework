@@ -33,11 +33,13 @@
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack --config webpack.dev.js",
         "watch": "webpack --config webpack.dev.js --watch",
-        "prod": "webpack --config webpack.prod.js"
+        "prod": "webpack --config webpack.prod.js",
+        "generate": "npx @openapitools/openapi-generator-cli generate -i ./openapi.yaml -o ./src/generated -g typescript-fetch"
     },
     "devDependencies": {
         "@mapbox/mapbox-gl-geocoder": "^5.0.1",
         "@maptiler/geocoding-control": "^0.0.98",
+        "@openapitools/openapi-generator-cli": "^2.7.0",
         "@sentry/browser": "^7.34.0",
         "@types/chart.js": "^2.9.37",
         "@types/gtag.js": "^0.0.11",
