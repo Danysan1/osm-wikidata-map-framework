@@ -43,11 +43,14 @@ foreach ($i18nOverride as $lang => $langData) {
 }
 
 $canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : getCurrentURL();
-
 $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (string)$conf->get("keywords") . '" />' : "";
-
+$jsScripts = glob("dist/main-*.js");
+usort($jsScripts, function (string $x, string $y): int {
+    return filemtime($y) - filemtime($x);
+});
+$jsScript = (string)$jsScripts[0];
+error_log(json_encode($jsScripts) . " => " . $jsScript)
 ?>
-
 <!DOCTYPE html>
 <html>
 
@@ -63,7 +66,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
         $analyticsId = (string)$conf->get("google_analytics_id"); ?>
         <script defer src="<?= "https://www.googletagmanager.com/gtag/js?id=$analyticsId"; ?>"></script>
     <?php } ?>
-    <script defer src="./<?=glob("dist/main-*.js")[0];?>" type="application/javascript"></script>
+    <script defer src="./<?= $jsScript; ?>" type="application/javascript"></script>
     <link rel="stylesheet" href="./dist/main.css" type="text/css" />
 
     <meta property="og:type" content="website" />
@@ -242,6 +245,12 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
                     <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
+            <div class="feature_src_wrapper">
+                <span class="i18n_source">Source:</span>
+                <a class="feature_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
+                <span class="src_osm_plus_wd hiddenElement">+</span>
+                <a class="feature_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
+            </div>
             <a title="Report a problem in this element" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= (string)$conf->get("element_issue_url") ?>">
                 <span class="button_img">⚠️</span> &nbsp;
                 <span class="i18n_report_problem">Report a problem in this element</span>
@@ -297,7 +306,7 @@ $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (st
                 <span class="i18n_source">Source:</span>
                 <a class="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
                 <span class="src_osm_plus_wd hiddenElement">+</span>
-                <a class="etymology_src_wd hiddenElement">Wikidata</a>
+                <a class="etymology_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
                 <span class="etymology_propagated_wrapper hiddenElement">
                     +
                     <a title="Description of the propagation mechanism" class="i18n_propagation title_i18n_propagation" href="<?= (string)$conf->get("propagation_docs_url") ?>">propagation</a>

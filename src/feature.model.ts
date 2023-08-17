@@ -79,16 +79,20 @@ export interface Etymology extends EtymologyDetails {
 export interface FeatureProperties {
     country_color?: string;
     alt_name?: string;
-    official_name?: string;
     commons?: string;
     el_id?: number;
+    end_century_color?: string;
     etymologies: Etymology[] | string; // Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
+    from_osm?: boolean;
+    from_wikidata?: boolean;
     gender_color?: string;
     name?: string;
+    official_name?: string;
     osm_id?: number;
     osm_type?: string;
     picture?: string;
     source_color?: string;
+    start_century_color?: string;
     text_etymology?: string;
     text_etymology_descr?: string;
     type_color?: string;

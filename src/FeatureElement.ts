@@ -32,6 +32,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem");
     translateContent(detail_container, ".i18n_location", "feature_details.location");
     translateAnchorTitle(detail_container, ".title_i18n_location", "feature_details.location");
+    translateContent(detail_container, ".i18n_source", "etymology_details.source");
 
     const element_name = detail_container.querySelector<HTMLElement>('.element_name');
     if (!element_name) {
@@ -160,6 +161,30 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
             showLoadingSpinner(false);
             showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
         });
+    }
+
+    const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm');
+    if (!src_osm) {
+        console.warn("Missing .feature_src_osm");
+    } else if (properties.from_osm && properties.osm_type && properties.osm_id) {
+        const osmURL = `https://www.openstreetmap.org/${properties.osm_type}/${properties.osm_id}`;
+        debugLog("Showing OSM feature source", { properties, osmURL, src_osm });
+        src_osm.href = osmURL;
+        src_osm.classList.remove('hiddenElement');
+    } else {
+        src_osm.classList.add('hiddenElement');
+    }
+
+    const src_wd = detail_container.querySelector<HTMLAnchorElement>('.feature_src_wd');
+    if (!src_wd) {
+        console.warn("Missing .feature_src_wd");
+    } else if (properties.from_wikidata && properties.wikidata) {
+        const wdURL = `https://www.wikidata.org/wiki/${properties.wikidata}`;
+        debugLog("Showing WD feature source", { properties, wdURL, src_wd });
+        src_wd.href = wdURL;
+        src_wd.classList.remove("hiddenElement");
+    } else {
+        src_wd.classList.add("hiddenElement");
     }
 
     return detail_container;

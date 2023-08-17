@@ -15,6 +15,7 @@ servers:
 paths:
   /global-map.php:
     get:
+      operationId: get_global_map
       summary: Get count of etymologies worldwide
       responses:
         200:
@@ -28,15 +29,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
         500:
           description: Unexpected error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
   /elements.php:
     get:
+      operationId: get_elements
       summary: Get centroids of features having an etymology in an area
       parameters:
         - in: query
@@ -82,15 +84,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
         500:
           description: Unexpected error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
   /etymologyMap.php:
     get:
+      operationId: get_etymologies
       summary: Get features and relative etymologies in an area
       parameters:
         - in: query
@@ -146,15 +149,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
         500:
           description: Unexpected error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
   /stats.php:
     get:
+      operationId: get_stats
       summary: Get statistics about objects in an area
       parameters:
         - in: query
@@ -210,15 +214,16 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
         500:
           description: Unexpected error
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
   /health.php:
     get:
+      operationId: health_check
       summary: Check whether the server is running fine
       responses:
         200:
@@ -228,7 +233,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Error"
+                $ref: "#/components/schemas/ErrorDetails"
 
 components:
   schemas:
@@ -248,7 +253,7 @@ components:
       type: string
       example: en
 
-    Error:
+    ErrorDetails:
       required:
         - error
       properties:
@@ -273,7 +278,7 @@ components:
           name:
             type: string
 
-    Geometry:
+    GeoJSONGeometry:
       type: object
       description: GeoJSON geometry
       required:
@@ -292,7 +297,7 @@ components:
             - MultiPolygon
           description: the geometry type
 
-    Point3D:
+    GeoJSONPoint3D:
       type: array
       description: Point in 3D space
       externalDocs:
@@ -302,80 +307,80 @@ components:
       items:
         type: number
 
-    Point:
+    GeoJSONPoint:
       type: object
       description: GeoJSON geometry
       externalDocs:
         url: http://geojson.org/geojson-spec.html#id2
       allOf:
-        - $ref: "#/components/schemas/Geometry"
+        - $ref: "#/components/schemas/GeoJSONGeometry"
         - properties:
             coordinates:
-              $ref: "#/components/schemas/Point3D"
+              $ref: "#/components/schemas/GeoJSONPoint3D"
 
-    LineString:
+    GeoJSONLineString:
       type: object
       description: GeoJSON geometry
       externalDocs:
         url: http://geojson.org/geojson-spec.html#id3
       allOf:
-        - $ref: "#/components/schemas/Geometry"
+        - $ref: "#/components/schemas/GeoJSONGeometry"
         - properties:
             coordinates:
               type: array
               items:
-                $ref: "#/components/schemas/Point3D"
+                $ref: "#/components/schemas/GeoJSONPoint3D"
 
-    Polygon:
+    GeoJSONPolygon:
       type: object
       description: GeoJSON geometry
       externalDocs:
         url: http://geojson.org/geojson-spec.html#id4
       allOf:
-        - $ref: "#/components/schemas/Geometry"
+        - $ref: "#/components/schemas/GeoJSONGeometry"
         - properties:
             coordinates:
               type: array
               items:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Point3D"
+                  $ref: "#/components/schemas/GeoJSONPoint3D"
 
-    MultiPoint:
+    GeoJSONMultiPoint:
       type: object
       description: GeoJSON geometry
       externalDocs:
         url: http://geojson.org/geojson-spec.html#id5
       allOf:
-        - $ref: "#/components/schemas/Geometry"
+        - $ref: "#/components/schemas/GeoJSONGeometry"
         - properties:
             coordinates:
               type: array
               items:
-                $ref: "#/components/schemas/Point3D"
+                $ref: "#/components/schemas/GeoJSONPoint3D"
 
-    MultiLineString:
+    GeoJSONMultiLineString:
       type: object
       description: GeoJSON geometry
       externalDocs:
         url: http://geojson.org/geojson-spec.html#id6
       allOf:
-        - $ref: "#/components/schemas/Geometry"
+        - $ref: "#/components/schemas/GeoJSONGeometry"
         - properties:
             coordinates:
               type: array
               items:
                 type: array
                 items:
-                  $ref: "#/components/schemas/Point3D"
+                  $ref: "#/components/schemas/GeoJSONPoint3D"
 
-    MultiPolygon:
+    GeoJSONMultiPolygon:
       type: object
       description: GeoJSON geometry
       externalDocs:
         url: http://geojson.org/geojson-spec.html#id6
       allOf:
-        - $ref: "#/components/schemas/Geometry"
+        - $ref: "#/components/schemas/GeoJSONGeometry"
         - properties:
             coordinates:
               type: array
@@ -384,9 +389,9 @@ components:
                 items:
                   type: array
                   items:
-                    $ref: "#/components/schemas/Point3D"
+                    $ref: "#/components/schemas/GeoJSONPoint3D"
 
-    GeometryCollection:
+    GeoJSONGeometryCollection:
       type: object
       description: GeoJSON geometry collection
       required:
@@ -402,9 +407,9 @@ components:
         geometries:
           type: array
           items:
-            $ref: "#/components/schemas/Geometry"
+            $ref: "#/components/schemas/GeoJSONGeometry"
 
-    Feature:
+    GeoJSONFeature:
       type: object
       description: GeoJSON Feature
       required:
@@ -420,14 +425,14 @@ components:
             - Feature
         id:
           type: integer
-        # geometry:
-        #   $ref: "#/components/schemas/GeometryCollection"
+        geometry:
+          $ref: "#/components/schemas/GeoJSONGeometryCollection"
         # properties:
         #   type: object
         bbox:
-          $ref: "#/components/schemas/BoundingBox"
+          $ref: "#/components/schemas/GeoJSONBoundingBox"
 
-    BoundingBox:
+    GeoJSONBoundingBox:
       type: array
       description: Bounding box of the features
       externalDocs:
@@ -437,7 +442,7 @@ components:
       items:
         type: number
 
-    FeatureCollection:
+    GeoJSONFeatureCollection:
       type: object
       description: GeoJSON Feature collection
       required:
@@ -453,17 +458,17 @@ components:
         features:
           type: array
           items:
-            $ref: "#/components/schemas/Feature"
+            $ref: "#/components/schemas/GeoJSONFeature"
         bbox:
-          $ref: "#/components/schemas/BoundingBox"
+          $ref: "#/components/schemas/GeoJSONBoundingBox"
 
     GlobalMapFeature:
       allOf:
-        - $ref: "#/components/schemas/Feature"
+        - $ref: "#/components/schemas/GeoJSONFeature"
         - type: object
           properties:
             geometry:
-              $ref: "#/components/schemas/Point"
+              $ref: "#/components/schemas/GeoJSONPoint"
             properties:
               type: object
               required:
@@ -474,7 +479,7 @@ components:
 
     GlobalMapResponse:
       allOf:
-        - $ref: "#/components/schemas/FeatureCollection"
+        - $ref: "#/components/schemas/GeoJSONFeatureCollection"
         - type: object
           properties:
             features:
@@ -484,18 +489,20 @@ components:
 
     ElementFeature:
       allOf:
-        - $ref: "#/components/schemas/Feature"
+        - $ref: "#/components/schemas/GeoJSONFeature"
         - type: object
+          title: ElementFeatureDetails
           properties:
             geometry:
-              $ref: "#/components/schemas/Point"
+              $ref: "#/components/schemas/GeoJSONPoint"
             id:
               type: string
 
     DetailedFeatureCollection:
       allOf:
-        - $ref: "#/components/schemas/FeatureCollection"
+        - $ref: "#/components/schemas/GeoJSONFeatureCollection"
         - type: object
+          title: DetailedFeatureCollectionDetails
           properties:
             metadata:
               type: object
@@ -516,6 +523,7 @@ components:
       allOf:
         - $ref: "#/components/schemas/DetailedFeatureCollection"
         - type: object
+          title: ElementResponseFeatures
           properties:
             features:
               type: array
@@ -583,11 +591,12 @@ components:
 
     EtymologyFeature:
       allOf:
-        - $ref: "#/components/schemas/Feature"
+        - $ref: "#/components/schemas/GeoJSONFeature"
         - type: object
+          title: EtymologyFeatureDetails
           properties:
             geometry:
-              $ref: "#/components/schemas/Geometry"
+              $ref: "#/components/schemas/GeoJSONGeometry"
             id:
               type: string
             properties:
@@ -596,40 +605,67 @@ components:
                 - name
                 - etymologies
               properties:
-                name:
+                country_color:
                   type: string
+                  example: "#33ff66"
                 alt_name:
                   type: string
-                official_name:
+                commons:
                   type: string
+                  example: "Category:Colosseum"
+                el_id:
+                  type: integer
+                end_century_color:
+                  type: string
+                  example: "#33ff66"
                 etymologies:
                   type: array
                   items:
                     $ref: "#/components/schemas/Etymology"
-                wikidata:
-                  type: string
-                  description: Q-ID of the Wikidata entity for this feature
-                  example: "Q1"
-                source_color:
-                  type: string
-                  example: "#33ff66"
+                from_osm:
+                  type: boolean
+                from_wikidata:
+                  type: boolean
                 gender_color:
                   type: string
                   example: "#33ff66"
-                type_color:
+                name:
+                  type: string
+                official_name:
+                  type: string
+                osm_type:
+                  type: string
+                osm_id:
+                  type: integer
+                picture:
+                  type: string
+                  example: "File:Colosseo 2020.jpg"
+                source_color:
                   type: string
                   example: "#33ff66"
                 start_century_color:
                   type: string
                   example: "#33ff66"
-                end_century_color:
+                text_etymology:
+                  type: string
+                text_etymology_descr:
+                  type: string
+                type_color:
                   type: string
                   example: "#33ff66"
+                wikidata:
+                  type: string
+                  description: Q-ID of the Wikidata entity for this feature
+                  example: "Q1"
+                wikipedia:
+                  type: string
+                  example: "en:Colosseum"
 
     EtymologyResponse:
       allOf:
         - $ref: "#/components/schemas/DetailedFeatureCollection"
         - type: object
+          title: EtymologyResponseFeatures
           properties:
             features:
               type: array
