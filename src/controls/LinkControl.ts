@@ -74,16 +74,19 @@ export class LinkControl implements IControl {
             if (!e.isSourceLoaded || e.dataType != "source" || !sourceIds.includes(e.sourceId))
                 return;
 
-            const url = (e.source as any)?.data;
-            if (typeof url !== "string")
-                return;
+            const data = (e.source as any)?.data;
 
             try {
-                const response = await fetch(url, {
-                    mode: "same-origin",
-                    cache: "only-if-cached",
-                });
-                const content = await response.json();
+                let content;
+                if (typeof data === "object") {
+                    content = data;
+                } else if (typeof data === "string") {
+                    const response = await fetch(data, {
+                        mode: "same-origin",
+                        cache: "only-if-cached",
+                    });
+                    content = await response.json();
+                }
                 if (!content.metadata) {
                     debugLog("Missing metadata, hiding");
                     this.show(false);

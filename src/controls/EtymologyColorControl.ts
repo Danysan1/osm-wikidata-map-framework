@@ -137,12 +137,11 @@ class EtymologyColorControl extends DropdownControl {
                         osm_text_names.add(props.text_etymology);
                 });
             });
-        const stats: EtymologyStat[] = [
-            { name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size },
-            { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size },
-            { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size },
-            { name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size }
-        ]
+        const stats: EtymologyStat[] = [];
+        if(propagation_IDs.size) stats.push({ name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size });
+        if(wikidata_IDs.size) stats.push({ name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size });
+        if(osm_wikidata_IDs.size) stats.push({ name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size });
+        if(osm_text_names.size) stats.push({ name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size });
         //console.info("Source stats:", stats);
         this.setChartStats(stats);
 

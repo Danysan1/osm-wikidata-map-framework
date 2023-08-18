@@ -33,11 +33,13 @@ export class WikidataMapService extends WikidataService {
         if (!ret.results?.bindings)
             throw new Error("Invalid response from Wikidata (no bindings)");
 
-        return {
+        const out: GeoJSON = {
             type: "FeatureCollection",
             bbox,
             features: ret.results.bindings.reduce(this.featureReducer, [])
         };
+        (out as any).metadata = { wikidata_query: sparqlQuery };
+        return out;
     }
 
     private getDirectSparqlQuery(sourceID: string): string {
@@ -89,8 +91,8 @@ export class WikidataMapService extends WikidataService {
         }
 
         const wkt_geometry = row.location.value as string,
-            geometry = parseWKT(wkt_geometry) as Point|null;
-        if(!geometry) {
+            geometry = parseWKT(wkt_geometry) as Point | null;
+        if (!geometry) {
             debugLog("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
