@@ -43,13 +43,15 @@ foreach ($i18nOverride as $lang => $langData) {
 }
 
 $canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : getCurrentURL();
+
 $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (string)$conf->get("keywords") . '" />' : "";
+
 $jsScripts = glob("dist/main-*.js");
 usort($jsScripts, function (string $x, string $y): int {
     return filemtime($y) - filemtime($x);
-});
+}); // Finds the latest version of the Webpack-generated Javascript entrypoint file
 $jsScript = (string)$jsScripts[0];
-error_log(json_encode($jsScripts) . " => " . $jsScript)
+//error_log(json_encode($jsScripts) . " => " . $jsScript)
 ?>
 <!DOCTYPE html>
 <html>
