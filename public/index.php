@@ -245,16 +245,18 @@ error_log(json_encode($jsScripts) . " => " . $jsScript)
                     <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
+            
+            <a title="Report a problem in this element" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= (string)$conf->get("element_issue_url") ?>">
+                <span class="button_img">⚠️</span> &nbsp;
+                <span class="i18n_report_problem">Report a problem in this element</span>
+            </a>
+
             <div class="feature_src_wrapper">
                 <span class="i18n_source">Source:</span>
                 <a class="feature_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
                 <span class="src_osm_plus_wd hiddenElement">+</span>
                 <a class="feature_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
             </div>
-            <a title="Report a problem in this element" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= (string)$conf->get("element_issue_url") ?>">
-                <span class="button_img">⚠️</span> &nbsp;
-                <span class="i18n_report_problem">Report a problem in this element</span>
-            </a>
         </div>
     </template>
 
