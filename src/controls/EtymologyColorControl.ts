@@ -34,10 +34,8 @@ export interface EtymologyStat {
  **/
 class EtymologyColorControl extends DropdownControl {
     private _chartInitInProgress = false;
-    private _chartXHR?: XMLHttpRequest;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
-    private _lastQueryString?: string;
     private _lastWikidataIDs?: string[];
     private _lastColorSchemeID?: string;
     private _setLayerColor: (color: string | ExpressionSpecification) => void;
@@ -102,10 +100,8 @@ class EtymologyColorControl extends DropdownControl {
             if (colorSchemeID === 'source') {
                 this._lastColorSchemeID = colorSchemeID;
                 this._lastWikidataIDs = undefined;
-                this._lastQueryString = undefined;
                 this.loadSourceChartData();
             } else if (statsQueries[colorSchemeID]) {
-                this._lastQueryString = undefined;
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
                     this.showDropdown();
@@ -207,10 +203,14 @@ class EtymologyColorControl extends DropdownControl {
     setLayerColorForStats(stats: EtymologyStat[]) {
         const data: any[] = ["case"];
         stats.forEach((row: EtymologyStat) => {
-            data.push(
-                ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]],
-                row.color || '#223b53'
-            );
+            if (row.color && row.subjects?.length) {
+                data.push(
+                    ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]],
+                    row.color,
+                    ["all", [">", ["length", ["get", "etymologies"]], 1], ["in", ["get", "wikidata", ["at", 1, ["get", "etymologies"]]], ["literal", row.subjects]]],
+                    row.color,
+                );
+            }
         });
         data.push('#223b53');
         this._setLayerColor(data as ExpressionSpecification);
