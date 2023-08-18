@@ -18,7 +18,6 @@ functions:
             -   httpApi: 'GET /index.php'
             -   httpApi: 'GET /elements.php'
             -   httpApi: 'GET /etymologyMap.php'
-            -   httpApi: 'GET /stats.php'
             -   httpApi: 'GET /health.php'
 
 # Exclude files from deployment

@@ -11,9 +11,7 @@ use \App\Config\IniEnvConfiguration;
 use \App\BaseBoundingBox;
 use \App\PostGIS_PDO;
 use \App\Query\Caching\CSVCachedBBoxGeoJSONQuery;
-use \App\Query\Combined\BBoxGeoJSONEtymologyQuery;
 use App\Query\Overpass\BBoxEtymologyOverpassQuery;
-use \App\Query\Wikidata\CachedEtymologyIDListWikidataFactory;
 use \App\Config\Overpass\RoundRobinOverpassConfig;
 use App\Config\Wikidata\BaseWikidataConfig;
 use \App\Query\PostGIS\BBoxEtymologyPostGISQuery;
@@ -31,7 +29,6 @@ $serverTiming->add("2_prepare");
 $maxArea = (float)$conf->get("wikidata_bbox_max_area");
 $bbox = BaseBoundingBox::fromInput(INPUT_GET, $maxArea);
 
-$downloadColors = (bool)getFilteredParamOrDefault("download_colors", FILTER_VALIDATE_BOOL, false);
 $source = (string)getFilteredParamOrDefault("source", FILTER_SANITIZE_SPECIAL_CHARS, "overpass_all");
 
 $defaultLanguage = (string)$conf->get('default_language');
@@ -59,7 +56,6 @@ if ($db != null) {
     $query = new BBoxEtymologyPostGISQuery(
         $bbox,
         $db,
-        $wikidataConfig,
         $textKey,
         $descriptionKey,
         $defaultLanguage,
@@ -67,14 +63,12 @@ if ($db != null) {
         $serverTiming,
         $maxElements,
         $source,
-        $search,
-        $downloadColors
+        $search
     );
 } else {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
     $overpassCacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
-    $wikidataCacheTimeoutHours = (int)$conf->get("wikidata_cache_timeout_hours");
     $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
 
     if ($source == "wd_direct") {
@@ -98,10 +92,6 @@ if ($db != null) {
         throw new Exception("Bad 'source' parameter");
     }
 
-    if ($downloadColors) {
-        $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $serverTiming);
-        $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
-    }
     $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);
 }
 

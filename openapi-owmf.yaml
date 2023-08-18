@@ -19,8 +19,6 @@ tags:
     description: Fetch clusters of features
   - name: features
     description: Fetch map features with their details and etymologies
-  - name: statistics
-    description: Fetch statistics about features
 
 paths:
   /global-map.php:
@@ -148,11 +146,6 @@ paths:
           required: false
           schema:
             type: string
-        - in: query
-          name: "download_colors"
-          required: false
-          schema:
-            type: boolean
       responses:
         200:
           description: The GeoJSON response containing the features and etymologies
@@ -160,73 +153,6 @@ paths:
             application/geo+json:
               schema:
                 $ref: "#/components/schemas/EtymologyResponse"
-        400:
-          description: Bad parameters passed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDetails"
-        500:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDetails"
-  /stats.php:
-    get:
-      operationId: get_stats
-      tags:
-        - statistics
-      summary: Get statistics about objects in an area
-      parameters:
-        - in: query
-          name: "minLat"
-          required: true
-          schema:
-            $ref: "#/components/schemas/Latitude"
-        - in: query
-          name: "minLon"
-          required: true
-          schema:
-            $ref: "#/components/schemas/Longitude"
-        - in: query
-          name: "maxLat"
-          required: true
-          schema:
-            $ref: "#/components/schemas/Latitude"
-        - in: query
-          name: "maxLon"
-          required: true
-          schema:
-            $ref: "#/components/schemas/Longitude"
-        - in: query
-          name: "language"
-          required: true
-          schema:
-            $ref: "#/components/schemas/Language"
-        - in: query
-          name: "to"
-          required: true
-          schema:
-            $ref: "#/components/schemas/StatisticsType"
-        - in: query
-          name: "source"
-          required: true
-          schema:
-            $ref: "#/components/schemas/Source"
-        - in: query
-          name: "search"
-          description: Q-ID of the Wikidata entity to search for
-          required: false
-          schema:
-            type: string
-      responses:
-        200:
-          description: The GeoJSON response containing the features and etymologies
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/StatisticsResponse"
         400:
           description: Bad parameters passed
           content:
@@ -277,26 +203,6 @@ components:
       properties:
         error:
           type: string
-
-    StatisticsResponse:
-      type: array
-      items:
-        type: object
-        title: EtymologyStat
-        required:
-          - name
-          - count
-        properties:
-          color:
-            type: string
-          count:
-            type: integer
-          descr:
-            type: string
-          id:
-            type: string
-          name:
-            type: string
 
     GeoJSONGeometry:
       type: object
@@ -587,10 +493,6 @@ components:
         propagated:
           type: boolean
           description: Whether this etymology has been obtained through propagation
-        start_date:
-          type: string
-          description: Start date of this item
-          example: "2020-01-01"
         wd_id:
           type: integer
           description: Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
@@ -616,9 +518,6 @@ components:
                 - name
                 - etymologies
               properties:
-                country_color:
-                  type: string
-                  example: "#33ff66"
                 alt_name:
                   type: string
                 commons:
@@ -626,9 +525,6 @@ components:
                   example: "Category:Colosseum"
                 el_id:
                   type: integer
-                end_century_color:
-                  type: string
-                  example: "#33ff66"
                 etymologies:
                   type: array
                   title: EtymologyFeatureEtymologies
@@ -638,9 +534,6 @@ components:
                   type: boolean
                 from_wikidata:
                   type: boolean
-                gender_color:
-                  type: string
-                  example: "#33ff66"
                 name:
                   type: string
                 official_name:
@@ -652,19 +545,10 @@ components:
                 picture:
                   type: string
                   example: "File:Colosseo 2020.jpg"
-                source_color:
-                  type: string
-                  example: "#33ff66"
-                start_century_color:
-                  type: string
-                  example: "#33ff66"
                 text_etymology:
                   type: string
                 text_etymology_descr:
                   type: string
-                type_color:
-                  type: string
-                  example: "#33ff66"
                 wikidata:
                   type: string
                   description: Q-ID of the Wikidata entity for this feature
@@ -702,13 +586,3 @@ components:
         - wd_indirect
         - wd_qualifier
         - wd_reverse
-
-    StatisticsType:
-      type: string
-      enum:
-        - sourceStats
-        - genderStats
-        - typeStats
-        - countryStats
-        - startCenturyStats
-        - endCenturyStats

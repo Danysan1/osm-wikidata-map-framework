@@ -1,7 +1,6 @@
 apis/ClustersApi.ts
 apis/DefaultApi.ts
 apis/FeaturesApi.ts
-apis/StatisticsApi.ts
 apis/index.ts
 index.ts
 models/DetailedFeatureCollection.ts
@@ -16,7 +15,6 @@ models/EtymologyFeatureDetails.ts
 models/EtymologyFeatureProperties.ts
 models/EtymologyResponse.ts
 models/EtymologyResponseFeatures.ts
-models/EtymologyStat.ts
 models/FeatureCollectionDetails.ts
 models/FeatureCollectionMetadata.ts
 models/GeoJSONFeature.ts
@@ -39,6 +37,5 @@ models/GlobalMapFeatureDetailsProperties.ts
 models/GlobalMapFeatures.ts
 models/GlobalMapResponse.ts
 models/Source.ts
-models/StatisticsType.ts
 models/index.ts
 runtime.ts

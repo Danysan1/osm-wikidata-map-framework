@@ -1,7 +1,7 @@
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, ExpressionSpecification, RequestTransformFunction } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, Expression as ExpressionSpecification, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
+// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
@@ -200,9 +200,6 @@ export class EtymologyMap extends Map {
             maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
             fragmentParams = getCorrectFragmentParams(),
-            colorSchemeID = fragmentParams.colorScheme,
-            colorScheme = colorSchemes[colorSchemeID],
-            downloadColors = Array.isArray(colorScheme.color) && colorScheme.color[0] === "get",
             source = fragmentParams.source,
             language = document.documentElement.lang,
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
@@ -224,7 +221,6 @@ export class EtymologyMap extends Map {
 
         if (enableWikidataLayers) {
             const queryParams = {
-                download_colors: downloadColors ? "1" : "0",
                 language,
                 minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
                 minLon: (Math.floor(minLon * 100) / 100).toString(),
@@ -279,7 +275,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     prepareWikidataLayers(wikidata_url: string, minZoom: number) {
-        const colorSchemeColor = getCurrentColorScheme().color,
+        const colorSchemeColor = getCurrentColorScheme().color || '#223b53',
             wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
             wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
             wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
@@ -383,35 +379,28 @@ export class EtymologyMap extends Map {
 
             const colorControl = new EtymologyColorControl(
                 getCorrectFragmentParams().colorScheme,
-                (colorSchemeID: ColorSchemeID) => {
+                (colorSchemeID) => {
+                    debugLog("initWikidataControls set colorScheme", { colorSchemeID });
                     const params = getCorrectFragmentParams();
                     if (params.colorScheme != colorSchemeID) {
                         setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
                         this.updateDataSource();
-
-                        const colorSchemeObj = colorSchemes[colorSchemeID];
-                        let color: string | ExpressionSpecification;
-
-                        if (colorSchemeObj) {
-                            color = colorSchemeObj.color;
-                        } else {
-                            logErrorMessage("Invalid selected color scheme", "error", { colorSchemeID });
-                            color = '#3bb2d0';
-                        }
-                        debugLog("EtymologyColorControl dropDown click", { colorSchemeID, colorSchemeObj, color });
-                        [
-                            ["wikidata_source_layer_point", "circle-color"],
-                            ["wikidata_source_layer_lineString", 'line-color'],
-                            ["wikidata_source_layer_polygon_fill", 'fill-color'],
-                            ["wikidata_source_layer_polygon_border", 'line-color'],
-                        ].forEach(([layerID, property]) => {
-                            if (this?.getLayer(layerID)) {
-                                this.setPaintProperty(layerID, property, color);
-                            } else {
-                                console.warn("Layer does not exist, can't set property", { layerID, property, color });
-                            }
-                        });
                     }
+                },
+                (color) => {
+                    debugLog("initWikidataControls set color", { color });
+                    [
+                        ["wikidata_source_layer_point", "circle-color"],
+                        ["wikidata_source_layer_lineString", 'line-color'],
+                        ["wikidata_source_layer_polygon_fill", 'fill-color'],
+                        ["wikidata_source_layer_polygon_border", 'line-color'],
+                    ].forEach(([layerID, property]) => {
+                        if (this?.getLayer(layerID)) {
+                            this.setPaintProperty(layerID, property, color);
+                        } else {
+                            console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                        }
+                    });
                 },
                 t,
                 WIKIDATA_SOURCE,

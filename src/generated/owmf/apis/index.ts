@@ -3,4 +3,3 @@
 export * from './ClustersApi';
 export * from './DefaultApi';
 export * from './FeaturesApi';
-export * from './StatisticsApi';

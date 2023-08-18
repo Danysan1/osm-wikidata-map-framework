@@ -6,7 +6,7 @@ import startCenturyStatsQuery from "./query/start-century-stats.sparql";
 import endCenturyStatsQuery from "./query/end-century-stats.sparql";
 import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
-import { EtymologyStat } from "../generated/owmf";
+import { EtymologyStat } from "../controls/EtymologyColorControl";
 
 export const statsCSVPaths: Record<ColorSchemeID, string | null> = {
     blue: null,
@@ -47,8 +47,9 @@ export class StatsService {
                 return {
                     color: x.color?.value,
                     count: parseInt(x.count.value),
-                    id: x.id?.value?.replace("http://www.wikidata.org/entity/", ""),
+                    id: x.id?.value,
                     name: x.name.value,
+                    subjects: x.subjects?.value?.split(","),
                 };
             }) as EtymologyStat[];
         if (csvPath) {

@@ -1,5 +1,9 @@
 #defaultView:BarChart
-SELECT ?name (COUNT(DISTINCT ?wikidata) AS ?count) ?id (GROUP_CONCAT(DISTINCT REPLACE(STR(?wikidata),STR(wd:),'');separator=',') AS ?items)
+SELECT
+    ?name
+    (COUNT(DISTINCT ?wikidata) AS ?count)
+    (STRAFTER(STR(?id),STR(wd:)) AS ?id)
+    (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 

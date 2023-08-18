@@ -48,31 +48,8 @@ CREATE TABLE owmf.element_wikidata_cods (
 CREATE TABLE owmf.wikidata (
     wd_id SERIAL NOT NULL PRIMARY KEY,
     wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
-    wd_position GEOMETRY(Point,4326),
-    wd_event_date TIMESTAMP,
-    wd_event_date_precision INT,
-    wd_start_date TIMESTAMP,
-    wd_start_date_precision INT,
-    wd_end_date TIMESTAMP,
-    wd_end_date_precision INT,
-    wd_birth_date TIMESTAMP,
-    wd_birth_date_precision INT,
-    wd_death_date TIMESTAMP,
-    wd_death_date_precision INT,
-    wd_commons VARCHAR,
-    wd_gender_id INT REFERENCES owmf.wikidata(wd_id),
-    wd_instance_id INT REFERENCES owmf.wikidata(wd_id),
-    wd_country_id INT REFERENCES owmf.wikidata(wd_id),
     wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    wd_download_date TIMESTAMP DEFAULT NULL,
-    wd_full_download_date TIMESTAMP DEFAULT NULL,
-    wd_notes VARCHAR,
-    wd_gender_descr VARCHAR,
-    wd_gender_color VARCHAR,
-    wd_type_descr VARCHAR,
-    wd_type_color VARCHAR,
-    wd_country_descr VARCHAR,
-    wd_country_color VARCHAR
+    wd_notes VARCHAR
 );
 
 CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='100');
@@ -112,79 +89,3 @@ CREATE TABLE owmf.etymology (
 );
 
 CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='100');
-
-CREATE TABLE owmf.wikidata_text (
-    wdt_id SERIAL NOT NULL PRIMARY KEY,
-    wdt_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
-    wdt_language CHAR(3) NOT NULL,
-    wdt_name VARCHAR NOT NULL,
-    wdt_description VARCHAR,
-    wdt_wikipedia_url VARCHAR,
-    wdt_occupations VARCHAR,
-    wdt_citizenship VARCHAR,
-    wdt_prizes VARCHAR,
-    wdt_event_place VARCHAR,
-    wdt_birth_place VARCHAR,
-    wdt_death_place VARCHAR,
-    wdt_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    wdt_full_download_date TIMESTAMP,
-    CONSTRAINT wdt_unique_wikidata_language UNIQUE (wdt_wd_id, wdt_language)
-);
-
-CREATE INDEX wikidata_text_id_idx ON owmf.wikidata_text (wdt_wd_id) WITH (fillfactor='100');
-
-CREATE FUNCTION owmf.et_source_color(et owmf.etymology)
-    RETURNS text
-    LANGUAGE 'sql'
-    COST 100
-    VOLATILE PARALLEL UNSAFE
-AS $BODY$
-SELECT CASE
-	WHEN et.et_recursion_depth != 0 THEN '#ff3333'
-	WHEN et.et_from_osm THEN '#33ff66'
-	WHEN et.et_from_osm_wikidata_wd_id IS NOT NULL THEN '#3399ff'
-	ELSE NULL
-END
-$BODY$;
-
-CREATE OR REPLACE FUNCTION owmf.et_source_name(et owmf.etymology)
-    RETURNS text
-    LANGUAGE 'sql'
-    COST 100
-    VOLATILE PARALLEL UNSAFE
-AS $BODY$
-SELECT CASE
-	WHEN et.et_recursion_depth != 0 THEN 'Propagation'
-	WHEN et.et_from_osm THEN 'OpenStreetMap'
-	WHEN et.et_from_osm_wikidata_wd_id IS NOT NULL THEN 'Wikidata'
-	ELSE NULL
-END
-$BODY$;
-
--- Color mapping from century to RGB
--- Red:   (-inf,5,9,13,17,21,inf) => (0,0,0,0,255,255,255)
--- Green: (-inf,5,9,13,17,21,inf) => (0,0,255,255,255,0,0)
--- Blue:  (-inf,5,9,13,17,21,inf) => (255,255,255,0,0,0,0)
-CREATE OR REPLACE FUNCTION owmf.et_century_color(century NUMERIC)
-    RETURNS text
-    LANGUAGE 'plpgsql'
-    COST 100
-    VOLATILE PARALLEL UNSAFE
-AS $BODY$
-DECLARE
-    red INT := CASE
-        WHEN century IS NULL THEN NULL
-        ELSE LEAST(GREATEST((century-13)*255/4, 0), 255)
-    END;
-    green INT := CASE
-        WHEN century IS NULL THEN NULL
-        ELSE LEAST(GREATEST(512-(ABS(century-13)*255/4), 0), 255)
-    END;
-    blue INT := CASE
-        WHEN century IS NULL THEN NULL
-        ELSE LEAST(GREATEST((13-century)*255/4, 0), 255)
-    END;
-BEGIN
-    RETURN 'rgb('||red||','||green||','||blue||')';
-END
-$BODY$;

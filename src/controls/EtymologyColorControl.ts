@@ -1,6 +1,6 @@
-import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent } from 'maplibre-gl';
+import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
 
-// import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent } from 'mapbox-gl';
+// import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
@@ -10,7 +10,16 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
 import { StatsService, statsQueries } from '../services/StatsService';
-import { Etymology, EtymologyFeatureProperties, EtymologyStat } from '../generated/owmf';
+import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
+
+export interface EtymologyStat {
+    color?: string;
+    count: number;
+    descr?: string;
+    id?: string;
+    name: string;
+    subjects?: string[];
+}
 
 /**
  * Let the user choose a color scheme
@@ -24,13 +33,14 @@ import { Etymology, EtymologyFeatureProperties, EtymologyStat } from '../generat
  * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-2/
  **/
 class EtymologyColorControl extends DropdownControl {
-    private _chartInitInProgress: boolean;
-    private _chartXHR: XMLHttpRequest | null;
+    private _chartInitInProgress = false;
+    private _chartXHR?: XMLHttpRequest;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
     private _lastQueryString?: string;
     private _lastWikidataIDs?: string[];
     private _lastColorSchemeID?: string;
+    private _setLayerColor: (color: string | ExpressionSpecification) => void;
     private _t: TFunction;
 
     private baseChartData = {
@@ -44,6 +54,7 @@ class EtymologyColorControl extends DropdownControl {
     constructor(
         startColorScheme: ColorSchemeID,
         onSchemeChange: (colorScheme: ColorSchemeID) => void,
+        setLayerColor: (color: string | ExpressionSpecification) => void,
         t: TFunction,
         sourceId: string,
         minZoomLevel: number
@@ -74,8 +85,7 @@ class EtymologyColorControl extends DropdownControl {
                 }
             }
         );
-        this._chartInitInProgress = false;
-        this._chartXHR = null;
+        this._setLayerColor = setLayerColor;
         this._t = t;
     }
 
@@ -99,15 +109,11 @@ class EtymologyColorControl extends DropdownControl {
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
                     this.showDropdown();
-            } else if (bounds && colorScheme?.urlCode) {
-                this._lastColorSchemeID = colorSchemeID;
-                this._lastWikidataIDs = undefined;
-                this.downloadChartDataFromBackend(bounds, colorScheme, source);
-                if (event)
-                    this.showDropdown();
             } else if (event?.type === 'change') {
                 debugLog("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
                 this.showDropdown(false);
+                if (colorScheme?.color)
+                    this._setLayerColor(colorScheme.color);
             }
         }
     }
@@ -127,22 +133,30 @@ class EtymologyColorControl extends DropdownControl {
                 etymologies.forEach(etymology => {
                     if (etymology.propagated)
                         propagation_IDs.add(etymology.wikidata);
-                    else if (!etymology.propagated && etymology.from_wikidata)
+                    else if (etymology.from_wikidata)
                         wikidata_IDs.add(etymology.wikidata);
-                    else if (!etymology.propagated && etymology.from_osm)
+                    else if (etymology.from_osm)
                         osm_wikidata_IDs.add(etymology.wikidata);
                     else if (props.text_etymology)
                         osm_text_names.add(props.text_etymology);
                 });
             });
         const stats: EtymologyStat[] = [
-            { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size },
-            { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size },
             { name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size },
+            { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size },
+            { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size },
             { name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size }
         ]
         //console.info("Source stats:", stats);
         this.setChartStats(stats);
+
+        this._setLayerColor([
+            "case",
+            ["coalesce", ["get", "propagated", ["at", 0, ["get", "etymologies"]]], false], '#ff3333',
+            ["coalesce", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]], false], '#3399ff',
+            ["coalesce", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]], false], '#33ff66',
+            '#223b53'
+        ]);
     }
 
     async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
@@ -165,66 +179,13 @@ class EtymologyColorControl extends DropdownControl {
                 const stats = await new StatsService().fetchStats(wikidataIDs, colorSchemeID);
                 if (stats.length > 0) {
                     this.setChartStats(stats)
+                    this.setLayerColorForStats(stats);
                 } else {
                     throw new Error("Empty stats result");
                 }
             } catch (e) {
                 console.error("Stats fetch error", e);
                 this._lastWikidataIDs = undefined;
-                this.removeChart();
-            }
-        }
-    }
-
-    downloadChartDataFromBackend(bounds: LngLatBounds, colorScheme: ColorScheme, source?: string) {
-        if (!colorScheme?.urlCode)
-            throw new Error("downloadChartData: can't download data for a color scheme with no URL code - " + colorScheme.textKey);
-
-        const southWest = bounds.getSouthWest(),
-            minLat = southWest.lat,
-            minLon = southWest.lng,
-            northEast = bounds.getNorthEast(),
-            maxLat = northEast.lat,
-            maxLon = northEast.lng,
-            language = document.documentElement.lang,
-            queryParams = {
-                to: colorScheme?.urlCode,
-                minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
-                minLon: (Math.floor(minLon * 1000) / 1000).toString(),
-                maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
-                maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
-                language,
-                source: source ?? getCorrectFragmentParams().source,
-            },
-            queryString = new URLSearchParams(queryParams).toString(),
-            stats_url = './stats.php?' + queryString,
-            xhr = new XMLHttpRequest();
-
-        if (this._lastQueryString !== queryString) {
-            this._lastQueryString = queryString;
-            xhr.onreadystatechange = (e) => this.handleChartXHRStateChange(xhr, e);
-            xhr.open('GET', stats_url, true);
-            xhr.send();
-
-            if (this._chartXHR)
-                this._chartXHR.abort();
-            this._chartXHR = xhr;
-        }
-    }
-
-    handleChartXHRStateChange(xhr: XMLHttpRequest, e: Event) {
-        if (xhr.readyState === XMLHttpRequest.UNSENT || xhr.status === 0) {
-            debugLog("XHR aborted", { xhr, e });
-        } else if (xhr.readyState == XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                this.setChartStats(JSON.parse(xhr.responseText));
-            } else if (xhr.status === 500 && xhr.responseText.includes("Not implemented")) {
-                this.removeChart();
-                showSnackbar(this._t("color_scheme.not_available"), "lightsalmon");
-            } else {
-                console.error("XHR error", { xhr, e });
-                //if (event.type && event.type == 'change')
-                //    this.hideDropdown();
                 this.removeChart();
             }
         }
@@ -241,6 +202,18 @@ class EtymologyColorControl extends DropdownControl {
             data.datasets[0].data.push(row.count);
         });
         this.setChartData(data);
+    }
+
+    setLayerColorForStats(stats: EtymologyStat[]) {
+        const data: any[] = ["case"];
+        stats.forEach((row: EtymologyStat) => {
+            data.push(
+                ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]],
+                row.color || '#223b53'
+            );
+        });
+        data.push('#223b53');
+        this._setLayerColor(data as ExpressionSpecification);
     }
 
     /**

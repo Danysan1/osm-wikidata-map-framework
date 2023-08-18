@@ -74,12 +74,6 @@ export interface Etymology {
      */
     propagated?: boolean;
     /**
-     * Start date of this item
-     * @type {string}
-     * @memberof Etymology
-     */
-    start_date?: string;
-    /**
      * Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
      * @type {number}
      * @memberof Etymology
@@ -121,7 +115,6 @@ export function EtymologyFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'from_wikidata_prop': !exists(json, 'from_wikidata_prop') ? undefined : json['from_wikidata_prop'],
         'from_parts_of_wikidata_cod': !exists(json, 'from_parts_of_wikidata_cod') ? undefined : json['from_parts_of_wikidata_cod'],
         'propagated': !exists(json, 'propagated') ? undefined : json['propagated'],
-        'start_date': !exists(json, 'start_date') ? undefined : json['start_date'],
         'wd_id': !exists(json, 'wd_id') ? undefined : json['wd_id'],
         'wikidata': !exists(json, 'wikidata') ? undefined : json['wikidata'],
     };
@@ -145,7 +138,6 @@ export function EtymologyToJSON(value?: Etymology | null): any {
         'from_wikidata_prop': value.from_wikidata_prop,
         'from_parts_of_wikidata_cod': value.from_parts_of_wikidata_cod,
         'propagated': value.propagated,
-        'start_date': value.start_date,
         'wd_id': value.wd_id,
         'wikidata': value.wikidata,
     };

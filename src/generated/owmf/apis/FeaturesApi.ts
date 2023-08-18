@@ -36,7 +36,6 @@ export interface GetEtymologiesRequest {
     language: string;
     source: Source;
     search?: string;
-    downloadColors?: boolean;
 }
 
 /**
@@ -100,10 +99,6 @@ export class FeaturesApi extends runtime.BaseAPI {
 
         if (requestParameters.search !== undefined) {
             queryParameters['search'] = requestParameters.search;
-        }
-
-        if (requestParameters.downloadColors !== undefined) {
-            queryParameters['download_colors'] = requestParameters.downloadColors;
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
