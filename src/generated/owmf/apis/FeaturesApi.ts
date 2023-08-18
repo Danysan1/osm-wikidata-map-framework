@@ -17,15 +17,12 @@ import * as runtime from '../runtime';
 import type {
   ErrorDetails,
   EtymologyResponse,
-  Source,
 } from '../models';
 import {
     ErrorDetailsFromJSON,
     ErrorDetailsToJSON,
     EtymologyResponseFromJSON,
     EtymologyResponseToJSON,
-    SourceFromJSON,
-    SourceToJSON,
 } from '../models';
 
 export interface GetEtymologiesRequest {
@@ -34,7 +31,7 @@ export interface GetEtymologiesRequest {
     maxLat: number;
     maxLon: number;
     language: string;
-    source: Source;
+    source: string;
     search?: string;
 }
 

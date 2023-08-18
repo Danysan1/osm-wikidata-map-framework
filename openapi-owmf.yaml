@@ -77,7 +77,7 @@ paths:
           name: "source"
           required: true
           schema:
-            $ref: "#/components/schemas/Source"
+            $ref: "#/components/schemas/SourceID"
         - in: query
           name: "search"
           description: Q-ID of the Wikidata entity to search for
@@ -139,7 +139,7 @@ paths:
           name: "source"
           required: true
           schema:
-            $ref: "#/components/schemas/Source"
+            $ref: "#/components/schemas/SourceID"
         - in: query
           name: "search"
           description: Q-ID of the Wikidata entity to search for
@@ -506,6 +506,9 @@ components:
         - $ref: "#/components/schemas/GeoJSONFeature"
         - type: object
           title: EtymologyFeatureDetails
+          required:
+            - geometry
+            - properties
           properties:
             geometry:
               $ref: "#/components/schemas/GeoJSONGeometry"
@@ -568,9 +571,9 @@ components:
               items:
                 $ref: "#/components/schemas/EtymologyFeature"
 
-    Source:
+    SourceID:
       type: string
-      enum:
+      example:
         - db_all
         - db_osm_name_etymology
         - db_osm_subject

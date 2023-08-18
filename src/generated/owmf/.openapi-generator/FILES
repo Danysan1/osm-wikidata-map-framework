@@ -36,6 +36,5 @@ models/GlobalMapFeatureDetails.ts
 models/GlobalMapFeatureDetailsProperties.ts
 models/GlobalMapFeatures.ts
 models/GlobalMapResponse.ts
-models/Source.ts
 models/index.ts
 runtime.ts

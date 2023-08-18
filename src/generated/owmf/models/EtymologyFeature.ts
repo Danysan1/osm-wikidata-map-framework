@@ -61,7 +61,7 @@ export interface EtymologyFeature {
      * @type {EtymologyFeatureProperties}
      * @memberof EtymologyFeature
      */
-    properties?: EtymologyFeatureProperties;
+    properties: EtymologyFeatureProperties;
 }
 
 
@@ -82,6 +82,7 @@ export function instanceOfEtymologyFeature(value: object): boolean {
     isInstance = isInstance && "type" in value;
     isInstance = isInstance && "id" in value;
     isInstance = isInstance && "geometry" in value;
+    isInstance = isInstance && "properties" in value;
 
     return isInstance;
 }
@@ -100,7 +101,7 @@ export function EtymologyFeatureFromJSONTyped(json: any, ignoreDiscriminator: bo
         'id': json['id'],
         'geometry': GeoJSONGeometryFromJSON(json['geometry']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
-        'properties': !exists(json, 'properties') ? undefined : EtymologyFeaturePropertiesFromJSON(json['properties']),
+        'properties': EtymologyFeaturePropertiesFromJSON(json['properties']),
     };
 }
 

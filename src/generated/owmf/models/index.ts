@@ -33,4 +33,3 @@ export * from './GlobalMapFeatureDetails';
 export * from './GlobalMapFeatureDetailsProperties';
 export * from './GlobalMapFeatures';
 export * from './GlobalMapResponse';
-export * from './Source';

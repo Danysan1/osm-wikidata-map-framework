@@ -37,7 +37,7 @@ export interface EtymologyFeatureDetails {
      * @type {GeoJSONGeometry}
      * @memberof EtymologyFeatureDetails
      */
-    geometry?: GeoJSONGeometry;
+    geometry: GeoJSONGeometry;
     /**
      * 
      * @type {string}
@@ -49,7 +49,7 @@ export interface EtymologyFeatureDetails {
      * @type {EtymologyFeatureProperties}
      * @memberof EtymologyFeatureDetails
      */
-    properties?: EtymologyFeatureProperties;
+    properties: EtymologyFeatureProperties;
 }
 
 /**
@@ -57,6 +57,8 @@ export interface EtymologyFeatureDetails {
  */
 export function instanceOfEtymologyFeatureDetails(value: object): boolean {
     let isInstance = true;
+    isInstance = isInstance && "geometry" in value;
+    isInstance = isInstance && "properties" in value;
 
     return isInstance;
 }
@@ -71,9 +73,9 @@ export function EtymologyFeatureDetailsFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'geometry': !exists(json, 'geometry') ? undefined : GeoJSONGeometryFromJSON(json['geometry']),
+        'geometry': GeoJSONGeometryFromJSON(json['geometry']),
         'id': !exists(json, 'id') ? undefined : json['id'],
-        'properties': !exists(json, 'properties') ? undefined : EtymologyFeaturePropertiesFromJSON(json['properties']),
+        'properties': EtymologyFeaturePropertiesFromJSON(json['properties']),
     };
 }
 

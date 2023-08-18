@@ -1,0 +1,50 @@
+SELECT
+    ?etymology
+    ?item
+    (SAMPLE(?itemLabel) AS ?itemLabel)
+    (SAMPLE(?location) AS ?location)
+    (SAMPLE(?commons) AS ?commons)
+    (SAMPLE(?picture) AS ?picture)
+    (SAMPLE(?osm) AS ?osm)
+    (?etymology AS ?from_entity)
+    (wdt:${indirectProperty} AS ?from_prop)
+WITH { 
+    SELECT ?etymology ?location ?commons ?picture
+    WHERE {
+        ?etymology p:${indirectProperty} ?stmt.
+        MINUS { ?stmt pq:P582 []. } # Ignore if it has a end date
+        SERVICE wikibase:box {
+            ?stmt pq:P625 ?location.
+            bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
+                wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+        } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+        FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+        OPTIONAL { ?stmt pq:P373 ?commons. }
+        ${pictureQuery}
+    }
+    ${limitClause}
+} AS %qualifier
+WITH {
+    SELECT ?etymology ?location ?item ?itemLabel ?commons ?picture ?osm
+    WHERE {
+        ?etymology p:${indirectProperty} ?stmt.
+        MINUS { ?stmt pq:P625|pq:P582 []. }
+        ?stmt ps:${indirectProperty} ?item.
+        SERVICE wikibase:box {
+            ?item wdt:P625 ?location.
+            bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
+                wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+        } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+        FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+        OPTIONAL { ?item wdt:P373 ?commons. }
+        OPTIONAL { ?item wdt:P18 ?picture. }
+        OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
+        ${labelQuery}
+    }
+    ${limitClause}
+} AS %reverse
+WHERE {
+    { INCLUDE %qualifier. } UNION { INCLUDE %reverse. }
+}
+GROUP BY ?item ?etymology
+${limitClause}

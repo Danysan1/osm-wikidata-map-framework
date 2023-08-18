@@ -9,7 +9,7 @@ import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
-import { StatsService, statsQueries } from '../services/StatsService';
+import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
 
 export interface EtymologyStat {
@@ -176,7 +176,7 @@ class EtymologyColorControl extends DropdownControl {
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = wikidataIDs;
             try {
-                const stats = await new StatsService().fetchStats(wikidataIDs, colorSchemeID);
+                const stats = await new WikidataStatsService().fetchStats(wikidataIDs, colorSchemeID);
                 if (stats.length > 0) {
                     this.setChartStats(stats)
                     this.setLayerColorForStats(stats);

@@ -4,7 +4,7 @@ import { EtymologyDetails } from "../feature.model";
 import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
 
 export class WikidataService {
-    private _api;
+    protected _api;
 
     public constructor() {
         this._api = new SparqlApi(new Configuration({
@@ -25,9 +25,9 @@ export class WikidataService {
 
     async etymologyIDsQuery(etymologyIDs: string[], sparqlQueryTemplate: string): Promise<SparqlResponse> {
         const defaultLanguage = getConfig("default_language") || 'en',
-            language = document.documentElement.lang.split('-').at(0),
+            language = document.documentElement.lang.split('-').at(0) || '',
             wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
-            sparqlQuery = sparqlQueryTemplate.replaceAll('${wikidataValues}', wikidataValues).replaceAll('${language}', language || '').replaceAll('${defaultLanguage}', defaultLanguage);
+            sparqlQuery = sparqlQueryTemplate.replaceAll('${wikidataValues}', wikidataValues).replaceAll('${language}', language).replaceAll('${defaultLanguage}', defaultLanguage);
         return await this._api.postSparqlQuery({ format: "json", query: sparqlQuery });
     }
 

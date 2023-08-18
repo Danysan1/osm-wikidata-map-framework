@@ -1,33 +1,21 @@
 import { ColorSchemeID } from "../colorScheme.model";
-import typeStatsQuery from "./query/type-stats.sparql";
-import genderStatsQuery from "./query/gender-stats.sparql";
-import countryStatsQuery from "./query/country-stats.sparql";
-import startCenturyStatsQuery from "./query/start-century-stats.sparql";
-import endCenturyStatsQuery from "./query/end-century-stats.sparql";
+import typeStatsQuery from "./query/stats/type.sparql";
+import genderStatsQuery from "./query/stats/gender.sparql";
+import countryStatsQuery from "./query/stats/country.sparql";
+import startCenturyStatsQuery from "./query/stats/start-century.sparql";
+import endCenturyStatsQuery from "./query/stats/end-century.sparql";
 import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
 import { EtymologyStat } from "../controls/EtymologyColorControl";
 import { debugLog } from "../config";
 
-export const statsCSVPaths: Record<ColorSchemeID, string | null> = {
-    blue: null,
-    source: null,
-    black: null,
-    red: null,
-    orange: null,
+export const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
     gender: "csv/wikidata_genders.csv",
     country: "csv/wikidata_countries.csv",
-    startCentury: null,
-    endCentury: null,
 }
 
-export const statsQueries: Record<ColorSchemeID, string | null> = {
-    blue: null,
-    source: null,
-    black: null,
-    red: null,
-    orange: null,
+export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
     type: typeStatsQuery,
     gender: genderStatsQuery,
     country: countryStatsQuery,
@@ -35,13 +23,13 @@ export const statsQueries: Record<ColorSchemeID, string | null> = {
     endCentury: endCenturyStatsQuery,
 }
 
-export class StatsService {
+export class WikidataStatsService extends WikidataService {
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
         const csvPath = statsCSVPaths[colorSchemeID],
             sparqlQuery = statsQueries[colorSchemeID];
         if (!sparqlQuery)
             throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
-        const res = await new WikidataService().etymologyIDsQuery(wikidataIDs, sparqlQuery),
+        const res = await this.etymologyIDsQuery(wikidataIDs, sparqlQuery),
             stats = res?.results?.bindings?.map((x: any): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
                     debugLog("Empty count or name", x);

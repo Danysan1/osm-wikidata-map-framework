@@ -18,7 +18,6 @@ import type {
   ElementResponse,
   ErrorDetails,
   GlobalMapResponse,
-  Source,
 } from '../models';
 import {
     ElementResponseFromJSON,
@@ -27,8 +26,6 @@ import {
     ErrorDetailsToJSON,
     GlobalMapResponseFromJSON,
     GlobalMapResponseToJSON,
-    SourceFromJSON,
-    SourceToJSON,
 } from '../models';
 
 export interface GetElementsRequest {
@@ -36,7 +33,7 @@ export interface GetElementsRequest {
     minLon: number;
     maxLat: number;
     maxLon: number;
-    source: Source;
+    source: string;
     search?: string;
 }
 

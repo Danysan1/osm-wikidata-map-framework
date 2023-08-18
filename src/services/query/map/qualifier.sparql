@@ -1,0 +1,20 @@
+SELECT DISTINCT
+    ?etymology
+    ?location
+    ?commons
+    ?picture
+    (?etymology AS ?from_entity)
+    (wdt:${indirectProperty} AS ?from_prop)
+WHERE {
+    ?etymology p:${indirectProperty} ?stmt.
+    MINUS { ?stmt pq:P582 []. } # Ignore if it has a end date
+    SERVICE wikibase:box {
+        ?stmt pq:P625 ?location.
+        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
+            wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+    OPTIONAL { ?stmt pq:P373 ?commons. }
+    ${pictureQuery}
+}
+${limitClause}

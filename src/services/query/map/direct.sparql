@@ -1,0 +1,25 @@
+SELECT DISTINCT
+    ?item
+    ?itemLabel
+    ?location
+    ?commons
+    ?picture
+    ?osm
+    ?etymology
+    (?item AS ?from_entity)
+    ?from_prop
+WHERE {
+    VALUES ?from_prop { ${directProperties} }
+    ?item ?from_prop ?etymology.
+    SERVICE wikibase:box {
+        ?item wdt:P625 ?location.
+        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral .
+        bd:serviceParam wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral .
+    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+    OPTIONAL { ?item wdt:P373 ?commons }
+    OPTIONAL { ?item wdt:P18 ?picture }
+    OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
+    ${labelQuery}
+}
+${limitClause}
