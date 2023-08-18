@@ -2,13 +2,14 @@
 SELECT
     (?century AS ?name)
     (COUNT(DISTINCT ?wikidata) AS ?count)
-    (STRAFTER(STR(?id),STR(wd:)) AS ?id)
+    (?century AS ?id)
     (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
     (CONCAT('rgb(',?red,',',?green,',',?blue,')') AS ?color)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
     ?wikidata wdt:P569|wdt:P571|wdt:P580|wdt:P1619|wdt:P585 ?date.
+    FILTER (!wikibase:isSomeValue(?date))
     BIND(CEIL(YEAR(?date)/100.0) AS ?century)
 
     BIND(ROUND((?century-13)*255/4) AS ?rawRed)

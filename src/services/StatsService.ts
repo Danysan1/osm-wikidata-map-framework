@@ -7,6 +7,7 @@ import endCenturyStatsQuery from "./query/end-century-stats.sparql";
 import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
 import { EtymologyStat } from "../controls/EtymologyColorControl";
+import { debugLog } from "../config";
 
 export const statsCSVPaths: Record<ColorSchemeID, string | null> = {
     blue: null,
@@ -42,8 +43,10 @@ export class StatsService {
             throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
         const res = await new WikidataService().etymologyIDsQuery(wikidataIDs, sparqlQuery),
             stats = res?.results?.bindings?.map((x: any): EtymologyStat => {
-                if (!x.count?.value || !x.name?.value)
+                if (!x.count?.value || !x.name?.value) {
+                    debugLog("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
+                }
                 return {
                     color: x.color?.value,
                     count: parseInt(x.count.value),
