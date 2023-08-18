@@ -13,10 +13,11 @@ import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debugLog, getBoolConfig, getConfig } from './config';
 import { SourceControl } from './controls/SourceControl';
-import { ColorSchemeID, colorSchemes } from './colorScheme.model';
+import { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
 import './style.css';
+import { WikidataMapService } from './services/WikidataMapService';
 
 const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -32,6 +33,7 @@ export class EtymologyMap extends Map {
     private anyDetailShownBefore = false;
     private wikidataControlsInitialized = false;
     private wikidataSourceInitialized = false;
+    private wikidataMapService: WikidataMapService;
 
     constructor(
         containerId: string,
@@ -60,6 +62,7 @@ export class EtymologyMap extends Map {
         this.backgroundStyles = backgroundStyles;
         this.geocoderControl = geocoderControl;
         this.projectionControl = projectionControl;
+        this.wikidataMapService = new WikidataMapService();
 
         try {
             openInfoWindow(this);
@@ -220,19 +223,25 @@ export class EtymologyMap extends Map {
         });
 
         if (enableWikidataLayers) {
-            const queryParams = {
-                language,
-                minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
-                minLon: (Math.floor(minLon * 100) / 100).toString(),
-                maxLat: (Math.ceil(maxLat * 100) / 100).toString(), // 0.123 => 0.13
-                maxLon: (Math.ceil(maxLon * 100) / 100).toString(),
-                source,
-                search: this.search,
-            },
-                queryString = new URLSearchParams(queryParams).toString(),
-                wikidata_url = './etymologyMap.php?' + queryString;
+            if (this.wikidataMapService.canHandleSource(source)) {
+                this.wikidataMapService.fetchMapData(source, bounds.toArray().flat() as BBox).then(
+                    data => this.prepareWikidataLayers(data, thresholdZoomLevel)
+                );
+            } else {
+                const queryParams = {
+                    language,
+                    minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
+                    minLon: (Math.floor(minLon * 100) / 100).toString(),
+                    maxLat: (Math.ceil(maxLat * 100) / 100).toString(), // 0.123 => 0.13
+                    maxLon: (Math.ceil(maxLon * 100) / 100).toString(),
+                    source,
+                    search: this.search,
+                },
+                    queryString = new URLSearchParams(queryParams).toString(),
+                    wikidata_url = './etymologyMap.php?' + queryString;
 
-            this.prepareWikidataLayers(wikidata_url, thresholdZoomLevel);
+                this.prepareWikidataLayers(wikidata_url, thresholdZoomLevel);
+            }
         } else if (enableGlobalLayers) {
             if (getBoolConfig("db_enable"))
                 this.prepareGlobalLayers(minZoomLevel);
@@ -274,7 +283,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    prepareWikidataLayers(wikidata_url: string, minZoom: number) {
+    prepareWikidataLayers(wikidata_url: string | GeoJSON, minZoom: number) {
         const colorSchemeColor = getCurrentColorScheme().color || '#223b53',
             wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
             wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
@@ -507,7 +516,7 @@ export class EtymologyMap extends Map {
 
     addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
         let sourceObject = this.getSource(id) as GeoJSONSource | null;
-        const newSourceDataURL = typeof config.data === 'string' ? config.data : null,
+        const newSourceDataURL = ["string", "object"].includes(typeof config.data) ? config.data as string | GeoJSON : null,
             oldSourceDataURL = (sourceObject as any)?._data,
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {

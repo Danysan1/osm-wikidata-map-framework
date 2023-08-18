@@ -74,8 +74,12 @@ export class LinkControl implements IControl {
             if (!e.isSourceLoaded || e.dataType != "source" || !sourceIds.includes(e.sourceId))
                 return;
 
+            const url = (e.source as any)?.data;
+            if (typeof url !== "string")
+                return;
+
             try {
-                const response = await fetch((e.source as any).data, {
+                const response = await fetch(url, {
                     mode: "same-origin",
                     cache: "only-if-cached",
                 });

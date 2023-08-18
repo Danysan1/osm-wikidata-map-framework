@@ -108,7 +108,7 @@ export function etymologyToDomElement(ety: EtymologyDetails, currentZoom = 12.5)
     if (!wikipedia_button) {
         console.warn("Missing wikipedia_button");
     } else if (ety.wikipedia) {
-        wikipedia_button.href = ety.wikipedia;
+        wikipedia_button.href = ety.wikipedia .startsWith("http") ? ety.wikipedia : `https://www.wikipedia.org/wiki/${ety.wikipedia}`;
         wikipedia_button.classList.remove("hiddenElement");
     } else {
         wikipedia_button.classList.add("hiddenElement");
@@ -118,7 +118,12 @@ export function etymologyToDomElement(ety: EtymologyDetails, currentZoom = 12.5)
     if (!commons_button) {
         console.warn("Missing commons_button");
     } else if (ety.commons) {
-        commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+        if(ety.commons.startsWith("http"))
+            commons_button.href = ety.commons;
+        else if (ety.commons.startsWith("Category:"))
+            commons_button.href = `https://commons.wikimedia.org/wiki/${ety.commons}`;
+        else
+            commons_button.href = `https://commons.wikimedia.org/wiki/Category:${ety.commons}`;
         commons_button.classList.remove("hiddenElement");
     } else {
         commons_button.classList.add("hiddenElement");

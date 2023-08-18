@@ -4,6 +4,7 @@ SELECT
     (SAMPLE(?itemLabel) AS ?itemLabel)
     (SAMPLE(?location) AS ?location)
     (SAMPLE(?commons) AS ?commons)
+    (SAMPLE(?wikipedia) AS ?wikipedia)
     (SAMPLE(?picture) AS ?picture)
     (SAMPLE(?osm) AS ?osm)
     (?etymology AS ?from_entity)
@@ -22,10 +23,9 @@ WITH {
         OPTIONAL { ?stmt pq:P373 ?commons. }
         ${pictureQuery}
     }
-    ${limitClause}
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?location ?item ?itemLabel ?commons ?picture ?osm
+    SELECT ?etymology ?location ?item ?itemLabel ?commons ?wikipedia ?picture ?osm
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt pq:P625|pq:P582 []. }
@@ -37,14 +37,16 @@ WITH {
         } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
         FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
         OPTIONAL { ?item wdt:P373 ?commons. }
+        OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
         OPTIONAL { ?item wdt:P18 ?picture. }
         OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
-        ${labelQuery}
+        SERVICE wikibase:label {
+            bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
+            ?item rdfs:label ?itemLabel.
+        }
     }
-    ${limitClause}
 } AS %reverse
 WHERE {
     { INCLUDE %qualifier. } UNION { INCLUDE %reverse. }
 }
 GROUP BY ?item ?etymology
-${limitClause}

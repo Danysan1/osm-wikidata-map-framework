@@ -99,7 +99,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     if (!element_wikipedia_button) {
         debugLog("Missing element_wikipedia_button");
     } else if (wikipedia && wikipedia != 'null') {
-        element_wikipedia_button.href = `https://www.wikipedia.org/wiki/${wikipedia}`;
+        element_wikipedia_button.href = wikipedia.startsWith("http") ? wikipedia : `https://www.wikipedia.org/wiki/${wikipedia}`;
         element_wikipedia_button.classList.remove("hiddenElement");
     } else {
         element_wikipedia_button.classList.add("hiddenElement");
@@ -109,7 +109,12 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     if (!element_commons_button) {
         debugLog("Missing element_commons_button");
     } else if (commons && commons != 'null') {
-        element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
+        if (commons.startsWith("http"))
+            element_commons_button.href = commons;
+        else if (commons.startsWith("Category:"))
+            element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
+        else
+            element_commons_button.href = `https://commons.wikimedia.org/wiki/Category:${commons}`;
         element_commons_button.classList.remove("hiddenElement");
     } else {
         element_commons_button.classList.add("hiddenElement");

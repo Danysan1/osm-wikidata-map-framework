@@ -3,25 +3,29 @@ SELECT
     (SAMPLE(?itemLabel) AS ?itemLabel)
     (SAMPLE(?location) AS ?location)
     (SAMPLE(?commons) AS ?commons)
+    (SAMPLE(?wikipedia) AS ?wikipedia)
     (SAMPLE(?picture) AS ?picture)
     (SAMPLE(?osm) AS ?osm)
     ?etymology
     (?etymology AS ?from_entity)
-    (wdt:$wikidataProperty AS ?from_prop)
+    (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
-    ?etymology p:$wikidataProperty ?stmt.
+    ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. }
-    ?stmt ps:$wikidataProperty ?item.
+    ?stmt ps:${indirectProperty} ?item.
     SERVICE wikibase:box {
         ?item wdt:P625 ?location.
-        bd:serviceParam wikibase:cornerWest 'Point($southWest)'^^geo:wktLiteral;
-            wikibase:cornerEast 'Point($northEast)'^^geo:wktLiteral.
+        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
+            wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     OPTIONAL { ?item wdt:P373 ?commons. }
+    OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P18 ?picture. }
-        OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
-    $labelQuery
+    OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
+        ?item rdfs:label ?itemLabel.
+    }
 }
 GROUP BY ?item ?etymology
-$limitClause

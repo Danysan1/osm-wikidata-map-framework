@@ -17,4 +17,3 @@ WHERE {
     OPTIONAL { ?stmt pq:P373 ?commons. }
     ${pictureQuery}
 }
-${limitClause}

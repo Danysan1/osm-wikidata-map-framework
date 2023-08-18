@@ -3,6 +3,7 @@ SELECT DISTINCT
     ?itemLabel
     ?location
     ?commons
+    ?wikipedia
     ?picture
     ?osm
     ?etymology
@@ -18,8 +19,11 @@ WHERE {
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     OPTIONAL { ?item wdt:P373 ?commons }
+    OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P18 ?picture }
     OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
-    ${labelQuery}
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
+        ?item rdfs:label ?itemLabel.
+    }
 }
-${limitClause}

@@ -4,7 +4,7 @@ import reverseMapQuery from "./query/map/reverse.sparql";
 import qualifierMapQuery from "./query/map/qualifier.sparql";
 import directMapQuery from "./query/map/direct.sparql";
 import { debugLog, getConfig, getJsonConfig } from "../config";
-import { GeoJSONPoint, GeoJSONPosition, parse as parseWKT, stringify as stringifyWKT } from "wellknown";
+import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
 import { Etymology, EtymologyFeature } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
@@ -26,8 +26,8 @@ export class WikidataMapService extends WikidataService {
             sparqlQuery = sparqlQueryTemplate
                 .replaceAll('${language}', language || '')
                 .replaceAll('${defaultLanguage}', defaultLanguage)
-                .replaceAll('${southWestWKT}', stringifyWKT({ coordinates: [bbox[0], bbox[1]] } as GeoJSONPoint))
-                .replaceAll('${northEastWKT}', stringifyWKT({ coordinates: [bbox[2], bbox[3]] } as GeoJSONPoint)),
+                .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
+                .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
             ret = await this._api.postSparqlQuery({ format: "json", query: sparqlQuery });
 
         if (!ret.results?.bindings)
@@ -77,7 +77,9 @@ export class WikidataMapService extends WikidataService {
         else
             throw new Error("Invalid sourceID: " + sourceID);
 
-        return sparqlQueryTemplate.replaceAll('${indirectProperty}', indirectProperty);
+        const imageProperty = getConfig("wikidata_image_property"),
+            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
+        return sparqlQueryTemplate.replaceAll('${indirectProperty}', indirectProperty).replaceAll('${pictureQuery}', pictureQuery);
     }
 
     private featureReducer(acc: Feature[], row: any): Feature[] {
@@ -87,10 +89,17 @@ export class WikidataMapService extends WikidataService {
         }
 
         const wkt_geometry = row.location.value as string,
-            geometry = parseWKT(wkt_geometry) as Point,
-            feature_wd_id = row.item?.value?.replace("http://www.wikidata.org/entity/", ""),
+            geometry = parseWKT(wkt_geometry) as Point|null;
+        if(!geometry) {
+            debugLog("Failed to parse WKT coordinates", { wkt_geometry, row });
+            return acc;
+        }
+
+        const feature_wd_id = row.item?.value?.replace("http://www.wikidata.org/entity/", ""),
             etymology_wd_id = row.etymology?.value?.replace("http://www.wikidata.org/entity/", ""),
-            existingFeature = acc.find(feature => feature.id === feature_wd_id || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])),
+            existingFeature = acc.find(
+                feature => feature.id !== undefined && feature.id === feature_wd_id || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
+            ),
             etymology: Etymology = {
                 from_osm: false,
                 from_wikidata: true,
@@ -103,9 +112,7 @@ export class WikidataMapService extends WikidataService {
         if (existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             debugLog("Duplicate etymology", { existingFeature, row });
         } else if (existingFeature) {
-            existingFeature.properties.etymologies.push({
-
-            });
+            existingFeature.properties.etymologies.push(etymology);
         } else {
             const osm = row.osm?.value,
                 osm_type = osm?.split("/").at(3),
@@ -116,13 +123,16 @@ export class WikidataMapService extends WikidataService {
                 id: feature_wd_id,
                 geometry,
                 properties: {
-                    name: row.name?.value,
+                    commons: row.commons?.value,
                     etymologies: [etymology],
                     from_osm: false,
                     from_wikidata: true,
+                    name: row.itemLabel?.value,
                     osm_id,
                     osm_type,
+                    picture: row.picture?.value,
                     wikidata: feature_wd_id,
+                    wikipedia: row.wikipedia?.value,
                 }
             });
         }
