@@ -31,13 +31,12 @@ class CachedEtymologyIDListWikidataFactory implements StringSetXMLQueryFactory
         string $cacheFileBasePath,
         string $cacheFileBaseURL,
         int $cacheTimeoutHours,
-        bool $eagerFullDownload,
         ?ServerTiming $serverTiming
     ) {
         $this->cacheTimeoutHours = $cacheTimeoutHours;
         $this->cacheFileBaseURL = $cacheFileBaseURL;
         $this->language = $language;
-        $this->queryBuilder = $eagerFullDownload ? new FullEtymologyIDListWikidataQueryBuilder() : new BaseEtymologyIDListWikidataQueryBuilder();
+        $this->queryBuilder = new BaseEtymologyIDListWikidataQueryBuilder();
         $this->config = $config;
         $this->cacheFileBasePath = $cacheFileBasePath;
         $this->serverTiming = $serverTiming;

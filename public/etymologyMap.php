@@ -43,7 +43,6 @@ $maxElements = $conf->has("max_map_elements") ? (int)$conf->get("max_map_element
 if ($maxElements !== null && $maxElements <= 0) {
     throw new Exception("The max_map_elements configuration must be > 0 or empty");
 }
-$eagerFullDownload = $conf->getBool("eager_full_etymology_download");
 
 $enableDB = $conf->getBool("db_enable");
 if ($enableDB && str_starts_with($source, "db_")) {
@@ -69,8 +68,7 @@ if ($db != null) {
         $maxElements,
         $source,
         $search,
-        $downloadColors,
-        $eagerFullDownload
+        $downloadColors
     );
 } else {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
@@ -100,8 +98,8 @@ if ($db != null) {
         throw new Exception("Bad 'source' parameter");
     }
 
-    if ($downloadColors || $eagerFullDownload) {
-        $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $eagerFullDownload, $serverTiming);
+    if ($downloadColors) {
+        $wikidataFactory = new CachedEtymologyIDListWikidataFactory($safeLanguage, $wikidataConfig, $cacheFileBasePath, $cacheFileBaseURL, $wikidataCacheTimeoutHours, $serverTiming);
         $baseQuery = new BBoxGeoJSONEtymologyQuery($baseQuery, $wikidataFactory, $serverTiming);
     }
     $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);

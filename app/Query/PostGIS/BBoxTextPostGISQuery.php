@@ -26,7 +26,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
     private WikidataConfig $wikidataConfig;
     private ?int $maxElements;
     private bool $downloadColors;
-    private bool $eagerFullDownload;
 
     public function __construct(
         BoundingBox $bbox,
@@ -38,8 +37,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
-        bool $downloadColors = false,
-        bool $eagerFullDownload = false
+        bool $downloadColors = false
     ) {
         parent::__construct($bbox, $db, $serverTiming, $source, $search);
 
@@ -52,7 +50,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $this->wikidataConfig = $wikidataConfig;
         $this->maxElements = $maxElements;
         $this->downloadColors = $downloadColors;
-        $this->eagerFullDownload = $eagerFullDownload;
     }
 
     protected function getLimitClause(): string
@@ -70,14 +67,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
 
     public function send(): QueryResult
     {
-        if ($this->downloadColors || $this->eagerFullDownload)
+        if ($this->downloadColors)
             $this->downloadMissingTextIfNecessary();
         return parent::send();
     }
 
     private function downloadMissingTextIfNecessary(): void
     {
-        $downloadDateField = $this->eagerFullDownload ? "wd_full_download_date" : "wd_download_date";
         $filterClause = $this->getEtymologyFilterClause() . $this->getElementFilterClause();
         $language = empty($this->language) ? $this->defaultLanguage : $this->language;
 
@@ -91,7 +87,7 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
             JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
             LEFT JOIN owmf.wikidata_text AS wdt
                 ON wdt.wdt_wd_id = wd.wd_id AND wdt.wdt_language = :lang::VARCHAR
-            WHERE (wd.$downloadDateField IS NULL OR wdt.wdt_full_download_date IS NULL)
+            WHERE (wd.wd_download_date IS NULL OR wdt.wdt_full_download_date IS NULL)
             $filterClause"
         );
         $sthMissingWikidata->execute($queryParams);
@@ -106,13 +102,13 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
              */
             $searchArray = array_column($missingWikidataText, 0);
             $searchSet = new BaseStringSet($searchArray);
-            $this->downloadMissingText($searchSet, $language, $downloadDateField);
+            $this->downloadMissingText($searchSet, $language);
         }
     }
 
-    private function downloadMissingText(StringSet $searchSet, string $language, string $downloadDateField): void
+    private function downloadMissingText(StringSet $searchSet, string $language): void
     {
-        $queryBuilder = $this->eagerFullDownload ? new FullEtymologyIDListWikidataQueryBuilder() : new BaseEtymologyIDListWikidataQueryBuilder();
+        $queryBuilder = new BaseEtymologyIDListWikidataQueryBuilder();
         $wikidataQuery = new StringSetJSONWikidataQuery(
             $searchSet,
             $language,
@@ -208,7 +204,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("wikidata-insert-gender-text");
 
-        $downloadDateExtraUpdate = $this->eagerFullDownload ? "wd_download_date = CURRENT_TIMESTAMP," : "";
         $stInsertWikidata = $this->getDB()->prepare(
             "UPDATE owmf.wikidata 
             SET wd_position = ST_GeomFromText(response->'wkt_coords'->>'value', 4326),
@@ -226,13 +221,12 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
                 wd_gender_id = gender.wd_id,
                 wd_instance_id = instance.wd_id,
                 wd_country_id = country.wd_id,
-                $downloadDateExtraUpdate
-                $downloadDateField = CURRENT_TIMESTAMP
+                wd_download_date = CURRENT_TIMESTAMP
             FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
             LEFT JOIN owmf.wikidata AS gender ON gender.wd_wikidata_cod = REPLACE(response->'genderID'->>'value', 'http://www.wikidata.org/entity/', '')
             LEFT JOIN owmf.wikidata AS instance ON instance.wd_wikidata_cod = REPLACE(response->'instanceID'->>'value', 'http://www.wikidata.org/entity/', '')
             LEFT JOIN owmf.wikidata AS country ON country.wd_wikidata_cod = REPLACE(response->'countryID'->>'value', 'http://www.wikidata.org/entity/', '')
-            WHERE wikidata.$downloadDateField IS NULL
+            WHERE wikidata.wd_download_date IS NULL
             AND wikidata.wd_wikidata_cod = REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '')"
         );
         $stInsertWikidata->bindValue("result", $responseJSON, PDO::PARAM_LOB);
@@ -240,35 +234,6 @@ abstract class BBoxTextPostGISQuery extends BBoxPostGISQuery
         $stInsertWikidata->execute();
         if ($this->hasServerTiming())
             $this->getServerTiming()->add("wikidata-insert-wikidata");
-
-        if ($this->eagerFullDownload) {
-            try {
-                $stInsertPicture = $this->getDB()->prepare(
-                    "INSERT INTO owmf.wikidata_picture (wdp_wd_id, wdp_picture)
-                    SELECT DISTINCT wd.wd_id, REPLACE(pic.picture,'http://commons.wikimedia.org/wiki/Special:FilePath/','')
-                    FROM owmf.wikidata AS wd
-                    JOIN (
-                        SELECT
-                            REPLACE(response->'wikidata'->>'value', 'http://www.wikidata.org/entity/', '') AS wikidata_cod,
-                            REGEXP_SPLIT_TO_TABLE(response->'pictures'->>'value', '||') AS picture
-                        FROM json_array_elements((:result::JSON)->'results'->'bindings') AS response
-                    ) AS pic ON pic.wikidata_cod = wd.wd_wikidata_cod
-                    LEFT JOIN owmf.wikidata_picture AS wdp ON wd.wd_id = wdp.wdp_wd_id
-                    WHERE pic.picture IS NOT NULL
-                    AND pic.picture != ''
-                    AND wdp IS NULL
-                    ON CONFLICT (wdp_wd_id, wdp_picture) DO NOTHING
-                    RETURNING CONCAT('File:',wdp_picture) AS picture"
-                );
-                $stInsertPicture->bindValue("result", $responseJSON, PDO::PARAM_LOB);
-                //$stInsertPicture->debugDumpParams();
-                $stInsertPicture->execute();
-                if ($this->hasServerTiming())
-                    $this->getServerTiming()->add("wikidata-picture-insert");
-            } catch (Exception $e) {
-                error_log("An error occurred while inserting pictures: " . $e->getMessage());
-            }
-        }
 
         $stUpdateText = $this->getDB()->prepare(
             "UPDATE owmf.wikidata_text

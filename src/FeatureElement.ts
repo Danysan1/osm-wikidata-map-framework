@@ -154,8 +154,6 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
     if (!etymologies_container) {
         debugLog("Missing etymologies_container");
-    } else if (getBoolConfig("eager_full_etymology_download")) {
-        showEtymologies(properties, etymologies, etymologies_container, currentZoom);
     } else {
         showLoadingSpinner(true);
         downloadEtymologyDetails(etymologies).then(filledEtymologies => {

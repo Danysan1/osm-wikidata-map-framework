@@ -30,8 +30,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
         ?int $maxElements = null,
         ?string $source = null,
         ?string $search = null,
-        bool $downloadColors = false,
-        bool $eagerFullDownload = false
+        bool $downloadColors = false
     ) {
         parent::__construct(
             $bbox,
@@ -43,8 +42,7 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
             $maxElements,
             $source,
             $search,
-            $downloadColors,
-            $eagerFullDownload
+            $downloadColors
         );
         $this->textKey = $textKey;
         $this->descriptionKey = $descriptionKey;
@@ -145,14 +143,6 @@ class BBoxEtymologyPostGISQuery extends BBoxTextPostGISQuery implements BBoxGeoJ
                         'instanceID', instance.wd_wikidata_cod,
                         'name', wdt.wdt_name,
                         'occupations', wdt.wdt_occupations,
-                        'pictures', (
-                            SELECT JSON_AGG(JSON_BUILD_OBJECT(
-                                'picture', wdp_picture,
-                                'attribution', wdp_attribution
-                            ))
-                            FROM owmf.wikidata_picture
-                            WHERE wdp_wd_id = wd.wd_id
-                        ),
                         'prizes', wdt.wdt_prizes,
                         'start_date', EXTRACT(epoch FROM wd.wd_start_date),
                         'start_date_precision', wd.wd_start_date_precision,

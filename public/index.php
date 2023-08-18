@@ -116,7 +116,6 @@ error_log(json_encode($jsScripts) . " => " . $jsScript)
     <?= $conf->getMetaTag("sentry_js_replays_on_error_sample_rate", true); ?>
     <?= $conf->getMetaTag("bbox_margin", true); ?>
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
-    <?= $conf->getMetaTag("eager_full_etymology_download", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
     <?= $conf->getJsonScriptTag("i18n_override", true); ?>

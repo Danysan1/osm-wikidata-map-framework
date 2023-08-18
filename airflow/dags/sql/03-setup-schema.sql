@@ -113,18 +113,6 @@ CREATE TABLE owmf.etymology (
 
 CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='100');
 
-CREATE TABLE owmf.wikidata_picture (
-    wdp_id SERIAL NOT NULL PRIMARY KEY,
-    wdp_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
-    wdp_picture VARCHAR NOT NULL,
-    wdp_attribution VARCHAR,
-    wdp_download_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    wdp_full_download_date TIMESTAMP,
-    CONSTRAINT wdp_unique_wikidata_picture UNIQUE (wdp_wd_id, wdp_picture)
-);
-
-CREATE INDEX wikidata_picture_id_idx ON owmf.wikidata_picture (wdp_wd_id) WITH (fillfactor='100');
-
 CREATE TABLE owmf.wikidata_text (
     wdt_id SERIAL NOT NULL PRIMARY KEY,
     wdt_wd_id INT NOT NULL REFERENCES owmf.wikidata(wd_id),
