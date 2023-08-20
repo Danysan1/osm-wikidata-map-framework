@@ -2,6 +2,7 @@ import { debugLog, getConfig } from "../config";
 import detailsQuery from "./query/etymology-details.sparql";
 import { EtymologyDetails } from "../feature.model";
 import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
+import { logErrorMessage } from "../monitoring";
 
 export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
@@ -88,7 +89,11 @@ export class WikidataService {
                     wikidata: wdQID,
                 };
             });
-            localStorage.setItem(cacheKey, JSON.stringify(out));
+            try {
+                localStorage.setItem(cacheKey, JSON.stringify(out));
+            } catch (e) {
+                logErrorMessage("Failed to store details data in cache", "warning", { cacheKey, out, e });
+            }
         }
         return out;
     }

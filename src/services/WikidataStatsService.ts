@@ -8,6 +8,8 @@ import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
 import { EtymologyStat } from "../controls/EtymologyColorControl";
 import { debugLog } from "../config";
+import { logErrorMessage } from "../monitoring";
+import { compress, decompress } from "lz-string";
 
 export const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
@@ -29,7 +31,7 @@ export class WikidataStatsService extends WikidataService {
             cachedResponse = localStorage.getItem(cacheKey);
         let out: EtymologyStat[];
         if (cachedResponse) {
-            out = JSON.parse(cachedResponse);
+            out = JSON.parse(decompress(cachedResponse));
             debugLog("Cache hit, using cached response", { cacheKey, out });
         } else {
             debugLog("Cache miss, fetching data", { cacheKey });
@@ -61,7 +63,11 @@ export class WikidataStatsService extends WikidataService {
                 // console.table(stats);
                 out.forEach(stat => stat.color = (csv.data as string[][]).find(row => row[0] === stat.id)?.at(3));
             }
-            localStorage.setItem(cacheKey, JSON.stringify(out));
+            try {
+                localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
+            } catch (e) {
+                logErrorMessage("Failed to store stats data in cache", "warning", { cacheKey, out, e });
+            }
         }
         return out;
     }

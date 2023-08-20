@@ -8,6 +8,7 @@ import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
 import { Etymology, EtymologyFeature } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
+import { compress, decompress } from "lz-string";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 
@@ -24,7 +25,7 @@ export class WikidataMapService extends WikidataService {
             cachedResponse = localStorage.getItem(cacheKey);
         let out: GeoJSON;
         if (cachedResponse) {
-            out = JSON.parse(cachedResponse);
+            out = JSON.parse(decompress(cachedResponse));
             debugLog("Cache hit, using cached response", { cacheKey, out });
         } else {
             debugLog("Cache miss, fetching data", { cacheKey });
@@ -45,7 +46,11 @@ export class WikidataMapService extends WikidataService {
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
             (out as any).metadata = { wikidata_query: sparqlQuery, timestamp: new Date().toISOString() };
-            localStorage.setItem(cacheKey, JSON.stringify(out));
+            try {
+                localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
+            } catch (e) {
+                logErrorMessage("Failed to store map data in cache", "warning", { cacheKey, out, e });
+            }
         }
         return out;
     }
