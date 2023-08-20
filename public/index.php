@@ -116,7 +116,6 @@ $jsScript = (string)$jsScripts[0];
     <?= $conf->getMetaTag("sentry_js_env", true); ?>
     <?= $conf->getMetaTag("sentry_js_replays_session_sample_rate", true); ?>
     <?= $conf->getMetaTag("sentry_js_replays_on_error_sample_rate", true); ?>
-    <?= $conf->getMetaTag("bbox_margin", true); ?>
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>

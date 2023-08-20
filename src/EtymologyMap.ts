@@ -194,7 +194,6 @@ export class EtymologyMap extends Map {
      */
     async updateDataSource() {
         const bounds = this.getBounds(),
-            bbox_margin = parseFloat(getConfig("bbox_margin") ?? "0"),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
@@ -224,20 +223,17 @@ export class EtymologyMap extends Map {
             else
                 loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
         } else if (enableElementLayers || enableWikidataLayers) {
-            let minLat = southWest.lat - bbox_margin,
-                minLon = southWest.lng - bbox_margin,
-                maxLat = northEast.lat + bbox_margin,
-                maxLon = northEast.lng + bbox_margin;
+            let minLat: number, minLon: number, maxLat: number, maxLon: number;
             if (enableWikidataLayers) {
-                minLat = Math.floor(minLat * 100) / 100; // 0.123 => 0.12
-                minLon = Math.floor(minLon * 100) / 100;
-                maxLat = Math.ceil(maxLat * 100) / 100; // 0.123 => 0.13
-                maxLon = Math.ceil(maxLon * 100) / 100;
+                minLat = Math.floor(southWest.lat * 100) / 100; // 0.123 => 0.12
+                minLon = Math.floor(southWest.lng * 100) / 100;
+                maxLat = Math.ceil(northEast.lat * 100) / 100; // 0.123 => 0.13
+                maxLon = Math.ceil(northEast.lng * 100) / 100;
             } else {
-                minLat = Math.floor(minLat * 10) / 10; // 0.123 => 0.1
-                minLon = Math.floor(minLon * 10) / 10;
-                maxLat = Math.ceil(maxLat * 10) / 10; // 0.123 => 0.2
-                maxLon = Math.ceil(maxLon * 10) / 10;
+                minLat = Math.floor(southWest.lat * 10) / 10; // 0.123 => 0.1
+                minLon = Math.floor(southWest.lng * 10) / 10;
+                maxLat = Math.ceil(northEast.lat * 10) / 10; // 0.123 => 0.2
+                maxLon = Math.ceil(northEast.lng * 10) / 10;
             }
 
             const queryParams = {
