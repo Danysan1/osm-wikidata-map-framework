@@ -1,3 +1,4 @@
+#defaultView:Map
 SELECT
     ?item
     (SAMPLE(?itemLabel) AS ?itemLabel)

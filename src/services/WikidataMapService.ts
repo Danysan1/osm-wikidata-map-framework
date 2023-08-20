@@ -20,25 +20,33 @@ export class WikidataMapService extends WikidataService {
     }
 
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON> {
-        const sparqlQueryTemplate = sourceID.startsWith("wd_direct") ? this.getDirectSparqlQuery(sourceID) : this.getIndirectSparqlQuery(sourceID),
-            defaultLanguage = getConfig("default_language") || 'en',
-            language = document.documentElement.lang.split('-').at(0) || '',
-            sparqlQuery = sparqlQueryTemplate
-                .replaceAll('${language}', language || '')
-                .replaceAll('${defaultLanguage}', defaultLanguage)
-                .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
-                .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
-            ret = await this._api.postSparqlQuery({ format: "json", query: sparqlQuery });
+        const cacheKey = `owmf.map.${sourceID}_${this.language}_${bbox.join("_")}`,
+            cachedResponse = localStorage.getItem(cacheKey);
+        let out: GeoJSON;
+        if (cachedResponse) {
+            out = JSON.parse(cachedResponse);
+            debugLog("Cache hit, using cached response", { cacheKey, out });
+        } else {
+            debugLog("Cache miss, fetching data", { cacheKey });
+            const sparqlQueryTemplate = sourceID.startsWith("wd_direct") ? this.getDirectSparqlQuery(sourceID) : this.getIndirectSparqlQuery(sourceID),
+                sparqlQuery = sparqlQueryTemplate
+                    .replaceAll('${language}', this.language || '')
+                    .replaceAll('${defaultLanguage}', this.defaultLanguage)
+                    .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
+                    .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
+                ret = await this.api.postSparqlQuery({ format: "json", query: sparqlQuery });
 
-        if (!ret.results?.bindings)
-            throw new Error("Invalid response from Wikidata (no bindings)");
+            if (!ret.results?.bindings)
+                throw new Error("Invalid response from Wikidata (no bindings)");
 
-        const out: GeoJSON = {
-            type: "FeatureCollection",
-            bbox,
-            features: ret.results.bindings.reduce(this.featureReducer, [])
-        };
-        (out as any).metadata = { wikidata_query: sparqlQuery };
+            out = {
+                type: "FeatureCollection",
+                bbox,
+                features: ret.results.bindings.reduce(this.featureReducer, [])
+            };
+            (out as any).metadata = { wikidata_query: sparqlQuery, timestamp: new Date().toISOString() };
+            localStorage.setItem(cacheKey, JSON.stringify(out));
+        }
         return out;
     }
 
@@ -61,7 +69,7 @@ export class WikidataMapService extends WikidataService {
         else
             properties = [sourceProperty];
 
-        return sparqlQueryTemplate.replaceAll('${directProperties}', directProperties.map(id => "wdt:" + id).join(" "));
+        return sparqlQueryTemplate.replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
     }
 
     private getIndirectSparqlQuery(sourceID: string): string {
@@ -97,25 +105,26 @@ export class WikidataMapService extends WikidataService {
             return acc;
         }
 
-        const feature_wd_id = row.item?.value?.replace("http://www.wikidata.org/entity/", ""),
-            etymology_wd_id = row.etymology?.value?.replace("http://www.wikidata.org/entity/", ""),
+        const feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            etymology_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             existingFeature = acc.find(
-                feature => feature.id !== undefined && feature.id === feature_wd_id || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
-            ),
-            etymology: Etymology = {
-                from_osm: false,
-                from_wikidata: true,
-                from_wikidata_entity: row.from_entity?.value?.replace("http://www.wikidata.org/entity/", ""),
-                from_wikidata_prop: row.from_prop?.value?.replace("http://www.wikidata.org/prop/direct/", ""),
-                propagated: false,
-                wikidata: etymology_wd_id,
-            };
-
+                feature => (feature.id !== undefined && feature.id === feature_wd_id) || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
+            );
         if (existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             debugLog("Duplicate etymology", { existingFeature, row });
-        } else if (existingFeature) {
+        }
+
+        const etymology: Etymology = {
+            from_osm: false,
+            from_wikidata: true,
+            from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
+            propagated: false,
+            wikidata: etymology_wd_id,
+        };
+        if (existingFeature) { // Add the new etymology to the existing item for this feature
             existingFeature.properties.etymologies.push(etymology);
-        } else {
+        } else { // Add the new item for this feature 
             const osm = row.osm?.value,
                 osm_type = osm?.split("/").at(3),
                 osm_id = osm ? parseInt(osm.split("/").at(4)) : undefined;

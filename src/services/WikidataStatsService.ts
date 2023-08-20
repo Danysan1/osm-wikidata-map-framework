@@ -25,12 +25,20 @@ export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
 
 export class WikidataStatsService extends WikidataService {
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        const csvPath = statsCSVPaths[colorSchemeID],
-            sparqlQuery = statsQueries[colorSchemeID];
-        if (!sparqlQuery)
-            throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
-        const res = await this.etymologyIDsQuery(wikidataIDs, sparqlQuery),
-            stats = res?.results?.bindings?.map((x: any): EtymologyStat => {
+        const cacheKey = `owmf.stats.${colorSchemeID}_${this.language}_${wikidataIDs.join("_")}`,
+            cachedResponse = localStorage.getItem(cacheKey);
+        let out: EtymologyStat[];
+        if (cachedResponse) {
+            out = JSON.parse(cachedResponse);
+            debugLog("Cache hit, using cached response", { cacheKey, out });
+        } else {
+            debugLog("Cache miss, fetching data", { cacheKey });
+            const csvPath = statsCSVPaths[colorSchemeID],
+                sparqlQuery = statsQueries[colorSchemeID];
+            if (!sparqlQuery)
+                throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
+            const res = await this.etymologyIDsQuery(wikidataIDs, sparqlQuery);
+            out = res?.results?.bindings?.map((x: any): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
                     debugLog("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
@@ -43,16 +51,18 @@ export class WikidataStatsService extends WikidataService {
                     subjects: x.subjects?.value?.split(","),
                 };
             }) as EtymologyStat[];
-        if (csvPath) {
-            const csvResponse = await fetch(csvPath),
-                csvText = await csvResponse.text(),
-                csv = parse(csvText, { download: false, header: false });
-            // console.info("Loaded CSV:")
-            // console.table(csv.data);
-            // console.info("Applying to stats:")
-            // console.table(stats);
-            stats.forEach(stat => stat.color = (csv.data as string[][]).find(row => row[0] === stat.id)?.at(3));
+            if (csvPath) {
+                const csvResponse = await fetch(csvPath),
+                    csvText = await csvResponse.text(),
+                    csv = parse(csvText, { download: false, header: false });
+                // console.info("Loaded CSV:")
+                // console.table(csv.data);
+                // console.info("Applying to stats:")
+                // console.table(stats);
+                out.forEach(stat => stat.color = (csv.data as string[][]).find(row => row[0] === stat.id)?.at(3));
+            }
+            localStorage.setItem(cacheKey, JSON.stringify(out));
         }
-        return stats;
+        return out;
     }
 }

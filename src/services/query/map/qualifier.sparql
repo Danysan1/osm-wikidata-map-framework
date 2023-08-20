@@ -1,3 +1,4 @@
+#defaultView:Map
 SELECT DISTINCT
     ?etymology
     ?location

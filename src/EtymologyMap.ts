@@ -192,15 +192,11 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
      */
-    updateDataSource() {
+    async updateDataSource() {
         const bounds = this.getBounds(),
             bbox_margin = parseFloat(getConfig("bbox_margin") ?? "0"),
             southWest = bounds.getSouthWest(),
-            minLat = southWest.lat - bbox_margin,
-            minLon = southWest.lng - bbox_margin,
             northEast = bounds.getNorthEast(),
-            maxLat = northEast.lat + bbox_margin,
-            maxLon = northEast.lng + bbox_margin,
             zoomLevel = this.getZoom(),
             fragmentParams = getCorrectFragmentParams(),
             source = fragmentParams.source,
@@ -222,47 +218,49 @@ export class EtymologyMap extends Map {
             search: this.search,
         });
 
-        if (enableWikidataLayers) {
-            if (this.wikidataMapService.canHandleSource(source)) {
-                this.wikidataMapService.fetchMapData(source, bounds.toArray().flat() as BBox).then(
-                    data => this.prepareWikidataLayers(data, thresholdZoomLevel)
-                );
-            } else {
-                const queryParams = {
-                    language,
-                    minLat: (Math.floor(minLat * 100) / 100).toString(), // 0.123 => 0.12
-                    minLon: (Math.floor(minLon * 100) / 100).toString(),
-                    maxLat: (Math.ceil(maxLat * 100) / 100).toString(), // 0.123 => 0.13
-                    maxLon: (Math.ceil(maxLon * 100) / 100).toString(),
-                    source,
-                    search: this.search,
-                },
-                    queryString = new URLSearchParams(queryParams).toString(),
-                    wikidata_url = './etymologyMap.php?' + queryString;
-
-                this.prepareWikidataLayers(wikidata_url, thresholdZoomLevel);
-            }
-        } else if (enableGlobalLayers) {
+        if (enableGlobalLayers) {
             if (getBoolConfig("db_enable"))
                 this.prepareGlobalLayers(minZoomLevel);
             else
                 loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
-        } else if (enableElementLayers) {
-            const queryParams = {
-                minLat: (Math.floor(minLat * 10) / 10).toString(), // 0.123 => 0.1
-                minLon: (Math.floor(minLon * 10) / 10).toString(), // 0.123 => 0.1
-                maxLat: (Math.ceil(maxLat * 10) / 10).toString(), // 0.123 => 0.2
-                maxLon: (Math.ceil(maxLon * 10) / 10).toString(), // 0.123 => 0.2
-                language,
-                source,
-                search: this.search,
-            },
-                queryString = new URLSearchParams(queryParams).toString(),
-                elements_url = './elements.php?' + queryString;
+        } else if (enableElementLayers || enableWikidataLayers) {
+            let minLat = southWest.lat - bbox_margin,
+                minLon = southWest.lng - bbox_margin,
+                maxLat = northEast.lat + bbox_margin,
+                maxLon = northEast.lng + bbox_margin;
+            if (enableWikidataLayers) {
+                minLat = Math.floor(minLat * 100) / 100; // 0.123 => 0.12
+                minLon = Math.floor(minLon * 100) / 100;
+                maxLat = Math.ceil(maxLat * 100) / 100; // 0.123 => 0.13
+                maxLon = Math.ceil(maxLon * 100) / 100;
+            } else {
+                minLat = Math.floor(minLat * 10) / 10; // 0.123 => 0.1
+                minLon = Math.floor(minLon * 10) / 10;
+                maxLat = Math.ceil(maxLat * 10) / 10; // 0.123 => 0.2
+                maxLon = Math.ceil(maxLon * 10) / 10;
+            }
 
-            this.prepareElementsLayers(elements_url, minZoomLevel, thresholdZoomLevel);
+            const queryParams = {
+                language,
+                minLat: minLat.toString(),
+                minLon: minLon.toString(),
+                maxLat: maxLat.toString(),
+                maxLon: maxLon.toString(),
+                source,
+                search: this.search
+            },
+                queryString = new URLSearchParams(queryParams).toString();
+
+            let data: GeoJSON | undefined;
+            if (this.wikidataMapService.canHandleSource(source))
+                data = await this.wikidataMapService.fetchMapData(source, [minLon, minLat, maxLon, maxLat]);
+
+            if (enableWikidataLayers)
+                this.prepareWikidataLayers(data || "./etymologyMap.php?" + queryString, thresholdZoomLevel);
+            else
+                this.prepareElementsLayers(data || "./elements.php?" + queryString, minZoomLevel, thresholdZoomLevel);
         } else {
-            console.error("No layer was enabled", {
+            logErrorMessage("No layer was enabled", "error", {
                 zoomLevel,
                 minZoomLevel,
                 thresholdZoomLevel,
@@ -283,7 +281,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    prepareWikidataLayers(wikidata_url: string | GeoJSON, minZoom: number) {
+    prepareWikidataLayers(data: string | GeoJSON, minZoom: number) {
         const colorSchemeColor = getCurrentColorScheme().color || '#223b53',
             wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
             wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
@@ -295,7 +293,7 @@ export class EtymologyMap extends Map {
             {
                 type: 'geojson',
                 //buffer: 512, // This only works on already downloaded data
-                data: wikidata_url,
+                data,
                 attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
             }
         );
@@ -418,8 +416,12 @@ export class EtymologyMap extends Map {
             setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
 
             debugLog("Initializing link controls", { minZoomLevel });
-            this.addControl(new LinkControl("https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel), 'top-right');
-            this.addControl(new LinkControl("https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#%23defaultView%3AMap%0A", minZoomLevel), 'top-right');
+            this.addControl(new LinkControl(
+                "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel
+            ), 'top-right');
+            this.addControl(new LinkControl(
+                "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#", minZoomLevel
+            ), 'top-right');
         });
     }
 
@@ -503,10 +505,10 @@ export class EtymologyMap extends Map {
      * 
      * @see prepareClusteredLayers
      */
-    prepareElementsLayers(elements_url: string, minZoom: number, maxZoom: number) {
+    prepareElementsLayers(data: string | GeoJSON, minZoom: number, maxZoom: number) {
         this.prepareClusteredLayers(
             ELEMENTS_SOURCE,
-            elements_url,
+            data,
             minZoom,
             maxZoom
         );
@@ -558,7 +560,7 @@ export class EtymologyMap extends Map {
      */
     prepareClusteredLayers(
         sourceName: string,
-        sourceDataURL: string,
+        data: string | GeoJSON,
         minZoom: number | undefined = undefined,
         maxZoom: number | undefined = undefined,
         clusterProperties: object | undefined = undefined,
@@ -573,7 +575,7 @@ export class EtymologyMap extends Map {
                 {
                     type: 'geojson',
                     buffer: 256,
-                    data: sourceDataURL,
+                    data,
                     cluster: true,
                     maxzoom: maxZoom,
                     //clusterMaxZoom: maxZoom, // Max zoom to cluster points on
