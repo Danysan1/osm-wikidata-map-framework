@@ -1,4 +1,4 @@
-import { TFunction } from "i18next";
+import { Resource, TFunction } from "i18next";
 import ChainedBackend from 'i18next-chained-backend'
 import resourcesToBackend from 'i18next-resources-to-backend'
 import HttpBackend from 'i18next-http-backend'
@@ -42,16 +42,11 @@ export async function loadTranslator() {
             defaultLanguage = getConfig("default_language") || 'en',
             locale = document.documentElement.lang,
             language = locale.split('-').at(0),
-            rawI18nOverride = getJsonConfig("i18n_override"),
+            i18nOverride: Resource | null = getJsonConfig("i18n_override"),
             backends: object[] = [HttpBackend];
-        if (rawI18nOverride) {
-            try {
-                const i18nOverride = JSON.parse(rawI18nOverride);
-                debugLog("loadTranslator: using i18n_override:", { defaultLanguage, language, rawI18nOverride, i18nOverride });
-                backends.unshift(resourcesToBackend(i18nOverride));
-            } catch (e) {
-                logErrorMessage("Failed parsing i18n_override", "error", { defaultLanguage, language, rawI18nOverride, e });
-            }
+        if (i18nOverride) {
+            debugLog("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
+            backends.unshift(resourcesToBackend(i18nOverride));
         }
         tPromise = import("i18next").then(i18next => i18next.use(ChainedBackend).init({
             debug: getBoolConfig("enable_debug_log"),

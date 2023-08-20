@@ -14,10 +14,8 @@ export class SourceControl extends DropdownControl {
         t: TFunction,
         minZoomLevel: number
     ) {
-        const rawKeys = getJsonConfig("osm_wikidata_keys"),
-            keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
-            rawOsmProps = getJsonConfig("osm_wikidata_properties"),
-            osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
+        const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
+            osmProps: string[] | null = getJsonConfig("osm_wikidata_properties"),
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getBoolConfig("propagate_data"),
             dbEnabled = getBoolConfig("db_enable"),
@@ -31,7 +29,7 @@ export class SourceControl extends DropdownControl {
 
                     // If the change came from a manual interaction, update the fragment params
                     setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                    
+
                     // If the change came from a fragment change, update the dropdown
                     // Regardless of the source, update the map
                     onSourceChange(sourceID);

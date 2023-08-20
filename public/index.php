@@ -92,6 +92,7 @@ $jsScript = (string)$jsScripts[0];
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
     <?= $conf->getMetaTag("db_enable", true); ?>
+    <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
     <?= $conf->getJsonScriptTag("osm_wikidata_keys", true); ?>
     <?= $conf->getJsonScriptTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>
