@@ -158,7 +158,15 @@ class EtymologyColorControl extends DropdownControl {
         const wikidataIDs = this.getMap()
             ?.querySourceFeatures("wikidata_source")
             ?.map(feature => feature.properties?.etymologies)
-            ?.flatMap(etymologies => (typeof etymologies === 'string' ? JSON.parse(etymologies) : etymologies) as Etymology[])
+            ?.flatMap(etymologies => {
+                if(Array.isArray(etymologies))
+                    return etymologies as Etymology[];
+
+                if(typeof etymologies === 'string')
+                    return JSON.parse(etymologies) as Etymology[];
+
+                return [];
+            })
             ?.map(etymology => etymology.wikidata)
             ?.filter(id => typeof id === 'string')
             ?.sort() as string[] || [];

@@ -18,6 +18,7 @@ import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
 import './style.css';
 import { WikidataMapService } from './services/WikidataMapService';
+import { OverpassService } from './services/OverpassService';
 
 const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -34,6 +35,7 @@ export class EtymologyMap extends Map {
     private wikidataControlsInitialized = false;
     private wikidataSourceInitialized = false;
     private wikidataMapService: WikidataMapService;
+    private overpassService: OverpassService;
 
     constructor(
         containerId: string,
@@ -63,6 +65,7 @@ export class EtymologyMap extends Map {
         this.geocoderControl = geocoderControl;
         this.projectionControl = projectionControl;
         this.wikidataMapService = new WikidataMapService();
+        this.overpassService = new OverpassService();
 
         try {
             openInfoWindow(this);
@@ -250,6 +253,10 @@ export class EtymologyMap extends Map {
             let data: GeoJSON | undefined;
             if (this.wikidataMapService.canHandleSource(source))
                 data = await this.wikidataMapService.fetchMapData(source, [minLon, minLat, maxLon, maxLat]);
+            else if (enableElementLayers && this.overpassService.canHandleSource(source))
+                data = await this.overpassService.fetchMapClusterElements(source, [minLon, minLat, maxLon, maxLat]);
+            else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
+                data = await this.overpassService.fetchMapElementDetails(source, [minLon, minLat, maxLon, maxLat]);
 
             if (enableWikidataLayers)
                 this.prepareWikidataLayers(data || "./etymologyMap.php?" + queryString, thresholdZoomLevel);

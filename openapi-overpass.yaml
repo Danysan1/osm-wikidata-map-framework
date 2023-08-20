@@ -36,6 +36,23 @@ paths:
             application/json:
               schema:
                 type: object
+                title: OverpassQueryResponse
+                properties:
+                  version:
+                    type: number
+                    description: The version of the Overpass API
+                  generator:
+                    type: string
+                    description: The name of the Overpass API
+                  osm3s:
+                    type: object
+                    description: The details of the OSM3S API
+                  elements:
+                    type: array
+                    description: The elements returned by the query
+                    items:
+                      type: object
+                      description: An element returned by the query
         '400':
           description: Bad request or malformed query
         '500':

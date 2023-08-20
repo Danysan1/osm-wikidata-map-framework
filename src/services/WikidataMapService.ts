@@ -21,7 +21,7 @@ export class WikidataMapService extends WikidataService {
     }
 
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON> {
-        const cacheKey = `owmf.wd.map.${sourceID}_${this.language}_${bbox.join("_")}`,
+        const cacheKey = `owmf.map.${sourceID}_${this.language}_${bbox.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
         let out: GeoJSON;
         if (cachedResponse) {
@@ -61,7 +61,7 @@ export class WikidataMapService extends WikidataService {
         if (!rawDirectProperties)
             throw new Error("No direct properties defined");
 
-        const sourceProperty = /_(P\d+)$/.exec(sourceID)?.at(1),
+        const sourceProperty = /^wd_\w+_(P\d+)$/.exec(sourceID)?.at(1),
             directProperties = JSON.parse(rawDirectProperties),
             sparqlQueryTemplate = directMapQuery as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
@@ -128,7 +128,7 @@ export class WikidataMapService extends WikidataService {
             wikidata: etymology_wd_id,
         };
         if (existingFeature) { // Add the new etymology to the existing item for this feature
-            existingFeature.properties.etymologies.push(etymology);
+            existingFeature.properties.etymologies?.push(etymology);
         } else { // Add the new item for this feature 
             const osm = row.osm?.value,
                 osm_type = osm?.split("/").at(3),

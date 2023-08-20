@@ -41,7 +41,7 @@ export class WikidataService {
 
     async fetchEtymologyDetails(etymologyIDs: string[]): Promise<EtymologyDetails[]> {
         etymologyIDs.sort();
-        const cacheKey = `owmf.wd.details.${this.language}_${etymologyIDs.join("_")}`,
+        const cacheKey = `owmf.details.${this.language}_${etymologyIDs.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
         let out: EtymologyDetails[];
         if (cachedResponse) {

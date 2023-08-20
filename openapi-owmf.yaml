@@ -1,6 +1,6 @@
 openapi: "3.0.3"
 info:
-  version: 1.13.0
+  version: 2.0.0
   title: "OSM-Wikidata Map Framework API"
   description: Programmatically interact with a site based on OSM-Wikidata Map Framework
 
@@ -517,9 +517,6 @@ components:
             properties:
               type: object
               title: EtymologyFeatureProperties
-              required:
-                - name
-                - etymologies
               properties:
                 alt_name:
                   type: string

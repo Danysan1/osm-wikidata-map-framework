@@ -113,6 +113,8 @@ function prepareHTML(Configuration $conf)
 	$wikimediaImgSrcs = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
 	$wikimediaConnectSrcs = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
+	$overpassConnectSrcs = implode(" ", $conf->getArray('overpass_endpoints'));
+
 	$payPalImgSrcs = "https://www.paypal.com https://www.paypalobjects.com";
 
 	header(
@@ -126,7 +128,7 @@ function prepareHTML(Configuration $conf)
 			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
 			"frame-ancestors 'none'; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $wikimediaConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $stadiaConnectSrcs $jawgConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"connect-src 'self' $wikimediaConnectSrcs $overpassConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $stadiaConnectSrcs $jawgConnectSrcs $googleAnalyticsConnectSrcs ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"

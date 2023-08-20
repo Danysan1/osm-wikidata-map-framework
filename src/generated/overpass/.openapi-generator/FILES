@@ -1,4 +1,6 @@
 apis/OverpassApi.ts
 apis/index.ts
 index.ts
+models/OverpassQueryResponse.ts
+models/index.ts
 runtime.ts

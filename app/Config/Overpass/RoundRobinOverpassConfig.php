@@ -47,9 +47,9 @@ class RoundRobinOverpassConfig implements OverpassConfig
 
     public function getEndpoint(): string
     {
-        $out = $this->endpoints[array_rand($this->endpoints)];
+        $out = (string)$this->endpoints[array_rand($this->endpoints)];
         //error_log("RoundRobinOverpassConfig: $out");
-        return $out;
+        return $out . "/interpreter";
     }
 
     public function shouldFetchNodes(): bool

@@ -27,7 +27,7 @@ export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
 
 export class WikidataStatsService extends WikidataService {
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        const cacheKey = `owmf.wd.stats.${colorSchemeID}.${this.language}_${wikidataIDs.join("_")}`,
+        const cacheKey = `owmf.stats.${colorSchemeID}.${this.language}_${wikidataIDs.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
         let out: EtymologyStat[];
         if (cachedResponse) {
