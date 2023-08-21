@@ -7,10 +7,9 @@ import { getCorrectFragmentParams } from '../fragment';
 import { debugLog } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
 import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
-import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
+import { Etymology, EtymologyFeature } from '../generated/owmf';
 
 export interface EtymologyStat {
     color?: string;
@@ -121,12 +120,12 @@ class EtymologyColorControl extends DropdownControl {
             propagation_IDs = new Set<string>();
         this.getMap()
             ?.querySourceFeatures("wikidata_source")
-            ?.forEach(feature => {
-                const props = feature.properties as EtymologyFeatureProperties,
-                    rawEtymologies = props.etymologies,
+            ?.forEach((feature: EtymologyFeature) => {
+                const props = feature.properties,
+                    rawEtymologies = props?.etymologies,
                     etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
 
-                if (etymologies) {
+                if (etymologies?.length) {
                     etymologies.forEach(etymology => {
                         if (!etymology.wikidata)
                             debugLog("Skipping etymology in source calculation", etymology);
@@ -136,15 +135,15 @@ class EtymologyColorControl extends DropdownControl {
                             wikidata_IDs.add(etymology.wikidata);
                         else if (etymology.from_osm)
                             osm_wikidata_IDs.add(etymology.wikidata);
-                        else if (props.text_etymology)
-                            osm_text_names.add(props.text_etymology);
                     });
-                } else if (!props.wikidata)
-                    debugLog("Skipping feature in source calculation", props);
-                else if (props.from_wikidata) {
-                    wikidata_IDs.add(props.wikidata);
-                } else if (props.from_osm) {
-                    osm_wikidata_IDs.add(props.wikidata);
+                } else if (props?.text_etymology)
+                    osm_text_names.add(props?.text_etymology);
+                else if (!props?.wikidata)
+                    debugLog("Skipping feature in source calculation", props || {});
+                else if (props?.from_wikidata) {
+                    wikidata_IDs.add(props?.wikidata);
+                } else if (props?.from_osm) {
+                    osm_wikidata_IDs.add(props?.wikidata);
                 }
             });
         const stats: EtymologyStat[] = [];

@@ -1,10 +1,12 @@
 import { debugLog, getConfig, getJsonConfig } from "../config";
-import { GeoJSON, BBox } from "geojson";
-import { EtymologyResponse } from "../generated/owmf";
+import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
+import { EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
 import { compress, decompress } from "lz-string";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import osmtogeojson from "osmtogeojson";
+
+type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 
 export class OverpassService {
     private api: OverpassApi;
@@ -50,12 +52,19 @@ export class OverpassService {
             debugLog("Cache miss, fetching data", { cacheKey });
             const filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
-                maxElements: string | null = getConfig("max_map_elements");
-            let keys: string[];
-            if (!wikidata_keys) {
+                maxElements: string | null = getConfig("max_map_elements"),
+                osm_text_key = getConfig("osm_text_key"),
+                osm_description_key = getConfig("osm_description_key");
+            let keys: string[], text_key: string | null;
+
+            if (sourceID === "overpass_text") {
+                keys = [];
+                text_key = osm_text_key;
+            } else if (!wikidata_keys) {
                 throw new Error("No keys configured")
             } else if (sourceID === "overpass_all") {
                 keys = wikidata_keys;
+                text_key = osm_text_key;
             } else {
                 const wikidata_key_codes = wikidata_keys.map(key => key.replace(":wikidata", "").replace(":", "_")),
                     sourceKeyCode = /^overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
@@ -65,24 +74,26 @@ export class OverpassService {
                     throw new Error(`Invalid sourceID: ${sourceID}`);
                 else
                     keys = wikidata_keys.filter(key => key.replace(":wikidata", "").replace(":", "_") === sourceKeyCode);
+                text_key = null;
             }
+
             let query = `
 [out:json][timeout:40];
 (
 `;
-            keys.forEach(key => {
-                if (filter_tags) {
-                    filter_tags.forEach(filter_tag => {
-                        const filter_split = filter_tag.split("=");
-                        if (filter_split.length === 1 || filter_split[1] === "*")
-                            query += `nwr["${filter_split[0]}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
-                        else
-                            query += `nwr["${filter_split[0]}"="${filter_split[1]}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
-                    });
-                } else {
-                    query += `nwr["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
-                }
-            });
+            if (filter_tags) {
+                filter_tags.forEach(filter_tag => {
+                    const filter_split = filter_tag.split("="),
+                        filter_clause = (filter_split.length > 1 && filter_split[1] !== "*") ? `${filter_split[0]}"="${filter_split[1]}` : filter_split[0];
+                    keys.forEach(key => { query += `nwr["${filter_clause}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`; });
+                    if (text_key)
+                        query += `nwr["${filter_clause}"]["${text_key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                });
+            } else {
+                keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`; });
+                if (text_key)
+                    query += `nwr["${text_key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+            }
             query += `
 ); 
 ${outClause}`.replace("${maxElements}", maxElements || "");
@@ -90,7 +101,7 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
             const res = await this.api.postOverpassQuery({ data: query });
 
             out = osmtogeojson(res);
-            out.features.forEach(feature => {
+            out.features.forEach((feature: Feature) => {
                 if (!feature.id)
                     feature.id = feature.properties?.id ? feature.properties.id : Math.random().toString();
                 if (!feature.properties)
@@ -101,7 +112,16 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                     osm_id = feature.properties.id ? feature.properties.id.split("/")[1] : undefined;
                 feature.properties.osm_id = osm_id;
                 feature.properties.osm_type = osm_type;
-                feature.properties.commons = feature.properties.wikimedia_commons;
+                if (osm_text_key)
+                    feature.properties.text_etymology = feature.properties[osm_text_key];
+                if (osm_description_key)
+                    feature.properties.text_etymology_descr = feature.properties[osm_description_key];
+                if (typeof feature.properties.wikimedia_commons === "string") {
+                    if (feature.properties.wikimedia_commons?.includes("File:"))
+                        feature.properties.picture = feature.properties.wikimedia_commons;
+                    else
+                        feature.properties.commons = feature.properties.wikimedia_commons;
+                }
                 feature.properties.etymologies = [];
                 keys.map(key => feature.properties?.[key])
                     .filter(value => value)
