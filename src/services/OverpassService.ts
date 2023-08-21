@@ -29,19 +29,19 @@ export class OverpassService {
         return true;
     }
 
-    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON> {
+    fetchMapClusterElements(sourceID: string, bbox: BBox, includeWikidata = false): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "elements", "out ids center ${maxElements};", sourceID, bbox
+            "elements", "out ids center ${maxElements};", sourceID, bbox, includeWikidata
         );
     }
 
-    fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON> {
+    fetchMapElementDetails(sourceID: string, bbox: BBox, includeWikidata = false): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "map", "out body ${maxElements}; >; out skel qt;", sourceID, bbox
+            "map", "out body ${maxElements}; >; out skel qt;", sourceID, bbox, includeWikidata
         );
     }
 
-    async fetchMapData(cachePrefix: string, outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON> {
+    async fetchMapData(cachePrefix: string, outClause: string, sourceID: string, bbox: BBox, includeWikidata = false): Promise<GeoJSON & EtymologyResponse> {
         const cacheKey = `owmf.${cachePrefix}.${sourceID}.${this.language}_${bbox.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
         let out: GeoJSON & EtymologyResponse;
@@ -88,11 +88,15 @@ export class OverpassService {
                     keys.forEach(key => { query += `nwr["${filter_clause}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`; });
                     if (text_key)
                         query += `nwr["${filter_clause}"]["${text_key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                    if (includeWikidata)
+                        query += `nwr["${filter_clause}"]["wikidata"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
                 });
             } else {
                 keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`; });
                 if (text_key)
                     query += `nwr["${text_key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                if (includeWikidata)
+                    query += `nwr["wikidata"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
             }
             query += `
 ); 

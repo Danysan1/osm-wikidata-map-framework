@@ -15,7 +15,7 @@ export class SourceControl extends DropdownControl {
         minZoomLevel: number
     ) {
         const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
-            osmProps: string[] | null = getJsonConfig("osm_wikidata_properties"),
+            wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getBoolConfig("propagate_data"),
             dbEnabled = getBoolConfig("db_enable"),
@@ -49,8 +49,8 @@ export class SourceControl extends DropdownControl {
                 });
             }
 
-            if (osmProps && osmProps.length > 0)
-                dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
+            if (wdDirectProperties?.length)
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), "DB"));
 
             if (indirectWdProperty)
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", { indirectWdProperty }), "DB"));
@@ -59,8 +59,8 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_propagated", t("source.propagated"), "DB"));
         }
 
-        if (osmProps && osmProps.length > 0)
-            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API"));
+        if (wdDirectProperties?.length)
+            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), "Wikidata API"));
 
         if (indirectWdProperty) {
             dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), "Wikidata API"));
@@ -77,6 +77,9 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem(source, "OSM " + key, "OSM (Overpass API)"));
             });
         }
+
+        if(keys && wdDirectProperties?.length)
+            dropdownItems.push(buildDropdownItem("overpass_wd_direct", "OSM + Wikidata", "Overpass API + Wikidata API"));
 
         super(
             '⚙️',

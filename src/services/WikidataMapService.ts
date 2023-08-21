@@ -20,7 +20,7 @@ export class WikidataMapService extends WikidataService {
         return true;
     }
 
-    async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON> {
+    async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         const cacheKey = `owmf.map.${sourceID}_${this.language}_${bbox.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
         let out: GeoJSON & EtymologyResponse;
@@ -56,13 +56,9 @@ export class WikidataMapService extends WikidataService {
     }
 
     private getDirectSparqlQuery(sourceID: string): string {
-        const rawDirectProperties = getJsonConfig("osm_wikidata_properties");
         let properties: string[];
-        if (!rawDirectProperties)
-            throw new Error("No direct properties defined");
-
         const sourceProperty = /^wd_\w+_(P\d+)$/.exec(sourceID)?.at(1),
-            directProperties = JSON.parse(rawDirectProperties),
+            directProperties = getJsonConfig("osm_wikidata_properties"),
             sparqlQueryTemplate = directMapQuery as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
             throw new Error("Empty direct properties");

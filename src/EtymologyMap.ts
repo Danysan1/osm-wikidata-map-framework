@@ -19,6 +19,7 @@ import { LinkControl } from './controls/LinkControl';
 import './style.css';
 import { WikidataMapService } from './services/WikidataMapService';
 import { OverpassService } from './services/OverpassService';
+import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
 
 const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -36,6 +37,7 @@ export class EtymologyMap extends Map {
     private wikidataSourceInitialized = false;
     private wikidataMapService: WikidataMapService;
     private overpassService: OverpassService;
+    private overpassWikidataService: OverpassWikidataMapService;
 
     constructor(
         containerId: string,
@@ -66,6 +68,7 @@ export class EtymologyMap extends Map {
         this.projectionControl = projectionControl;
         this.wikidataMapService = new WikidataMapService();
         this.overpassService = new OverpassService();
+        this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService);
 
         try {
             openInfoWindow(this);
@@ -257,6 +260,10 @@ export class EtymologyMap extends Map {
                 data = await this.overpassService.fetchMapClusterElements(source, [minLon, minLat, maxLon, maxLat]);
             else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
                 data = await this.overpassService.fetchMapElementDetails(source, [minLon, minLat, maxLon, maxLat]);
+            else if (enableElementLayers && this.overpassWikidataService.canHandleSource(source))
+                data = await this.overpassWikidataService.fetchMapClusterElements(source, [minLon, minLat, maxLon, maxLat]);
+            else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
+                data = await this.overpassWikidataService.fetchMapElementDetails(source, [minLon, minLat, maxLon, maxLat]);
 
             if (enableWikidataLayers)
                 this.prepareWikidataLayers(data || "./etymologyMap.php?" + queryString, thresholdZoomLevel);

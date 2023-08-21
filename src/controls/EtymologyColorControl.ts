@@ -156,9 +156,9 @@ class EtymologyColorControl extends DropdownControl {
 
         this._setLayerColor([
             "case",
-            ["all", ["has", "etymologies"], ["coalesce", ["get", "propagated", ["at", 0, ["get", "etymologies"]]]], false], '#ff3333',
-            ["all", ["has", "etymologies"], ["coalesce", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]], false], '#3399ff',
-            ["all", ["has", "etymologies"], ["coalesce", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]], false], '#33ff66',
+            ["coalesce", ["all", ["has", "etymologies"], ["get", "propagated", ["at", 0, ["get", "etymologies"]]]], false], '#ff3333',
+            ["coalesce", ["all", ["has", "etymologies"], ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]], false], '#3399ff',
+            ["coalesce", ["all", ["has", "etymologies"], ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]], false], '#33ff66',
             ["coalesce", ["get", "from_wikidata"], false], '#3399ff',
             ["coalesce", ["get", "from_osm"], false], '#33ff66',
             '#223b53'
@@ -223,13 +223,13 @@ class EtymologyColorControl extends DropdownControl {
         stats.forEach((row: EtymologyStat) => {
             if (row.color && row.subjects?.length) {
                 data.push(
-                    ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]],
+                    ["coalesce", ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]], false],
                     row.color,
-                    [
+                    ["coalesce", [
                         "all",
                         [">", ["length", ["get", "etymologies"]], 1],
                         ["in", ["get", "wikidata", ["at", 1, ["get", "etymologies"]]], ["literal", row.subjects]]
-                    ],
+                    ], false],
                     row.color,
                 );
             }
