@@ -27,6 +27,7 @@ export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
 
 export class WikidataStatsService extends WikidataService {
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
+        wikidataIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
         const cacheKey = `owmf.stats.${colorSchemeID}.${this.language}_${wikidataIDs.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
         let out: EtymologyStat[];

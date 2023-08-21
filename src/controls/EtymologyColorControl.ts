@@ -115,27 +115,37 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     loadSourceChartData() {
-        const osm_wikidata_IDs = new Set(),
-            osm_text_names = new Set(),
-            wikidata_IDs = new Set(),
-            propagation_IDs = new Set();
+        const osm_wikidata_IDs = new Set<string>(),
+            osm_text_names = new Set<string>(),
+            wikidata_IDs = new Set<string>(),
+            propagation_IDs = new Set<string>();
         this.getMap()
             ?.querySourceFeatures("wikidata_source")
             ?.forEach(feature => {
                 const props = feature.properties as EtymologyFeatureProperties,
                     rawEtymologies = props.etymologies,
-                    etymologies = (typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) : rawEtymologies) as Etymology[];
+                    etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
 
-                etymologies.forEach(etymology => {
-                    if (etymology.propagated)
-                        propagation_IDs.add(etymology.wikidata);
-                    else if (etymology.from_wikidata)
-                        wikidata_IDs.add(etymology.wikidata);
-                    else if (etymology.from_osm)
-                        osm_wikidata_IDs.add(etymology.wikidata);
-                    else if (props.text_etymology)
-                        osm_text_names.add(props.text_etymology);
-                });
+                if (etymologies) {
+                    etymologies.forEach(etymology => {
+                        if (!etymology.wikidata)
+                            debugLog("Skipping etymology in source calculation", etymology);
+                        else if (etymology.propagated)
+                            propagation_IDs.add(etymology.wikidata);
+                        else if (etymology.from_wikidata)
+                            wikidata_IDs.add(etymology.wikidata);
+                        else if (etymology.from_osm)
+                            osm_wikidata_IDs.add(etymology.wikidata);
+                        else if (props.text_etymology)
+                            osm_text_names.add(props.text_etymology);
+                    });
+                } else if (!props.wikidata)
+                    debugLog("Skipping feature in source calculation", props);
+                else if (props.from_wikidata) {
+                    wikidata_IDs.add(props.wikidata);
+                } else if (props.from_osm) {
+                    osm_wikidata_IDs.add(props.wikidata);
+                }
             });
         const stats: EtymologyStat[] = [];
         if (propagation_IDs.size) stats.push({ name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size });
@@ -147,9 +157,11 @@ class EtymologyColorControl extends DropdownControl {
 
         this._setLayerColor([
             "case",
-            ["coalesce", ["get", "propagated", ["at", 0, ["get", "etymologies"]]], false], '#ff3333',
-            ["coalesce", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]], false], '#3399ff',
-            ["coalesce", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]], false], '#33ff66',
+            ["all", ["has", "etymologies"], ["coalesce", ["get", "propagated", ["at", 0, ["get", "etymologies"]]]], false], '#ff3333',
+            ["all", ["has", "etymologies"], ["coalesce", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]], false], '#3399ff',
+            ["all", ["has", "etymologies"], ["coalesce", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]], false], '#33ff66',
+            ["coalesce", ["get", "from_wikidata"], false], '#3399ff',
+            ["coalesce", ["get", "from_osm"], false], '#33ff66',
             '#223b53'
         ]);
     }
@@ -159,10 +171,10 @@ class EtymologyColorControl extends DropdownControl {
             ?.querySourceFeatures("wikidata_source")
             ?.map(feature => feature.properties?.etymologies)
             ?.flatMap(etymologies => {
-                if(Array.isArray(etymologies))
+                if (Array.isArray(etymologies))
                     return etymologies as Etymology[];
 
-                if(typeof etymologies === 'string')
+                if (typeof etymologies === 'string')
                     return JSON.parse(etymologies) as Etymology[];
 
                 return [];

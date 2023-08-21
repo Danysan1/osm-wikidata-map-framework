@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { GeoJSONFeatureID } from './GeoJSONFeatureID';
+import {
+    GeoJSONFeatureIDFromJSON,
+    GeoJSONFeatureIDFromJSONTyped,
+    GeoJSONFeatureIDToJSON,
+} from './GeoJSONFeatureID';
 import type { GeoJSONPoint } from './GeoJSONPoint';
 import {
     GeoJSONPointFromJSON,
@@ -40,10 +46,10 @@ export interface GlobalMapFeature {
     type: GlobalMapFeatureTypeEnum;
     /**
      * 
-     * @type {number}
+     * @type {GeoJSONFeatureID}
      * @memberof GlobalMapFeature
      */
-    id: number;
+    id?: GeoJSONFeatureID;
     /**
      * 
      * @type {GeoJSONPoint}
@@ -80,7 +86,6 @@ export type GlobalMapFeatureTypeEnum = typeof GlobalMapFeatureTypeEnum[keyof typ
 export function instanceOfGlobalMapFeature(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "id" in value;
     isInstance = isInstance && "geometry" in value;
 
     return isInstance;
@@ -97,7 +102,7 @@ export function GlobalMapFeatureFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'type': json['type'],
-        'id': json['id'],
+        'id': !exists(json, 'id') ? undefined : GeoJSONFeatureIDFromJSON(json['id']),
         'geometry': GeoJSONPointFromJSON(json['geometry']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
         'properties': !exists(json, 'properties') ? undefined : GlobalMapFeatureDetailsPropertiesFromJSON(json['properties']),
@@ -114,7 +119,7 @@ export function GlobalMapFeatureToJSON(value?: GlobalMapFeature | null): any {
     return {
         
         'type': value.type,
-        'id': value.id,
+        'id': GeoJSONFeatureIDToJSON(value.id),
         'geometry': GeoJSONPointToJSON(value.geometry),
         'bbox': value.bbox,
         'properties': GlobalMapFeatureDetailsPropertiesToJSON(value.properties),

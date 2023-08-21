@@ -20,6 +20,12 @@ import { exists, mapValues } from '../runtime';
  */
 export interface FeatureCollectionMetadata {
     /**
+     * ISO string for the time the query was run
+     * @type {string}
+     * @memberof FeatureCollectionMetadata
+     */
+    timestamp?: string;
+    /**
      * Total number of etymologies linked to the features
      * @type {number}
      * @memberof FeatureCollectionMetadata
@@ -58,6 +64,7 @@ export function FeatureCollectionMetadataFromJSONTyped(json: any, ignoreDiscrimi
     }
     return {
         
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
         'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
         'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
         'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
@@ -73,6 +80,7 @@ export function FeatureCollectionMetadataToJSON(value?: FeatureCollectionMetadat
     }
     return {
         
+        'timestamp': value.timestamp,
         'etymology_count': value.etymology_count,
         'wikidata_query': value.wikidata_query,
         'overpass_query': value.overpass_query,

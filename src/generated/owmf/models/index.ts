@@ -16,6 +16,7 @@ export * from './FeatureCollectionDetails';
 export * from './FeatureCollectionMetadata';
 export * from './GeoJSONFeature';
 export * from './GeoJSONFeatureCollection';
+export * from './GeoJSONFeatureID';
 export * from './GeoJSONGeometry';
 export * from './GeoJSONGeometryCollection';
 export * from './GeoJSONLineString';

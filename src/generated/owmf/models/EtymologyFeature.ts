@@ -19,6 +19,12 @@ import {
     EtymologyFeaturePropertiesFromJSONTyped,
     EtymologyFeaturePropertiesToJSON,
 } from './EtymologyFeatureProperties';
+import type { GeoJSONFeatureID } from './GeoJSONFeatureID';
+import {
+    GeoJSONFeatureIDFromJSON,
+    GeoJSONFeatureIDFromJSONTyped,
+    GeoJSONFeatureIDToJSON,
+} from './GeoJSONFeatureID';
 import type { GeoJSONGeometry } from './GeoJSONGeometry';
 import {
     GeoJSONGeometryFromJSON,
@@ -40,10 +46,10 @@ export interface EtymologyFeature {
     type: EtymologyFeatureTypeEnum;
     /**
      * 
-     * @type {string}
+     * @type {GeoJSONFeatureID}
      * @memberof EtymologyFeature
      */
-    id: string;
+    id?: GeoJSONFeatureID;
     /**
      * 
      * @type {GeoJSONGeometry}
@@ -61,7 +67,7 @@ export interface EtymologyFeature {
      * @type {EtymologyFeatureProperties}
      * @memberof EtymologyFeature
      */
-    properties: EtymologyFeatureProperties;
+    properties: EtymologyFeatureProperties | null;
 }
 
 
@@ -80,7 +86,6 @@ export type EtymologyFeatureTypeEnum = typeof EtymologyFeatureTypeEnum[keyof typ
 export function instanceOfEtymologyFeature(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "id" in value;
     isInstance = isInstance && "geometry" in value;
     isInstance = isInstance && "properties" in value;
 
@@ -98,7 +103,7 @@ export function EtymologyFeatureFromJSONTyped(json: any, ignoreDiscriminator: bo
     return {
         
         'type': json['type'],
-        'id': json['id'],
+        'id': !exists(json, 'id') ? undefined : GeoJSONFeatureIDFromJSON(json['id']),
         'geometry': GeoJSONGeometryFromJSON(json['geometry']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
         'properties': EtymologyFeaturePropertiesFromJSON(json['properties']),
@@ -115,7 +120,7 @@ export function EtymologyFeatureToJSON(value?: EtymologyFeature | null): any {
     return {
         
         'type': value.type,
-        'id': value.id,
+        'id': GeoJSONFeatureIDToJSON(value.id),
         'geometry': GeoJSONGeometryToJSON(value.geometry),
         'bbox': value.bbox,
         'properties': EtymologyFeaturePropertiesToJSON(value.properties),

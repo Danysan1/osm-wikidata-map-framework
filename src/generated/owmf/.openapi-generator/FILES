@@ -19,6 +19,7 @@ models/FeatureCollectionDetails.ts
 models/FeatureCollectionMetadata.ts
 models/GeoJSONFeature.ts
 models/GeoJSONFeatureCollection.ts
+models/GeoJSONFeatureID.ts
 models/GeoJSONGeometry.ts
 models/GeoJSONGeometryCollection.ts
 models/GeoJSONLineString.ts

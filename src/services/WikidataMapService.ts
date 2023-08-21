@@ -6,7 +6,7 @@ import directMapQuery from "./query/map/direct.sparql";
 import { debugLog, getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
-import { Etymology, EtymologyFeature } from "../generated/owmf";
+import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
 import { compress, decompress } from "lz-string";
 
@@ -23,7 +23,7 @@ export class WikidataMapService extends WikidataService {
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON> {
         const cacheKey = `owmf.map.${sourceID}_${this.language}_${bbox.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
-        let out: GeoJSON;
+        let out: GeoJSON & EtymologyResponse;
         if (cachedResponse) {
             out = JSON.parse(decompress(cachedResponse));
             debugLog("Cache hit, using cached response", { cacheKey, out });
@@ -45,7 +45,7 @@ export class WikidataMapService extends WikidataService {
                 bbox,
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
-            (out as any).metadata = { wikidata_query: sparqlQuery, timestamp: new Date().toISOString() };
+            out.metadata = { wikidata_query: sparqlQuery, timestamp: new Date().toISOString() };
             try {
                 localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
             } catch (e) {
@@ -128,7 +128,7 @@ export class WikidataMapService extends WikidataService {
             wikidata: etymology_wd_id,
         };
         if (existingFeature) { // Add the new etymology to the existing item for this feature
-            existingFeature.properties.etymologies?.push(etymology);
+            existingFeature.properties?.etymologies?.push(etymology);
         } else { // Add the new item for this feature 
             const osm = row.osm?.value,
                 osm_type = osm?.split("/").at(3),

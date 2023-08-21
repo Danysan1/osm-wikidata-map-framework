@@ -1,14 +1,10 @@
-import { WikidataService } from "./WikidataService";
 import { debugLog, getConfig, getJsonConfig } from "../config";
-import { parse as parseWKT } from "wellknown";
-import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
-import { Etymology, EtymologyFeature } from "../generated/owmf";
+import { GeoJSON, BBox } from "geojson";
+import { EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
 import { compress, decompress } from "lz-string";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import osmtogeojson from "osmtogeojson";
-
-export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 
 export class OverpassService {
     private api: OverpassApi;
@@ -46,7 +42,7 @@ export class OverpassService {
     async fetchMapData(cachePrefix: string, outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON> {
         const cacheKey = `owmf.${cachePrefix}.${sourceID}.${this.language}_${bbox.join("_")}`,
             cachedResponse = localStorage.getItem(cacheKey);
-        let out: GeoJSON;
+        let out: GeoJSON & EtymologyResponse;
         if (cachedResponse) {
             out = JSON.parse(decompress(cachedResponse));
             debugLog("Cache hit, using cached response", { cacheKey, out });
@@ -79,12 +75,12 @@ export class OverpassService {
                     filter_tags.forEach(filter_tag => {
                         const filter_split = filter_tag.split("=");
                         if (filter_split.length === 1 || filter_split[1] === "*")
-                            query += `node["${filter_split[0]}"]["${key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                            query += `nwr["${filter_split[0]}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
                         else
-                            query += `node["${filter_split[0]}"="${filter_split[1]}"]["${key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                            query += `nwr["${filter_split[0]}"="${filter_split[1]}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
                     });
                 } else {
-                    query += `node["${key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                    query += `nwr["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
                 }
             });
             query += `
@@ -94,7 +90,32 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
             const res = await this.api.postOverpassQuery({ data: query });
 
             out = osmtogeojson(res);
-            (out as any).metadata = { overpass_query: query, timestamp: new Date().toISOString() };
+            out.features.forEach(feature => {
+                if (!feature.id)
+                    feature.id = feature.properties?.id ? feature.properties.id : Math.random().toString();
+                if (!feature.properties)
+                    feature.properties = {};
+                feature.properties.from_osm = true;
+                feature.properties.from_wikidata = false;
+                const osm_type = feature.properties.id?.split("/")?.[0],
+                    osm_id = feature.properties.id ? feature.properties.id.split("/")[1] : undefined;
+                feature.properties.osm_id = osm_id;
+                feature.properties.osm_type = osm_type;
+                feature.properties.commons = feature.properties.wikimedia_commons;
+                feature.properties.etymologies = [];
+                keys.map(key => feature.properties?.[key])
+                    .filter(value => value)
+                    .flatMap((value: string) => value.split(";"))
+                    .forEach(value => feature.properties?.etymologies?.push({
+                        from_osm: true,
+                        from_osm_id: osm_id,
+                        from_osm_type: osm_type,
+                        from_wikidata: false,
+                        propagated: false,
+                        wikidata: value
+                    }));
+            });
+            out.metadata = { overpass_query: query, timestamp: new Date().toISOString() };
             try {
                 localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
             } catch (e) {

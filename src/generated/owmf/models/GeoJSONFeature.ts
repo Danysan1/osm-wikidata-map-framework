@@ -13,6 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { GeoJSONFeatureID } from './GeoJSONFeatureID';
+import {
+    GeoJSONFeatureIDFromJSON,
+    GeoJSONFeatureIDFromJSONTyped,
+    GeoJSONFeatureIDToJSON,
+} from './GeoJSONFeatureID';
 import type { GeoJSONGeometryCollection } from './GeoJSONGeometryCollection';
 import {
     GeoJSONGeometryCollectionFromJSON,
@@ -34,10 +40,10 @@ export interface GeoJSONFeature {
     type: GeoJSONFeatureTypeEnum;
     /**
      * 
-     * @type {number}
+     * @type {GeoJSONFeatureID}
      * @memberof GeoJSONFeature
      */
-    id: number;
+    id?: GeoJSONFeatureID;
     /**
      * 
      * @type {GeoJSONGeometryCollection}
@@ -68,7 +74,6 @@ export type GeoJSONFeatureTypeEnum = typeof GeoJSONFeatureTypeEnum[keyof typeof 
 export function instanceOfGeoJSONFeature(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "id" in value;
     isInstance = isInstance && "geometry" in value;
 
     return isInstance;
@@ -85,7 +90,7 @@ export function GeoJSONFeatureFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'type': json['type'],
-        'id': json['id'],
+        'id': !exists(json, 'id') ? undefined : GeoJSONFeatureIDFromJSON(json['id']),
         'geometry': GeoJSONGeometryCollectionFromJSON(json['geometry']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
     };
@@ -101,7 +106,7 @@ export function GeoJSONFeatureToJSON(value?: GeoJSONFeature | null): any {
     return {
         
         'type': value.type,
-        'id': value.id,
+        'id': GeoJSONFeatureIDToJSON(value.id),
         'geometry': GeoJSONGeometryCollectionToJSON(value.geometry),
         'bbox': value.bbox,
     };

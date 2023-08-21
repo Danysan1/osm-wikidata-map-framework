@@ -43,7 +43,8 @@ export const GeoJSONMultiPointTypeEnum = {
     Polygon: 'Polygon',
     MultiPoint: 'MultiPoint',
     MultiLineString: 'MultiLineString',
-    MultiPolygon: 'MultiPolygon'
+    MultiPolygon: 'MultiPolygon',
+    GeometryCollection: 'GeometryCollection'
 } as const;
 export type GeoJSONMultiPointTypeEnum = typeof GeoJSONMultiPointTypeEnum[keyof typeof GeoJSONMultiPointTypeEnum];
 

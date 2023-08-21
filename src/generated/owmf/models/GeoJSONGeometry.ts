@@ -37,7 +37,8 @@ export const GeoJSONGeometryTypeEnum = {
     Polygon: 'Polygon',
     MultiPoint: 'MultiPoint',
     MultiLineString: 'MultiLineString',
-    MultiPolygon: 'MultiPolygon'
+    MultiPolygon: 'MultiPolygon',
+    GeometryCollection: 'GeometryCollection'
 } as const;
 export type GeoJSONGeometryTypeEnum = typeof GeoJSONGeometryTypeEnum[keyof typeof GeoJSONGeometryTypeEnum];
 

@@ -221,6 +221,7 @@ components:
             - MultiPoint
             - MultiLineString
             - MultiPolygon
+            - GeometryCollection
           description: the geometry type
 
     GeoJSONPoint3D:
@@ -340,7 +341,6 @@ components:
       description: GeoJSON Feature
       required:
         - type
-        - id
         - geometry
       externalDocs:
         url: https://tools.ietf.org/html/rfc7946#section-3.2
@@ -350,7 +350,11 @@ components:
           enum:
             - Feature
         id:
-          type: integer
+          title: GeoJSONFeatureID
+          description: Commonly used identifier
+          oneOf:
+            - type: string
+            - type: integer
         geometry:
           $ref: "#/components/schemas/GeoJSONGeometryCollection"
         # properties:
@@ -436,6 +440,9 @@ components:
               type: object
               title: FeatureCollectionMetadata
               properties:
+                timestamp:
+                  type: string
+                  description: ISO string for the time the query was run
                 etymology_count:
                   type: integer
                   description: Total number of etymologies linked to the features
@@ -512,10 +519,9 @@ components:
           properties:
             geometry:
               $ref: "#/components/schemas/GeoJSONGeometry"
-            id:
-              type: string
             properties:
               type: object
+              nullable: true
               title: EtymologyFeatureProperties
               properties:
                 alt_name:

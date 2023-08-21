@@ -40,16 +40,10 @@ export interface EtymologyFeatureDetails {
     geometry: GeoJSONGeometry;
     /**
      * 
-     * @type {string}
-     * @memberof EtymologyFeatureDetails
-     */
-    id?: string;
-    /**
-     * 
      * @type {EtymologyFeatureProperties}
      * @memberof EtymologyFeatureDetails
      */
-    properties: EtymologyFeatureProperties;
+    properties: EtymologyFeatureProperties | null;
 }
 
 /**
@@ -74,7 +68,6 @@ export function EtymologyFeatureDetailsFromJSONTyped(json: any, ignoreDiscrimina
     return {
         
         'geometry': GeoJSONGeometryFromJSON(json['geometry']),
-        'id': !exists(json, 'id') ? undefined : json['id'],
         'properties': EtymologyFeaturePropertiesFromJSON(json['properties']),
     };
 }
@@ -89,7 +82,6 @@ export function EtymologyFeatureDetailsToJSON(value?: EtymologyFeatureDetails | 
     return {
         
         'geometry': GeoJSONGeometryToJSON(value.geometry),
-        'id': value.id,
         'properties': EtymologyFeaturePropertiesToJSON(value.properties),
     };
 }

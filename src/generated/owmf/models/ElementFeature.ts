@@ -37,7 +37,7 @@ export interface ElementFeature {
      * @type {string}
      * @memberof ElementFeature
      */
-    id: string;
+    id?: string;
     /**
      * 
      * @type {GeoJSONPoint}
@@ -68,7 +68,6 @@ export type ElementFeatureTypeEnum = typeof ElementFeatureTypeEnum[keyof typeof 
 export function instanceOfElementFeature(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
-    isInstance = isInstance && "id" in value;
     isInstance = isInstance && "geometry" in value;
 
     return isInstance;
@@ -85,7 +84,7 @@ export function ElementFeatureFromJSONTyped(json: any, ignoreDiscriminator: bool
     return {
         
         'type': json['type'],
-        'id': json['id'],
+        'id': !exists(json, 'id') ? undefined : json['id'],
         'geometry': GeoJSONPointFromJSON(json['geometry']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
     };
