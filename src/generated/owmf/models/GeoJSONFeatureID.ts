@@ -12,39 +12,33 @@
  * Do not edit the class manually.
  */
 
+import { exists, mapValues } from '../runtime';
 /**
- * @type GeoJSONFeatureID
  * Commonly used identifier
  * @export
+ * @interface GeoJSONFeatureID
  */
-export type GeoJSONFeatureID = number | string;
+export interface GeoJSONFeatureID {
+}
+
+/**
+ * Check if a given object implements the GeoJSONFeatureID interface.
+ */
+export function instanceOfGeoJSONFeatureID(value: object): boolean {
+    let isInstance = true;
+
+    return isInstance;
+}
 
 export function GeoJSONFeatureIDFromJSON(json: any): GeoJSONFeatureID {
     return GeoJSONFeatureIDFromJSONTyped(json, false);
 }
 
 export function GeoJSONFeatureIDFromJSONTyped(json: any, ignoreDiscriminator: boolean): GeoJSONFeatureID {
-    if ((json === undefined) || (json === null)) {
-        return json;
-    }
-    return { ...numberFromJSONTyped(json, true), ...stringFromJSONTyped(json, true) };
+    return json;
 }
 
 export function GeoJSONFeatureIDToJSON(value?: GeoJSONFeatureID | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
-    }
-
-    if (instanceOfnumber(value)) {
-        return numberToJSON(value as number);
-    }
-    if (instanceOfstring(value)) {
-        return stringToJSON(value as string);
-    }
-
-    return {};
+    return value;
 }
 

@@ -352,7 +352,7 @@ components:
         id:
           title: GeoJSONFeatureID
           description: Commonly used identifier
-          oneOf:
+          anyOf:
             - type: string
             - type: integer
         geometry:

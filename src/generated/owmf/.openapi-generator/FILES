@@ -1,3 +1,4 @@
+.openapi-generator-ignore
 apis/ClustersApi.ts
 apis/DefaultApi.ts
 apis/FeaturesApi.ts
