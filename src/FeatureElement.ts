@@ -4,7 +4,7 @@ import { GeoJSONFeature } from 'maplibre-gl';
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { etymologyToDomElement } from "./EtymologyElement";
-import { debugLog, getBoolConfig } from "./config";
+import { debugLog, getConfig } from "./config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
@@ -130,12 +130,17 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         element_osm_button.classList.add("hiddenElement");
     }
 
-    const show_feature_mapcomplete = getBoolConfig("show_feature_mapcomplete"),
+    let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
+    while (Array.isArray(coord) && Array.isArray(coord[0])) {
+        coord = coord[0];
+    }
+    const lon = coord[0], lat = coord[1],
+        mapcomplete_theme = getConfig("mapcomplete_theme"),
         element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
         debugLog("Missing element_mapcomplete_button");
-    } else if (show_feature_mapcomplete && osm_full_id) {
-        element_mapcomplete_button.href = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id;
+    } else if (mapcomplete_theme && osm_full_id) {
+        element_mapcomplete_button.href = `https://mapcomplete.osm.be/${mapcomplete_theme}.html?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
         element_mapcomplete_button.classList.remove("hiddenElement");
     } else {
         element_mapcomplete_button.classList.add("hiddenElement");
@@ -145,11 +150,6 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     if (!element_location_button) {
         debugLog("Missing element_location_button");
     } else if (osm_full_id || properties.commons || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
-        let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
-        while (Array.isArray(coord) && Array.isArray(coord[0])) {
-            coord = coord[0];
-        }
-        const lon = coord[0], lat = coord[1];
         element_location_button.href = `#${lon},${lat},${currentZoom + 1}`;
         element_location_button.classList.remove("hiddenElement");
     } else {

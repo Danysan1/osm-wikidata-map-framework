@@ -93,6 +93,8 @@ $jsScript = (string)$jsScripts[0];
 
     <?= $conf->getMetaTag("db_enable", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
+    <?= $conf->getMetaTag("osm_text_key"); ?>
+    <?= $conf->getMetaTag("osm_description_key"); ?>
     <?= $conf->getJsonScriptTag("osm_wikidata_keys", true); ?>
     <?= $conf->getJsonScriptTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>
@@ -120,7 +122,7 @@ $jsScript = (string)$jsScripts[0];
     <?= $conf->getMetaTag("enable_debug_log", true); ?>
     <?= $conf->getJsonScriptTag("overpass_endpoints", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
-    <?= $conf->getMetaTag("show_feature_mapcomplete", true); ?>
+    <?= $conf->getMetaTag("mapcomplete_theme", true); ?>
     <?= $conf->getJsonScriptTag("i18n_override", true); ?>
     <?= $conf->getMetaTag("default_language"); ?>
 </head>
@@ -247,7 +249,7 @@ $jsScript = (string)$jsScripts[0];
                     <h3 class="i18n_loading">Loading entities...</h3>
                 </div>
             </div>
-            
+
             <a title="Report a problem in this element" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 ety_error_button title_i18n_report_problem" href="<?= (string)$conf->get("element_issue_url") ?>">
                 <span class="button_img">⚠️</span> &nbsp;
                 <span class="i18n_report_problem">Report a problem in this element</span>
