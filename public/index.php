@@ -93,8 +93,8 @@ $jsScript = (string)$jsScripts[0];
 
     <?= $conf->getMetaTag("db_enable", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
-    <?= $conf->getMetaTag("osm_text_key"); ?>
-    <?= $conf->getMetaTag("osm_description_key"); ?>
+    <?= $conf->getMetaTag("osm_text_key", true); ?>
+    <?= $conf->getMetaTag("osm_description_key", true); ?>
     <?= $conf->getJsonScriptTag("osm_wikidata_keys", true); ?>
     <?= $conf->getJsonScriptTag("osm_wikidata_properties", true); ?>
     <?= $conf->getMetaTag("propagate_data", true); ?>
@@ -125,8 +125,8 @@ $jsScript = (string)$jsScripts[0];
     <?= $conf->getMetaTag("mapcomplete_theme", true); ?>
     <?= $conf->getJsonScriptTag("i18n_override", true); ?>
     <?= $conf->getMetaTag("default_language"); ?>
-    <?= $conf->getMetaTag("max_map_elements"); ?>
-    <?= $conf->getMetaTag("max_wikidata_elements"); ?>
+    <?= $conf->getMetaTag("max_map_elements", true); ?>
+    <?= $conf->getMetaTag("max_wikidata_elements", true); ?>
 </head>
 
 <body>

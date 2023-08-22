@@ -3,6 +3,7 @@ import indirectMapQuery from "./query/map/indirect.sparql";
 import reverseMapQuery from "./query/map/reverse.sparql";
 import qualifierMapQuery from "./query/map/qualifier.sparql";
 import directMapQuery from "./query/map/direct.sparql";
+import baseMapQuery from "./query/map/base.sparql";
 import { debugLog, getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
@@ -21,7 +22,7 @@ export class WikidataMapService extends WikidataService {
     }
 
     canHandleSource(sourceID: string): boolean {
-        if (!/^wd_(direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID))
+        if (!/^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID))
             return false;
 
         return true;
@@ -35,10 +36,18 @@ export class WikidataMapService extends WikidataService {
             debugLog("Cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
             debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
-            const sparqlQueryTemplate = sourceID.startsWith("wd_direct") ? this.getDirectSparqlQuery(sourceID) : this.getIndirectSparqlQuery(sourceID),
+            let sparqlQueryTemplate: string;
+            if (sourceID === "wd_base")
+                sparqlQueryTemplate = baseMapQuery;
+            else if (sourceID.startsWith("wd_direct"))
+                sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
+            else
+                sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
+            const maxElements = getConfig("max_map_elements"),
                 sparqlQuery = sparqlQueryTemplate
                     .replaceAll('${language}', this.language || '')
                     .replaceAll('${defaultLanguage}', this.defaultLanguage)
+                    .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
                     .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
                     .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
                 ret = await this.api.postSparqlQuery({ format: "json", query: sparqlQuery });
@@ -79,10 +88,7 @@ export class WikidataMapService extends WikidataService {
         else
             properties = [sourceProperty];
 
-        const maxElements = getConfig("max_map_elements");
-        return sparqlQueryTemplate
-            .replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "))
-            .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "");
+        return sparqlQueryTemplate.replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
     }
 
     private getIndirectSparqlQuery(sourceID: string): string {
@@ -101,11 +107,10 @@ export class WikidataMapService extends WikidataService {
             throw new Error("Invalid sourceID: " + sourceID);
 
         const imageProperty = getConfig("wikidata_image_property"),
-            maxElements = getConfig("max_map_elements"),
             pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
-        return sparqlQueryTemplate.replaceAll('${indirectProperty}', indirectProperty)
-            .replaceAll('${pictureQuery}', pictureQuery)
-            .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "");
+        return sparqlQueryTemplate
+            .replaceAll('${indirectProperty}', indirectProperty)
+            .replaceAll('${pictureQuery}', pictureQuery);
     }
 
     private featureReducer(acc: Feature[], row: any): Feature[] {
@@ -130,17 +135,16 @@ export class WikidataMapService extends WikidataService {
             debugLog("Duplicate etymology", { existing: existingFeature.properties, new: row });
         }
 
-        const etymology: Etymology = {
+        const etymology: Etymology | null = etymology_wd_id ? {
             from_osm: false,
             from_wikidata: true,
             from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
             propagated: false,
             wikidata: etymology_wd_id,
-        };
-        if (existingFeature) { // Add the new etymology to the existing item for this feature
-            existingFeature.properties?.etymologies?.push(etymology);
-        } else { // Add the new item for this feature 
+        } : null;
+
+        if (!existingFeature) { // Add the new feature for this item 
             const osm = row.osm?.value,
                 osm_type = osm?.split("/").at(3),
                 osm_id = osm ? parseInt(osm.split("/").at(4)) : undefined;
@@ -151,7 +155,7 @@ export class WikidataMapService extends WikidataService {
                 geometry,
                 properties: {
                     commons: row.commons?.value,
-                    etymologies: [etymology],
+                    etymologies: etymology ? [etymology] : undefined,
                     from_osm: false,
                     from_wikidata: true,
                     name: row.itemLabel?.value,
@@ -162,6 +166,8 @@ export class WikidataMapService extends WikidataService {
                     wikipedia: row.wikipedia?.value,
                 }
             });
+        } else if (etymology) { // Add the new etymology to the existing feature for this feature
+            existingFeature.properties?.etymologies?.push(etymology);
         }
 
         return acc;

@@ -141,12 +141,10 @@ class EtymologyColorControl extends DropdownControl {
                     });
                 } else if (props?.text_etymology)
                     osm_text_names.add(props?.text_etymology);
-                else if (!props?.wikidata)
-                    debugLog("Skipping feature in source calculation", props || {});
                 else if (props?.from_wikidata) {
-                    wikidata_IDs.add(props?.wikidata);
+                    wikidata_IDs.add(props?.wikidata || feature.id?.toString() || "");
                 } else if (props?.from_osm) {
-                    osm_IDs.add(props?.wikidata);
+                    osm_IDs.add(props?.wikidata || feature.id?.toString() || "");
                 }
             });
         const stats: EtymologyStat[] = [];
@@ -163,19 +161,23 @@ class EtymologyColorControl extends DropdownControl {
             "case",
             ["coalesce", ["all",
                 ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
                 ["to-boolean", ["get", "propagated", ["at", 0, ["get", "etymologies"]]]]
             ], false], '#ff3333',
             ["coalesce", ["all",
                 ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
                 ["to-boolean", ["get", "from_osm_id", ["at", 0, ["get", "etymologies"]]]],
                 ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
             ], false], '#33ffee',
             ["coalesce", ["all",
                 ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
                 ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
             ], false], '#3399ff',
             ["coalesce", ["all",
                 ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
                 ["to-boolean", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]]
             ], false], '#33ff66',
             ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',

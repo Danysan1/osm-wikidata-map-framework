@@ -96,8 +96,8 @@ x-airflow-common:
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}
     AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key:-}
     AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key:-}
-    AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
-    AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties}
+    AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys:-}
+    AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties:-}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
     AIRFLOW_VAR_GLOBAL_MAP_THRESHOLD: ${global_map_threshold:-0}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"

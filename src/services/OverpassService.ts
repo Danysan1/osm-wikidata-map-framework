@@ -43,7 +43,7 @@ export class OverpassService {
         );
     }
 
-    async fetchMapData(outClause: string, sourceID: string, bbox: BBox, requireKeys: boolean): Promise<GeoJSON & EtymologyResponse> {
+    private async fetchMapData(outClause: string, sourceID: string, bbox: BBox, requireKeys: boolean): Promise<GeoJSON & EtymologyResponse> {
         const cachedResponse = await this.db.getMap(sourceID, bbox, this.language);
         let out: GeoJSON & EtymologyResponse;
         if (cachedResponse) {

@@ -40,12 +40,12 @@ export class OverpassWikidataMapService {
             this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
-        const out = this.mergeMapData(overpassData, wikidataData, true);
+        const out = this.mergeMapData(overpassData, wikidataData, wikidataSourceID !== "wd_base");
         out.sourceID = sourceID;
         return out;
     }
 
-    mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse, requireKeys: boolean): GeoJSON & EtymologyResponse {
+    private mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse, requireKeys: boolean): GeoJSON & EtymologyResponse {
         const out = wikidataData.features.reduce((acc, wikidataFeature: Feature) => {
             const existingFeature: Feature | undefined = overpassData.features.find((overpassFeature: Feature) => {
                 const sameWikidata = overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata,
@@ -57,6 +57,13 @@ export class OverpassWikidataMapService {
                 acc.features.push(wikidataFeature);
             } else {
                 wikidataFeature.properties?.etymologies?.forEach((etymology: Etymology) => {
+                    ["name", "picture", "commons", "wikidata", "wikipedia"].forEach(key => {
+                        if (existingFeature.properties && !existingFeature.properties[key]) {
+                            const fallbackValue = wikidataFeature.properties?.[key];
+                            if (typeof fallbackValue === "string")
+                                existingFeature.properties[key] = fallbackValue;
+                        }
+                    });
                     existingFeature.properties?.etymologies?.push({
                         ...etymology,
                         from_osm_id: existingFeature.properties?.osm_id,
@@ -66,6 +73,7 @@ export class OverpassWikidataMapService {
             }
             return acc;
         }, overpassData);
+        
         if (requireKeys) {
             out.features = out.features.filter(
                 (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology

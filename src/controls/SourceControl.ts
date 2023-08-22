@@ -89,6 +89,9 @@ export class SourceControl extends DropdownControl {
             }
         }
 
+        if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty)
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", "OSM (Overpass API) + Wikidata Query Service"));
+
         super(
             '⚙️',
             dropdownItems,
