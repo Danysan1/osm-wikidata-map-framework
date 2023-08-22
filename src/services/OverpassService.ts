@@ -33,17 +33,17 @@ export class OverpassService {
 
     fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "out ids center ${maxElements};", sourceID, bbox
+            "out ids center ${maxElements};", sourceID, bbox, false
         );
     }
 
     fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "out body ${maxElements}; >; out skel qt;", sourceID, bbox
+            "out body ${maxElements}; >; out skel qt;", sourceID, bbox, true
         );
     }
 
-    async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+    async fetchMapData(outClause: string, sourceID: string, bbox: BBox, requireKeys: boolean): Promise<GeoJSON & EtymologyResponse> {
         const cachedResponse = await this.db.getMap(sourceID, bbox, this.language);
         let out: GeoJSON & EtymologyResponse;
         if (cachedResponse) {
@@ -62,12 +62,14 @@ export class OverpassService {
                 keys = [];
                 use_text_key = false;
                 use_wikidata = true;
+                requireKeys = false;
             } else if (!wikidata_keys) {
                 throw new Error("No keys configured")
             } else if (sourceID === "overpass_all_wd") {
                 keys = wikidata_keys;
                 use_text_key = true;
                 use_wikidata = true;
+                requireKeys = false;
             } else if (sourceID === "overpass_all") {
                 keys = wikidata_keys;
                 use_text_key = true;
@@ -156,8 +158,11 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                         wikidata: value
                     }));
             });
-            if (!use_wikidata)
-                out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
+            if (requireKeys) {
+                out.features = out.features.filter(
+                    (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology
+                );
+            }
             out.overpass_query = query;
             out.timestamp = new Date().toISOString();
             out.bbox = bbox;

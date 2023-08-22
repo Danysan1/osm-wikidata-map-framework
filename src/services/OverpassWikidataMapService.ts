@@ -28,7 +28,7 @@ export class OverpassWikidataMapService {
             this.overpassService.fetchMapClusterElements(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
-        return this.mergeMapData(overpassData, wikidataData);
+        return this.mergeMapData(overpassData, wikidataData, false);
     }
 
     async fetchMapElementDetails(sourceID: string, bbox: BBox) {
@@ -40,12 +40,12 @@ export class OverpassWikidataMapService {
             this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
-        const out = this.mergeMapData(overpassData, wikidataData);
+        const out = this.mergeMapData(overpassData, wikidataData, true);
         out.sourceID = sourceID;
         return out;
     }
 
-    mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse): GeoJSON & EtymologyResponse {
+    mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse, requireKeys: boolean): GeoJSON & EtymologyResponse {
         const out = wikidataData.features.reduce((acc, wikidataFeature: Feature) => {
             const existingFeature: Feature | undefined = overpassData.features.find((overpassFeature: Feature) => {
                 const sameWikidata = overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata,
@@ -66,7 +66,11 @@ export class OverpassWikidataMapService {
             }
             return acc;
         }, overpassData);
-        out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
+        if (requireKeys) {
+            out.features = out.features.filter(
+                (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology
+            );
+        }
         out.wikidata_query = wikidataData.wikidata_query;
         return out;
     }
