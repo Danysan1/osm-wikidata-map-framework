@@ -57,7 +57,7 @@ export class OverpassWikidataMapService {
                 acc.features.push(wikidataFeature);
             } else {
                 wikidataFeature.properties?.etymologies?.forEach((etymology: Etymology) => {
-                    ["name", "picture", "commons", "wikidata", "wikipedia"].forEach(key => {
+                    ["name", "description", "picture", "commons", "wikidata", "wikipedia"].forEach(key => {
                         if (existingFeature.properties && !existingFeature.properties[key]) {
                             const fallbackValue = wikidataFeature.properties?.[key];
                             if (typeof fallbackValue === "string")

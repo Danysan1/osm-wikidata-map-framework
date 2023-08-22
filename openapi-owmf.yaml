@@ -481,8 +481,11 @@ components:
           description: Whether OpenStreetMap is the original source of this etymology
         from_osm_type:
           type: string
-          description: Type (node/way/relation) of the source OpenStreetMap element
-          example: node
+          description: Type of the source OpenStreetMap element
+          enum:
+            - node
+            - way
+            - relation
         from_osm_id:
           type: integer
           description: ID (unique only within its type) of the source OpenStreetMap element
@@ -546,12 +549,24 @@ components:
                 name:
                   type: string
                   description: Localized name of the feature
+                description:
+                  type: string
+                  description: Localized description of the feature
                 official_name:
                   type: string
+                  description: Official name of the feature
+                  externalDocs:
+                    url: https://wiki.openstreetmap.org/wiki/Key:official_name
                 osm_type:
                   type: string
+                  description: Type of the OpenStreetMap element for this feature
+                  enum:
+                    - node
+                    - way
+                    - relation
                 osm_id:
                   type: integer
+                  description: ID (unique only within its type) of the OpenStreetMap element for this feature
                 picture:
                   type: string
                   description: Title of a Wikimedia Commons picture for this feature

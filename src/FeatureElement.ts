@@ -43,7 +43,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     }
 
     const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
-        alt_names = [properties.official_name, properties.alt_name].filter(
+        alt_names = [properties.official_name, properties.alt_name].flatMap(name => name?.split(";")).filter(
             name => name && name !== 'null' && name !== properties.name
         );
     if (!element_alt_names) {
@@ -52,6 +52,12 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         element_alt_names.innerText =
             "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
     }
+
+    const element_description = detail_container.querySelector<HTMLElement>('.element_description');
+    if (!element_description)
+        debugLog("Missing element_description");
+    else if (properties.description)
+        element_description.innerText = properties.description;
 
     const wikidata = properties.wikidata,
         commons = properties.commons,

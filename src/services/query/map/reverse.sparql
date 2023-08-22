@@ -2,6 +2,7 @@
 SELECT
     ?item
     (SAMPLE(?itemLabel) AS ?itemLabel)
+    (SAMPLE(?itemDescription) AS ?itemDescription)
     (SAMPLE(?location) AS ?location)
     (SAMPLE(?commons) AS ?commons)
     (SAMPLE(?wikipedia) AS ?wikipedia)
@@ -27,6 +28,7 @@ WHERE {
     SERVICE wikibase:label {
         bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
         ?item rdfs:label ?itemLabel.
+        ?item schema:description ?itemDescription.
     }
 }
 GROUP BY ?item ?etymology

@@ -69,19 +69,25 @@ export interface EtymologyFeatureProperties {
      */
     name?: string;
     /**
-     * 
+     * Localized description of the feature
+     * @type {string}
+     * @memberof EtymologyFeatureProperties
+     */
+    description?: string;
+    /**
+     * Official name of the feature
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     official_name?: string;
     /**
-     * 
+     * Type of the OpenStreetMap element for this feature
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
-    osm_type?: string;
+    osm_type?: EtymologyFeaturePropertiesOsmTypeEnum;
     /**
-     * 
+     * ID (unique only within its type) of the OpenStreetMap element for this feature
      * @type {number}
      * @memberof EtymologyFeatureProperties
      */
@@ -118,6 +124,18 @@ export interface EtymologyFeatureProperties {
     wikipedia?: string;
 }
 
+
+/**
+ * @export
+ */
+export const EtymologyFeaturePropertiesOsmTypeEnum = {
+    Node: 'node',
+    Way: 'way',
+    Relation: 'relation'
+} as const;
+export type EtymologyFeaturePropertiesOsmTypeEnum = typeof EtymologyFeaturePropertiesOsmTypeEnum[keyof typeof EtymologyFeaturePropertiesOsmTypeEnum];
+
+
 /**
  * Check if a given object implements the EtymologyFeatureProperties interface.
  */
@@ -144,6 +162,7 @@ export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscrim
         'from_osm': !exists(json, 'from_osm') ? undefined : json['from_osm'],
         'from_wikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
         'name': !exists(json, 'name') ? undefined : json['name'],
+        'description': !exists(json, 'description') ? undefined : json['description'],
         'official_name': !exists(json, 'official_name') ? undefined : json['official_name'],
         'osm_type': !exists(json, 'osm_type') ? undefined : json['osm_type'],
         'osm_id': !exists(json, 'osm_id') ? undefined : json['osm_id'],
@@ -171,6 +190,7 @@ export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeaturePropert
         'from_osm': value.from_osm,
         'from_wikidata': value.from_wikidata,
         'name': value.name,
+        'description': value.description,
         'official_name': value.official_name,
         'osm_type': value.osm_type,
         'osm_id': value.osm_id,

@@ -159,6 +159,7 @@ export class WikidataMapService extends WikidataService {
                     from_osm: false,
                     from_wikidata: true,
                     name: row.itemLabel?.value,
+                    description: row.itemDescription?.value,
                     osm_id,
                     osm_type,
                     picture: row.picture?.value,

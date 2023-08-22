@@ -32,11 +32,11 @@ export interface Etymology {
      */
     from_osm?: boolean;
     /**
-     * Type (node/way/relation) of the source OpenStreetMap element
+     * Type of the source OpenStreetMap element
      * @type {string}
      * @memberof Etymology
      */
-    from_osm_type?: string;
+    from_osm_type?: EtymologyFromOsmTypeEnum;
     /**
      * ID (unique only within its type) of the source OpenStreetMap element
      * @type {number}
@@ -86,6 +86,18 @@ export interface Etymology {
      */
     wikidata?: string;
 }
+
+
+/**
+ * @export
+ */
+export const EtymologyFromOsmTypeEnum = {
+    Node: 'node',
+    Way: 'way',
+    Relation: 'relation'
+} as const;
+export type EtymologyFromOsmTypeEnum = typeof EtymologyFromOsmTypeEnum[keyof typeof EtymologyFromOsmTypeEnum];
+
 
 /**
  * Check if a given object implements the Etymology interface.

@@ -218,6 +218,7 @@ $jsScript = (string)$jsScripts[0];
         <div class="detail_container">
             <h3 class="element_name"></h3>
             <p class="element_alt_names"></p>
+            <p class="element_description"></p>
             <div class="button_row">
                 <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">

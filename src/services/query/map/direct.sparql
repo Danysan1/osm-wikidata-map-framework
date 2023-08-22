@@ -2,6 +2,7 @@
 SELECT DISTINCT
     ?item
     ?itemLabel
+    ?itemDescription
     ?location
     ?commons
     ?wikipedia
@@ -26,6 +27,7 @@ WHERE {
     SERVICE wikibase:label {
         bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
         ?item rdfs:label ?itemLabel.
+        ?item schema:description ?itemDescription.
     }
 }
 ${limit}
