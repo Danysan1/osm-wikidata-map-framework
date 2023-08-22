@@ -19,12 +19,6 @@ import {
     EtymologyFeatureFromJSONTyped,
     EtymologyFeatureToJSON,
 } from './EtymologyFeature';
-import type { FeatureCollectionMetadata } from './FeatureCollectionMetadata';
-import {
-    FeatureCollectionMetadataFromJSON,
-    FeatureCollectionMetadataFromJSONTyped,
-    FeatureCollectionMetadataToJSON,
-} from './FeatureCollectionMetadata';
 
 /**
  * 
@@ -52,10 +46,34 @@ export interface EtymologyResponse {
     bbox?: Array<number>;
     /**
      * 
-     * @type {FeatureCollectionMetadata}
+     * @type {string}
      * @memberof EtymologyResponse
      */
-    metadata?: FeatureCollectionMetadata;
+    sourceID?: string;
+    /**
+     * ISO string for the time the query was run
+     * @type {string}
+     * @memberof EtymologyResponse
+     */
+    timestamp?: string;
+    /**
+     * Total number of etymologies linked to the features
+     * @type {number}
+     * @memberof EtymologyResponse
+     */
+    etymology_count?: number;
+    /**
+     * Wikidata SPARQL query used to fetch the features
+     * @type {string}
+     * @memberof EtymologyResponse
+     */
+    wikidata_query?: string;
+    /**
+     * OverpassQL query used to fetch the features
+     * @type {string}
+     * @memberof EtymologyResponse
+     */
+    overpass_query?: string;
 }
 
 
@@ -92,7 +110,11 @@ export function EtymologyResponseFromJSONTyped(json: any, ignoreDiscriminator: b
         'type': json['type'],
         'features': ((json['features'] as Array<any>).map(EtymologyFeatureFromJSON)),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
-        'metadata': !exists(json, 'metadata') ? undefined : FeatureCollectionMetadataFromJSON(json['metadata']),
+        'sourceID': !exists(json, 'sourceID') ? undefined : json['sourceID'],
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
+        'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
+        'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
     };
 }
 
@@ -108,7 +130,11 @@ export function EtymologyResponseToJSON(value?: EtymologyResponse | null): any {
         'type': value.type,
         'features': ((value.features as Array<any>).map(EtymologyFeatureToJSON)),
         'bbox': value.bbox,
-        'metadata': FeatureCollectionMetadataToJSON(value.metadata),
+        'sourceID': value.sourceID,
+        'timestamp': value.timestamp,
+        'etymology_count': value.etymology_count,
+        'wikidata_query': value.wikidata_query,
+        'overpass_query': value.overpass_query,
     };
 }
 

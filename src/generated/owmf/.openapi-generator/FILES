@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/ClustersApi.ts
 apis/DefaultApi.ts
 apis/FeaturesApi.ts
@@ -17,7 +16,6 @@ models/EtymologyFeatureProperties.ts
 models/EtymologyResponse.ts
 models/EtymologyResponseFeatures.ts
 models/FeatureCollectionDetails.ts
-models/FeatureCollectionMetadata.ts
 models/GeoJSONFeature.ts
 models/GeoJSONFeatureCollection.ts
 models/GeoJSONFeatureID.ts

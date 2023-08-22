@@ -13,7 +13,7 @@ use \App\Result\JSONQueryResult;
 interface GeoJSONQueryResult extends JSONQueryResult
 {
     /**
-     * @return array{bbox?:array,features:array,metadata?:array,type:string}
+     * @return array{type:string,features:array,bbox?:array,etymology_count?:int,timestamp?:string,wikidata_query?:string,overpass_query?:string}
      */
     public function getGeoJSONData(): array;
 

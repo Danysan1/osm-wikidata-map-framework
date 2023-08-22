@@ -157,7 +157,9 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
             });
             if (!includeWikidata)
                 out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
-            out.metadata = { overpass_query: query, timestamp: new Date().toISOString() };
+            out.overpass_query = query;
+            out.timestamp = new Date().toISOString();
+            out.sourceID = sourceID;
             try {
                 localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
             } catch (e) {

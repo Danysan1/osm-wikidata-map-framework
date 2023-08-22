@@ -85,7 +85,7 @@ class BBoxEtymologyPostGISQuery extends BBoxPostGISQuery implements BBoxGeoJSONQ
             "SELECT JSON_BUILD_OBJECT(
                 'type', 'FeatureCollection',
                 'features', COALESCE(JSON_AGG(ST_AsGeoJSON(ele.*)::json), '[]'::JSON),
-                'metadata', JSON_BUILD_OBJECT('etymology_count', COALESCE(SUM(ele.num_etymologies), 0))
+                'etymology_count', COALESCE(SUM(ele.num_etymologies), 0)
                 )
             FROM (
                 SELECT

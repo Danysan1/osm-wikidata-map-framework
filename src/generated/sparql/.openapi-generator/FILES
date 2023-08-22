@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/SparqlApi.ts
 apis/index.ts
 index.ts

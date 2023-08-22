@@ -13,7 +13,6 @@ export * from './EtymologyFeatureProperties';
 export * from './EtymologyResponse';
 export * from './EtymologyResponseFeatures';
 export * from './FeatureCollectionDetails';
-export * from './FeatureCollectionMetadata';
 export * from './GeoJSONFeature';
 export * from './GeoJSONFeatureCollection';
 export * from './GeoJSONFeatureID';

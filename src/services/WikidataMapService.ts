@@ -45,11 +45,13 @@ export class WikidataMapService extends WikidataService {
                 bbox,
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
-            out.metadata = { wikidata_query: sparqlQuery, timestamp: new Date().toISOString() };
+            out.wikidata_query = sparqlQuery;
+            out.timestamp = new Date().toISOString();
+            out.sourceID = sourceID;
             try {
                 localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
             } catch (e) {
-                if(e instanceof DOMException && e.name === "QuotaExceededError") {
+                if (e instanceof DOMException && e.name === "QuotaExceededError") {
                     logErrorMessage("localStorage quota exceeded, clearing it", "warning", { cacheKey, out, e });
                     localStorage.clear();
                     localStorage.setItem(cacheKey, compress(JSON.stringify(out)));

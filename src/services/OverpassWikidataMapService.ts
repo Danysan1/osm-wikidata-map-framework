@@ -42,7 +42,9 @@ export class OverpassWikidataMapService {
             this.overpassService.fetchMapElementDetails(overpassSourceID, bbox, true),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
-        return this.mergeMapData(overpassData, wikidataData);
+        const out = this.mergeMapData(overpassData, wikidataData);
+        out.sourceID = sourceID;
+        return out;
     }
 
     mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse): GeoJSON & EtymologyResponse {
@@ -67,9 +69,7 @@ export class OverpassWikidataMapService {
             return acc;
         }, overpassData);
         out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
-        if (!out.metadata)
-            out.metadata = {};
-        out.metadata.wikidata_query = wikidataData.metadata?.wikidata_query;
+        out.wikidata_query = wikidataData.wikidata_query;
         return out;
     }
 }

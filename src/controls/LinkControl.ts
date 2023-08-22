@@ -4,6 +4,8 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'ma
 
 import { debugLog } from '../config';
 import { logErrorMessage } from '../monitoring';
+import { EtymologyResponse } from '../generated/owmf';
+import { GeoJSON } from 'geojson';
 
 export class LinkControl implements IControl {
     private container?: HTMLDivElement;
@@ -17,7 +19,7 @@ export class LinkControl implements IControl {
         iconUrl: string,
         title: string,
         sourceIds: string[],
-        mapEventField: string,
+        mapEventField: keyof EtymologyResponse,
         baseUrl: string,
         minZoomLevel = 0
     ) {
@@ -69,7 +71,7 @@ export class LinkControl implements IControl {
             this.container?.classList?.add("hiddenElement");
     }
 
-    createSourceDataHandler(sourceIds: string[], mapEventField: string, baseUrl: string) {
+    createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
             if (!e.isSourceLoaded || e.dataType != "source" || !sourceIds.includes(e.sourceId))
                 return;
@@ -77,7 +79,7 @@ export class LinkControl implements IControl {
             const data = (e.source as any)?.data;
 
             try {
-                let content;
+                let content: GeoJSON & EtymologyResponse;
                 if (typeof data === "object") {
                     content = data;
                 } else if (typeof data === "string") {
@@ -86,15 +88,16 @@ export class LinkControl implements IControl {
                         cache: "only-if-cached",
                     });
                     content = await response.json();
+                } else {
+                    throw new Error("Invalid data type");
                 }
-                if (!content.metadata) {
-                    debugLog("Missing metadata, hiding");
-                    this.show(false);
-                } else if (!content.metadata[mapEventField]) {
+
+                const query = content[mapEventField];
+                if (typeof query !== "string" || !query.length) {
                     //debugLog("Missing query field, hiding", { content, mapEventField });
                     this.show(false);
                 } else {
-                    const encodedQuery = encodeURIComponent(content.metadata[mapEventField]),
+                    const encodedQuery = encodeURIComponent(query),
                         linkUrl = baseUrl + encodedQuery;
                     debugLog("Query field found, showing URL", { linkUrl, mapEventField });
                     this.setURL(linkUrl);

@@ -13,13 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { FeatureCollectionMetadata } from './FeatureCollectionMetadata';
-import {
-    FeatureCollectionMetadataFromJSON,
-    FeatureCollectionMetadataFromJSONTyped,
-    FeatureCollectionMetadataToJSON,
-} from './FeatureCollectionMetadata';
-
 /**
  * 
  * @export
@@ -28,10 +21,34 @@ import {
 export interface FeatureCollectionDetails {
     /**
      * 
-     * @type {FeatureCollectionMetadata}
+     * @type {string}
      * @memberof FeatureCollectionDetails
      */
-    metadata?: FeatureCollectionMetadata;
+    sourceID?: string;
+    /**
+     * ISO string for the time the query was run
+     * @type {string}
+     * @memberof FeatureCollectionDetails
+     */
+    timestamp?: string;
+    /**
+     * Total number of etymologies linked to the features
+     * @type {number}
+     * @memberof FeatureCollectionDetails
+     */
+    etymology_count?: number;
+    /**
+     * Wikidata SPARQL query used to fetch the features
+     * @type {string}
+     * @memberof FeatureCollectionDetails
+     */
+    wikidata_query?: string;
+    /**
+     * OverpassQL query used to fetch the features
+     * @type {string}
+     * @memberof FeatureCollectionDetails
+     */
+    overpass_query?: string;
 }
 
 /**
@@ -53,7 +70,11 @@ export function FeatureCollectionDetailsFromJSONTyped(json: any, ignoreDiscrimin
     }
     return {
         
-        'metadata': !exists(json, 'metadata') ? undefined : FeatureCollectionMetadataFromJSON(json['metadata']),
+        'sourceID': !exists(json, 'sourceID') ? undefined : json['sourceID'],
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
+        'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
+        'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
     };
 }
 
@@ -66,7 +87,11 @@ export function FeatureCollectionDetailsToJSON(value?: FeatureCollectionDetails 
     }
     return {
         
-        'metadata': FeatureCollectionMetadataToJSON(value.metadata),
+        'sourceID': value.sourceID,
+        'timestamp': value.timestamp,
+        'etymology_count': value.etymology_count,
+        'wikidata_query': value.wikidata_query,
+        'overpass_query': value.overpass_query,
     };
 }
 

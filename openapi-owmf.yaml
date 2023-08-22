@@ -431,29 +431,29 @@ components:
               type: string
 
     DetailedFeatureCollection:
+      description: GeoJSON Feature collection with additional OWMF-related details
       allOf:
         - $ref: "#/components/schemas/GeoJSONFeatureCollection"
         - type: object
           title: FeatureCollectionDetails
           properties:
-            metadata:
-              type: object
-              title: FeatureCollectionMetadata
-              properties:
-                timestamp:
-                  type: string
-                  description: ISO string for the time the query was run
-                etymology_count:
-                  type: integer
-                  description: Total number of etymologies linked to the features
-                wikidata_query:
-                  type: string
-                  description: Wikidata SPARQL query used to fetch the features
-                  example: "SELECT ... WHERE { ... }"
-                overpass_query:
-                  type: string
-                  description: OverpassQL query used to fetch the features
-                  example: "[out:json]; ...; out;"
+            sourceID:
+              $ref: "#/components/schemas/SourceID"
+              description: ID of the source of the features
+            timestamp:
+              type: string
+              description: ISO string for the time the query was run
+            etymology_count:
+              type: integer
+              description: Total number of etymologies linked to the features
+            wikidata_query:
+              type: string
+              description: Wikidata SPARQL query used to fetch the features
+              example: "SELECT ... WHERE { ... }"
+            overpass_query:
+              type: string
+              description: OverpassQL query used to fetch the features
+              example: "[out:json]; ...; out;"
 
     ElementResponse:
       allOf:
@@ -542,6 +542,7 @@ components:
                   type: boolean
                 name:
                   type: string
+                  description: Localized name of the feature
                 official_name:
                   type: string
                 osm_type:
@@ -550,17 +551,21 @@ components:
                   type: integer
                 picture:
                   type: string
+                  description: Title of a Wikimedia Commons picture for this feature
                   example: "File:Colosseo 2020.jpg"
                 text_etymology:
                   type: string
+                  description: Textual name of the etymology
                 text_etymology_descr:
                   type: string
+                  description: Textual description of the etymology
                 wikidata:
                   type: string
                   description: Q-ID of the Wikidata entity for this feature
                   example: "Q1"
                 wikipedia:
                   type: string
+                  description: Title of a Wikipedia page for this feature prefixed with its language code (lang:Name)
                   example: "en:Colosseum"
 
     EtymologyResponse:

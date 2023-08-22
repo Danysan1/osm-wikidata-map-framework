@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { FeatureCollectionMetadata } from './FeatureCollectionMetadata';
-import {
-    FeatureCollectionMetadataFromJSON,
-    FeatureCollectionMetadataFromJSONTyped,
-    FeatureCollectionMetadataToJSON,
-} from './FeatureCollectionMetadata';
 import type { GeoJSONFeature } from './GeoJSONFeature';
 import {
     GeoJSONFeatureFromJSON,
@@ -27,7 +21,7 @@ import {
 } from './GeoJSONFeature';
 
 /**
- * 
+ * GeoJSON Feature collection with additional OWMF-related details
  * @export
  * @interface DetailedFeatureCollection
  */
@@ -52,10 +46,34 @@ export interface DetailedFeatureCollection {
     bbox?: Array<number>;
     /**
      * 
-     * @type {FeatureCollectionMetadata}
+     * @type {string}
      * @memberof DetailedFeatureCollection
      */
-    metadata?: FeatureCollectionMetadata;
+    sourceID?: string;
+    /**
+     * ISO string for the time the query was run
+     * @type {string}
+     * @memberof DetailedFeatureCollection
+     */
+    timestamp?: string;
+    /**
+     * Total number of etymologies linked to the features
+     * @type {number}
+     * @memberof DetailedFeatureCollection
+     */
+    etymology_count?: number;
+    /**
+     * Wikidata SPARQL query used to fetch the features
+     * @type {string}
+     * @memberof DetailedFeatureCollection
+     */
+    wikidata_query?: string;
+    /**
+     * OverpassQL query used to fetch the features
+     * @type {string}
+     * @memberof DetailedFeatureCollection
+     */
+    overpass_query?: string;
 }
 
 
@@ -92,7 +110,11 @@ export function DetailedFeatureCollectionFromJSONTyped(json: any, ignoreDiscrimi
         'type': json['type'],
         'features': ((json['features'] as Array<any>).map(GeoJSONFeatureFromJSON)),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
-        'metadata': !exists(json, 'metadata') ? undefined : FeatureCollectionMetadataFromJSON(json['metadata']),
+        'sourceID': !exists(json, 'sourceID') ? undefined : json['sourceID'],
+        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
+        'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
+        'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
+        'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
     };
 }
 
@@ -108,7 +130,11 @@ export function DetailedFeatureCollectionToJSON(value?: DetailedFeatureCollectio
         'type': value.type,
         'features': ((value.features as Array<any>).map(GeoJSONFeatureToJSON)),
         'bbox': value.bbox,
-        'metadata': FeatureCollectionMetadataToJSON(value.metadata),
+        'sourceID': value.sourceID,
+        'timestamp': value.timestamp,
+        'etymology_count': value.etymology_count,
+        'wikidata_query': value.wikidata_query,
+        'overpass_query': value.overpass_query,
     };
 }
 

@@ -63,7 +63,7 @@ export interface EtymologyFeatureProperties {
      */
     from_wikidata?: boolean;
     /**
-     * 
+     * Localized name of the feature
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
@@ -87,19 +87,19 @@ export interface EtymologyFeatureProperties {
      */
     osm_id?: number;
     /**
-     * 
+     * Title of a Wikimedia Commons picture for this feature
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     picture?: string;
     /**
-     * 
+     * Textual name of the etymology
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     text_etymology?: string;
     /**
-     * 
+     * Textual description of the etymology
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
@@ -111,7 +111,7 @@ export interface EtymologyFeatureProperties {
      */
     wikidata?: string;
     /**
-     * 
+     * Title of a Wikipedia page for this feature prefixed with its language code (lang:Name)
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
