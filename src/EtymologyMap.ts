@@ -38,6 +38,8 @@ export class EtymologyMap extends Map {
     private wikidataMapService: WikidataMapService;
     private overpassService: OverpassService;
     private overpassWikidataService: OverpassWikidataMapService;
+    private lastSource?: string;
+    private lastBBox?: BBox;
 
     constructor(
         containerId: string,
@@ -240,6 +242,14 @@ export class EtymologyMap extends Map {
                 minLon = Math.floor(southWest.lng * 10) / 10;
                 maxLat = Math.ceil(northEast.lat * 10) / 10; // 0.123 => 0.2
                 maxLon = Math.ceil(northEast.lng * 10) / 10;
+            }
+            const bbox: BBox = [minLon, minLat, maxLon, maxLat];
+            if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+                debugLog("updateDataSource: skipping source update", { source, bbox });
+                return;
+            } else {
+                this.lastSource = source;
+                this.lastBBox = bbox;
             }
 
             const queryParams = {

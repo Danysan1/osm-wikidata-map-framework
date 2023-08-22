@@ -114,8 +114,9 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     loadSourceChartData() {
-        const osm_wikidata_IDs = new Set<string>(),
+        const osm_IDs = new Set<string>(),
             osm_text_names = new Set<string>(),
+            osm_wikidata_IDs = new Set<string>(),
             wikidata_IDs = new Set<string>(),
             propagation_IDs = new Set<string>();
         this.getMap()
@@ -131,10 +132,12 @@ class EtymologyColorControl extends DropdownControl {
                             debugLog("Skipping etymology in source calculation", etymology);
                         else if (etymology.propagated)
                             propagation_IDs.add(etymology.wikidata);
+                        else if (etymology.from_osm_id && etymology.from_wikidata)
+                            osm_wikidata_IDs.add(etymology.wikidata);
                         else if (etymology.from_wikidata)
                             wikidata_IDs.add(etymology.wikidata);
                         else if (etymology.from_osm)
-                            osm_wikidata_IDs.add(etymology.wikidata);
+                            osm_IDs.add(etymology.wikidata);
                     });
                 } else if (props?.text_etymology)
                     osm_text_names.add(props?.text_etymology);
@@ -143,24 +146,40 @@ class EtymologyColorControl extends DropdownControl {
                 else if (props?.from_wikidata) {
                     wikidata_IDs.add(props?.wikidata);
                 } else if (props?.from_osm) {
-                    osm_wikidata_IDs.add(props?.wikidata);
+                    osm_IDs.add(props?.wikidata);
                 }
             });
         const stats: EtymologyStat[] = [];
         if (propagation_IDs.size) stats.push({ name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size });
+        if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: '#33ffee', id: 'osm_wikidata', count: osm_wikidata_IDs.size });
         if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size });
-        if (osm_wikidata_IDs.size) stats.push({ name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size });
+        if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_IDs.size });
         if (osm_text_names.size) stats.push({ name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size });
+        //console.info("osm_wikidata_IDs:", osm_wikidata_IDs);
         //console.info("Source stats:", stats);
         this.setChartStats(stats);
 
         this._setLayerColor([
             "case",
-            ["coalesce", ["all", ["has", "etymologies"], ["get", "propagated", ["at", 0, ["get", "etymologies"]]]], false], '#ff3333',
-            ["coalesce", ["all", ["has", "etymologies"], ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]], false], '#3399ff',
-            ["coalesce", ["all", ["has", "etymologies"], ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]], false], '#33ff66',
-            ["coalesce", ["get", "from_wikidata"], false], '#3399ff',
-            ["coalesce", ["get", "from_osm"], false], '#33ff66',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                ["to-boolean", ["get", "propagated", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#ff3333',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                ["to-boolean", ["get", "from_osm_id", ["at", 0, ["get", "etymologies"]]]],
+                ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#33ffee',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#3399ff',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                ["to-boolean", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#33ff66',
+            ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
+            ["coalesce", ["to-boolean", ["get", "from_osm"]], false], '#33ff66',
             '#223b53'
         ]);
     }

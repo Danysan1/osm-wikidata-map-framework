@@ -15,27 +15,33 @@ export class OverpassWikidataMapService {
     }
 
     canHandleSource(sourceID: string): boolean {
-        if (!/^overpass_wd_(direct|indirect)$/.test(sourceID))
+        if (!/^overpass_(all|none|osm_[_a-z]+)\+wd_(direct|indirect|reverse|qualifier)$/.test(sourceID))
             return false;
 
         return true;
     }
 
     async fetchMapClusterElements(sourceID: string, bbox: BBox) {
-        const wikidataSourceID = sourceID.replace("overpass_", ""),
-            [overpassData, wikidataData] = await Promise.all([
-                this.overpassService.fetchMapClusterElements("overpass_all", bbox, true),
-                this.wikidataService.fetchMapData(wikidataSourceID, bbox)
-            ]);
+        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
+        if (!overpassSourceID || !wikidataSourceID)
+            throw new Error("Invalid sourceID");
+
+        const [overpassData, wikidataData] = await Promise.all([
+            this.overpassService.fetchMapClusterElements(overpassSourceID, bbox, true),
+            this.wikidataService.fetchMapData(wikidataSourceID, bbox)
+        ]);
         return this.mergeMapData(overpassData, wikidataData);
     }
 
     async fetchMapElementDetails(sourceID: string, bbox: BBox) {
-        const wikidataSourceID = sourceID.replace("overpass_", ""),
-            [overpassData, wikidataData] = await Promise.all([
-                this.overpassService.fetchMapElementDetails("overpass_all", bbox, true),
-                this.wikidataService.fetchMapData(wikidataSourceID, bbox)
-            ]);
+        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
+        if (!overpassSourceID || !wikidataSourceID)
+            throw new Error("Invalid sourceID");
+
+        const [overpassData, wikidataData] = await Promise.all([
+            this.overpassService.fetchMapElementDetails(overpassSourceID, bbox, true),
+            this.wikidataService.fetchMapData(wikidataSourceID, bbox)
+        ]);
         return this.mergeMapData(overpassData, wikidataData);
     }
 
@@ -61,6 +67,9 @@ export class OverpassWikidataMapService {
             return acc;
         }, overpassData);
         out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
+        if (!out.metadata)
+            out.metadata = {};
+        out.metadata.wikidata_query = wikidataData.metadata?.wikidata_query;
         return out;
     }
 }

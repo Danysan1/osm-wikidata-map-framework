@@ -23,7 +23,7 @@ export class OverpassService {
     }
 
     canHandleSource(sourceID: string): boolean {
-        if (!/^overpass_(all|osm_[_a-z]+)$/.test(sourceID))
+        if (!/^overpass_(all|none|osm_[_a-z]+)$/.test(sourceID))
             return false;
 
         return true;
@@ -57,7 +57,12 @@ export class OverpassService {
                 osm_description_key = getConfig("osm_description_key");
             let keys: string[], text_key: string | null;
 
-            if (sourceID === "overpass_text") {
+            if (sourceID === "overpass_none") {
+                keys = [];
+                text_key = null;
+                if (!includeWikidata)
+                    throw new Error("No key specified");
+            } else if (sourceID === "overpass_text") {
                 keys = [];
                 text_key = osm_text_key;
             } else if (!wikidata_keys) {
@@ -78,25 +83,26 @@ export class OverpassService {
             }
 
             let query = `
-[out:json][timeout:40];
+[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
 (
 `;
             if (filter_tags) {
                 filter_tags.forEach(filter_tag => {
                     const filter_split = filter_tag.split("="),
-                        filter_clause = (filter_split.length > 1 && filter_split[1] !== "*") ? `${filter_split[0]}"="${filter_split[1]}` : filter_split[0];
-                    keys.forEach(key => { query += `nwr["${filter_clause}"]["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`; });
+                        filter_on_value = filter_split.length > 1 && filter_split[1] !== "*",
+                        filter_clause = filter_on_value ? `${filter_split[0]}"="${filter_split[1]}` : filter_split[0];
+                    keys.forEach(key => { query += `nwr["${filter_clause}"]["${key}"~"^Q[0-9]+"];\n`; });
                     if (text_key)
-                        query += `nwr["${filter_clause}"]["${text_key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                        query += `nwr["${filter_clause}"]["${text_key}"];\n`;
                     if (includeWikidata)
-                        query += `nwr["${filter_clause}"]["wikidata"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                        query += `nwr["${filter_clause}"]["wikidata"~"^Q[0-9]+"];\n`;
                 });
             } else {
-                keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`; });
+                keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"];\n`; });
                 if (text_key)
-                    query += `nwr["${text_key}"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                    query += `nwr["${text_key}"];\n`;
                 if (includeWikidata)
-                    query += `nwr["wikidata"~"^Q[0-9]+"](${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]});\n`;
+                    query += `nwr["wikidata"~"^Q[0-9]+"];\n`;
             }
             query += `
 ); 
@@ -110,27 +116,37 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                     feature.id = feature.properties?.id ? feature.properties.id : Math.random().toString();
                 if (!feature.properties)
                     feature.properties = {};
+
                 feature.properties.from_osm = true;
                 feature.properties.from_wikidata = false;
                 const osm_type = feature.properties.id?.split("/")?.[0],
                     osm_id = feature.properties.id ? feature.properties.id.split("/")[1] : undefined;
                 feature.properties.osm_id = osm_id;
                 feature.properties.osm_type = osm_type;
-                if (osm_text_key)
-                    feature.properties.text_etymology = feature.properties[osm_text_key];
-                if (osm_description_key)
-                    feature.properties.text_etymology_descr = feature.properties[osm_description_key];
+
+                if (text_key) {
+                    feature.properties.text_etymology = feature.properties[text_key];
+                    if (osm_description_key)
+                        feature.properties.text_etymology_descr = feature.properties[osm_description_key];
+                }
+
                 if (typeof feature.properties.wikimedia_commons === "string") {
                     if (feature.properties.wikimedia_commons?.includes("File:"))
                         feature.properties.picture = feature.properties.wikimedia_commons;
                     else
                         feature.properties.commons = feature.properties.wikimedia_commons;
                 }
-                feature.properties.etymologies = [];
-                keys.map(key => feature.properties?.[key])
+
+                if (feature.properties["name:" + this.language])
+                    feature.properties.name = feature.properties["name:" + this.language];
+                else if (feature.properties["name:" + this.defaultLanguage])
+                    feature.properties.name = feature.properties["name:" + this.defaultLanguage];
+
+                feature.properties.etymologies = keys
+                    .map(key => feature.properties?.[key])
                     .filter(value => value)
                     .flatMap((value: string) => value.split(";"))
-                    .forEach(value => feature.properties?.etymologies?.push({
+                    .map(value => ({
                         from_osm: true,
                         from_osm_id: osm_id,
                         from_osm_type: osm_type,
@@ -139,6 +155,8 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                         wikidata: value
                     }));
             });
+            if (!includeWikidata)
+                out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
             out.metadata = { overpass_query: query, timestamp: new Date().toISOString() };
             try {
                 localStorage.setItem(cacheKey, compress(JSON.stringify(out)));

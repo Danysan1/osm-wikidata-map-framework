@@ -49,7 +49,13 @@ export class WikidataMapService extends WikidataService {
             try {
                 localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
             } catch (e) {
-                logErrorMessage("Failed to store map data in cache", "warning", { cacheKey, out, e });
+                if(e instanceof DOMException && e.name === "QuotaExceededError") {
+                    logErrorMessage("localStorage quota exceeded, clearing it", "warning", { cacheKey, out, e });
+                    localStorage.clear();
+                    localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
+                } else {
+                    logErrorMessage("Failed to store map data in cache", "error", { cacheKey, out, e });
+                }
             }
         }
         return out;
@@ -112,7 +118,7 @@ export class WikidataMapService extends WikidataService {
                 feature => (feature.id !== undefined && feature.id === feature_wd_id) || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
             );
         if (existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            debugLog("Duplicate etymology", { existingFeature, row });
+            debugLog("Duplicate etymology", { existing: existingFeature.properties, new: row });
         }
 
         const etymology: Etymology = {

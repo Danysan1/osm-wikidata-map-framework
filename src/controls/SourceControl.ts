@@ -59,27 +59,36 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_propagated", t("source.propagated"), "DB"));
         }
 
-        if (wdDirectProperties?.length)
-            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), "Wikidata API"));
-
-        if (indirectWdProperty) {
-            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), "Wikidata API"));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), "Wikidata API"));
-            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), "Wikidata API"));
-        }
-
-        if (keys) {
+        if (keys?.length) {
             if (keys.length > 1)
-                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "OSM (Overpass API)"));
+                dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys"), "OpenStreetMap (Overpass API)"));
 
             keys.forEach(key => {
                 const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
-                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "OSM (Overpass API)"));
+                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "OpenStreetMap (Overpass API)"));
             });
         }
 
-        if(keys && wdDirectProperties?.length)
-            dropdownItems.push(buildDropdownItem("overpass_wd_direct", "OSM + Wikidata", "Overpass API + Wikidata API"));
+        if (wdDirectProperties?.length) {
+            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_none+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
+            if (keys?.length)
+                dropdownItems.push(buildDropdownItem("overpass_all+wd_direct", t("source.all_osm_keys") + " + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
+        }
+
+        if (indirectWdProperty) {
+            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_none+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_none+wd_qualifier", "OSM wikidata + " + t("source.wd_qualifier", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_none+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            if (keys?.length) {
+                dropdownItems.push(buildDropdownItem("overpass_all+wd_indirect", t("source.all_osm_keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all+wd_qualifier", t("source.all_osm_keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all+wd_reverse", t("source.all_osm_keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            }
+        }
 
         super(
             '⚙️',
