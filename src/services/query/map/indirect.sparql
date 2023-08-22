@@ -53,3 +53,4 @@ WHERE {
     { INCLUDE %qualifier. } UNION { INCLUDE %reverse. }
 }
 GROUP BY ?item ?etymology
+${limit}

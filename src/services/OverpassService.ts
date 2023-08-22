@@ -53,7 +53,7 @@ export class OverpassService {
             debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
             const filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
-                maxElements: string | null = getConfig("max_map_elements"),
+                maxElements = getConfig("max_map_elements"),
                 osm_text_key = getConfig("osm_text_key"),
                 osm_description_key = getConfig("osm_description_key");
             let keys: string[], use_text_key: boolean, use_wikidata: boolean;

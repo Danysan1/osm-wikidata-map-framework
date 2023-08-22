@@ -28,3 +28,4 @@ WHERE {
         ?item rdfs:label ?itemLabel.
     }
 }
+${limit}

@@ -125,6 +125,8 @@ $jsScript = (string)$jsScripts[0];
     <?= $conf->getMetaTag("mapcomplete_theme", true); ?>
     <?= $conf->getJsonScriptTag("i18n_override", true); ?>
     <?= $conf->getMetaTag("default_language"); ?>
+    <?= $conf->getMetaTag("max_map_elements"); ?>
+    <?= $conf->getMetaTag("max_wikidata_elements"); ?>
 </head>
 
 <body>

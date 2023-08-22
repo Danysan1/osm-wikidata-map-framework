@@ -79,7 +79,10 @@ export class WikidataMapService extends WikidataService {
         else
             properties = [sourceProperty];
 
-        return sparqlQueryTemplate.replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
+        const maxElements = getConfig("max_map_elements");
+        return sparqlQueryTemplate
+            .replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "))
+            .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "");
     }
 
     private getIndirectSparqlQuery(sourceID: string): string {
@@ -98,8 +101,11 @@ export class WikidataMapService extends WikidataService {
             throw new Error("Invalid sourceID: " + sourceID);
 
         const imageProperty = getConfig("wikidata_image_property"),
+            maxElements = getConfig("max_map_elements"),
             pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
-        return sparqlQueryTemplate.replaceAll('${indirectProperty}', indirectProperty).replaceAll('${pictureQuery}', pictureQuery);
+        return sparqlQueryTemplate.replaceAll('${indirectProperty}', indirectProperty)
+            .replaceAll('${pictureQuery}', pictureQuery)
+            .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "");
     }
 
     private featureReducer(acc: Feature[], row: any): Feature[] {

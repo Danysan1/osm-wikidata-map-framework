@@ -30,3 +30,4 @@ WHERE {
     }
 }
 GROUP BY ?item ?etymology
+${limit}
