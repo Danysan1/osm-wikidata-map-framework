@@ -20,6 +20,7 @@ import './style.css';
 import { WikidataMapService } from './services/WikidataMapService';
 import { OverpassService } from './services/OverpassService';
 import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
+import { MapDatabase } from './services/MapDatabase';
 
 const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -68,8 +69,9 @@ export class EtymologyMap extends Map {
         this.backgroundStyles = backgroundStyles;
         this.geocoderControl = geocoderControl;
         this.projectionControl = projectionControl;
-        this.wikidataMapService = new WikidataMapService();
-        this.overpassService = new OverpassService();
+        const db = new MapDatabase();
+        this.wikidataMapService = new WikidataMapService(db);
+        this.overpassService = new OverpassService(db);
         this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService);
 
         try {

@@ -454,6 +454,9 @@ components:
               type: string
               description: OverpassQL query used to fetch the features
               example: "[out:json]; ...; out;"
+            language:
+              type: string
+              description: Language fetched
 
     ElementResponse:
       allOf:

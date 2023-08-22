@@ -2,74 +2,76 @@ import { debugLog, getConfig, getJsonConfig } from "../config";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
 import { EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
-import { compress, decompress } from "lz-string";
 import { Configuration, OverpassApi } from "../generated/overpass";
+import { MapDatabase } from "./MapDatabase";
 import osmtogeojson from "osmtogeojson";
 
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 
 export class OverpassService {
     private api: OverpassApi;
+    private db: MapDatabase;
     protected defaultLanguage: string;
     protected language?: string;
 
-    constructor() {
+    constructor(db: MapDatabase) {
         const endpoints: string[] = getJsonConfig("overpass_endpoints") || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),
             basePath = endpoints[randomIndex];
         this.api = new OverpassApi(new Configuration({ basePath }));
         this.defaultLanguage = getConfig("default_language") || 'en';
         this.language = document.documentElement.lang.split('-').at(0);
+        this.db = db;
     }
 
     canHandleSource(sourceID: string): boolean {
-        if (!/^overpass_(all|none|osm_[_a-z]+)$/.test(sourceID))
+        if (!/^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(sourceID))
             return false;
 
         return true;
     }
 
-    fetchMapClusterElements(sourceID: string, bbox: BBox, includeWikidata = false): Promise<GeoJSON & EtymologyResponse> {
+    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "elements", "out ids center ${maxElements};", sourceID, bbox, includeWikidata
+            "out ids center ${maxElements};", sourceID, bbox
         );
     }
 
-    fetchMapElementDetails(sourceID: string, bbox: BBox, includeWikidata = false): Promise<GeoJSON & EtymologyResponse> {
+    fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "map", "out body ${maxElements}; >; out skel qt;", sourceID, bbox, includeWikidata
+            "out body ${maxElements}; >; out skel qt;", sourceID, bbox
         );
     }
 
-    async fetchMapData(cachePrefix: string, outClause: string, sourceID: string, bbox: BBox, includeWikidata = false): Promise<GeoJSON & EtymologyResponse> {
-        const cacheKey = `owmf.${cachePrefix}.${sourceID}.${this.language}_${bbox.join("_")}`,
-            cachedResponse = localStorage.getItem(cacheKey);
+    async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+        const cachedResponse = await this.db.getMap(sourceID, bbox, this.language);
         let out: GeoJSON & EtymologyResponse;
         if (cachedResponse) {
-            out = JSON.parse(decompress(cachedResponse));
-            debugLog("Cache hit, using cached response", { cacheKey, out });
+            out = cachedResponse;
+            debugLog("Cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Cache miss, fetching data", { cacheKey });
+            debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
             const filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
                 maxElements: string | null = getConfig("max_map_elements"),
                 osm_text_key = getConfig("osm_text_key"),
                 osm_description_key = getConfig("osm_description_key");
-            let keys: string[], text_key: string | null;
+            let keys: string[], use_text_key: boolean, use_wikidata: boolean;
 
-            if (sourceID === "overpass_none") {
+            if (sourceID === "overpass_wd") {
                 keys = [];
-                text_key = null;
-                if (!includeWikidata)
-                    throw new Error("No key specified");
-            } else if (sourceID === "overpass_text") {
-                keys = [];
-                text_key = osm_text_key;
+                use_text_key = false;
+                use_wikidata = true;
             } else if (!wikidata_keys) {
                 throw new Error("No keys configured")
+            } else if (sourceID === "overpass_all_wd") {
+                keys = wikidata_keys;
+                use_text_key = true;
+                use_wikidata = true;
             } else if (sourceID === "overpass_all") {
                 keys = wikidata_keys;
-                text_key = osm_text_key;
+                use_text_key = true;
+                use_wikidata = false;
             } else {
                 const wikidata_key_codes = wikidata_keys.map(key => key.replace(":wikidata", "").replace(":", "_")),
                     sourceKeyCode = /^overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
@@ -79,29 +81,27 @@ export class OverpassService {
                     throw new Error(`Invalid sourceID: ${sourceID}`);
                 else
                     keys = wikidata_keys.filter(key => key.replace(":wikidata", "").replace(":", "_") === sourceKeyCode);
-                text_key = null;
+                use_text_key = false;
+                use_wikidata = false;
             }
 
-            let query = `
-[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
-(
-`;
+            let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}]; (\n`;
             if (filter_tags) {
                 filter_tags.forEach(filter_tag => {
                     const filter_split = filter_tag.split("="),
                         filter_on_value = filter_split.length > 1 && filter_split[1] !== "*",
                         filter_clause = filter_on_value ? `${filter_split[0]}"="${filter_split[1]}` : filter_split[0];
                     keys.forEach(key => { query += `nwr["${filter_clause}"]["${key}"~"^Q[0-9]+"];\n`; });
-                    if (text_key)
-                        query += `nwr["${filter_clause}"]["${text_key}"];\n`;
-                    if (includeWikidata)
+                    if (use_text_key && osm_text_key)
+                        query += `nwr["${filter_clause}"]["${osm_text_key}"];\n`;
+                    if (use_wikidata)
                         query += `nwr["${filter_clause}"]["wikidata"~"^Q[0-9]+"];\n`;
                 });
             } else {
                 keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"];\n`; });
-                if (text_key)
-                    query += `nwr["${text_key}"];\n`;
-                if (includeWikidata)
+                if (use_text_key && osm_text_key)
+                    query += `nwr["${osm_text_key}"];\n`;
+                if (use_wikidata)
                     query += `nwr["wikidata"~"^Q[0-9]+"];\n`;
             }
             query += `
@@ -124,8 +124,9 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                 feature.properties.osm_id = osm_id;
                 feature.properties.osm_type = osm_type;
 
-                if (text_key) {
-                    feature.properties.text_etymology = feature.properties[text_key];
+                if (use_text_key) {
+                    if (osm_text_key)
+                        feature.properties.text_etymology = feature.properties[osm_text_key];
                     if (osm_description_key)
                         feature.properties.text_etymology_descr = feature.properties[osm_description_key];
                 }
@@ -155,15 +156,17 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                         wikidata: value
                     }));
             });
-            if (!includeWikidata)
+            if (!use_wikidata)
                 out.features = out.features.filter((feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology);
             out.overpass_query = query;
             out.timestamp = new Date().toISOString();
+            out.bbox = bbox;
             out.sourceID = sourceID;
+            out.language = this.language;
             try {
-                localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
+                this.db.addMap(out);
             } catch (e) {
-                logErrorMessage("Failed to store map data in cache", "warning", { cacheKey, out, e });
+                logErrorMessage("Failed to store map data in cache", "warning", { sourceID, bbox, language: this.language, out, e });
             }
         }
         return out;

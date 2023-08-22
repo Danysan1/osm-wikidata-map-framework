@@ -48,6 +48,7 @@
         "@typescript-eslint/parser": "^5.36.2",
         "chart.js": "^3.6.0",
         "css-loader": "^6.7.1",
+        "dexie": "^3.2.4",
         "eslint": "^8.23.0",
         "i18next": "^22.4.14",
         "i18next-chained-backend": "^4.2.0",

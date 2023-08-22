@@ -8,11 +8,18 @@ import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
 import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
-import { compress, decompress } from "lz-string";
+import { MapDatabase } from "./MapDatabase";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 
 export class WikidataMapService extends WikidataService {
+    protected db: MapDatabase;
+
+    constructor(db: MapDatabase) {
+        super();
+        this.db = db;
+    }
+
     canHandleSource(sourceID: string): boolean {
         if (!/^wd_(direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID))
             return false;
@@ -21,14 +28,13 @@ export class WikidataMapService extends WikidataService {
     }
 
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        const cacheKey = `owmf.map.${sourceID}_${this.language}_${bbox.join("_")}`,
-            cachedResponse = localStorage.getItem(cacheKey);
+        const cachedResponse = await this.db.getMap(sourceID, bbox, this.language);
         let out: GeoJSON & EtymologyResponse;
         if (cachedResponse) {
-            out = JSON.parse(decompress(cachedResponse));
-            debugLog("Cache hit, using cached response", { cacheKey, out });
+            out = cachedResponse;
+            debugLog("Cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Cache miss, fetching data", { cacheKey });
+            debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
             const sparqlQueryTemplate = sourceID.startsWith("wd_direct") ? this.getDirectSparqlQuery(sourceID) : this.getIndirectSparqlQuery(sourceID),
                 sparqlQuery = sparqlQueryTemplate
                     .replaceAll('${language}', this.language || '')
@@ -48,16 +54,11 @@ export class WikidataMapService extends WikidataService {
             out.wikidata_query = sparqlQuery;
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
+            out.language = this.language;
             try {
-                localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
+                this.db.addMap(out);
             } catch (e) {
-                if (e instanceof DOMException && e.name === "QuotaExceededError") {
-                    logErrorMessage("localStorage quota exceeded, clearing it", "warning", { cacheKey, out, e });
-                    localStorage.clear();
-                    localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
-                } else {
-                    logErrorMessage("Failed to store map data in cache", "error", { cacheKey, out, e });
-                }
+                logErrorMessage("Failed to store map data in cache", "warning", { sourceID, bbox, language: this.language, out, e });
             }
         }
         return out;

@@ -74,6 +74,12 @@ export interface DetailedFeatureCollection {
      * @memberof DetailedFeatureCollection
      */
     overpass_query?: string;
+    /**
+     * Language fetched
+     * @type {string}
+     * @memberof DetailedFeatureCollection
+     */
+    language?: string;
 }
 
 
@@ -115,6 +121,7 @@ export function DetailedFeatureCollectionFromJSONTyped(json: any, ignoreDiscrimi
         'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
         'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
         'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
+        'language': !exists(json, 'language') ? undefined : json['language'],
     };
 }
 
@@ -135,6 +142,7 @@ export function DetailedFeatureCollectionToJSON(value?: DetailedFeatureCollectio
         'etymology_count': value.etymology_count,
         'wikidata_query': value.wikidata_query,
         'overpass_query': value.overpass_query,
+        'language': value.language,
     };
 }
 

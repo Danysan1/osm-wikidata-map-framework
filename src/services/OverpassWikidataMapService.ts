@@ -15,10 +15,8 @@ export class OverpassWikidataMapService {
     }
 
     canHandleSource(sourceID: string): boolean {
-        if (!/^overpass_(all|none|osm_[_a-z]+)\+wd_(direct|indirect|reverse|qualifier)$/.test(sourceID))
-            return false;
-
-        return true;
+        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
+        return this.overpassService.canHandleSource(overpassSourceID) && this.wikidataService.canHandleSource(wikidataSourceID);
     }
 
     async fetchMapClusterElements(sourceID: string, bbox: BBox) {
@@ -27,7 +25,7 @@ export class OverpassWikidataMapService {
             throw new Error("Invalid sourceID");
 
         const [overpassData, wikidataData] = await Promise.all([
-            this.overpassService.fetchMapClusterElements(overpassSourceID, bbox, true),
+            this.overpassService.fetchMapClusterElements(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
         return this.mergeMapData(overpassData, wikidataData);
@@ -39,7 +37,7 @@ export class OverpassWikidataMapService {
             throw new Error("Invalid sourceID");
 
         const [overpassData, wikidataData] = await Promise.all([
-            this.overpassService.fetchMapElementDetails(overpassSourceID, bbox, true),
+            this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
         const out = this.mergeMapData(overpassData, wikidataData);
