@@ -160,12 +160,16 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     if (!etymologies_container) {
         debugLog("Missing etymologies_container");
     } else {
-        showLoadingSpinner(true);
-        if (etymologies) {
+        const placeholder = etymologies_container.querySelector<HTMLDivElement>(".etymology_loading");
+        if (etymologies?.length) {
+            showLoadingSpinner(true);
             downloadEtymologyDetails(etymologies).then(filledEtymologies => {
                 showLoadingSpinner(false);
                 showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
+                placeholder?.classList.add("hiddenElement");
             });
+        } else {
+            placeholder?.classList.add("hiddenElement");
         }
     }
 
@@ -242,8 +246,6 @@ function showEtymologies(properties: EtymologyFeatureProperties, etymologies: Et
             }, currentZoom));
         }
     }
-
-    etymologies_container.querySelector<HTMLDivElement>(".etymology_loading")?.classList.add("hiddenElement");
 }
 
 async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100): Promise<Etymology[]> {
