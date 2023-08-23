@@ -3,7 +3,7 @@ import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties }
 import { EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
 import { Configuration, OverpassApi } from "../generated/overpass";
-import { MapDatabase } from "./MapDatabase";
+import { MapDatabase } from "../db/MapDatabase";
 import osmtogeojson from "osmtogeojson";
 
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
@@ -46,17 +46,11 @@ export class OverpassService {
     }
 
     private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        let out: GeoJSON & EtymologyResponse | undefined;
-        try {
-            out = await this.db.getMap(sourceID, bbox, this.language);
-        } catch (e) {
-            logErrorMessage("Failed to load map data from cache", "warning", { sourceID, bbox, language: this.language, e });
-        }
-
+        let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
-            debugLog("Cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            debugLog("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
+            debugLog("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
             const filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
                 maxElements = getConfig("max_map_elements"),
@@ -168,11 +162,7 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
             out.bbox = bbox;
             out.sourceID = sourceID;
             out.language = this.language;
-            try {
-                this.db.addMap(out);
-            } catch (e) {
-                logErrorMessage("Failed to store map data in cache", "warning", { sourceID, bbox, language: this.language, out, e });
-            }
+            this.db.addMap(out);
         }
         return out;
     }

@@ -9,7 +9,7 @@ import { parse } from "papaparse";
 import { EtymologyStat } from "../controls/EtymologyColorControl";
 import { debugLog } from "../config";
 import { logErrorMessage } from "../monitoring";
-import { compress, decompress } from "lz-string";
+import { StatsDatabase } from "../db/StatsDatabase";
 
 export const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
@@ -26,16 +26,19 @@ export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
 }
 
 export class WikidataStatsService extends WikidataService {
+    private db: StatsDatabase;
+
+    public constructor() {
+        super();
+        this.db = new StatsDatabase();
+    }
+
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        wikidataIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
-        const cacheKey = `owmf.stats.${colorSchemeID}.${this.language}_${wikidataIDs.join("_")}`,
-            cachedResponse = localStorage.getItem(cacheKey);
-        let out: EtymologyStat[];
-        if (cachedResponse) {
-            out = JSON.parse(decompress(cachedResponse));
-            debugLog("Cache hit, using cached response", { cacheKey, out });
+        let out = await this.db.getStats(colorSchemeID, wikidataIDs, this.language);
+        if (out) {
+            debugLog("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
-            debugLog("Cache miss, fetching data", { cacheKey });
+            debugLog("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
             const csvPath = statsCSVPaths[colorSchemeID],
                 sparqlQuery = statsQueries[colorSchemeID];
             if (!sparqlQuery)
@@ -64,11 +67,7 @@ export class WikidataStatsService extends WikidataService {
                 // console.table(stats);
                 out.forEach(stat => stat.color = (csv.data as string[][]).find(row => row[0] === stat.id)?.at(3));
             }
-            try {
-                localStorage.setItem(cacheKey, compress(JSON.stringify(out)));
-            } catch (e) {
-                logErrorMessage("Failed to store stats data in cache", "warning", { cacheKey, out, e });
-            }
+            this.db.addStats(out, colorSchemeID, wikidataIDs, this.language);
         }
         return out;
     }

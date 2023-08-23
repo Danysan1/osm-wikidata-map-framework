@@ -364,7 +364,7 @@ components:
 
     GeoJSONBoundingBox:
       type: array
-      description: Bounding box of the features
+      description: 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
       externalDocs:
         url: https://tools.ietf.org/html/rfc7946#section-5
       minItems: 4

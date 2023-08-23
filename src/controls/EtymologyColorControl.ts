@@ -37,8 +37,8 @@ class EtymologyColorControl extends DropdownControl {
     private _chartJsObject?: import('chart.js').Chart;
     private _lastWikidataIDs?: string[];
     private _lastColorSchemeID?: string;
-    private _setLayerColor: (color: string | ExpressionSpecification) => void;
-    private _t: TFunction;
+    private sourceId: string;
+    private setLayerColor: (color: string | ExpressionSpecification) => void;
 
     private baseChartData = {
         labels: [],
@@ -82,8 +82,8 @@ class EtymologyColorControl extends DropdownControl {
                 }
             }
         );
-        this._setLayerColor = setLayerColor;
-        this._t = t;
+        this.setLayerColor = setLayerColor;
+        this.sourceId = sourceId;
     }
 
     updateChart(event?: MapEvent | Event, source?: string) {
@@ -108,7 +108,7 @@ class EtymologyColorControl extends DropdownControl {
                 debugLog("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
                 this.showDropdown(false);
                 if (colorScheme?.color)
-                    this._setLayerColor(colorScheme.color);
+                    this.setLayerColor(colorScheme.color);
             }
         }
     }
@@ -120,8 +120,13 @@ class EtymologyColorControl extends DropdownControl {
             wikidata_IDs = new Set<string>(),
             propagation_IDs = new Set<string>();
         this.getMap()
-            ?.querySourceFeatures("wikidata_source")
-            ?.forEach((feature: EtymologyFeature) => {
+            ?.queryRenderedFeatures({
+                layers: [
+                    this.sourceId + "_layer_point",
+                    this.sourceId + "_layer_lineString",
+                    this.sourceId + "_layer_polygon_fill"
+                ]
+            })?.forEach((feature: EtymologyFeature) => {
                 const props = feature.properties,
                     rawEtymologies = props?.etymologies,
                     etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
@@ -157,7 +162,7 @@ class EtymologyColorControl extends DropdownControl {
         //console.info("Source stats:", stats);
         this.setChartStats(stats);
 
-        this._setLayerColor([
+        this.setLayerColor([
             "case",
             ["coalesce", ["all",
                 ["has", "etymologies"],
@@ -200,18 +205,18 @@ class EtymologyColorControl extends DropdownControl {
                 return [];
             })
             ?.map(etymology => etymology.wikidata)
-            ?.filter(id => typeof id === 'string')
-            ?.sort() as string[] || [];
-        if (wikidataIDs.length === 0) {
+            ?.filter(id => typeof id === 'string') as string[] || [],
+            uniqueIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
+        if (uniqueIDs.length === 0) {
             debugLog("Skipping stats update for 0 IDs");
-        } else if (colorSchemeID === this._lastColorSchemeID && wikidataIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => wikidataIDs[i] === id)) {
-            debugLog("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
+        } else if (colorSchemeID === this._lastColorSchemeID && uniqueIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => uniqueIDs[i] === id)) {
+            debugLog("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
         } else {
-            debugLog("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
+            debugLog("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
-            this._lastWikidataIDs = wikidataIDs;
+            this._lastWikidataIDs = uniqueIDs;
             try {
-                const stats = await new WikidataStatsService().fetchStats(wikidataIDs, colorSchemeID);
+                const stats = await new WikidataStatsService().fetchStats(uniqueIDs, colorSchemeID);
                 if (stats.length > 0) {
                     this.setChartStats(stats)
                     this.setLayerColorForStats(stats);
@@ -256,7 +261,7 @@ class EtymologyColorControl extends DropdownControl {
             }
         });
         data.push('#223b53');
-        this._setLayerColor(data as ExpressionSpecification);
+        this.setLayerColor(data as ExpressionSpecification);
     }
 
     /**

@@ -9,7 +9,7 @@ import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
 import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { logErrorMessage } from "../monitoring";
-import { MapDatabase } from "./MapDatabase";
+import { MapDatabase } from "../db/MapDatabase";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 
@@ -29,13 +29,11 @@ export class WikidataMapService extends WikidataService {
     }
 
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        const cachedResponse = await this.db.getMap(sourceID, bbox, this.language);
-        let out: GeoJSON & EtymologyResponse;
-        if (cachedResponse) {
-            out = cachedResponse;
-            debugLog("Cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+        let out = await this.db.getMap(sourceID, bbox, this.language);
+        if (out) {
+            debugLog("Wikidata map cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
+            debugLog("Wikidata map cache miss, fetching data", { sourceID, bbox, language: this.language });
             let sparqlQueryTemplate: string;
             if (sourceID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
@@ -64,11 +62,7 @@ export class WikidataMapService extends WikidataService {
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
             out.language = this.language;
-            try {
-                this.db.addMap(out);
-            } catch (e) {
-                logErrorMessage("Failed to store map data in cache", "warning", { sourceID, bbox, language: this.language, out, e });
-            }
+            this.db.addMap(out);
         }
         return out;
     }

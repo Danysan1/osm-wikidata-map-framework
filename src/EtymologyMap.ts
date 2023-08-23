@@ -20,7 +20,7 @@ import './style.css';
 import { WikidataMapService } from './services/WikidataMapService';
 import { OverpassService } from './services/OverpassService';
 import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
-import { MapDatabase } from './services/MapDatabase';
+import { MapDatabase } from './db/MapDatabase';
 
 const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",

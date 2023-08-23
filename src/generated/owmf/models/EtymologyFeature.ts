@@ -57,7 +57,7 @@ export interface EtymologyFeature {
      */
     geometry: GeoJSONGeometry;
     /**
-     * Bounding box of the features
+     * 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
      * @type {Array<number>}
      * @memberof EtymologyFeature
      */
