@@ -47,10 +47,12 @@ $canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : getCur
 $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (string)$conf->get("keywords") . '" />' : "";
 
 $jsScripts = glob("dist/main-*.js");
+if(empty($jsScripts))
+    throw new Exception("No Javascript entrypoint file found");
 usort($jsScripts, function (string $x, string $y): int {
     return filemtime($y) - filemtime($x);
 }); // Finds the latest version of the Webpack-generated Javascript entrypoint file
-$jsScript = (string)$jsScripts[0];
+$jsScript = $jsScripts[0];
 //error_log(json_encode($jsScripts) . " => " . $jsScript)
 ?>
 <!DOCTYPE html>
