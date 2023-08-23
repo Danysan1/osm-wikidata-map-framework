@@ -4,7 +4,7 @@ import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent, Expression
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
-import { debugLog } from '../config';
+import { debugLog, getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { TFunction } from 'i18next';
@@ -56,14 +56,19 @@ class EtymologyColorControl extends DropdownControl {
         sourceId: string,
         minZoomLevel: number
     ) {
-        const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
-            id,
-            text: t(item.textKey),
-            onSelect: (event) => {
-                this.updateChart(event);
-                onSchemeChange(id as ColorSchemeID);
-            }
-        }));
+        const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
+            wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
+            indirectWdProperty = getConfig("wikidata_indirect_property"),
+            anyEtymology = keys?.length || wdDirectProperties?.length || indirectWdProperty,
+            usableColorSchemes = Object.entries(colorSchemes).filter(([_, scheme]) => anyEtymology || !scheme.requiresEtymology),
+            dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
+                id,
+                text: t(item.textKey),
+                onSelect: (event) => {
+                    this.updateChart(event);
+                    onSchemeChange(id as ColorSchemeID);
+                }
+            }));
         super(
             '📊', //'🎨',
             dropdownItems,

@@ -266,16 +266,20 @@ export class EtymologyMap extends Map {
                 queryString = new URLSearchParams(queryParams).toString();
 
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService.canHandleSource(source))
-                data = await this.wikidataMapService.fetchMapData(source, [minLon, minLat, maxLon, maxLat]);
-            else if (enableElementLayers && this.overpassService.canHandleSource(source))
-                data = await this.overpassService.fetchMapClusterElements(source, [minLon, minLat, maxLon, maxLat]);
-            else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
-                data = await this.overpassService.fetchMapElementDetails(source, [minLon, minLat, maxLon, maxLat]);
-            else if (enableElementLayers && this.overpassWikidataService.canHandleSource(source))
-                data = await this.overpassWikidataService.fetchMapClusterElements(source, [minLon, minLat, maxLon, maxLat]);
-            else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
-                data = await this.overpassWikidataService.fetchMapElementDetails(source, [minLon, minLat, maxLon, maxLat]);
+            try {
+                if (this.wikidataMapService.canHandleSource(source))
+                    data = await this.wikidataMapService.fetchMapData(source, bbox);
+                else if (enableElementLayers && this.overpassService.canHandleSource(source))
+                    data = await this.overpassService.fetchMapClusterElements(source, bbox);
+                else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
+                    data = await this.overpassService.fetchMapElementDetails(source, bbox);
+                else if (enableElementLayers && this.overpassWikidataService.canHandleSource(source))
+                    data = await this.overpassWikidataService.fetchMapClusterElements(source, bbox);
+                else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
+                    data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
+            } catch (e) {
+                logErrorMessage("Error fetching map data", "error", { source, bbox, e });
+            }
 
             if (enableWikidataLayers)
                 this.prepareWikidataLayers(data || "./etymologyMap.php?" + queryString, thresholdZoomLevel);
@@ -304,6 +308,8 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     prepareWikidataLayers(data: string | GeoJSON, minZoom: number) {
+        this.initWikidataControls();
+
         const colorSchemeColor = getCurrentColorScheme().color || '#223b53',
             wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
             wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
@@ -385,15 +391,13 @@ export class EtymologyMap extends Map {
             }, wikidata_layer_polygon_border);
             this.initWikidataLayer(wikidata_layer_polygon_fill);
         }
-
-        this.initWikidataControls();
     }
 
     initWikidataControls() {
         if (this.wikidataControlsInitialized)
             return;
-
         this.wikidataControlsInitialized = true;
+        debugLog("Initializing Wikidata controls");
         loadTranslator().then(t => {
             const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
                 thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
@@ -528,14 +532,13 @@ export class EtymologyMap extends Map {
      * @see prepareClusteredLayers
      */
     prepareElementsLayers(data: string | GeoJSON, minZoom: number, maxZoom: number) {
+        this.initWikidataControls();
         this.prepareClusteredLayers(
             ELEMENTS_SOURCE,
             data,
             minZoom,
             maxZoom
         );
-
-        this.initWikidataControls();
     }
 
     addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {

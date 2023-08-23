@@ -2,6 +2,7 @@ import { getConfig, getBoolConfig, debugLog, getJsonConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
+import { logErrorMessage } from '../monitoring';
 
 /**
  * Let the user choose the map style.
@@ -20,19 +21,22 @@ export class SourceControl extends DropdownControl {
             propagationEnabled = getBoolConfig("propagate_data"),
             dbEnabled = getBoolConfig("db_enable"),
             dropdownItems: DropdownItem[] = [],
+            selectSource = (sourceID: string) => {
+                debugLog("Selecting source ", { sourceID });
+
+                // If the change came from a manual interaction, update the fragment params
+                setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+
+                // If the change came from a fragment change, update the dropdown
+                // Regardless of the source, update the map
+                onSourceChange(sourceID);
+            },
             buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
                 id: sourceID,
-                text,
+                text: text,
                 category: category,
                 onSelect: () => {
-                    debugLog("Source selected", { sourceID });
-
-                    // If the change came from a manual interaction, update the fragment params
-                    setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-
-                    // If the change came from a fragment change, update the dropdown
-                    // Regardless of the source, update the map
-                    onSourceChange(sourceID);
+                    selectSource(sourceID);
 
                     // Hide the dropdown to leave more space for the map
                     this.showDropdown(false);
@@ -93,6 +97,12 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", "OpenStreetMap (Overpass API)"));
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", "OSM (Overpass API) + Wikidata Query Service"));
             dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", "Wikidata Query Service"));
+        }
+
+        if (!dropdownItems.find(item => item.id === startSourceID)) {
+            logErrorMessage("Invalid startSourceID", "warning", { oldID: startSourceID, dropdownItems, newID: dropdownItems[0].id });
+            startSourceID = dropdownItems[0].id;
+            selectSource(startSourceID);
         }
 
         super(
