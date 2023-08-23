@@ -28,7 +28,7 @@ export class OverpassWikidataMapService {
             this.overpassService.fetchMapClusterElements(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
-        return this.mergeMapData(overpassData, wikidataData, false);
+        return this.mergeMapData(overpassData, wikidataData);
     }
 
     async fetchMapElementDetails(sourceID: string, bbox: BBox) {
@@ -40,12 +40,15 @@ export class OverpassWikidataMapService {
             this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
-        const out = this.mergeMapData(overpassData, wikidataData, wikidataSourceID !== "wd_base");
+        const out = this.mergeMapData(overpassData, wikidataData);
+        out.features = out.features.filter(
+            (feature: Feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
+        );
         out.sourceID = sourceID;
         return out;
     }
 
-    private mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse, requireKeys: boolean): GeoJSON & EtymologyResponse {
+    private mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse): GeoJSON & EtymologyResponse {
         const out = wikidataData.features.reduce((acc, wikidataFeature: Feature) => {
             const existingFeature: Feature | undefined = overpassData.features.find((overpassFeature: Feature) => {
                 const sameWikidata = overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata,
@@ -56,14 +59,14 @@ export class OverpassWikidataMapService {
             if (!existingFeature) {
                 acc.features.push(wikidataFeature);
             } else {
+                ["name", "description", "picture", "commons", "wikidata", "wikipedia"].forEach(key => {
+                    if (existingFeature.properties && !existingFeature.properties[key]) {
+                        const fallbackValue = wikidataFeature.properties?.[key];
+                        if (typeof fallbackValue === "string")
+                            existingFeature.properties[key] = fallbackValue;
+                    }
+                });
                 wikidataFeature.properties?.etymologies?.forEach((etymology: Etymology) => {
-                    ["name", "description", "picture", "commons", "wikidata", "wikipedia"].forEach(key => {
-                        if (existingFeature.properties && !existingFeature.properties[key]) {
-                            const fallbackValue = wikidataFeature.properties?.[key];
-                            if (typeof fallbackValue === "string")
-                                existingFeature.properties[key] = fallbackValue;
-                        }
-                    });
                     existingFeature.properties?.etymologies?.push({
                         ...etymology,
                         from_osm_id: existingFeature.properties?.osm_id,
@@ -73,12 +76,7 @@ export class OverpassWikidataMapService {
             }
             return acc;
         }, overpassData);
-        
-        if (requireKeys) {
-            out.features = out.features.filter(
-                (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology
-            );
-        }
+
         out.wikidata_query = wikidataData.wikidata_query;
         return out;
     }

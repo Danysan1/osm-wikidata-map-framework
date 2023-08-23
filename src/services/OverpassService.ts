@@ -33,21 +33,27 @@ export class OverpassService {
 
     fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         return this.fetchMapData(
-            "out ids center ${maxElements};", sourceID, bbox, false
+            "out ids center ${maxElements};", "elements_" + sourceID, bbox
         );
     }
 
-    fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        return this.fetchMapData(
-            "out body ${maxElements}; >; out skel qt;", sourceID, bbox, true
+    async fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+        const out = await this.fetchMapData("out body ${maxElements}; >; out skel qt;", "details_" + sourceID, bbox);
+        out.features = out.features.filter(
+            (feature: Feature) => sourceID === "overpass_wd" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
+        return out;
     }
 
-    private async fetchMapData(outClause: string, sourceID: string, bbox: BBox, requireKeys: boolean): Promise<GeoJSON & EtymologyResponse> {
-        const cachedResponse = await this.db.getMap(sourceID, bbox, this.language);
-        let out: GeoJSON & EtymologyResponse;
-        if (cachedResponse) {
-            out = cachedResponse;
+    private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+        let out: GeoJSON & EtymologyResponse | undefined;
+        try {
+            out = await this.db.getMap(sourceID, bbox, this.language);
+        } catch (e) {
+            logErrorMessage("Failed to load map data from cache", "warning", { sourceID, bbox, language: this.language, e });
+        }
+
+        if (out) {
             debugLog("Cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
             debugLog("Cache miss, fetching data", { sourceID, bbox, language: this.language });
@@ -55,28 +61,27 @@ export class OverpassService {
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
                 maxElements = getConfig("max_map_elements"),
                 osm_text_key = getConfig("osm_text_key"),
-                osm_description_key = getConfig("osm_description_key");
+                osm_description_key = getConfig("osm_description_key"),
+                requireKeys = !sourceID.endsWith("overpass_wd");
             let keys: string[], use_text_key: boolean, use_wikidata: boolean;
 
-            if (sourceID === "overpass_wd") {
+            if (sourceID.endsWith("overpass_wd")) {
                 keys = [];
                 use_text_key = false;
                 use_wikidata = true;
-                requireKeys = false;
             } else if (!wikidata_keys) {
                 throw new Error("No keys configured")
-            } else if (sourceID === "overpass_all_wd") {
+            } else if (sourceID.endsWith("overpass_all_wd")) {
                 keys = wikidata_keys;
                 use_text_key = true;
                 use_wikidata = true;
-                requireKeys = false;
-            } else if (sourceID === "overpass_all") {
+            } else if (sourceID.endsWith("overpass_all")) {
                 keys = wikidata_keys;
                 use_text_key = true;
                 use_wikidata = false;
             } else {
                 const wikidata_key_codes = wikidata_keys.map(key => key.replace(":wikidata", "").replace(":", "_")),
-                    sourceKeyCode = /^overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
+                    sourceKeyCode = /^\w+_overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
                 if (!sourceKeyCode)
                     throw new Error("Failed to extract sourceKeyCode");
                 else if (!wikidata_key_codes.includes(sourceKeyCode))
@@ -158,11 +163,6 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
                         wikidata: value
                     }));
             });
-            if (requireKeys) {
-                out.features = out.features.filter(
-                    (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology
-                );
-            }
             out.overpass_query = query;
             out.timestamp = new Date().toISOString();
             out.bbox = bbox;

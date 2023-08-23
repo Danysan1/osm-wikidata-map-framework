@@ -182,10 +182,12 @@ div.custom-ctrl>table>tr>td {
   font-size: large;
 }
 
-.detail_container div.header,
-.detail_container div.info,
-.detail_container div.grid,
-.detail_container div.column {
+div.detail_container p.alt_names,
+div.detail_container p.element_description,
+div.detail_container div.header,
+div.detail_container div.info,
+div.detail_container div.grid,
+div.detail_container div.column {
   max-width: 40em;
 }
 
