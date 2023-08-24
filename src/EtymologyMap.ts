@@ -22,7 +22,7 @@ import { OverpassService } from './services/OverpassService';
 import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
 import { MapDatabase } from './db/MapDatabase';
 
-const defaultBackgroundStyle = getConfig("default_background_style") ?? 'mapbox_streets',
+const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
     ELEMENTS_SOURCE = "elements_source",
     GLOBAL_SOURCE = "global_source";
