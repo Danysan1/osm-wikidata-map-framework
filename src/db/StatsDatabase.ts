@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { debug } from '../config';
+import { debug, getConfig } from '../config';
 import { EtymologyStat } from '../controls/EtymologyColorControl';
 import { ColorSchemeID } from '../colorScheme.model';
 
@@ -20,6 +20,13 @@ export class StatsDatabase extends Dexie {
         this.version(1).stores({
             stats: "++id, [colorSchemeID+language+wikidataIDs]"
         });
+
+        setTimeout(async () => {
+            const maxHours = parseInt(getConfig("cache_timeout_hours") || "24"),
+                threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
+            if (debug) console.info("Evicted old maps from indexedDB", { count, maxHours, threshold });
+        }, 10_000);
     }
 
     public async getStats(colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string, maxHours?: number): Promise<EtymologyStat[] | undefined> {
@@ -29,16 +36,6 @@ export class StatsDatabase extends Dexie {
                     .where({ colorSchemeID, language, wikidataIDs })
                     .first();
             });
-
-            const outdated = maxHours && row?.timestamp && new Date(row.timestamp) < new Date(Date.now() - 1000 * 60 * maxHours);
-            if (outdated && row.id) {
-                if (debug) console.info("Evicting old stats from cache", row);
-                await this.transaction('r', this.stats, async () => {
-                    if (row.id) await this.stats.delete(row.id);
-                });
-                return undefined;
-            }
-
             return row?.stats;
         } catch (e) {
             console.error("Failed getting stats from cache", e);

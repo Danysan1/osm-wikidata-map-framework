@@ -129,6 +129,7 @@ $jsScript = $jsScripts[0];
     <?= $conf->getMetaTag("default_language"); ?>
     <?= $conf->getMetaTag("max_map_elements", true); ?>
     <?= $conf->getMetaTag("max_wikidata_elements", true); ?>
+    <?= $conf->getMetaTag("cache_timeout_hours", true); ?>
 </head>
 
 <body>

@@ -68,7 +68,7 @@ if ($db != null) {
 } else {
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
-    $overpassCacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $cacheTimeoutHours = (int)$conf->get("cache_timeout_hours");
     $imageProperty = $conf->has("wikidata_image_property") ? (string)$conf->get("wikidata_image_property") : null;
 
     if ($source == "wd_direct") {
@@ -92,7 +92,7 @@ if ($db != null) {
         throw new Exception("Bad 'source' parameter");
     }
 
-    $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $overpassCacheTimeoutHours, $cacheFileBaseURL);
+    $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
 }
 
 $serverTiming->add("3_init");
