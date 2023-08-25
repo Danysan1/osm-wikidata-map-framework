@@ -41,7 +41,8 @@ export class OverpassService {
         out.features = out.features.filter(
             (feature: Feature) => feature.properties?.wikidata || (sourceID === "overpass_wd" || feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
-        if (debug) console.info(`Overpass fetchMapElementDetails found ${out.features.length} features after filtering`, out);
+        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
+        if (debug) console.info(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 

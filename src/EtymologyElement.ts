@@ -40,7 +40,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     }
 
     const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
-    if (debug) console.info("formatDate", { date, precision, dateObject, options, out });
+    //if (debug) console.info("formatDate", { date, precision, dateObject, options, out });
     return out;
 }
 

@@ -205,28 +205,14 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
      */
-    async updateDataSource() {
-        const bounds = this.getBounds(),
-            southWest = bounds.getSouthWest(),
-            northEast = bounds.getNorthEast(),
-            zoomLevel = this.getZoom(),
-            fragmentParams = getCorrectFragmentParams(),
-            source = fragmentParams.source,
-            language = document.documentElement.lang,
+    updateDataSource() {
+        const zoomLevel = this.getZoom(),
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
-            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
-            enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
-            enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
             enableGlobalLayers = zoomLevel < minZoomLevel;
         if (debug) console.info("updateDataSource", {
             zoomLevel,
             minZoomLevel,
-            thresholdZoomLevel,
-            enableWikidataLayers,
-            enableElementLayers,
             enableGlobalLayers,
-            source,
-            language,
             search: this.search,
         });
 
@@ -235,63 +221,72 @@ export class EtymologyMap extends Map {
                 this.prepareGlobalLayers(minZoomLevel);
             else
                 loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
-        } else if (enableElementLayers || enableWikidataLayers) {
-            let minLat: number, minLon: number, maxLat: number, maxLon: number;
-            if (enableWikidataLayers) {
-                minLat = Math.floor(southWest.lat * 100) / 100; // 0.123 => 0.12
-                minLon = Math.floor(southWest.lng * 100) / 100;
-                maxLat = Math.ceil(northEast.lat * 100) / 100; // 0.123 => 0.13
-                maxLon = Math.ceil(northEast.lng * 100) / 100;
-            } else {
-                minLat = Math.floor(southWest.lat * 10) / 10; // 0.123 => 0.1
-                minLon = Math.floor(southWest.lng * 10) / 10;
-                maxLat = Math.ceil(northEast.lat * 10) / 10; // 0.123 => 0.2
-                maxLon = Math.ceil(northEast.lng * 10) / 10;
-            }
-            const bbox: BBox = [minLon, minLat, maxLon, maxLat];
-            if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-                if (debug) console.info("updateDataSource: skipping source update", { source, bbox });
-                return;
-            } else {
-                this.lastSource = source;
-                this.lastBBox = bbox;
-            }
-
-            try {
-                let data: GeoJSON | undefined;
-                if (this.wikidataMapService.canHandleSource(source))
-                    data = await this.wikidataMapService.fetchMapData(source, bbox);
-                else if (enableElementLayers && this.overpassService.canHandleSource(source))
-                    data = await this.overpassService.fetchMapClusterElements(source, bbox);
-                else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
-                    data = await this.overpassService.fetchMapElementDetails(source, bbox);
-                else if (enableElementLayers && this.overpassWikidataService.canHandleSource(source))
-                    data = await this.overpassWikidataService.fetchMapClusterElements(source, bbox);
-                else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
-                    data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
-                else if (enableElementLayers && this.backendService.canHandleSource(source))
-                    data = await this.backendService.fetchMapClusterElements(source, bbox);
-                else if (enableWikidataLayers && this.backendService.canHandleSource(source))
-                    data = await this.backendService.fetchMapElementDetails(source, bbox);
-                else
-                    throw new Error("No service found");
-
-                if (!data)
-                    throw new Error("No data found");
-
-                if (enableWikidataLayers)
-                    this.prepareWikidataLayers(data, thresholdZoomLevel);
-                else
-                    this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
-            } catch (e) {
-                logErrorMessage("Error fetching map data", "error", { source, bbox, e });
-            }
         } else {
-            logErrorMessage("No layer was enabled", "error", {
-                zoomLevel,
-                minZoomLevel,
-                thresholdZoomLevel,
-            });
+            this.updateElementOrDetailsSource();
+        }
+    }
+
+    async updateElementOrDetailsSource() {
+        const bounds = this.getBounds(),
+            southWest = bounds.getSouthWest(),
+            northEast = bounds.getNorthEast(),
+            fragmentParams = getCorrectFragmentParams(),
+            source = fragmentParams.source,
+            zoomLevel = this.getZoom(),
+            minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
+            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
+            enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
+            enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel;
+        let minLat: number, minLon: number, maxLat: number, maxLon: number;
+        if (enableWikidataLayers) {
+            minLat = Math.floor(southWest.lat * 100) / 100; // 0.123 => 0.12
+            minLon = Math.floor(southWest.lng * 100) / 100;
+            maxLat = Math.ceil(northEast.lat * 100) / 100; // 0.123 => 0.13
+            maxLon = Math.ceil(northEast.lng * 100) / 100;
+        } else {
+            minLat = Math.floor(southWest.lat * 10) / 10; // 0.123 => 0.1
+            minLon = Math.floor(southWest.lng * 10) / 10;
+            maxLat = Math.ceil(northEast.lat * 10) / 10; // 0.123 => 0.2
+            maxLon = Math.ceil(northEast.lng * 10) / 10;
+        }
+        const bbox: BBox = [minLon, minLat, maxLon, maxLat];
+        if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.info("updateDataSource: skipping source update", { source, bbox });
+            return;
+        } else {
+            this.lastSource = source;
+            this.lastBBox = bbox;
+        }
+
+        try {
+            showLoadingSpinner(true);
+            let data: GeoJSON | undefined;
+            if (this.wikidataMapService.canHandleSource(source))
+                data = await this.wikidataMapService.fetchMapData(source, bbox);
+            else if (enableElementLayers && this.overpassService.canHandleSource(source))
+                data = await this.overpassService.fetchMapClusterElements(source, bbox);
+            else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
+                data = await this.overpassService.fetchMapElementDetails(source, bbox);
+            else if (enableElementLayers && this.overpassWikidataService.canHandleSource(source))
+                data = await this.overpassWikidataService.fetchMapClusterElements(source, bbox);
+            else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
+                data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
+            else if (enableElementLayers && this.backendService.canHandleSource(source))
+                data = await this.backendService.fetchMapClusterElements(source, bbox);
+            else if (enableWikidataLayers && this.backendService.canHandleSource(source))
+                data = await this.backendService.fetchMapElementDetails(source, bbox);
+            else
+                throw new Error("No service found");
+
+            if (!data)
+                throw new Error("No data found");
+
+            if (enableWikidataLayers)
+                this.prepareWikidataLayers(data, thresholdZoomLevel);
+            else
+                this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
+        } catch (e) {
+            logErrorMessage("Error fetching map data", "error", { source, bbox, e });
         }
     }
 

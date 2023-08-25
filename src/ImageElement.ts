@@ -25,7 +25,7 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
     } else if (typeof img == 'string') {
         imgName = decodeURIComponent(img.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
         imgAttribution = null;
-        if (debug) console.info("imageToDomElement: string img", { img, imgAttribution });
+        //if (debug) console.info("imageToDomElement: string img", { img, imgAttribution });
     } else {
         imgName = null;
         imgAttribution = null;

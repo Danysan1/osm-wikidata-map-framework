@@ -31,7 +31,7 @@ export class WikidataMapService extends WikidataService {
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
-            if (debug) console.info("Wikidata map cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: this.language, out });
         } else {
             if (debug) console.info("Wikidata map cache miss, fetching data", { sourceID, bbox, language: this.language });
             let sparqlQueryTemplate: string;
@@ -58,13 +58,14 @@ export class WikidataMapService extends WikidataService {
                 bbox,
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
+            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
             out.wikidata_query = sparqlQuery;
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
             out.language = this.language;
+            if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }
-        if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features`, out);
         return out;
     }
 
