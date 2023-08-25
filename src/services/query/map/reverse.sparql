@@ -13,8 +13,9 @@ SELECT
     (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
-    MINUS { ?stmt pq:P582 []. }
+    MINUS { ?stmt pq:P582 []. } # Ignore if it has an end date
     ?stmt ps:${indirectProperty} ?item.
+    MINUS { ?etymology (wdt:${indirectProperty}/wdt:P276) ?item. } # Prevent duplicated etymologies where both the item and the item's location are linked
     SERVICE wikibase:box {
         ?item wdt:P625 ?location.
         bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
