@@ -1,5 +1,5 @@
 import { ColorSchemeID } from "./colorScheme.model";
-import { debugLog, getConfig } from "./config";
+import { debug, getConfig } from "./config";
 
 const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lon_raw = getConfig("default_center_lon"),
@@ -30,7 +30,7 @@ function getFragmentParams(): FragmentParams {
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
             source: (hashParams && hashParams[4]) ? hashParams[4] : null,
         } as FragmentParams;
-    //debugLog("getFragmentParams", { hashParams, out });
+    //if(enable_debug_log) console.info("getFragmentParams", { hashParams, out });
     return out;
 }
 
@@ -51,10 +51,10 @@ function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorSchem
 
     const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.source}`;
     if (window.location.hash !== fragment) {
-        debugLog("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
+        if (debug) console.info("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
         window.location.hash = fragment;
     } else {
-        debugLog("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
+        if (debug) console.info("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
     }
     return fragment;
 }
@@ -75,19 +75,19 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
     }
 
     if (p.lon === null || p.lat === null || p.zoom === null) {
-        debugLog("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
+        if (debug) console.info("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
         p.lon = default_center_lon;
         p.lat = default_center_lat;
         p.zoom = default_zoom;
     }
 
     if (!p.colorScheme || p.colorScheme === 'null' || p.colorScheme === 'undefined') {
-        debugLog("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
+        if (debug) console.info("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
         p.colorScheme = defaultColorScheme;
     }
 
     if (!p.source || p.source === 'null' || p.source === 'undefined') {
-        debugLog("getCorrectFragmentParams: using default color scheme", { p, defaultSource });
+        if (debug) console.info("getCorrectFragmentParams: using default color scheme", { p, defaultSource });
         p.source = defaultSource;
     }
 

@@ -1,4 +1,4 @@
-import { debugLog } from "../config";
+import { debug } from "../config";
 import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
@@ -45,7 +45,7 @@ export class OverpassWikidataMapService {
         out.features = out.features.filter(
             (feature: Feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
-        debugLog(`OverpassWikidataMapService.fetchMapElementDetails found ${out.features.length} features after filtering`, out);
+        if (debug) console.info(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features after filtering`, out);
         out.sourceID = sourceID;
         return out;
     }
@@ -87,7 +87,7 @@ export class OverpassWikidataMapService {
         }, overpassData);
 
         out.wikidata_query = wikidataData.wikidata_query;
-        debugLog(`OverpassWikidataMapService.mergeMapData found ${out.features.length} features`, { features: [...out.features] });
+        if (debug) console.info(`Overpass+Wikidata mergeMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 }

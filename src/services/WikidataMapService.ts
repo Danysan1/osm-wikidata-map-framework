@@ -4,7 +4,7 @@ import reverseMapQuery from "./query/map/reverse.sparql";
 import qualifierMapQuery from "./query/map/qualifier.sparql";
 import directMapQuery from "./query/map/direct.sparql";
 import baseMapQuery from "./query/map/base.sparql";
-import { debugLog, getConfig, getJsonConfig } from "../config";
+import { debug, getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
 import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
@@ -31,9 +31,9 @@ export class WikidataMapService extends WikidataService {
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
-            debugLog("Wikidata map cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.info("Wikidata map cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Wikidata map cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.info("Wikidata map cache miss, fetching data", { sourceID, bbox, language: this.language });
             let sparqlQueryTemplate: string;
             if (sourceID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
@@ -64,7 +64,7 @@ export class WikidataMapService extends WikidataService {
             out.language = this.language;
             this.db.addMap(out);
         }
-        debugLog(`WikidataMapService.fetchMapData found ${out.features.length} features`, out);
+        if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features`, out);
         return out;
     }
 
@@ -117,7 +117,7 @@ export class WikidataMapService extends WikidataService {
         const wkt_geometry = row.location.value as string,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
-            debugLog("Failed to parse WKT coordinates", { wkt_geometry, row });
+            if (debug) console.info("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
 
@@ -127,7 +127,7 @@ export class WikidataMapService extends WikidataService {
                 feature => (feature.id !== undefined && feature.id === feature_wd_id) || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
             );
         if (existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            debugLog("Duplicate etymology", { existing: existingFeature.properties, new: row });
+            if (debug) console.info("Duplicate etymology", { existing: existingFeature.properties, new: row });
         }
 
         const etymology: Etymology | null = etymology_wd_id ? {

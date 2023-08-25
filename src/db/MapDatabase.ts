@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { debugLog } from '../config';
+import { debug } from '../config';
 import { EtymologyResponse } from '../generated/owmf';
 import { BBox, GeoJSON } from 'geojson';
 
@@ -26,7 +26,7 @@ export class MapDatabase extends Dexie {
 
             const outdated = maxHours && row?.timestamp && new Date(row.timestamp) < new Date(Date.now() - 1000 * 60 * maxHours)
             if (outdated && row.id) {
-                debugLog("Evicting old map from cache", row);
+                if (debug) console.info("Evicting old map from cache", row);
                 await this.transaction("rw", this.maps, async () => {
                     if (row.id) await this.maps.delete(row.id);
                 });

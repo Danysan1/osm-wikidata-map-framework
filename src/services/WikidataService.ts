@@ -1,4 +1,4 @@
-import { debugLog, getConfig } from "../config";
+import { debug, getConfig } from "../config";
 import detailsQuery from "./query/etymology-details.sparql";
 import { EtymologyDetails } from "../feature.model";
 import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
@@ -46,9 +46,9 @@ export class WikidataService {
         let out: EtymologyDetails[];
         if (cachedResponse) {
             out = JSON.parse(cachedResponse);
-            debugLog("Cache hit, using cached response", { cacheKey, out });
+            if (debug) console.info("Cache hit, using cached response", { cacheKey, out });
         } else {
-            debugLog("Cache miss, fetching data", { cacheKey });
+            if (debug) console.info("Cache miss, fetching data", { cacheKey });
             const res = await this.etymologyIDsQuery(etymologyIDs, detailsQuery);
 
             if (!res?.results?.bindings?.length) {

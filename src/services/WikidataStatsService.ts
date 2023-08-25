@@ -7,8 +7,7 @@ import endCenturyStatsQuery from "./query/stats/end-century.sparql";
 import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
 import { EtymologyStat } from "../controls/EtymologyColorControl";
-import { debugLog } from "../config";
-import { logErrorMessage } from "../monitoring";
+import { debug } from "../config";
 import { StatsDatabase } from "../db/StatsDatabase";
 
 export const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
@@ -36,9 +35,9 @@ export class WikidataStatsService extends WikidataService {
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
         let out = await this.db.getStats(colorSchemeID, wikidataIDs, this.language);
         if (out) {
-            debugLog("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
+            if (debug) console.info("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
-            debugLog("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
+            if (debug) console.info("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
             const csvPath = statsCSVPaths[colorSchemeID],
                 sparqlQuery = statsQueries[colorSchemeID];
             if (!sparqlQuery)
@@ -46,7 +45,7 @@ export class WikidataStatsService extends WikidataService {
             const res = await this.etymologyIDsQuery(wikidataIDs, sparqlQuery);
             out = res?.results?.bindings?.map((x: any): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
-                    debugLog("Empty count or name", x);
+                    if (debug) console.info("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
                 }
                 return {

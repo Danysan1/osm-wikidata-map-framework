@@ -16,10 +16,4 @@ export function getJsonConfig(key: string): any | null {
     return configElement?.textContent ? JSON.parse(configElement.textContent) : null;
 }
 
-let enable_debug_log: boolean | null = null;
-export function debugLog(msg: string, extra?: object) {
-    if (enable_debug_log === null)
-        enable_debug_log = getBoolConfig("enable_debug_log");
-
-    if (enable_debug_log) console.info(msg, extra);
-}
+export const debug = getBoolConfig("enable_debug_log");

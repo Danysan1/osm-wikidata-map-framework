@@ -1,4 +1,4 @@
-import { debugLog } from "./config";
+import { debug } from "./config";
 
 const snackbar_id = "snackbar";
 let timeoutID: NodeJS.Timeout | null = null;
@@ -29,13 +29,13 @@ function showSnackbar(message: string, color = "lightcoral", timeout = 3000) {
     snackbar.style.backgroundColor = color;
     snackbar.role = "alert";
 
-    debugLog("Showing snackbar", { message, snackbar });
+    if (debug) console.info("Showing snackbar", { message, snackbar });
     snackbar.classList.add("show");
 
     if (timeout) {
         // After N milliseconds, remove the show class from DIV
         const hideSnackbar = () => {
-            debugLog("Hiding snackbar");
+            if (debug) console.info("Hiding snackbar");
             snackbar?.classList.remove("show");
         };
         timeoutID = setTimeout(hideSnackbar, timeout);
@@ -58,10 +58,10 @@ function showLoadingSpinner(on = true) {
     }
 
     if (on) {
-        debugLog("Showing spinner", spinnerEl);
+        if (debug) console.info("Showing spinner", spinnerEl);
         spinnerEl.classList.add('show');
     } else {
-        debugLog("Hiding spinner", spinnerEl);
+        if (debug) console.info("Hiding spinner", spinnerEl);
         spinnerEl.classList.remove('show');
     }
 }

@@ -1,4 +1,4 @@
-import { debugLog, getConfig, getJsonConfig } from "../config";
+import { debug, getConfig, getJsonConfig } from "../config";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
 import { ElementResponse, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { Configuration, OverpassApi } from "../generated/overpass";
@@ -41,16 +41,16 @@ export class OverpassService {
         out.features = out.features.filter(
             (feature: Feature) => feature.properties?.wikidata || (sourceID === "overpass_wd" || feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
-        debugLog(`OverpassService.fetchMapElementDetails found ${out.features.length} features after filtering`, out);
+        if (debug) console.info(`Overpass fetchMapElementDetails found ${out.features.length} features after filtering`, out);
         return out;
     }
 
     private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
-            debugLog("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.info("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.info("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
             const filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
                 maxElements = getConfig("max_map_elements"),
@@ -163,7 +163,7 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
             out.language = this.language;
             this.db.addMap(out);
         }
-        debugLog(`OverpassService.fetchMapData found ${out.features.length} features`, { features: [...out.features] });
+        if (debug) console.info(`Overpass fetchMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 }

@@ -11,7 +11,7 @@ import { EtymologyColorControl, getCurrentColorScheme } from './controls/Etymolo
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { debugLog, getBoolConfig, getConfig } from './config';
+import { debug, getBoolConfig, getConfig } from './config';
 import { SourceControl } from './controls/SourceControl';
 import { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
@@ -57,7 +57,7 @@ export class EtymologyMap extends Map {
             backgroundStyleObj = backgroundStyles[0];
         }
         const startParams = getCorrectFragmentParams();
-        debugLog("Instantiating map", { containerId, backgroundStyleObj, startParams });
+        if (debug) console.info("Instantiating map", { containerId, backgroundStyleObj, startParams });
 
         super({
             container: containerId,
@@ -107,7 +107,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
     mapStyleDataHandler(e: MapDataEvent) {
-        debugLog("mapStyleDataHandler", e);
+        if (debug) console.info("mapStyleDataHandler", e);
         this.setCulture();
         this.updateDataSource();
     }
@@ -122,7 +122,7 @@ export class EtymologyMap extends Map {
      * @see https://github.com/mapbox/mapbox-gl-js/issues/7579
      */
     mapStyleLoadHandler() {
-        // debugLog("mapStyleLoadHandler");
+        // if (enable_debug_log) console.info("mapStyleLoadHandler");
         // this.setCulture();
         // this.updateDataSource();
     }
@@ -135,7 +135,7 @@ export class EtymologyMap extends Map {
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
             currZoom = this.getZoom();
-        debugLog("hashChangeHandler", { newParams, currLat, currLon, currZoom });
+        if (debug) console.info("hashChangeHandler", { newParams, currLat, currLon, currZoom });
 
         // Check if the position has changed in order to avoid unnecessary map movements
         if (Math.abs(currLat - newParams.lat) > 0.001 ||
@@ -162,7 +162,7 @@ export class EtymologyMap extends Map {
             sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent || globalSourceEvent);
 
         if (sourceDataLoaded) {
-            debugLog("mapSourceDataHandler: data loaded", {
+            if (debug) console.info("mapSourceDataHandler: data loaded", {
                 sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
             });
             showLoadingSpinner(false);
@@ -218,7 +218,7 @@ export class EtymologyMap extends Map {
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
             enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel,
             enableGlobalLayers = zoomLevel < minZoomLevel;
-        debugLog("updateDataSource", {
+        if (debug) console.info("updateDataSource", {
             zoomLevel,
             minZoomLevel,
             thresholdZoomLevel,
@@ -250,7 +250,7 @@ export class EtymologyMap extends Map {
             }
             const bbox: BBox = [minLon, minLat, maxLon, maxLat];
             if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-                debugLog("updateDataSource: skipping source update", { source, bbox });
+                if (debug) console.info("updateDataSource: skipping source update", { source, bbox });
                 return;
             } else {
                 this.lastSource = source;
@@ -398,11 +398,11 @@ export class EtymologyMap extends Map {
         if (this.wikidataControlsInitialized)
             return;
         this.wikidataControlsInitialized = true;
-        debugLog("Initializing Wikidata controls");
+        if (debug) console.info("Initializing Wikidata controls");
         loadTranslator().then(t => {
             const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
                 thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
-            debugLog("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
+            if (debug) console.info("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
             const sourceControl = new SourceControl(
                 getCorrectFragmentParams().source,
                 this.updateDataSource.bind(this),
@@ -414,7 +414,7 @@ export class EtymologyMap extends Map {
             const colorControl = new EtymologyColorControl(
                 getCorrectFragmentParams().colorScheme,
                 (colorSchemeID) => {
-                    debugLog("initWikidataControls set colorScheme", { colorSchemeID });
+                    if (debug) console.info("initWikidataControls set colorScheme", { colorSchemeID });
                     const params = getCorrectFragmentParams();
                     if (params.colorScheme != colorSchemeID) {
                         setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
@@ -422,7 +422,7 @@ export class EtymologyMap extends Map {
                     }
                 },
                 (color) => {
-                    debugLog("initWikidataControls set color", { color });
+                    if (debug) console.info("initWikidataControls set color", { color });
                     [
                         ["wikidata_source_layer_point", "circle-color"],
                         ["wikidata_source_layer_lineString", 'line-color'],
@@ -442,7 +442,7 @@ export class EtymologyMap extends Map {
             );
             setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
 
-            debugLog("Initializing link controls", { minZoomLevel });
+            if (debug) console.info("Initializing link controls", { minZoomLevel });
             this.addControl(new LinkControl(
                 "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel
             ), 'top-right');
@@ -487,7 +487,7 @@ export class EtymologyMap extends Map {
      */
     onWikidataLayerClick(ev: MapMouseEvent & { features?: GeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
         if (ev.popupAlreadyShown) {
-            debugLog("onWikidataLayerClick: etymology popup already shown", ev);
+            if (debug) console.info("onWikidataLayerClick: etymology popup already shown", ev);
         } else if (!ev.features) {
             console.warn("onWikidataLayerClick: missing or empty clicked features list", ev);
         } else {
@@ -509,7 +509,7 @@ export class EtymologyMap extends Map {
                     .setHTML('<div class="detail_wrapper"><span class="element_loading"></span></div>')
                     .addTo(this),
                 detail_wrapper = popup.getElement().querySelector<HTMLDivElement>(".detail_wrapper");
-            debugLog("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
+            if (debug) console.info("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
             if (!detail_wrapper)
                 throw new Error("Failed adding the popup");
 
@@ -549,21 +549,21 @@ export class EtymologyMap extends Map {
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
             showLoadingSpinner(true);
-            debugLog("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });
+            if (debug) console.info("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });
             sourceObject.setData(newSourceDataURL);
         } else if (!sourceObject) {
-            debugLog("addGeoJSONSource: adding source", { id, newSourceDataURL });
+            if (debug) console.info("addGeoJSONSource: adding source", { id, newSourceDataURL });
             showLoadingSpinner(true);
             this.addSource(id, config);
             sourceObject = this.getSource(id) as GeoJSONSource;
             if (sourceObject)
-                debugLog("addGeoJSONSource success ", { id, config, sourceObject });
-            else {
-                console.error("addGeoJSONSource failed", { id, config, sourceObject })
-                throw new Error("Failed adding source");
-            }
+                if (debug) console.info("addGeoJSONSource success ", { id, config, sourceObject });
+                else {
+                    console.error("addGeoJSONSource failed", { id, config, sourceObject })
+                    throw new Error("Failed adding source");
+                }
         } else {
-            debugLog("Skipping source update", { id, newSourceDataURL });
+            if (debug) console.info("Skipping source update", { id, newSourceDataURL });
         }
         return sourceObject;
     }
@@ -658,7 +658,7 @@ export class EtymologyMap extends Map {
             this.on('mouseenter', clusterLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', clusterLayerName, () => this.getCanvas().style.cursor = '');
 
-            debugLog("prepareClusteredLayers cluster", {
+            if (debug) console.info("prepareClusteredLayers cluster", {
                 clusterLayerName, layerDefinition, layer: this.getLayer(clusterLayerName)
             });
         }
@@ -678,7 +678,7 @@ export class EtymologyMap extends Map {
                 }
             } as SymbolLayerSpecification;
             this.addLayer(layerDefinition);
-            debugLog("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
+            if (debug) console.info("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
         }
 
         if (!this.getLayer(pointLayerName)) {
@@ -711,7 +711,7 @@ export class EtymologyMap extends Map {
             this.on('mouseenter', pointLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', pointLayerName, () => this.getCanvas().style.cursor = '');
 
-            debugLog("prepareClusteredLayers point", {
+            if (debug) console.info("prepareClusteredLayers point", {
                 pointLayerName, layerDefinition, layer: this.getLayer(pointLayerName)
             });
         }
@@ -753,7 +753,7 @@ export class EtymologyMap extends Map {
                 zoom = defaultZoom
                 console.warn("easeToClusterCenter: Empty zoom, using default");
             }
-            debugLog("easeToClusterCenter", { zoom, center });
+            if (debug) console.info("easeToClusterCenter", { zoom, center });
             this.easeTo({
                 center: center,
                 zoom: zoom
@@ -772,7 +772,7 @@ export class EtymologyMap extends Map {
         const lat = this.getCenter().lat,
             lon = this.getCenter().lng,
             zoom = this.getZoom();
-        debugLog("updateDataForMapPosition", { lat, lon, zoom });
+        if (debug) console.info("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
         setFragmentParams(lon, lat, zoom);
     }
@@ -896,7 +896,7 @@ export class EtymologyMap extends Map {
                 ['get', 'name:' + defaultLanguage] // Default language name in MapTiler vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
             ];
 
-        debugLog("setCulture", {
+        if (debug) console.info("setCulture", {
             language,
             defaultLanguage,
             newTextField,

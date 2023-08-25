@@ -2,7 +2,7 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'ma
 
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { debugLog } from '../config';
+import { debug } from '../config';
 import { logErrorMessage } from '../monitoring';
 import { EtymologyResponse } from '../generated/owmf';
 import { GeoJSON } from 'geojson';
@@ -94,12 +94,12 @@ export class LinkControl implements IControl {
 
                 const query = content[mapEventField];
                 if (typeof query !== "string" || !query.length) {
-                    //debugLog("Missing query field, hiding", { content, mapEventField });
+                    //if (enable_debug_log) console.info("Missing query field, hiding", { content, mapEventField });
                     this.show(false);
                 } else {
                     const encodedQuery = encodeURIComponent(query),
                         linkUrl = baseUrl + encodedQuery;
-                    debugLog("Query field found, showing URL", { linkUrl, mapEventField });
+                    if (debug) console.info("Query field found, showing URL", { linkUrl, mapEventField });
                     this.setURL(linkUrl);
                     this.show();
                 }

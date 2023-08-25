@@ -1,4 +1,3 @@
-import { debugLog } from '../config';
 import { DropdownControl } from './DropdownControl';
 
 export interface BackgroundStyle {
@@ -28,7 +27,7 @@ export function stadiaStyle(id: string, text: string, stadiaId: string, beta = f
     return {
         id: id,
         text: text,
-        styleUrl: `https://tiles${beta?'-beta':''}.stadiamaps.com/styles/${stadiaId}.json`
+        styleUrl: `https://tiles${beta ? '-beta' : ''}.stadiamaps.com/styles/${stadiaId}.json`
     };
 }
 

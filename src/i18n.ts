@@ -2,7 +2,7 @@ import { Resource, TFunction } from "i18next";
 import ChainedBackend from 'i18next-chained-backend'
 import resourcesToBackend from 'i18next-resources-to-backend'
 import HttpBackend from 'i18next-http-backend'
-import { debugLog, getBoolConfig, getConfig, getJsonConfig } from "./config";
+import { debug, getBoolConfig, getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
 export function getLocale(): string | undefined {
@@ -15,7 +15,7 @@ export function setPageLocale() {
     const locale = getLocale(),
         lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en';
 
-    debugLog("setPageLocale", {
+    if (debug) console.info("setPageLocale", {
         locale, lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
@@ -46,7 +46,7 @@ export async function loadTranslator() {
             backends: object[] = [HttpBackend],
             backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
         if (i18nOverride) {
-            debugLog("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
+            if (debug) console.info("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
             backends.unshift(resourcesToBackend(i18nOverride));
             backendOptions.unshift({});
         }
@@ -78,7 +78,7 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
 export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string) {
     const domElement = parent.querySelector<HTMLAnchorElement>(selector);
     if (!domElement) {
-        debugLog("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
+        if (debug) console.info("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator()
             .then(t => {

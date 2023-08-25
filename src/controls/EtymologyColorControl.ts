@@ -4,7 +4,7 @@ import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent, Expression
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
-import { debugLog, getConfig, getJsonConfig } from '../config';
+import { debug, getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { TFunction } from 'i18next';
@@ -82,7 +82,7 @@ class EtymologyColorControl extends DropdownControl {
                     validZoomLevel = zoomLevel >= minZoomLevel,
                     sourceLoaded = e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId;
                 if (validZoomLevel && sourceLoaded) {
-                    debugLog("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel });
+                    if (debug) console.info("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel });
                     this.updateChart(e, getCorrectFragmentParams().source);
                 }
             }
@@ -110,7 +110,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (event)
                     this.showDropdown();
             } else if (event?.type === 'change') {
-                debugLog("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
+                if (debug) console.info("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
                 this.showDropdown(false);
                 if (colorScheme?.color)
                     this.setLayerColor(colorScheme.color);
@@ -139,7 +139,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (etymologies?.length) {
                     etymologies.forEach(etymology => {
                         if (!etymology.wikidata)
-                            debugLog("Skipping etymology in source calculation", etymology);
+                            console.warn("Skipping etymology with no Wikidata ID in source calculation", etymology);
                         else if (etymology.propagated)
                             propagation_IDs.add(etymology.wikidata);
                         else if (etymology.from_osm_id && etymology.from_wikidata)
@@ -213,11 +213,11 @@ class EtymologyColorControl extends DropdownControl {
             ?.filter(id => typeof id === 'string') as string[] || [],
             uniqueIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
         if (uniqueIDs.length === 0) {
-            debugLog("Skipping stats update for 0 IDs");
+            if (debug) console.info("Skipping stats update for 0 IDs");
         } else if (colorSchemeID === this._lastColorSchemeID && uniqueIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => uniqueIDs[i] === id)) {
-            debugLog("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.info("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
         } else {
-            debugLog("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.info("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = uniqueIDs;
             try {
@@ -275,7 +275,7 @@ class EtymologyColorControl extends DropdownControl {
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     setChartData(data: ChartData<"pie">) {
-        debugLog("setChartData", {
+        if (debug) console.info("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
@@ -283,9 +283,9 @@ class EtymologyColorControl extends DropdownControl {
         if (this._chartJsObject && this._chartDomElement) {
             this.updateChartObject(data);
         } else if (this._chartInitInProgress) {
-            debugLog("setChartData: chart already loading");
+            if (debug) console.info("setChartData: chart already loading");
         } else {
-            debugLog("setChartData: Loading chart.js and initializing the chart");
+            if (debug) console.info("setChartData: Loading chart.js and initializing the chart");
             this.initChartObject(data);
         }
     }

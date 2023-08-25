@@ -1,4 +1,4 @@
-import { getConfig, getBoolConfig, debugLog, getJsonConfig } from '../config';
+import { getConfig, getBoolConfig, debug, getJsonConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
@@ -22,7 +22,7 @@ export class SourceControl extends DropdownControl {
             dbEnabled = getBoolConfig("db_enable"),
             dropdownItems: DropdownItem[] = [],
             selectSource = (sourceID: string) => {
-                debugLog("Selecting source ", { sourceID });
+                if (debug) console.info("Selecting source ", { sourceID });
 
                 // If the change came from a manual interaction, update the fragment params
                 setFragmentParams(undefined, undefined, undefined, undefined, sourceID);

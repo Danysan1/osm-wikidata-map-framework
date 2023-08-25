@@ -1,4 +1,4 @@
-import { debugLog, getConfig } from "../config";
+import { debug, getConfig } from "../config";
 import { GeoJSON, BBox } from "geojson";
 import { ElementResponse, EtymologyResponse } from "../generated/owmf";
 import { OwmfApi } from "../generated/owmf";
@@ -28,9 +28,9 @@ export class OwmfBackendService {
         const source = "elements_" + sourceID;
         let out = await this.db.getMap(source, bbox, this.language) as GeoJSON & ElementResponse | undefined;
         if (out) {
-            debugLog("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.info("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            debugLog("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.info("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
             out = await this.api.getElements({
                 minLon: bbox[0],
                 minLat: bbox[1],
@@ -45,6 +45,7 @@ export class OwmfBackendService {
             out.sourceID = source;
             this.db.addMap(out);
         }
+        if (debug) console.info(`OWMF fetchMapClusterElements found ${out.features.length} features`, out);
         return out;
     }
 
@@ -52,9 +53,9 @@ export class OwmfBackendService {
         const sourceID = "details_" + source;
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
-            debugLog("Overpass cache hit, using cached response", { source, bbox, language: this.language, out });
+            if (debug) console.info("Overpass cache hit, using cached response", { source, bbox, language: this.language, out });
         } else {
-            debugLog("Overpass cache miss, fetching data", { source, bbox, language: this.language });
+            if (debug) console.info("Overpass cache miss, fetching data", { source, bbox, language: this.language });
             out = await this.api.getEtymologies({
                 minLon: bbox[0],
                 minLat: bbox[1],
@@ -70,6 +71,7 @@ export class OwmfBackendService {
             out.sourceID = source;
             this.db.addMap(out);
         }
+        if (debug) console.info(`OWMF fetchMapElementDetails found ${out.features.length} features`, out);
         return out;
     }
 }

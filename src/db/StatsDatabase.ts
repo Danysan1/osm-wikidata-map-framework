@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { debugLog } from '../config';
+import { debug } from '../config';
 import { EtymologyStat } from '../controls/EtymologyColorControl';
 import { ColorSchemeID } from '../colorScheme.model';
 
@@ -32,7 +32,7 @@ export class StatsDatabase extends Dexie {
 
             const outdated = maxHours && row?.timestamp && new Date(row.timestamp) < new Date(Date.now() - 1000 * 60 * maxHours);
             if (outdated && row.id) {
-                debugLog("Evicting old stats from cache", row);
+                if (debug) console.info("Evicting old stats from cache", row);
                 await this.transaction('r', this.stats, async () => {
                     if (row.id) await this.stats.delete(row.id);
                 });

@@ -3,7 +3,7 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'ma
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 
 import { logErrorMessage } from '../monitoring';
-import { debugLog } from '../config';
+import { debug } from '../config';
 import { loadTranslator } from '../i18n';
 
 export interface DropdownItem {
@@ -156,7 +156,7 @@ export class DropdownControl implements IControl {
     }
 
     btnClickHandler(event: MouseEvent) {
-        debugLog("EtymologyColorControl button click", event);
+        if (debug) console.info("EtymologyColorControl button click", event);
         this.toggleDropdown();
     }
 
@@ -167,7 +167,7 @@ export class DropdownControl implements IControl {
         const dropdownItemId = dropDown.value,
             dropdownItemObj = this._dropdownItems.find(item => item.id === dropdownItemId);
         if (dropdownItemObj) {
-            debugLog("DropdownControl select", { dropdownItemObj, event });
+            if (debug) console.info("DropdownControl select", { dropdownItemObj, event });
             dropdownItemObj.onSelect(event)
         } else {
             logErrorMessage("Invalid selected dropdown item", "error", { dropdownItemId });
@@ -201,9 +201,9 @@ export class DropdownControl implements IControl {
         if (!dropdown?.options) {
             console.warn("setCurrentID: dropdown not yet initialized", { id });
         } else if (dropdown.value === id) {
-            debugLog("setCurrentID: skipping change to same value", { id });
+            if (debug) console.info("setCurrentID: skipping change to same value", { id });
         } else {
-            debugLog("setCurrentID: updating", { old: dropdown.value, next: id });
+            if (debug) console.info("setCurrentID: updating", { old: dropdown.value, next: id });
             dropdown.value = id;
             dropdown.dispatchEvent(new Event("change"));
         }
@@ -240,7 +240,7 @@ export class DropdownControl implements IControl {
         return (e: MapEvent) => {
             const zoomLevel = e.target.getZoom(),
                 show = zoomLevel >= minZoomLevel;
-            debugLog("moveend", { zoomLevel, minZoomLevel, show });
+            if (debug) console.info("moveend", { zoomLevel, minZoomLevel, show });
             this.show(show);
         }
     }
