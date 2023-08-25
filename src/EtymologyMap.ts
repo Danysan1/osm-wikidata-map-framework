@@ -156,14 +156,16 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
     mapSourceDataHandler(e: MapSourceDataEvent) {
+        if (!e.isSourceLoaded || e.dataType !== "source")
+            return;
+
         const wikidataSourceEvent = e.dataType == "source" && e.sourceId == WIKIDATA_SOURCE,
             elementsSourceEvent = e.dataType == "source" && e.sourceId == ELEMENTS_SOURCE,
-            globalSourceEvent = e.dataType == "source" && e.sourceId == GLOBAL_SOURCE,
-            sourceDataLoaded = e.isSourceLoaded && (wikidataSourceEvent || elementsSourceEvent || globalSourceEvent);
+            globalSourceEvent = e.dataType == "source" && e.sourceId == GLOBAL_SOURCE;
 
-        if (sourceDataLoaded) {
+        if (wikidataSourceEvent || elementsSourceEvent || globalSourceEvent) {
             if (debug) console.info("mapSourceDataHandler: data loaded", {
-                sourceDataLoaded, wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
+                wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
             });
             showLoadingSpinner(false);
 
@@ -177,7 +179,6 @@ export class EtymologyMap extends Map {
                     showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
                 else
                     showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
-
             });
         }
     }

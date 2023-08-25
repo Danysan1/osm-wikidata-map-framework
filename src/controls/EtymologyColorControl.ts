@@ -10,6 +10,7 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
 import { TFunction } from 'i18next';
 import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 import { Etymology, EtymologyFeature } from '../generated/owmf';
+import { showLoadingSpinner } from '../snackbar';
 
 export interface EtymologyStat {
     color?: string;
@@ -78,12 +79,16 @@ class EtymologyColorControl extends DropdownControl {
             minZoomLevel,
             () => this.setCurrentID(getCorrectFragmentParams().colorScheme),
             (e: MapSourceDataEvent) => {
+                if (!e.isSourceLoaded || e.dataType !== "source" || sourceId !== e.sourceId)
+                    return;
+
                 const zoomLevel = e.target.getZoom(),
-                    validZoomLevel = zoomLevel >= minZoomLevel,
-                    sourceLoaded = e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId;
-                if (validZoomLevel && sourceLoaded) {
-                    if (debug) console.info("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel });
-                    this.updateChart(e, getCorrectFragmentParams().source);
+                    validZoomLevel = zoomLevel >= minZoomLevel;
+                if (validZoomLevel) {
+                    if (debug) console.info("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
+                    this.updateChart(e);
+                } else {
+                    if (debug) console.info("EtymologyColorControl: skipping chart update ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
                 }
             }
         );
@@ -91,21 +96,24 @@ class EtymologyColorControl extends DropdownControl {
         this.sourceId = sourceId;
     }
 
-    updateChart(event?: MapEvent | Event, source?: string) {
+    updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not yet initialized", { event });
             return;
         } else {
             const colorSchemeID = dropdown.value as ColorSchemeID,
-                colorScheme = colorSchemes[colorSchemeID],
-                bounds = this.getMap()?.getBounds();
+                colorScheme = colorSchemes[colorSchemeID];
 
             if (colorSchemeID === 'source') {
+                if (debug) console.info("updateChart: showing source stats", { event, colorSchemeID });
                 this._lastColorSchemeID = colorSchemeID;
                 this._lastWikidataIDs = undefined;
                 this.loadSourceChartData();
+                if (event)
+                    this.showDropdown();
             } else if (statsQueries[colorSchemeID]) {
+                if (debug) console.info("updateChart: downloading stats from Wikidata", { event, colorSchemeID });
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
                     this.showDropdown();
@@ -197,6 +205,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
+        showLoadingSpinner(true);
         const wikidataIDs = this.getMap()
             ?.querySourceFeatures("wikidata_source")
             ?.map(feature => feature.properties?.etymologies)
@@ -234,6 +243,7 @@ class EtymologyColorControl extends DropdownControl {
                 this.removeChart();
             }
         }
+        showLoadingSpinner(false);
     }
 
     /**

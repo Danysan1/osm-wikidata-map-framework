@@ -73,7 +73,7 @@ export class LinkControl implements IControl {
 
     createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType != "source" || !sourceIds.includes(e.sourceId))
+            if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIds.includes(e.sourceId))
                 return;
 
             const data = (e.source as any)?.data;

@@ -171,9 +171,9 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         if (etymologies?.length) {
             showLoadingSpinner(true);
             downloadEtymologyDetails(etymologies).then(filledEtymologies => {
-                showLoadingSpinner(false);
                 showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
                 placeholder?.classList.add("hiddenElement");
+                showLoadingSpinner(false);
             });
         } else {
             placeholder?.classList.add("hiddenElement");

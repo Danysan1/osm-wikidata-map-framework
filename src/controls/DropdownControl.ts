@@ -155,12 +155,12 @@ export class DropdownControl implements IControl {
         this._map = undefined;
     }
 
-    btnClickHandler(event: MouseEvent) {
+    private btnClickHandler(event: MouseEvent) {
         if (debug) console.info("EtymologyColorControl button click", event);
         this.toggleDropdown();
     }
 
-    dropDownChangeHandler(event: Event) {
+    private dropDownChangeHandler(event: Event) {
         const dropDown = event.target;
         if (!(dropDown instanceof HTMLSelectElement))
             throw new Error("Bad event target dropdown");
