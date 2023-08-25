@@ -19,18 +19,18 @@ import {
     EtymologyFeaturePropertiesFromJSONTyped,
     EtymologyFeaturePropertiesToJSON,
 } from './EtymologyFeatureProperties';
+import type { GeoJSONFeatureGeometry } from './GeoJSONFeatureGeometry';
+import {
+    GeoJSONFeatureGeometryFromJSON,
+    GeoJSONFeatureGeometryFromJSONTyped,
+    GeoJSONFeatureGeometryToJSON,
+} from './GeoJSONFeatureGeometry';
 import type { GeoJSONFeatureID } from './GeoJSONFeatureID';
 import {
     GeoJSONFeatureIDFromJSON,
     GeoJSONFeatureIDFromJSONTyped,
     GeoJSONFeatureIDToJSON,
 } from './GeoJSONFeatureID';
-import type { GeoJSONGeometry } from './GeoJSONGeometry';
-import {
-    GeoJSONGeometryFromJSON,
-    GeoJSONGeometryFromJSONTyped,
-    GeoJSONGeometryToJSON,
-} from './GeoJSONGeometry';
 
 /**
  * 
@@ -52,22 +52,22 @@ export interface EtymologyFeature {
     id?: GeoJSONFeatureID;
     /**
      * 
-     * @type {GeoJSONGeometry}
+     * @type {GeoJSONFeatureGeometry}
      * @memberof EtymologyFeature
      */
-    geometry: GeoJSONGeometry;
-    /**
-     * 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
-     * @type {Array<number>}
-     * @memberof EtymologyFeature
-     */
-    bbox?: Array<number>;
+    geometry: GeoJSONFeatureGeometry;
     /**
      * 
      * @type {EtymologyFeatureProperties}
      * @memberof EtymologyFeature
      */
     properties: EtymologyFeatureProperties | null;
+    /**
+     * 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
+     * @type {Array<number>}
+     * @memberof EtymologyFeature
+     */
+    bbox?: Array<number>;
 }
 
 
@@ -104,9 +104,9 @@ export function EtymologyFeatureFromJSONTyped(json: any, ignoreDiscriminator: bo
         
         'type': json['type'],
         'id': !exists(json, 'id') ? undefined : GeoJSONFeatureIDFromJSON(json['id']),
-        'geometry': GeoJSONGeometryFromJSON(json['geometry']),
-        'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
+        'geometry': GeoJSONFeatureGeometryFromJSON(json['geometry']),
         'properties': EtymologyFeaturePropertiesFromJSON(json['properties']),
+        'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
     };
 }
 
@@ -121,9 +121,9 @@ export function EtymologyFeatureToJSON(value?: EtymologyFeature | null): any {
         
         'type': value.type,
         'id': GeoJSONFeatureIDToJSON(value.id),
-        'geometry': GeoJSONGeometryToJSON(value.geometry),
-        'bbox': value.bbox,
+        'geometry': GeoJSONFeatureGeometryToJSON(value.geometry),
         'properties': EtymologyFeaturePropertiesToJSON(value.properties),
+        'bbox': value.bbox,
     };
 }
 

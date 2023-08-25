@@ -13,18 +13,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { GeoJSONFeatureGeometry } from './GeoJSONFeatureGeometry';
+import {
+    GeoJSONFeatureGeometryFromJSON,
+    GeoJSONFeatureGeometryFromJSONTyped,
+    GeoJSONFeatureGeometryToJSON,
+} from './GeoJSONFeatureGeometry';
 import type { GeoJSONFeatureID } from './GeoJSONFeatureID';
 import {
     GeoJSONFeatureIDFromJSON,
     GeoJSONFeatureIDFromJSONTyped,
     GeoJSONFeatureIDToJSON,
 } from './GeoJSONFeatureID';
-import type { GeoJSONGeometryCollection } from './GeoJSONGeometryCollection';
-import {
-    GeoJSONGeometryCollectionFromJSON,
-    GeoJSONGeometryCollectionFromJSONTyped,
-    GeoJSONGeometryCollectionToJSON,
-} from './GeoJSONGeometryCollection';
 
 /**
  * GeoJSON Feature
@@ -46,10 +46,16 @@ export interface GeoJSONFeature {
     id?: GeoJSONFeatureID;
     /**
      * 
-     * @type {GeoJSONGeometryCollection}
+     * @type {GeoJSONFeatureGeometry}
      * @memberof GeoJSONFeature
      */
-    geometry: GeoJSONGeometryCollection;
+    geometry: GeoJSONFeatureGeometry;
+    /**
+     * 
+     * @type {{ [key: string]: string; }}
+     * @memberof GeoJSONFeature
+     */
+    properties: { [key: string]: string; } | null;
     /**
      * 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
      * @type {Array<number>}
@@ -75,6 +81,7 @@ export function instanceOfGeoJSONFeature(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
     isInstance = isInstance && "geometry" in value;
+    isInstance = isInstance && "properties" in value;
 
     return isInstance;
 }
@@ -91,7 +98,8 @@ export function GeoJSONFeatureFromJSONTyped(json: any, ignoreDiscriminator: bool
         
         'type': json['type'],
         'id': !exists(json, 'id') ? undefined : GeoJSONFeatureIDFromJSON(json['id']),
-        'geometry': GeoJSONGeometryCollectionFromJSON(json['geometry']),
+        'geometry': GeoJSONFeatureGeometryFromJSON(json['geometry']),
+        'properties': json['properties'],
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
     };
 }
@@ -107,7 +115,8 @@ export function GeoJSONFeatureToJSON(value?: GeoJSONFeature | null): any {
         
         'type': value.type,
         'id': GeoJSONFeatureIDToJSON(value.id),
-        'geometry': GeoJSONGeometryCollectionToJSON(value.geometry),
+        'geometry': GeoJSONFeatureGeometryToJSON(value.geometry),
+        'properties': value.properties,
         'bbox': value.bbox,
     };
 }

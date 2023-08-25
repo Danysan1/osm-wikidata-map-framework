@@ -21,6 +21,7 @@ import { WikidataMapService } from './services/WikidataMapService';
 import { OverpassService } from './services/OverpassService';
 import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
 import { MapDatabase } from './db/MapDatabase';
+import { OwmfBackendService } from './services/OwmfBackendService';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -39,6 +40,7 @@ export class EtymologyMap extends Map {
     private wikidataMapService: WikidataMapService;
     private overpassService: OverpassService;
     private overpassWikidataService: OverpassWikidataMapService;
+    private backendService: OwmfBackendService;
     private lastSource?: string;
     private lastBBox?: BBox;
 
@@ -73,6 +75,7 @@ export class EtymologyMap extends Map {
         this.wikidataMapService = new WikidataMapService(db);
         this.overpassService = new OverpassService(db);
         this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService);
+        this.backendService = new OwmfBackendService(db);
 
         try {
             openInfoWindow(this);
@@ -254,19 +257,8 @@ export class EtymologyMap extends Map {
                 this.lastBBox = bbox;
             }
 
-            const queryParams = {
-                language,
-                minLat: minLat.toString(),
-                minLon: minLon.toString(),
-                maxLat: maxLat.toString(),
-                maxLon: maxLon.toString(),
-                source,
-                search: this.search
-            },
-                queryString = new URLSearchParams(queryParams).toString();
-
-            let data: GeoJSON | undefined;
             try {
+                let data: GeoJSON | undefined;
                 if (this.wikidataMapService.canHandleSource(source))
                     data = await this.wikidataMapService.fetchMapData(source, bbox);
                 else if (enableElementLayers && this.overpassService.canHandleSource(source))
@@ -277,14 +269,23 @@ export class EtymologyMap extends Map {
                     data = await this.overpassWikidataService.fetchMapClusterElements(source, bbox);
                 else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
                     data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
+                else if (enableElementLayers && this.backendService.canHandleSource(source))
+                    data = await this.backendService.fetchMapClusterElements(source, bbox);
+                else if (enableWikidataLayers && this.backendService.canHandleSource(source))
+                    data = await this.backendService.fetchMapElementDetails(source, bbox);
+                else
+                    throw new Error("No service found");
+
+                if (!data)
+                    throw new Error("No data found");
+
+                if (enableWikidataLayers)
+                    this.prepareWikidataLayers(data, thresholdZoomLevel);
+                else
+                    this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
             } catch (e) {
                 logErrorMessage("Error fetching map data", "error", { source, bbox, e });
             }
-
-            if (enableWikidataLayers)
-                this.prepareWikidataLayers(data || "./etymologyMap.php?" + queryString, thresholdZoomLevel);
-            else
-                this.prepareElementsLayers(data || "./elements.php?" + queryString, minZoomLevel, thresholdZoomLevel);
         } else {
             logErrorMessage("No layer was enabled", "error", {
                 zoomLevel,

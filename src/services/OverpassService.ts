@@ -1,7 +1,6 @@
 import { debugLog, getConfig, getJsonConfig } from "../config";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
-import { EtymologyFeature, EtymologyResponse } from "../generated/owmf";
-import { logErrorMessage } from "../monitoring";
+import { ElementResponse, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import { MapDatabase } from "../db/MapDatabase";
 import osmtogeojson from "osmtogeojson";
@@ -31,7 +30,7 @@ export class OverpassService {
         return true;
     }
 
-    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
         return this.fetchMapData(
             "out ids center ${maxElements};", "elements_" + sourceID, bbox
         );
@@ -110,7 +109,7 @@ export class OverpassService {
 ${outClause}`.replace("${maxElements}", maxElements || "");
 
             const res = await this.api.postOverpassQuery({ data: query });
-
+            
             out = osmtogeojson(res);
             out.features.forEach((feature: Feature) => {
                 if (!feature.id)

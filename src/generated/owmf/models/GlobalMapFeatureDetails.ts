@@ -13,12 +13,6 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { GeoJSONPoint } from './GeoJSONPoint';
-import {
-    GeoJSONPointFromJSON,
-    GeoJSONPointFromJSONTyped,
-    GeoJSONPointToJSON,
-} from './GeoJSONPoint';
 import type { GlobalMapFeatureDetailsProperties } from './GlobalMapFeatureDetailsProperties';
 import {
     GlobalMapFeatureDetailsPropertiesFromJSON,
@@ -32,12 +26,6 @@ import {
  * @interface GlobalMapFeatureDetails
  */
 export interface GlobalMapFeatureDetails {
-    /**
-     * 
-     * @type {GeoJSONPoint}
-     * @memberof GlobalMapFeatureDetails
-     */
-    geometry?: GeoJSONPoint;
     /**
      * 
      * @type {GlobalMapFeatureDetailsProperties}
@@ -65,7 +53,6 @@ export function GlobalMapFeatureDetailsFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'geometry': !exists(json, 'geometry') ? undefined : GeoJSONPointFromJSON(json['geometry']),
         'properties': !exists(json, 'properties') ? undefined : GlobalMapFeatureDetailsPropertiesFromJSON(json['properties']),
     };
 }
@@ -79,7 +66,6 @@ export function GlobalMapFeatureDetailsToJSON(value?: GlobalMapFeatureDetails | 
     }
     return {
         
-        'geometry': GeoJSONPointToJSON(value.geometry),
         'properties': GlobalMapFeatureDetailsPropertiesToJSON(value.properties),
     };
 }

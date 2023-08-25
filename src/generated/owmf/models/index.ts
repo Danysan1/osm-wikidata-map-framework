@@ -1,8 +1,6 @@
 /* tslint:disable */
 /* eslint-disable */
 export * from './DetailedFeatureCollection';
-export * from './ElementFeature';
-export * from './ElementFeatureDetails';
 export * from './ElementResponse';
 export * from './ElementResponseFeatures';
 export * from './ErrorDetails';
@@ -15,6 +13,7 @@ export * from './EtymologyResponseFeatures';
 export * from './FeatureCollectionDetails';
 export * from './GeoJSONFeature';
 export * from './GeoJSONFeatureCollection';
+export * from './GeoJSONFeatureGeometry';
 export * from './GeoJSONFeatureID';
 export * from './GeoJSONGeometry';
 export * from './GeoJSONGeometryCollection';

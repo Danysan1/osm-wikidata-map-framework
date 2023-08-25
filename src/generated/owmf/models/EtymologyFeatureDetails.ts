@@ -19,12 +19,6 @@ import {
     EtymologyFeaturePropertiesFromJSONTyped,
     EtymologyFeaturePropertiesToJSON,
 } from './EtymologyFeatureProperties';
-import type { GeoJSONGeometry } from './GeoJSONGeometry';
-import {
-    GeoJSONGeometryFromJSON,
-    GeoJSONGeometryFromJSONTyped,
-    GeoJSONGeometryToJSON,
-} from './GeoJSONGeometry';
 
 /**
  * 
@@ -32,12 +26,6 @@ import {
  * @interface EtymologyFeatureDetails
  */
 export interface EtymologyFeatureDetails {
-    /**
-     * 
-     * @type {GeoJSONGeometry}
-     * @memberof EtymologyFeatureDetails
-     */
-    geometry: GeoJSONGeometry;
     /**
      * 
      * @type {EtymologyFeatureProperties}
@@ -51,7 +39,6 @@ export interface EtymologyFeatureDetails {
  */
 export function instanceOfEtymologyFeatureDetails(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "geometry" in value;
     isInstance = isInstance && "properties" in value;
 
     return isInstance;
@@ -67,7 +54,6 @@ export function EtymologyFeatureDetailsFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'geometry': GeoJSONGeometryFromJSON(json['geometry']),
         'properties': EtymologyFeaturePropertiesFromJSON(json['properties']),
     };
 }
@@ -81,7 +67,6 @@ export function EtymologyFeatureDetailsToJSON(value?: EtymologyFeatureDetails | 
     }
     return {
         
-        'geometry': GeoJSONGeometryToJSON(value.geometry),
         'properties': EtymologyFeaturePropertiesToJSON(value.properties),
     };
 }

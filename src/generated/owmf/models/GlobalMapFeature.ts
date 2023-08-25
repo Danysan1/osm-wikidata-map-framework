@@ -13,18 +13,18 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { GeoJSONFeatureGeometry } from './GeoJSONFeatureGeometry';
+import {
+    GeoJSONFeatureGeometryFromJSON,
+    GeoJSONFeatureGeometryFromJSONTyped,
+    GeoJSONFeatureGeometryToJSON,
+} from './GeoJSONFeatureGeometry';
 import type { GeoJSONFeatureID } from './GeoJSONFeatureID';
 import {
     GeoJSONFeatureIDFromJSON,
     GeoJSONFeatureIDFromJSONTyped,
     GeoJSONFeatureIDToJSON,
 } from './GeoJSONFeatureID';
-import type { GeoJSONPoint } from './GeoJSONPoint';
-import {
-    GeoJSONPointFromJSON,
-    GeoJSONPointFromJSONTyped,
-    GeoJSONPointToJSON,
-} from './GeoJSONPoint';
 import type { GlobalMapFeatureDetailsProperties } from './GlobalMapFeatureDetailsProperties';
 import {
     GlobalMapFeatureDetailsPropertiesFromJSON,
@@ -52,22 +52,22 @@ export interface GlobalMapFeature {
     id?: GeoJSONFeatureID;
     /**
      * 
-     * @type {GeoJSONPoint}
+     * @type {GeoJSONFeatureGeometry}
      * @memberof GlobalMapFeature
      */
-    geometry: GeoJSONPoint;
+    geometry: GeoJSONFeatureGeometry;
+    /**
+     * 
+     * @type {GlobalMapFeatureDetailsProperties}
+     * @memberof GlobalMapFeature
+     */
+    properties: GlobalMapFeatureDetailsProperties;
     /**
      * 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
      * @type {Array<number>}
      * @memberof GlobalMapFeature
      */
     bbox?: Array<number>;
-    /**
-     * 
-     * @type {GlobalMapFeatureDetailsProperties}
-     * @memberof GlobalMapFeature
-     */
-    properties?: GlobalMapFeatureDetailsProperties;
 }
 
 
@@ -87,6 +87,7 @@ export function instanceOfGlobalMapFeature(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
     isInstance = isInstance && "geometry" in value;
+    isInstance = isInstance && "properties" in value;
 
     return isInstance;
 }
@@ -103,9 +104,9 @@ export function GlobalMapFeatureFromJSONTyped(json: any, ignoreDiscriminator: bo
         
         'type': json['type'],
         'id': !exists(json, 'id') ? undefined : GeoJSONFeatureIDFromJSON(json['id']),
-        'geometry': GeoJSONPointFromJSON(json['geometry']),
+        'geometry': GeoJSONFeatureGeometryFromJSON(json['geometry']),
+        'properties': GlobalMapFeatureDetailsPropertiesFromJSON(json['properties']),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
-        'properties': !exists(json, 'properties') ? undefined : GlobalMapFeatureDetailsPropertiesFromJSON(json['properties']),
     };
 }
 
@@ -120,9 +121,9 @@ export function GlobalMapFeatureToJSON(value?: GlobalMapFeature | null): any {
         
         'type': value.type,
         'id': GeoJSONFeatureIDToJSON(value.id),
-        'geometry': GeoJSONPointToJSON(value.geometry),
-        'bbox': value.bbox,
+        'geometry': GeoJSONFeatureGeometryToJSON(value.geometry),
         'properties': GlobalMapFeatureDetailsPropertiesToJSON(value.properties),
+        'bbox': value.bbox,
     };
 }
 

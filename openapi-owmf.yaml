@@ -13,19 +13,17 @@ servers:
     description: Open Burial Map
   - url: https://artist.dsantini.it
     description: Open Artist Map
-    
+
 tags:
-  - name: clusters
-    description: Fetch clusters of features
-  - name: features
-    description: Fetch map features with their details and etymologies
+  - name: owmf
+    description: Fetch map clusters or features with their details and etymologies
 
 paths:
   /global-map.php:
     get:
       operationId: get_global_map
       tags:
-        - clusters
+        - owmf
       summary: Get clusters of etymologies worldwide
       responses:
         200:
@@ -50,7 +48,7 @@ paths:
     get:
       operationId: get_elements
       tags:
-        - clusters
+        - owmf
       summary: Get centroids of features having an etymology in an area
       parameters:
         - in: query
@@ -107,7 +105,7 @@ paths:
     get:
       operationId: get_etymologies
       tags:
-        - features
+        - owmf
       summary: Get features and relative etymologies in an area
       parameters:
         - in: query
@@ -168,6 +166,8 @@ paths:
   /health.php:
     get:
       operationId: health_check
+      tags:
+        - owmf
       summary: Check whether the server is running fine
       responses:
         200:
@@ -207,6 +207,8 @@ components:
     GeoJSONGeometry:
       type: object
       description: GeoJSON geometry
+      discriminator:
+        propertyName: type
       required:
         - type
       externalDocs:
@@ -341,7 +343,9 @@ components:
       description: GeoJSON Feature
       required:
         - type
+        # - id
         - geometry
+        - properties
       externalDocs:
         url: https://tools.ietf.org/html/rfc7946#section-3.2
       properties:
@@ -356,9 +360,18 @@ components:
             - type: string
             - type: integer
         geometry:
-          $ref: "#/components/schemas/GeoJSONGeometryCollection"
-        # properties:
-        #   type: object
+          oneOf:
+            - $ref: "#/components/schemas/GeoJSONPoint"
+            - $ref: "#/components/schemas/GeoJSONLineString"
+            - $ref: "#/components/schemas/GeoJSONPolygon"
+            - $ref: "#/components/schemas/GeoJSONMultiPoint"
+            - $ref: "#/components/schemas/GeoJSONMultiLineString"
+            - $ref: "#/components/schemas/GeoJSONMultiPolygon"
+        properties:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
         bbox:
           $ref: "#/components/schemas/GeoJSONBoundingBox"
 
@@ -398,8 +411,6 @@ components:
         - type: object
           title: GlobalMapFeatureDetails
           properties:
-            geometry:
-              $ref: "#/components/schemas/GeoJSONPoint"
             properties:
               type: object
               required:
@@ -418,17 +429,6 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/GlobalMapFeature"
-
-    ElementFeature:
-      allOf:
-        - $ref: "#/components/schemas/GeoJSONFeature"
-        - type: object
-          title: ElementFeatureDetails
-          properties:
-            geometry:
-              $ref: "#/components/schemas/GeoJSONPoint"
-            id:
-              type: string
 
     DetailedFeatureCollection:
       description: GeoJSON Feature collection with additional OWMF-related details
@@ -467,7 +467,7 @@ components:
             features:
               type: array
               items:
-                $ref: "#/components/schemas/ElementFeature"
+                $ref: "#/components/schemas/GeoJSONFeature"
 
     Etymology:
       type: object
@@ -523,8 +523,6 @@ components:
             - geometry
             - properties
           properties:
-            geometry:
-              $ref: "#/components/schemas/GeoJSONGeometry"
             properties:
               type: object
               nullable: true

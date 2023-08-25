@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ElementFeature } from './ElementFeature';
+import type { GeoJSONFeature } from './GeoJSONFeature';
 import {
-    ElementFeatureFromJSON,
-    ElementFeatureFromJSONTyped,
-    ElementFeatureToJSON,
-} from './ElementFeature';
+    GeoJSONFeatureFromJSON,
+    GeoJSONFeatureFromJSONTyped,
+    GeoJSONFeatureToJSON,
+} from './GeoJSONFeature';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface ElementResponse {
     type: ElementResponseTypeEnum;
     /**
      * 
-     * @type {Array<ElementFeature>}
+     * @type {Array<GeoJSONFeature>}
      * @memberof ElementResponse
      */
-    features: Array<ElementFeature>;
+    features: Array<GeoJSONFeature>;
     /**
      * 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
      * @type {Array<number>}
@@ -114,7 +114,7 @@ export function ElementResponseFromJSONTyped(json: any, ignoreDiscriminator: boo
     return {
         
         'type': json['type'],
-        'features': ((json['features'] as Array<any>).map(ElementFeatureFromJSON)),
+        'features': ((json['features'] as Array<any>).map(GeoJSONFeatureFromJSON)),
         'bbox': !exists(json, 'bbox') ? undefined : json['bbox'],
         'sourceID': !exists(json, 'sourceID') ? undefined : json['sourceID'],
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
@@ -135,7 +135,7 @@ export function ElementResponseToJSON(value?: ElementResponse | null): any {
     return {
         
         'type': value.type,
-        'features': ((value.features as Array<any>).map(ElementFeatureToJSON)),
+        'features': ((value.features as Array<any>).map(GeoJSONFeatureToJSON)),
         'bbox': value.bbox,
         'sourceID': value.sourceID,
         'timestamp': value.timestamp,

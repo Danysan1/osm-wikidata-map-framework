@@ -13,18 +13,19 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { GeoJSONGeometry } from './GeoJSONGeometry';
+import {
+    GeoJSONGeometryFromJSON,
+    GeoJSONGeometryFromJSONTyped,
+    GeoJSONGeometryToJSON,
+} from './GeoJSONGeometry';
+
 /**
  * GeoJSON geometry
  * @export
  * @interface GeoJSONMultiPolygon
  */
-export interface GeoJSONMultiPolygon {
-    /**
-     * the geometry type
-     * @type {string}
-     * @memberof GeoJSONMultiPolygon
-     */
-    type: GeoJSONMultiPolygonTypeEnum;
+export interface GeoJSONMultiPolygon extends GeoJSONGeometry {
     /**
      * 
      * @type {Array<Array<Array<Array<number>>>>}
@@ -34,27 +35,12 @@ export interface GeoJSONMultiPolygon {
 }
 
 
-/**
- * @export
- */
-export const GeoJSONMultiPolygonTypeEnum = {
-    Point: 'Point',
-    LineString: 'LineString',
-    Polygon: 'Polygon',
-    MultiPoint: 'MultiPoint',
-    MultiLineString: 'MultiLineString',
-    MultiPolygon: 'MultiPolygon',
-    GeometryCollection: 'GeometryCollection'
-} as const;
-export type GeoJSONMultiPolygonTypeEnum = typeof GeoJSONMultiPolygonTypeEnum[keyof typeof GeoJSONMultiPolygonTypeEnum];
-
 
 /**
  * Check if a given object implements the GeoJSONMultiPolygon interface.
  */
 export function instanceOfGeoJSONMultiPolygon(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "type" in value;
 
     return isInstance;
 }
@@ -68,8 +54,7 @@ export function GeoJSONMultiPolygonFromJSONTyped(json: any, ignoreDiscriminator:
         return json;
     }
     return {
-        
-        'type': json['type'],
+        ...GeoJSONGeometryFromJSONTyped(json, ignoreDiscriminator),
         'coordinates': !exists(json, 'coordinates') ? undefined : json['coordinates'],
     };
 }
@@ -82,8 +67,7 @@ export function GeoJSONMultiPolygonToJSON(value?: GeoJSONMultiPolygon | null): a
         return null;
     }
     return {
-        
-        'type': value.type,
+        ...GeoJSONGeometryToJSON(value),
         'coordinates': value.coordinates,
     };
 }

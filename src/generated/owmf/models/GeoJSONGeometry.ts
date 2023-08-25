@@ -13,6 +13,15 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import {
+     GeoJSONLineStringFromJSONTyped,
+     GeoJSONMultiLineStringFromJSONTyped,
+     GeoJSONMultiPointFromJSONTyped,
+     GeoJSONMultiPolygonFromJSONTyped,
+     GeoJSONPointFromJSONTyped,
+     GeoJSONPolygonFromJSONTyped
+} from './';
+
 /**
  * GeoJSON geometry
  * @export
@@ -60,6 +69,26 @@ export function GeoJSONGeometryFromJSON(json: any): GeoJSONGeometry {
 export function GeoJSONGeometryFromJSONTyped(json: any, ignoreDiscriminator: boolean): GeoJSONGeometry {
     if ((json === undefined) || (json === null)) {
         return json;
+    }
+    if (!ignoreDiscriminator) {
+        if (json['type'] === 'GeoJSONLineString') {
+            return GeoJSONLineStringFromJSONTyped(json, true);
+        }
+        if (json['type'] === 'GeoJSONMultiLineString') {
+            return GeoJSONMultiLineStringFromJSONTyped(json, true);
+        }
+        if (json['type'] === 'GeoJSONMultiPoint') {
+            return GeoJSONMultiPointFromJSONTyped(json, true);
+        }
+        if (json['type'] === 'GeoJSONMultiPolygon') {
+            return GeoJSONMultiPolygonFromJSONTyped(json, true);
+        }
+        if (json['type'] === 'GeoJSONPoint') {
+            return GeoJSONPointFromJSONTyped(json, true);
+        }
+        if (json['type'] === 'GeoJSONPolygon') {
+            return GeoJSONPolygonFromJSONTyped(json, true);
+        }
     }
     return {
         

@@ -1,11 +1,8 @@
-apis/ClustersApi.ts
-apis/DefaultApi.ts
-apis/FeaturesApi.ts
+.openapi-generator-ignore
+apis/OwmfApi.ts
 apis/index.ts
 index.ts
 models/DetailedFeatureCollection.ts
-models/ElementFeature.ts
-models/ElementFeatureDetails.ts
 models/ElementResponse.ts
 models/ElementResponseFeatures.ts
 models/ErrorDetails.ts
@@ -18,6 +15,7 @@ models/EtymologyResponseFeatures.ts
 models/FeatureCollectionDetails.ts
 models/GeoJSONFeature.ts
 models/GeoJSONFeatureCollection.ts
+models/GeoJSONFeatureGeometry.ts
 models/GeoJSONFeatureID.ts
 models/GeoJSONGeometry.ts
 models/GeoJSONGeometryCollection.ts

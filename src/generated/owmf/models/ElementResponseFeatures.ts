@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { ElementFeature } from './ElementFeature';
+import type { GeoJSONFeature } from './GeoJSONFeature';
 import {
-    ElementFeatureFromJSON,
-    ElementFeatureFromJSONTyped,
-    ElementFeatureToJSON,
-} from './ElementFeature';
+    GeoJSONFeatureFromJSON,
+    GeoJSONFeatureFromJSONTyped,
+    GeoJSONFeatureToJSON,
+} from './GeoJSONFeature';
 
 /**
  * 
@@ -28,10 +28,10 @@ import {
 export interface ElementResponseFeatures {
     /**
      * 
-     * @type {Array<ElementFeature>}
+     * @type {Array<GeoJSONFeature>}
      * @memberof ElementResponseFeatures
      */
-    features?: Array<ElementFeature>;
+    features?: Array<GeoJSONFeature>;
 }
 
 /**
@@ -53,7 +53,7 @@ export function ElementResponseFeaturesFromJSONTyped(json: any, ignoreDiscrimina
     }
     return {
         
-        'features': !exists(json, 'features') ? undefined : ((json['features'] as Array<any>).map(ElementFeatureFromJSON)),
+        'features': !exists(json, 'features') ? undefined : ((json['features'] as Array<any>).map(GeoJSONFeatureFromJSON)),
     };
 }
 
@@ -66,7 +66,7 @@ export function ElementResponseFeaturesToJSON(value?: ElementResponseFeatures | 
     }
     return {
         
-        'features': value.features === undefined ? undefined : ((value.features as Array<any>).map(ElementFeatureToJSON)),
+        'features': value.features === undefined ? undefined : ((value.features as Array<any>).map(GeoJSONFeatureToJSON)),
     };
 }
 

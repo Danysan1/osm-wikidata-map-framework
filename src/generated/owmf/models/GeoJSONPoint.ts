@@ -13,18 +13,19 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { GeoJSONGeometry } from './GeoJSONGeometry';
+import {
+    GeoJSONGeometryFromJSON,
+    GeoJSONGeometryFromJSONTyped,
+    GeoJSONGeometryToJSON,
+} from './GeoJSONGeometry';
+
 /**
  * GeoJSON geometry
  * @export
  * @interface GeoJSONPoint
  */
-export interface GeoJSONPoint {
-    /**
-     * the geometry type
-     * @type {string}
-     * @memberof GeoJSONPoint
-     */
-    type: GeoJSONPointTypeEnum;
+export interface GeoJSONPoint extends GeoJSONGeometry {
     /**
      * Point in 3D space
      * @type {Array<number>}
@@ -34,27 +35,12 @@ export interface GeoJSONPoint {
 }
 
 
-/**
- * @export
- */
-export const GeoJSONPointTypeEnum = {
-    Point: 'Point',
-    LineString: 'LineString',
-    Polygon: 'Polygon',
-    MultiPoint: 'MultiPoint',
-    MultiLineString: 'MultiLineString',
-    MultiPolygon: 'MultiPolygon',
-    GeometryCollection: 'GeometryCollection'
-} as const;
-export type GeoJSONPointTypeEnum = typeof GeoJSONPointTypeEnum[keyof typeof GeoJSONPointTypeEnum];
-
 
 /**
  * Check if a given object implements the GeoJSONPoint interface.
  */
 export function instanceOfGeoJSONPoint(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "type" in value;
 
     return isInstance;
 }
@@ -68,8 +54,7 @@ export function GeoJSONPointFromJSONTyped(json: any, ignoreDiscriminator: boolea
         return json;
     }
     return {
-        
-        'type': json['type'],
+        ...GeoJSONGeometryFromJSONTyped(json, ignoreDiscriminator),
         'coordinates': !exists(json, 'coordinates') ? undefined : json['coordinates'],
     };
 }
@@ -82,8 +67,7 @@ export function GeoJSONPointToJSON(value?: GeoJSONPoint | null): any {
         return null;
     }
     return {
-        
-        'type': value.type,
+        ...GeoJSONGeometryToJSON(value),
         'coordinates': value.coordinates,
     };
 }
