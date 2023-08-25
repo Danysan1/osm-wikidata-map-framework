@@ -29,7 +29,7 @@ export class StatsDatabase extends Dexie {
         }, 10_000);
     }
 
-    public async getStats(colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string, maxHours?: number): Promise<EtymologyStat[] | undefined> {
+    public async getStats(colorSchemeID: ColorSchemeID, wikidataIDs: string[], language?: string): Promise<EtymologyStat[] | undefined> {
         try {
             const row = await this.transaction('r', this.stats, async () => {
                 return await this.stats
