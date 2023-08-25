@@ -122,51 +122,51 @@ export class WikidataMapService extends WikidataService {
             return acc;
         }
 
-        const feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            etymology_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+        const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            etymology_wd_id: string | undefined = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             existingFeature = acc.find(
-                feature => (feature.id !== undefined && feature.id === feature_wd_id) || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
+                feature => (feature_wd_id && feature.id === feature_wd_id) || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
             );
-        if (existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            if (debug) console.info("Duplicate etymology", { existing: existingFeature.properties, new: row });
+
+        if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+            if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
+        } else {
+            const etymology: Etymology | null = etymology_wd_id ? {
+                from_osm: false,
+                from_wikidata: true,
+                from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
+                propagated: false,
+                wikidata: etymology_wd_id,
+            } : null;
+
+            if (!existingFeature) { // Add the new feature for this item 
+                const osm = row.osm?.value,
+                    osm_type = osm?.split("/").at(3),
+                    osm_id = osm ? parseInt(osm.split("/").at(4)) : undefined;
+
+                acc.push({
+                    type: "Feature",
+                    id: feature_wd_id,
+                    geometry,
+                    properties: {
+                        commons: row.commons?.value,
+                        etymologies: etymology ? [etymology] : undefined,
+                        from_osm: false,
+                        from_wikidata: true,
+                        name: row.itemLabel?.value,
+                        description: row.itemDescription?.value,
+                        osm_id,
+                        osm_type,
+                        picture: row.picture?.value,
+                        wikidata: feature_wd_id,
+                        wikipedia: row.wikipedia?.value,
+                    }
+                });
+            } else if (etymology) { // Add the new etymology to the existing feature for this feature
+                existingFeature.properties?.etymologies?.push(etymology);
+            }
         }
-
-        const etymology: Etymology | null = etymology_wd_id ? {
-            from_osm: false,
-            from_wikidata: true,
-            from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
-            propagated: false,
-            wikidata: etymology_wd_id,
-        } : null;
-
-        if (!existingFeature) { // Add the new feature for this item 
-            const osm = row.osm?.value,
-                osm_type = osm?.split("/").at(3),
-                osm_id = osm ? parseInt(osm.split("/").at(4)) : undefined;
-
-            acc.push({
-                type: "Feature",
-                id: feature_wd_id,
-                geometry,
-                properties: {
-                    commons: row.commons?.value,
-                    etymologies: etymology ? [etymology] : undefined,
-                    from_osm: false,
-                    from_wikidata: true,
-                    name: row.itemLabel?.value,
-                    description: row.itemDescription?.value,
-                    osm_id,
-                    osm_type,
-                    picture: row.picture?.value,
-                    wikidata: feature_wd_id,
-                    wikipedia: row.wikipedia?.value,
-                }
-            });
-        } else if (etymology) { // Add the new etymology to the existing feature for this feature
-            existingFeature.properties?.etymologies?.push(etymology);
-        }
-
         return acc;
     }
 }

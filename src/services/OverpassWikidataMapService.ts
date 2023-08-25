@@ -77,11 +77,15 @@ export class OverpassWikidataMapService {
 
                 // Merge etymologies
                 wikidataFeature.properties?.etymologies?.forEach((etymology: Etymology) => {
-                    existingFeature.properties?.etymologies?.push({
-                        ...etymology,
-                        from_osm_id: existingFeature.properties?.osm_id,
-                        from_osm_type: existingFeature.properties?.osm_type
-                    });
+                    if (etymology.wikidata && existingFeature.properties?.etymologies?.some(ety => ety.wikidata === etymology.wikidata)) {
+                        if (debug) console.warn("Overpass+Wikidata: Ignoring duplicate etymology", { wd_id: etymology.wikidata, existing: existingFeature.properties, new: wikidataFeature.properties });
+                    } else {
+                        existingFeature.properties?.etymologies?.push({
+                            ...etymology,
+                            from_osm_id: existingFeature.properties?.osm_id,
+                            from_osm_type: existingFeature.properties?.osm_type
+                        });
+                    }
                 });
             }
             return acc;
