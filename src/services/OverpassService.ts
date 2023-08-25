@@ -39,8 +39,9 @@ export class OverpassService {
     async fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         const out = await this.fetchMapData("out body ${maxElements}; >; out skel qt;", "details_" + sourceID, bbox);
         out.features = out.features.filter(
-            (feature: Feature) => sourceID === "overpass_wd" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
+            (feature: Feature) => feature.properties?.wikidata || (sourceID === "overpass_wd" || feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
+        debugLog(`OverpassService.fetchMapElementDetails found ${out.features.length} features after filtering`, out);
         return out;
     }
 
@@ -54,8 +55,7 @@ export class OverpassService {
                 wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
                 maxElements = getConfig("max_map_elements"),
                 osm_text_key = getConfig("osm_text_key"),
-                osm_description_key = getConfig("osm_description_key"),
-                requireKeys = !sourceID.endsWith("overpass_wd");
+                osm_description_key = getConfig("osm_description_key");
             let keys: string[], use_text_key: boolean, use_wikidata: boolean;
 
             if (sourceID.endsWith("overpass_wd")) {
@@ -91,25 +91,25 @@ export class OverpassService {
                     const filter_split = filter_tag.split("="),
                         filter_on_value = filter_split.length > 1 && filter_split[1] !== "*",
                         filter_clause = filter_on_value ? `${filter_split[0]}"="${filter_split[1]}` : filter_split[0];
-                    keys.forEach(key => { query += `nwr["${filter_clause}"]["${key}"~"^Q[0-9]+"];\n`; });
+                    keys.forEach(key => { query += `nwr[!"place"][!"boundary"]["${filter_clause}"]["${key}"~"^Q[0-9]+"];\n`; });
                     if (use_text_key && osm_text_key)
-                        query += `nwr["${filter_clause}"]["${osm_text_key}"];\n`;
+                        query += `nwr[!"place"][!"boundary"]["${filter_clause}"]["${osm_text_key}"];\n`;
                     if (use_wikidata)
-                        query += `nwr["${filter_clause}"]["wikidata"~"^Q[0-9]+"];\n`;
+                        query += `nwr[!"place"][!"boundary"]["${filter_clause}"]["wikidata"~"^Q[0-9]+"];\n`;
                 });
             } else {
                 keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"];\n`; });
                 if (use_text_key && osm_text_key)
-                    query += `nwr["${osm_text_key}"];\n`;
+                    query += `nwr[!"place"][!"boundary"]["${osm_text_key}"];\n`;
                 if (use_wikidata)
-                    query += `nwr["wikidata"~"^Q[0-9]+"];\n`;
+                    query += `nwr[!"place"][!"boundary"]["wikidata"~"^Q[0-9]+"];\n`;
             }
             query += `
 ); 
 ${outClause}`.replace("${maxElements}", maxElements || "");
 
             const res = await this.api.postOverpassQuery({ data: query });
-            
+
             out = osmtogeojson(res);
             out.features.forEach((feature: Feature) => {
                 if (!feature.id)
@@ -163,6 +163,7 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
             out.language = this.language;
             this.db.addMap(out);
         }
+        debugLog(`OverpassService.fetchMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 }

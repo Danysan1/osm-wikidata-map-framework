@@ -1,3 +1,4 @@
+import { debugLog } from "../config";
 import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
@@ -44,6 +45,7 @@ export class OverpassWikidataMapService {
         out.features = out.features.filter(
             (feature: Feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
+        debugLog(`OverpassWikidataMapService.fetchMapElementDetails found ${out.features.length} features after filtering`, out);
         out.sourceID = sourceID;
         return out;
     }
@@ -59,13 +61,20 @@ export class OverpassWikidataMapService {
             if (!existingFeature) {
                 acc.features.push(wikidataFeature);
             } else {
-                ["name", "description", "picture", "commons", "wikidata", "wikipedia"].forEach(key => {
+                // Unlike Overpass, Wikidata returns localized Wikipedia links so it has more priority
+                if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
+                    existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;
+
+                // For other key, give priority to Overpass
+                ["name", "description", "picture", "commons", "wikidata"].forEach(key => {
                     if (existingFeature.properties && !existingFeature.properties[key]) {
                         const fallbackValue = wikidataFeature.properties?.[key];
                         if (typeof fallbackValue === "string")
                             existingFeature.properties[key] = fallbackValue;
                     }
                 });
+
+                // Merge etymologies
                 wikidataFeature.properties?.etymologies?.forEach((etymology: Etymology) => {
                     existingFeature.properties?.etymologies?.push({
                         ...etymology,
@@ -78,6 +87,7 @@ export class OverpassWikidataMapService {
         }, overpassData);
 
         out.wikidata_query = wikidataData.wikidata_query;
+        debugLog(`OverpassWikidataMapService.mergeMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 }

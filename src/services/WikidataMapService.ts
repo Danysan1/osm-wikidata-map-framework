@@ -64,6 +64,7 @@ export class WikidataMapService extends WikidataService {
             out.language = this.language;
             this.db.addMap(out);
         }
+        debugLog(`WikidataMapService.fetchMapData found ${out.features.length} features`, out);
         return out;
     }
 
