@@ -49,8 +49,7 @@
         "end_century": "Per secolo di fine/morte",
         "black": "Nero",
         "red": "Rosso",
-        "orange": "Arancione",
-        "not_available": "Questo schema di colori non è disponibile per questa sorgente"
+        "orange": "Arancione"
     },
     "feature_details": {
         "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",

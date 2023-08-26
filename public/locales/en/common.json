@@ -49,8 +49,7 @@
         "end_century": "By end/death century",
         "black": "Black",
         "red": "Red",
-        "orange": "Orange",
-        "not_available": "This color scheme is not available for this source"
+        "orange": "Orange"
     },
     "feature_details": {
         "loading_first_n_items": "Loading only first {{partial}} items out of {{total}}...",

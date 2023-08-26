@@ -49,8 +49,7 @@
         "end_century": "Par siècle de fin/décès",
         "black": "Noir",
         "red": "Rouge",
-        "orange": "Orange",
-        "not_available": "Cette schéma de couleurs n'est pas disponible pour cette source"
+        "orange": "Orange"
     },
     "feature_details": {
         "loading_first_n_items": "Chargement des {{partial}} premiers éléments sur {{total}} uniquement...",

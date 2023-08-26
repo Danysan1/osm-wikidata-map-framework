@@ -49,8 +49,7 @@
         "end_century": "Por siglo de fin/muerte",
         "black": "Negro",
         "red": "Rojo",
-        "orange": "Naranja",
-        "not_available": "Este esquema de color no está disponible para esta fuente"
+        "orange": "Naranja"
     },
     "feature_details": {
         "loading_first_n_items": "Cargando solo los primeros {{partial}} elementos de {{total}}...",

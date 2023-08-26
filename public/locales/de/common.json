@@ -49,8 +49,7 @@
         "end_century": "Nach Jahrhundert des Endes/Todes",
         "black": "Schwarz",
         "red": "Rot",
-        "orange": "Orange",
-        "not_available": "Dieses Farbschema ist für diese Quelle nicht verfügbar"
+        "orange": "Orange"
     },
     "feature_details": {
         "loading_first_n_items": "Nur die ersten {{partial}} Elemente von {{total}} werden geladen...",
