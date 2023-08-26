@@ -1,6 +1,6 @@
 import { debug, getConfig } from "../config";
 import { GeoJSON, BBox } from "geojson";
-import { ElementResponse, EtymologyResponse } from "../generated/owmf";
+import { Configuration, ElementResponse, EtymologyResponse } from "../generated/owmf";
 import { OwmfApi } from "../generated/owmf";
 import { MapDatabase } from "../db/MapDatabase";
 
@@ -11,7 +11,7 @@ export class OwmfBackendService {
     protected language?: string;
 
     constructor(db: MapDatabase) {
-        this.api = new OwmfApi();
+        this.api = new OwmfApi(new Configuration({ basePath: "" }));
         this.defaultLanguage = getConfig("default_language") || 'en';
         this.language = document.documentElement.lang.split('-').at(0);
         this.db = db;
