@@ -127,6 +127,11 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     loadSourceChartData() {
+        if (!this.getMap()?.getSource(this.sourceId)) {
+            if (debug) console.warn("loadSourceChartData: source not yet loaded", { sourceId: this.sourceId });
+            return;
+        }
+
         const osm_IDs = new Set<string>(),
             osm_text_names = new Set<string>(),
             osm_wikidata_IDs = new Set<string>(),

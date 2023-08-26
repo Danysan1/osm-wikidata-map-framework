@@ -53,7 +53,7 @@
     },
     "feature_details": {
         "loading_first_n_items": "Warning message shown when a feature contains more etymologies than the max configured limit, should contain the variables {{partial}} (number of shown etymologies) and {{total}} (total etymologies)",
-        "location": "Al text of the '🎯' button to move the map to the location of the feature/etymology",
+        "location": "Alt text of the '🎯' button to move the map to the location of the feature/etymology",
         "picture_via_commons": "Attribution to Wikimedia Commons under the images",
         "loading": "Placeholder text shown while fetching and loading the etymologies",
         "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"

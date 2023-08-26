@@ -103,6 +103,7 @@ export class EtymologyMap extends Map {
      * This event is executed very often, mupltiple times per base map change
      * However it's the only reliable event for intercepting base map changes
      * 
+     * @see mapStyleLoadHandler
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
@@ -117,6 +118,7 @@ export class EtymologyMap extends Map {
      * This event should handle the change of base map
      * It fires only one time but it's not reliable
      * 
+     * @see mapStyleDataHandler
      * @see https://bl.ocks.org/ryanbaumann/7f9a353d0a1ae898ce4e30f336200483/96bea34be408290c161589dcebe26e8ccfa132d7
      * @see https://github.com/mapbox/mapbox-gl-js/issues/3979
      * @see https://github.com/mapbox/mapbox-gl-js/issues/7579
@@ -238,20 +240,22 @@ export class EtymologyMap extends Map {
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
             enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel;
-        let minLat: number, minLon: number, maxLat: number, maxLon: number;
+        let minLat: number, minLon: number, maxLat: number, maxLon: number, mapSource: string;
         if (enableWikidataLayers) {
             minLat = Math.floor(southWest.lat * 100) / 100; // 0.123 => 0.12
             minLon = Math.floor(southWest.lng * 100) / 100;
             maxLat = Math.ceil(northEast.lat * 100) / 100; // 0.123 => 0.13
             maxLon = Math.ceil(northEast.lng * 100) / 100;
+            mapSource = WIKIDATA_SOURCE;
         } else {
             minLat = Math.floor(southWest.lat * 10) / 10; // 0.123 => 0.1
             minLon = Math.floor(southWest.lng * 10) / 10;
             maxLat = Math.ceil(northEast.lat * 10) / 10; // 0.123 => 0.2
             maxLon = Math.ceil(northEast.lng * 10) / 10;
+            mapSource = ELEMENTS_SOURCE;
         }
         const bbox: BBox = [minLon, minLat, maxLon, maxLat];
-        if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+        if (this.getSource(mapSource) !== undefined && this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
             if (debug) console.info("updateDataSource: skipping source update", { source, bbox });
             return;
         } else {
