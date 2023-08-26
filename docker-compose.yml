@@ -152,6 +152,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow-init
       - airflow-minimal
       - airflow
 
