@@ -38,7 +38,7 @@ class EtymologyColorControl extends DropdownControl {
     private _chartJsObject?: import('chart.js').Chart;
     private _lastWikidataIDs?: string[];
     private _lastColorSchemeID?: string;
-    private sourceId: string;
+    private layers: string[];
     private setLayerColor: (color: string | ExpressionSpecification) => void;
 
     private baseChartData = {
@@ -93,7 +93,11 @@ class EtymologyColorControl extends DropdownControl {
             }
         );
         this.setLayerColor = setLayerColor;
-        this.sourceId = sourceId;
+        this.layers = [
+            sourceId + "_layer_point",
+            sourceId + "_layer_lineString",
+            sourceId + "_layer_polygon_fill"
+        ];
     }
 
     updateChart(event?: MapEvent | Event) {
@@ -127,10 +131,12 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     loadSourceChartData() {
-        if (!this.getMap()?.getSource(this.sourceId)) {
-            if (debug) console.warn("loadSourceChartData: source not yet loaded", { sourceId: this.sourceId });
-            return;
-        }
+        for (const i in this.layers) {
+            if (!this.getMap()?.getLayer(this.layers[i])) {
+                if (debug) console.warn("loadSourceChartData: layer not yet loaded", { layers: this.layers, layer: this.layers[i] });
+                return;
+            }
+        };
 
         const osm_IDs = new Set<string>(),
             osm_text_names = new Set<string>(),
@@ -138,29 +144,25 @@ class EtymologyColorControl extends DropdownControl {
             wikidata_IDs = new Set<string>(),
             propagation_IDs = new Set<string>();
         this.getMap()
-            ?.queryRenderedFeatures({
-                layers: [
-                    this.sourceId + "_layer_point",
-                    this.sourceId + "_layer_lineString",
-                    this.sourceId + "_layer_polygon_fill"
-                ]
-            })?.forEach((feature: EtymologyFeature) => {
+            ?.queryRenderedFeatures({ layers: this.layers })
+            ?.forEach((feature: EtymologyFeature) => {
                 const props = feature.properties,
                     rawEtymologies = props?.etymologies,
                     etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
 
                 if (etymologies?.length) {
                     etymologies.forEach(etymology => {
-                        if (!etymology.wikidata)
-                            console.warn("Skipping etymology with no Wikidata ID in source calculation", etymology);
-                        else if (etymology.propagated)
+                        if (!etymology.wikidata) {
+                            if (debug) console.warn("Skipping etymology with no Wikidata ID in source calculation", etymology);
+                        } else if (etymology.propagated) {
                             propagation_IDs.add(etymology.wikidata);
-                        else if (etymology.from_osm_id && etymology.from_wikidata)
+                        } else if (etymology.from_osm_id && etymology.from_wikidata) {
                             osm_wikidata_IDs.add(etymology.wikidata);
-                        else if (etymology.from_wikidata)
+                        } else if (etymology.from_wikidata) {
                             wikidata_IDs.add(etymology.wikidata);
-                        else if (etymology.from_osm)
+                        } else if (etymology.from_osm) {
                             osm_IDs.add(etymology.wikidata);
+                        }
                     });
                 } else if (props?.text_etymology)
                     osm_text_names.add(props?.text_etymology);
