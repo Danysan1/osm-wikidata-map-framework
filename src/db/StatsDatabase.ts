@@ -22,10 +22,12 @@ export class StatsDatabase extends Dexie {
         });
 
         setTimeout(async () => {
-            const maxHours = parseInt(getConfig("cache_timeout_hours") || "24"),
-                threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
-                count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-            if (debug) console.info("Evicted old maps from indexedDB", { count, maxHours, threshold });
+            this.transaction('rw', this.stats, async () => {
+                const maxHours = parseInt(getConfig("cache_timeout_hours") || "24"),
+                    threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                    count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
+                if (debug) console.info("Evicted old maps from indexedDB", { count, maxHours, threshold });
+            });
         }, 10_000);
     }
 
