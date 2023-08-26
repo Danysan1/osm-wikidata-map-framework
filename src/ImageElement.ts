@@ -1,4 +1,4 @@
-import { debugLog } from "./config";
+import { debug } from "./config";
 import { ImageResponse } from "./feature.model";
 import { loadTranslator } from "./i18n";
 import { WikimediaCommonsService } from "./services/WikimediaCommonsService";
@@ -21,11 +21,11 @@ export function imageToDomElement(img: ImageResponse): HTMLDivElement {
     if (typeof img == 'object' && typeof img.picture == 'string') {
         imgName = decodeURIComponent(img.picture);
         imgAttribution = img.attribution ? 'Image via ' + img.attribution : null;
-        debugLog("imageToDomElement: object img", { img, imgAttribution });
+        if (debug) console.info("imageToDomElement: object img", { img, imgAttribution });
     } else if (typeof img == 'string') {
         imgName = decodeURIComponent(img.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
         imgAttribution = null;
-        debugLog("imageToDomElement: string img", { img, imgAttribution });
+        //if (debug) console.info("imageToDomElement: string img", { img, imgAttribution });
     } else {
         imgName = null;
         imgAttribution = null;

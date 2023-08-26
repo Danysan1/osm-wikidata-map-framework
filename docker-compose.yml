@@ -91,13 +91,13 @@ x-airflow-common:
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
     AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${db_user}:${db_password}@${db_host}:5432/${db_database} # connection to the configured OWMF PostGIS DB
     AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${db_user}:${db_password}@${db_host}:5432/planet # connection to the configured OWMF PostGIS DB
-    AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}
+    AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}/sparql
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}
     AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key:-}
     AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key:-}
-    AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys}
-    AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties}
+    AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys:-}
+    AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties:-}
     AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
     AIRFLOW_VAR_GLOBAL_MAP_THRESHOLD: ${global_map_threshold:-0}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
@@ -152,6 +152,7 @@ services:
     networks:
       - airflow-internal
     profiles:
+      - airflow-init
       - airflow-minimal
       - airflow
 
@@ -228,7 +229,6 @@ services:
       - ${AIRFLOW_PROJ_DIR:-.}/dags:/opt/airflow/dags
       - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
       - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
-      - ./public/csv:/opt/airflow/csv
       - db-init-work-dir:/workdir:delegated
       # https://devopscube.com/run-docker-in-docker/
       - //var/run/docker.sock:/var/run/docker.sock:rw
@@ -461,9 +461,11 @@ services:
     ports:
       - "${swagger_port:-8001}:8080"
     volumes:
-      - ./openapi.yaml:/usr/share/nginx/html/owmf_openapi.yaml
+      - ./openapi-owmf.yaml:/usr/share/nginx/html/openapi-owmf.yaml
+      - ./openapi-overpass.yaml:/usr/share/nginx/html/openapi-overpass.yaml
+      - ./openapi-wikidata.yaml:/usr/share/nginx/html/openapi-wikidata.yaml
     environment:
-      - API_URL=owmf_openapi.yaml
+      - API_URL=openapi-owmf.yaml
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/"]
       interval: 10s

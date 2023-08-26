@@ -1,8 +1,8 @@
-import { TFunction } from "i18next";
+import { Resource, TFunction } from "i18next";
 import ChainedBackend from 'i18next-chained-backend'
 import resourcesToBackend from 'i18next-resources-to-backend'
 import HttpBackend from 'i18next-http-backend'
-import { debugLog, getBoolConfig, getConfig, getJsonConfig } from "./config";
+import { debug, getBoolConfig, getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
 export function getLocale(): string | undefined {
@@ -15,7 +15,7 @@ export function setPageLocale() {
     const locale = getLocale(),
         lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en';
 
-    debugLog("setPageLocale", {
+    if (debug) console.info("setPageLocale", {
         locale, lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
@@ -42,23 +42,20 @@ export async function loadTranslator() {
             defaultLanguage = getConfig("default_language") || 'en',
             locale = document.documentElement.lang,
             language = locale.split('-').at(0),
-            rawI18nOverride = getJsonConfig("i18n_override"),
-            backends: object[] = [HttpBackend];
-        if (rawI18nOverride) {
-            try {
-                const i18nOverride = JSON.parse(rawI18nOverride);
-                debugLog("loadTranslator: using i18n_override:", { defaultLanguage, language, rawI18nOverride, i18nOverride });
-                backends.unshift(resourcesToBackend(i18nOverride));
-            } catch (e) {
-                logErrorMessage("Failed parsing i18n_override", "error", { defaultLanguage, language, rawI18nOverride, e });
-            }
+            i18nOverride: Resource | null = getJsonConfig("i18n_override"),
+            backends: object[] = [HttpBackend],
+            backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
+        if (i18nOverride) {
+            if (debug) console.info("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
+            backends.unshift(resourcesToBackend(i18nOverride));
+            backendOptions.unshift({});
         }
         tPromise = import("i18next").then(i18next => i18next.use(ChainedBackend).init({
             debug: getBoolConfig("enable_debug_log"),
             fallbackLng: defaultLanguage,
             //lng: locale, // comment to use the language only, UNcomment to use the full locale
             lng: language, // UNcomment to use the language only, comment to use the full locale
-            backend: { backends },
+            backend: { backends, backendOptions },
             ns: ["common", defaultNamespace],
             fallbackNS: "common",
             defaultNS: defaultNamespace
@@ -81,7 +78,7 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
 export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string) {
     const domElement = parent.querySelector<HTMLAnchorElement>(selector);
     if (!domElement) {
-        debugLog("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
+        if (debug) console.info("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator()
             .then(t => {

@@ -1,22 +1,24 @@
-import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent } from 'maplibre-gl';
+import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
 
-// import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent } from 'mapbox-gl';
+// import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
 
 import { ChartData } from "chart.js";
 import { getCorrectFragmentParams } from '../fragment';
-import { debugLog } from '../config';
+import { debug, getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { showSnackbar } from '../snackbar';
 import { TFunction } from 'i18next';
-import { Etymology, FeatureProperties } from '../feature.model';
-import { StatsService, statsQueries } from '../services/StatsService';
+import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
+import { Etymology, EtymologyFeature } from '../generated/owmf';
+import { showLoadingSpinner } from '../snackbar';
 
 export interface EtymologyStat {
     color?: string;
+    count: number;
+    descr?: string;
     id?: string;
-    name?: string;
-    count?: number;
+    name: string;
+    subjects?: string[];
 }
 
 /**
@@ -31,14 +33,13 @@ export interface EtymologyStat {
  * @see https://docs.mapbox.com/help/tutorials/choropleth-studio-gl-pt-2/
  **/
 class EtymologyColorControl extends DropdownControl {
-    private _chartInitInProgress: boolean;
-    private _chartXHR: XMLHttpRequest | null;
+    private _chartInitInProgress = false;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
-    private _lastQueryString?: string;
     private _lastWikidataIDs?: string[];
     private _lastColorSchemeID?: string;
-    private _t: TFunction;
+    private sourceId: string;
+    private setLayerColor: (color: string | ExpressionSpecification) => void;
 
     private baseChartData = {
         labels: [],
@@ -51,18 +52,24 @@ class EtymologyColorControl extends DropdownControl {
     constructor(
         startColorScheme: ColorSchemeID,
         onSchemeChange: (colorScheme: ColorSchemeID) => void,
+        setLayerColor: (color: string | ExpressionSpecification) => void,
         t: TFunction,
         sourceId: string,
         minZoomLevel: number
     ) {
-        const dropdownItems: DropdownItem[] = Object.entries(colorSchemes).map(([id, item]) => ({
-            id,
-            text: t(item.textKey),
-            onSelect: (event) => {
-                this.updateChart(event);
-                onSchemeChange(id as ColorSchemeID);
-            }
-        }));
+        const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
+            wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
+            indirectWdProperty = getConfig("wikidata_indirect_property"),
+            anyEtymology = keys?.length || wdDirectProperties?.length || indirectWdProperty,
+            usableColorSchemes = Object.entries(colorSchemes).filter(([_, scheme]) => anyEtymology || !scheme.requiresEtymology),
+            dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
+                id,
+                text: t(item.textKey),
+                onSelect: (event) => {
+                    this.updateChart(event);
+                    onSchemeChange(id as ColorSchemeID);
+                }
+            }));
         super(
             '📊', //'🎨',
             dropdownItems,
@@ -72,106 +79,166 @@ class EtymologyColorControl extends DropdownControl {
             minZoomLevel,
             () => this.setCurrentID(getCorrectFragmentParams().colorScheme),
             (e: MapSourceDataEvent) => {
+                if (!e.isSourceLoaded || e.dataType !== "source" || sourceId !== e.sourceId)
+                    return;
+
                 const zoomLevel = e.target.getZoom(),
-                    validZoomLevel = zoomLevel >= minZoomLevel,
-                    sourceLoaded = e.isSourceLoaded && e.dataType == "source" && sourceId == e.sourceId;
-                if (validZoomLevel && sourceLoaded) {
-                    debugLog("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel });
-                    this.updateChart(e, getCorrectFragmentParams().source);
+                    validZoomLevel = zoomLevel >= minZoomLevel;
+                if (validZoomLevel) {
+                    if (debug) console.info("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
+                    this.updateChart(e);
+                } else {
+                    if (debug) console.info("EtymologyColorControl: skipping chart update ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
                 }
             }
         );
-        this._chartInitInProgress = false;
-        this._chartXHR = null;
-        this._t = t;
+        this.setLayerColor = setLayerColor;
+        this.sourceId = sourceId;
     }
 
-    updateChart(event?: MapEvent | Event, source?: string) {
+    updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not yet initialized", { event });
             return;
         } else {
             const colorSchemeID = dropdown.value as ColorSchemeID,
-                colorScheme = colorSchemes[colorSchemeID],
-                bounds = this.getMap()?.getBounds();
+                colorScheme = colorSchemes[colorSchemeID];
 
             if (colorSchemeID === 'source') {
+                if (debug) console.info("updateChart: showing source stats", { event, colorSchemeID });
                 this._lastColorSchemeID = colorSchemeID;
                 this._lastWikidataIDs = undefined;
-                this._lastQueryString = undefined;
                 this.loadSourceChartData();
+                if (event)
+                    this.showDropdown();
             } else if (statsQueries[colorSchemeID]) {
-                this._lastQueryString = undefined;
+                if (debug) console.info("updateChart: downloading stats from Wikidata", { event, colorSchemeID });
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
                     this.showDropdown();
-            } else if (bounds && colorScheme?.urlCode) {
-                this._lastColorSchemeID = colorSchemeID;
-                this._lastWikidataIDs = undefined;
-                this.downloadChartDataFromBackend(bounds, colorScheme, source);
-                if (event)
-                    this.showDropdown();
             } else if (event?.type === 'change') {
-                debugLog("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
+                if (debug) console.info("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
                 this.showDropdown(false);
+                if (colorScheme?.color)
+                    this.setLayerColor(colorScheme.color);
             }
         }
     }
 
     loadSourceChartData() {
-        const osm_wikidata_IDs = new Set(),
-            osm_text_names = new Set(),
-            wikidata_IDs = new Set(),
-            propagation_IDs = new Set();
-        this.getMap()
-            ?.querySourceFeatures("wikidata_source")
-            ?.forEach(feature => {
-                const props = feature.properties as FeatureProperties,
-                    rawEtymologies = props.etymologies,
-                    etymologies = (typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) : rawEtymologies) as Etymology[];
+        if (!this.getMap()?.getSource(this.sourceId)) {
+            if (debug) console.warn("loadSourceChartData: source not yet loaded", { sourceId: this.sourceId });
+            return;
+        }
 
-                etymologies.forEach(etymology => {
-                    if (etymology.propagated)
-                        propagation_IDs.add(etymology.wikidata);
-                    else if (!etymology.propagated && etymology.from_wikidata)
-                        wikidata_IDs.add(etymology.wikidata);
-                    else if (!etymology.propagated && etymology.from_osm)
-                        osm_wikidata_IDs.add(etymology.wikidata);
-                    else if (props.text_etymology)
-                        osm_text_names.add(props.text_etymology);
-                });
+        const osm_IDs = new Set<string>(),
+            osm_text_names = new Set<string>(),
+            osm_wikidata_IDs = new Set<string>(),
+            wikidata_IDs = new Set<string>(),
+            propagation_IDs = new Set<string>();
+        this.getMap()
+            ?.queryRenderedFeatures({
+                layers: [
+                    this.sourceId + "_layer_point",
+                    this.sourceId + "_layer_lineString",
+                    this.sourceId + "_layer_polygon_fill"
+                ]
+            })?.forEach((feature: EtymologyFeature) => {
+                const props = feature.properties,
+                    rawEtymologies = props?.etymologies,
+                    etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
+
+                if (etymologies?.length) {
+                    etymologies.forEach(etymology => {
+                        if (!etymology.wikidata)
+                            console.warn("Skipping etymology with no Wikidata ID in source calculation", etymology);
+                        else if (etymology.propagated)
+                            propagation_IDs.add(etymology.wikidata);
+                        else if (etymology.from_osm_id && etymology.from_wikidata)
+                            osm_wikidata_IDs.add(etymology.wikidata);
+                        else if (etymology.from_wikidata)
+                            wikidata_IDs.add(etymology.wikidata);
+                        else if (etymology.from_osm)
+                            osm_IDs.add(etymology.wikidata);
+                    });
+                } else if (props?.text_etymology)
+                    osm_text_names.add(props?.text_etymology);
+                else if (props?.from_wikidata) {
+                    wikidata_IDs.add(props?.wikidata || feature.id?.toString() || "");
+                } else if (props?.from_osm) {
+                    osm_IDs.add(props?.wikidata || feature.id?.toString() || "");
+                }
             });
-        const stats: EtymologyStat[] = [
-            { name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_wikidata_IDs.size },
-            { name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size },
-            { name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size },
-            { name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size }
-        ]
+        const stats: EtymologyStat[] = [];
+        if (propagation_IDs.size) stats.push({ name: "Propagation", color: '#ff3333', id: 'propagation', count: propagation_IDs.size });
+        if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: '#33ffee', id: 'osm_wikidata', count: osm_wikidata_IDs.size });
+        if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size });
+        if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_IDs.size });
+        if (osm_text_names.size) stats.push({ name: "OpenStreetMap (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size });
+        //console.info("osm_wikidata_IDs:", osm_wikidata_IDs);
         //console.info("Source stats:", stats);
         this.setChartStats(stats);
+
+        this.setLayerColor([
+            "case",
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
+                ["to-boolean", ["get", "propagated", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#ff3333',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
+                ["to-boolean", ["get", "from_osm_id", ["at", 0, ["get", "etymologies"]]]],
+                ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#33ffee',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
+                ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#3399ff',
+            ["coalesce", ["all",
+                ["has", "etymologies"],
+                [">", ["length", ["get", "etymologies"]], 0],
+                ["to-boolean", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]]
+            ], false], '#33ff66',
+            ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
+            ["coalesce", ["to-boolean", ["get", "from_osm"]], false], '#33ff66',
+            '#223b53'
+        ]);
     }
 
     async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
+        showLoadingSpinner(true);
         const wikidataIDs = this.getMap()
             ?.querySourceFeatures("wikidata_source")
             ?.map(feature => feature.properties?.etymologies)
-            ?.flatMap(etymologies => (typeof etymologies === 'string' ? JSON.parse(etymologies) : etymologies) as Etymology[])
+            ?.flatMap(etymologies => {
+                if (Array.isArray(etymologies))
+                    return etymologies as Etymology[];
+
+                if (typeof etymologies === 'string')
+                    return JSON.parse(etymologies) as Etymology[];
+
+                return [];
+            })
             ?.map(etymology => etymology.wikidata)
-            ?.filter(id => typeof id === 'string')
-            ?.sort() as string[] || [];
-        if (wikidataIDs.length === 0) {
-            debugLog("Skipping stats update for 0 IDs");
-        } else if (colorSchemeID === this._lastColorSchemeID && wikidataIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => wikidataIDs[i] === id)) {
-            debugLog("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
+            ?.filter(id => typeof id === 'string') as string[] || [],
+            uniqueIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
+        if (uniqueIDs.length === 0) {
+            if (debug) console.info("Skipping stats update for 0 IDs");
+        } else if (colorSchemeID === this._lastColorSchemeID && uniqueIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => uniqueIDs[i] === id)) {
+            if (debug) console.info("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
         } else {
-            debugLog("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, wikidataIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.info("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
-            this._lastWikidataIDs = wikidataIDs;
+            this._lastWikidataIDs = uniqueIDs;
             try {
-                const stats = await new StatsService().fetchStats(wikidataIDs, colorSchemeID);
+                const stats = await new WikidataStatsService().fetchStats(uniqueIDs, colorSchemeID);
                 if (stats.length > 0) {
                     this.setChartStats(stats)
+                    this.setLayerColorForStats(stats);
                 } else {
                     throw new Error("Empty stats result");
                 }
@@ -181,60 +248,7 @@ class EtymologyColorControl extends DropdownControl {
                 this.removeChart();
             }
         }
-    }
-
-    downloadChartDataFromBackend(bounds: LngLatBounds, colorScheme: ColorScheme, source?: string) {
-        if (!colorScheme?.urlCode)
-            throw new Error("downloadChartData: can't download data for a color scheme with no URL code - " + colorScheme.textKey);
-
-        const southWest = bounds.getSouthWest(),
-            minLat = southWest.lat,
-            minLon = southWest.lng,
-            northEast = bounds.getNorthEast(),
-            maxLat = northEast.lat,
-            maxLon = northEast.lng,
-            language = document.documentElement.lang,
-            queryParams = {
-                to: colorScheme?.urlCode,
-                minLat: (Math.floor(minLat * 1000) / 1000).toString(), // 0.1234 => 0.124 
-                minLon: (Math.floor(minLon * 1000) / 1000).toString(),
-                maxLat: (Math.ceil(maxLat * 1000) / 1000).toString(), // 0.1234 => 0.123
-                maxLon: (Math.ceil(maxLon * 1000) / 1000).toString(),
-                language,
-                source: source ?? getCorrectFragmentParams().source,
-            },
-            queryString = new URLSearchParams(queryParams).toString(),
-            stats_url = './stats.php?' + queryString,
-            xhr = new XMLHttpRequest();
-
-        if (this._lastQueryString !== queryString) {
-            this._lastQueryString = queryString;
-            xhr.onreadystatechange = (e) => this.handleChartXHRStateChange(xhr, e);
-            xhr.open('GET', stats_url, true);
-            xhr.send();
-
-            if (this._chartXHR)
-                this._chartXHR.abort();
-            this._chartXHR = xhr;
-        }
-    }
-
-    handleChartXHRStateChange(xhr: XMLHttpRequest, e: Event) {
-        if (xhr.readyState === XMLHttpRequest.UNSENT || xhr.status === 0) {
-            debugLog("XHR aborted", { xhr, e });
-        } else if (xhr.readyState == XMLHttpRequest.DONE) {
-            if (xhr.status === 200) {
-                this.setChartStats(JSON.parse(xhr.responseText));
-            } else if (xhr.status === 500 && xhr.responseText.includes("Not implemented")) {
-                this.removeChart();
-                showSnackbar(this._t("color_scheme.not_available"), "lightsalmon");
-            } else {
-                console.error("XHR error", { xhr, e });
-                //if (event.type && event.type == 'change')
-                //    this.hideDropdown();
-                this.removeChart();
-            }
-        }
+        showLoadingSpinner(false);
     }
 
     /**
@@ -243,13 +257,31 @@ class EtymologyColorControl extends DropdownControl {
     setChartStats(stats: EtymologyStat[]) {
         const data = structuredClone(this.baseChartData);
         stats.forEach((row: EtymologyStat) => {
-            if (row.name && row.count) {
-                data.labels?.push(row.name);
-                (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
-                data.datasets[0].data.push(row.count);
-            }
+            data.labels?.push(row.name);
+            (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');
+            data.datasets[0].data.push(row.count);
         });
         this.setChartData(data);
+    }
+
+    setLayerColorForStats(stats: EtymologyStat[]) {
+        const data: any[] = ["case"];
+        stats.forEach((row: EtymologyStat) => {
+            if (row.color && row.subjects?.length) {
+                data.push(
+                    ["coalesce", ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]], false],
+                    row.color,
+                    ["coalesce", [
+                        "all",
+                        [">", ["length", ["get", "etymologies"]], 1],
+                        ["in", ["get", "wikidata", ["at", 1, ["get", "etymologies"]]], ["literal", row.subjects]]
+                    ], false],
+                    row.color,
+                );
+            }
+        });
+        data.push('#223b53');
+        this.setLayerColor(data as ExpressionSpecification);
     }
 
     /**
@@ -258,7 +290,7 @@ class EtymologyColorControl extends DropdownControl {
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     setChartData(data: ChartData<"pie">) {
-        debugLog("setChartData", {
+        if (debug) console.info("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
@@ -266,9 +298,9 @@ class EtymologyColorControl extends DropdownControl {
         if (this._chartJsObject && this._chartDomElement) {
             this.updateChartObject(data);
         } else if (this._chartInitInProgress) {
-            debugLog("setChartData: chart already loading");
+            if (debug) console.info("setChartData: chart already loading");
         } else {
-            debugLog("setChartData: Loading chart.js and initializing the chart");
+            if (debug) console.info("setChartData: Loading chart.js and initializing the chart");
             this.initChartObject(data);
         }
     }

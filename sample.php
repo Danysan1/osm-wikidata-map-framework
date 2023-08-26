@@ -14,7 +14,7 @@ function getOverpassEndpoint(): string
          * @var array<string>
          */
         $endpoints = json_decode((string)$rawEndpoints);
-        return is_array($endpoints) ? $endpoints[array_rand($endpoints)] : $endpoints;
+        return (is_array($endpoints) ? $endpoints[array_rand($endpoints)] : $endpoints)."/interpreter";
     } catch (Exception $e) {
         echo "Non fatal error: " . $e . PHP_EOL;
         return 'https://overpass-api.de/api/interpreter';

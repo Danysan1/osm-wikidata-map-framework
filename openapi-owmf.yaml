@@ -1,0 +1,615 @@
+openapi: "3.0.3"
+info:
+  version: 2.0.0
+  title: "OSM-Wikidata Map Framework API"
+  description: Programmatically interact with a site based on OSM-Wikidata Map Framework
+
+servers:
+  - url: http://localhost
+    description: Local instance
+  - url: https://etymology.dsantini.it
+    description: Open Etymology Map
+  - url: https://burial.dsantini.it
+    description: Open Burial Map
+  - url: https://artist.dsantini.it
+    description: Open Artist Map
+
+tags:
+  - name: owmf
+    description: Fetch map clusters or features with their details and etymologies
+
+paths:
+  /global-map.php:
+    get:
+      operationId: get_global_map
+      tags:
+        - owmf
+      summary: Get clusters of etymologies worldwide
+      responses:
+        200:
+          description: The GeoJSON response containing the features and etymologies
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/GlobalMapResponse"
+        409:
+          description: The DB is not enabled in this instance,
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+  /elements.php:
+    get:
+      operationId: get_elements
+      tags:
+        - owmf
+      summary: Get centroids of features having an etymology in an area
+      parameters:
+        - in: query
+          name: "minLat"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Latitude"
+        - in: query
+          name: "minLon"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Longitude"
+        - in: query
+          name: "maxLat"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Latitude"
+        - in: query
+          name: "maxLon"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Longitude"
+        - in: query
+          name: "source"
+          required: true
+          schema:
+            $ref: "#/components/schemas/SourceID"
+        - in: query
+          name: "search"
+          description: Q-ID of the Wikidata entity to search for
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: The GeoJSON response containing the features and etymologies
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/ElementResponse"
+        409:
+          description: The DB is not enabled in this instance,
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+  /etymologyMap.php:
+    get:
+      operationId: get_etymologies
+      tags:
+        - owmf
+      summary: Get features and relative etymologies in an area
+      parameters:
+        - in: query
+          name: "minLat"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Latitude"
+        - in: query
+          name: "minLon"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Longitude"
+        - in: query
+          name: "maxLat"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Latitude"
+        - in: query
+          name: "maxLon"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Longitude"
+        - in: query
+          name: "language"
+          required: true
+          schema:
+            $ref: "#/components/schemas/Language"
+        - in: query
+          name: "source"
+          required: true
+          schema:
+            $ref: "#/components/schemas/SourceID"
+        - in: query
+          name: "search"
+          description: Q-ID of the Wikidata entity to search for
+          required: false
+          schema:
+            type: string
+      responses:
+        200:
+          description: The GeoJSON response containing the features and etymologies
+          content:
+            application/geo+json:
+              schema:
+                $ref: "#/components/schemas/EtymologyResponse"
+        400:
+          description: Bad parameters passed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+  /health.php:
+    get:
+      operationId: health_check
+      tags:
+        - owmf
+      summary: Check whether the server is running fine
+      responses:
+        200:
+          description: Everything is fine
+        500:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorDetails"
+
+components:
+  schemas:
+    Latitude:
+      type: number
+      minimum: -90
+      maximum: 90
+      example: 45.464
+
+    Longitude:
+      type: number
+      minimum: -180
+      maximum: 180
+      example: 9.19
+
+    Language:
+      type: string
+      example: en
+
+    ErrorDetails:
+      required:
+        - error
+      properties:
+        error:
+          type: string
+
+    GeoJSONGeometry:
+      type: object
+      description: GeoJSON geometry
+      discriminator:
+        propertyName: type
+      required:
+        - type
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometry-objects
+      properties:
+        type:
+          type: string
+          enum:
+            - Point
+            - LineString
+            - Polygon
+            - MultiPoint
+            - MultiLineString
+            - MultiPolygon
+            - GeometryCollection
+          description: the geometry type
+
+    GeoJSONPoint3D:
+      type: array
+      description: Point in 3D space
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id2
+      minItems: 2
+      maxItems: 3
+      items:
+        type: number
+
+    GeoJSONPoint:
+      type: object
+      description: GeoJSON geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id2
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONGeometry"
+        - properties:
+            coordinates:
+              $ref: "#/components/schemas/GeoJSONPoint3D"
+
+    GeoJSONLineString:
+      type: object
+      description: GeoJSON geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id3
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONGeometry"
+        - properties:
+            coordinates:
+              type: array
+              items:
+                $ref: "#/components/schemas/GeoJSONPoint3D"
+
+    GeoJSONPolygon:
+      type: object
+      description: GeoJSON geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id4
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONGeometry"
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoJSONPoint3D"
+
+    GeoJSONMultiPoint:
+      type: object
+      description: GeoJSON geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id5
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONGeometry"
+        - properties:
+            coordinates:
+              type: array
+              items:
+                $ref: "#/components/schemas/GeoJSONPoint3D"
+
+    GeoJSONMultiLineString:
+      type: object
+      description: GeoJSON geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id6
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONGeometry"
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GeoJSONPoint3D"
+
+    GeoJSONMultiPolygon:
+      type: object
+      description: GeoJSON geometry
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#id6
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONGeometry"
+        - properties:
+            coordinates:
+              type: array
+              items:
+                type: array
+                items:
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/GeoJSONPoint3D"
+
+    GeoJSONGeometryCollection:
+      type: object
+      description: GeoJSON geometry collection
+      required:
+        - type
+        - geometries
+      externalDocs:
+        url: http://geojson.org/geojson-spec.html#geometrycollection
+      properties:
+        type:
+          type: string
+          enum:
+            - GeometryCollection
+        geometries:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoJSONGeometry"
+
+    GeoJSONFeature:
+      type: object
+      description: GeoJSON Feature
+      required:
+        - type
+        # - id
+        - geometry
+        - properties
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7946#section-3.2
+      properties:
+        type:
+          type: string
+          enum:
+            - Feature
+        id:
+          title: GeoJSONFeatureID
+          description: Commonly used identifier
+          anyOf:
+            - type: string
+            - type: integer
+        geometry:
+          oneOf:
+            - $ref: "#/components/schemas/GeoJSONPoint"
+            - $ref: "#/components/schemas/GeoJSONLineString"
+            - $ref: "#/components/schemas/GeoJSONPolygon"
+            - $ref: "#/components/schemas/GeoJSONMultiPoint"
+            - $ref: "#/components/schemas/GeoJSONMultiLineString"
+            - $ref: "#/components/schemas/GeoJSONMultiPolygon"
+        properties:
+          type: object
+          nullable: true
+          additionalProperties:
+            type: string
+        bbox:
+          $ref: "#/components/schemas/GeoJSONBoundingBox"
+
+    GeoJSONBoundingBox:
+      type: array
+      description: 2D/3D bounding box of the feature[s], in the order minLon,minLat,maxLon,maxLat[,minAlt,maxAlt]
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7946#section-5
+      minItems: 4
+      maxItems: 6
+      items:
+        type: number
+
+    GeoJSONFeatureCollection:
+      type: object
+      description: GeoJSON Feature collection
+      required:
+        - type
+        - features
+      externalDocs:
+        url: https://tools.ietf.org/html/rfc7946#section-3.3
+      properties:
+        type:
+          type: string
+          enum:
+            - FeatureCollection
+        features:
+          type: array
+          items:
+            $ref: "#/components/schemas/GeoJSONFeature"
+        bbox:
+          $ref: "#/components/schemas/GeoJSONBoundingBox"
+
+    GlobalMapFeature:
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONFeature"
+        - type: object
+          title: GlobalMapFeatureDetails
+          properties:
+            properties:
+              type: object
+              required:
+                - num
+              properties:
+                num:
+                  type: integer
+
+    GlobalMapResponse:
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONFeatureCollection"
+        - type: object
+          title: GlobalMapFeatures
+          properties:
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/GlobalMapFeature"
+
+    DetailedFeatureCollection:
+      description: GeoJSON Feature collection with additional OWMF-related details
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONFeatureCollection"
+        - type: object
+          title: FeatureCollectionDetails
+          properties:
+            sourceID:
+              $ref: "#/components/schemas/SourceID"
+              description: ID of the source of the features
+            timestamp:
+              type: string
+              description: ISO string for the time the query was run
+            etymology_count:
+              type: integer
+              description: Total number of etymologies linked to the features
+            wikidata_query:
+              type: string
+              description: Wikidata SPARQL query used to fetch the features
+              example: "SELECT ... WHERE { ... }"
+            overpass_query:
+              type: string
+              description: OverpassQL query used to fetch the features
+              example: "[out:json]; ...; out;"
+            language:
+              type: string
+              description: Language fetched
+
+    ElementResponse:
+      allOf:
+        - $ref: "#/components/schemas/DetailedFeatureCollection"
+        - type: object
+          title: ElementResponseFeatures
+          properties:
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/GeoJSONFeature"
+
+    Etymology:
+      type: object
+      title: EtymologyBaseData
+      properties:
+        et_id:
+          type: integer
+          description: Internal ID for the etymology relation (unique within the request but may vary after DB updates)
+        from_osm:
+          type: boolean
+          description: Whether OpenStreetMap is the original source of this etymology
+        from_osm_type:
+          type: string
+          description: Type of the source OpenStreetMap element
+          enum:
+            - node
+            - way
+            - relation
+        from_osm_id:
+          type: integer
+          description: ID (unique only within its type) of the source OpenStreetMap element
+        from_wikidata:
+          type: boolean
+          description: Whether Wikidata is the original source of this etymology
+        from_wikidata_entity:
+          type: string
+          description: Q-ID of the source Wikidata entity this etymology has been extracted from
+          example: Q1
+        from_wikidata_prop:
+          type: string
+          description: P-ID of the Wikidata property that links from the source Wikidata entity to this etymology entity
+          example: P123
+        from_parts_of_wikidata_cod:
+          type: string
+          description: Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
+        propagated:
+          type: boolean
+          description: Whether this etymology has been obtained through propagation
+        wd_id:
+          type: integer
+          description: Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
+        wikidata:
+          type: string
+          description: Q-ID of this etymology Wikidata item
+          example: Q42
+
+    EtymologyFeature:
+      allOf:
+        - $ref: "#/components/schemas/GeoJSONFeature"
+        - type: object
+          title: EtymologyFeatureDetails
+          required:
+            - geometry
+            - properties
+          properties:
+            properties:
+              type: object
+              nullable: true
+              title: EtymologyFeatureProperties
+              properties:
+                alt_name:
+                  type: string
+                commons:
+                  type: string
+                  example: "Category:Colosseum"
+                el_id:
+                  type: integer
+                etymologies:
+                  type: array
+                  title: EtymologyFeatureEtymologies
+                  items:
+                    $ref: "#/components/schemas/Etymology" # Beware: Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
+                from_osm:
+                  type: boolean
+                from_wikidata:
+                  type: boolean
+                name:
+                  type: string
+                  description: Localized name of the feature
+                description:
+                  type: string
+                  description: Localized description of the feature
+                official_name:
+                  type: string
+                  description: Official name of the feature
+                  externalDocs:
+                    url: https://wiki.openstreetmap.org/wiki/Key:official_name
+                osm_type:
+                  type: string
+                  description: Type of the OpenStreetMap element for this feature
+                  enum:
+                    - node
+                    - way
+                    - relation
+                osm_id:
+                  type: integer
+                  description: ID (unique only within its type) of the OpenStreetMap element for this feature
+                picture:
+                  type: string
+                  description: Title of a Wikimedia Commons picture for this feature
+                  example: "File:Colosseo 2020.jpg"
+                text_etymology:
+                  type: string
+                  description: Textual name of the etymology
+                text_etymology_descr:
+                  type: string
+                  description: Textual description of the etymology
+                wikidata:
+                  type: string
+                  description: Q-ID of the Wikidata entity for this feature
+                  example: "Q1"
+                wikipedia:
+                  type: string
+                  description: Title of a Wikipedia page for this feature prefixed with its language code (lang:Name)
+                  example: "en:Colosseum"
+
+    EtymologyResponse:
+      allOf:
+        - $ref: "#/components/schemas/DetailedFeatureCollection"
+        - type: object
+          title: EtymologyResponseFeatures
+          properties:
+            features:
+              type: array
+              items:
+                $ref: "#/components/schemas/EtymologyFeature"
+
+    SourceID:
+      type: string
+      example:
+        - db_all
+        - db_osm_name_etymology
+        - db_osm_subject
+        - db_osm_buried
+        - db_osm_wikidata_direct
+        - db_osm_wikidata_reverse
+        - db_propagated
+        - overpass_all
+        - overpass_osm_name_etymology
+        - overpass_osm_subject
+        - overpass_osm_buried
+        - wd_direct
+        - wd_indirect
+        - wd_qualifier
+        - wd_reverse

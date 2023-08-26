@@ -71,7 +71,7 @@ if ($db != null) {
     }
     $cacheFileBasePath = (string)$conf->get("cache_file_base_path");
     $cacheFileBaseURL = (string)$conf->get("cache_file_base_url");
-    $cacheTimeoutHours = (int)$conf->get("overpass_cache_timeout_hours");
+    $cacheTimeoutHours = (int)$conf->get("cache_timeout_hours");
     $query = new CSVCachedBBoxGeoJSONQuery($baseQuery, $cacheFileBasePath, $serverTiming, $cacheTimeoutHours, $cacheFileBaseURL);
 }
 

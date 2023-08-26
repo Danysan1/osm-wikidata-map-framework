@@ -1,4 +1,4 @@
-import { debugLog, getConfig } from "./config";
+import { debug, getConfig } from "./config";
 import { SeverityLevel } from "@sentry/browser";
 import { Extras, Integration } from '@sentry/types';
 
@@ -21,7 +21,7 @@ function initSentry() {
             if (enableReplay)
                 integrations.push(new Replay({ maskAllText: true, blockAllMedia: true }));
 
-            debugLog("Initializing Sentry", {
+            if (debug) console.info("Initializing Sentry", {
                 dsn, environment, rawReplaysOnErrorSampleRate, replaysOnErrorSampleRate, enableReplay
             });
             init({ dsn, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, integrations });
@@ -30,7 +30,11 @@ function initSentry() {
 }
 
 function logErrorMessage(message: string, level: SeverityLevel = "error", extra: object | undefined = undefined) {
-    debugLog(message, extra);
+    if (level === "warning")
+        console.warn(message, extra);
+    else
+        console.error(message, extra);
+
     import("./Sentry").then(({ captureException, captureMessage }) => {
         if (extra instanceof Error) {
             captureException(extra, {
@@ -57,7 +61,7 @@ function initGoogleAnalytics() {
         gtag: Gtag.Gtag = function () { (window as any).dataLayer.push(arguments); }
 
     if (google_analytics_id) {
-        debugLog("Initializing Google Analytics", { google_analytics_id });
+        if (debug) console.info("Initializing Google Analytics", { google_analytics_id });
         (window as any).dataLayer = (window as any).dataLayer || [];
         gtag('js', new Date());
         gtag('config', google_analytics_id);
@@ -72,7 +76,7 @@ function initMatomo() {
         matomo_id = getConfig("matomo_id");
 
     if (matomo_domain && matomo_id) {
-        debugLog("Initializing Matomo", { matomo_domain, matomo_id });
+        if (debug) console.info("Initializing Matomo", { matomo_domain, matomo_id });
         // eslint-disable-next-line no-var
         var _paq = (window as any)._paq = (window as any)._paq || [];
         /* tracker methods like "setCustomDimension" should be called before "trackPageView" */

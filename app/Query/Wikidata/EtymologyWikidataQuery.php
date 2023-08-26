@@ -144,10 +144,6 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             "name" => $name,
             "from_osm" => false,
             "from_wikidata" => true,
-            "gender_color" => "#3bb2d0",
-            "source_color" => "#3399ff",
-            "type_color" => "#3bb2d0",
-            "country_color" => "#3bb2d0",
             OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY => $itemQID,
             OverpassEtymologyQueryResult::FEATURE_COMMONS_KEY => $commons,
             "picture" => $picture,
@@ -216,10 +212,8 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
             "bbox" => $this->getBBox()->asArray(),
             //"features" => array_map([$this, "convertRowToGeoJsonFeature"], $rows),
             "features" => $features,
-            "metadata" => [
-                "etymology_count" => count($rows),
-                "wikidata_query" => $this->baseQuery->getWikidataQuery()
-            ],
+            "etymology_count" => count($rows),
+            "wikidata_query" => $this->baseQuery->getWikidataQuery()
         ]);
 
         //error_log("EtymologyWikidataQuery result: $ret");

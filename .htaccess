@@ -1,0 +1,12 @@
+# THIS FILE IS IGNORED in the standard dockerized version of OWMF
+# To configure it, edit apache.conf
+# This file may be used only if you run OWMF without docker in a custom deployemnt (ex. managed server or custom-configured VPS)
+
+
+# Disable directory browsing 
+Options -Indexes
+
+
+# Disable access to all files except for the public/ folder
+RewriteEngine on
+RewriteRule !public/.* - [F]

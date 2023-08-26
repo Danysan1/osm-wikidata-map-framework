@@ -11,7 +11,7 @@ import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-trans
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './controls/BackgroundStyleControl';
-import { debugLog, getBoolConfig, getConfig } from './config';
+import { debug, getBoolConfig, getConfig } from './config';
 import { setPageLocale } from './i18n';
 import './style.css';
 
@@ -87,14 +87,14 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @see https://docs.mapbox.com/mapbox-gl-js/example/disable-rotation/
  */
 function initMap() {
-    debugLog("Initializing the map");
+    if (debug) console.info("Initializing the map");
     let requestTransformFunc: RequestTransformFunction | undefined;
 
     /********** Start of Mapbox GL JS specific code **********/
     // if (!mapbox_token)
     //     throw new Error("Missing Mapbox token");
     // mapLibrary.accessToken = mapbox_token;
-    // debugLog("Using MapboxGeocoder", { mapbox_token });
+    // if (enable_debug_log) console.info("Using MapboxGeocoder", { mapbox_token });
     // const geocoderControl = new MapboxGeocoder({
     //     accessToken: mapbox_token,
     //     collapsed: true,
@@ -106,7 +106,7 @@ function initMap() {
     /********** End of Mapbox GL JS specific code **********/
 
     /********** Start of Maplibre GL JS specific code **********/
-    debugLog("Using Maptiler GeocoderControl", { maptiler_key });
+    if (debug) console.info("Using Maptiler GeocoderControl", { maptiler_key });
     let geocoderControl: GeocodingControl | undefined;
     if (mapbox_token)
         requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
@@ -126,7 +126,12 @@ function initMap() {
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     mapLibrary.setRTLTextPlugin(
         'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
-        err => err ? console.error("Error loading mapbox-gl-rtl-text", err) : debugLog("mapbox-gl-rtl-text loaded"),
+        err => {
+            if (err)
+                console.error("Error loading mapbox-gl-rtl-text", err)
+            else if (debug)
+                console.info("mapbox-gl-rtl-text loaded")
+        },
         true // Lazy load the plugin
     );
 

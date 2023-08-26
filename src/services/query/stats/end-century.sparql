@@ -1,0 +1,24 @@
+#defaultView:BarChart
+SELECT
+    (?century AS ?name)
+    (COUNT(DISTINCT ?wikidata) AS ?count)
+    (?century AS ?id)
+    (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
+    (CONCAT('rgb(',?red,',',?green,',',?blue,')') AS ?color)
+WHERE {
+    VALUES ?wikidata { ${wikidataValues} }
+
+    ?wikidata wdt:P570|wdt:P576|wdt:P582|wdt:P3999|wdt:P585 ?date.
+    FILTER (!wikibase:isSomeValue(?date))
+    BIND(CEIL(YEAR(?date)/100.0) AS ?century)
+
+    BIND(ROUND((?century-13)*255/4) AS ?rawRed)
+    BIND(STR(IF(?rawRed > 0, ?rawRed, 0)) AS ?red)
+    BIND(ROUND(512-(ABS(?century-13)*255/4)) AS ?rawGreen)
+    BIND(STR(IF(?rawGreen > 0, ?rawGreen, 0)) AS ?green)
+    BIND(ROUND((13-?century)*255/4) AS ?rawBlue)
+    BIND(STR(IF(?rawBlue > 0, ?rawBlue, 0)) AS ?blue)
+}
+GROUP BY ?century ?red ?green ?blue
+ORDER BY DESC(?count)
+LIMIT 30

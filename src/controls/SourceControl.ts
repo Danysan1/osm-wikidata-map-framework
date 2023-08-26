@@ -1,7 +1,8 @@
-import { getConfig, getBoolConfig, debugLog, getJsonConfig } from '../config';
+import { getConfig, getBoolConfig, debug, getJsonConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
+import { logErrorMessage } from '../monitoring';
 
 /**
  * Let the user choose the map style.
@@ -14,27 +15,28 @@ export class SourceControl extends DropdownControl {
         t: TFunction,
         minZoomLevel: number
     ) {
-        const rawKeys = getJsonConfig("osm_wikidata_keys"),
-            keys = rawKeys ? JSON.parse(rawKeys) as string[] : null,
-            rawOsmProps = getJsonConfig("osm_wikidata_properties"),
-            osmProps = rawOsmProps ? JSON.parse(rawOsmProps) as string[] : null,
+        const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
+            wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getBoolConfig("propagate_data"),
             dbEnabled = getBoolConfig("db_enable"),
             dropdownItems: DropdownItem[] = [],
+            selectSource = (sourceID: string) => {
+                if (debug) console.info("Selecting source ", { sourceID });
+
+                // If the change came from a manual interaction, update the fragment params
+                setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+
+                // If the change came from a fragment change, update the dropdown
+                // Regardless of the source, update the map
+                onSourceChange(sourceID);
+            },
             buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
                 id: sourceID,
-                text,
+                text: text,
                 category: category,
                 onSelect: () => {
-                    debugLog("Source selected", { sourceID });
-
-                    // If the change came from a manual interaction, update the fragment params
-                    setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
-                    
-                    // If the change came from a fragment change, update the dropdown
-                    // Regardless of the source, update the map
-                    onSourceChange(sourceID);
+                    selectSource(sourceID);
 
                     // Hide the dropdown to leave more space for the map
                     this.showDropdown(false);
@@ -51,8 +53,8 @@ export class SourceControl extends DropdownControl {
                 });
             }
 
-            if (osmProps && osmProps.length > 0)
-                dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + osmProps.join("/"), "DB"));
+            if (wdDirectProperties?.length)
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), "DB"));
 
             if (indirectWdProperty)
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", { indirectWdProperty }), "DB"));
@@ -61,23 +63,46 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_propagated", t("source.propagated"), "DB"));
         }
 
-        if (osmProps && osmProps.length > 0)
-            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + osmProps.join("/"), "Wikidata API"));
-
-        if (indirectWdProperty) {
-            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), "Wikidata API"));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), "Wikidata API"));
-            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), "Wikidata API"));
-        }
-
-        if (keys) {
+        if (keys?.length) {
             if (keys.length > 1)
-                dropdownItems.push(buildDropdownItem("overpass_all", "OSM " + keys.join(" / "), "Overpass API"));
+                dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys"), "OpenStreetMap (Overpass API)"));
 
             keys.forEach(key => {
                 const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
-                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "Overpass API"));
+                dropdownItems.push(buildDropdownItem(source, "OSM " + key, "OpenStreetMap (Overpass API)"));
             });
+        }
+
+        if (wdDirectProperties?.length) {
+            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
+            if (keys?.length)
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", t("source.all_osm_keys") + " + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
+        }
+
+        if (indirectWdProperty) {
+            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), "Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            if (keys?.length) {
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", t("source.all_osm_keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", t("source.all_osm_keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", t("source.all_osm_keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+            }
+        }
+
+        if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty) {
+            dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", "OpenStreetMap (Overpass API)"));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", "OSM (Overpass API) + Wikidata Query Service"));
+            dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", "Wikidata Query Service"));
+        }
+
+        if (!dropdownItems.find(item => item.id === startSourceID)) {
+            logErrorMessage("Invalid startSourceID", "warning", { oldID: startSourceID, dropdownItems, newID: dropdownItems[0].id });
+            startSourceID = dropdownItems[0].id;
+            selectSource(startSourceID);
         }
 
         super(

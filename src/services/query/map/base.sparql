@@ -1,0 +1,27 @@
+#defaultView:Map
+SELECT DISTINCT
+    ?item
+    ?itemLabel
+    ?itemDescription
+    ?location
+    ?commons
+    ?wikipedia
+    ?picture
+    ?osm
+WHERE {
+    SERVICE wikibase:box {
+        ?item wdt:P625 ?location.
+        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral .
+        bd:serviceParam wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral .
+    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+    OPTIONAL { ?item wdt:P373 ?commons }
+    OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
+    OPTIONAL { ?item wdt:P18 ?picture }
+    OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
+        ?item rdfs:label ?itemLabel.
+        ?item schema:description ?itemDescription.
+    }
+}
+${limit}

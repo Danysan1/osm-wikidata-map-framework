@@ -113,10 +113,6 @@ class OverpassEtymologyQueryResult extends GeoJSONOverpassQueryResult
                 "from_wikidata" => false,
                 "osm_type" => $osmType,
                 "osm_id" => $osmID,
-                "gender_color" => "#3bb2d0",
-                "source_color" => "#33ff66",
-                "type_color" => "#3bb2d0",
-                "country_color" => "#3bb2d0",
             ],
         ];
 

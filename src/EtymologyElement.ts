@@ -1,5 +1,5 @@
-import { debugLog } from "./config";
-import { DatePrecision, Etymology, ImageResponse } from "./feature.model";
+import { debug } from "./config";
+import { DatePrecision, EtymologyDetails, ImageResponse } from "./feature.model";
 import { translateContent, translateAnchorTitle } from "./i18n";
 import { imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
@@ -40,11 +40,11 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     }
 
     const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
-    debugLog("formatDate", { date, precision, dateObject, options, out });
+    //if (debug) console.info("formatDate", { date, precision, dateObject, options, out });
     return out;
 }
 
-export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLElement {
+export function etymologyToDomElement(ety: EtymologyDetails, currentZoom = 12.5): HTMLElement {
     const etymology_template = document.getElementById('etymology_template');
     if (!(etymology_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
@@ -54,7 +54,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     //etyDomElement.dataset.wd_id = ety.wd_id?.toString();
 
     const lang = document.documentElement.lang.split("-").at(0);
-    debugLog("etymologyToDomElement", {
+    if (debug) console.info("etymologyToDomElement", {
         et_id: ety.et_id, wd_id: ety.wd_id, ety, etyDomElement, lang
     });
 
@@ -108,7 +108,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     if (!wikipedia_button) {
         console.warn("Missing wikipedia_button");
     } else if (ety.wikipedia) {
-        wikipedia_button.href = ety.wikipedia;
+        wikipedia_button.href = ety.wikipedia.startsWith("http") ? ety.wikipedia : `https://www.wikipedia.org/wiki/${ety.wikipedia}`;
         wikipedia_button.classList.remove("hiddenElement");
     } else {
         wikipedia_button.classList.add("hiddenElement");
@@ -118,7 +118,12 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
     if (!commons_button) {
         console.warn("Missing commons_button");
     } else if (ety.commons) {
-        commons_button.href = "https://commons.wikimedia.org/wiki/Category:" + ety.commons;
+        if (ety.commons.startsWith("http"))
+            commons_button.href = ety.commons;
+        else if (ety.commons.startsWith("Category:"))
+            commons_button.href = `https://commons.wikimedia.org/wiki/${ety.commons}`;
+        else
+            commons_button.href = `https://commons.wikimedia.org/wiki/Category:${ety.commons}`;
         commons_button.classList.remove("hiddenElement");
     } else {
         commons_button.classList.add("hiddenElement");
@@ -250,7 +255,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
         console.warn("Missing .etymology_src_osm");
     } else if (ety.from_osm_type && ety.from_osm_id && src_osm) {
         const osmURL = `https://www.openstreetmap.org/${ety.from_osm_type}/${ety.from_osm_id}`;
-        debugLog("Showing OSM etymology source", { ety, osmURL, src_osm });
+        if (debug) console.info("Showing OSM etymology source", { ety, osmURL, src_osm });
         src_osm.href = osmURL;
         src_osm.classList.remove('hiddenElement');
     } else {
@@ -270,7 +275,7 @@ export function etymologyToDomElement(ety: Etymology, currentZoom = 12.5): HTMLE
         console.warn("Missing .etymology_src_wd");
     } else if (ety.from_wikidata_entity) {
         const wdURL = `https://www.wikidata.org/wiki/${ety.from_wikidata_entity}#${ety.from_wikidata_prop}`;
-        debugLog("Showing WD etymology source", { ety, wdURL, src_wd });
+        if (debug) console.info("Showing WD etymology source", { ety, wdURL, src_wd });
         src_wd.href = wdURL;
         src_wd.classList.remove("hiddenElement");
     } else {

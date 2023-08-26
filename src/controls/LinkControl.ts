@@ -2,8 +2,10 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'ma
 
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { debugLog } from '../config';
+import { debug } from '../config';
 import { logErrorMessage } from '../monitoring';
+import { EtymologyResponse } from '../generated/owmf';
+import { GeoJSON } from 'geojson';
 
 export class LinkControl implements IControl {
     private container?: HTMLDivElement;
@@ -17,7 +19,7 @@ export class LinkControl implements IControl {
         iconUrl: string,
         title: string,
         sourceIds: string[],
-        mapEventField: string,
+        mapEventField: keyof EtymologyResponse,
         baseUrl: string,
         minZoomLevel = 0
     ) {
@@ -69,27 +71,35 @@ export class LinkControl implements IControl {
             this.container?.classList?.add("hiddenElement");
     }
 
-    createSourceDataHandler(sourceIds: string[], mapEventField: string, baseUrl: string) {
+    createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType != "source" || !sourceIds.includes(e.sourceId))
+            if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIds.includes(e.sourceId))
                 return;
 
+            const data = (e.source as any)?.data;
+
             try {
-                const response = await fetch((e.source as any).data, {
-                    mode: "same-origin",
-                    cache: "only-if-cached",
-                });
-                const content = await response.json();
-                if (!content.metadata) {
-                    debugLog("Missing metadata, hiding");
-                    this.show(false);
-                } else if (!content.metadata[mapEventField]) {
-                    //debugLog("Missing query field, hiding", { content, mapEventField });
+                let content: GeoJSON & EtymologyResponse;
+                if (typeof data === "object") {
+                    content = data;
+                } else if (typeof data === "string") {
+                    const response = await fetch(data, {
+                        mode: "same-origin",
+                        cache: "only-if-cached",
+                    });
+                    content = await response.json();
+                } else {
+                    throw new Error("Invalid data type");
+                }
+
+                const query = content[mapEventField];
+                if (typeof query !== "string" || !query.length) {
+                    //if (enable_debug_log) console.info("Missing query field, hiding", { content, mapEventField });
                     this.show(false);
                 } else {
-                    const encodedQuery = encodeURIComponent(content.metadata[mapEventField]),
+                    const encodedQuery = encodeURIComponent(query),
                         linkUrl = baseUrl + encodedQuery;
-                    debugLog("Query field found, showing URL", { linkUrl, mapEventField });
+                    if (debug) console.info("Query field found, showing URL", { linkUrl, mapEventField });
                     this.setURL(linkUrl);
                     this.show();
                 }

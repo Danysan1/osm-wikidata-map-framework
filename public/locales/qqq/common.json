@@ -1,0 +1,68 @@
+{
+    "title": "Fallback title for the infobox and the browser tab title, this should always be replaced by the title of the actual map through the i18n_override configuration",
+    "description": "Fallback description for the infobox, this should always be replaced by the title of the actual map through the i18n_override configuration",
+    "info_box": {
+        "open_popup": "Alt text for the 'ℹ️' button to open the info popup",
+        "click_anywhere": "Click anywhere on the map to explore.",
+        "use_controls": "Instructions to use the controls on the sides to see other data",
+        "to_see_statistics": "Instructions to use the button to see statistics about elements",
+        "to_choose_source": "Instructions to use the button to choose which data source to use",
+        "to_overpass_query": "Instructions to use the button to view the source OverpassQL query",
+        "to_wikidata_query": "Instructions to use the button to view the source SPARQL query",
+        "to_change_background": "Instructions to use the button to change the background map style",
+        "to_open_again": "Instructions to use the button to open again the info popup",
+        "contribute": "Text of the button that links to the documentation to contribute to the map",
+        "download_dataset": "Text of the button to download the data as dataset",
+        "last_db_update": "Text before the date of the last database update",
+        "based_on": "Text before the link to the OSM-Wikidata Map Framework repository",
+        "report_issue": "Text of the link to the issue tracker",
+        "report_issue_title": "Alt text of the link to the issue tracker",
+        "about_me": "Text of the About me button",
+        "about_me_title": "Alt text of the About me button"
+    },
+    "snackbar": {
+        "zoom_in": "Instructions to zoom in to view data",
+        "fetch_error": "Error message shown when an error occurred while fetching the data",
+        "map_error": "Error message shown when an internal error occurred",
+        "data_loaded": "Success message shown when the data has been successfully fetched and loaded",
+        "no_data_in_this_area": "Warning message when the viewport is intentionally wmpty because it contains no data",
+        "data_loaded_instructions": "Instructions shown after the first load to click on any highlighted element to show its details"
+    },
+    "source": {
+        "choose_source": "Alt text for the '⚙️' button to show/hide the source dropdown",
+        "db_all": "All sources from DB",
+        "db_osm_wikidata_reverse": "Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}",
+        "propagated": "Propagated",
+        "all_osm_keys": "All OSM keys",
+        "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
+        "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
+        "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        "choose_scheme": "Alt text for the '📊' button to show/hide the color scheme / stats dropdown",
+        "blue": "Blue",
+        "source": "Stats by source",
+        "gender": "Stats by gender",
+        "type": "Stats by type",
+        "country": "Stats by country",
+        "start_century": "Stats by start/birth century",
+        "end_century": "Stats by end/death century",
+        "black": "Black",
+        "red": "Red",
+        "orange": "Orange"
+    },
+    "feature_details": {
+        "loading_first_n_items": "Warning message shown when a feature contains more etymologies than the max configured limit, should contain the variables {{partial}} (number of shown etymologies) and {{total}} (total etymologies)",
+        "location": "Alt text of the '🎯' button to move the map to the location of the feature/etymology",
+        "picture_via_commons": "Attribution to Wikimedia Commons under the images",
+        "loading": "Placeholder text shown while fetching and loading the etymologies",
+        "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"
+    },
+    "etymology_details": {
+        "source": "Source:",
+        "propagation": "propagation",
+        "propagation_title": "Alt text of the link to the description of the propagation mechanism"
+    },
+    "choose_basemap": "Alt text for the '🌍' button to show/hide the style dropdown",
+    "choose_projection": "Alt text for the '🌐' button to show/hide the projection dropdown"
+}

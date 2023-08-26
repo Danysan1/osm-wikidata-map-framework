@@ -4,26 +4,27 @@ import { GeoJSONFeature } from 'maplibre-gl';
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { etymologyToDomElement } from "./EtymologyElement";
-import { debugLog, getBoolConfig } from "./config";
+import { debug, getConfig } from "./config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
 import { imageToDomElement } from "./ImageElement";
 import { logErrorMessage } from "./monitoring";
-import { Etymology, EtymologyDetails, FeatureProperties } from './feature.model';
+import { EtymologyDetails } from './feature.model';
+import { Etymology, EtymologyFeatureProperties } from './generated/owmf';
 
 export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');
     if (!(detail_template instanceof HTMLTemplateElement))
         throw new Error("Missing etymology template");
 
-    const properties = feature.properties as FeatureProperties,
-        etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as Etymology[] : properties?.etymologies,
+    const properties = feature.properties as EtymologyFeatureProperties,
+        etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
         detail_container = detail_template.content.cloneNode(true) as HTMLElement,
         osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
     //detail_container.dataset.el_id = properties.el_id?.toString();
 
-    debugLog("featureToDomElement", {
+    if (debug) console.info("featureToDomElement", {
         el_id: properties.el_id, feature, etymologies, detail_container
     });
 
@@ -32,23 +33,31 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem");
     translateContent(detail_container, ".i18n_location", "feature_details.location");
     translateAnchorTitle(detail_container, ".title_i18n_location", "feature_details.location");
+    translateContent(detail_container, ".i18n_source", "etymology_details.source");
 
     const element_name = detail_container.querySelector<HTMLElement>('.element_name');
     if (!element_name) {
-        debugLog("Missing element_name");
+        if (debug) console.info("Missing element_name");
     } else if (properties.name && properties.name != 'null') {
         element_name.innerText = '📍 ' + properties.name;
     }
 
     const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
-        alt_names = [properties.official_name, properties.alt_name].filter(
+        alt_names = [properties.official_name, properties.alt_name].flatMap(name => name?.split(";")).filter(
             name => name && name !== 'null' && name !== properties.name
         );
     if (!element_alt_names) {
-        debugLog("Missing element_alt_names");
+        if (debug) console.info("Missing element_alt_names");
     } else if (alt_names.length > 0) {
         element_alt_names.innerText =
             "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
+    }
+
+    const element_description = detail_container.querySelector<HTMLElement>('.element_description');
+    if (!element_description) {
+        if (debug) console.info("Missing element_description");
+    } else if (properties.description) {
+        element_description.innerText = properties.description;
     }
 
     const wikidata = properties.wikidata,
@@ -56,17 +65,17 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         picture = properties.picture,
         feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
     if (!feature_pictures) {
-        debugLog("Missing pictures element");
+        if (debug) console.info("Missing pictures element");
     } else if (picture && picture !== 'null') {
-        debugLog("Using picture from feature 'picture' property", { picture });
+        if (debug) console.info("Using picture from feature 'picture' property", { picture });
         feature_pictures.appendChild(imageToDomElement(picture))
         feature_pictures.classList.remove("hiddenElement");
     } else if (commons?.includes("File:")) {
-        debugLog("Using picture from feature 'commons' property", { commons });
+        if (debug) console.info("Using picture from feature 'commons' property", { commons });
         feature_pictures.appendChild(imageToDomElement(commons));
         feature_pictures.classList.remove("hiddenElement");
     } else if (wikidata && wikidata !== 'null') {
-        debugLog("Using picture from feature 'wikidata' property", { wikidata });
+        if (debug) console.info("Using picture from feature 'wikidata' property", { wikidata });
         new WikidataService().getCommonsImageFromWikidataID(wikidata).then(img => {
             if (img) {
                 feature_pictures.appendChild(imageToDomElement(img));
@@ -84,7 +93,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
 
     const element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
     if (!element_wikidata_button) {
-        debugLog("Missing element_wikidata_button");
+        if (debug) console.info("Missing element_wikidata_button");
     } else if (wikidata && wikidata != 'null') {
         element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
         element_wikidata_button.classList.remove("hiddenElement");
@@ -95,9 +104,9 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     const wikipedia = properties.wikipedia,
         element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
     if (!element_wikipedia_button) {
-        debugLog("Missing element_wikipedia_button");
+        if (debug) console.info("Missing element_wikipedia_button");
     } else if (wikipedia && wikipedia != 'null') {
-        element_wikipedia_button.href = `https://www.wikipedia.org/wiki/${wikipedia}`;
+        element_wikipedia_button.href = wikipedia.startsWith("http") ? wikipedia : `https://www.wikipedia.org/wiki/${wikipedia}`;
         element_wikipedia_button.classList.remove("hiddenElement");
     } else {
         element_wikipedia_button.classList.add("hiddenElement");
@@ -105,9 +114,14 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
 
     const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
     if (!element_commons_button) {
-        debugLog("Missing element_commons_button");
+        if (debug) console.info("Missing element_commons_button");
     } else if (commons && commons != 'null') {
-        element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
+        if (commons.startsWith("http"))
+            element_commons_button.href = commons;
+        else if (commons.startsWith("Category:"))
+            element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
+        else
+            element_commons_button.href = `https://commons.wikimedia.org/wiki/Category:${commons}`;
         element_commons_button.classList.remove("hiddenElement");
     } else {
         element_commons_button.classList.add("hiddenElement");
@@ -115,7 +129,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
 
     const element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
     if (!element_osm_button) {
-        debugLog("Missing element_osm_button");
+        if (debug) console.info("Missing element_osm_button");
     } else if (osm_full_id) {
         element_osm_button.href = 'https://www.openstreetmap.org/' + osm_full_id;
         element_osm_button.classList.remove("hiddenElement");
@@ -123,12 +137,17 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         element_osm_button.classList.add("hiddenElement");
     }
 
-    const show_feature_mapcomplete = getBoolConfig("show_feature_mapcomplete"),
+    let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
+    while (Array.isArray(coord) && Array.isArray(coord[0])) {
+        coord = coord[0];
+    }
+    const lon = coord[0], lat = coord[1],
+        mapcomplete_theme = getConfig("mapcomplete_theme"),
         element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
     if (!element_mapcomplete_button) {
-        debugLog("Missing element_mapcomplete_button");
-    } else if (show_feature_mapcomplete && osm_full_id) {
-        element_mapcomplete_button.href = 'https://mapcomplete.osm.be/etymology.html#' + osm_full_id;
+        if (debug) console.info("Missing element_mapcomplete_button");
+    } else if (mapcomplete_theme && osm_full_id) {
+        element_mapcomplete_button.href = `https://mapcomplete.osm.be/${mapcomplete_theme}.html?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
         element_mapcomplete_button.classList.remove("hiddenElement");
     } else {
         element_mapcomplete_button.classList.add("hiddenElement");
@@ -136,13 +155,8 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
 
     const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
     if (!element_location_button) {
-        debugLog("Missing element_location_button");
+        if (debug) console.info("Missing element_location_button");
     } else if (osm_full_id || properties.commons || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
-        let coord = (feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
-        while (Array.isArray(coord) && Array.isArray(coord[0])) {
-            coord = coord[0];
-        }
-        const lon = coord[0], lat = coord[1];
         element_location_button.href = `#${lon},${lat},${currentZoom + 1}`;
         element_location_button.classList.remove("hiddenElement");
     } else {
@@ -151,21 +165,49 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
 
     const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
     if (!etymologies_container) {
-        debugLog("Missing etymologies_container");
-    } else if (getBoolConfig("eager_full_etymology_download")) {
-        showEtymologies(properties, etymologies, etymologies_container, currentZoom);
+        if (debug) console.info("Missing etymologies_container");
     } else {
-        showLoadingSpinner(true);
-        downloadEtymologyDetails(etymologies).then(filledEtymologies => {
-            showLoadingSpinner(false);
-            showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
-        });
+        const placeholder = etymologies_container.querySelector<HTMLDivElement>(".etymology_loading");
+        if (etymologies?.length) {
+            showLoadingSpinner(true);
+            downloadEtymologyDetails(etymologies).then(filledEtymologies => {
+                showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
+                placeholder?.classList.add("hiddenElement");
+                showLoadingSpinner(false);
+            });
+        } else {
+            placeholder?.classList.add("hiddenElement");
+        }
+    }
+
+    const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm');
+    if (!src_osm) {
+        console.warn("Missing .feature_src_osm");
+    } else if (properties.from_osm && properties.osm_type && properties.osm_id) {
+        const osmURL = `https://www.openstreetmap.org/${properties.osm_type}/${properties.osm_id}`;
+        if (debug) console.info("Showing OSM feature source", { properties, osmURL, src_osm });
+        src_osm.href = osmURL;
+        src_osm.classList.remove('hiddenElement');
+    } else {
+        src_osm.classList.add('hiddenElement');
+    }
+
+    const src_wd = detail_container.querySelector<HTMLAnchorElement>('.feature_src_wd');
+    if (!src_wd) {
+        console.warn("Missing .feature_src_wd");
+    } else if (properties.from_wikidata && properties.wikidata) {
+        const wdURL = `https://www.wikidata.org/wiki/${properties.wikidata}`;
+        if (debug) console.info("Showing WD feature source", { properties, wdURL, src_wd });
+        src_wd.href = wdURL;
+        src_wd.classList.remove("hiddenElement");
+    } else {
+        src_wd.classList.add("hiddenElement");
     }
 
     return detail_container;
 }
 
-function showEtymologies(properties: FeatureProperties, etymologies: Etymology[], etymologies_container: HTMLElement, currentZoom: number) {
+function showEtymologies(properties: EtymologyFeatureProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
     // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
     etymologies.sort((a, b) => (a.wikidata?.length || 0) - (b.wikidata?.length || 0)).forEach((ety) => {
         if (ety?.wikidata) {
@@ -198,7 +240,7 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
             ),
             nthTextEtyName = nthTextEtyNameExists ? textEtyNames[n] : undefined,
             nthTextEtyDescr = nthTextEtyDescrExists ? textEtyDescrs[n] : undefined;
-        debugLog("showEtymologies: showing text etymology? ", {
+        if (debug) console.info("showEtymologies: showing text etymology? ", {
             n, nthTextEtyNameExists, nthTextEtyName, nthTextEtyDescrExists, nthTextEtyDescr, textEtyShouldBeShown, etymologies
         });
         if (textEtyShouldBeShown) {
@@ -211,8 +253,6 @@ function showEtymologies(properties: FeatureProperties, etymologies: Etymology[]
             }, currentZoom));
         }
     }
-
-    etymologies_container.querySelector<HTMLDivElement>(".etymology_loading")?.classList.add("hiddenElement");
 }
 
 async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100): Promise<Etymology[]> {

@@ -33,6 +33,7 @@
         "db_all": "Tutte le fonti dal DB",
         "db_osm_wikidata_reverse": "Entità Wikidata referenziate da OSM wikidata=* e {{indirectWdProperty}}",
         "propagated": "Propagati",
+        "all_osm_keys": "Tutte le chiavi OSM",
         "wd_reverse": "Entità Wikidata referenziate da {{indirectWdProperty}}",
         "wd_qualifier": "Qualificatori P625 su {{indirectWdProperty}}",
         "wd_indirect": "Qualificatori P625 su {{indirectWdProperty}} e entità Wikidata referenziate da {{indirectWdProperty}}"
@@ -48,8 +49,7 @@
         "end_century": "Per secolo di fine/morte",
         "black": "Nero",
         "red": "Rosso",
-        "orange": "Arancione",
-        "not_available": "Questo schema di colori non è disponibile per questa sorgente"
+        "orange": "Arancione"
     },
     "feature_details": {
         "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",
