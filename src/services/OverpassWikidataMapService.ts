@@ -21,9 +21,12 @@ export class OverpassWikidataMapService {
     }
 
     async fetchMapClusterElements(sourceID: string, bbox: BBox) {
-        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
+        let [overpassSourceID, wikidataSourceID] = sourceID.split("+");
         if (!overpassSourceID || !wikidataSourceID)
             throw new Error("Invalid sourceID");
+
+        if (overpassSourceID === "overpass_all_wd")
+            overpassSourceID = "overpass_all"; // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
 
         const [overpassData, wikidataData] = await Promise.all([
             this.overpassService.fetchMapClusterElements(overpassSourceID, bbox),
