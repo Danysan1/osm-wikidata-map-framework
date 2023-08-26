@@ -556,14 +556,14 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(true);
             this.addSource(id, config);
             sourceObject = this.getSource(id) as GeoJSONSource;
-            if (sourceObject)
-                if (debug) console.info("addGeoJSONSource success ", { id, config, sourceObject });
-                else {
-                    console.error("addGeoJSONSource failed", { id, config, sourceObject })
-                    throw new Error("Failed adding source");
-                }
-        } else {
-            if (debug) console.info("Skipping source update", { id, newSourceDataURL });
+            if (!sourceObject) {
+                console.error("addGeoJSONSource failed", { id, config, sourceObject })
+                throw new Error("Failed adding source");
+            } else if (debug) {
+                console.info("addGeoJSONSource success ", { id, config, sourceObject });
+            }
+        } else if (debug) {
+            console.info("Skipping source update", { id, newSourceDataURL });
         }
         return sourceObject;
     }

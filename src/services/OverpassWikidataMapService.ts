@@ -25,8 +25,10 @@ export class OverpassWikidataMapService {
         if (!overpassSourceID || !wikidataSourceID)
             throw new Error("Invalid sourceID");
 
+        if (overpassSourceID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
+            return this.wikidataService.fetchMapData(wikidataSourceID, bbox);
         if (overpassSourceID === "overpass_all_wd")
-            overpassSourceID = "overpass_all"; // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
+            overpassSourceID = "overpass_all";
 
         const [overpassData, wikidataData] = await Promise.all([
             this.overpassService.fetchMapClusterElements(overpassSourceID, bbox),
