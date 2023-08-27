@@ -150,7 +150,7 @@ class EtymologyColorControl extends DropdownControl {
                     rawEtymologies = props?.etymologies,
                     etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
 
-                if (etymologies?.length) {
+                if (etymologies?.some(ety => ety.wikidata)) {
                     etymologies.forEach(etymology => {
                         if (!etymology.wikidata) {
                             if (debug) console.warn("Skipping etymology with no Wikidata ID in source calculation", etymology);
@@ -205,6 +205,7 @@ class EtymologyColorControl extends DropdownControl {
                 [">", ["length", ["get", "etymologies"]], 0],
                 ["to-boolean", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]]
             ], false], '#33ff66',
+            ["coalesce", ["has", "text_etymology"], false], '#223b53',
             ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
             ["coalesce", ["to-boolean", ["get", "from_osm"]], false], '#33ff66',
             '#223b53'

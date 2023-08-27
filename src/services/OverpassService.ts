@@ -146,8 +146,8 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
 
                 feature.properties.etymologies = keys
                     .map(key => feature.properties?.[key])
-                    .filter(value => value)
-                    .flatMap((value: string) => value.split(";"))
+                    .flatMap((value?: string) => value?.split(";"))
+                    .filter(value => value !== undefined && value !== "")
                     .map(value => ({
                         from_osm: true,
                         from_osm_id: osm_id,

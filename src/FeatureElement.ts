@@ -168,16 +168,12 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         if (debug) console.info("Missing etymologies_container");
     } else {
         const placeholder = etymologies_container.querySelector<HTMLDivElement>(".etymology_loading");
-        if (etymologies?.length) {
-            showLoadingSpinner(true);
-            downloadEtymologyDetails(etymologies).then(filledEtymologies => {
-                showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
-                placeholder?.classList.add("hiddenElement");
-                showLoadingSpinner(false);
-            });
-        } else {
+        showLoadingSpinner(true);
+        downloadEtymologyDetails(etymologies).then(filledEtymologies => {
+            showEtymologies(properties, filledEtymologies, etymologies_container, currentZoom);
             placeholder?.classList.add("hiddenElement");
-        }
+            showLoadingSpinner(false);
+        });
     }
 
     const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm');
@@ -214,10 +210,10 @@ function showEtymologies(properties: EtymologyFeatureProperties, etymologies: Et
             try {
                 etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
             } catch (err) {
-                console.error("Failed adding etymology", ety, err);
+                console.error("Failed adding etymology", { properties, ety, err });
             }
-        } else {
-            console.warn("Found etymology without Wikidata ID", ety);
+        } else if (debug) {
+            console.warn("Found etymology without Wikidata ID", { properties, ety });
         }
     });
 
@@ -227,6 +223,7 @@ function showEtymologies(properties: EtymologyFeatureProperties, etymologies: Et
         textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
         textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr,
         textEtyDescrs = textEtyDescrExists ? textEtyDescr.split(";") : [];
+    if (debug) console.info("showEtymologies: text etymology", { textEtyName, textEtyNameExists, textEtyNames, textEtyDescr, textEtyDescrExists, textEtyDescrs });
 
     for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
         const nthTextEtyNameExists = n < textEtyNames.length,
@@ -255,15 +252,19 @@ function showEtymologies(properties: EtymologyFeatureProperties, etymologies: Et
     }
 }
 
-async function downloadEtymologyDetails(etymologies: Etymology[], maxItems = 100): Promise<Etymology[]> {
-    let etymologyIDs = etymologies.map(e => e?.wikidata).filter(x => !!x) as string[];
+async function downloadEtymologyDetails(etymologies?: Etymology[], maxItems = 100): Promise<Etymology[]> {
+    if (!etymologies?.length)
+        return [];
 
+    let etymologyIDs = etymologies.map(e => e.wikidata).filter(x => !!x) as string[];
     if (etymologyIDs.length == 0)
         return etymologies;
 
+    // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
+    etymologyIDs = [...new Set(etymologyIDs)].sort((a, b) => a.length - b.length);
     if (etymologyIDs.length > maxItems) {
-        // Too many items, limiting to the first N entities with the shortest Wikidata Q-ID (which usually means most famous)
-        etymologyIDs = etymologyIDs.sort((a, b) => a.length - b.length).slice(0, maxItems);
+        // Too many items, limiting to the first N most famous ones
+        etymologyIDs = etymologyIDs.slice(0, maxItems);
         loadTranslator().then(t => showSnackbar(
             t("feature_details.loading_first_n_items", { partial: maxItems, total: etymologies.length }),
             "lightsalmon",
