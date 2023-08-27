@@ -145,10 +145,11 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
         coord = coord[0];
     }
-    const lon = coord[0], lat = coord[1]
+    const lon = typeof coord[0] === "number" ? coord[0] : undefined,
+        lat = typeof coord[1] === "number" ? coord[1] : undefined;
 
     const element_matcher_button = detail_container.querySelector<HTMLAnchorElement>('.element_matcher_button'),
-        show_osm_matcher = osm_full_id && !properties.wikidata,
+        show_osm_matcher = osm_full_id && !properties.wikidata && lat !== undefined && lon !== undefined,
         show_wd_matcher = properties.wikidata && !osm_full_id;
     if (!element_matcher_button) {
         if (debug) console.info("Missing element_matcher_button");
@@ -164,11 +165,11 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
 
     const mapcomplete_theme = getConfig("mapcomplete_theme"),
         element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
-        show_mapcomplete = osm_full_id && mapcomplete_theme;
+        show_mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined;
     if (!element_mapcomplete_button) {
         if (debug) console.info("Missing element_mapcomplete_button");
     } else if (show_mapcomplete) {
-        element_mapcomplete_button.href = `https://mapcomplete.osm.be/${mapcomplete_theme}.html?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
+        element_mapcomplete_button.href = `https://mapcomplete.org/${mapcomplete_theme}?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
         element_mapcomplete_button.classList.remove("hiddenElement");
     } else {
         element_mapcomplete_button.classList.add("hiddenElement");
