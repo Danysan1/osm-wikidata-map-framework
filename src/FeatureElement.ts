@@ -61,12 +61,15 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     }
 
     const wikidata = properties.wikidata,
+        has_wikidata = wikidata && wikidata !== 'null',
         commons = properties.commons,
+        has_commons = commons && commons !== 'null',
         picture = properties.picture,
+        has_picture = picture && picture !== 'null',
         feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
     if (!feature_pictures) {
         if (debug) console.info("Missing pictures element");
-    } else if (picture && picture !== 'null') {
+    } else if (has_picture) {
         if (debug) console.info("Using picture from feature 'picture' property", { picture });
         feature_pictures.appendChild(imageToDomElement(picture))
         feature_pictures.classList.remove("hiddenElement");
@@ -74,7 +77,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
         if (debug) console.info("Using picture from feature 'commons' property", { commons });
         feature_pictures.appendChild(imageToDomElement(commons));
         feature_pictures.classList.remove("hiddenElement");
-    } else if (wikidata && wikidata !== 'null') {
+    } else if (has_wikidata) {
         if (debug) console.info("Using picture from feature 'wikidata' property", { wikidata });
         new WikidataService().getCommonsImageFromWikidataID(wikidata).then(img => {
             if (img) {
@@ -94,7 +97,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     const element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
     if (!element_wikidata_button) {
         if (debug) console.info("Missing element_wikidata_button");
-    } else if (wikidata && wikidata != 'null') {
+    } else if (has_wikidata) {
         element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
         element_wikidata_button.classList.remove("hiddenElement");
     } else {
@@ -102,10 +105,11 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     }
 
     const wikipedia = properties.wikipedia,
+        has_wikipedia = wikipedia && wikipedia !== 'null',
         element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
     if (!element_wikipedia_button) {
         if (debug) console.info("Missing element_wikipedia_button");
-    } else if (wikipedia && wikipedia != 'null') {
+    } else if (has_wikipedia) {
         element_wikipedia_button.href = wikipedia.startsWith("http") ? wikipedia : `https://www.wikipedia.org/wiki/${wikipedia}`;
         element_wikipedia_button.classList.remove("hiddenElement");
     } else {
@@ -115,7 +119,7 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
     if (!element_commons_button) {
         if (debug) console.info("Missing element_commons_button");
-    } else if (commons && commons != 'null') {
+    } else if (has_commons) {
         if (commons.startsWith("http"))
             element_commons_button.href = commons;
         else if (commons.startsWith("Category:"))
@@ -141,22 +145,40 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     while (Array.isArray(coord) && Array.isArray(coord[0])) {
         coord = coord[0];
     }
-    const lon = coord[0], lat = coord[1],
-        mapcomplete_theme = getConfig("mapcomplete_theme"),
-        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button');
+    const lon = coord[0], lat = coord[1]
+
+    const element_matcher_button = detail_container.querySelector<HTMLAnchorElement>('.element_matcher_button'),
+        show_osm_matcher = osm_full_id && !properties.wikidata,
+        show_wd_matcher = properties.wikidata && !osm_full_id;
+    if (!element_matcher_button) {
+        if (debug) console.info("Missing element_matcher_button");
+    } else if (show_osm_matcher) {
+        element_matcher_button.href = `https://map.osm.wikidata.link/map/18/${lat}/${lon}`;
+        element_matcher_button.classList.remove("hiddenElement");
+    } else if (show_wd_matcher) {
+        element_matcher_button.href = `https://map.osm.wikidata.link/item/${properties.wikidata}`;
+        element_matcher_button.classList.remove("hiddenElement");
+    } else {
+        element_matcher_button.classList.add("hiddenElement");
+    }
+
+    const mapcomplete_theme = getConfig("mapcomplete_theme"),
+        element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
+        show_mapcomplete = osm_full_id && mapcomplete_theme;
     if (!element_mapcomplete_button) {
         if (debug) console.info("Missing element_mapcomplete_button");
-    } else if (mapcomplete_theme && osm_full_id) {
+    } else if (show_mapcomplete) {
         element_mapcomplete_button.href = `https://mapcomplete.osm.be/${mapcomplete_theme}.html?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
         element_mapcomplete_button.classList.remove("hiddenElement");
     } else {
         element_mapcomplete_button.classList.add("hiddenElement");
     }
 
-    const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
+    const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button'),
+        show_location = show_mapcomplete || show_osm_matcher || show_wd_matcher || osm_full_id || has_wikidata || has_commons || has_wikipedia;
     if (!element_location_button) {
         if (debug) console.info("Missing element_location_button");
-    } else if (osm_full_id || properties.commons || properties.wikipedia || properties.wikidata) { // Hide this button if it is the only one
+    } else if (show_location) { // Hide this button if it's the only one
         element_location_button.href = `#${lon},${lat},${currentZoom + 1}`;
         element_location_button.classList.remove("hiddenElement");
     } else {

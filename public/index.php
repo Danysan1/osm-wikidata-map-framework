@@ -47,7 +47,7 @@ $canonicalURL = $conf->has("home_url") ? (string)$conf->get("home_url") : getCur
 $metaKeywords = $conf->has("keywords") ? '<meta name="keywords" content="' . (string)$conf->get("keywords") . '" />' : "";
 
 $jsScripts = glob("dist/main-*.js");
-if(empty($jsScripts))
+if (empty($jsScripts))
     throw new Exception("No Javascript entrypoint file found");
 usort($jsScripts, function (string $x, string $y): int {
     return filemtime($y) - filemtime($x);
@@ -223,11 +223,11 @@ $jsScript = $jsScripts[0];
             <p class="element_alt_names"></p>
             <p class="element_description"></p>
             <div class="button_row">
-                <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
+                <a title="Wikipedia" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
                     <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                     <span class="button_text"> Wikipedia</span>
                 </a>
-                <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
+                <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
                     <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
                     <span class="button_text"> Commons</span>
                 </a>
@@ -235,11 +235,15 @@ $jsScript = $jsScripts[0];
                     <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
                     <span class="button_text"> Wikidata</span>
                 </a>
-                <a title="OpenStreetMap" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
+                <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
                     <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
                     <span class="button_text"> OpenStreetMap</span>
                 </a>
-                <a title="MapComplete" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
+                <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button">
+                    <img class="button_img" src="img/osm-wd-matcher.png" alt="OSM ↔ Wikidata matcher logo">
+                    <span class="button_text"> OSM ↔ Wikidata matcher</span>
+                </a>
+                <a title="MapComplete" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
                     <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                     <span class="button_text"> Mapcomplete</span>
                 </a>
