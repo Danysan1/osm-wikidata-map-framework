@@ -141,8 +141,7 @@ ${outClause}`.replace("${maxElements}", maxElements || "");
 
                 if (feature.properties["name:" + this.language])
                     feature.properties.name = feature.properties["name:" + this.language];
-                else if (feature.properties["name:" + this.defaultLanguage])
-                    feature.properties.name = feature.properties["name:" + this.defaultLanguage];
+                // Default language is intentionally not used as it could overwrite a more specific language in name=*
 
                 feature.properties.etymologies = keys
                     .map(key => feature.properties?.[key])
