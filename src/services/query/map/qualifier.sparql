@@ -4,6 +4,9 @@ SELECT DISTINCT
     ?location
     ?commons
     ?picture
+    ?osm_node
+    ?osm_way
+    ?osm_rel
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
@@ -17,5 +20,8 @@ WHERE {
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     OPTIONAL { ?stmt pq:P373 ?commons. }
     ${pictureQuery}
+    OPTIONAL { ?stmt pq:P11693 ?osm_node. }
+    OPTIONAL { ?stmt pq:P10689 ?osm_way. }
+    OPTIONAL { ?stmt pq:P402 ?osm_rel. }
 }
 ${limit}

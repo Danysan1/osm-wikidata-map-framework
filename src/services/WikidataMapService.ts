@@ -141,9 +141,17 @@ export class WikidataMapService extends WikidataService {
             } : null;
 
             if (!existingFeature) { // Add the new feature for this item 
-                const osm = row.osm?.value,
-                    osm_type = osm?.split("/").at(3),
-                    osm_id = osm ? parseInt(osm.split("/").at(4)) : undefined;
+                let osm_id: number | undefined, osm_type: "node" | "way" | "relation" | undefined;
+                if (row.osm_rel?.value) {
+                    osm_type = "relation";
+                    osm_id = parseInt(row.osm_rel.value);
+                } else if (row.osm_way?.value) {
+                    osm_type = "way";
+                    osm_id = parseInt(row.osm_way.value);
+                } else if (row.osm_node?.value) {
+                    osm_type = "node";
+                    osm_id = parseInt(row.osm_node.value);
+                }
 
                 acc.push({
                     type: "Feature",

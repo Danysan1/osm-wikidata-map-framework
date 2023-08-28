@@ -7,7 +7,9 @@ SELECT DISTINCT
     ?commons
     ?wikipedia
     ?picture
-    ?osm
+    ?osm_node
+    ?osm_way
+    ?osm_rel
     ?etymology
     (?item AS ?from_entity)
     ?from_prop
@@ -24,7 +26,9 @@ WHERE {
     OPTIONAL { ?item wdt:P373 ?commons }
     OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P18 ?picture }
-    OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
+    OPTIONAL { ?item wdt:P11693 ?osm_node. }
+    OPTIONAL { ?item wdt:P10689 ?osm_way. }
+    OPTIONAL { ?item wdt:P402 ?osm_rel. }
     SERVICE wikibase:label {
         bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
         ?item rdfs:label ?itemLabel.

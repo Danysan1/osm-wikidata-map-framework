@@ -7,11 +7,13 @@ SELECT
     (SAMPLE(?commons) AS ?commons)
     (SAMPLE(?wikipedia) AS ?wikipedia)
     (SAMPLE(?picture) AS ?picture)
-    (SAMPLE(?osm) AS ?osm)
+    (SAMPLE(?osm_node) AS ?osm_node)
+    (SAMPLE(?osm_way) AS ?osm_way)
+    (SAMPLE(?osm_rel) AS ?osm_rel)
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
 WITH { 
-    SELECT ?etymology ?location ?commons ?picture
+    SELECT ?etymology ?location ?commons ?picture ?osm_node ?osm_way ?osm_rel
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt pq:P582 []. } # Ignore if it has an end date
@@ -24,10 +26,13 @@ WITH {
         FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
         OPTIONAL { ?stmt pq:P373 ?commons. }
         ${pictureQuery}
+        OPTIONAL { ?stmt pq:P11693 ?osm_node. }
+        OPTIONAL { ?stmt pq:P10689 ?osm_way. }
+        OPTIONAL { ?stmt pq:P402 ?osm_rel. }
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?location ?item ?itemLabel ?commons ?wikipedia ?picture ?osm
+    SELECT ?etymology ?location ?item ?itemLabel ?commons ?wikipedia ?picture ?osm_node ?osm_way ?osm_rel
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt (pq:P625|pq:P582) []. } # Ignore if it has a location qualifier (it will fetched be in the other subquery) or an end date
@@ -44,7 +49,9 @@ WITH {
         OPTIONAL { ?item wdt:P373 ?commons. }
         OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
         OPTIONAL { ?item wdt:P18 ?picture. }
-        OPTIONAL { ?item (wdt:P402|wdt:P10689|wdt:P11693) ?osm. }
+        OPTIONAL { ?item wdt:P11693 ?osm_node. }
+        OPTIONAL { ?item wdt:P10689 ?osm_way. }
+        OPTIONAL { ?item wdt:P402 ?osm_rel. }
         SERVICE wikibase:label {
             bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
             ?item rdfs:label ?itemLabel.
