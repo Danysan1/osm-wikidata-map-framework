@@ -15,6 +15,7 @@ WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. } # Ignore if it has an end date
     ?stmt ps:${indirectProperty} ?item.
+    MINUS { ?item (wdt:P582|wdt:P576|wdt:P3999) []. } # Ignore if it has a end date
     MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
     SERVICE wikibase:box {
         ?item wdt:P625 ?location.

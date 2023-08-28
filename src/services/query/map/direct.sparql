@@ -14,6 +14,7 @@ SELECT DISTINCT
 WHERE {
     VALUES ?from_prop { ${directProperties} }
     ?item ?from_prop ?etymology.
+    MINUS { ?item (wdt:P582|wdt:P576|wdt:P3999) []. } # Ignore if it has a end date
     SERVICE wikibase:box {
         ?item wdt:P625 ?location.
         bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral .
