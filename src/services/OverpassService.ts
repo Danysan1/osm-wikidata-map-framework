@@ -92,18 +92,18 @@ export class OverpassService {
                     const filter_split = filter_tag.split("="),
                         filter_on_value = filter_split.length > 1 && filter_split[1] !== "*",
                         filter_clause = filter_on_value ? `${filter_split[0]}"="${filter_split[1]}` : filter_split[0];
-                    keys.forEach(key => { query += `nwr[!"place"][!"boundary"]["${filter_clause}"]["${key}"~"^Q[0-9]+"];\n`; });
+                    keys.forEach(key => { query += `nwr[!"boundary"]["${filter_clause}"]["${key}"~"^Q[0-9]+"];\n`; });
                     if (use_text_key && osm_text_key)
-                        query += `nwr[!"place"][!"boundary"]["${filter_clause}"]["${osm_text_key}"];\n`;
+                        query += `nwr[!"boundary"]["${filter_clause}"]["${osm_text_key}"];\n`;
                     if (use_wikidata)
-                        query += `nwr[!"place"][!"boundary"]["${filter_clause}"]["wikidata"~"^Q[0-9]+"];\n`;
+                        query += `nwr[!"boundary"]["${filter_clause}"]["wikidata"~"^Q[0-9]+"];\n`;
                 });
             } else {
                 keys.forEach(key => { query += `nwr["${key}"~"^Q[0-9]+"];\n`; });
                 if (use_text_key && osm_text_key)
-                    query += `nwr[!"place"][!"boundary"]["${osm_text_key}"];\n`;
+                    query += `nwr[!"boundary"]["${osm_text_key}"];\n`;
                 if (use_wikidata)
-                    query += `nwr[!"place"][!"boundary"]["wikidata"~"^Q[0-9]+"];\n`;
+                    query += `nwr[!"boundary"]["wikidata"~"^Q[0-9]+"];\n`;
             }
             query += `
 ); 
