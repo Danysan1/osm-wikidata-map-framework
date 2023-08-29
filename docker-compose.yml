@@ -89,17 +89,17 @@ x-airflow-common:
     # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${db_user}:${db_password}@${db_host}:5432/${db_database} # connection to the configured OWMF PostGIS DB
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${db_user}:${db_password}@${db_host}:5432/planet # connection to the configured OWMF PostGIS DB
-    AIRFLOW_CONN_WIKIDATA_API: ${wikidata_endpoint}/sparql
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:5432/${owmf_db_database} # connection to the configured OWMF PostGIS DB
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:5432/planet # connection to the configured OWMF PostGIS DB
+    AIRFLOW_CONN_WIKIDATA_API: ${owmf_wikidata_endpoint}/sparql
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
-    AIRFLOW_VAR_OSM_FILTER_TAGS: ${osm_filter_tags:-}
-    AIRFLOW_VAR_OSM_TEXT_KEY: ${osm_text_key:-}
-    AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${osm_description_key:-}
-    AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${osm_wikidata_keys:-}
-    AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${osm_wikidata_properties:-}
-    AIRFLOW_VAR_PROPAGATE_DATA: ${propagate_data:-false}
-    AIRFLOW_VAR_GLOBAL_MAP_THRESHOLD: ${global_map_threshold:-0}
+    AIRFLOW_VAR_OSM_FILTER_TAGS: ${owmf_osm_filter_tags:-}
+    AIRFLOW_VAR_OSM_TEXT_KEY: ${owmf_osm_text_key:-}
+    AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${owmf_osm_description_key:-}
+    AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${owmf_osm_wikidata_keys:-}
+    AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${owmf_osm_wikidata_properties:-}
+    AIRFLOW_VAR_PROPAGATE_DATA: ${owmf_propagate_data:-false}
+    AIRFLOW_VAR_GLOBAL_MAP_THRESHOLD: ${owmf_global_map_threshold:-0}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
     AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
     AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network
@@ -405,12 +405,12 @@ services:
     image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     #image: odidev/postgis:13-3.1-alpine # supports arm64
     ports:
-      - "${db_port:-5432}:5432"
+      - "${owmf_db_port:-5432}:5432"
     shm_size: 100m
     environment:
-      - POSTGRES_USER=${db_user}
-      - POSTGRES_PASSWORD=${db_password}
-      - POSTGRES_DB=${db_database}
+      - POSTGRES_USER=${owmf_db_user}
+      - POSTGRES_PASSWORD=${owmf_db_password}
+      - POSTGRES_DB=${owmf_db_database}
     volumes:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
@@ -422,7 +422,7 @@ services:
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "${db_user}"]
+      test: ["CMD", "pg_isready", "-U", "${owmf_db_user}"]
       interval: 5s
       retries: 5
     restart: unless-stopped
@@ -435,7 +435,7 @@ services:
   pgadmin:
     image: dpage/pgadmin4:7.1
     ports:
-      - "${pgadmin_port:-8000}:80"
+      - "${owmf_pgadmin_port:-8000}:80"
     depends_on:
       - owmf-postgis
     environment:
@@ -459,7 +459,7 @@ services:
   swagger-ui:
     image: swaggerapi/swagger-ui:v5.1.0
     ports:
-      - "${swagger_port:-8001}:8080"
+      - "${owmf_swagger_port:-8001}:8080"
     volumes:
       - ./openapi-owmf.yaml:/usr/share/nginx/html/openapi-owmf.yaml
       - ./openapi-overpass.yaml:/usr/share/nginx/html/openapi-overpass.yaml
@@ -485,7 +485,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${web_http_port:-80}:80"
+      - "${owmf_web_http_port:-80}:80"
     networks:
       - owmf-internal
     healthcheck:
@@ -512,18 +512,18 @@ services:
           - "linux/amd64"
           - "linux/arm64"
         tags:
-          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${framework_image_tag}
+          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag}
           - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
         cache-from:
           - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache
         cache-to:
           - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache,mode=max
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${framework_image_tag:-latest}
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag:-latest}
     env_file:
       - .env
     ports:
-      - "${web_http_port:-80}:80"
-      - "${web_https_port:-443}:443"
+      - "${owmf_web_http_port:-80}:80"
+      - "${owmf_web_https_port:-443}:443"
     networks:
       - owmf-internal
     logging:
@@ -558,7 +558,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: lambda-dev
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda-dev:${framework_image_tag:-latest}
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda-dev:${owmf_framework_image_tag:-latest}
     env_file:
       - .env
     ports:
@@ -577,7 +577,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: lambda-dev
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda:${framework_image_tag:-latest}
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda:${owmf_framework_image_tag:-latest}
     env_file:
       - .env
     ports:

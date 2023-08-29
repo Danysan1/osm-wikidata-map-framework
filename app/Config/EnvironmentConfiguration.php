@@ -24,7 +24,7 @@ class EnvironmentConfiguration extends BaseConfiguration
 
 	public function has(string $key): bool
 	{
-		return getenv($key) !== false && getenv($key) !== "";
+		return !empty($key) && getenv("owmf_$key") !== false && getenv("owmf_$key") !== "";
 	}
 
 	public function get(string $key): mixed
@@ -32,6 +32,6 @@ class EnvironmentConfiguration extends BaseConfiguration
 		if (!$this->has($key)) {
 			throw new Exception("Configuration not found: $key");
 		}
-		return getenv($key);
+		return getenv("owmf_$key");
 	}
 }

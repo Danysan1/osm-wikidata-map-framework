@@ -38,17 +38,14 @@ class EnvFileConfiguration extends BaseConfiguration
 
 	public function has(string $key): bool
 	{
-		return isset($_ENV[$key]) && $_ENV[$key] !== "";
+		return !empty($key) && isset($_ENV["owmf_$key"]) && $_ENV["owmf_$key"] !== "";
 	}
 
 	public function get(string $key): mixed
 	{
-		if (empty($key))
-			throw new Exception("Invalid empty configuration key");
-
 		if (!$this->has($key))
 			throw new Exception("Configuration not found: $key");
 
-		return $_ENV[$key];
+		return $_ENV["owmf_$key"];
 	}
 }

@@ -15,9 +15,9 @@ class IniFileConfiguration extends BaseConfiguration
 
 	public function __construct(string $iniFilePath = __DIR__ . "/../../owmf.ini")
 	{
-        if (!file_exists($iniFilePath))
-            throw new Exception(".ini file does not exist: '$iniFilePath'");
-		
+		if (!file_exists($iniFilePath))
+			throw new Exception(".ini file does not exist: '$iniFilePath'");
+
 		$this->config = @parse_ini_file($iniFilePath);
 		if (empty($this->config))
 			throw new Exception("Failed loading .ini configuration: '$iniFilePath'");
@@ -30,14 +30,14 @@ class IniFileConfiguration extends BaseConfiguration
 
 	public function has(string $key): bool
 	{
-		return isset($this->config[$key]) && $this->config[$key] !== "";
+		return !empty($key) && isset($this->config["owmf_$key"]) && $this->config["owmf_$key"] !== "";
 	}
 
 	public function get(string $key): mixed
 	{
-		if (!isset($this->config[$key])) {
+		if (!$this->has($key)) {
 			throw new Exception("Configuration not found: $key");
 		}
-		return $this->config[$key];
+		return $this->config["owmf_$key"];
 	}
 }
