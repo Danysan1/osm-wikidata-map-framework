@@ -12,6 +12,7 @@ import { imageToDomElement } from "./ImageElement";
 import { logErrorMessage } from "./monitoring";
 import { EtymologyDetails } from './feature.model';
 import { Etymology, EtymologyFeatureProperties } from './generated/owmf';
+import { setFragmentParams } from './fragment';
 
 export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): HTMLElement {
     const detail_template = document.getElementById('detail_template');
@@ -180,7 +181,10 @@ export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5)
     if (!element_location_button) {
         if (debug) console.info("Missing element_location_button");
     } else if (show_location) { // Hide this button if it's the only one
-        element_location_button.href = `#${lon},${lat},${currentZoom + 1}`;
+        element_location_button.addEventListener("click", () => {
+            setFragmentParams(lon, lat, currentZoom + 1);
+            return false;
+        });
         element_location_button.classList.remove("hiddenElement");
     } else {
         element_location_button.classList.add("hiddenElement");

@@ -1,5 +1,6 @@
 import { debug } from "./config";
 import { DatePrecision, EtymologyDetails, ImageResponse } from "./feature.model";
+import { setFragmentParams } from "./fragment";
 import { translateContent, translateAnchorTitle } from "./i18n";
 import { imageToDomElement } from "./ImageElement";
 import { WikipediaService } from "./services/WikipediaService";
@@ -143,7 +144,10 @@ export function etymologyToDomElement(ety: EtymologyDetails, currentZoom = 12.5)
             ety_lon = strLon ? parseFloat(strLon) : NaN;
 
             if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
-                location_button.href = `#${ety_lon},${ety_lat},${currentZoom}`;
+                location_button.addEventListener("click", () => {
+                    setFragmentParams(ety_lon, ety_lat, currentZoom);
+                    return false;
+                });
                 location_button.classList.remove("hiddenElement");
             } else {
                 location_button.classList.add("hiddenElement");
