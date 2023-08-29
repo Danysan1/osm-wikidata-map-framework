@@ -74,7 +74,7 @@ export class OverpassWikidataMapService {
                 if (!existingFeature.properties?.alt_name && existingFeature.properties?.name && wikidataFeature.properties?.name) {
                     const lowerOsmName = existingFeature.properties.name.toLowerCase(),
                         lowerWikidataName = wikidataFeature.properties.name.toLowerCase();
-                    if (!lowerOsmName.includes(lowerWikidataName))
+                    if (!lowerWikidataName.includes(lowerOsmName) && !lowerOsmName.includes(lowerWikidataName))
                         existingFeature.properties.alt_name = wikidataFeature.properties.name;
                 }
 
