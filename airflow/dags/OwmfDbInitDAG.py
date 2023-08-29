@@ -722,7 +722,7 @@ class OwmfDbInitDAG(DAG):
 
         task_pg_restore = BashOperator(
             task_id = "pg_restore",
-            bash_command='pg_restore --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --schema "owmf" --verbose --no-owner --no-privileges --no-tablespaces "$backupFilePath"',
+            bash_command='pg_restore --host "$host" --port "$port" --dbname "$dbname" --username "$user" --no-password --role "$user" --schema "owmf" --verbose --no-owner --no-privileges --no-tablespaces "$backupFilePath"',
             env= {
                 "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
                 "host": f"{{{{ conn['{upload_db_conn_id}'].host }}}}", # "{{ conn[params.upload_db_conn_id].host }}",
