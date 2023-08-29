@@ -19,7 +19,7 @@ abstract class BaseConfiguration implements Configuration
 
     private static function lowLevelMetaTag(string $key, string $value): string
     {
-        return '<meta name="config_' . htmlspecialchars($key) . '" content="' . htmlspecialchars($value) . '" />';
+        return '<meta name="config_' . htmlspecialchars($key) . '" content="' . htmlspecialchars($value) . '" />' . PHP_EOL;
     }
 
     public function getMetaTag(string $key, ?bool $optional = false): string
@@ -35,7 +35,7 @@ abstract class BaseConfiguration implements Configuration
         if ($optional && !$this->has($key))
             return "";
         else
-            return '<script type="application/json" id="config_'.$key.'">'.(string)$this->get($key).'</script>';
+            return '<script type="application/json" id="config_' . $key . '">' . (string)$this->get($key) . '</script>' . PHP_EOL;
     }
 
     /**
