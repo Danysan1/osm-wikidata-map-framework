@@ -71,6 +71,13 @@ export class OverpassWikidataMapService {
                 if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
                     existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;
 
+                if (!existingFeature.properties?.alt_name && existingFeature.properties?.name && wikidataFeature.properties?.name) {
+                    const lowerOsmName = existingFeature.properties.name.toLowerCase(),
+                        lowerWikidataName = wikidataFeature.properties.name.toLowerCase();
+                    if (!lowerOsmName.includes(lowerWikidataName))
+                        existingFeature.properties.alt_name = wikidataFeature.properties.name;
+                }
+
                 // For other key, give priority to Overpass
                 ["name", "description", "picture", "commons", "wikidata"].forEach(key => {
                     if (existingFeature.properties && !existingFeature.properties[key]) {
