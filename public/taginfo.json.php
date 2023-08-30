@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Generates the taginfo.json file for this OWMF-based project, ready to be used by OpenStreetMap Taginfo.
  * @see https://wiki.openstreetmap.org/wiki/Taginfo/Projects
@@ -16,8 +17,6 @@ prepareJSON($conf);
 
 $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
-$textKey = $conf->has('osm_text_key') ? (string)$conf->get('osm_text_key') : null;
-$descriptionKey = $conf->has('osm_description_key') ? (string)$conf->get('osm_description_key') : null;
 $filterTags = $conf->has("osm_filter_tags") ? $conf->getArray("osm_filter_tags") : null;
 
 $tags = [[
@@ -45,17 +44,27 @@ $tags = [[
     "object_types" => ["node", "way", "relation", "area"],
     "doc_url" => $contributingURL,
     "description" => "The value of 'wikipedia' is used to show the link to the object's Wikipedia page alongside its details",
-], [
-    "key" => $textKey,
-    "object_types" => ["node", "way", "relation", "area"],
-    "doc_url" => $contributingURL,
-    "description" => "The value of '$textKey' is used as textual detail information",
-], [
-    "key" => $descriptionKey,
-    "object_types" => ["node", "way", "relation", "area"],
-    "doc_url" => $contributingURL,
-    "description" => "The value of '$descriptionKey' is used as textual detail information",
 ]];
+
+if ($conf->has('osm_text_key')) {
+    $textKey = (string)$conf->get('osm_text_key');
+    $tags[] = [
+        "key" => $textKey,
+        "object_types" => ["node", "way", "relation", "area"],
+        "doc_url" => $contributingURL,
+        "description" => "The value of '$textKey' is used as textual detail information",
+    ];
+}
+
+if ($conf->has('osm_description_key')) {
+    $descriptionKey = (string)$conf->get('osm_description_key');
+    $tags[] = [
+        "key" => $descriptionKey,
+        "object_types" => ["node", "way", "relation", "area"],
+        "doc_url" => $contributingURL,
+        "description" => "The value of '$descriptionKey' is used as textual detail information",
+    ];
+}
 
 if (!empty($filterTags)) {
     $filterTagsStringList = implode(" or ", $filterTags);
@@ -86,13 +95,15 @@ if ($conf->getBool("db_enable") && $conf->getBool("propagate_data")) {
     ];
 }
 
-foreach ($conf->getWikidataKeys() as $key) {
-    $tags[] = [
-        "key" => $key,
-        "object_types" => ["node", "way", "relation", "area"],
-        "doc_url" => $contributingURL,
-        "description" => "The Wikidata entity/entities linked by '$key' is/are used to show details about the item",
-    ];
+if ($conf->has('osm_wikidata_keys')) {
+    foreach ($conf->getWikidataKeys() as $key) {
+        $tags[] = [
+            "key" => $key,
+            "object_types" => ["node", "way", "relation", "area"],
+            "doc_url" => $contributingURL,
+            "description" => "The Wikidata entity/entities linked by '$key' is/are used to show details about the item",
+        ];
+    }
 }
 
 if ($conf->has("osm_wikidata_properties")) {
