@@ -148,7 +148,7 @@ export class OverpassService {
     private buildOverpassQuery(
         wd_keys: string[], bbox: BBox, use_text_key: boolean, osm_text_key: string | null, use_wikidata: boolean, outClause: string
     ): string {
-        let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}]; (\n`;
+        let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];\n(\n`;
 
         const raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
             filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
