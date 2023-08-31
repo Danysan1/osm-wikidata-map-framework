@@ -14,6 +14,7 @@ WHERE {
         bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral .
         bd:serviceParam wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral .
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
     OPTIONAL { ?item wdt:P373 ?commons }
     OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P18 ?picture }
