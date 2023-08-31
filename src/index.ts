@@ -66,7 +66,7 @@ if (maptiler_key) {
         maptilerStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
         maptilerStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
         maptilerStyle('maptiler_dataviz', 'Maptiler Dataviz', 'dataviz', maptiler_key),
-        maptilerStyle('maptiler_dataviz', 'Maptiler Dark', 'dataviz-dark', maptiler_key),
+        maptilerStyle('maptiler_dark', 'Maptiler Dark', 'dataviz-dark', maptiler_key),
         maptilerStyle('maptiler_ocean', 'Maptiler Ocean', 'ocean', maptiler_key),
         maptilerStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
         maptilerStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor-v2', maptiler_key),
