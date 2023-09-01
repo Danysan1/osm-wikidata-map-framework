@@ -3,12 +3,12 @@ import { GeoJSONFeature } from 'maplibre-gl';
 // import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
 
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
-import { etymologyToDomElement } from "./EtymologyElement";
+import { etymologyToDomElement } from "./components/EtymologyElement";
 import { debug, getConfig } from "./config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "./i18n";
 import { showLoadingSpinner, showSnackbar } from "./snackbar";
 import { WikidataService } from "./services/WikidataService";
-import { imageToDomElement } from "./ImageElement";
+import { imageToDomElement } from "./components/CommonsImageElement";
 import { logErrorMessage } from "./monitoring";
 import { EtymologyDetails } from './feature.model';
 import { Etymology, EtymologyFeatureProperties } from './generated/owmf';

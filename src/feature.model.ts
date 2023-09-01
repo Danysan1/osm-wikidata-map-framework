@@ -1,12 +1,5 @@
 import { Etymology } from "./generated/owmf";
 
-interface DetailedImage {
-    picture: string,
-    attribution?: string,
-}
-
-export type ImageResponse = string | DetailedImage;
-
 /**
  * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision
  */
@@ -46,7 +39,7 @@ export interface EtymologyDetails extends Etymology {
     instance?: string;
     name?: string;
     occupations?: string;
-    pictures?: ImageResponse[];
+    pictures?: string[];
     prizes?: string;
     start_date?: string;
     start_date_precision?: DatePrecision;
