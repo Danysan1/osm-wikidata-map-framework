@@ -54,7 +54,6 @@ export class EtymologyElement extends HTMLDivElement {
 
     constructor() {
         super();
-        console.info("EtymologyElement constructor");
         this.classList.add('etymology-container', 'hiddenElement', 'custom-component');
     }
 

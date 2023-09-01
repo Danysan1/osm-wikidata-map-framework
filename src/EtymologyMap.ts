@@ -9,7 +9,7 @@ import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { BackgroundStyle, BackgroundStyleControl } from './controls/BackgroundStyleControl';
 import { EtymologyColorControl, getCurrentColorScheme } from './controls/EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
-import { featureToDomElement } from "./FeatureElement";
+import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debug, getBoolConfig, getConfig } from './config';
 import { SourceControl } from './controls/SourceControl';

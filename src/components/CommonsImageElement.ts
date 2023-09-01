@@ -10,7 +10,6 @@ export class CommonsImageElement extends HTMLDivElement {
 
     constructor() {
         super();
-        console.info("EtymologyElement constructor");
         this.classList.add('pic-container', 'hiddenElement', 'custom-component');
     }
 
