@@ -63,6 +63,7 @@ export class WikidataMapService extends WikidataService {
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
             out.language = this.language;
+            out.truncated = !!maxElements && ret.results.bindings.length === parseInt(maxElements);
             if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }

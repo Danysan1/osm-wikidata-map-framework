@@ -139,6 +139,8 @@ export class OverpassService {
             out.bbox = bbox;
             out.sourceID = sourceID;
             out.language = this.language;
+            const maxElements = getConfig("max_map_elements");
+            out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
             this.db.addMap(out);
         }
         if (debug) console.info(`Overpass fetchMapData found ${out.features.length} features`, { features: [...out.features] });

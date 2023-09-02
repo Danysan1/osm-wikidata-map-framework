@@ -1,7 +1,7 @@
 #defaultView:Map
 SELECT
     ?item
-    (SAMPLE(?itemLabel) AS ?itemLabel)
+    (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
     (SAMPLE(?itemDescription) AS ?itemDescription)
     (SAMPLE(?location) AS ?location)
     (SAMPLE(?commons) AS ?commons)
@@ -25,17 +25,16 @@ WHERE {
             wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+    ?item rdfs:label ?anyLabel.
+    OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
+    OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
+    OPTIONAL { ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = '${language}'). }
     OPTIONAL { ?item wdt:P373 ?commons. }
     OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P18 ?picture. }
     OPTIONAL { ?item wdt:P11693 ?osm_node. }
     OPTIONAL { ?item wdt:P10689 ?osm_way. }
     OPTIONAL { ?item wdt:P402 ?osm_rel. }
-    SERVICE wikibase:label {
-        bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
-        ?item rdfs:label ?itemLabel.
-        ?item schema:description ?itemDescription.
-    }
 }
 GROUP BY ?item ?etymology
 ${limit}

@@ -25,11 +25,19 @@ export class MapDatabase extends Dexie {
     }
 
     public async getMap(sourceID: string, bbox: BBox, language?: string): Promise<GeoJSON & EtymologyResponse | undefined> {
+        const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
                 return await this.maps
-                    .where({ "sourceID": sourceID, "language": language })
-                    .and(map => map.bbox?.length === 4 && map.bbox[0] <= bbox[0] && map.bbox[1] <= bbox[1] && map.bbox[2] >= bbox[2] && map.bbox[3] >= bbox[3])
+                    .where({ sourceID, language })
+                    .and(map => {
+                        if (!map.bbox)
+                            return false;
+                        const [mapMinLon, mapMinLat, mapMaxLon, mapMaxLat] = map.bbox,
+                            mapIncludesBBox = !map.truncated && mapMinLon <= minLon && mapMinLat <= minLat && mapMaxLon >= maxLon && mapMaxLat >= maxLat,
+                            mapIncludedinBBoxIsTruncated = !!map.truncated && minLon <= mapMinLon && minLat <= mapMinLat && maxLon >= mapMaxLon && maxLat >= mapMaxLat;
+                        return mapIncludesBBox || mapIncludedinBBoxIsTruncated;
+                    })
                     .first();
             });
         } catch (e) {

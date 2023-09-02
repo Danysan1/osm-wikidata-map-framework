@@ -454,6 +454,9 @@ components:
               type: string
               description: OverpassQL query used to fetch the features
               example: "[out:json]; ...; out;"
+            truncated:
+              type: boolean
+              description: Whether the response has been truncated due to the maximum number of features being reached
             language:
               type: string
               description: Language fetched

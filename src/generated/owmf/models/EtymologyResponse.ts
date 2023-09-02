@@ -75,6 +75,12 @@ export interface EtymologyResponse {
      */
     overpass_query?: string;
     /**
+     * Whether the response has been truncated due to the maximum number of features being reached
+     * @type {boolean}
+     * @memberof EtymologyResponse
+     */
+    truncated?: boolean;
+    /**
      * Language fetched
      * @type {string}
      * @memberof EtymologyResponse
@@ -121,6 +127,7 @@ export function EtymologyResponseFromJSONTyped(json: any, ignoreDiscriminator: b
         'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
         'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
         'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
+        'truncated': !exists(json, 'truncated') ? undefined : json['truncated'],
         'language': !exists(json, 'language') ? undefined : json['language'],
     };
 }
@@ -142,6 +149,7 @@ export function EtymologyResponseToJSON(value?: EtymologyResponse | null): any {
         'etymology_count': value.etymology_count,
         'wikidata_query': value.wikidata_query,
         'overpass_query': value.overpass_query,
+        'truncated': value.truncated,
         'language': value.language,
     };
 }

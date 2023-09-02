@@ -2,7 +2,8 @@
 SELECT
     ?etymology
     ?item
-    (SAMPLE(?itemLabel) AS ?itemLabel)
+    (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
+    (SAMPLE(?itemDescription) AS ?itemDescription)
     (SAMPLE(?location) AS ?location)
     (SAMPLE(?commons) AS ?commons)
     (SAMPLE(?wikipedia) AS ?wikipedia)
@@ -32,7 +33,7 @@ WITH {
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?location ?item ?itemLabel ?commons ?wikipedia ?picture ?osm_node ?osm_way ?osm_rel
+    SELECT ?etymology ?location ?item ?anyLabel ?langLabel ?defaultLabel ?itemDescription ?commons ?wikipedia ?picture ?osm_node ?osm_way ?osm_rel
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt (pq:P625|pq:P582) []. } # Ignore if the etymology statement has a location qualifier (it will fetched be in the other subquery) or an end date
@@ -46,16 +47,16 @@ WITH {
                 wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
         } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
         FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+        ?item rdfs:label ?anyLabel.
+        OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
+        OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
+        OPTIONAL { ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = '${language}'). }
         OPTIONAL { ?item wdt:P373 ?commons. }
         OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
         OPTIONAL { ?item wdt:P18 ?picture. }
         OPTIONAL { ?item wdt:P11693 ?osm_node. }
         OPTIONAL { ?item wdt:P10689 ?osm_way. }
         OPTIONAL { ?item wdt:P402 ?osm_rel. }
-        SERVICE wikibase:label {
-            bd:serviceParam wikibase:language "${language},${defaultLanguage},en".
-            ?item rdfs:label ?itemLabel.
-        }
     }
 } AS %reverse
 WHERE {
