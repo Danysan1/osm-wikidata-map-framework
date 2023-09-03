@@ -30,21 +30,24 @@ The most basic deployment can be launched by using Docker and executing these sh
 2. Edit the file `.env` to configure your map
    - set the OSM keys and Wikidata properties you want to use (as documented [above](#available-data-source-patterns)) in the "Data source" section
    - other configuration keys should be fine but can be edited to customize the web application. If you expose your app on a domain/address different than localhost or 127.0.0.1 you will also need to specify a token/key for the background map (either `mapbox_token`, `maptiler_key`, `enable_stadia_maps` or `jawg_token`)
-   - take inspiration from configurations of other projects like [Open Etymology Map](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example), [Open Burial Map](https://gitlab.com/openetymologymap/open-burial-map/-/blob/main/.env.example), ...
+   - take inspiration from configurations of other projects like [Open Etymology Map](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example), [Open Burial Map](https://gitlab.com/openetymologymap/open-burial-map/-/blob/main/.env.example), [Open Artist Map](https://gitlab.com/openetymologymap/open-artist-map/-/blob/main/.env.example), [Open Architect Map](https://gitlab.com/openetymologymap/open-architect-map/-/blob/main/.env.example), ...
 3. Launch the docker image of the framework
    ```sh
    docker run --rm --env-file ".env" -p "80:80/tcp" "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest"
    ```
    The web application will be accessible at http://localhost
 
+If this process fails for you or you encounter any bug during the process we want to hear from you: please report it on [GitLab](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues) or [GitHub](https://github.com/Danysan1/osm-wikidata-map-framework/issues).
+
 For more advanced deployment configurations check [CONTRIBUTING.md](CONTRIBUTING.md#deployment).
 
-The framework is fully internationalized (assuming the data from Wikidata is available in the current language).
+The framework is fully internationalized.
 By default the browser language is used.
 You can force another language by passing the [ISO 639-1 language code](https://www.loc.gov/standards/iso639-2/php/code_list.php) to the `lang` parameter.
 For example https://etymology.dsantini.it/?lang=es passes `es` to require data in spanish.
-The supported languages are listed in [public/locales/](public/locales/).
-Help with translation is welcome!
+Translations for the labels specific to the framework are taken from the files in [public/locales/](public/locales/) (help with new translations is welcome!).
+The translated text in the details panel for the map feature selected by the user are taken from from OSM [`name:*=*`](https://wiki.openstreetmap.org/wiki/Multilingual_names) and Wikidata labels.
+Translations for the map labels are handled by the map provider (and are typically derived from OSM and/or Wikidata).
 
 ## Technologies used for data elaboration and display
 
