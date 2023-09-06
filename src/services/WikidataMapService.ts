@@ -125,9 +125,17 @@ export class WikidataMapService extends WikidataService {
 
         const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             etymology_wd_id: string | undefined = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            existingFeature = acc.find(
-                feature => (feature_wd_id && feature.id === feature_wd_id) || (feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1])
-            );
+            existingFeature = acc.find(feature => {
+                if (feature.id !== feature_wd_id)
+                    return false; // Not the same feature
+
+                //console.info("Checking feature for merging", { wd_id: feature.id, feature_wd_id, geom: feature.geometry, geometry });
+                if (feature_wd_id)
+                    return true; // Both features have the same Wikidata ID
+
+                // Both features have no Wikidata ID, check if they have the same coordinates
+                return feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
+            });
 
         if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });

@@ -37,7 +37,7 @@ class EtymologyColorControl extends DropdownControl {
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: import('chart.js').Chart;
     private _lastWikidataIDs?: string[];
-    private _lastColorSchemeID?: string;
+    private _lastColorSchemeID?: ColorSchemeID;
     private layers: string[];
     private pictureAvailable: string;
     private pictureUnavailable: string;
