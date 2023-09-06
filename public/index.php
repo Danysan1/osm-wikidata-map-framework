@@ -130,6 +130,8 @@ $jsScript = $jsScripts[0];
     <?= $conf->getMetaTag("max_map_elements", true); ?>
     <?= $conf->getMetaTag("max_wikidata_elements", true); ?>
     <?= $conf->getMetaTag("cache_timeout_hours", true); ?>
+    <?= $conf->getMetaTag("elements_bbox_max_area", true); ?>
+    <?= $conf->getMetaTag("wikidata_bbox_max_area", true); ?>
 </head>
 
 <body>

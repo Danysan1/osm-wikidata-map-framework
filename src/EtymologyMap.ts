@@ -1,7 +1,7 @@
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
+// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat } from 'mapbox-gl';
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
@@ -33,7 +33,6 @@ export class EtymologyMap extends Map {
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl?: IControl;
     private projectionControl?: IControl;
-    private search: string;
     private anyDetailShownBefore = false;
     private wikidataControlsInitialized = false;
     private wikidataSourceInitialized = false;
@@ -94,8 +93,6 @@ export class EtymologyMap extends Map {
         //eslint-disable-next-line
         const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
         window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
-
-        this.search = new URLSearchParams(window.location.search).get("search") ?? "";
     }
 
     /**
@@ -209,54 +206,41 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
      */
     updateDataSource() {
-        const zoomLevel = this.getZoom(),
-            minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
-            enableGlobalLayers = zoomLevel < minZoomLevel;
-        if (debug) console.info("updateDataSource", {
-            zoomLevel,
-            minZoomLevel,
-            enableGlobalLayers,
-            search: this.search,
-        });
-
-        if (enableGlobalLayers) {
-            if (getBoolConfig("db_enable"))
-                this.prepareGlobalLayers(minZoomLevel);
-            else
-                loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
-        } else {
-            this.updateElementOrDetailsSource();
-        }
-    }
-
-    async updateElementOrDetailsSource() {
         const bounds = this.getBounds(),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
-            fragmentParams = getCorrectFragmentParams(),
-            source = fragmentParams.source,
             zoomLevel = this.getZoom(),
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
-            enableWikidataLayers = zoomLevel >= thresholdZoomLevel,
-            enableElementLayers = zoomLevel < thresholdZoomLevel && zoomLevel >= minZoomLevel;
-        let minLat: number, minLon: number, maxLat: number, maxLon: number, mapSource: string;
-        if (enableWikidataLayers) {
-            minLat = Math.floor(southWest.lat * 100) / 100; // 0.123 => 0.12
-            minLon = Math.floor(southWest.lng * 100) / 100;
-            maxLat = Math.ceil(northEast.lat * 100) / 100; // 0.123 => 0.13
-            maxLon = Math.ceil(northEast.lng * 100) / 100;
-            mapSource = WIKIDATA_SOURCE;
-        } else {
-            minLat = Math.floor(southWest.lat * 10) / 10; // 0.123 => 0.1
-            minLon = Math.floor(southWest.lng * 10) / 10;
-            maxLat = Math.ceil(northEast.lat * 10) / 10; // 0.123 => 0.2
-            maxLon = Math.ceil(northEast.lng * 10) / 10;
-            mapSource = ELEMENTS_SOURCE;
-        }
-        const bbox: BBox = [minLon, minLat, maxLon, maxLat];
-        if (this.getSource(mapSource) !== undefined && this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.info("updateDataSource: skipping source update", { source, bbox });
+            wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
+            elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
+            area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
+            enableWikidataLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
+            enableElementsLayers = !enableWikidataLayers && zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea;
+        if (debug) console.info("updateDataSource", {
+            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers,
+        });
+
+        if (enableElementsLayers)
+            this.updateElementsSource(southWest, northEast, minZoomLevel, thresholdZoomLevel);
+        else if (enableWikidataLayers)
+            this.updateWikidataSource(southWest, northEast, thresholdZoomLevel);
+        else if (getBoolConfig("db_enable"))
+            this.prepareGlobalLayers(minZoomLevel);
+        else
+            loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
+    }
+
+    async updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
+        const source = getCorrectFragmentParams().source,
+            bbox: BBox = [
+                Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
+                Math.floor(southWest.lat * 10) / 10,
+                Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
+                Math.ceil(northEast.lat * 10) / 10
+            ];
+        if (this.getSource(ELEMENTS_SOURCE) !== undefined && this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.info("updateElementsSource: skipping source update", { source, bbox });
             return;
         } else {
             this.lastSource = source;
@@ -268,17 +252,50 @@ export class EtymologyMap extends Map {
             let data: GeoJSON | undefined;
             if (this.wikidataMapService.canHandleSource(source))
                 data = await this.wikidataMapService.fetchMapData(source, bbox);
-            else if (enableElementLayers && this.overpassService.canHandleSource(source))
+            else if (this.overpassService.canHandleSource(source))
                 data = await this.overpassService.fetchMapClusterElements(source, bbox);
-            else if (enableWikidataLayers && this.overpassService.canHandleSource(source))
-                data = await this.overpassService.fetchMapElementDetails(source, bbox);
-            else if (enableElementLayers && this.overpassWikidataService.canHandleSource(source))
+            else if (this.overpassWikidataService.canHandleSource(source))
                 data = await this.overpassWikidataService.fetchMapClusterElements(source, bbox);
-            else if (enableWikidataLayers && this.overpassWikidataService.canHandleSource(source))
-                data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
-            else if (enableElementLayers && this.backendService.canHandleSource(source))
+            else if (this.backendService.canHandleSource(source))
                 data = await this.backendService.fetchMapClusterElements(source, bbox);
-            else if (enableWikidataLayers && this.backendService.canHandleSource(source))
+            else
+                throw new Error("No service found");
+
+            if (!data)
+                throw new Error("No data found");
+
+            this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
+        } catch (e) {
+            logErrorMessage("Error fetching map data", "error", { source, bbox, e });
+        }
+    }
+
+    async updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
+        const source = getCorrectFragmentParams().source,
+            bbox: BBox = [
+                Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
+                Math.floor(southWest.lat * 100) / 100,
+                Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
+                Math.ceil(northEast.lat * 100) / 100
+            ];
+        if (this.getSource(WIKIDATA_SOURCE) !== undefined && this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.info("updateWikidataSource: skipping source update", { source, bbox });
+            return;
+        } else {
+            this.lastSource = source;
+            this.lastBBox = bbox;
+        }
+
+        try {
+            showLoadingSpinner(true);
+            let data: GeoJSON | undefined;
+            if (this.wikidataMapService.canHandleSource(source))
+                data = await this.wikidataMapService.fetchMapData(source, bbox);
+            else if (this.overpassService.canHandleSource(source))
+                data = await this.overpassService.fetchMapElementDetails(source, bbox);
+            else if (this.overpassWikidataService.canHandleSource(source))
+                data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
+            else if (this.backendService.canHandleSource(source))
                 data = await this.backendService.fetchMapElementDetails(source, bbox);
             else
                 throw new Error("No service found");
@@ -286,10 +303,7 @@ export class EtymologyMap extends Map {
             if (!data)
                 throw new Error("No data found");
 
-            if (enableWikidataLayers)
-                this.prepareWikidataLayers(data, thresholdZoomLevel);
-            else
-                this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
+            this.prepareWikidataLayers(data, thresholdZoomLevel);
         } catch (e) {
             logErrorMessage("Error fetching map data", "error", { source, bbox, e });
         }
