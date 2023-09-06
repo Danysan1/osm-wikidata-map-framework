@@ -157,11 +157,11 @@ export class OverpassService {
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = wd_keys.filter(key => filter_tags?.includes(key)),
             extra_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        filter_wd_keys.forEach(key => query += `nwr[!"boundary"]["${key}"]; // filter == secondary wikidata key\n`);
+        filter_wd_keys.forEach(key => query += `nwr[!"boundary"]["type"!="boundary"]["${key}"]; // filter == secondary wikidata key\n`);
         if (use_text_key && text_etymology_key_is_filter)
-            query += `nwr[!"boundary"]["${osm_text_key}"]; // filter == text etymology key\n`;
+            query += `nwr[!"boundary"]["type"!="boundary"]["${osm_text_key}"]; // filter == text etymology key\n`;
         if (use_wikidata && !filter_tags)
-            query += `nwr[!"boundary"]["wikidata"];\n`;
+            query += `nwr[!"boundary"]["type"!="boundary"]["wikidata"];\n`;
 
         filter_tags?.forEach(filter_tag => {
             const filter_split = filter_tag.split("="),
@@ -171,12 +171,12 @@ export class OverpassService {
 
             if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
                 extra_wd_keys.forEach(
-                    key => query += `nwr[!"boundary"]["${filter_clause}"]["${key}"]; // filter + secondary wikidata key\n`
+                    key => query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["${key}"]; // filter + secondary wikidata key\n`
                 );
                 if (use_text_key && !text_etymology_key_is_filter)
-                    query += `nwr[!"boundary"]["${filter_clause}"]["${osm_text_key}"]; // filter + text etymology key\n`;
+                    query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["${osm_text_key}"]; // filter + text etymology key\n`;
                 if (use_wikidata)
-                    query += `nwr[!"boundary"]["${filter_clause}"]["wikidata"];\n`;
+                    query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["wikidata"];\n`;
             }
         });
 
