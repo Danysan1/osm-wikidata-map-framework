@@ -1,45 +1,48 @@
-export type ColorSchemeID = "blue" | "gender" | "type" | "country" | "startCentury" | "endCentury" | "source" | "black" | "red" | "orange";
+export type ColorSchemeID = "blue" | "gender" | "type" | "country" | "startCentury" | "endCentury" | "source" | "picture" | "black" | "red" | "orange";
 
 export interface ColorScheme {
+    /** i18n translation key for the label to be shown in the dropdown item for this color scheme */
     textKey: string;
+    /** Fixed color to be shown */
     color?: string;
-    urlCode: string | null;
-    requiresEtymology: boolean;
+    /** Whether this color scheme should be available when no etymology is available */
+    showWithoutEtymology?: boolean;
+    /** Whether this color scheme should be available when any etymology is available */
+    showWithEtymology?: boolean;
 }
 
 export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
-    blue: { textKey: 'color_scheme.blue', color: '#3bb2d0', urlCode: null, requiresEtymology: false },
+    blue: {
+        textKey: 'color_scheme.blue', color: '#3bb2d0', showWithoutEtymology: true, showWithEtymology: true,
+    },
     source: {
-        textKey: "color_scheme.source",
-        urlCode: "sourceStats",
-        requiresEtymology: false,
+        textKey: "color_scheme.source", showWithoutEtymology: true, showWithEtymology: true,
     },
     gender: {
-        textKey: 'color_scheme.gender',
-        urlCode: "genderStats",
-        requiresEtymology: true,
+        textKey: 'color_scheme.gender', showWithEtymology: true,
     },
     type: {
-        textKey: 'color_scheme.type',
-        urlCode: "typeStats",
-        requiresEtymology: true,
+        textKey: 'color_scheme.type', showWithEtymology: true,
     },
     country: {
-        textKey: 'color_scheme.country',
-        urlCode: "countryStats",
-        requiresEtymology: true,
+        textKey: 'color_scheme.country', showWithEtymology: true,
     },
     startCentury: {
-        textKey: 'color_scheme.start_century',
-        urlCode: "startCenturyStats",
-        requiresEtymology: true,
+        textKey: 'color_scheme.start_century', showWithEtymology: true,
     },
     endCentury: {
-        textKey: 'color_scheme.end_century',
-        urlCode: "endCenturyStats",
-        requiresEtymology: true,
+        textKey: 'color_scheme.end_century', showWithEtymology: true,
     },
-    black: { textKey: 'color_scheme.black', color: '#223b53', urlCode: null, requiresEtymology: false },
-    red: { textKey: 'color_scheme.red', color: '#e55e5e', urlCode: null, requiresEtymology: false },
-    orange: { textKey: 'color_scheme.orange', color: '#fbb03b', urlCode: null, requiresEtymology: false },
+    picture: {
+        textKey: "color_scheme.feature_picture", showWithoutEtymology: true,
+    },
+    black: {
+        textKey: 'color_scheme.black', color: '#223b53', showWithoutEtymology: true, showWithEtymology: true,
+    },
+    red: {
+        textKey: 'color_scheme.red', color: '#e55e5e', showWithoutEtymology: true, showWithEtymology: true,
+    },
+    orange: {
+        textKey: 'color_scheme.orange', color: '#fbb03b', showWithoutEtymology: true, showWithEtymology: true,
+    },
 };

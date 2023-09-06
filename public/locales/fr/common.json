@@ -47,6 +47,9 @@
         "country": "Par pays",
         "start_century": "Par siècle de début/naissance",
         "end_century": "Par siècle de fin/décès",
+        "feature_picture": "Par disponibilité des images",
+        "available": "Disponible",
+        "unavailable": "Indisponible",
         "black": "Noir",
         "red": "Rouge",
         "orange": "Orange"

@@ -91,8 +91,8 @@ export class OverpassService {
 
             out = osmtogeojson(res);
             out.features.forEach((feature: Feature) => {
-                if (!feature.id)
-                    feature.id = feature.properties?.id ? feature.properties.id : Math.random().toString();
+                if (!feature.id && feature.properties?.id)
+                    feature.id = feature.properties?.id;
                 if (!feature.properties)
                     feature.properties = {};
 
