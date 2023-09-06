@@ -101,7 +101,7 @@ if ($conf->has('osm_wikidata_keys')) {
             "key" => $key,
             "object_types" => ["node", "way", "relation", "area"],
             "doc_url" => $contributingURL,
-            "description" => "The Wikidata entity/entities linked by '$key' is/are used to show details about the item",
+            "description" => "The Wikidata entities linked by '$key' are used to show details about the item",
         ];
     }
 }
@@ -117,6 +117,25 @@ if ($conf->has("osm_wikidata_properties")) {
             "description" => "The value of 'wikidata' is used to gather details from relevant properties ($propsString) of the linked Wikidata entity",
         ];
     }
+}
+
+if ($conf->has("wikidata_indirect_property")) {
+    $wikidataProp = (string)$conf->get("wikidata_indirect_property");
+    $tags[] = [
+        "key" => "wikidata",
+        "object_types" => ["node", "way", "relation", "area"],
+        "doc_url" => $contributingURL,
+        "description" => "The value of 'wikidata' is used to gather details from Wikidata entities that link to the same entity through the $wikidataProp property",
+    ];
+}
+
+if (!$conf->has("osm_wikidata_properties") && !$conf->has("wikidata_indirect_property") && !$conf->has("osm_wikidata_keys")) {
+    $tags[] = [
+        "key" => "wikidata",
+        "object_types" => ["node", "way", "relation", "area"],
+        "doc_url" => $contributingURL,
+        "description" => "The value of 'wikidata' is used to gather details from the linked Wikidata entities",
+    ];
 }
 
 $i18nOverride = $conf->getArray("i18n_override");
