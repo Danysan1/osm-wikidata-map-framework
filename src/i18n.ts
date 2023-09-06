@@ -70,8 +70,11 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
     if (!domElement) {
         logErrorMessage("translateContent: failed finding element", "error", { parentClasses: parent.classList, selector });
     } else {
-        loadTranslator().then(t => domElement.textContent = t(key))
-            .catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
+        loadTranslator().then(t => {
+            const label = t(key);
+            domElement.textContent = label;
+            domElement.ariaLabel = label; // https://dequeuniversity.com/rules/axe/4.7/label-content-name-mismatch
+        }).catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
     }
 }
 
@@ -84,7 +87,7 @@ export function translateAnchorTitle(parent: HTMLElement, selector: string, key:
             .then(t => {
                 const title = t(key);
                 domElement.title = title;
-                domElement.ariaLabel = title;
+                //domElement.ariaLabel = title;
             })
             .catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
     }
