@@ -9,7 +9,7 @@ import { loadTranslator } from '../i18n';
 export interface DropdownItem {
     id: string;
     text: string;
-    category?: string;
+    category?: string | null;
     onSelect: (event: Event) => void;
 }
 

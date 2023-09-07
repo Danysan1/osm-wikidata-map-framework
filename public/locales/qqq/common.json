@@ -47,12 +47,16 @@
         "country": "Stats by country",
         "start_century": "Stats by start/birth century",
         "end_century": "Stats by end/death century",
-        "feature_picture": "Stats by feature picture availability",
+        "feature_picture": "Statistics by feature picture availability",
         "available": "Available",
         "unavailable": "Unavailable",
         "black": "Black",
         "red": "Red",
-        "orange": "Orange"
+        "orange": "Orange",
+        "uniform": "Uniform color category",
+        "feature_statistics": "Featutre statistics category",
+        "etymology_statistics": "Etymology (linked entity) statistics category",
+        "osm_text_only": "Features with only text etymology (no linked entities)"
     },
     "feature_details": {
         "loading_first_n_items": "Warning message shown when a feature contains more etymologies than the max configured limit, should contain the variables {{partial}} (number of shown etymologies) and {{total}} (total etymologies)",

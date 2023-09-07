@@ -52,7 +52,11 @@
         "unavailable": "Non disponibile",
         "black": "Nero",
         "red": "Rosso",
-        "orange": "Arancione"
+        "orange": "Arancione",
+        "uniform": "Uniforme",
+        "feature_statistics": "Statistiche elementi",
+        "etymology_statistics": "Statistiche sulle entità collegate",
+        "osm_text_only": "OSM (solo testo)"
     },
     "feature_details": {
         "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",

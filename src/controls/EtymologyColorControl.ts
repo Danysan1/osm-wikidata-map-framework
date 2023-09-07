@@ -39,6 +39,7 @@ class EtymologyColorControl extends DropdownControl {
     private _lastWikidataIDs?: string[];
     private _lastColorSchemeID?: ColorSchemeID;
     private layers: string[];
+    private osmTextOnly: string;
     private pictureAvailable: string;
     private pictureUnavailable: string;
     private setLayerColor: (color: string | ExpressionSpecification) => void;
@@ -63,10 +64,12 @@ class EtymologyColorControl extends DropdownControl {
             wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             anyEtymology = keys?.length || wdDirectProperties?.length || indirectWdProperty,
-            usableColorSchemes = Object.entries(colorSchemes).filter(([_, scheme]) => anyEtymology ? scheme.showWithEtymology : scheme.showWithoutEtymology),
+            entries = Object.entries(colorSchemes),
+            usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology),
             dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
                 id,
                 text: t(item.textKey),
+                category: t(item.categoryKey),
                 onSelect: (event) => {
                     this.updateChart(event);
                     onSchemeChange(id as ColorSchemeID);
@@ -100,6 +103,7 @@ class EtymologyColorControl extends DropdownControl {
             sourceId + "_layer_lineString",
             sourceId + "_layer_polygon_fill"
         ];
+        this.osmTextOnly = t("color_scheme.osm_text_only");
         this.pictureAvailable = t("color_scheme.available");
         this.pictureUnavailable = t("color_scheme.unavailable");
     }
@@ -143,7 +147,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (debug) console.warn("loadSourceChartData: layer not yet loaded", { layers: this.layers, layer: this.layers[i] });
                 return;
             }
-        };
+        }
 
         const stats = calculateChartData(this.getMap()?.queryRenderedFeatures({ layers: this.layers }) || []);
         //console.info("osm_wikidata_IDs:", osm_wikidata_IDs);
@@ -194,7 +198,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: '#33ffee', id: 'osm_wikidata', count: osm_wikidata_IDs.size });
                 if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size });
                 if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_IDs.size });
-                if (osm_text_names.size) stats.push({ name: "OSM (text only)", color: "#223b53", id: "osm_text", count: osm_text_names.size });
+                if (osm_text_names.size) stats.push({ name: this.osmTextOnly, color: "#223b53", id: "osm_text", count: osm_text_names.size });
                 return stats;
             },
             [

@@ -50,6 +50,10 @@
         "feature_picture": "By picture availability",
         "available": "Available",
         "unavailable": "Unavailable",
+        "osm_text_only": "OSM (text only)",
+        "uniform": "Uniform",
+        "feature_statistics": "Feature statistics",
+        "etymology_statistics": "Linked entity statistics",
         "black": "Black",
         "red": "Red",
         "orange": "Orange"
