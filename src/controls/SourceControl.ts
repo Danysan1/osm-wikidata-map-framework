@@ -21,6 +21,7 @@ export class SourceControl extends DropdownControl {
             propagationEnabled = getBoolConfig("propagate_data"),
             dbEnabled = getBoolConfig("db_enable"),
             dropdownItems: DropdownItem[] = [],
+            osm_text_key = getConfig("osm_text_key"),
             selectSource = (sourceID: string) => {
                 if (debug) console.info("Selecting source ", { sourceID });
 
@@ -93,7 +94,7 @@ export class SourceControl extends DropdownControl {
             }
         }
 
-        if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty) {
+        if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty && !osm_text_key) {
             dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", "OpenStreetMap (Overpass API)"));
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", "OSM (Overpass API) + Wikidata Query Service"));
             dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", "Wikidata Query Service"));

@@ -129,7 +129,7 @@ if ($conf->has("wikidata_indirect_property")) {
     ];
 }
 
-if (!$conf->has("osm_wikidata_properties") && !$conf->has("wikidata_indirect_property") && !$conf->has("osm_wikidata_keys")) {
+if (!$conf->has("osm_wikidata_properties") && !$conf->has("wikidata_indirect_property") && !$conf->has("osm_wikidata_keys") && !$conf->has("osm_text_key")) {
     $tags[] = [
         "key" => "wikidata",
         "object_types" => ["node", "way", "relation", "area"],
