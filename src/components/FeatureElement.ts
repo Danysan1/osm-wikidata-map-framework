@@ -65,7 +65,7 @@ export class FeatureElement extends HTMLDivElement {
             osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
         //detail_container.dataset.el_id = properties.el_id?.toString();
 
-        if (debug) console.info("featureToDomElement", {
+        if (debug) console.info("FeatureElement render", {
             el_id: properties.el_id, feature: this.feature, etymologies, detail_container
         });
 
@@ -243,11 +243,12 @@ export class FeatureElement extends HTMLDivElement {
             });
         }
 
-        const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm');
+        const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm'),
+            show_src_osm = properties.from_osm && osm_full_id;
         if (!src_osm) {
             console.warn("Missing .feature_src_osm");
-        } else if (properties.from_osm && properties.osm_type && properties.osm_id) {
-            const osmURL = `https://www.openstreetmap.org/${properties.osm_type}/${properties.osm_id}`;
+        } else if (show_src_osm) {
+            const osmURL = `https://www.openstreetmap.org/${osm_full_id}`;
             if (debug) console.info("Showing OSM feature source", { properties, osmURL, src_osm });
             src_osm.href = osmURL;
             src_osm.classList.remove('hiddenElement');
@@ -255,10 +256,19 @@ export class FeatureElement extends HTMLDivElement {
             src_osm.classList.add('hiddenElement');
         }
 
-        const src_wd = detail_container.querySelector<HTMLAnchorElement>('.feature_src_wd');
+        const src_osm_and_wd = detail_container.querySelector<HTMLAnchorElement>('.src_osm_and_wd'),
+            src_wd = detail_container.querySelector<HTMLAnchorElement>('.feature_src_wd'),
+            show_src_wd = properties.from_wikidata && properties.wikidata;
+        if (!src_osm_and_wd)
+            console.warn("Missing .src_osm_and_wd");
+        else if (show_src_osm && show_src_wd)
+            src_osm_and_wd.classList.remove("hiddenElement");
+        else
+            src_osm_and_wd.classList.add("hiddenElement");
+
         if (!src_wd) {
             console.warn("Missing .feature_src_wd");
-        } else if (properties.from_wikidata && properties.wikidata) {
+        } else if (show_src_wd) {
             const wdURL = `https://www.wikidata.org/wiki/${properties.wikidata}`;
             if (debug) console.info("Showing WD feature source", { properties, wdURL, src_wd });
             src_wd.href = wdURL;

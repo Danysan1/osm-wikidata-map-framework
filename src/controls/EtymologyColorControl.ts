@@ -69,7 +69,6 @@ class EtymologyColorControl extends DropdownControl {
             dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
                 id,
                 text: t(item.textKey),
-                category: t(item.categoryKey),
                 onSelect: (event) => {
                     this.updateChart(event);
                     onSchemeChange(id as ColorSchemeID);
@@ -185,12 +184,12 @@ class EtymologyColorControl extends DropdownControl {
                                 osm_IDs.add(etymology.wikidata);
                             }
                         });
-                    } else if (feature.properties?.text_etymology)
+                    } else if (feature.properties?.text_etymology) {
                         osm_text_names.add(feature.properties?.text_etymology);
-                    else if (feature.properties?.from_wikidata) {
-                        wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
                     } else if (feature.properties?.from_osm) {
                         osm_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                    } else if (feature.properties?.from_wikidata) {
+                        wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
                     }
                 });
                 const stats: EtymologyStat[] = [];
@@ -205,28 +204,32 @@ class EtymologyColorControl extends DropdownControl {
                 "case",
                 ["coalesce", ["all",
                     ["has", "etymologies"],
+                    ["!=", ["get", "etymologies"], '[]'],
                     [">", ["length", ["get", "etymologies"]], 0],
                     ["to-boolean", ["get", "propagated", ["at", 0, ["get", "etymologies"]]]]
                 ], false], '#ff3333',
                 ["coalesce", ["all",
                     ["has", "etymologies"],
+                    ["!=", ["get", "etymologies"], '[]'],
                     [">", ["length", ["get", "etymologies"]], 0],
                     ["to-boolean", ["get", "from_osm_id", ["at", 0, ["get", "etymologies"]]]],
                     ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
                 ], false], '#33ffee',
                 ["coalesce", ["all",
                     ["has", "etymologies"],
+                    ["!=", ["get", "etymologies"], '[]'],
                     [">", ["length", ["get", "etymologies"]], 0],
                     ["to-boolean", ["get", "from_wikidata", ["at", 0, ["get", "etymologies"]]]]
                 ], false], '#3399ff',
                 ["coalesce", ["all",
                     ["has", "etymologies"],
+                    ["!=", ["get", "etymologies"], '[]'],
                     [">", ["length", ["get", "etymologies"]], 0],
                     ["to-boolean", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]]
                 ], false], '#33ff66',
                 ["coalesce", ["has", "text_etymology"], false], '#223b53',
-                ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
                 ["coalesce", ["to-boolean", ["get", "from_osm"]], false], '#33ff66',
+                ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
                 '#223b53'
             ]
         );

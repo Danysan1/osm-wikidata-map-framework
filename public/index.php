@@ -254,7 +254,11 @@ $jsScript = $jsScripts[0];
                     <span class="button_text i18n_location"> Location</span>
                 </a>
             </div>
-            <?php if ($conf->getBool("show_feature_picture")) { ?><div class="feature_pictures column"></div><?php } ?>
+            <?php if ($conf->getBool("show_feature_picture")) { ?>
+                <div class="feature_pictures column"></div>
+            <?php } else { ?>
+                <!-- show_feature_picture = false -->
+            <?php } ?>
 
             <div class="etymologies_container grid grid-auto">
                 <div class="etymology etymology_loading">
@@ -270,7 +274,7 @@ $jsScript = $jsScripts[0];
             <div class="feature_src_wrapper">
                 <span class="i18n_source">Source:</span>
                 <a class="feature_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
-                <span class="src_osm_plus_wd hiddenElement">+</span>
+                <span class="src_osm_and_wd hiddenElement">&</span>
                 <a class="feature_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
             </div>
         </div>

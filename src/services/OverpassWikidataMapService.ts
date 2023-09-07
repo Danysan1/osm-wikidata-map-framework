@@ -21,17 +21,16 @@ export class OverpassWikidataMapService {
     }
 
     async fetchMapClusterElements(sourceID: string, bbox: BBox) {
-        let [overpassSourceID, wikidataSourceID] = sourceID.split("+");
+        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
         if (!overpassSourceID || !wikidataSourceID)
             throw new Error("Invalid sourceID");
 
         if (overpassSourceID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
             return this.wikidataService.fetchMapData(wikidataSourceID, bbox);
-        if (overpassSourceID === "overpass_all_wd")
-            overpassSourceID = "overpass_all";
 
+        const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_wd" : overpassSourceID;
         const [overpassData, wikidataData] = await Promise.all([
-            this.overpassService.fetchMapClusterElements(overpassSourceID, bbox),
+            this.overpassService.fetchMapClusterElements(actualOverpassSourceID, bbox),
             this.wikidataService.fetchMapData(wikidataSourceID, bbox)
         ]);
         return this.mergeMapData(overpassData, wikidataData);
@@ -67,6 +66,9 @@ export class OverpassWikidataMapService {
             if (!existingFeature) {
                 acc.features.push(wikidataFeature);
             } else {
+                if (!existingFeature.properties)
+                    existingFeature.properties = {};
+                existingFeature.properties.from_wikidata = true;
                 // Unlike Overpass, Wikidata returns localized Wikipedia links so it has more priority
                 if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
                     existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;
