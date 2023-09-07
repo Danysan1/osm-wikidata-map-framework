@@ -17,9 +17,14 @@ RUN curl -s https://raw.githubusercontent.com/composer/getcomposer.org/76a7060cc
 
 # https://docs.docker.com/engine/reference/commandline/build/
 FROM base AS dev
-# https://gist.github.com/ben-albon/3c33628662dcd4120bf4
+# https://github.com/nodesource/distributions#installation-instructions
 RUN apt-get update && \
-	apt-get install -y libpq-dev libzip-dev zip git npm && \
+	apt-get install -y libpq-dev libzip-dev zip git ca-certificates curl gnupg && \
+	mkdir -p /etc/apt/keyrings && \
+	curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg && \
+	echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list && \
+	apt-get update && \
+	apt-get install -y nodejs && \
 	rm -rf /var/lib/apt/lists/*
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
 	docker-php-ext-install -j$(nproc) pdo_pgsql zip
