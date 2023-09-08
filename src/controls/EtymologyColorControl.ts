@@ -69,6 +69,7 @@ class EtymologyColorControl extends DropdownControl {
             dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
                 id,
                 text: t(item.textKey, item.defaultText),
+                category: t(item.categoryKey, item.defaultCategoryText),
                 onSelect: (event) => {
                     this.updateChart(event);
                     onSchemeChange(id as ColorSchemeID);
@@ -116,9 +117,14 @@ class EtymologyColorControl extends DropdownControl {
             const colorSchemeID = dropdown.value as ColorSchemeID,
                 colorScheme = colorSchemes[colorSchemeID];
 
-            if (colorSchemeID === 'source') {
-                if (debug) console.info("updateChart: showing source stats", { event, colorSchemeID });
-                this.loadSourceChartData();
+            if (colorSchemeID === 'feature_source') {
+                if (debug) console.info("updateChart: showing feature source stats", { event, colorSchemeID });
+                this.loadFeatureSourceChartData();
+                if (event)
+                    this.showDropdown();
+            } else if (colorSchemeID === 'etymology_source') {
+                if (debug) console.info("updateChart: showing etymology source stats", { event, colorSchemeID });
+                this.loadEtymologySourceChartData();
                 if (event)
                     this.showDropdown();
             } else if (colorSchemeID === 'picture') {
@@ -156,8 +162,43 @@ class EtymologyColorControl extends DropdownControl {
         this.setLayerColor(layerColor);
     }
 
-    private loadSourceChartData() {
-        this._lastColorSchemeID = "source";
+    private loadFeatureSourceChartData() {
+        this._lastColorSchemeID = "feature_source";
+        this._lastWikidataIDs = undefined;
+        this.calculateAndLoadChartData(
+            (features: EtymologyFeature[]) => {
+                const osm_IDs = new Set<string>(),
+                    osm_wikidata_IDs = new Set<string>(),
+                    wikidata_IDs = new Set<string>();
+                features.forEach((feature: EtymologyFeature) => {
+                    if (feature.properties?.from_osm && feature.properties?.from_wikidata)
+                        osm_wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                    else if (feature.properties?.from_osm)
+                        osm_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                    else if (feature.properties?.from_wikidata)
+                        wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                });
+                const stats: EtymologyStat[] = [];
+                if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: '#33ffee', id: 'osm_wikidata', count: osm_wikidata_IDs.size });
+                if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: '#3399ff', id: 'wikidata', count: wikidata_IDs.size });
+                if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: '#33ff66', id: 'osm_wikidata', count: osm_IDs.size });
+                return stats;
+            },
+            [
+                "case",
+                ["coalesce", ["all",
+                    ["to-boolean", ["get", "from_osm"]],
+                    ["to-boolean", ["get", "from_wikidata"]]
+                ], false], '#33ffee',
+                ["coalesce", ["to-boolean", ["get", "from_osm"]], false], '#33ff66',
+                ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
+                '#223b53'
+            ]
+        );
+    }
+
+    private loadEtymologySourceChartData() {
+        this._lastColorSchemeID = "etymology_source";
         this._lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             (features: EtymologyFeature[]) => {
@@ -186,10 +227,6 @@ class EtymologyColorControl extends DropdownControl {
                         });
                     } else if (feature.properties?.text_etymology) {
                         osm_text_names.add(feature.properties?.text_etymology);
-                    } else if (feature.properties?.from_osm) {
-                        osm_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
-                    } else if (feature.properties?.from_wikidata) {
-                        wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
                     }
                 });
                 const stats: EtymologyStat[] = [];
@@ -228,8 +265,6 @@ class EtymologyColorControl extends DropdownControl {
                     ["to-boolean", ["get", "from_osm", ["at", 0, ["get", "etymologies"]]]]
                 ], false], '#33ff66',
                 ["coalesce", ["has", "text_etymology"], false], '#223b53',
-                ["coalesce", ["to-boolean", ["get", "from_osm"]], false], '#33ff66',
-                ["coalesce", ["to-boolean", ["get", "from_wikidata"]], false], '#3399ff',
                 '#223b53'
             ]
         );
