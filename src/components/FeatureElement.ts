@@ -69,12 +69,12 @@ export class FeatureElement extends HTMLDivElement {
             el_id: properties.el_id, feature: this.feature, etymologies, detail_container
         });
 
-        translateContent(detail_container, ".i18n_loading", "feature_details.loading");
-        translateContent(detail_container, ".i18n_report_problem", "feature_details.report_problem");
-        translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem");
-        translateContent(detail_container, ".i18n_location", "feature_details.location");
-        translateAnchorTitle(detail_container, ".title_i18n_location", "feature_details.location");
-        translateContent(detail_container, ".i18n_source", "etymology_details.source");
+        translateContent(detail_container, ".i18n_loading", "feature_details.loading", "Loading entities...");
+        translateContent(detail_container, ".i18n_report_problem", "feature_details.report_problem", "Report a problem in this element");
+        translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem", "Report a problem in this element");
+        translateContent(detail_container, ".i18n_location", "feature_details.location", "Location");
+        translateAnchorTitle(detail_container, ".title_i18n_location", "feature_details.location", "Location");
+        translateContent(detail_container, ".i18n_source", "feature_details.source", "Source:");
 
         const element_name = detail_container.querySelector<HTMLElement>('.element_name');
         if (!element_name) {
@@ -346,7 +346,7 @@ export class FeatureElement extends HTMLDivElement {
             // Too many items, limiting to the first N most famous ones
             etymologyIDs = etymologyIDs.slice(0, maxItems);
             loadTranslator().then(t => showSnackbar(
-                t("feature_details.loading_first_n_items", { partial: maxItems, total: etymologies.length }),
+                t("feature_details.loading_first_n_items", `Loading only first ${maxItems} items`, { partial: maxItems, total: etymologies.length }),
                 "lightsalmon",
                 10_000
             ));

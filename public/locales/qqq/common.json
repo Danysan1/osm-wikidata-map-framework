@@ -59,6 +59,7 @@
         "osm_text_only": "Features with only text etymology (no linked entities)"
     },
     "feature_details": {
+        "source": "Source:",
         "loading_first_n_items": "Warning message shown when a feature contains more etymologies than the max configured limit, should contain the variables {{partial}} (number of shown etymologies) and {{total}} (total etymologies)",
         "location": "Alt text of the '🎯' button to move the map to the location of the feature/etymology",
         "picture_via_commons": "Attribution to Wikimedia Commons under the images",
@@ -71,5 +72,7 @@
         "propagation_title": "Alt text of the link to the description of the propagation mechanism"
     },
     "choose_basemap": "Alt text for the '🌍' button to show/hide the style dropdown",
-    "choose_projection": "Alt text for the '🌐' button to show/hide the projection dropdown"
+    "choose_projection": "Alt text for the '🌐' button to show/hide the projection dropdown",
+    "overpass_turbo_query": "Alt text for the button that links to query on Overpass Turbo",
+    "wdqs_query": "Alt text for the button that links to query on Wikidata Query Service"
 }

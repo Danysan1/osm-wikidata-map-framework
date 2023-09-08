@@ -68,7 +68,7 @@ class EtymologyColorControl extends DropdownControl {
             usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology),
             dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
                 id,
-                text: t(item.textKey),
+                text: t(item.textKey, item.defaultText),
                 onSelect: (event) => {
                     this.updateChart(event);
                     onSchemeChange(id as ColorSchemeID);
@@ -102,9 +102,9 @@ class EtymologyColorControl extends DropdownControl {
             sourceId + "_layer_lineString",
             sourceId + "_layer_polygon_fill"
         ];
-        this.osmTextOnly = t("color_scheme.osm_text_only");
-        this.pictureAvailable = t("color_scheme.available");
-        this.pictureUnavailable = t("color_scheme.unavailable");
+        this.osmTextOnly = t("color_scheme.osm_text_only", "OSM (Text only)");
+        this.pictureAvailable = t("color_scheme.available", "Available");
+        this.pictureUnavailable = t("color_scheme.unavailable", "Unavailable");
     }
 
     private updateChart(event?: MapEvent | Event) {

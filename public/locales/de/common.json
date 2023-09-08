@@ -55,6 +55,7 @@
         "orange": "Orange"
     },
     "feature_details": {
+        "source": "Quelle:",
         "loading_first_n_items": "Nur die ersten {{partial}} Elemente von {{total}} werden geladen...",
         "location": "Standort",
         "picture_via_commons": "Bild von Wikimedia Commons",
@@ -62,7 +63,6 @@
         "report_problem": "Ein Problem mit diesem Element melden"
     },
     "etymology_details": {
-        "source": "Quelle:",
         "propagation": "vermehrung",
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
     },

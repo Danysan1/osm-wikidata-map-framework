@@ -101,11 +101,11 @@ export class EtymologyElement extends HTMLDivElement {
         const lang = document.documentElement.lang.split("-").at(0);
         if (debug) console.info("EtymologyElement", { ety: this.etymology, etyDomElement, lang });
 
-        translateContent(etyDomElement, ".i18n_source", "etymology_details.source");
-        translateContent(etyDomElement, ".i18n_location", "feature_details.location");
-        translateAnchorTitle(etyDomElement, ".title_i18n_location", "feature_details.location");
-        translateContent(etyDomElement, ".i18n_propagation", "etymology_details.propagation");
-        translateAnchorTitle(etyDomElement, ".title_i18n_propagation", "etymology_details.propagation_title");
+        translateContent(etyDomElement, ".i18n_source", "feature_details.source", "Source:");
+        translateContent(etyDomElement, ".i18n_location", "feature_details.location", "Location");
+        translateAnchorTitle(etyDomElement, ".title_i18n_location", "feature_details.location", "Location");
+        translateContent(etyDomElement, ".i18n_propagation", "etymology_details.propagation", "propagation");
+        translateAnchorTitle(etyDomElement, ".title_i18n_propagation", "etymology_details.propagation_title", "Description of the propagation mechanism");
 
         const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
         if (!etymology_name) {

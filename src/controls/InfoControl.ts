@@ -15,30 +15,30 @@ function openInfoWindow(map: Map) {
     const popupPosition = map.unproject([0, 0]),
         introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
 
-    translateContent(introDomElement, ".i18n_title", "title");
-    translateContent(introDomElement, ".i18n_description", "description");
-    translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere");
-    translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls");
-    translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics");
-    translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source");
-    translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background");
-    translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again");
-    translateContent(introDomElement, ".i18n_to_overpass_query", "info_box.to_overpass_query");
-    translateContent(introDomElement, ".i18n_to_wikidata_query", "info_box.to_wikidata_query");
-    translateContent(introDomElement, ".i18n_contribute", "info_box.contribute");
-    translateAnchorTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute");
-    translateContent(introDomElement, ".i18n_based_on", "info_box.based_on");
-    translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue");
-    translateAnchorTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title");
-    translateContent(introDomElement, ".i18n_about_me", "info_box.about_me");
-    translateAnchorTitle(introDomElement, ".title_i18n_about_me", "info_box.about_me_title");
+    translateContent(introDomElement, ".i18n_title", "title", "OSM-Wikidata Map Framework");
+    translateContent(introDomElement, ".i18n_description", "description", "");
+    translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere", "Click anywhere on the map to explore");
+    translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls", "Use the controls on the sides to see other data:");
+    translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics", "to see statistics about elements");
+    translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source", "to choose which data source to use");
+    translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background", "to change the background map style");
+    translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again", "to open again this popup");
+    translateContent(introDomElement, ".i18n_to_overpass_query", "info_box.to_overpass_query", "to view the source OverpassQL query");
+    translateContent(introDomElement, ".i18n_to_wikidata_query", "info_box.to_wikidata_query", "to view the source SPARQL query");
+    translateContent(introDomElement, ".i18n_contribute", "info_box.contribute", "Contribute to the map");
+    translateAnchorTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute", "Contribute to the map");
+    translateContent(introDomElement, ".i18n_based_on", "info_box.based_on", "Based on");
+    translateContent(introDomElement, ".i18n_report_issue", "info_box.report_issue", "Report an issue");
+    translateAnchorTitle(introDomElement, ".title_i18n_report_issue", "info_box.report_issue_title", "Report a problem or a bug of this application");
+    translateContent(introDomElement, ".i18n_about_me", "info_box.about_me", "About me");
+    translateAnchorTitle(introDomElement, ".title_i18n_about_me", "info_box.about_me_title", "Personal website of the author of OSM-Wikidata Map Framework");
 
     if (introDomElement.querySelector<HTMLElement>(".i18n_last_db_update"))
-        translateContent(introDomElement, ".i18n_last_db_update", "info_box.last_db_update");
+        translateContent(introDomElement, ".i18n_last_db_update", "info_box.last_db_update", "Last database update:");
 
     if (introDomElement.querySelector<HTMLElement>(".i18n_download_dataset")) {
-        translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset");
-        translateAnchorTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset");
+        translateContent(introDomElement, ".i18n_download_dataset", "info_box.download_dataset", "Download as dataset");
+        translateAnchorTitle(introDomElement, ".title_i18n_download_dataset", "info_box.download_dataset", "Download as dataset");
     }
 
     const popup = new Popup({
@@ -90,7 +90,7 @@ class InfoControl implements IControl {
         container.appendChild(ctrlBtn);
 
         loadTranslator().then(t => {
-            const title = t("info_box.open_popup");
+            const title = t("info_box.open_popup", "Open the info popup");
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;
         });

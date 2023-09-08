@@ -65,27 +65,27 @@ export async function loadTranslator() {
     return tPromise;
 }
 
-export function translateContent(parent: HTMLElement, selector: string, key: string) {
+export function translateContent(parent: HTMLElement, selector: string, key: string, defaultValue: string) {
     const domElement = parent.querySelector<HTMLElement>(selector);
     if (!domElement) {
         logErrorMessage("translateContent: failed finding element", "error", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator().then(t => {
-            const label = t(key);
+            const label = t(key, defaultValue);
             domElement.textContent = label;
             domElement.ariaLabel = label; // https://dequeuniversity.com/rules/axe/4.7/label-content-name-mismatch
         }).catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
     }
 }
 
-export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string) {
+export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string, defaultValue: string) {
     const domElement = parent.querySelector<HTMLAnchorElement>(selector);
     if (!domElement) {
         if (debug) console.info("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator()
             .then(t => {
-                const title = t(key);
+                const title = t(key, defaultValue);
                 domElement.title = title;
                 //domElement.ariaLabel = title;
             })

@@ -45,7 +45,7 @@ export class SourceControl extends DropdownControl {
             });
 
         if (dbEnabled) {
-            dropdownItems.push(buildDropdownItem("db_all", t("source.db_all"), "DB"));
+            dropdownItems.push(buildDropdownItem("db_all", t("source.db_all", "All sources from DB"), "DB"));
 
             if (keys) {
                 keys.forEach(key => {
@@ -58,15 +58,15 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), "DB"));
 
             if (indirectWdProperty)
-                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", { indirectWdProperty }), "DB"));
+                dropdownItems.push(buildDropdownItem("db_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", `Wikidata entities referenced with OSM wikidata=* and ${indirectWdProperty}`, { indirectWdProperty }), "DB"));
 
             if (propagationEnabled)
-                dropdownItems.push(buildDropdownItem("db_propagated", t("source.propagated"), "DB"));
+                dropdownItems.push(buildDropdownItem("db_propagated", t("source.propagated", "Propagated"), "DB"));
         }
 
         if (keys?.length) {
             if (keys.length > 1)
-                dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys"), "OpenStreetMap (Overpass API)"));
+                dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys", "All OSM keys"), "OpenStreetMap (Overpass API)"));
 
             keys.forEach(key => {
                 const source = "overpass_osm_" + key.replace(":wikidata", "").replace(":", "_");
@@ -78,7 +78,7 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), "Wikidata Query Service"));
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
             if (keys?.length)
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", t("source.all_osm_keys") + " + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", t("source.all_osm_keys", "All OSM keys") + " + Wikidata " + wdDirectProperties.join("/"), "OSM (Overpass API) + Wikidata Query Service"));
         }
 
         if (indirectWdProperty) {
@@ -88,9 +88,9 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
             if (keys?.length) {
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", t("source.all_osm_keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", t("source.all_osm_keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", t("source.all_osm_keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), "OSM (Overpass API) + Wikidata Query Service"));
             }
         }
 

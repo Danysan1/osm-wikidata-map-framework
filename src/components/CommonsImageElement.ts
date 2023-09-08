@@ -79,7 +79,7 @@ export class CommonsImageElement extends HTMLDivElement {
 
         loadTranslator()
             .then(t => {
-                const title = t("feature_details.picture_via_commons");
+                const title = t("feature_details.picture_via_commons", "Picture from Wikimedia Commons");
                 picture.alt = title;
                 link.title = title;
                 link.ariaLabel = title;

@@ -458,10 +458,20 @@ export class EtymologyMap extends Map {
 
             if (debug) console.info("Initializing link controls", { minZoomLevel });
             this.addControl(new LinkControl(
-                "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg", "Overpass Turbo", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "overpass_query", "https://overpass-turbo.eu/?Q=", minZoomLevel
+                "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg",
+                t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
+                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                "overpass_query",
+                "https://overpass-turbo.eu/?Q=",
+                minZoomLevel
             ), 'top-right');
             this.addControl(new LinkControl(
-                "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg", "Wikidata Query Service", [ELEMENTS_SOURCE, WIKIDATA_SOURCE], "wikidata_query", "https://query.wikidata.org/#", minZoomLevel
+                "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg",
+                t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
+                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                "wikidata_query",
+                "https://query.wikidata.org/#",
+                minZoomLevel
             ), 'top-right');
         });
     }

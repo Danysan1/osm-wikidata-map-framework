@@ -59,6 +59,7 @@
         "osm_text_only": "OSM (solo testo)"
     },
     "feature_details": {
+        "source": "Fonte:",
         "loading_first_n_items": "Caricamento solo dei primi {{partial}} elementi su {{total}}...",
         "location": "Posizione",
         "picture_via_commons": "Immagine da Wikimedia Commons",
@@ -66,10 +67,11 @@
         "report_problem": "Segnala un problema in questo elemento"
     },
     "etymology_details": {
-        "source": "Fonte:",
         "propagation": "propagazione",
         "propagation_title": "Descrizione del meccanismo di propagazione"
     },
     "choose_basemap": "Scegli lo sfondo della mappa",
-    "choose_projection": "Scegli la proiezione della mappa"
+    "choose_projection": "Scegli la proiezione della mappa",
+    "overpass_turbo_query": "Query OverpassQL di origine su Overpass Turbo",
+    "wdqs_query": "Query SPARQL di origine su Wikidata Query Service"
 }
