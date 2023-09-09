@@ -42,6 +42,8 @@ export class EtymologyMap extends Map {
     private backendService: OwmfBackendService;
     private lastSource?: string;
     private lastBBox?: BBox;
+    private fetchInProgress = false;
+    private shouldFetchAgain = false
 
     constructor(
         containerId: string,
@@ -166,19 +168,25 @@ export class EtymologyMap extends Map {
             if (debug) console.info("mapSourceDataHandler: data loaded", {
                 wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
             });
+            this.fetchInProgress = false;
             showLoadingSpinner(false);
 
-            const wikidataFeatureCount = this.querySourceFeatures(WIKIDATA_SOURCE).length;
-            loadTranslator().then(t => {
-                if (!this.wikidataSourceInitialized)
-                    this.wikidataSourceInitialized = true;
-                else if (wikidataSourceEvent && wikidataFeatureCount === 0)
-                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000);
-                else if (wikidataSourceEvent && !this.anyDetailShownBefore)
-                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
-                else
-                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
-            });
+            if (this.shouldFetchAgain) {
+                this.shouldFetchAgain = false;
+                this.updateDataSource();
+            } else {
+                const wikidataFeatureCount = this.querySourceFeatures(WIKIDATA_SOURCE).length;
+                loadTranslator().then(t => {
+                    if (!this.wikidataSourceInitialized)
+                        this.wikidataSourceInitialized = true;
+                    else if (wikidataSourceEvent && wikidataFeatureCount === 0)
+                        showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000);
+                    else if (wikidataSourceEvent && !this.anyDetailShownBefore)
+                        showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
+                    else
+                        showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
+                });
+            }
         }
     }
 
@@ -187,6 +195,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
      */
     mapErrorHandler(err: any) {
+        this.fetchInProgress = false;
         showLoadingSpinner(false);
 
         let errorMessage;
@@ -200,12 +209,12 @@ export class EtymologyMap extends Map {
         logErrorMessage(errorMessage, "error", err);
     }
 
-    /**
-     * 
-     * @see https://docs.mapbox.com/mapbox-gl-js/example/external-geojson/
-     * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-polygon/
-     */
     updateDataSource() {
+        if (this.fetchInProgress) {
+            this.shouldFetchAgain = true;
+            if (debug) console.info("updateDataSource: Fetch already in progress, skipping source update");
+            return;
+        }
         const bounds = this.getBounds(),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
@@ -232,6 +241,11 @@ export class EtymologyMap extends Map {
     }
 
     async updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
+        if (this.getSource(ELEMENTS_SOURCE) !== undefined) {
+            if (debug) console.info("updateElementsSource: missing source, skipping source update");
+            return;
+        }
+
         const source = getCorrectFragmentParams().source,
             bbox: BBox = [
                 Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
@@ -239,13 +253,14 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-        if (this.getSource(ELEMENTS_SOURCE) !== undefined && this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.info("updateElementsSource: skipping source update", { source, bbox });
+        if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.info("updateElementsSource: unchanged sourceID and BBox, skipping source update", { source, bbox });
             return;
-        } else {
-            this.lastSource = source;
-            this.lastBBox = bbox;
         }
+
+        this.fetchInProgress = true;
+        this.lastSource = source;
+        this.lastBBox = bbox;
 
         try {
             showLoadingSpinner(true);
@@ -271,6 +286,11 @@ export class EtymologyMap extends Map {
     }
 
     async updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
+        if (this.getSource(WIKIDATA_SOURCE) !== undefined) {
+            if (debug) console.info("updateWikidataSource: missing source, skipping source update");
+            return;
+        }
+
         const source = getCorrectFragmentParams().source,
             bbox: BBox = [
                 Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
@@ -278,13 +298,14 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-        if (this.getSource(WIKIDATA_SOURCE) !== undefined && this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.info("updateWikidataSource: skipping source update", { source, bbox });
+        if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.info("updateWikidataSource: unchanged sourceID and BBox, skipping source update", { source, bbox });
             return;
-        } else {
-            this.lastSource = source;
-            this.lastBBox = bbox;
         }
+
+        this.fetchInProgress = true;
+        this.lastSource = source;
+        this.lastBBox = bbox;
 
         try {
             showLoadingSpinner(true);
