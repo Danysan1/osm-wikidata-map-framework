@@ -239,6 +239,21 @@ export class EtymologyMap extends Map {
             loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
     }
 
+    private isBBoxChanged(sourceID: string, bbox: BBox) {
+        if (this.lastSourceID === sourceID &&
+            this.lastBBox &&
+            this.lastBBox[0] <= bbox[0] &&
+            this.lastBBox[1] <= bbox[1] &&
+            this.lastBBox[2] >= bbox[2] &&
+            this.lastBBox[3] >= bbox[3]) {
+            if (debug) console.debug("isBBoxChanged: unchanged sourceID and BBox", { lastSourceID: this.lastSourceID, sourceID, lastBBox: this.lastBBox, bbox });
+            return true;
+        } else {
+            if (debug) console.debug("isBBoxChanged: sourceID or BBox changed", { lastSourceID: this.lastSourceID, sourceID, lastBBox: this.lastBBox, bbox });
+            return false;
+        }
+    }
+
     private async updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
         const sourceID = getCorrectFragmentParams().source,
             bbox: BBox = [
@@ -247,10 +262,8 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-        if (this.lastSourceID === sourceID && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.debug("updateElementsSource: unchanged sourceID and BBox, skipping source update", { source: sourceID, bbox });
+        if (this.isBBoxChanged(sourceID, bbox))
             return;
-        }
 
         this.fetchInProgress = true;
         this.lastSourceID = sourceID;
@@ -287,10 +300,8 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-        if (this.lastSourceID === sourceID && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.debug("updateWikidataSource: unchanged sourceID and BBox, skipping source update", { source: sourceID, bbox });
+        if (this.isBBoxChanged(sourceID, bbox))
             return;
-        }
 
         this.fetchInProgress = true;
         this.lastSourceID = sourceID;
