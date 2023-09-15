@@ -34,7 +34,6 @@ export class EtymologyMap extends Map {
     private geocoderControl?: IControl;
     private projectionControl?: IControl;
     private anyDetailShownBefore = false;
-    private wikidataControlsInitialized = false;
     private wikidataSourceInitialized = false;
     private wikidataMapService: WikidataMapService;
     private overpassService: OverpassService;
@@ -344,8 +343,6 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     prepareWikidataLayers(data: string | GeoJSON, minZoom: number) {
-        this.initWikidataControls();
-
         const colorSchemeColor = getCurrentColorScheme().color || '#223b53',
             wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
             wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
@@ -430,9 +427,6 @@ export class EtymologyMap extends Map {
     }
 
     initWikidataControls() {
-        if (this.wikidataControlsInitialized)
-            return;
-        this.wikidataControlsInitialized = true;
         if (debug) console.info("Initializing Wikidata controls");
         loadTranslator().then(t => {
             const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
@@ -578,7 +572,6 @@ export class EtymologyMap extends Map {
      * @see prepareClusteredLayers
      */
     prepareElementsLayers(data: string | GeoJSON, minZoom: number, maxZoom: number) {
-        this.initWikidataControls();
         this.prepareClusteredLayers(
             ELEMENTS_SOURCE,
             data,
@@ -879,6 +872,7 @@ export class EtymologyMap extends Map {
             this.addControl(this.projectionControl, 'top-right');
 
         this.addControl(new InfoControl(), 'top-right');
+        this.initWikidataControls();
     }
 
     /**
