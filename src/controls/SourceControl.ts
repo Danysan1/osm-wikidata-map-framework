@@ -23,7 +23,7 @@ export class SourceControl extends DropdownControl {
             dropdownItems: DropdownItem[] = [],
             osm_text_key = getConfig("osm_text_key"),
             selectSource = (sourceID: string) => {
-                if (debug) console.info("Selecting source ", { sourceID });
+                if (debug) console.debug("Selecting source ", { sourceID });
 
                 // If the change came from a manual interaction, update the fragment params
                 setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
@@ -100,7 +100,9 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", "Wikidata Query Service"));
         }
 
-        if (!dropdownItems.find(item => item.id === startSourceID)) {
+        if (dropdownItems.find(item => item.id === startSourceID)) {
+            if (debug) console.debug("Starting with valid sourceID", { startSourceID });
+        } else {
             logErrorMessage("Invalid startSourceID", "warning", { oldID: startSourceID, dropdownItems, newID: dropdownItems[0].id });
             startSourceID = dropdownItems[0].id;
             selectSource(startSourceID);
