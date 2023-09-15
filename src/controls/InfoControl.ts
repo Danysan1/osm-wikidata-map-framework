@@ -76,6 +76,7 @@ function openInfoWindow(map: Map) {
  * Let the user re-open the info window.
  * 
  * Control implemented as ES6 class
+ * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/maplibregl.IControl/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  */
 class InfoControl implements IControl {

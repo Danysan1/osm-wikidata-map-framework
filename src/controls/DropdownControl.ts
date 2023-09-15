@@ -17,6 +17,7 @@ export interface DropdownItem {
  * Let the user choose something through a dropdown.
  * 
  * Control implemented as ES6 class
+ * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/maplibregl.IControl/
  * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
 export class DropdownControl implements IControl {
@@ -62,7 +63,7 @@ export class DropdownControl implements IControl {
         this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl dropdown-ctrl';
 
         const table = document.createElement('table');
-        table.className = "dropdown-ctrl-table";
+        table.className = "dropdown-ctrl-table custom-ctrl-table";
         this._container.appendChild(table);
 
         const tr = document.createElement('tr');
@@ -85,7 +86,7 @@ export class DropdownControl implements IControl {
         ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
         ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
         dropdownCell.appendChild(ctrlDropDown);
-        dropdownCell.className = 'dropdown-cell';
+        dropdownCell.className = 'dropdown-cell content-cell';
 
         if (this._titleKey) {
             loadTranslator().then(t => {

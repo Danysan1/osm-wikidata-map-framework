@@ -13,6 +13,7 @@ import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debug, getBoolConfig, getConfig } from './config';
 import { SourceControl } from './controls/SourceControl';
+import { LanguageControl } from './controls/LanguageControl';
 import { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
@@ -871,6 +872,7 @@ export class EtymologyMap extends Map {
             unit: 'metric'
         }), 'bottom-left');
         this.addControl(new FullscreenControl(), 'top-right');
+        this.addControl(new LanguageControl(), 'top-right');
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
         if (this.projectionControl)
             this.addControl(this.projectionControl, 'top-right');

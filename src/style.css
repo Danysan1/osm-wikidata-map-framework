@@ -166,6 +166,10 @@ div.custom-ctrl>table {
   width: 100%;
 }
 
+div.custom-ctrl>table>tr>td.content-cell {
+  max-height: 1em;
+}
+
 div.custom-ctrl>table>tr>td.button-cell {
   width: 1em;
 }
@@ -443,6 +447,7 @@ div.detail_container>a.k-button.hiddenElement,
 div.info>a.k-button.hiddenElement,
 select.dropdown-ctrl-dropdown.hiddenElement,
 table.dropdown-ctrl-table.hiddenElement,
+table.custom-ctrl-table.hiddenElement,
 canvas.chart.hiddenElement {
   display: none;
 }
@@ -475,10 +480,15 @@ p.pic-attr {
 .maplibregl-ctrl-group>button img,
 .maplibregl-ctrl-group>a img,
 .mapboxgl-ctrl-group>button img,
-.mapboxgl-ctrl-group>a img {
-  height: 23px;
+.mapboxgl-ctrl-group>a img,
+.maplibregl-ctrl-group button img,
+.maplibregl-ctrl-group a img,
+.mapboxgl-ctrl-group button img,
+.mapboxgl-ctrl-group a img {
+  max-height: 23px;
   width: 23px;
   margin: 3px;
+  vertical-align: middle;
 }
 
 .owmf_info_popup .intro td>img {
