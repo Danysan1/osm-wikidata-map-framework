@@ -262,11 +262,11 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-        if (this.isBBoxChanged(sourceID, bbox))
+        if (this.isBBoxChanged("elements-" + sourceID, bbox))
             return;
 
         this.fetchInProgress = true;
-        this.lastSourceID = sourceID;
+        this.lastSourceID = "elements-" + sourceID;
         this.lastBBox = bbox;
 
         try {
@@ -300,11 +300,11 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-        if (this.isBBoxChanged(sourceID, bbox))
+        if (this.isBBoxChanged("details" + sourceID, bbox))
             return;
 
         this.fetchInProgress = true;
-        this.lastSourceID = sourceID;
+        this.lastSourceID = "details" + sourceID;
         this.lastBBox = bbox;
 
         try {

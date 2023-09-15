@@ -35,7 +35,10 @@ export class OverpassWikidataMapService {
 
         const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_wd" : overpassSourceID;
         return await this.fetchAndMergeMapData(
-            "elements_" + sourceID, actualOverpassSourceID, wikidataSourceID, bbox
+            "elements-" + sourceID,
+            () => this.overpassService.fetchMapClusterElements(actualOverpassSourceID, bbox),
+            () => this.wikidataService.fetchMapData(wikidataSourceID, bbox),
+            bbox
         );
     }
 
@@ -45,7 +48,10 @@ export class OverpassWikidataMapService {
             throw new Error("Invalid sourceID");
 
         const out = await this.fetchAndMergeMapData(
-            "elements_" + sourceID, overpassSourceID, wikidataSourceID, bbox
+            "details-" + sourceID,
+            () => this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
+            () => this.wikidataService.fetchMapData(wikidataSourceID, bbox),
+            bbox
         );
         out.features = out.features.filter(
             (feature: Feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
@@ -59,7 +65,10 @@ export class OverpassWikidataMapService {
     }
 
     private async fetchAndMergeMapData(
-        sourceID: string, overpassSourceID: string, wikidataSourceID: string, bbox: BBox
+        sourceID: string,
+        fetchOverpass: () => Promise<GeoJSON & EtymologyResponse>,
+        fetchWikidata: () => Promise<GeoJSON & EtymologyResponse>,
+        bbox: BBox
     ): Promise<GeoJSON & EtymologyResponse> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
@@ -67,10 +76,7 @@ export class OverpassWikidataMapService {
         } else {
             if (debug) console.debug("Overpass+Wikidata cache miss, fetching data", { sourceID, bbox, language: this.language });
             if (debug) console.time("fetch");
-            const [overpassData, wikidataData] = await Promise.all([
-                this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
-                this.wikidataService.fetchMapData(wikidataSourceID, bbox)
-            ]);
+            const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
             if (debug) { console.timeEnd("fetch"); console.time("merge"); }
             out = this.mergeMapData(overpassData, wikidataData);
             if (debug) console.timeEnd("merge");

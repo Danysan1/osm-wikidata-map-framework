@@ -25,7 +25,7 @@ export class OwmfBackendService {
     }
 
     async fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
-        const source = "elements_" + sourceID;
+        const source = "elements-" + sourceID;
         let out = await this.db.getMap(source, bbox, this.language) as GeoJSON & ElementResponse | undefined;
         if (out) {
             if (debug) console.info("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
@@ -50,7 +50,7 @@ export class OwmfBackendService {
     }
 
     async fetchMapElementDetails(source: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        const sourceID = "details_" + source;
+        const sourceID = "details-" + source;
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
             if (debug) console.info("Overpass cache hit, using cached response", { source, bbox, language: this.language, out });

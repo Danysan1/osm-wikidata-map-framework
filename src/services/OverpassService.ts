@@ -27,6 +27,7 @@ export class OverpassService {
             acc[keyCode] = key;
             return acc;
         }, {});
+        if (debug) console.debug("OverpassService initialized", { wikidata_keys: this.wikidata_keys, wikidata_key_codes: this.wikidata_key_codes });
     }
 
     canHandleSource(sourceID: string): boolean {
@@ -38,12 +39,14 @@ export class OverpassService {
 
     fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
         return this.fetchMapData(
-            "out ids center ${maxElements};", "elements_" + sourceID, bbox
+            "out ids center ${maxElements};", "elements-" + sourceID, bbox
         );
     }
 
     async fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        const out = await this.fetchMapData("out body ${maxElements}; >; out skel qt;", "details_" + sourceID, bbox);
+        const out = await this.fetchMapData(
+            "out body ${maxElements}; >; out skel qt;", "details-" + sourceID, bbox
+        );
         out.features = out.features.filter(
             (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && sourceID.endsWith("_wd"))
         );
