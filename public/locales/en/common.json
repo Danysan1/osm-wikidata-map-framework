@@ -70,6 +70,7 @@
         "propagation": "propagation",
         "propagation_title": "Description of the propagation mechanism"
     },
+    "change_language": "Change language",
     "choose_basemap": "Choose background style",
     "choose_projection": "Choose map projection",
     "overpass_turbo_query": "Source OverpassQL query on Overpass Turbo",

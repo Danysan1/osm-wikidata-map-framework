@@ -66,6 +66,7 @@
         "propagation": "propagation",
         "propagation_title": "Description du mécanisme de propagation"
     },
+    "change_language": "Changer de langue",
     "choose_basemap": "Choisissez le style de fond",
     "choose_projection": "Choisissez la projection cartographique"
 }

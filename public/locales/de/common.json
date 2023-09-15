@@ -66,6 +66,7 @@
         "propagation": "vermehrung",
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
     },
+    "change_language": "Sprache ändern",
     "choose_basemap": "Hintergrundstil auswählen",
     "choose_projection": "Wählen Sie Kartenprojektion"
 }
