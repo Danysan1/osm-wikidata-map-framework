@@ -90,10 +90,10 @@ class EtymologyColorControl extends DropdownControl {
                 const zoomLevel = e.target.getZoom(),
                     validZoomLevel = zoomLevel >= minZoomLevel;
                 if (validZoomLevel) {
-                    if (debug) console.info("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
+                    if (debug) console.debug("EtymologyColorControl: updating chart ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
                     this.updateChart(e);
                 } else {
-                    if (debug) console.info("EtymologyColorControl: skipping chart update ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
+                    if (debug) console.debug("EtymologyColorControl: skipping chart update ", { zoomLevel, minZoomLevel, validZoomLevel, sourceId, e });
                 }
             }
         );
@@ -108,7 +108,7 @@ class EtymologyColorControl extends DropdownControl {
         this.pictureUnavailable = t("color_scheme.unavailable", "Unavailable");
     }
 
-    private updateChart(event?: MapEvent | Event) {
+    public updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not yet initialized", { event });
@@ -118,27 +118,27 @@ class EtymologyColorControl extends DropdownControl {
                 colorScheme = colorSchemes[colorSchemeID];
 
             if (colorSchemeID === 'feature_source') {
-                if (debug) console.info("updateChart: showing feature source stats", { event, colorSchemeID });
+                if (debug) console.debug("updateChart: showing feature source stats", { event, colorSchemeID });
                 this.loadFeatureSourceChartData();
                 if (event)
                     this.showDropdown();
             } else if (colorSchemeID === 'etymology_source') {
-                if (debug) console.info("updateChart: showing etymology source stats", { event, colorSchemeID });
+                if (debug) console.debug("updateChart: showing etymology source stats", { event, colorSchemeID });
                 this.loadEtymologySourceChartData();
                 if (event)
                     this.showDropdown();
             } else if (colorSchemeID === 'picture') {
-                if (debug) console.info("updateChart: showing picture stats", { event, colorSchemeID });
+                if (debug) console.debug("updateChart: showing picture stats", { event, colorSchemeID });
                 this.loadPictureAvailabilityChartData();
                 if (event)
                     this.showDropdown();
             } else if (statsQueries[colorSchemeID]) {
-                if (debug) console.info("updateChart: downloading stats from Wikidata", { event, colorSchemeID });
+                if (debug) console.debug("updateChart: downloading stats from Wikidata", { event, colorSchemeID });
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
                     this.showDropdown();
             } else if (event?.type === 'change') {
-                if (debug) console.info("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
+                if (debug) console.debug("updateChart: change event with no query nor urlCode, hiding", { event, colorSchemeID });
                 this.showDropdown(false);
                 if (colorScheme?.color)
                     this.setLayerColor(colorScheme.color);
@@ -315,11 +315,11 @@ class EtymologyColorControl extends DropdownControl {
             ?.filter(id => typeof id === 'string') as string[] || [],
             uniqueIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
         if (uniqueIDs.length === 0) {
-            if (debug) console.info("Skipping stats update for 0 IDs");
+            if (debug) console.debug("Skipping stats update for 0 IDs");
         } else if (colorSchemeID === this._lastColorSchemeID && uniqueIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => uniqueIDs[i] === id)) {
-            if (debug) console.info("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.debug("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
         } else {
-            if (debug) console.info("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.debug("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = uniqueIDs;
             try {
@@ -378,7 +378,7 @@ class EtymologyColorControl extends DropdownControl {
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     private setChartData(data: ChartData<"pie">) {
-        if (debug) console.info("setChartData", {
+        if (debug) console.debug("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
@@ -386,9 +386,9 @@ class EtymologyColorControl extends DropdownControl {
         if (this._chartJsObject && this._chartDomElement) {
             this.updateChartObject(data);
         } else if (this._chartInitInProgress) {
-            if (debug) console.info("setChartData: chart already loading");
+            if (debug) console.debug("setChartData: chart already loading");
         } else {
-            if (debug) console.info("setChartData: Loading chart.js and initializing the chart");
+            if (debug) console.debug("setChartData: Loading chart.js and initializing the chart");
             this.initChartObject(data);
         }
     }

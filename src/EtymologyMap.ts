@@ -470,7 +470,10 @@ export class EtymologyMap extends Map {
                 WIKIDATA_SOURCE,
                 thresholdZoomLevel
             );
-            setTimeout(() => this.addControl(colorControl, 'top-left'), 50); // Delay needed to make sure the dropdown is always under the search bar
+            setTimeout(() => {
+                this.addControl(colorControl, 'top-left');
+                colorControl.updateChart();
+            }, 50); // Delay needed to make sure the dropdown is always under the search bar
 
             if (debug) console.debug("Initializing link controls", { minZoomLevel });
             this.addControl(new LinkControl(
