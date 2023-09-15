@@ -84,7 +84,7 @@ export class OverpassService {
                 use_wikidata = false;
             } else {
                 // Search a specific etymology key
-                const sourceKeyCode = /^\w+_overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
+                const sourceKeyCode = /^.*overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
 
                 if (!sourceKeyCode)
                     throw new Error(`Failed to extract sourceKeyCode from sourceID ${sourceID}`);
