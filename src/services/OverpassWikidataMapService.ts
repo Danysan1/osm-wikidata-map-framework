@@ -1,4 +1,5 @@
-import { debug } from "../config";
+import { debug, getConfig } from "../config";
+import { MapDatabase } from "../db/MapDatabase";
 import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
@@ -7,10 +8,14 @@ import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties }
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 
 export class OverpassWikidataMapService {
+    private db: MapDatabase;
+    private language: string;
     private overpassService: OverpassService;
     private wikidataService: WikidataMapService;
 
-    constructor(overpassService: OverpassService, wikidataService: WikidataMapService) {
+    constructor(overpassService: OverpassService, wikidataService: WikidataMapService, db: MapDatabase) {
+        this.db = db;
+        this.language = document.documentElement.lang.split('-').at(0) || getConfig("default_language") || "en";
         this.overpassService = overpassService;
         this.wikidataService = wikidataService;
     }
@@ -29,11 +34,9 @@ export class OverpassWikidataMapService {
             return this.wikidataService.fetchMapData(wikidataSourceID, bbox);
 
         const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_wd" : overpassSourceID;
-        const [overpassData, wikidataData] = await Promise.all([
-            this.overpassService.fetchMapClusterElements(actualOverpassSourceID, bbox),
-            this.wikidataService.fetchMapData(wikidataSourceID, bbox)
-        ]);
-        return this.mergeMapData(overpassData, wikidataData);
+        return await this.fetchAndMergeMapData(
+            "elements_" + sourceID, actualOverpassSourceID, wikidataSourceID, bbox
+        );
     }
 
     async fetchMapElementDetails(sourceID: string, bbox: BBox) {
@@ -41,17 +44,41 @@ export class OverpassWikidataMapService {
         if (!overpassSourceID || !wikidataSourceID)
             throw new Error("Invalid sourceID");
 
-        const [overpassData, wikidataData] = await Promise.all([
-            this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
-            this.wikidataService.fetchMapData(wikidataSourceID, bbox)
-        ]);
-        const out = this.mergeMapData(overpassData, wikidataData);
+        const out = await this.fetchAndMergeMapData(
+            "elements_" + sourceID, overpassSourceID, wikidataSourceID, bbox
+        );
         out.features = out.features.filter(
             (feature: Feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
-        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-        if (debug) console.info(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
-        out.sourceID = sourceID;
+        out.etymology_count = out.features.reduce(
+            (acc, feature) => acc + (feature.properties?.etymologies?.length || 0),
+            0
+        );
+        if (debug) console.debug(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        return out;
+    }
+
+    private async fetchAndMergeMapData(
+        sourceID: string, overpassSourceID: string, wikidataSourceID: string, bbox: BBox
+    ): Promise<GeoJSON & EtymologyResponse> {
+        let out = await this.db.getMap(sourceID, bbox, this.language);
+        if (out) {
+            if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+        } else {
+            if (debug) console.debug("Overpass+Wikidata cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.time("fetch");
+            const [overpassData, wikidataData] = await Promise.all([
+                this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
+                this.wikidataService.fetchMapData(wikidataSourceID, bbox)
+            ]);
+            if (debug) { console.timeEnd("fetch"); console.time("merge"); }
+            out = this.mergeMapData(overpassData, wikidataData);
+            if (debug) console.timeEnd("merge");
+            if (!out)
+                throw new Error("Merge failed");
+            out.sourceID = sourceID;
+            this.db.addMap(out);
+        }
         return out;
     }
 
@@ -113,7 +140,7 @@ export class OverpassWikidataMapService {
 
         out.wikidata_query = wikidataData.wikidata_query;
         out.truncated = out.truncated || wikidataData.truncated;
-        if (debug) console.info(`Overpass+Wikidata mergeMapData found ${out.features.length} features`, { features: [...out.features] });
+        if (debug) console.debug(`Overpass+Wikidata mergeMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 }

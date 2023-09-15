@@ -75,7 +75,7 @@ export class EtymologyMap extends Map {
         const db = new MapDatabase();
         this.wikidataMapService = new WikidataMapService(db);
         this.overpassService = new OverpassService(db);
-        this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService);
+        this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService, db);
         this.backendService = new OwmfBackendService(db);
 
         try {
