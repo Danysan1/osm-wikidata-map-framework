@@ -63,7 +63,7 @@ export class LanguageControl implements IControl {
         const languageCell = document.createElement("td"),
             languageButton = document.createElement("button");
         languageButton.innerText = "🔣";
-        loadTranslator().then(t => languageButton.title = t("language_ctrl.title", "Change language"));
+        loadTranslator().then(t => languageButton.title = t("change_language", "Change language"));
         languageButton.className = "language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon";
         languageButton.addEventListener("click", () => {
             if (debug) console.debug("LanguageControl: Toggling language selection links");
