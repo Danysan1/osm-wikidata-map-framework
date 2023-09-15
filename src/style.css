@@ -182,8 +182,9 @@ div.custom-ctrl>table>tr>td {
   font-size: large;
 }
 
-div.detail_container p.alt_names,
-div.detail_container p.element_description,
+div.detail_container .element_name,
+div.detail_container .alt_names,
+div.detail_container .element_description,
 div.detail_container div.header,
 div.detail_container div.info,
 div.detail_container div.grid,
