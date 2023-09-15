@@ -9,14 +9,14 @@ export class WikidataService {
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     protected api: SparqlApi;
     protected defaultLanguage: string;
-    protected language?: string;
+    protected language: string;
 
     public constructor() {
         this.api = new SparqlApi(new Configuration({
             basePath: getConfig("wikidata_endpoint") || "https://query.wikidata.org"
         }));
         this.defaultLanguage = getConfig("default_language") || 'en';
-        this.language = document.documentElement.lang.split('-').at(0);
+        this.language = document.documentElement.lang.split('-').at(0) || this.defaultLanguage;
     }
 
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {

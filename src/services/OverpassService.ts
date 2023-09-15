@@ -10,17 +10,23 @@ type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 export class OverpassService {
     private api: OverpassApi;
     private db: MapDatabase;
-    protected defaultLanguage: string;
-    protected language?: string;
+    private language: string;
+    private wikidata_keys?: string[];
+    private wikidata_key_codes?: Record<string, string>;
 
     constructor(db: MapDatabase) {
         const endpoints: string[] = getJsonConfig("overpass_endpoints") || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),
             basePath = endpoints[randomIndex];
         this.api = new OverpassApi(new Configuration({ basePath }));
-        this.defaultLanguage = getConfig("default_language") || 'en';
-        this.language = document.documentElement.lang.split('-').at(0);
+        this.language = document.documentElement.lang.split('-').at(0) || getConfig("default_language") || "en";
         this.db = db;
+        this.wikidata_keys = getJsonConfig("osm_wikidata_keys") || undefined;
+        this.wikidata_key_codes = this.wikidata_keys?.reduce((acc: Record<string, string>, key) => {
+            const keyCode = key.replace(":wikidata", "").replace(":", "_");
+            acc[keyCode] = key;
+            return acc;
+        }, {});
     }
 
     canHandleSource(sourceID: string): boolean {
@@ -42,51 +48,53 @@ export class OverpassService {
             (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && sourceID.endsWith("_wd"))
         );
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-        if (debug) console.info(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        if (debug) console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 
     private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
-            if (debug) console.info("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.debug("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
-            if (debug) console.info("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
-            const wikidata_keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
-                osm_text_key = getConfig("osm_text_key"),
+            if (debug) console.debug("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
+            const osm_text_key = getConfig("osm_text_key"),
                 osm_description_key = getConfig("osm_description_key");
-            let keys: string[], use_text_key: boolean, use_wikidata: boolean;
+            let keys: string[],
+                use_wikidata: boolean,
+                search_text_key = osm_text_key;
 
             if (sourceID.endsWith("overpass_wd")) {
+                // Search only elements with wikidata=*
                 keys = [];
-                use_text_key = false;
+                search_text_key = null;
                 use_wikidata = true;
-            } else if (!wikidata_keys) {
-                throw new Error("No keys configured")
+            } else if (!this.wikidata_keys) {
+                throw new Error(`No keys configured, invalid sourceID ${this.wikidata_keys}`)
             } else if (sourceID.endsWith("overpass_all_wd")) {
-                keys = wikidata_keys;
-                use_text_key = !!osm_text_key;
+                // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
+                keys = this.wikidata_keys;
                 use_wikidata = true;
             } else if (sourceID.endsWith("overpass_all")) {
-                keys = wikidata_keys;
-                use_text_key = !!osm_text_key;
+                // Search all elements with an etymology
+                keys = this.wikidata_keys;
                 use_wikidata = false;
             } else {
-                const wikidata_key_codes = wikidata_keys.map(key => key.replace(":wikidata", "").replace(":", "_")),
-                    sourceKeyCode = /^\w+_overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
+                // Search a specific etymology key
+                const sourceKeyCode = /^\w+_overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
 
                 if (!sourceKeyCode)
-                    throw new Error("Failed to extract sourceKeyCode");
-                else if (!wikidata_key_codes.includes(sourceKeyCode))
+                    throw new Error(`Failed to extract sourceKeyCode from sourceID ${sourceID}`);
+                else if (!this.wikidata_key_codes || !(sourceKeyCode in this.wikidata_key_codes))
                     throw new Error(`Invalid sourceID: ${sourceID}`);
                 else
-                    keys = wikidata_keys.filter(key => key.replace(":wikidata", "").replace(":", "_") === sourceKeyCode);
+                    keys = [this.wikidata_key_codes[sourceKeyCode]];
 
-                use_text_key = false;
+                search_text_key = null;
                 use_wikidata = false;
             }
 
-            const query = this.buildOverpassQuery(keys, bbox, use_text_key, osm_text_key, use_wikidata, outClause),
+            const query = this.buildOverpassQuery(keys, bbox, search_text_key, use_wikidata, outClause),
                 res = await this.api.postOverpassQuery({ data: query });
 
             out = osmtogeojson(res);
@@ -103,12 +111,10 @@ export class OverpassService {
                 feature.properties.osm_id = osm_id;
                 feature.properties.osm_type = osm_type;
 
-                if (use_text_key) {
-                    if (osm_text_key)
-                        feature.properties.text_etymology = feature.properties[osm_text_key];
-                    if (osm_description_key)
-                        feature.properties.text_etymology_descr = feature.properties[osm_description_key];
-                }
+                if (osm_text_key)
+                    feature.properties.text_etymology = feature.properties[osm_text_key];
+                if (osm_description_key)
+                    feature.properties.text_etymology_descr = feature.properties[osm_description_key];
 
                 if (typeof feature.properties.wikimedia_commons === "string") {
                     if (feature.properties.wikimedia_commons?.includes("File:"))
@@ -143,12 +149,12 @@ export class OverpassService {
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
             this.db.addMap(out);
         }
-        if (debug) console.info(`Overpass fetchMapData found ${out.features.length} features`, { features: [...out.features] });
+        if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 
     private buildOverpassQuery(
-        wd_keys: string[], bbox: BBox, use_text_key: boolean, osm_text_key: string | null, use_wikidata: boolean, outClause: string
+        wd_keys: string[], bbox: BBox, osm_text_key: string | null, use_wikidata: boolean, outClause: string
     ): string {
         let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];\n(\n`;
 
@@ -157,11 +163,11 @@ export class OverpassService {
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             extra_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        if (debug) console.info("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, extra_wd_keys, osm_text_key });
+        if (debug) console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, extra_wd_keys, osm_text_key });
         filter_wd_keys.forEach(
             key => query += `nwr[!"boundary"]["type"!="boundary"]["${key}"]; // ${key} is both filter and secondary wikidata key\n`
         );
-        if (use_text_key && text_etymology_key_is_filter)
+        if (text_etymology_key_is_filter)
             query += `nwr[!"boundary"]["type"!="boundary"]["${osm_text_key}"]; // ${osm_text_key} is both filter and text etymology key\n`;
         if (use_wikidata && !filter_tags && !osm_text_key)
             query += `nwr[!"boundary"]["type"!="boundary"]["wikidata"];\n`;
@@ -176,7 +182,7 @@ export class OverpassService {
                 extra_wd_keys.forEach(
                     key => query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["${key}"]; // ${filter_clause} is a filter, ${key} is a secondary wikidata key\n`
                 );
-                if (use_text_key && !text_etymology_key_is_filter)
+                if (osm_text_key && !text_etymology_key_is_filter)
                     query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["${osm_text_key}"]; // ${filter_clause} is a filter, ${osm_text_key} is a text etymology key\n`;
                 if (use_wikidata)
                     query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["wikidata"]; // ${filter_clause} is a filter\n`;
