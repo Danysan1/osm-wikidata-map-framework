@@ -39,7 +39,7 @@ export class EtymologyMap extends Map {
     private overpassService: OverpassService;
     private overpassWikidataService: OverpassWikidataMapService;
     private backendService: OwmfBackendService;
-    private lastSource?: string;
+    private lastSourceID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
     private shouldFetchAgain = false
@@ -240,38 +240,33 @@ export class EtymologyMap extends Map {
     }
 
     private async updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
-        if (this.getSource(ELEMENTS_SOURCE) !== undefined) {
-            if (debug) console.debug("updateElementsSource: missing source, skipping source update");
-            return;
-        }
-
-        const source = getCorrectFragmentParams().source,
+        const sourceID = getCorrectFragmentParams().source,
             bbox: BBox = [
                 Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
                 Math.floor(southWest.lat * 10) / 10,
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-        if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.debug("updateElementsSource: unchanged sourceID and BBox, skipping source update", { source, bbox });
+        if (this.lastSourceID === sourceID && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.debug("updateElementsSource: unchanged sourceID and BBox, skipping source update", { source: sourceID, bbox });
             return;
         }
 
         this.fetchInProgress = true;
-        this.lastSource = source;
+        this.lastSourceID = sourceID;
         this.lastBBox = bbox;
 
         try {
             showLoadingSpinner(true);
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService.canHandleSource(source))
-                data = await this.wikidataMapService.fetchMapData(source, bbox);
-            else if (this.overpassService.canHandleSource(source))
-                data = await this.overpassService.fetchMapClusterElements(source, bbox);
-            else if (this.overpassWikidataService.canHandleSource(source))
-                data = await this.overpassWikidataService.fetchMapClusterElements(source, bbox);
-            else if (this.backendService.canHandleSource(source))
-                data = await this.backendService.fetchMapClusterElements(source, bbox);
+            if (this.wikidataMapService.canHandleSource(sourceID))
+                data = await this.wikidataMapService.fetchMapData(sourceID, bbox);
+            else if (this.overpassService.canHandleSource(sourceID))
+                data = await this.overpassService.fetchMapClusterElements(sourceID, bbox);
+            else if (this.overpassWikidataService.canHandleSource(sourceID))
+                data = await this.overpassWikidataService.fetchMapClusterElements(sourceID, bbox);
+            else if (this.backendService.canHandleSource(sourceID))
+                data = await this.backendService.fetchMapClusterElements(sourceID, bbox);
             else
                 throw new Error("No service found");
 
@@ -280,43 +275,38 @@ export class EtymologyMap extends Map {
 
             this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
         } catch (e) {
-            logErrorMessage("Error fetching map data", "error", { source, bbox, e });
+            logErrorMessage("Error fetching map data", "error", { sourceID, bbox, e });
         }
     }
 
     private async updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
-        if (this.getSource(WIKIDATA_SOURCE) !== undefined) {
-            if (debug) console.debug("updateWikidataSource: missing source, skipping source update");
-            return;
-        }
-
-        const source = getCorrectFragmentParams().source,
+        const sourceID = getCorrectFragmentParams().source,
             bbox: BBox = [
                 Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
                 Math.floor(southWest.lat * 100) / 100,
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-        if (this.lastSource === source && this.lastBBox?.join(",") === bbox.join(",")) {
-            if (debug) console.debug("updateWikidataSource: unchanged sourceID and BBox, skipping source update", { source, bbox });
+        if (this.lastSourceID === sourceID && this.lastBBox?.join(",") === bbox.join(",")) {
+            if (debug) console.debug("updateWikidataSource: unchanged sourceID and BBox, skipping source update", { source: sourceID, bbox });
             return;
         }
 
         this.fetchInProgress = true;
-        this.lastSource = source;
+        this.lastSourceID = sourceID;
         this.lastBBox = bbox;
 
         try {
             showLoadingSpinner(true);
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService.canHandleSource(source))
-                data = await this.wikidataMapService.fetchMapData(source, bbox);
-            else if (this.overpassService.canHandleSource(source))
-                data = await this.overpassService.fetchMapElementDetails(source, bbox);
-            else if (this.overpassWikidataService.canHandleSource(source))
-                data = await this.overpassWikidataService.fetchMapElementDetails(source, bbox);
-            else if (this.backendService.canHandleSource(source))
-                data = await this.backendService.fetchMapElementDetails(source, bbox);
+            if (this.wikidataMapService.canHandleSource(sourceID))
+                data = await this.wikidataMapService.fetchMapData(sourceID, bbox);
+            else if (this.overpassService.canHandleSource(sourceID))
+                data = await this.overpassService.fetchMapElementDetails(sourceID, bbox);
+            else if (this.overpassWikidataService.canHandleSource(sourceID))
+                data = await this.overpassWikidataService.fetchMapElementDetails(sourceID, bbox);
+            else if (this.backendService.canHandleSource(sourceID))
+                data = await this.backendService.fetchMapElementDetails(sourceID, bbox);
             else
                 throw new Error("No service found");
 
@@ -325,7 +315,7 @@ export class EtymologyMap extends Map {
 
             this.prepareWikidataLayers(data, thresholdZoomLevel);
         } catch (e) {
-            logErrorMessage("Error fetching map data", "error", { source, bbox, e });
+            logErrorMessage("Error fetching map data", "error", { sourceID, bbox, e });
         }
     }
 
