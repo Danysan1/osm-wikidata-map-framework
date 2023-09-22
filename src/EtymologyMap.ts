@@ -150,6 +150,16 @@ export class EtymologyMap extends Map {
         }
     }
 
+    private fetchCompleted() {
+        if (debug) console.debug("fetchCompleted", { shouldFetchAgain: this.shouldFetchAgain });
+        this.fetchInProgress = false;
+        showLoadingSpinner(false);
+        if (this.shouldFetchAgain) {
+            this.shouldFetchAgain = false;
+            this.updateDataSource();
+        }
+    }
+
     /**
      * Event listener that fires when one of the map's sources loads or changes.
      * 
@@ -160,33 +170,27 @@ export class EtymologyMap extends Map {
         if (!e.isSourceLoaded || e.dataType !== "source")
             return;
 
-        const wikidataSourceEvent = e.dataType == "source" && e.sourceId == WIKIDATA_SOURCE,
-            elementsSourceEvent = e.dataType == "source" && e.sourceId == ELEMENTS_SOURCE,
-            globalSourceEvent = e.dataType == "source" && e.sourceId == GLOBAL_SOURCE;
+        const wikidataSourceEvent = e.sourceId === WIKIDATA_SOURCE,
+            elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE,
+            globalSourceEvent = e.sourceId === GLOBAL_SOURCE;
 
         if (wikidataSourceEvent || elementsSourceEvent || globalSourceEvent) {
             if (debug) console.debug("mapSourceDataHandler: data loaded", {
                 wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
             });
-            this.fetchInProgress = false;
-            showLoadingSpinner(false);
+            this.fetchCompleted();
 
-            if (this.shouldFetchAgain) {
-                this.shouldFetchAgain = false;
-                this.updateDataSource();
-            } else {
-                const wikidataFeatureCount = this.querySourceFeatures(WIKIDATA_SOURCE).length;
-                loadTranslator().then(t => {
-                    if (!this.wikidataSourceInitialized)
-                        this.wikidataSourceInitialized = true;
-                    else if (wikidataSourceEvent && wikidataFeatureCount === 0)
-                        showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000);
-                    else if (wikidataSourceEvent && !this.anyDetailShownBefore)
-                        showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
-                    else
-                        showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
-                });
-            }
+            const wikidataFeatureCount = this.querySourceFeatures(WIKIDATA_SOURCE).length;
+            loadTranslator().then(t => {
+                if (!this.wikidataSourceInitialized)
+                    this.wikidataSourceInitialized = true;
+                else if (wikidataSourceEvent && wikidataFeatureCount === 0)
+                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000);
+                else if (wikidataSourceEvent && !this.anyDetailShownBefore)
+                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
+                else
+                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
+            });
         }
     }
 
@@ -195,11 +199,9 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
      */
     private mapErrorHandler(err: any) {
-        this.fetchInProgress = false;
-        showLoadingSpinner(false);
-
         let errorMessage;
-        if ([GLOBAL_SOURCE, ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId) && err.error.status > 200) {
+        if ([GLOBAL_SOURCE, ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId)) {
+            this.fetchCompleted();
             loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error")));
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
@@ -290,6 +292,7 @@ export class EtymologyMap extends Map {
             this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
         } catch (e) {
             logErrorMessage("Error fetching map data", "error", { sourceID, bbox, e });
+            this.fetchCompleted();
         }
     }
 
@@ -328,6 +331,7 @@ export class EtymologyMap extends Map {
             this.prepareWikidataLayers(data, thresholdZoomLevel);
         } catch (e) {
             logErrorMessage("Error fetching map data", "error", { sourceID, bbox, e });
+            this.fetchCompleted();
         }
     }
 
