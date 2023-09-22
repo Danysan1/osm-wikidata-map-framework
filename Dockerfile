@@ -8,6 +8,7 @@ WORKDIR /var/www
 RUN a2enmod headers ssl rewrite deflate expires
 
 COPY ./apache.conf /etc/apache2/conf-available/owmf.conf
+COPY ./99_owmf_security.conf /etc/modsecurity/99_owmf_security.conf
 RUN a2enconf owmf.conf
 
 # https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md

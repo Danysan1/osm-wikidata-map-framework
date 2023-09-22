@@ -135,51 +135,37 @@ function prepareHTML(Configuration $conf)
 	);
 }
 
-/**
- * @param Configuration $conf
- * @return void
- */
-function prepareText(Configuration $conf)
+function prepareText(Configuration $conf): void
 {
 	preparePage($conf);
 	header("Content-Type: text/plain; charset=utf-8");
 }
 
-/**
- * @param Configuration $conf
- * @return void
- */
-function prepareCSV(Configuration $conf)
+function prepareCSV(Configuration $conf): void
 {
 	preparePage($conf);
 	header("Content-Type: text/csv; charset=utf-8");
 }
 
-/**
- * @param Configuration $conf
- * @return void
- */
-function prepareJSON(Configuration $conf)
+function prepareJSON(Configuration $conf): void
 {
 	preparePage($conf);
 	header("Content-Type: application/json; charset=utf-8");
 }
 
-/**
- * @param Configuration $conf
- * @return void
- */
-function prepareGeoJSON(Configuration $conf)
+function prepareXML(Configuration $conf): void
+{
+	preparePage($conf);
+	header("Content-Type: application/xml; charset=utf-8");
+}
+
+function prepareGeoJSON(Configuration $conf): void
 {
 	preparePage($conf);
 	header("Content-Type: application/geo+json; charset=utf-8");
 }
 
-/**
- * @param Configuration $conf
- * @return void
- */
-function prepareJS(Configuration $conf)
+function prepareJS(Configuration $conf): void
 {
 	preparePage($conf);
 	header("Content-Type: application/javascript; charset=utf-8");
