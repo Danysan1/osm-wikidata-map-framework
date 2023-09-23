@@ -161,19 +161,20 @@ export class OverpassService {
     ): string {
         let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];\n(\n`;
 
-        const raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
+        const notTooBig = '[!"sqkm"][!"boundary"]["type"!="boundary"]["natural"!="peninsula"]["place"!="archipelago"]', // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#excluded-elements
+            raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
             filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             extra_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
         if (debug) console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, extra_wd_keys, osm_text_key });
         filter_wd_keys.forEach(
-            key => query += `nwr[!"boundary"]["type"!="boundary"]["${key}"]; // ${key} is both filter and secondary wikidata key\n`
+            key => query += `nwr${notTooBig}["${key}"]; // ${key} is both filter and secondary wikidata key\n`
         );
         if (text_etymology_key_is_filter)
-            query += `nwr[!"boundary"]["type"!="boundary"]["${osm_text_key}"]; // ${osm_text_key} is both filter and text etymology key\n`;
+            query += `nwr${notTooBig}["${osm_text_key}"]; // ${osm_text_key} is both filter and text etymology key\n`;
         if (use_wikidata && !filter_tags && !osm_text_key)
-            query += `nwr[!"boundary"]["type"!="boundary"]["wikidata"];\n`;
+            query += `nwr${notTooBig}["wikidata"];\n`;
 
         filter_tags?.forEach(filter_tag => {
             const filter_split = filter_tag.split("="),
@@ -183,12 +184,12 @@ export class OverpassService {
 
             if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
                 extra_wd_keys.forEach(
-                    key => query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["${key}"]; // ${filter_clause} is a filter, ${key} is a secondary wikidata key\n`
+                    key => query += `nwr${notTooBig}["${filter_clause}"]["${key}"]; // ${filter_clause} is a filter, ${key} is a secondary wikidata key\n`
                 );
                 if (osm_text_key && !text_etymology_key_is_filter)
-                    query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["${osm_text_key}"]; // ${filter_clause} is a filter, ${osm_text_key} is a text etymology key\n`;
+                    query += `nwr${notTooBig}["${filter_clause}"]["${osm_text_key}"]; // ${filter_clause} is a filter, ${osm_text_key} is a text etymology key\n`;
                 if (use_wikidata)
-                    query += `nwr[!"boundary"]["type"!="boundary"]["${filter_clause}"]["wikidata"]; // ${filter_clause} is a filter\n`;
+                    query += `nwr${notTooBig}["${filter_clause}"]["wikidata"]; // ${filter_clause} is a filter\n`;
             }
         });
 

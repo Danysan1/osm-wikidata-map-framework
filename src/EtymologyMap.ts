@@ -242,19 +242,16 @@ export class EtymologyMap extends Map {
             loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
     }
 
-    private isBBoxChanged(sourceID: string, bbox: BBox) {
-        if (this.lastSourceID === sourceID &&
+    private isBBoxUnchanged(sourceID: string, bbox: BBox) {
+        const isBBoxUnchanged =
+            this.lastSourceID === sourceID &&
             this.lastBBox &&
             this.lastBBox[0] <= bbox[0] &&
             this.lastBBox[1] <= bbox[1] &&
             this.lastBBox[2] >= bbox[2] &&
-            this.lastBBox[3] >= bbox[3]) {
-            if (debug) console.debug("isBBoxChanged: unchanged sourceID and BBox", { lastSourceID: this.lastSourceID, sourceID, lastBBox: this.lastBBox, bbox });
-            return true;
-        } else {
-            if (debug) console.debug("isBBoxChanged: sourceID or BBox changed", { lastSourceID: this.lastSourceID, sourceID, lastBBox: this.lastBBox, bbox });
-            return false;
-        }
+            this.lastBBox[3] >= bbox[3];
+        if (debug) console.debug("isBBoxUnchanged", { isBBoxUnchanged, lastSourceID: this.lastSourceID, sourceID, lastBBox: this.lastBBox, bbox });
+        return isBBoxUnchanged;
     }
 
     private async updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
@@ -265,7 +262,7 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-        if (this.isBBoxChanged("elements-" + sourceID, bbox))
+        if (this.isBBoxUnchanged("elements-" + sourceID, bbox))
             return;
 
         this.fetchInProgress = true;
@@ -304,7 +301,7 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-        if (this.isBBoxChanged("details" + sourceID, bbox))
+        if (this.isBBoxUnchanged("details" + sourceID, bbox))
             return;
 
         this.fetchInProgress = true;

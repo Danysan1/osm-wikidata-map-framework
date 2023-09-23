@@ -88,6 +88,23 @@ All other translations are located in the [`public/locales/{LANGUAGE_CODE}/commo
 In order to fix an error to an existing translation you simply need to edit the relevant file.
 In order to create a new translation you can copy one of the existing language folders in [`public/locales`](public/locales/) to a new folder with the ISO 639-1 code of the new language you want to translate and then edit the new `common.json`.
 
+### Excluded elements
+
+OWMF makes the choice to remove extremely big elements when fetching from OpenStreetMap for two reasons:
+
+- They are often complex and heavy to download, elaborate and store from both a time and space point of view. Downloading the data for a small city without excluding containing areas can easily lead to download hundreds of megabytes, causing very long elaboration times on the back-end and causing almost all front-end user devices to hang or crash
+- They hinder visualization of small elements. Map are always approximations of reality and it's normal to hide big elements at high zoom and most small elements at low zoom, in order to not overload the user with too many items. Being OWMF designed to show details only at high zoom it's appropriate to remove very big elements.
+
+Tags causing elements to be removed include:
+
+- `boundary=*`
+- `type=boundary`
+- `natural=peninsula` (ex: [Peloponnese](https://www.openstreetmap.org/relation/5913779), [Arabian Peninsula](https://www.openstreetmap.org/relation/5631846))
+- `place=archipelago` (ex: [Canary Islands](https://www.openstreetmap.org/relation/5392189))
+- `sqkm=*` (ex: [Persian Gulf](https://www.openstreetmap.org/relation/9326283), [Lake Superior](https://www.openstreetmap.org/relation/4039486))
+
+This filtering is done in [OwmfFilterDAG](airflow/dags/OwmfFilterDAG.py) for the DB data and by [OverpassService](src/services/OverpassService.ts) for Overpass data.
+
 ### Deployment
 
 In order to make a deployed instance function correctly all instance settings must be set in `.env`.

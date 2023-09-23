@@ -152,6 +152,7 @@ class OwmfFilterDAG(DAG):
         )
         task_keep_name >> task_keep_possible_ety
 
+        # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#excluded-elements
         task_remove_non_interesting = OsmiumTagsFilterOperator(
             task_id = "remove_non_interesting_elements",
             container_name = "osm-wikidata-map-framework-remove_non_interesting_elements",
