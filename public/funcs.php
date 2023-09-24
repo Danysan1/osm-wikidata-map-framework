@@ -49,6 +49,9 @@ function preparePage(Configuration $conf)
 /**
  * @param Configuration $conf
  * @return void
+ * 
+ * @see https://maplibre.org/maplibre-gl-js/docs/#csp-directives
+ * @see https://docs.mapbox.com/mapbox-gl-js/guides/browsers-and-testing/
  */
 function prepareHTML(Configuration $conf)
 {

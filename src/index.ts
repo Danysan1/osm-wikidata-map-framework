@@ -172,10 +172,11 @@ function initPage() {
         initMap();
     } else {
         const errorMessage = document.createElement("strong");
-        errorMessage.innerHTML = 'Your browser does not support Mapbox GL JS, which is needed to render the map. You can find out the minimum requirements <a href="https://docs.mapbox.com/help/troubleshooting/mapbox-browser-support/">here</a>.';
+        //errorMessage.innerHTML = 'Your browser does not support Mapbox GL JS, which is needed to render the map. You can find out the minimum requirements <a href="https://docs.mapbox.com/help/troubleshooting/mapbox-browser-support/">here</a>.';
+        errorMessage.innerHTML = 'Your browser does not support Maplibre GL JS, which is needed to render the map.';
         document.body.appendChild(errorMessage);
 
-        logErrorMessage("Device/Browser does not support Mapbox GL JS");
+        logErrorMessage("Device/Browser does not support the map library.");
     }
 
     Array.from(document.getElementsByClassName("dataset_button")).forEach(
