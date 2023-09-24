@@ -44,14 +44,6 @@ class EtymologyColorControl extends DropdownControl {
     private pictureUnavailable: string;
     private setLayerColor: (color: string | ExpressionSpecification) => void;
 
-    private baseChartData = {
-        labels: [],
-        datasets: [{
-            data: [],
-            backgroundColor: [],
-        }]
-    } as ChartData<"pie">;
-
     constructor(
         startColorScheme: ColorSchemeID,
         onSchemeChange: (colorScheme: ColorSchemeID) => void,
@@ -343,7 +335,13 @@ class EtymologyColorControl extends DropdownControl {
      * Initializes or updates the chart with the given sttistics
      */
     private setChartStats(stats: EtymologyStat[]) {
-        const data = structuredClone(this.baseChartData);
+        const data: ChartData<"pie"> = {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [],
+            }]
+        };
         stats.forEach((row: EtymologyStat) => {
             data.labels?.push(row.name);
             (data.datasets[0].backgroundColor as string[]).push(row.color || '#223b53');

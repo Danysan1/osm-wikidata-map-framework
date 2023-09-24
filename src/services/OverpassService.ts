@@ -161,7 +161,8 @@ export class OverpassService {
     ): string {
         let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];\n(\n`;
 
-        const notTooBig = '[!"sqkm"][!"boundary"]["type"!="boundary"]["natural"!="peninsula"]["place"!="archipelago"]', // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#excluded-elements
+        // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
+        const notTooBig = '[!"sqkm"][!"boundary"]["type"!="boundary"]["natural"!="peninsula"]["place"!="archipelago"]',
             raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
             filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
