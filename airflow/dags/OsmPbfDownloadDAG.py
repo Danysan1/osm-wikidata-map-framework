@@ -241,7 +241,7 @@ class OsmPbfDownloadDAG(DAG):
 
         task_wait_for_torrent_download = TransmissionWaitTorrentSensor(
             task_id = "wait_torrent_download",
-            retries = 3,
+            retries = 5,
             torrent_hash = "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}",
             torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
@@ -266,7 +266,7 @@ class OsmPbfDownloadDAG(DAG):
 
         task_save_pbf = BashOperator(
             task_id = "save_pbf",
-            bash_command = 'cp "$downloadedFilePath" "$pbfPath" && echo "$date" > "$datePath"',
+            bash_command = 'mv "$downloadedFilePath" "$pbfPath" && echo "$date" > "$datePath"',
             env = {
                 "downloadedFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='downloaded_file_path') }}",
                 "pbfPath": pbf_path,

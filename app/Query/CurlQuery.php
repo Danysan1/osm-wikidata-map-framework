@@ -16,6 +16,7 @@ abstract class CurlQuery extends BaseRemoteQuery
     public function __construct(array|string $query, string $endpointURL, ?string $method = "GET", ?string $userAgent = null)
     {
         $this->httpRequestQuery = is_array($query) ? http_build_query($query) : urlencode($query);
+        //error_log("CurlQuery endpoint URL: $endpointURL");
         parent::__construct($endpointURL);
 
         $url = $endpointURL;
