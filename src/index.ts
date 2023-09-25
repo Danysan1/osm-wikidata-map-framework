@@ -44,8 +44,8 @@ if (enable_stadia_maps) {
         //stadiaStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
         stadiaStyle('stadia_outdoors', "Stadia Outdoors", 'outdoors'),
         stadiaStyle('stadia_osm_bright', "Stadia OSM Bright", 'osm_bright'),
-        stadiaStyle('stamen_toner', "Stamen Toner", 'stamen_toner', true),
-        stadiaStyle('stamen_terrain', "Stament Terrain", 'stamen_terrain', true),
+        stadiaStyle('stamen_toner', "Stamen Toner", 'stamen_toner'),
+        stadiaStyle('stamen_terrain', "Stamen Terrain", 'stamen_terrain'),
     );
 }
 

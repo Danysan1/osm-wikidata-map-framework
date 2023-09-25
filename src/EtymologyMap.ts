@@ -351,6 +351,7 @@ export class EtymologyMap extends Map {
             wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
             wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
             wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill';
+        if (debug) console.debug("prepareWikidataLayers set layer color", { colorSchemeColor });
 
         this.addOrUpdateGeoJSONSource(
             WIKIDATA_SOURCE,
@@ -454,7 +455,7 @@ export class EtymologyMap extends Map {
                     }
                 },
                 (color) => {
-                    if (debug) console.debug("initWikidataControls set color", { color });
+                    if (debug) console.debug("initWikidataControls set layer color", { color });
                     [
                         ["wikidata_source_layer_point", "circle-color"],
                         ["wikidata_source_layer_lineString", 'line-color'],

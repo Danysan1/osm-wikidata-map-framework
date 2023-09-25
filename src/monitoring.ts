@@ -29,7 +29,7 @@ function initSentry() {
     }
 }
 
-function logErrorMessage(message: string, level: SeverityLevel = "error", extra: object | undefined = undefined) {
+function logErrorMessage(message: string, level: SeverityLevel = "error", extra: Error | Extras | undefined = undefined) {
     if (level === "warning")
         console.warn(message, extra);
     else
@@ -39,12 +39,12 @@ function logErrorMessage(message: string, level: SeverityLevel = "error", extra:
         if (extra instanceof Error) {
             captureException(extra, {
                 level: level,
-                extra: ({ message } as Extras)
+                extra: { message }
             });
         } else {
             captureMessage(message, {
                 level: level,
-                extra: (extra as Extras)
+                extra: extra
             });
         }
     }).catch((err) => console.error(
