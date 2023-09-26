@@ -406,8 +406,6 @@ services:
   owmf-postgis:
     image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     #image: odidev/postgis:13-3.1-alpine # supports arm64
-    ports:
-      - "${owmf_db_port:-5432}:5432"
     shm_size: 100m
     environment:
       - POSTGRES_USER=${owmf_db_user}

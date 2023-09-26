@@ -26,6 +26,9 @@
   "i18n-ally.localesPaths": [
     "public/locales"
   ],
+  "[typescript]": {
+      "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
   "i18n-ally.keystyle": "nested",
   "i18n-ally.indent": 4
 }

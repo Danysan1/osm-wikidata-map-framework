@@ -1,0 +1,34 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "command": "docker-compose --profile dev up",
+            "name": "Docker",
+            "request": "launch",
+            "type": "node-terminal"
+        },
+        {
+            "name": "NPM",
+            "request": "launch",
+            "runtimeArgs": [
+                "run-script",
+                "watch"
+            ],
+            "runtimeExecutable": "npm",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        },
+    ],
+    "compounds": [
+      {
+        "name": "All",
+        "configurations": ["Docker", "NPM"],
+        "stopAll": true
+      }
+    ]
+}
