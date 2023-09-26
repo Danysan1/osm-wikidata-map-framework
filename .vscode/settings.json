@@ -20,7 +20,8 @@
     "VERIFYPEER",
     "wikibase"
   ],
-  "python.linting.enabled": true,
+  "python.linting.pylint": true,
+  "python.formatting.autopep8": true,
   "dotenv.enableAutocloaking": false,
   "i18n-ally.localesPaths": [
     "public/locales"

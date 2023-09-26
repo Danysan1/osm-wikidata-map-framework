@@ -102,6 +102,10 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
     return procede
 
 class OsmPbfDownloadDAG(DAG):
+    """
+    Apache Airflow DAG for OSM-Wikidata Map Framework OSM PBF file download.
+    """
+
     def __init__(self,
             pbf_url:str=None,
             rss_url:str=None,
@@ -113,7 +117,7 @@ class OsmPbfDownloadDAG(DAG):
             **kwargs
         ):
         """
-        DAG for OSM-Wikidata Map Framework DB initialization
+        Apache Airflow DAG for OSM-Wikidata Map Framework OSM PBF file download.
 
         Parameters:
         ----------
