@@ -26,6 +26,12 @@ def do_copy_file(source_path:str, dest_path:str) -> None:
     copyfile(source_path, dest_path)
 
 class OwmfFilterDAG(DAG):
+    """
+    Apache Airflow DAG for OSM-Wikidata Map Framework OSM data filtering.
+    Triggered on the availability of the PBF file for the prefix.
+    Filters the appropriate OSM data and exports it to a PG tab-separated-values file ready for importing into the DB.
+    """
+
     def __init__(self,
             upload_db_conn_id:str=None,
             prefix:str=None,
@@ -34,7 +40,7 @@ class OwmfFilterDAG(DAG):
             **kwargs
         ):
         """
-        DAG for OSM-Wikidata Map Framework DB initialization
+        Apache Airflow DAG for OSM-Wikidata Map Framework OSM data filtering.
 
         Parameters:
         ----------

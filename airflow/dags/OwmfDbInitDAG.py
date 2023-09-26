@@ -122,6 +122,11 @@ def choose_propagation_method(propagate_data:str) -> str:
         return "elaborate_data.join_post_propagation"
 
 class OwmfDbInitDAG(DAG):
+    """
+    Apache Airflow DAG for OSM-Wikidata Map Framework DB initialization.
+    Triggered on the availability of the PG tab-separated-values file ready for importing into the DB.
+    """
+
     def __init__(self,
             local_db_conn_id:str="local_owmf_postgis_db",
             upload_db_conn_id:str=None,
@@ -131,7 +136,7 @@ class OwmfDbInitDAG(DAG):
             **kwargs
         ):
         """
-        DAG for OSM-Wikidata Map Framework DB initialization
+        Apache Airflow DAG for OSM-Wikidata Map Framework DB initialization.
 
         Parameters:
         ----------
