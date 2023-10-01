@@ -100,10 +100,9 @@ Tags causing elements to be removed include:
 - `boundary=*`
 - `type=boundary`
 - `natural=peninsula` (ex: [Peloponnese](https://www.openstreetmap.org/relation/5913779), [Arabian Peninsula](https://www.openstreetmap.org/relation/5631846))
-- `place=archipelago` (ex: [Canary Islands](https://www.openstreetmap.org/relation/5392189))
+- `place=sea` or `place=archipelago` (ex: [Canary Islands](https://www.openstreetmap.org/relation/5392189))
 - `sqkm=*` (ex: [Persian Gulf](https://www.openstreetmap.org/relation/9326283), [Lake Superior](https://www.openstreetmap.org/relation/4039486))
-- `end_date=*`
-- `route=historic`
+- `end_date=*` or `route=historic`
 
 This filtering is done in [OwmfFilterDAG](airflow/dags/OwmfFilterDAG.py) for the DB data and by [OverpassService](src/services/OverpassService.ts) for Overpass data.
 
