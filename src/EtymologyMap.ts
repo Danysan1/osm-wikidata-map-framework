@@ -17,6 +17,7 @@ import { LanguageControl } from './controls/LanguageControl';
 import { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
+import { DataTableControl } from './controls/DataTableControl';
 import './style.css';
 import { WikidataMapService } from './services/WikidataMapService';
 import { OverpassService } from './services/OverpassService';
@@ -495,6 +496,9 @@ export class EtymologyMap extends Map {
                 "https://query.wikidata.org/#",
                 minZoomLevel
             ), 'top-right');
+            // this.addControl(new DataTableControl(
+            //     "📋", t("datatable", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
+            // ));
         });
     }
 
