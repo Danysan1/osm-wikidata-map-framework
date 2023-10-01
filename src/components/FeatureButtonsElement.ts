@@ -1,17 +1,13 @@
-import { GeoJSONFeature } from 'maplibre-gl';
-
-// import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
-
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { debug, getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
 import { EtymologyDetails } from '../feature.model';
-import { EtymologyFeatureProperties } from '../generated/owmf';
+import { EtymologyFeature, EtymologyFeatureProperties } from '../generated/owmf';
 import { setFragmentParams } from '../fragment';
 
 export class FeatureButtonsElement extends HTMLDivElement {
     private _destinationZoom = 12;
-    private _feature?: GeoJSONFeature;
+    private _feature?: EtymologyFeature;
 
     constructor() {
         super();
@@ -28,11 +24,11 @@ export class FeatureButtonsElement extends HTMLDivElement {
         this.render();
     }
 
-    get feature(): GeoJSONFeature | undefined {
+    get feature(): EtymologyFeature | undefined {
         return this._feature;
     }
 
-    set feature(feature: GeoJSONFeature | undefined) {
+    set feature(feature: EtymologyFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
             if (debug) console.info("Feature: unsetting feature");
@@ -174,7 +170,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
 customElements.define('owmf-feature-buttons-element', FeatureButtonsElement, { extends: 'div' });
 
-export function featureToButtonsDomElement(feature: GeoJSONFeature, destinationZoom: number): FeatureButtonsElement {
+export function featureToButtonsDomElement(feature: EtymologyFeature, destinationZoom: number): FeatureButtonsElement {
     const element = document.createElement("div", { is: 'owmf-feature-buttons-element' }) as FeatureButtonsElement;
     element.destinationZoom = destinationZoom;
     element.feature = feature;

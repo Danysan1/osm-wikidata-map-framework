@@ -496,9 +496,9 @@ export class EtymologyMap extends Map {
                 "https://query.wikidata.org/#",
                 minZoomLevel
             ), 'top-right');
-            // this.addControl(new DataTableControl(
-            //     "📋", t("datatable", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
-            // ));
+            this.addControl(new DataTableControl(
+                "📋", t("datatable", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
+            ));
         });
     }
 
