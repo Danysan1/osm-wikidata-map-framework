@@ -11,7 +11,6 @@ import { featureToButtonsDomElement } from '../components/FeatureButtonsElement'
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
     private button?: HTMLButtonElement;
-    private icon: string;
     private title: string;
     private sourceId: string;
     private map?: Map;
@@ -19,12 +18,10 @@ export class DataTableControl implements IControl {
     private moveEndHandler: (e: MapEvent) => void;
 
     constructor(
-        icon: string,
         title: string,
         sourceId: string,
         minZoomLevel = 0
     ) {
-        this.icon = icon;
         this.title = title;
         this.sourceId = sourceId;
 
@@ -48,11 +45,17 @@ export class DataTableControl implements IControl {
         this.button = document.createElement("button");
         this.button.title = this.title;
         this.button.ariaLabel = this.title;
-        this.button.innerText = this.icon;
         this.button.addEventListener("click", () => {
             this.openTable();
             return false;
         });
+
+        const icon = document.createElement("img");
+        icon.className  = "button_img";
+        icon.alt = "Data table symbol";
+        icon.src = "https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg";
+        this.button.appendChild(icon);
+
         this.container.appendChild(this.button);
 
         this.show(false);
@@ -113,11 +116,20 @@ export class DataTableControl implements IControl {
 
                     const name = f.properties?.name,
                         alt_names = f.properties?.alt_name,
-                        wikidata = document.createElement("a"),
+                        feature_wikidata = document.createElement("a"),
+                        linked_wikidata = document.createElement("ul"),
                         buttons = featureToButtonsDomElement(f, 15);
-                    wikidata.innerText = f.properties?.wikidata ?? "";
-                    wikidata.href = `https://www.wikidata.org/wiki/${f.properties?.wikidata}`;
-                    [name, alt_names, wikidata, buttons].forEach(value => {
+                        feature_wikidata.innerText = f.properties?.wikidata ?? "";
+                        feature_wikidata.href = `https://www.wikidata.org/wiki/${f.properties?.wikidata}`;
+                    f.properties?.etymologies?.forEach(etymology => {
+                        const li = document.createElement("li"),
+                            a = document.createElement("a");
+                        a.innerText = etymology.wikidata ?? "";
+                        a.href = `https://www.wikidata.org/wiki/${etymology.wikidata}`;
+                        li.appendChild(a);
+                        linked_wikidata.appendChild(li);
+                    });
+                    [name, alt_names, feature_wikidata, linked_wikidata, buttons].forEach(value => {
                         const td = document.createElement("td");
                         if (value instanceof HTMLElement)
                             td.appendChild(value);

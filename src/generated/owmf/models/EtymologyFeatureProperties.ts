@@ -27,13 +27,13 @@ import {
  */
 export interface EtymologyFeatureProperties {
     /**
-     * 
+     * Alternative names of the feature, separated by a semicolon
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     alt_name?: string;
     /**
-     * 
+     * Name of the Wikimedia Commons category for this feature
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
@@ -45,19 +45,19 @@ export interface EtymologyFeatureProperties {
      */
     el_id?: number;
     /**
-     * 
+     * List of linked items that describe some aspect of this feature (which aspect depends on the configuration of this instance)
      * @type {Array<Etymology>}
      * @memberof EtymologyFeatureProperties
      */
     etymologies?: Array<Etymology>;
     /**
-     * 
+     * Whether OpenStreetMap is the original source of the geometry of this feature
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */
     from_osm?: boolean;
     /**
-     * 
+     * Whether Wikidata is the original source of the geometry of this feature
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */

@@ -497,7 +497,7 @@ export class EtymologyMap extends Map {
                 minZoomLevel
             ), 'top-right');
             this.addControl(new DataTableControl(
-                "📋", t("datatable", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
+                t("datatable", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
             ));
         });
     }

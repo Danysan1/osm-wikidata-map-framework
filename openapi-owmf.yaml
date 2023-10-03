@@ -478,7 +478,7 @@ components:
       properties:
         et_id:
           type: integer
-          description: Internal ID for the etymology relation (unique within the request but may vary after DB updates)
+          description: Internal ID for the etymology relationship (unique within the request but may vary after OWMF DB updates)
         from_osm:
           type: boolean
           description: Whether OpenStreetMap is the original source of this etymology
@@ -491,7 +491,7 @@ components:
             - relation
         from_osm_id:
           type: integer
-          description: ID (unique only within its type) of the source OpenStreetMap element
+          description: ID (unique only within its osm_type) of the source OpenStreetMap element
         from_wikidata:
           type: boolean
           description: Whether Wikidata is the original source of this etymology
@@ -511,7 +511,7 @@ components:
           description: Whether this etymology has been obtained through propagation
         wd_id:
           type: integer
-          description: Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
+          description: Internal ID for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
         wikidata:
           type: string
           description: Q-ID of this etymology Wikidata item
@@ -533,20 +533,26 @@ components:
               properties:
                 alt_name:
                   type: string
+                  description: Alternative names of the feature, separated by a semicolon
                 commons:
                   type: string
+                  description: Name of the Wikimedia Commons category for this feature
                   example: "Category:Colosseum"
                 el_id:
                   type: integer
+                  description: Internal ID for this feature (unique within the request but may vary after OWMF DB updates)
                 etymologies:
                   type: array
+                  description: List of linked items that describe some aspect of this feature (which aspect depends on the configuration of this instance)
                   title: EtymologyFeatureEtymologies
                   items:
                     $ref: "#/components/schemas/Etymology" # Beware: Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
                 from_osm:
                   type: boolean
+                  description: Whether OpenStreetMap is the original source of the geometry of this feature
                 from_wikidata:
                   type: boolean
+                  description: Whether Wikidata is the original source of the geometry of this feature
                 name:
                   type: string
                   description: Localized name of the feature
@@ -567,7 +573,7 @@ components:
                     - relation
                 osm_id:
                   type: integer
-                  description: ID (unique only within its type) of the OpenStreetMap element for this feature
+                  description: ID (unique only within its osm_type) of the OpenStreetMap element for this feature
                 picture:
                   type: string
                   description: Title of a Wikimedia Commons picture for this feature

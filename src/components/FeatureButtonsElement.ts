@@ -50,21 +50,21 @@ export class FeatureButtonsElement extends HTMLDivElement {
         if (!(feature_buttons_template instanceof HTMLTemplateElement))
             throw new Error("Missing feature buttons template");
 
-        const properties = this.feature.properties as EtymologyFeatureProperties,
+        const properties = this.feature.properties,
             etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
             detail_container = feature_buttons_template.content.cloneNode(true) as HTMLElement,
-            osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
+            osm_full_id = properties?.osm_type && properties?.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
 
         if (debug) console.info("FeatureButtonsElement render", {
-            el_id: properties.el_id, feature: this.feature, etymologies, detail_container
+            el_id: properties?.el_id, feature: this.feature, etymologies, detail_container
         });
 
         translateContent(detail_container, ".i18n_location", "feature_details.location", "Location");
         translateAnchorTitle(detail_container, ".title_i18n_location", "feature_details.location", "Location");
 
-        const wikidata = properties.wikidata,
+        const wikidata = properties?.wikidata,
             has_wikidata = wikidata && wikidata !== 'null',
-            commons = properties.commons,
+            commons = properties?.commons,
             has_commons = commons && commons !== 'null',
             element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
         if (!element_wikidata_button) {
@@ -76,7 +76,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_wikidata_button.classList.add("hiddenElement");
         }
 
-        const wikipedia = properties.wikipedia,
+        const wikipedia = properties?.wikipedia,
             has_wikipedia = wikipedia && wikipedia !== 'null',
             element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
         if (!element_wikipedia_button) {
@@ -121,8 +121,8 @@ export class FeatureButtonsElement extends HTMLDivElement {
             lat = typeof coord[1] === "number" ? coord[1] : undefined;
 
         const element_matcher_button = detail_container.querySelector<HTMLAnchorElement>('.element_matcher_button'),
-            show_osm_matcher = osm_full_id && !properties.wikidata && lat !== undefined && lon !== undefined,
-            show_wd_matcher = properties.wikidata && !osm_full_id;
+            show_osm_matcher = osm_full_id && !properties?.wikidata && lat !== undefined && lon !== undefined,
+            show_wd_matcher = properties?.wikidata && !osm_full_id;
         if (!element_matcher_button) {
             if (debug) console.info("Missing element_matcher_button");
         } else if (show_osm_matcher) {
