@@ -543,10 +543,14 @@ components:
                   description: Internal ID for this feature (unique within the request but may vary after OWMF DB updates)
                 etymologies:
                   type: array
-                  description: List of linked items that describe some aspect of this feature (which aspect depends on the configuration of this instance)
                   title: EtymologyFeatureEtymologies
+                  description:
+                    List of linked items that describe some aspect of this feature.
+                    Which aspect is represented depends on the configuration of this OWMF instance.
+                    Typically etymologies are sent as an array of Etymology objects.
+                    Both Mapbox GL and MapLibre GL stringify the array as JSON in some circumstances.
                   items:
-                    $ref: "#/components/schemas/Etymology" # Beware: Even though it is received as an array, for some reason both Mapbox GL and MapLibre GL stringify it as JSON
+                    $ref: "#/components/schemas/Etymology"
                 from_osm:
                   type: boolean
                   description: Whether OpenStreetMap is the original source of the geometry of this feature

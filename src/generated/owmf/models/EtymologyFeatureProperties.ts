@@ -39,13 +39,13 @@ export interface EtymologyFeatureProperties {
      */
     commons?: string;
     /**
-     * 
+     * Internal ID for this feature (unique within the request but may vary after OWMF DB updates)
      * @type {number}
      * @memberof EtymologyFeatureProperties
      */
     el_id?: number;
     /**
-     * List of linked items that describe some aspect of this feature (which aspect depends on the configuration of this instance)
+     * List of linked items that describe some aspect of this feature. Which aspect is represented depends on the configuration of this OWMF instance. Typically etymologies are sent as an array of Etymology objects. Both Mapbox GL and MapLibre GL stringify the array as JSON in some circumstances.
      * @type {Array<Etymology>}
      * @memberof EtymologyFeatureProperties
      */
@@ -87,7 +87,7 @@ export interface EtymologyFeatureProperties {
      */
     osm_type?: EtymologyFeaturePropertiesOsmTypeEnum;
     /**
-     * ID (unique only within its type) of the OpenStreetMap element for this feature
+     * ID (unique only within its osm_type) of the OpenStreetMap element for this feature
      * @type {number}
      * @memberof EtymologyFeatureProperties
      */

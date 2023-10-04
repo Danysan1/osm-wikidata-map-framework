@@ -3,30 +3,28 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } f
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent, Popup } from 'mapbox-gl';
 
 import { debug } from '../config';
-import { logErrorMessage } from '../monitoring';
-import { EtymologyFeature, EtymologyResponse } from '../generated/owmf';
-import { GeoJSON, Feature } from 'geojson';
+import { Etymology, EtymologyFeature, EtymologyResponse } from '../generated/owmf';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
 
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
     private button?: HTMLButtonElement;
     private title: string;
-    private sourceId: string;
+    private layers: string[];
     private map?: Map;
     private sourceDataHandler: (e: MapSourceDataEvent) => void;
     private moveEndHandler: (e: MapEvent) => void;
 
-    constructor(
-        title: string,
-        sourceId: string,
-        minZoomLevel = 0
-    ) {
+    constructor(title: string, sourceId: string, minZoomLevel = 0) {
         this.title = title;
-        this.sourceId = sourceId;
+        this.layers = [
+            sourceId + "_layer_point",
+            sourceId + "_layer_lineString",
+            sourceId + "_layer_polygon_fill"
+        ];
 
         this.sourceDataHandler = e => {
-            if (e.isSourceLoaded && e.dataType === "source" && this.sourceId === e.sourceId)
+            if (e.isSourceLoaded && e.dataType === "source" && sourceId === e.sourceId)
                 this.show(true);
         };
 
@@ -40,18 +38,15 @@ export class DataTableControl implements IControl {
         this.map = map;
 
         this.container = document.createElement("div");
-        this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl link-ctrl';
+        this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl data-table-ctrl';
 
         this.button = document.createElement("button");
         this.button.title = this.title;
         this.button.ariaLabel = this.title;
-        this.button.addEventListener("click", () => {
-            this.openTable();
-            return false;
-        });
+        this.button.addEventListener("click", () => this.openTable());
 
         const icon = document.createElement("img");
-        icon.className  = "button_img";
+        icon.className = "button_img";
         icon.alt = "Data table symbol";
         icon.src = "https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg";
         this.button.appendChild(icon);
@@ -84,67 +79,83 @@ export class DataTableControl implements IControl {
     }
 
     private openTable() {
-        const map = this.map,
-            source = map?.getSource(this.sourceId)
-        if (map !== undefined && source !== undefined) {
-            const data = (source as any)._data as (GeoJSON & EtymologyResponse) | undefined;
-            if (data !== undefined) {
-
-                const table = document.createElement("table"),
-                    thead = document.createElement("thead"),
-                    head_tr = document.createElement("tr"),
-                    tbody = document.createElement("tbody"),
-                    popup = new Popup({
-                        closeButton: true,
-                        closeOnClick: true,
-                        closeOnMove: true,
-                        className: "owmf_data_table_popup"
-                    });
-                table.appendChild(thead);
-                thead.appendChild(head_tr);
-                table.appendChild(tbody);
-
-                ["Name", "Alt names", "Wikidata", "Actions"].forEach(column => {
-                    const th = document.createElement("th");
-                    th.innerText = column;
-                    head_tr.appendChild(th);
+        const map = this.map;
+        if (map !== undefined) {
+            const features = map.queryRenderedFeatures({ layers: this.layers }),
+                table = document.createElement("table"),
+                thead = document.createElement("thead"),
+                head_tr = document.createElement("tr"),
+                tbody = document.createElement("tbody"),
+                popup = new Popup({
+                    closeButton: true,
+                    closeOnClick: true,
+                    closeOnMove: true,
+                    className: "owmf_data_table_popup"
                 });
+            table.className = "owmf_data_table";
+            table.appendChild(thead);
+            thead.appendChild(head_tr);
+            table.appendChild(tbody);
 
-                data.features?.forEach((f: EtymologyFeature) => {
-                    const tr = document.createElement("tr");
-                    tbody.appendChild(tr);
+            ["Name", "Alt names", "Wikidata", "Linked entities", "Actions"].forEach(column => {
+                const th = document.createElement("th");
+                th.innerText = column;
+                head_tr.appendChild(th);
+            });
 
-                    const name = f.properties?.name,
-                        alt_names = f.properties?.alt_name,
-                        feature_wikidata = document.createElement("a"),
-                        linked_wikidata = document.createElement("ul"),
-                        buttons = featureToButtonsDomElement(f, 15);
-                        feature_wikidata.innerText = f.properties?.wikidata ?? "";
-                        feature_wikidata.href = `https://www.wikidata.org/wiki/${f.properties?.wikidata}`;
-                    f.properties?.etymologies?.forEach(etymology => {
-                        const li = document.createElement("li"),
-                            a = document.createElement("a");
-                        a.innerText = etymology.wikidata ?? "";
-                        a.href = `https://www.wikidata.org/wiki/${etymology.wikidata}`;
-                        li.appendChild(a);
-                        linked_wikidata.appendChild(li);
-                    });
-                    [name, alt_names, feature_wikidata, linked_wikidata, buttons].forEach(value => {
-                        const td = document.createElement("td");
-                        if (value instanceof HTMLElement)
-                            td.appendChild(value);
-                        else
-                            td.innerText = value ?? "";
-                        tr.appendChild(td);
-                    });
-                });
+            features?.forEach(f => this.createFeatureRow(f, tbody));
 
-                popup.setLngLat(map.unproject([0, 0]))
-                    .setDOMContent(table)
-                    .addTo(map);
-                if (debug) console.debug("DataTableControl", { source, popup })
-                // console.table(data.features?.map(f => f.properties));
-            }
+            popup.setLngLat(map.unproject([0, 0]))
+                .setDOMContent(table)
+                .addTo(map);
+            if (debug) console.debug("DataTableControl", { popup })
+            // console.table(data.features?.map(f => f.properties));
         }
+    }
+
+    private createFeatureRow(feature: EtymologyFeature, tbody: HTMLTableSectionElement) {
+        const tr = document.createElement("tr"),
+            id = feature.properties?.wikidata?.toString() || feature.properties?.name;
+        if (id) {
+            if (debug) console.debug("createFeatureRow", { id, feature });
+            if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
+                return;
+            tr.dataset.featureId = id;
+        }
+        tbody.appendChild(tr);
+
+        const name = feature.properties?.name,
+            alt_names = feature.properties?.alt_name,
+            feature_wikidata = document.createElement("a"),
+            buttons = featureToButtonsDomElement(feature, 17),
+            etymologies = typeof feature.properties?.etymologies === "string" ? JSON.parse(feature.properties?.etymologies) as Etymology[] : feature.properties?.etymologies;
+        let linked_wikidata: HTMLAnchorElement | HTMLUListElement;
+        feature_wikidata.innerText = feature.properties?.wikidata ?? "";
+        feature_wikidata.href = `https://www.wikidata.org/wiki/${feature.properties?.wikidata}`;
+        if (etymologies?.length === 1) {
+            linked_wikidata = this.etymologyLink(etymologies[0]);
+        } else {
+            linked_wikidata = document.createElement("ul");
+            etymologies?.forEach(etymology => {
+                const li = document.createElement("li");
+                li.appendChild(this.etymologyLink(etymology));
+                linked_wikidata.appendChild(li);
+            });
+        }
+        [name, alt_names, feature_wikidata, linked_wikidata, buttons].forEach(value => {
+            const td = document.createElement("td");
+            if (value instanceof HTMLElement)
+                td.appendChild(value);
+            else
+                td.innerText = value ?? "";
+            tr.appendChild(td);
+        });
+    }
+
+    private etymologyLink(etymology: Etymology): HTMLAnchorElement {
+        const a = document.createElement("a");
+        a.innerText = etymology.wikidata ?? "";
+        a.href = `https://www.wikidata.org/wiki/${etymology.wikidata}`;
+        return a;
     }
 }

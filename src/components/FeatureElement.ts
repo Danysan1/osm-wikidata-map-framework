@@ -39,10 +39,10 @@ export class FeatureElement extends HTMLDivElement {
     set feature(feature: GeoJSONFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
-            if (debug) console.info("Feature: unsetting feature");
+            if (debug) console.info("FeatureElement: unsetting feature");
         } else {
             this._feature = feature;
-            if (debug) console.info("Feature: setting feature", { feature });
+            if (debug) console.info("FeatureElement: setting feature", { feature });
         }
         this.render();
     }

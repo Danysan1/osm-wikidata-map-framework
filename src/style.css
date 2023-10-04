@@ -500,3 +500,17 @@ p.pic-attr {
   max-width: 1em;
   max-height: 1em;
 }
+
+table.owmf_data_table {
+  border-collapse: collapse;
+  /*border-spacing: 0;*/
+}
+
+table.owmf_data_table td, th {
+  border: 1px solid #ddd;
+  padding: 0 8px;
+}
+
+table.owmf_data_table tr:nth-child(even) {
+  background-color: #eee;
+}

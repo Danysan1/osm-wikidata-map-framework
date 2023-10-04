@@ -20,7 +20,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
     set destinationZoom(destinationZoom: number) {
         this._destinationZoom = destinationZoom;
-        if (debug) console.info("FeatureButtonsElement: setting destinationZoom", { destinationZoom });
+        // if (debug) console.info("FeatureButtonsElement: setting destinationZoom", { destinationZoom });
         this.render();
     }
 
@@ -31,10 +31,10 @@ export class FeatureButtonsElement extends HTMLDivElement {
     set feature(feature: EtymologyFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
-            if (debug) console.info("Feature: unsetting feature");
+            // if (debug) console.info("FeatureButtonsElement: unsetting feature");
         } else {
             this._feature = feature;
-            if (debug) console.info("Feature: setting feature", { feature });
+            // if (debug) console.info("FeatureButtonsElement: setting feature", { feature });
         }
         this.render();
     }
@@ -162,7 +162,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
         }
 
         this.innerHTML = "";
-        if (debug) console.info("FeatureButtonsElement: rendering", { detail_container });
+        // if (debug) console.info("FeatureButtonsElement: rendering", { detail_container });
         this.appendChild(detail_container);
         this.classList.remove("hiddenElement");
     }
