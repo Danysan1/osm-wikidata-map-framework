@@ -217,15 +217,34 @@ function getFilteredParamOrDefault($paramName, $filter = FILTER_DEFAULT, $defaul
 define("ISO_LANGUAGE_PATTERN", '/^(\w+)[-\w]*$/');
 function getSafeLanguage(string $defaultValue): string
 {
-	$language = (string)getFilteredParamOrDefault("language", FILTER_SANITIZE_SPECIAL_CHARS, $defaultValue); // "en-GB-oxendict"
+	/**
+	 * Raw locale / language
+	 * 
+	 * @example "en-GB-oxendict"
+	 */
+	$language = (string)(
+		filter_input(INPUT_GET, "lang", FILTER_SANITIZE_SPECIAL_CHARS) ??
+		filter_input(INPUT_GET, "language", FILTER_SANITIZE_SPECIAL_CHARS) ??
+		$defaultValue
+	);
 
+	/**
+	 * Array of language parts
+	 * 
+	 * @example ["en-GB-oxendict","en","GB","oxendict"]
+	 */
 	$langMatches = [];
-	if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMatches[1])) { // ["en-GB-oxendict","en","GB","oxendict"]
+	if (!preg_match(ISO_LANGUAGE_PATTERN, $language, $langMatches) || empty($langMatches[1])) {
 		http_response_code(400);
 		die('{"error":"Invalid language code."};');
 	}
 
-	return $langMatches[1]; // "en"
+	/**
+	 * Safe language
+	 * 
+	 * @example "en"
+	 */
+	return $langMatches[1];
 }
 
 function getCurrentURL(): string
