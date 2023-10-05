@@ -504,10 +504,10 @@ export class EtymologyMap extends Map {
                 t("data_table.show", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
             ), 'top-right');
 
-            this.addControl(new OsmWikidataMatcherControl(), 'top-right');
+            this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
 
             if (getConfig("mapcomplete_theme"))
-                this.addControl(new MapCompleteControl(), 'top-right');
+                this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
         });
     }
 
