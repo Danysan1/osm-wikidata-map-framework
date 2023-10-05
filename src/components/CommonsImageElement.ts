@@ -26,10 +26,10 @@ export class CommonsImageElement extends HTMLDivElement {
     set name(name: string | undefined) {
         if (!name) {
             this._name = undefined;
-            if (debug) console.info("CommonsImage: unsetting name");
+            // if (debug) console.info("CommonsImageElement: unsetting name");
         } else {
             this._name = decodeURIComponent(name.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
-            if (debug) console.info("CommonsImage: setting name", { name, _name: this._name });
+            // if (debug) console.info("CommonsImageElement: setting name", { name, _name: this._name });
         }
         this.render();
     }

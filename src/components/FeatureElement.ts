@@ -2,9 +2,8 @@ import { GeoJSONFeature } from 'maplibre-gl';
 
 // import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
 
-import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { etymologyToDomElement } from "./EtymologyElement";
-import { debug, getConfig } from "../config";
+import { debug } from "../config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n";
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
 import { WikidataService } from "../services/WikidataService";
@@ -12,7 +11,7 @@ import { imageToDomElement } from "./CommonsImageElement";
 import { logErrorMessage } from "../monitoring";
 import { EtymologyDetails } from '../feature.model';
 import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
-import { setFragmentParams } from '../fragment';
+import { featureToButtonsDomElement } from './FeatureButtonsElement';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -40,10 +39,10 @@ export class FeatureElement extends HTMLDivElement {
     set feature(feature: GeoJSONFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
-            if (debug) console.info("Feature: unsetting feature");
+            if (debug) console.info("FeatureElement: unsetting feature");
         } else {
             this._feature = feature;
-            if (debug) console.info("Feature: setting feature", { feature });
+            if (debug) console.info("FeatureElement: setting feature", { feature });
         }
         this.render();
     }
@@ -72,8 +71,6 @@ export class FeatureElement extends HTMLDivElement {
         translateContent(detail_container, ".i18n_loading", "feature_details.loading", "Loading entities...");
         translateContent(detail_container, ".i18n_report_problem", "feature_details.report_problem", "Report a problem in this element");
         translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem", "Report a problem in this element");
-        translateContent(detail_container, ".i18n_location", "feature_details.location", "Location");
-        translateAnchorTitle(detail_container, ".title_i18n_location", "feature_details.location", "Location");
         translateContent(detail_container, ".i18n_source", "feature_details.source", "Source:");
 
         const element_name = detail_container.querySelector<HTMLElement>('.element_name');
@@ -135,100 +132,8 @@ export class FeatureElement extends HTMLDivElement {
             feature_pictures.classList.add("hiddenElement");
         }
 
-        const element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
-        if (!element_wikidata_button) {
-            if (debug) console.info("Missing element_wikidata_button");
-        } else if (has_wikidata) {
-            element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
-            element_wikidata_button.classList.remove("hiddenElement");
-        } else {
-            element_wikidata_button.classList.add("hiddenElement");
-        }
-
-        const wikipedia = properties.wikipedia,
-            has_wikipedia = wikipedia && wikipedia !== 'null',
-            element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
-        if (!element_wikipedia_button) {
-            if (debug) console.info("Missing element_wikipedia_button");
-        } else if (has_wikipedia) {
-            element_wikipedia_button.href = wikipedia.startsWith("http") ? wikipedia : `https://www.wikipedia.org/wiki/${wikipedia}`;
-            element_wikipedia_button.classList.remove("hiddenElement");
-        } else {
-            element_wikipedia_button.classList.add("hiddenElement");
-        }
-
-        const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
-        if (!element_commons_button) {
-            if (debug) console.info("Missing element_commons_button");
-        } else if (has_commons) {
-            if (commons.startsWith("http"))
-                element_commons_button.href = commons;
-            else if (commons.startsWith("Category:"))
-                element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
-            else
-                element_commons_button.href = `https://commons.wikimedia.org/wiki/Category:${commons}`;
-            element_commons_button.classList.remove("hiddenElement");
-        } else {
-            element_commons_button.classList.add("hiddenElement");
-        }
-
-        const element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
-        if (!element_osm_button) {
-            if (debug) console.info("Missing element_osm_button");
-        } else if (osm_full_id) {
-            element_osm_button.href = 'https://www.openstreetmap.org/' + osm_full_id;
-            element_osm_button.classList.remove("hiddenElement");
-        } else {
-            element_osm_button.classList.add("hiddenElement");
-        }
-
-        let coord = (this.feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
-        while (Array.isArray(coord) && Array.isArray(coord[0])) {
-            coord = coord[0];
-        }
-        const lon = typeof coord[0] === "number" ? coord[0] : undefined,
-            lat = typeof coord[1] === "number" ? coord[1] : undefined;
-
-        const element_matcher_button = detail_container.querySelector<HTMLAnchorElement>('.element_matcher_button'),
-            show_osm_matcher = osm_full_id && !properties.wikidata && lat !== undefined && lon !== undefined,
-            show_wd_matcher = properties.wikidata && !osm_full_id;
-        if (!element_matcher_button) {
-            if (debug) console.info("Missing element_matcher_button");
-        } else if (show_osm_matcher) {
-            element_matcher_button.href = `https://map.osm.wikidata.link/map/18/${lat}/${lon}`;
-            element_matcher_button.classList.remove("hiddenElement");
-        } else if (show_wd_matcher) {
-            element_matcher_button.href = `https://map.osm.wikidata.link/item/${properties.wikidata}`;
-            element_matcher_button.classList.remove("hiddenElement");
-        } else {
-            element_matcher_button.classList.add("hiddenElement");
-        }
-
-        const mapcomplete_theme = getConfig("mapcomplete_theme"),
-            element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
-            show_mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined;
-        if (!element_mapcomplete_button) {
-            if (debug) console.info("Missing element_mapcomplete_button");
-        } else if (show_mapcomplete) {
-            element_mapcomplete_button.href = `https://mapcomplete.org/${mapcomplete_theme}?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
-            element_mapcomplete_button.classList.remove("hiddenElement");
-        } else {
-            element_mapcomplete_button.classList.add("hiddenElement");
-        }
-
-        const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button'),
-            show_location = show_mapcomplete || show_osm_matcher || show_wd_matcher || osm_full_id || has_wikidata || has_commons || has_wikipedia;
-        if (!element_location_button) {
-            if (debug) console.info("Missing element_location_button");
-        } else if (show_location) { // Hide this button if it's the only one
-            element_location_button.addEventListener("click", () => {
-                setFragmentParams(lon, lat, this.currentZoom + 1);
-                return false;
-            });
-            element_location_button.classList.remove("hiddenElement");
-        } else {
-            element_location_button.classList.add("hiddenElement");
-        }
+        const buttons_placeholder = detail_container.querySelector<HTMLDivElement>('.feature_buttons_placeholder');
+        buttons_placeholder?.replaceWith(featureToButtonsDomElement(this.feature, this.currentZoom + 1));
 
         const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
         if (!etymologies_container) {
