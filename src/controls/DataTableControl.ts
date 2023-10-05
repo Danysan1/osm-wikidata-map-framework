@@ -115,7 +115,7 @@ export class DataTableControl implements IControl {
 
     private createFeatureRow(feature: EtymologyFeature, tbody: HTMLTableSectionElement) {
         const tr = document.createElement("tr"),
-            id = feature.properties?.wikidata?.toString() || feature.properties?.name;
+            id = feature.properties?.wikidata?.toString() || feature.properties?.name?.replaceAll('"', "");
         if (id) {
             if (debug) console.debug("createFeatureRow", { id, feature });
             if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)

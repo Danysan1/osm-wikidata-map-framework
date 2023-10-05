@@ -7,15 +7,16 @@ import { getCorrectFragmentParams } from '../fragment';
 
 export class MapCompleteControl implements IControl {
     private container?: HTMLDivElement;
+    private minZoomLevel: number;
     private mapComplete_theme: string;
     private moveEndHandler: (e: MapEvent) => void;
 
-    constructor() {
-        const mapComplete_theme = getConfig("mapcomplete_theme"),
-            minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9");
+    constructor(minZoomLevel: number) {
+        const mapComplete_theme = getConfig("mapcomplete_theme");
         if (!mapComplete_theme)
             throw new Error("mapcomplete_theme not set in config");
         if (debug) console.debug("Initializing MapCompleteControl", { mapComplete_theme, minZoomLevel });
+        this.minZoomLevel = minZoomLevel;
         this.mapComplete_theme = mapComplete_theme;
         this.moveEndHandler = e => this.show(e.target.getZoom() >= minZoomLevel);
     }
@@ -37,8 +38,7 @@ export class MapCompleteControl implements IControl {
 
         this.container.appendChild(button);
 
-        const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9");
-        this.show(map.getZoom() >= minZoomLevel);
+        this.show(map.getZoom() >= this.minZoomLevel);
 
         map.on("moveend", this.moveEndHandler);
 
