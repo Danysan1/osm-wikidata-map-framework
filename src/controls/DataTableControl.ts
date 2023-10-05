@@ -127,7 +127,8 @@ export class DataTableControl implements IControl {
         const name = feature.properties?.name,
             alt_names = feature.properties?.alt_name,
             feature_wikidata = document.createElement("a"),
-            buttons = featureToButtonsDomElement(feature, 17),
+            destinationZoomLevel = 18,
+            buttons = featureToButtonsDomElement(feature, destinationZoomLevel),
             etymologies = typeof feature.properties?.etymologies === "string" ? JSON.parse(feature.properties?.etymologies) as Etymology[] : feature.properties?.etymologies;
         let linked_wikidata: HTMLAnchorElement | HTMLUListElement;
         feature_wikidata.innerText = feature.properties?.wikidata ?? "";
