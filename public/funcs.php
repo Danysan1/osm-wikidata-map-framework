@@ -68,70 +68,71 @@ function prepareHTML(Configuration $conf)
 		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
 	}
 
-	$mapboxScriptSrcs = '';
-	$mapboxConnectSrcs = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/';
+	$mapboxScript = '';
+	$mapboxConnect = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/';
 	if ($conf->has("mapbox_token")) {
-		$mapboxScriptSrcs = 'https://api.mapbox.com';
-		$mapboxConnectSrcs = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+		$mapboxScript = 'https://api.mapbox.com';
+		$mapboxConnect = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 	}
 
-	$maptilerConnectSrcs = '';
-	$maptilerImgSrcs = '';
+	$maptilerConnect = '';
+	$maptilerImg = '';
 	if ($conf->has("maptiler_key")) {
-		$maptilerConnectSrcs = 'https://api.maptiler.com https://maputnik.github.io/osm-liberty/ https://klokantech.github.io/naturalearthtiles/';
-		$maptilerImgSrcs = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
+		$maptilerConnect = 'https://api.maptiler.com https://maputnik.github.io/osm-liberty/ https://klokantech.github.io/naturalearthtiles/';
+		$maptilerImg = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
 	}
 
-	$stadiaConnectSrcs = '';
+	$stadiaConnect = '';
 	if ($conf->getBool("enable_stadia_maps")) {
-		$stadiaConnectSrcs = 'https://tiles.stadiamaps.com/ https://tiles-beta.stadiamaps.com/';
+		$stadiaConnect = 'https://tiles.stadiamaps.com/ https://tiles-beta.stadiamaps.com/';
 	}
 
-	$jawgConnectSrcs = '';
+	$jawgConnect = '';
 	if ($conf->has("jawg_token")) {
-		$jawgConnectSrcs = 'https://api.jawg.io/ https://tile.jawg.io/';
+		$jawgConnect = 'https://api.jawg.io/ https://tile.jawg.io/';
 	}
 
-	$googleAnalyticsConnectSrcs = '';
-	$googleAnalyticsScriptSrcs = '';
+	$googleAnalyticsImg = '';
+	$googleAnalyticsScript = '';
 	if ($conf->has('google_analytics_id')) {
-		$googleAnalyticsConnectSrcs = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
-		$googleAnalyticsScriptSrcs = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
+		$googleAnalyticsImg = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
+		$googleAnalyticsScript = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
 	}
 
-	$sentryConnectSrcs = '';
-	$sentryScriptSrcs = '';
+	$sentryConnect = '';
+	$sentryScript = '';
 	if ($conf->has('sentry_js_dsn')) {
-		$sentryConnectSrcs = 'https://*.ingest.sentry.io';
-		$sentryScriptSrcs = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
+		$sentryConnect = 'https://*.ingest.sentry.io';
+		$sentryScript = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
 	}
 
-	$matomoConnectSrcs = '';
-	$matomoScriptSrcs = '';
+	$matomoConnect = '';
+	$matomoScript = '';
 	if ($conf->has('matomo_domain')) {
-		$matomoConnectSrcs = 'https://' . (string)$conf->get('matomo_domain');
-		$matomoScriptSrcs = 'https://cdn.matomo.cloud/';
+		$matomoConnect = 'https://' . (string)$conf->get('matomo_domain');
+		$matomoScript = 'https://cdn.matomo.cloud/';
 	}
 
-	$wikimediaImgSrcs = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
-	$wikimediaConnectSrcs = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
+	$wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
+	$wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
 
-	$overpassConnectSrcs = implode(" ", $conf->getArray('overpass_endpoints'));
+	$overpassConnect = implode(" ", $conf->getArray('overpass_endpoints'));
 
-	$payPalImgSrcs = "https://www.paypal.com https://www.paypalobjects.com";
+	$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
 
 	header(
 		"Content-Security-Policy: " .
-			"default-src 'self'; " .
-			"worker-src blob: ; " .
 			"child-src blob: ; " .
-			"img-src 'self' data: blob: $wikimediaImgSrcs $payPalImgSrcs $googleAnalyticsConnectSrcs $maptilerImgSrcs ; " .
-			"font-src 'self'; " .
-			"style-src 'self' https://fonts.googleapis.com; " .
-			"script-src 'self' $sentryScriptSrcs $matomoScriptSrcs $mapboxScriptSrcs $googleAnalyticsScriptSrcs ; " .
-			"frame-ancestors 'none'; " .
+			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg ; " .
+			"default-src 'self' ; " .
+			"font-src 'self' ; " .
+			"form-action https://www.paypal.com/donate ; " .
+			"frame-ancestors 'none' ; " .
+			"img-src 'self' data: blob: $wikimediaImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
 			"object-src 'none'; " .
-			"connect-src 'self' $wikimediaConnectSrcs $overpassConnectSrcs $sentryConnectSrcs $matomoConnectSrcs $mapboxConnectSrcs $maptilerConnectSrcs $stadiaConnectSrcs $jawgConnectSrcs $googleAnalyticsConnectSrcs ; " .
+			"script-src 'self' $sentryScript $matomoScript $mapboxScript $googleAnalyticsScript ; " .
+			"style-src 'self' https://fonts.googleapis.com ; " .
+			"worker-src blob: ; " .
 			$reportUri .
 			//"require-trusted-types-for 'script'; ".
 			"upgrade-insecure-requests;"
