@@ -172,6 +172,7 @@ class OwmfFilterDAG(DAG):
                 'boundary=continent', 'boundary=timezone', 'boundary=maritime', 'boundary=region', 'boundary=military_district', 'boundary=economic', # Big boundaries
                 'boundary=national_park', 'leisure=nature_reserve', # Big national areas
                 'r/sqkm=*', # Typically very big areas
+                'end_date=*', 'route=historic', # Items that don't exist anymore
                 'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],
             invert_match= True,

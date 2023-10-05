@@ -27,37 +27,37 @@ import {
  */
 export interface EtymologyFeatureProperties {
     /**
-     * 
+     * Alternative names of the feature, separated by a semicolon
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     alt_name?: string;
     /**
-     * 
+     * Name of the Wikimedia Commons category for this feature
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     commons?: string;
     /**
-     * 
+     * Internal ID for this feature (unique within the request but may vary after OWMF DB updates)
      * @type {number}
      * @memberof EtymologyFeatureProperties
      */
     el_id?: number;
     /**
-     * 
+     * List of linked items that describe some aspect of this feature. Which aspect is represented depends on the configuration of this OWMF instance. Typically etymologies are sent as an array of Etymology objects. Both Mapbox GL and MapLibre GL stringify the array as JSON in some circumstances.
      * @type {Array<Etymology>}
      * @memberof EtymologyFeatureProperties
      */
     etymologies?: Array<Etymology>;
     /**
-     * 
+     * Whether OpenStreetMap is the original source of the geometry of this feature
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */
     from_osm?: boolean;
     /**
-     * 
+     * Whether Wikidata is the original source of the geometry of this feature
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */
@@ -87,7 +87,7 @@ export interface EtymologyFeatureProperties {
      */
     osm_type?: EtymologyFeaturePropertiesOsmTypeEnum;
     /**
-     * ID (unique only within its type) of the OpenStreetMap element for this feature
+     * ID (unique only within its osm_type) of the OpenStreetMap element for this feature
      * @type {number}
      * @memberof EtymologyFeatureProperties
      */

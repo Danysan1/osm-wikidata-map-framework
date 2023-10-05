@@ -63,7 +63,7 @@ export class EtymologyElement extends HTMLDivElement {
 
     set currentZoom(currentZoom: number) {
         this._currentZoom = currentZoom;
-        if (debug) console.info("EtymologyElement: setting currentZoom", { currentZoom });
+        // if (debug) console.info("EtymologyElement: setting currentZoom", { currentZoom });
         this.render();
     }
 
@@ -74,10 +74,10 @@ export class EtymologyElement extends HTMLDivElement {
     set etymology(ety: EtymologyDetails | undefined) {
         if (!ety) {
             this._ety = undefined;
-            if (debug) console.info("EtymologyElement: unsetting etymology");
+            // if (debug) console.info("EtymologyElement: unsetting etymology");
         } else {
             this._ety = ety;
-            if (debug) console.info("EtymologyElement: setting etymology", { ety });
+            // if (debug) console.info("EtymologyElement: setting etymology", { ety });
         }
         this.render();
     }
@@ -345,7 +345,7 @@ export class EtymologyElement extends HTMLDivElement {
         }
 
         this.innerHTML = "";
-        if (debug) console.info("EtymologyElement: rendering", { etyDomElement });
+        // if (debug) console.info("EtymologyElement: rendering", { etyDomElement });
         this.appendChild(etyDomElement);
         this.classList.remove("hiddenElement");
     }

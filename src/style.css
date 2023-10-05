@@ -132,11 +132,13 @@ div.detail_container div.pictures img {
   max-height: 26em;
 }
 
-div.detail_container a.k-button {
+div.detail_container a.k-button,
+div.button_row a.k-button {
   margin: 0.5em;
 }
 
-div.detail_container a.k-button>.button_img {
+div.detail_container a.k-button>.button_img,
+div.button_row a.k-button>.button_img {
   width: 100%;
   max-width: 1.25em;
   max-height: 1.25em;
@@ -497,4 +499,18 @@ p.pic-attr {
   aspect-ratio: auto;
   max-width: 1em;
   max-height: 1em;
+}
+
+table.owmf_data_table {
+  border-collapse: collapse;
+  /*border-spacing: 0;*/
+}
+
+table.owmf_data_table td, th {
+  border: 1px solid #ddd;
+  padding: 0 8px;
+}
+
+table.owmf_data_table tr:nth-child(even) {
+  background-color: #eee;
 }

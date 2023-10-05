@@ -20,7 +20,7 @@ import { exists, mapValues } from '../runtime';
  */
 export interface Etymology {
     /**
-     * Internal ID for the etymology relation (unique within the request but may vary after DB updates)
+     * Internal ID for the etymology relationship (unique within the request but may vary after OWMF DB updates)
      * @type {number}
      * @memberof Etymology
      */
@@ -38,7 +38,7 @@ export interface Etymology {
      */
     from_osm_type?: EtymologyFromOsmTypeEnum;
     /**
-     * ID (unique only within its type) of the source OpenStreetMap element
+     * ID (unique only within its osm_type) of the source OpenStreetMap element
      * @type {number}
      * @memberof Etymology
      */
@@ -74,7 +74,7 @@ export interface Etymology {
      */
     propagated?: boolean;
     /**
-     * Internal ID for this etymology Wikidata item (unique within the request but may vary after DB updates)
+     * Internal ID for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
      * @type {number}
      * @memberof Etymology
      */

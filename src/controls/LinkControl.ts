@@ -25,8 +25,13 @@ export class LinkControl implements IControl {
     ) {
         this.iconUrl = iconUrl;
         this.title = title;
+
         this.sourceDataHandler = this.createSourceDataHandler(sourceIds, mapEventField, baseUrl).bind(this);
-        this.moveEndHandler = this.createMoveEndHandler(minZoomLevel).bind(this);
+
+        this.moveEndHandler = e => {
+            if (e.target.getZoom() < minZoomLevel)
+                this.show(false);
+        }
     }
 
     onAdd(map: Map): HTMLElement {
@@ -107,13 +112,6 @@ export class LinkControl implements IControl {
                 logErrorMessage("Failed retrieving last etymologyMap response, make sure cache is enabled", "error", { err });
                 this.show(false);
             }
-        }
-    }
-
-    createMoveEndHandler(minZoomLevel: number) {
-        return (e: MapEvent) => {
-            if (e.target.getZoom() < minZoomLevel)
-                this.show(false);
         }
     }
 }

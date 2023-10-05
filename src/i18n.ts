@@ -19,7 +19,14 @@ export function setPageLocale() {
         locale, lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
+    // <html lang='en'>
     document.documentElement.setAttribute("lang", lang);
+
+    // <meta http-equiv='Content-Language' content='en' />
+    const metaLanguage = document.createElement("meta");
+    metaLanguage.httpEquiv = "Content-Language";
+    metaLanguage.content = lang;
+    document.head.appendChild(metaLanguage);
 
     loadTranslator().then(t => {
         const title = document.head.querySelector<HTMLTitleElement>("title"),

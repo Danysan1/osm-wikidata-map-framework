@@ -219,41 +219,45 @@ $jsScript = $jsScripts[0];
         </div>
     </template>
 
+    <template id="feature_buttons_template">
+        <div class="button_row">
+            <a title="Wikipedia" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
+                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
+                <span class="button_text"> Wikipedia</span>
+            </a>
+            <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
+                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
+                <span class="button_text"> Commons</span>
+            </a>
+            <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
+                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
+                <span class="button_text"> Wikidata</span>
+            </a>
+            <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
+                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
+                <span class="button_text"> OpenStreetMap</span>
+            </a>
+            <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button">
+                <img class="button_img" src="img/osm-wd-matcher.png" alt="OSM ↔ Wikidata matcher logo">
+                <span class="button_text"> OSM ↔ Wikidata matcher</span>
+            </a>
+            <a title="MapComplete" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
+                <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
+                <span class="button_text"> Mapcomplete</span>
+            </a>
+            <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
+                <span class="button_img">🎯</span>
+                <span class="button_text i18n_location"> Location</span>
+            </a>
+        </div>
+    </template>
+
     <template id="detail_template">
         <div class="detail_container">
             <h3 class="element_name"></h3>
             <p class="element_alt_names"></p>
             <p class="element_description"></p>
-            <div class="button_row">
-                <a title="Wikipedia" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
-                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
-                    <span class="button_text"> Wikipedia</span>
-                </a>
-                <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
-                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
-                    <span class="button_text"> Commons</span>
-                </a>
-                <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
-                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
-                    <span class="button_text"> Wikidata</span>
-                </a>
-                <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
-                    <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
-                    <span class="button_text"> OpenStreetMap</span>
-                </a>
-                <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button">
-                    <img class="button_img" src="img/osm-wd-matcher.png" alt="OSM ↔ Wikidata matcher logo">
-                    <span class="button_text"> OSM ↔ Wikidata matcher</span>
-                </a>
-                <a title="MapComplete" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
-                    <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
-                    <span class="button_text"> Mapcomplete</span>
-                </a>
-                <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
-                    <span class="button_img">🎯</span>
-                    <span class="button_text i18n_location"> Location</span>
-                </a>
-            </div>
+            <div class="feature_buttons_placeholder"></div>
             <?php if ($conf->getBool("show_feature_picture")) { ?>
                 <div class="feature_pictures column"></div>
             <?php } else { ?>

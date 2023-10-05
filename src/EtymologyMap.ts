@@ -17,12 +17,15 @@ import { LanguageControl } from './controls/LanguageControl';
 import { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
+import { DataTableControl } from './controls/DataTableControl';
 import './style.css';
 import { WikidataMapService } from './services/WikidataMapService';
 import { OverpassService } from './services/OverpassService';
 import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
 import { MapDatabase } from './db/MapDatabase';
 import { OwmfBackendService } from './services/OwmfBackendService';
+import { OsmWikidataMatcherControl } from './controls/OsmWikidataMatcherControl';
+import { MapCompleteControl } from './controls/MapCompleteControl';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -487,6 +490,7 @@ export class EtymologyMap extends Map {
                 "https://overpass-turbo.eu/?Q=",
                 minZoomLevel
             ), 'top-right');
+
             this.addControl(new LinkControl(
                 "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg",
                 t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
@@ -495,6 +499,15 @@ export class EtymologyMap extends Map {
                 "https://query.wikidata.org/#",
                 minZoomLevel
             ), 'top-right');
+
+            this.addControl(new DataTableControl(
+                t("data_table.show", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
+            ), 'top-right');
+
+            this.addControl(new OsmWikidataMatcherControl(), 'top-right');
+
+            if (getConfig("mapcomplete_theme"))
+                this.addControl(new MapCompleteControl(), 'top-right');
         });
     }
 
