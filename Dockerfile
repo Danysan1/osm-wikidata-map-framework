@@ -8,7 +8,6 @@ WORKDIR /var/www
 RUN a2enmod headers ssl rewrite deflate expires
 
 COPY ./apache.conf /etc/apache2/conf-available/owmf.conf
-COPY ./99_owmf_security.conf /etc/modsecurity/99_owmf_security.conf
 RUN a2enconf owmf.conf
 
 # https://getcomposer.org/doc/faqs/how-to-install-composer-programmatically.md
@@ -51,15 +50,18 @@ RUN npm install && \
 # https://blog.gitguardian.com/how-to-improve-your-docker-containers-security-cheat-sheet/
 FROM base AS prod
 RUN apt-get update && \
-	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache libapache2-mod-security2 modsecurity-crs && \
+	apt-get install -y libpq-dev libzip-dev zip certbot python3-certbot-apache libapache2-mod-evasive libapache2-mod-security2 modsecurity-crs && \
 	rm -rf /var/lib/apt/lists/*
 
 # Setup mod_security - https://www.inmotionhosting.com/support/server/apache/install-modsecurity-apache-module/
+COPY ./99_owmf_security.conf /etc/modsecurity/99_owmf_security.conf
 RUN cp /etc/modsecurity/modsecurity.conf-recommended /etc/modsecurity/modsecurity.conf && \
-	sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/modsecurity/modsecurity.conf
+	sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /etc/modsecurity/modsecurity.conf && \
+	sed -i 's/ServerTokens OS/ServerTokens Prod/' /etc/apache2/conf-available/security.conf
 
 # Install PHP extensions - https://hub.docker.com/_/php/
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini" && \
+	sed -i 's/expose_php = On/expose_php = Off/' "$PHP_INI_DIR/php.ini" && \
 	docker-php-ext-install -j$(nproc) pdo_pgsql zip
 
 # Install dependencies with Composer
