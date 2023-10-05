@@ -30,11 +30,22 @@ $defaultLanguage = (string)$conf->get("default_language");
 if (empty($i18nOverride[$defaultLanguage]))
     throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
 $defaultNamespace = "app";
-if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))
-    throw new Exception("Missing i18n configuration for the default language ($defaultLanguage) and namespace ($defaultNamespace)");
-$i18nStrings = (array)$i18nOverride[$defaultLanguage][$defaultNamespace];
-$title = empty($i18nStrings["title"]) ? "" : (string)$i18nStrings["title"];
-$description = empty($i18nStrings["description"]) ? "" : (string)$i18nStrings["description"];
+$language = getSafeLanguage($defaultLanguage);
+
+if(!empty($i18nOverride[$language][$defaultNamespace]["title"]))
+    $title = (string)$i18nOverride[$language][$defaultNamespace]["title"];
+else if (!empty($i18nOverride[$defaultLanguage][$defaultNamespace]["title"]))
+    $title = (string)$i18nOverride[$defaultLanguage][$defaultNamespace]["title"];
+else
+    $title = "";
+
+if(!empty($i18nOverride[$language][$defaultNamespace]["description"]))
+    $description = (string)$i18nOverride[$language][$defaultNamespace]["description"];
+else if (!empty($i18nOverride[$defaultLanguage][$defaultNamespace]["description"]))
+    $description = (string)$i18nOverride[$defaultLanguage][$defaultNamespace]["description"];
+else
+    $description = "";
+
 $availableLanguages = [];
 foreach ($i18nOverride as $lang => $langData) {
     if (!empty($langData[$defaultNamespace]["title"])) {
