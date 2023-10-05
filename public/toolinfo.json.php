@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Generates the toolinfo.json file for this OWMF-based project, ready to be used by Hay's Wikimedia-related tool directory.
  * @see https://hay.toolforge.org/directory/
@@ -16,7 +17,7 @@ prepareJSON($conf);
 $i18nOverride = $conf->getArray("i18n_override");
 $defaultLanguage = "en"; // (string)$conf->get("default_language");
 $defaultNamespace = "app";
-if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]))
+if (empty($i18nOverride[$defaultLanguage][$defaultNamespace]) || !is_array($i18nOverride[$defaultLanguage][$defaultNamespace]))
     throw new Exception("Missing i18n configuration for the default language ($defaultLanguage)");
 $i18nStrings = $i18nOverride[$defaultLanguage][$defaultNamespace];
 if (empty($i18nStrings["title"]))
