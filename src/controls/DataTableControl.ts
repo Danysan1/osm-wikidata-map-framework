@@ -43,7 +43,7 @@ export class DataTableControl implements IControl {
         this.button = document.createElement("button");
         this.button.title = this.title;
         this.button.ariaLabel = this.title;
-        this.button.addEventListener("click", () => this.openTable());
+        this.button.addEventListener("click", () => this.openTable(map.getZoom()));
 
         const icon = document.createElement("img");
         icon.className = "button_img";
@@ -78,7 +78,7 @@ export class DataTableControl implements IControl {
             this.container?.classList?.add("hiddenElement");
     }
 
-    private openTable() {
+    private openTable(currentZoomLevel: number) {
         const map = this.map;
         if (map !== undefined) {
             const features = map.queryRenderedFeatures({ layers: this.layers }),
@@ -97,13 +97,13 @@ export class DataTableControl implements IControl {
             thead.appendChild(head_tr);
             table.appendChild(tbody);
 
-            ["Name", "Alt names", "Wikidata", "Linked entities", "Actions"].forEach(column => {
+            ["Name", "Alt names", "Actions", "Linked entities"].forEach(column => {
                 const th = document.createElement("th");
                 th.innerText = column;
                 head_tr.appendChild(th);
             });
 
-            features?.forEach(f => this.createFeatureRow(f, tbody));
+            features?.forEach(f => this.createFeatureRow(f, tbody, currentZoomLevel));
 
             popup.setLngLat(map.unproject([0, 0]))
                 .setDOMContent(table)
@@ -113,7 +113,7 @@ export class DataTableControl implements IControl {
         }
     }
 
-    private createFeatureRow(feature: EtymologyFeature, tbody: HTMLTableSectionElement) {
+    private createFeatureRow(feature: EtymologyFeature, tbody: HTMLTableSectionElement, currentZoomLevel: number) {
         const tr = document.createElement("tr"),
             id = feature.properties?.wikidata?.toString() || feature.properties?.name?.replaceAll('"', "");
         if (id) {
@@ -126,13 +126,10 @@ export class DataTableControl implements IControl {
 
         const name = feature.properties?.name,
             alt_names = feature.properties?.alt_name,
-            feature_wikidata = document.createElement("a"),
-            destinationZoomLevel = 18,
+            destinationZoomLevel = Math.max(currentZoomLevel, 18),
             buttons = featureToButtonsDomElement(feature, destinationZoomLevel),
             etymologies = typeof feature.properties?.etymologies === "string" ? JSON.parse(feature.properties?.etymologies) as Etymology[] : feature.properties?.etymologies;
         let linked_wikidata: HTMLAnchorElement | HTMLUListElement;
-        feature_wikidata.innerText = feature.properties?.wikidata ?? "";
-        feature_wikidata.href = `https://www.wikidata.org/wiki/${feature.properties?.wikidata}`;
         if (etymologies?.length === 1) {
             linked_wikidata = this.etymologyLink(etymologies[0]);
         } else {
@@ -143,7 +140,7 @@ export class DataTableControl implements IControl {
                 linked_wikidata.appendChild(li);
             });
         }
-        [name, alt_names, feature_wikidata, linked_wikidata, buttons].forEach(value => {
+        [name, alt_names, buttons, linked_wikidata].forEach(value => {
             const td = document.createElement("td");
             if (value instanceof HTMLElement)
                 td.appendChild(value);

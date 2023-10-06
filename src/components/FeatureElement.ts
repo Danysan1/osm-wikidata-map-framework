@@ -133,7 +133,7 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         const buttons_placeholder = detail_container.querySelector<HTMLDivElement>('.feature_buttons_placeholder');
-        buttons_placeholder?.replaceWith(featureToButtonsDomElement(this.feature, this.currentZoom + 1));
+        buttons_placeholder?.replaceWith(featureToButtonsDomElement(this.feature, this.currentZoom + 2));
 
         const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
         if (!etymologies_container) {
