@@ -14,13 +14,13 @@ export class FeatureButtonsElement extends HTMLDivElement {
         this.classList.add('feature_buttons_container', 'hiddenElement', 'custom-component');
     }
 
-    get destinationZoom(): number {
+    get destinationZoomLevel(): number {
         return this._destinationZoom;
     }
 
-    set destinationZoom(destinationZoom: number) {
-        this._destinationZoom = destinationZoom;
-        // if (debug) console.info("FeatureButtonsElement: setting destinationZoom", { destinationZoom });
+    set destinationZoomLevel(destinationZoomLevel: number) {
+        this._destinationZoom = destinationZoomLevel;
+        // if (debug) console.info("FeatureButtonsElement: setting destinationZoomLevel", { destinationZoomLevel });
         this.render();
     }
 
@@ -147,18 +147,15 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_mapcomplete_button.classList.add("hiddenElement");
         }
 
-        const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button'),
-            show_location = show_mapcomplete || show_osm_matcher || show_wd_matcher || osm_full_id || has_wikidata || has_commons || has_wikipedia;
+        const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
         if (!element_location_button) {
             if (debug) console.info("Missing element_location_button");
-        } else if (show_location) { // Hide this button if it's the only one
+        } else {
             element_location_button.addEventListener("click", () => {
-                setFragmentParams(lon, lat, this.destinationZoom);
+                setFragmentParams(lon, lat, this.destinationZoomLevel);
                 return false;
             });
             element_location_button.classList.remove("hiddenElement");
-        } else {
-            element_location_button.classList.add("hiddenElement");
         }
 
         this.innerHTML = "";
@@ -170,9 +167,9 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
 customElements.define('owmf-feature-buttons-element', FeatureButtonsElement, { extends: 'div' });
 
-export function featureToButtonsDomElement(feature: EtymologyFeature, destinationZoom: number): FeatureButtonsElement {
+export function featureToButtonsDomElement(feature: EtymologyFeature, destinationZoomLevel: number): FeatureButtonsElement {
     const element = document.createElement("div", { is: 'owmf-feature-buttons-element' }) as FeatureButtonsElement;
-    element.destinationZoom = destinationZoom;
+    element.destinationZoomLevel = destinationZoomLevel;
     element.feature = feature;
     return element;
 }

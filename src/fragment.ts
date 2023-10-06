@@ -43,11 +43,11 @@ function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorSchem
     const currentParams = getCorrectFragmentParams(),
         pos = { ...currentParams };
 
-    if (typeof lon == 'number') pos.lon = parseFloat(lon.toFixed(3));
-    if (typeof lat == 'number') pos.lat = parseFloat(lat.toFixed(3));
-    if (typeof zoom == 'number') pos.zoom = parseFloat(zoom.toFixed(1));
-    if (typeof colorScheme == 'string') pos.colorScheme = colorScheme;
-    if (typeof source == 'string') pos.source = source;
+    if (typeof lon === 'number') pos.lon = parseFloat(lon.toFixed(4));
+    if (typeof lat === 'number') pos.lat = parseFloat(lat.toFixed(4));
+    if (typeof zoom === 'number') pos.zoom = parseFloat(zoom.toFixed(1));
+    if (typeof colorScheme === 'string') pos.colorScheme = colorScheme;
+    if (typeof source === 'string') pos.source = source;
 
     const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.source}`;
     if (window.location.hash !== fragment) {
