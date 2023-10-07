@@ -18,7 +18,8 @@
         "report_issue": "Reportar un problema",
         "report_issue_title": "Reportar un problema o error con esta aplicación",
         "about_me": "Sobre mí",
-        "about_me_title": "Sitio personal del autor de OSM-Wikidata Map Framework"
+        "about_me_title": "Sitio personal del autor de OSM-Wikidata Map Framework",
+        "to_view_data_table": "para ver datos en una tabla (solo con zoom alto)"
     },
     "snackbar": {
         "zoom_in": "Zoom para ver los datos",
