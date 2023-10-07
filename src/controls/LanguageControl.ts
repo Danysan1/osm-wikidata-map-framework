@@ -45,13 +45,13 @@ export class LanguageControl implements IControl {
         languageTable.className = "language-ctrl-table custom-ctrl-table";
         languages.forEach((lang) => {
             const cell = document.createElement("td"),
-                link = document.createElement("a"),
+                link = document.createElement("button"),
                 flagImg = document.createElement("img");
             flagImg.src = flags[lang];
             link.title = lang;
             link.className = "language-select-link language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon hiddenElement";
-            //link.addEventListener("click", () => window.location.search = "?lang=" + lang);
-            link.href = "?lang=" + lang;
+            link.addEventListener("click", () => window.location.search = "?lang=" + lang);
+            //link.href = "?lang=" + lang;
             cell.className = "content-cell";
             link.appendChild(flagImg);
             cell.appendChild(link);

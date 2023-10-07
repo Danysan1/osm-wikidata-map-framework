@@ -443,17 +443,6 @@ div.pictures>div.pic-container {
   display: inline-flex;
 }
 
-.hiddenElement,
-div.pictures>div.pic-container.hiddenElement,
-div.detail_container>a.k-button.hiddenElement,
-div.info>a.k-button.hiddenElement,
-select.dropdown-ctrl-dropdown.hiddenElement,
-table.dropdown-ctrl-table.hiddenElement,
-table.custom-ctrl-table.hiddenElement,
-canvas.chart.hiddenElement {
-  display: none;
-}
-
 p.pic-attr {
   overflow: hidden;
   max-height: 2em;
@@ -513,4 +502,17 @@ table.owmf_data_table td, th {
 
 table.owmf_data_table tr:nth-child(even) {
   background-color: #eee;
+}
+
+.hiddenElement,
+div.mapboxgl-ctrl-group button.hiddenElement,
+div.maplibregl-ctrl-group button.hiddenElement,
+div.pictures>div.pic-container.hiddenElement,
+div.detail_container>a.k-button.hiddenElement,
+div.info>a.k-button.hiddenElement,
+select.dropdown-ctrl-dropdown.hiddenElement,
+table.dropdown-ctrl-table.hiddenElement,
+table.custom-ctrl-table.hiddenElement,
+canvas.chart.hiddenElement {
+  display: none;
 }
