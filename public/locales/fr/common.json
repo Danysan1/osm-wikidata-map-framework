@@ -18,7 +18,8 @@
         "report_issue": "Signaler un problème",
         "report_issue_title": "Signaler un problème ou un bogue de cette application",
         "about_me": "À propos de moi",
-        "about_me_title": "Site personnel de l'auteur du cadre de carte OSM-Wikidata"
+        "about_me_title": "Site personnel de l'auteur du cadre de carte OSM-Wikidata",
+        "to_view_data_table": "pour afficher les données dans un tableau (en zoomant beaucoup)"
     },
     "snackbar": {
         "zoom_in": "Veuillez zoomer pour afficher les données",

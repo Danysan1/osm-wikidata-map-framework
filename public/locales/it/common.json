@@ -7,8 +7,8 @@
         "use_controls": "Usa i controlli ai lati per visualizzare altri dati:",
         "to_see_statistics": "per visualizzare statistiche sugli elementi (solo ad alto zoom)",
         "to_choose_source": "per scegliere quale fonte dati utilizzare",
-        "to_overpass_query": "per visualizzare la query OverpassQL di origine (solo con la fonte Overpass)",
-        "to_wikidata_query": "per visualizzare la query SPARQL di origine (solo con la fonte Wikidata)",
+        "to_overpass_query": "per visualizzare la query OverpassQL di origine (solo con le fonti Overpass)",
+        "to_wikidata_query": "per visualizzare la query SPARQL di origine (solo con le fonti Wikidata)",
         "to_change_background": "per cambiare lo sfondo della mappa",
         "to_open_again": "per riaprire questa finestra",
         "contribute": "Contribuisci alla mappa",
@@ -18,7 +18,8 @@
         "report_issue": "Segnala un problema",
         "report_issue_title": "Segnala un problema o un bug di questa applicazione",
         "about_me": "Su di me",
-        "about_me_title": "Sito personale dell'autore di OSM-Wikidata Map Framework"
+        "about_me_title": "Sito personale dell'autore di OSM-Wikidata Map Framework",
+        "to_view_data_table": "per visualizzare i dati in una tabella (solo ad alto zoom)"
     },
     "snackbar": {
         "zoom_in": "Zoomare per visualizzare i dati",

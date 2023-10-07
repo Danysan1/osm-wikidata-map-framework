@@ -46,6 +46,7 @@ Q14795564,recurrent point in time,Events,#ff3333
 Q116741026,constitutive treaty,Events,#ff3333
 Q375011,religious festival,Events,#ff3333
 Q60075825,Christian holy day,Events,#ff3333
+Q15275719,recurring event,Events,#ff3333
 Q16560,palace,Buildings,#ffdd33
 Q41176,building,Buildings,#ffdd33
 Q23413,castle,Buildings,#ffdd33
@@ -298,6 +299,7 @@ Q133442,city-state,Human settlements,#7733ff
 Q148837,polis,Human settlements,#7733ff
 Q51929311,largest city,Human settlements,#7733ff
 Q50330360,second largest city,Human settlements,#7733ff
+Q116457956,non-urban municipality in Germany,Human settlements,#7733ff
 Q43229,organization,Organization,#ff33dd
 Q4830453,business,Organization,#ff33dd
 Q6881511,enterprise,Organization,#ff33dd

@@ -18,7 +18,8 @@
         "report_issue": "Text of the link to the issue tracker",
         "report_issue_title": "Alt text of the link to the issue tracker",
         "about_me": "Text of the About me button",
-        "about_me_title": "Alt text of the About me button"
+        "about_me_title": "Alt text of the About me button",
+        "to_view_data_table": "Instructions to use the button to open a table with the map features"
     },
     "snackbar": {
         "zoom_in": "Instructions to zoom in to view data",

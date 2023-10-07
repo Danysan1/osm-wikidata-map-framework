@@ -168,15 +168,19 @@ $jsScript = $jsScripts[0];
                     </tr>
                     <tr>
                         <td>⚙️</td>
-                        <td class="i18n_to_choose_source">to choose which data source to use (only at high zoom)</td>
+                        <td class="i18n_to_choose_source">to choose which data source to use</td>
                     </tr>
                     <tr>
                         <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" /></td>
-                        <td class="i18n_to_overpass_query">to view the source OverpassQL query (only with the Overpass source at high zoom)</td>
+                        <td class="i18n_to_overpass_query">to view the source OverpassQL query (only with Overpass sources)</td>
                     </tr>
                     <tr>
                         <td><img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg" width="16" height="16" alt="Wikidata Query Service logo" /></td>
-                        <td class="i18n_to_wikidata_query">to view the source SPARQL query (only with the Wikidata source at high zoom)</td>
+                        <td class="i18n_to_wikidata_query">to view the source SPARQL query (only with Wikidata sources)</td>
+                    </tr>
+                    <tr>
+                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg" width="16" height="16" alt="Table" /></td>
+                        <td class="i18n_to_view_data_table">to view data in a table (only at high zoom)</td>
                     </tr>
                     <tr>
                         <td>🌍</td>
