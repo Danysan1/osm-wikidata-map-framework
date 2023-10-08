@@ -19,7 +19,7 @@ foreach ($routeWhitelist as $pattern => $routeInfo) {
         $mimeType = $routeInfo[1];
         //error_log("Route $route => Serving $file as $mimeType");
 
-        header("Content-Type: $mimeType");
+        header("Content-Type: $mimeType; charset=utf-8");
         require $file;
 
         return;

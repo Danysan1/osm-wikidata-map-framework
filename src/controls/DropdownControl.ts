@@ -85,17 +85,16 @@ export class DropdownControl implements IControl {
         const ctrlDropDown = document.createElement('select');
         ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
         ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
+        ctrlDropDown.name = this._titleKey;
         dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell content-cell';
 
-        if (this._titleKey) {
-            loadTranslator().then(t => {
-                const title = t(this._titleKey);
-                ctrlBtn.title = title;
-                ctrlBtn.ariaLabel = title;
-                ctrlDropDown.title = title;
-            });
-        }
+        loadTranslator().then(t => {
+            const title = t(this._titleKey);
+            ctrlBtn.title = title;
+            ctrlBtn.ariaLabel = title;
+            ctrlDropDown.title = title;
+        });
 
         const okStartID = !!this._startDropdownItemId && this._dropdownItems.map(i => i.id).includes(this._startDropdownItemId),
             actualStartID = okStartID ? this._startDropdownItemId : this._dropdownItems[0].id;

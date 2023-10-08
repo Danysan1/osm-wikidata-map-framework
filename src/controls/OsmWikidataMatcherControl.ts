@@ -29,6 +29,8 @@ export class OsmWikidataMatcherControl implements IControl {
         icon.className = "button_img";
         icon.alt = "Data table symbol";
         icon.src = "img/osm-wd-matcher.png";
+        icon.width = 23;
+        icon.height = 23;
         button.appendChild(icon);
 
         this.container.appendChild(button);
