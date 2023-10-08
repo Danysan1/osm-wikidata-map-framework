@@ -109,6 +109,7 @@ export class OverpassService {
 
                 feature.properties.from_osm = true;
                 feature.properties.from_wikidata = false;
+
                 const osm_type = feature.properties.id?.split("/")?.[0],
                     osm_id = feature.properties.id ? parseInt(feature.properties.id.split("/")[1]) : undefined;
                 feature.properties.osm_id = osm_id;
