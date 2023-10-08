@@ -102,6 +102,9 @@ export class OverpassWikidataMapService {
                 if (!existingFeature.properties)
                     existingFeature.properties = {};
                 existingFeature.properties.from_wikidata = true;
+                existingFeature.properties.from_wikidata_entity = wikidataFeature.properties?.from_wikidata_entity;
+                existingFeature.properties.from_wikidata_prop = wikidataFeature.properties?.from_wikidata_prop;
+                
                 // Unlike Overpass, Wikidata returns localized Wikipedia links so it has more priority
                 if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
                     existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;

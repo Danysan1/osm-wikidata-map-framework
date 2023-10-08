@@ -502,7 +502,7 @@ components:
         from_wikidata_prop:
           type: string
           description: P-ID of the Wikidata property that links from the source Wikidata entity to this etymology entity
-          example: P123
+          example: P138
         from_parts_of_wikidata_cod:
           type: string
           description: Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
@@ -556,7 +556,15 @@ components:
                   description: Whether OpenStreetMap is the original source of the geometry of this feature
                 from_wikidata:
                   type: boolean
-                  description: Whether Wikidata is the original source of the geometry of this feature
+                  description: Whether Wikidata is the original source of this feature
+                from_wikidata_entity:
+                  type: string
+                  description: Q-ID of the Wikidata entity this feature has been extracted from
+                  example: Q1
+                from_wikidata_prop:
+                  type: string
+                  description: P-ID of the Wikidata property that links from the source Wikidata entity to this feature's geometry (directly or through a qualifier)
+                  example: P625
                 name:
                   type: string
                   description: Localized name of the feature

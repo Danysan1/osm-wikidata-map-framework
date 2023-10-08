@@ -57,11 +57,23 @@ export interface EtymologyFeatureProperties {
      */
     from_osm?: boolean;
     /**
-     * Whether Wikidata is the original source of the geometry of this feature
+     * Whether Wikidata is the original source of this feature
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */
     from_wikidata?: boolean;
+    /**
+     * Q-ID of the Wikidata entity this feature has been extracted from
+     * @type {string}
+     * @memberof EtymologyFeatureProperties
+     */
+    from_wikidata_entity?: string;
+    /**
+     * P-ID of the Wikidata property that links from the source Wikidata entity to this feature's geometry (directly or through a qualifier)
+     * @type {string}
+     * @memberof EtymologyFeatureProperties
+     */
+    from_wikidata_prop?: string;
     /**
      * Localized name of the feature
      * @type {string}
@@ -161,6 +173,8 @@ export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscrim
         'etymologies': !exists(json, 'etymologies') ? undefined : ((json['etymologies'] as Array<any>).map(EtymologyFromJSON)),
         'from_osm': !exists(json, 'from_osm') ? undefined : json['from_osm'],
         'from_wikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
+        'from_wikidata_entity': !exists(json, 'from_wikidata_entity') ? undefined : json['from_wikidata_entity'],
+        'from_wikidata_prop': !exists(json, 'from_wikidata_prop') ? undefined : json['from_wikidata_prop'],
         'name': !exists(json, 'name') ? undefined : json['name'],
         'description': !exists(json, 'description') ? undefined : json['description'],
         'official_name': !exists(json, 'official_name') ? undefined : json['official_name'],
@@ -189,6 +203,8 @@ export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeaturePropert
         'etymologies': value.etymologies === undefined ? undefined : ((value.etymologies as Array<any>).map(EtymologyToJSON)),
         'from_osm': value.from_osm,
         'from_wikidata': value.from_wikidata,
+        'from_wikidata_entity': value.from_wikidata_entity,
+        'from_wikidata_prop': value.from_wikidata_prop,
         'name': value.name,
         'description': value.description,
         'official_name': value.official_name,

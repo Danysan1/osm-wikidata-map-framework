@@ -139,17 +139,18 @@ abstract class EtymologyWikidataQuery extends BaseQuery implements BBoxGeoJSONQu
         $name = empty($row["itemLabel"]["value"]) ? null : (string)$row["itemLabel"]["value"];
         $commons = empty($row["commons"]["value"]) ? null : "Category:" . (string)$row["commons"]["value"];
         $picture = empty($row["picture"]["value"]) ? null : str_replace("http://commons.wikimedia.org/wiki/", "", (string)$row["picture"]["value"]);
+        $etymology = $this->convertRowToEtymology($row);
 
         $properties = [
             "name" => $name,
             "from_osm" => false,
             "from_wikidata" => true,
+            "from_wikidata_entity" => $itemQID ? $itemQID : $etymology["from_wikidata_entity"],
+            "from_wikidata_prop" => $itemQID ? "P625" : $etymology["from_wikidata_prop"],
             OverpassEtymologyQueryResult::FEATURE_WIKIDATA_KEY => $itemQID,
             OverpassEtymologyQueryResult::FEATURE_COMMONS_KEY => $commons,
             "picture" => $picture,
-            "etymologies" => [
-                $this->convertRowToEtymology($row)
-            ]
+            "etymologies" => [$etymology]
         ];
 
         if (!empty($row["osmRelation"]["value"])) {
