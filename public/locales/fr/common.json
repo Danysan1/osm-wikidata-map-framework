@@ -42,7 +42,7 @@
     "color_scheme": {
         "choose_scheme": "Choisissez le schéma de couleurs et les statistiques",
         "blue": "Bleu",
-        "source": "Par source",
+        "feature_source": "Par source d'éléments",
         "gender": "Par sexe",
         "type": "Par type",
         "country": "Par pays",
@@ -53,7 +53,12 @@
         "unavailable": "Indisponible",
         "black": "Noir",
         "red": "Rouge",
-        "orange": "Orange"
+        "orange": "Orange",
+        "etymology_source": "Par source d'entités liées",
+        "etymology_statistics": "Statistiques des entités liées",
+        "feature_statistics": "Statistiques sur les éléments cartographiques",
+        "uniform": "Couleurs uniformes",
+        "osm_text_only": "OSM (texte uniquement)"
     },
     "feature_details": {
         "source": "Source:",
@@ -69,5 +74,7 @@
     },
     "change_language": "Changer de langue",
     "choose_basemap": "Choisissez le style de fond",
-    "choose_projection": "Choisissez la projection cartographique"
+    "choose_projection": "Choisissez la projection cartographique",
+    "overpass_turbo_query": "Requête OverpassQL sur Overpass Turbo",
+    "wdqs_query": "Requête SPARQL sur Wikidata Query Service"
 }

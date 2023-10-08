@@ -17,13 +17,13 @@ export interface ColorScheme {
 
 export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     feature_source: {
-        textKey: "color_scheme.source", defaultText: "By source", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
+        textKey: "color_scheme.feature_source", defaultText: "By source", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
     },
     picture: {
         textKey: "color_scheme.feature_picture", defaultText: "By picture availability", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
     },
     etymology_source: {
-        textKey: "color_scheme.source", defaultText: "By source", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+        textKey: "color_scheme.etymology_source", defaultText: "By source", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
     gender: {
         textKey: 'color_scheme.gender', defaultText: "By gender", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",

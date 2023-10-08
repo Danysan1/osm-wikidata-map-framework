@@ -41,22 +41,23 @@
     },
     "color_scheme": {
         "choose_scheme": "Alt text for the '📊' button to show/hide the color scheme / stats dropdown",
-        "blue": "Blue",
-        "source": "Stats by source",
-        "gender": "Stats by gender",
-        "type": "Stats by type",
-        "country": "Stats by country",
-        "start_century": "Stats by start/birth century",
-        "end_century": "Stats by end/death century",
-        "feature_picture": "Statistics by feature picture availability",
+        "blue": "Dropdown item for uniform blue color",
+        "feature_source": "Dropdown item for map feature source statistics",
+        "etymology_source": "Dropdown item for linked entity source statistics",
+        "gender": "Dropdown item for linked entity gender statistics",
+        "type": "Dropdown item for linked entity type statistics",
+        "country": "Dropdown item for linked entity country statistics",
+        "start_century": "Dropdown item for linked entity start/birth century statistics",
+        "end_century": "Dropdown item for linked entity end/death century statistics",
+        "feature_picture": "Dropdown item for feature picture availability statistics",
         "available": "Available",
         "unavailable": "Unavailable",
-        "black": "Black",
-        "red": "Red",
-        "orange": "Orange",
-        "uniform": "Uniform color category",
-        "feature_statistics": "Featutre statistics category",
-        "etymology_statistics": "Etymology (linked entity) statistics category",
+        "black": "Dropdown item for uniform black color",
+        "red": "Dropdown item for uniform red color",
+        "orange": "Dropdown item for uniform orange color",
+        "uniform": "Dropdown category for uniform colors",
+        "feature_statistics": "Dropdown category for featutre statistics",
+        "etymology_statistics": "Dropdown category for linked entity statistics",
         "osm_text_only": "Features with only text etymology (no linked entities)"
     },
     "feature_details": {
@@ -68,12 +69,12 @@
         "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"
     },
     "etymology_details": {
-        "source": "Source:",
         "propagation": "propagation",
         "propagation_title": "Alt text of the link to the description of the propagation mechanism"
     },
     "choose_basemap": "Alt text for the '🌍' button to show/hide the style dropdown",
     "choose_projection": "Alt text for the '🌐' button to show/hide the projection dropdown",
     "overpass_turbo_query": "Alt text for the button that links to query on Overpass Turbo",
-    "wdqs_query": "Alt text for the button that links to query on Wikidata Query Service"
+    "wdqs_query": "Alt text for the button that links to query on Wikidata Query Service",
+    "change_language": "Alt text for the language selection control"
 }
