@@ -45,9 +45,9 @@ export class WikidataService {
         let out: EtymologyDetails[];
         if (cachedResponse) {
             out = JSON.parse(cachedResponse);
-            if (debug) console.info("Cache hit, using cached response", { cacheKey, out });
+            if (debug) console.info("fetchEtymologyDetails: Cache hit, using cached response", { cacheKey, out });
         } else {
-            if (debug) console.info("Cache miss, fetching data", { cacheKey });
+            if (debug) console.info("fetchEtymologyDetails: Cache miss, fetching data", { cacheKey });
             const res = await this.etymologyIDsQuery(etymologyIDs, detailsQuery);
 
             if (!res?.results?.bindings?.length) {
@@ -89,6 +89,7 @@ export class WikidataService {
                 };
             });
             try {
+                if (debug) console.info("fetchEtymologyDetails: Finished fetching, saving cache", { cacheKey });
                 localStorage.setItem(cacheKey, JSON.stringify(out));
             } catch (e) {
                 logErrorMessage("Failed to store details data in cache", "warning", { cacheKey, out, e });

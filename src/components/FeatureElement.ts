@@ -246,7 +246,7 @@ export class FeatureElement extends HTMLDivElement {
             return etymologies;
 
         // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
-        etymologyIDs = [...new Set(etymologyIDs)].sort((a, b) => a.length - b.length);
+        etymologyIDs = [...new Set(etymologyIDs)].sort((a, b) => parseInt(a.replace("Q","")) - parseInt(b.replace("Q","")));
         if (etymologyIDs.length > maxItems) {
             // Too many items, limiting to the first N most famous ones
             etymologyIDs = etymologyIDs.slice(0, maxItems);

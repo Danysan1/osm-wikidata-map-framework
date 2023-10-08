@@ -5,6 +5,7 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } f
 import { debug } from '../config';
 import { Etymology, EtymologyFeature, EtymologyResponse } from '../generated/owmf';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
+import { WikidataService } from '../services/WikidataService';
 
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
@@ -81,7 +82,7 @@ export class DataTableControl implements IControl {
     private openTable(currentZoomLevel: number) {
         const map = this.map;
         if (map !== undefined) {
-            const features = map.queryRenderedFeatures({ layers: this.layers }),
+            const features: EtymologyFeature[] = map.queryRenderedFeatures({ layers: this.layers }),
                 table = document.createElement("table"),
                 thead = document.createElement("thead"),
                 head_tr = document.createElement("tr"),
@@ -91,7 +92,8 @@ export class DataTableControl implements IControl {
                     closeOnClick: true,
                     closeOnMove: true,
                     className: "owmf_data_table_popup"
-                });
+                }),
+                wikidataIDs: string[] = [];
             table.className = "owmf_data_table";
             table.appendChild(thead);
             thead.appendChild(head_tr);
@@ -103,57 +105,83 @@ export class DataTableControl implements IControl {
                 head_tr.appendChild(th);
             });
 
-            features?.forEach(f => this.createFeatureRow(f, tbody, currentZoomLevel));
+            features?.forEach(f => {
+                const tr = document.createElement("tr"),
+                    id = f.properties?.wikidata?.toString() || f.properties?.name?.replaceAll('"', "");
+                if (id) {
+                    if (debug) console.debug("createFeatureRow", { id, f });
+                    if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
+                        return;
+                    tr.dataset.featureId = id;
+                }
+                tbody.appendChild(tr);
+
+                const name = f.properties?.name,
+                    alt_names = f.properties?.alt_name,
+                    destinationZoomLevel = Math.max(currentZoomLevel, 18),
+                    buttons = featureToButtonsDomElement(f, destinationZoomLevel),
+                    etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
+                    featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
+                    linked_wikidata = etymologies ? this.etymologyLinks(featureWikidataIDs) : undefined;
+                if (featureWikidataIDs)
+                    wikidataIDs.push(...featureWikidataIDs);
+                [name, alt_names, buttons, linked_wikidata].forEach(value => {
+                    const td = document.createElement("td");
+                    if (value instanceof HTMLElement)
+                        td.appendChild(value);
+                    else
+                        td.innerText = value ?? "";
+                    tr.appendChild(td);
+                });
+            });
 
             popup.setLngLat(map.unproject([0, 0]))
                 .setDOMContent(table)
                 .addTo(map);
             if (debug) console.debug("DataTableControl", { popup })
             // console.table(data.features?.map(f => f.properties));
+
+            this.downloadLinkLabels(wikidataIDs, tbody);
         }
     }
 
-    private createFeatureRow(feature: EtymologyFeature, tbody: HTMLTableSectionElement, currentZoomLevel: number) {
-        const tr = document.createElement("tr"),
-            id = feature.properties?.wikidata?.toString() || feature.properties?.name?.replaceAll('"', "");
-        if (id) {
-            if (debug) console.debug("createFeatureRow", { id, feature });
-            if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
-                return;
-            tr.dataset.featureId = id;
-        }
-        tbody.appendChild(tr);
-
-        const name = feature.properties?.name,
-            alt_names = feature.properties?.alt_name,
-            destinationZoomLevel = Math.max(currentZoomLevel, 18),
-            buttons = featureToButtonsDomElement(feature, destinationZoomLevel),
-            etymologies = typeof feature.properties?.etymologies === "string" ? JSON.parse(feature.properties?.etymologies) as Etymology[] : feature.properties?.etymologies;
-        let linked_wikidata: HTMLAnchorElement | HTMLUListElement;
-        if (etymologies?.length === 1) {
-            linked_wikidata = this.etymologyLink(etymologies[0]);
+    private etymologyLinks(wikidataIDs?: string[]): HTMLElement | undefined {
+        if (!wikidataIDs || wikidataIDs.length === 0) {
+            return undefined;
         } else {
-            linked_wikidata = document.createElement("ul");
-            etymologies?.forEach(etymology => {
+            const ul = document.createElement("ul");
+            wikidataIDs.forEach(id => {
                 const li = document.createElement("li");
-                li.appendChild(this.etymologyLink(etymology));
-                linked_wikidata.appendChild(li);
+                li.appendChild(this.wikidataLink(id));
+                ul.appendChild(li);
+            });
+            return ul;
+        }
+    }
+
+    private wikidataLink(wikidataID: string): HTMLAnchorElement {
+        const a = document.createElement("a");
+        a.dataset.wikidataId = wikidataID;
+        a.innerText = wikidataID;
+        a.href = `https://www.wikidata.org/wiki/${wikidataID}`;
+        return a;
+    }
+
+    private downloadLinkLabels(wikidataIDs: string[], container: HTMLElement) {
+        // De-duplicate and sort by ascending Q-ID
+        wikidataIDs = [...new Set(wikidataIDs)].sort((a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", "")));
+
+        if (wikidataIDs.length > 0) {
+            new WikidataService().fetchEtymologyDetails(wikidataIDs).then(details => {
+                details.forEach(detail => {
+                    container.querySelectorAll<HTMLAnchorElement>(`a[data-wikidata-id="${detail.wikidata}"]`)?.forEach(a => {
+                        if (detail.wikidata)
+                            a.title = detail.wikidata;
+                        if (detail.name)
+                            a.innerText = detail.name;
+                    });
+                });
             });
         }
-        [name, alt_names, buttons, linked_wikidata].forEach(value => {
-            const td = document.createElement("td");
-            if (value instanceof HTMLElement)
-                td.appendChild(value);
-            else
-                td.innerText = value ?? "";
-            tr.appendChild(td);
-        });
-    }
-
-    private etymologyLink(etymology: Etymology): HTMLAnchorElement {
-        const a = document.createElement("a");
-        a.innerText = etymology.wikidata ?? "";
-        a.href = `https://www.wikidata.org/wiki/${etymology.wikidata}`;
-        return a;
     }
 }
