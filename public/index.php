@@ -32,14 +32,14 @@ if (empty($i18nOverride[$defaultLanguage]))
 $defaultNamespace = "app";
 $language = getSafeLanguage($defaultLanguage);
 
-if(!empty($i18nOverride[$language][$defaultNamespace]["title"]))
+if (!empty($i18nOverride[$language][$defaultNamespace]["title"]))
     $title = (string)$i18nOverride[$language][$defaultNamespace]["title"];
 else if (!empty($i18nOverride[$defaultLanguage][$defaultNamespace]["title"]))
     $title = (string)$i18nOverride[$defaultLanguage][$defaultNamespace]["title"];
 else
     $title = "";
 
-if(!empty($i18nOverride[$language][$defaultNamespace]["description"]))
+if (!empty($i18nOverride[$language][$defaultNamespace]["description"]))
     $description = (string)$i18nOverride[$language][$defaultNamespace]["description"];
 else if (!empty($i18nOverride[$defaultLanguage][$defaultNamespace]["description"]))
     $description = (string)$i18nOverride[$defaultLanguage][$defaultNamespace]["description"];
@@ -102,6 +102,13 @@ $jsScript = $jsScripts[0];
     <link rel="apple-touch-icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" type="image/png" href="apple-touch-icon.png" />
 
+    <link rel="preconnect" href="https://upload.wikimedia.org" />
+    <?php if (str_starts_with((string)$conf->get("default_background_style"), "mapbox")) { ?>
+        <link rel="preconnect" href="https://api.mapbox.com">
+    <?php } ?>
+    <?php if ($conf->has("paypal_id")) { ?>
+        <link rel="preload" href="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" as="image" crossorigin="anonymous" fetchpriority="low" />
+    <?php } ?>
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
     <?= $conf->getMetaTag("db_enable", true); ?>
@@ -179,7 +186,7 @@ $jsScript = $jsScripts[0];
                         <td class="i18n_to_wikidata_query">to view the source SPARQL query (only with Wikidata sources)</td>
                     </tr>
                     <tr>
-                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg" width="16" height="16" alt="Table" /></td>
+                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg" width="16" height="13" alt="Table" /></td>
                         <td class="i18n_to_view_data_table">to view data in a table (only at high zoom)</td>
                     </tr>
                     <tr>

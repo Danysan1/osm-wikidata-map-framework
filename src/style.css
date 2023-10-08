@@ -478,6 +478,7 @@ p.pic-attr {
 .mapboxgl-ctrl-group a img {
   max-height: 23px;
   width: 23px;
+  aspect-ratio: auto;
   margin: 3px;
   vertical-align: middle;
 }

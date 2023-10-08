@@ -48,6 +48,8 @@ export class LinkControl implements IControl {
         const img = document.createElement("img");
         img.src = this.iconUrl;
         img.className = "mapboxgl-ctrl-icon";
+        img.width = 23;
+        img.height = 23;
         this.anchor.appendChild(img);
 
         this.show(false);

@@ -34,6 +34,8 @@ export class MapCompleteControl implements IControl {
         icon.className = "button_img";
         icon.alt = "Data table symbol";
         icon.src = "img/mapcomplete.svg";
+        icon.width = 23;
+        icon.height = 23;
         button.appendChild(icon);
 
         this.container.appendChild(button);
