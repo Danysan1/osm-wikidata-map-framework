@@ -54,6 +54,6 @@ export class OsmWikidataMatcherControl implements IControl {
 
     private openMatcher() {
         const { lon, lat, zoom } = getCorrectFragmentParams();
-        window.open(`https://map.osm.wikidata.link/map/${zoom}/${lat}/${lon}`);
+        window.open(`https://map.osm.wikidata.link/map/${zoom.toFixed()}/${lat}/${lon}`);
     }
 }
