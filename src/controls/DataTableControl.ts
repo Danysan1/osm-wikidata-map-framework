@@ -6,6 +6,7 @@ import { debug } from '../config';
 import { Etymology, EtymologyFeature, EtymologyResponse } from '../generated/owmf';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
 import { WikidataService } from '../services/WikidataService';
+import { WikidataDetailsService } from '../services/WikidataDetailsService';
 
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
@@ -95,7 +96,7 @@ export class DataTableControl implements IControl {
                     closeOnMove: true,
                     className: "owmf_data_table_popup"
                 }),
-                wikidataIDs: string[] = [];
+                wikidataIDs = new Set<string>();
             table.className = "owmf_data_table";
             table.appendChild(thead);
             thead.appendChild(head_tr);
@@ -125,8 +126,7 @@ export class DataTableControl implements IControl {
                     etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
                     featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
                     linked_wikidata = etymologies ? this.etymologyLinks(featureWikidataIDs) : undefined;
-                if (featureWikidataIDs)
-                    wikidataIDs.push(...featureWikidataIDs);
+                featureWikidataIDs?.forEach(id => wikidataIDs.add(id));
                 [name, alt_names, buttons, linked_wikidata].forEach(value => {
                     const td = document.createElement("td");
                     if (value instanceof HTMLElement)
@@ -165,23 +165,23 @@ export class DataTableControl implements IControl {
         const a = document.createElement("a");
         a.dataset.wikidataId = wikidataID;
         a.innerText = wikidataID;
+        a.title = wikidataID;
         a.href = `https://www.wikidata.org/wiki/${wikidataID}`;
         return a;
     }
 
-    private downloadLinkLabels(wikidataIDs: string[], container: HTMLElement) {
-        // De-duplicate and sort by ascending Q-ID
-        wikidataIDs = [...new Set(wikidataIDs)].sort((a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", "")));
-
-        if (wikidataIDs.length > 0) {
-            new WikidataService().fetchEtymologyDetails(wikidataIDs).then(details => {
-                details.forEach(detail => {
-                    container.querySelectorAll<HTMLAnchorElement>(`a[data-wikidata-id="${detail.wikidata}"]`)?.forEach(a => {
-                        if (detail.wikidata)
-                            a.title = detail.wikidata;
-                        if (detail.name)
-                            a.innerText = detail.name;
-                    });
+    private downloadLinkLabels(wikidataIDs: Set<string>, container: HTMLElement) {
+        if (wikidataIDs.size > 0) {
+            new WikidataDetailsService().fetchEtymologyDetails(wikidataIDs).then(details => {
+                wikidataIDs.forEach(wikidataID => {
+                    if (wikidataID in details) {
+                        const detail = details[wikidataID],
+                            links = container.querySelectorAll<HTMLAnchorElement>(`a[data-wikidata-id="${detail.wikidata}"]`);
+                        links.forEach(a => {
+                            if (detail.name)
+                                a.innerText = detail.name;
+                        });
+                    }
                 });
             });
         }

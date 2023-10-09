@@ -9,7 +9,7 @@ namespace App\Query\Wikidata\QueryBuilder;
  */
 class FullEtymologyIDListWikidataQueryBuilder extends BaseIDListWikidataQueryBuilder
 {
-    /** @see WikidataService.fetchEtymologyDetails() in WikidataService.ts */
+    /** @see WikidataDetailsService.fetchEtymologyDetails */
     protected function createQueryFromValidIDsString(string $wikidataValues, string $language): string
     {
         return "SELECT ?wikidata

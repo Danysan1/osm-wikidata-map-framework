@@ -12,6 +12,7 @@ import { logErrorMessage } from "../monitoring";
 import { EtymologyDetails } from '../feature.model';
 import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
+import { WikidataDetailsService } from '../services/WikidataDetailsService';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -241,15 +242,18 @@ export class FeatureElement extends HTMLDivElement {
         if (!etymologies?.length)
             return [];
 
-        let etymologyIDs = etymologies.map(e => e.wikidata).filter(x => !!x) as string[];
-        if (etymologyIDs.length == 0)
+        // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
+        let etymologyIDs = new Set(
+            etymologies.map(e => e.wikidata || "").filter(x => x !== "")
+        );
+        if (etymologyIDs.size == 0)
             return etymologies;
 
-        // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
-        etymologyIDs = [...new Set(etymologyIDs)].sort((a, b) => parseInt(a.replace("Q","")) - parseInt(b.replace("Q","")));
-        if (etymologyIDs.length > maxItems) {
+        let sortedIDs = [...etymologyIDs].sort((a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", "")));
+        if (etymologyIDs.size > maxItems) {
             // Too many items, limiting to the first N most famous ones
-            etymologyIDs = etymologyIDs.slice(0, maxItems);
+            sortedIDs = sortedIDs.slice(0, maxItems);
+            etymologyIDs = new Set(sortedIDs);
             loadTranslator().then(t => showSnackbar(
                 t("feature_details.loading_first_n_items", `Loading only first ${maxItems} items`, { partial: maxItems, total: etymologies.length }),
                 "lightsalmon",
@@ -258,11 +262,11 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         try {
-            const downlodedEtymologies = await new WikidataService().fetchEtymologyDetails(etymologyIDs);
-            return downlodedEtymologies.map(
-                (details: EtymologyDetails): Etymology => ({
-                    ...etymologies.find(oldEty => oldEty.wikidata == details.wikidata),
-                    ...details
+            const downlodedEtymologies = await new WikidataDetailsService().fetchEtymologyDetails(etymologyIDs);
+            return sortedIDs.map(
+                (wikidataID): Etymology => ({
+                    ...etymologies.find(oldEty => oldEty.wikidata === wikidataID),
+                    ...(downlodedEtymologies[wikidataID] || {})
                 })
             );
         } catch (err) {
