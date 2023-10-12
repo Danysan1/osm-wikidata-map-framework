@@ -2,17 +2,47 @@ openapi: 3.0.3
 info:
   title: Overpass API
   version: 1.0.0
+externalDocs:
+  url: https://dev.overpass-api.de/overpass-doc/en/
 
 servers: # https://wiki.openstreetmap.org/wiki/Overpass_API#Public_Overpass_API_instances
   - url: http://overpass-api.de/api
-    description: Main Overpass API endpoint
-    
+    description: Main Overpass API instance
+  - url: https://maps.mail.ru/osm/tools/overpass/api
+    description: VK Maps Overpass API instance
+  - url: https://overpass.kumi.systems/api
+    description: Kumi Systems Overpass Instance
+
 tags:
   - name: overpass
     description: Perform an Overpass QL query against the data
 
 paths:
   /interpreter:
+    get:
+      tags:
+        - overpass
+      summary: Run Overpass QL query via GET
+      operationId: get_overpass_query
+      parameters:
+        - name: data
+          in: query
+          description: The Overpass QL query
+          example: "[out:json]; ...; out;"
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The Overpass QL query has been processed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OverpassQueryResponse"
+        "400":
+          description: Bad request or malformed query
+        "500":
+          description: Fatal error
     post:
       tags:
         - overpass
@@ -29,31 +59,64 @@ paths:
                 data:
                   type: string
                   description: The Overpass QL query
+                  example: "[out:json]; ...; out;"
       responses:
-        '200':
+        "200":
           description: The Overpass QL query has been processed successfully.
           content:
             application/json:
               schema:
-                type: object
-                title: OverpassQueryResponse
-                properties:
-                  version:
-                    type: number
-                    description: The version of the Overpass API
-                  generator:
-                    type: string
-                    description: The name of the Overpass API
-                  osm3s:
-                    type: object
-                    description: The details of the OSM3S API
-                  elements:
-                    type: array
-                    description: The elements returned by the query
-                    items:
-                      type: object
-                      description: An element returned by the query
-        '400':
+                $ref: "#/components/schemas/OverpassQueryResponse"
+        "400":
           description: Bad request or malformed query
-        '500':
+        "500":
           description: Fatal error
+
+components:
+  schemas:
+    OverpassQueryResponse:
+      type: object
+      properties:
+        version:
+          type: number
+          description: The version of the Overpass API
+        generator:
+          type: string
+          description: The name of the Overpass API
+        osm3s:
+          type: object
+          description: The details of the OSM3S API
+        remark:
+          type: string
+          description: A remark about problems encountered the query
+        elements:
+          type: array
+          description: The elements returned by the query
+          items:
+            $ref: "#/components/schemas/OverpassElement"
+            description: An element returned by the query
+
+    OverpassElement:
+      type: object
+      required:
+        - type
+        - id
+      properties:
+        type:
+          type: string
+          description: Type of the OpenStreetMap element
+          enum:
+            - node
+            - way
+            - relation
+        id:
+          type: number
+          description: ID (unique only within its osm_type) of the OpenStreetMap element
+        tags:
+          type: object
+          description: The key-value tags of the OpenStreetMap element
+        members:
+          type: array
+          description: The members of the relation
+          items:
+            type: object

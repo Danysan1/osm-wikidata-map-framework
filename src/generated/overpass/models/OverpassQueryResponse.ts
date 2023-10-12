@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { OverpassElement } from './OverpassElement';
+import {
+    OverpassElementFromJSON,
+    OverpassElementFromJSONTyped,
+    OverpassElementToJSON,
+} from './OverpassElement';
+
 /**
  * 
  * @export
@@ -38,11 +45,17 @@ export interface OverpassQueryResponse {
      */
     osm3s?: object;
     /**
-     * The elements returned by the query
-     * @type {Array<object>}
+     * A remark about problems encountered the query
+     * @type {string}
      * @memberof OverpassQueryResponse
      */
-    elements?: Array<object>;
+    remark?: string;
+    /**
+     * The elements returned by the query
+     * @type {Array<OverpassElement>}
+     * @memberof OverpassQueryResponse
+     */
+    elements?: Array<OverpassElement>;
 }
 
 /**
@@ -67,7 +80,8 @@ export function OverpassQueryResponseFromJSONTyped(json: any, ignoreDiscriminato
         'version': !exists(json, 'version') ? undefined : json['version'],
         'generator': !exists(json, 'generator') ? undefined : json['generator'],
         'osm3s': !exists(json, 'osm3s') ? undefined : json['osm3s'],
-        'elements': !exists(json, 'elements') ? undefined : json['elements'],
+        'remark': !exists(json, 'remark') ? undefined : json['remark'],
+        'elements': !exists(json, 'elements') ? undefined : ((json['elements'] as Array<any>).map(OverpassElementFromJSON)),
     };
 }
 
@@ -83,7 +97,8 @@ export function OverpassQueryResponseToJSON(value?: OverpassQueryResponse | null
         'version': value.version,
         'generator': value.generator,
         'osm3s': value.osm3s,
-        'elements': value.elements,
+        'remark': value.remark,
+        'elements': value.elements === undefined ? undefined : ((value.elements as Array<any>).map(OverpassElementToJSON)),
     };
 }
 

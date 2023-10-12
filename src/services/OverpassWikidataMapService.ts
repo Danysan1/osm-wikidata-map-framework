@@ -75,11 +75,15 @@ export class OverpassWikidataMapService {
             if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
             if (debug) console.debug("Overpass+Wikidata cache miss, fetching data", { sourceID, bbox, language: this.language });
-            if (debug) console.time("fetch");
+
+            if (debug) console.time("Overpass+Wikidata fetch");
             const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
-            if (debug) { console.timeEnd("fetch"); console.time("merge"); }
+            if (debug) console.timeEnd("Overpass+Wikidata fetch");
+
+            if (debug) console.time("Overpass+Wikidata merge");
             out = this.mergeMapData(overpassData, wikidataData);
-            if (debug) console.timeEnd("merge");
+            if (debug) console.timeEnd("Overpass+Wikidata merge");
+
             if (!out)
                 throw new Error("Merge failed");
             out.sourceID = sourceID;
@@ -104,7 +108,7 @@ export class OverpassWikidataMapService {
                 existingFeature.properties.from_wikidata = true;
                 existingFeature.properties.from_wikidata_entity = wikidataFeature.properties?.from_wikidata_entity;
                 existingFeature.properties.from_wikidata_prop = wikidataFeature.properties?.from_wikidata_prop;
-                
+
                 // Unlike Overpass, Wikidata returns localized Wikipedia links so it has more priority
                 if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
                     existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;

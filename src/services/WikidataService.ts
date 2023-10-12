@@ -1,8 +1,5 @@
-import { debug, getConfig } from "../config";
-import detailsQuery from "./query/etymology-details.sparql";
-import { EtymologyDetails } from "../feature.model";
+import { getConfig } from "../config";
 import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
-import { logErrorMessage } from "../monitoring";
 
 export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";

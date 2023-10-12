@@ -2,11 +2,13 @@ openapi: 3.0.3
 info:
   title: Wikidata Query Service (WDQS)
   version: 1.0.0
+externalDocs:
+  url: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service
 
 servers:
   - url: https://query.wikidata.org
     description: Wikidata Query Service
-    
+
 tags:
   - name: sparql
     description: Perform a SPARQL query against the data

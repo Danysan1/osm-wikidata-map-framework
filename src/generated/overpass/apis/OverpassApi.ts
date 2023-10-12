@@ -22,6 +22,10 @@ import {
     OverpassQueryResponseToJSON,
 } from '../models';
 
+export interface GetOverpassQueryRequest {
+    data: string;
+}
+
 export interface PostOverpassQueryRequest {
     data: string;
 }
@@ -30,6 +34,40 @@ export interface PostOverpassQueryRequest {
  * 
  */
 export class OverpassApi extends runtime.BaseAPI {
+
+    /**
+     * Run Overpass QL query via GET
+     */
+    async getOverpassQueryRaw(requestParameters: GetOverpassQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<OverpassQueryResponse>> {
+        if (requestParameters.data === null || requestParameters.data === undefined) {
+            throw new runtime.RequiredError('data','Required parameter requestParameters.data was null or undefined when calling getOverpassQuery.');
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters.data !== undefined) {
+            queryParameters['data'] = requestParameters.data;
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/interpreter`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => OverpassQueryResponseFromJSON(jsonValue));
+    }
+
+    /**
+     * Run Overpass QL query via GET
+     */
+    async getOverpassQuery(requestParameters: GetOverpassQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<OverpassQueryResponse> {
+        const response = await this.getOverpassQueryRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Run Overpass QL query via POST
