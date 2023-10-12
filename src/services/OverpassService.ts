@@ -97,10 +97,18 @@ export class OverpassService {
                 use_wikidata = false;
             }
 
+            if (debug) console.time("Overpass query");
             const query = this.buildOverpassQuery(keys, bbox, search_text_key, use_wikidata, outClause),
                 res = await this.api.postOverpassQuery({ data: query });
+            if (debug) console.timeEnd("Overpass query");
+
+            if (debug) console.time("Overpass transform");
+            if (!res.elements && res.remark)
+                throw new Error(`Overpass API error: ${res.remark}`);
+            res.elements = res.elements?.filter(x => x.members === undefined || x.members?.length < 500);
 
             out = osmtogeojson(res);
+
             out.features.forEach((feature: Feature) => {
                 if (!feature.id && feature.properties?.id)
                     feature.id = feature.properties?.id;
@@ -153,6 +161,8 @@ export class OverpassService {
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
             this.db.addMap(out);
         }
+        if (debug) console.timeEnd("Overpass transform");
+
         if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
