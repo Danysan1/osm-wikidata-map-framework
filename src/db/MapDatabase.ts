@@ -24,7 +24,7 @@ export class MapDatabase extends Dexie {
         }, 10_000);
     }
 
-    public async getMap(sourceID: string, bbox: BBox, language?: string): Promise<GeoJSON & EtymologyResponse | undefined> {
+    public async getMap(sourceID: string, bbox: BBox, language?: string): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
@@ -46,9 +46,11 @@ export class MapDatabase extends Dexie {
         }
     }
 
-    public async addMap(map: GeoJSON & EtymologyResponse) {
+    public async addMap(map: MapRow) {
+        map.id = undefined;
         if (map.timestamp === undefined)
             map.timestamp = new Date().toISOString();
+
         try {
             await this.transaction('rw', this.maps, async () => {
                 await this.maps.add(map);
