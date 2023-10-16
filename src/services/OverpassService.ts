@@ -97,17 +97,18 @@ export class OverpassService {
                 use_wikidata = false;
             }
 
-            if (debug) console.time("Overpass query");
+            if (debug) console.time("overpass_query");
             const query = this.buildOverpassQuery(keys, bbox, search_text_key, use_wikidata, outClause),
                 res = await this.api.postOverpassQuery({ data: query });
-            if (debug) console.timeEnd("Overpass query");
+            if (debug) console.timeEnd("overpass_query");
+            if (debug) console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 
-            if (debug) console.time("Overpass transform");
             if (!res.elements && res.remark)
                 throw new Error(`Overpass API error: ${res.remark}`);
-            res.elements = res.elements?.filter(x => x.members === undefined || x.members?.length < 500);
 
+            if (debug) console.time("overpass_transform");
             out = osmtogeojson(res);
+            if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features );
 
             out.features.forEach((feature: Feature) => {
                 if (!feature.id && feature.properties?.id)
@@ -161,9 +162,8 @@ export class OverpassService {
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
             this.db.addMap(out);
         }
-        if (debug) console.timeEnd("Overpass transform");
-
-        if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} features`, { features: [...out.features] });
+        if (debug) console.timeEnd("overpass_transform");
+        if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features );
         return out;
     }
 
@@ -173,7 +173,9 @@ export class OverpassService {
         let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];\n(\n`;
 
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
-        const notTooBig = '[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]["natural"!="peninsula"]["place"!="sea"]["place"!="archipelago"]',
+        const maxRelationMembers = getConfig("max_relation_members"),
+            maxMembersFilter = maxRelationMembers ? `(if:count_members()<${maxRelationMembers})` : "",
+            notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]["natural"!="peninsula"]["place"!="sea"]["place"!="archipelago"]${maxMembersFilter}`,
             raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
             filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
