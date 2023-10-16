@@ -107,7 +107,7 @@ $jsScript = $jsScripts[0];
         <link rel="preconnect" href="https://api.mapbox.com">
     <?php } ?>
     <?php if ($conf->has("paypal_id")) { ?>
-        <link rel="preload" href="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" as="image" crossorigin="anonymous" fetchpriority="low" />
+        <link rel="preconnect" href="https://www.paypalobjects.com" />
     <?php } ?>
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
@@ -150,6 +150,7 @@ $jsScript = $jsScripts[0];
     <?= $conf->getMetaTag("cache_timeout_hours", true); ?>
     <?= $conf->getMetaTag("elements_bbox_max_area", true); ?>
     <?= $conf->getMetaTag("wikidata_bbox_max_area", true); ?>
+    <?= $conf->getMetaTag("max_relation_members", true); ?>
 </head>
 
 <body>
