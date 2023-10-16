@@ -40,10 +40,10 @@ export interface OverpassQueryResponse {
     generator?: string;
     /**
      * The details of the OSM3S API
-     * @type {object}
+     * @type {{ [key: string]: string; }}
      * @memberof OverpassQueryResponse
      */
-    osm3s?: object;
+    osm3s?: { [key: string]: string; };
     /**
      * A remark about problems encountered the query
      * @type {string}

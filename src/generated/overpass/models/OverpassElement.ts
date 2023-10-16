@@ -33,10 +33,28 @@ export interface OverpassElement {
     id: number;
     /**
      * The key-value tags of the OpenStreetMap element
-     * @type {object}
+     * @type {{ [key: string]: string; }}
      * @memberof OverpassElement
      */
-    tags?: object;
+    tags: { [key: string]: string; };
+    /**
+     * The EPSG:3857 latitude of the node
+     * @type {number}
+     * @memberof OverpassElement
+     */
+    lat?: number;
+    /**
+     * The EPSG:3857 longitude of the node
+     * @type {number}
+     * @memberof OverpassElement
+     */
+    lon?: number;
+    /**
+     * The nodes of the way
+     * @type {Array<number>}
+     * @memberof OverpassElement
+     */
+    nodes?: Array<number>;
     /**
      * The members of the relation
      * @type {Array<object>}
@@ -64,6 +82,7 @@ export function instanceOfOverpassElement(value: object): boolean {
     let isInstance = true;
     isInstance = isInstance && "type" in value;
     isInstance = isInstance && "id" in value;
+    isInstance = isInstance && "tags" in value;
 
     return isInstance;
 }
@@ -80,7 +99,10 @@ export function OverpassElementFromJSONTyped(json: any, ignoreDiscriminator: boo
         
         'type': json['type'],
         'id': json['id'],
-        'tags': !exists(json, 'tags') ? undefined : json['tags'],
+        'tags': json['tags'],
+        'lat': !exists(json, 'lat') ? undefined : json['lat'],
+        'lon': !exists(json, 'lon') ? undefined : json['lon'],
+        'nodes': !exists(json, 'nodes') ? undefined : json['nodes'],
         'members': !exists(json, 'members') ? undefined : json['members'],
     };
 }
@@ -97,6 +119,9 @@ export function OverpassElementToJSON(value?: OverpassElement | null): any {
         'type': value.type,
         'id': value.id,
         'tags': value.tags,
+        'lat': value.lat,
+        'lon': value.lon,
+        'nodes': value.nodes,
         'members': value.members,
     };
 }
