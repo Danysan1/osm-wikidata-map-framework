@@ -86,6 +86,8 @@ components:
         osm3s:
           type: object
           description: The details of the OSM3S API
+          additionalProperties:
+            type: string
         remark:
           type: string
           description: A remark about problems encountered the query
@@ -101,6 +103,7 @@ components:
       required:
         - type
         - id
+        - tags
       properties:
         type:
           type: string
@@ -115,6 +118,19 @@ components:
         tags:
           type: object
           description: The key-value tags of the OpenStreetMap element
+          additionalProperties:
+            type: string
+        lat:
+          type: number
+          description: The EPSG:3857 latitude of the node
+        lon:
+          type: number
+          description: The EPSG:3857 longitude of the node
+        nodes:
+          type: array
+          description: The nodes of the way
+          items:
+            type: number
         members:
           type: array
           description: The members of the relation
