@@ -147,6 +147,16 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_mapcomplete_button.classList.add("hiddenElement");
         }
 
+        const element_id_button = detail_container.querySelector<HTMLAnchorElement>('.element_id_button');
+        if(!element_id_button) {
+            if (debug) console.info("Missing element_id_button");
+        } else if (properties?.osm_type && properties?.osm_id) {
+            element_id_button.href = `https://www.openstreetmap.org/edit?editor=id&${properties.osm_type}=${properties.osm_id}`;
+            element_id_button.classList.remove("hiddenElement");
+        } else {
+            element_id_button.classList.add("hiddenElement");
+        }
+
         const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
         if (!element_location_button) {
             if (debug) console.info("Missing element_location_button");
