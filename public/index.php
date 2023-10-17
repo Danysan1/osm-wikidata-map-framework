@@ -268,6 +268,10 @@ $jsScript = $jsScripts[0];
                 <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
                 <span class="button_text"> Mapcomplete</span>
             </a>
+            <a title="iD editor" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_id_button">
+                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/1/1f/OpenStreetMap-Editor_iD_Logo.svg" alt="iD editor logo">
+                <span class="button_text"> iD editor</span>
+            </a>
             <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
                 <span class="button_img">🎯</span>
                 <span class="button_text i18n_location"> Location</span>

@@ -26,6 +26,7 @@ import { MapDatabase } from './db/MapDatabase';
 import { OwmfBackendService } from './services/OwmfBackendService';
 import { OsmWikidataMatcherControl } from './controls/OsmWikidataMatcherControl';
 import { MapCompleteControl } from './controls/MapCompleteControl';
+import { iDEditorControl } from './controls/iDEditorControl';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
@@ -504,6 +505,7 @@ export class EtymologyMap extends Map {
                 t("data_table.show", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
             ), 'top-right');
 
+            this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
             this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
 
             if (getConfig("mapcomplete_theme"))
