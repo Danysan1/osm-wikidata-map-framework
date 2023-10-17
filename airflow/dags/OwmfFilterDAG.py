@@ -167,7 +167,6 @@ class OwmfFilterDAG(DAG):
             tags=[
                 'man_made=flagpole', # Flag poles
                 'place=region','place=state','place=country','place=continent', # Label nodes and big areas
-                'place=sea', 'place=archipelago', 'place=island', # Islands
                 'admin_level=5','admin_level=4','admin_level=3', 'admin_level=2', # Country/region/province borders
                 'boundary=continent', 'boundary=timezone', 'boundary=maritime', 'boundary=region', 'boundary=military_district', 'boundary=economic', # Big boundaries
                 'boundary=national_park', 'leisure=nature_reserve', # Big national areas

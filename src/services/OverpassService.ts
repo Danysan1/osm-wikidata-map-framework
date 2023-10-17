@@ -175,7 +175,7 @@ export class OverpassService {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxRelationMembers = getConfig("max_relation_members"),
             maxMembersFilter = maxRelationMembers ? `(if:count_members()<${maxRelationMembers})` : "",
-            notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]["natural"!="peninsula"]["place"!="sea"]["place"!="archipelago"]${maxMembersFilter}`,
+            notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
             raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
             filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
