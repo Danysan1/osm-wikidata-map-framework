@@ -5,7 +5,7 @@
     "version": "6.6.0",
     "generators": {
       "overpass": {
-        "inputSpec": "./openapi-overpass.yaml",
+        "inputSpec": "./openapi/overpass.yaml",
         "output": "./src/generated/overpass",
         "generatorName": "typescript-fetch",
         "additionalProperties": {
@@ -13,7 +13,7 @@
         }
       },
       "owmf": {
-        "glob": "./openapi-owmf.yaml",
+        "glob": "./openapi/owmf.yaml",
         "output": "./src/generated/owmf",
         "generatorName": "typescript-fetch",
         "additionalProperties": {
@@ -21,7 +21,7 @@
         }
       },
       "sparql": {
-        "glob": "./openapi-sparql.yaml",
+        "glob": "./openapi/sparql.yaml",
         "output": "./src/generated/sparql",
         "generatorName": "typescript-fetch",
         "additionalProperties": {

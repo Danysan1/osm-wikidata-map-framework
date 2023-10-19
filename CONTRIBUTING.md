@@ -76,19 +76,22 @@ In order to display the etymology of an element you need to create one of these 
 
 ## How to contribute to OSM-Wikidata Map Framework
 
-Any suggestion to improve this documentation page is really appreciated, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects. You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/new) describing your suggestion.
+**Any suggestion to improve this documentation page is really appreciated**, as it helps more newcomers to contribute to the map and more in general to the OSM and Wikidata projects.
+You can edit it and open a merge request or you can [open a new issue](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/new) describing your suggestion.
 
 You can find below some information useful to contribute to the OSM-Wikidata Map Framework codebase.
 
 ### Helping with translation
 
-The translations for the title and description of the application is located in the `i18n_override` configuration. For example, the title and description of Open Etymology Map are located in the [`.env.example` file in its repository](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example).
+The translations for the title and description of the specific instance of OWMF is located in the `i18n_override` configuration.
+For example, the title and description of Open Etymology Map are located in the [`.env.example` file in its repository](https://gitlab.com/openetymologymap/open-etymology-map/-/blob/main/.env.example).
 
 All other translations are located in the [`public/locales/{LANGUAGE_CODE}/common.json`](public/locales/) files of the framework.
-In order to fix an error to an existing translation you simply need to edit the relevant file.
-In order to create a new translation you can copy one of the existing language folders in [`public/locales`](public/locales/) to a new folder with the ISO 639-1 code of the new language you want to translate and then edit the new `common.json`.
+**You translate can translate this Framework in new languages or fix an error to an existing translation [on Transifex](https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/)**.
 
-### Excluded elements
+### Architecture info for contributors
+
+#### Excluded elements
 
 OWMF makes the choice to remove extremely big elements when fetching from OpenStreetMap for two reasons:
 
@@ -104,7 +107,7 @@ Tags causing elements to be removed include:
 
 This filtering is done in [OwmfFilterDAG](airflow/dags/OwmfFilterDAG.py) for the DB data and by [OverpassService](src/services/OverpassService.ts) for Overpass data.
 
-### Deployment
+#### Deployment
 
 In order to make a deployed instance function correctly all instance settings must be set in `.env`.
 
@@ -176,8 +179,6 @@ At this point you need to load a dump of the DB on the DB exposed on localhost:5
 
 </details>
 
-### Structure
-
 #### Front-end
 
 The front-end code is composed by [index.php](public/index.php) and the Typescript code under the [src folder](src/).
@@ -188,6 +189,8 @@ At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered elem
 At low zoom level ([`threshold_zoom_level`](.env.example) > zoom > [`min_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](public/elements.php).
 
 At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](public/etymologyMap.php) .
+
+The API code used to connect to the back-end, to Overpass, to WDQS and other APIs is automatically generated from the OpenAPI specification files in [`openapi/`](openapi/) through `npm run generate` into [`src/generated/`](src/generated/).
 
 #### Back-end (v2, using PostGIS DB)
 
@@ -270,4 +273,4 @@ Data gathering process in [etymologyMap.php](public/etymologyMap.php) used by in
 
 #### Output
 
-The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in [`openapi-owmf.yaml`](openapi-owmf.yaml).
+The output of [etymologyMap.php](public/etymologyMap.php) is GeoJSON, the content of the properties for each element is defined in [the `owmf.yaml` OpenAPI specification file](openapi/owmf.yaml).
