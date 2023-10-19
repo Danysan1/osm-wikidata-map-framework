@@ -183,10 +183,10 @@ export class OverpassService {
             extra_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
         if (debug) console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, extra_wd_keys, osm_text_key });
         filter_wd_keys.forEach(
-            key => query += `nwr${notTooBig}["${key}"]; // ${key} is both filter and secondary wikidata key\n`
+            key => query += `nwr${notTooBig}["${key}"]; // "${key}" is both filter and secondary wikidata key\n`
         );
         if (text_etymology_key_is_filter)
-            query += `nwr${notTooBig}["${osm_text_key}"]; // ${osm_text_key} is both filter and text etymology key\n`;
+            query += `nwr${notTooBig}["${osm_text_key}"]; // "${osm_text_key}" is both filter and text etymology key\n`;
         if (use_wikidata && !filter_tags && !osm_text_key)
             query += `nwr${notTooBig}["wikidata"];\n`;
 
@@ -194,16 +194,16 @@ export class OverpassService {
             const filter_split = filter_tag.split("="),
                 filter_key = filter_split[0],
                 filter_value = filter_split[1],
-                filter_clause = filter_value ? `${filter_key}"="${filter_value}` : filter_key;
+                filter_clause = filter_value ? `"${filter_key}"="${filter_value}"` : `"${filter_key}"`;
 
             if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
                 extra_wd_keys.forEach(
-                    key => query += `nwr${notTooBig}["${filter_clause}"]["${key}"]; // ${filter_clause} is a filter, ${key} is a secondary wikidata key\n`
+                    key => query += `nwr${notTooBig}[${filter_clause}]["${key}"]; // ${filter_clause} is a filter, "${key}" is a secondary wikidata key\n`
                 );
                 if (osm_text_key && !text_etymology_key_is_filter)
-                    query += `nwr${notTooBig}["${filter_clause}"]["${osm_text_key}"]; // ${filter_clause} is a filter, ${osm_text_key} is a text etymology key\n`;
+                    query += `nwr${notTooBig}[${filter_clause}]["${osm_text_key}"]; // ${filter_clause} is a filter, "${osm_text_key}" is a text etymology key\n`;
                 if (use_wikidata)
-                    query += `nwr${notTooBig}["${filter_clause}"]["wikidata"]; // ${filter_clause} is a filter\n`;
+                    query += `nwr${notTooBig}[${filter_clause}]["wikidata"]; // ${filter_clause} is a filter\n`;
             }
         });
 
