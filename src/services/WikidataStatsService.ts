@@ -43,29 +43,28 @@ export class WikidataStatsService extends WikidataService {
             if (!sparqlQuery)
                 throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
             const res = await this.etymologyIDsQuery(wikidataIDs, sparqlQuery);
+            let csvData: string[][] | undefined;
+            if (csvPath) {
+                const csvResponse = await fetch(csvPath),
+                    csvText = await csvResponse.text();
+                csvData = parse(csvText, { download: false, header: false }).data as string[][];
+                // console.info("Loaded CSV:")
+                // console.table(csvData);
+            }
             out = res?.results?.bindings?.map((x: any): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
                     if (debug) console.info("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
                 }
                 return {
-                    color: x.color?.value,
+                    name: x.name.value,
                     count: parseInt(x.count.value),
                     id: x.id?.value,
-                    name: x.name.value,
+                    class: x.class?.value,
                     subjects: x.subjects?.value?.split(","),
+                    color: x.color?.value || csvData?.find(row => row[0] === x.id?.value || row[0] === x.class?.value)?.at(3),
                 };
             }) as EtymologyStat[];
-            if (csvPath) {
-                const csvResponse = await fetch(csvPath),
-                    csvText = await csvResponse.text(),
-                    csv = parse(csvText, { download: false, header: false });
-                // console.info("Loaded CSV:")
-                // console.table(csv.data);
-                // console.info("Applying to stats:")
-                // console.table(stats);
-                out.forEach(stat => stat.color = (csv.data as string[][]).find(row => row[0] === stat.id)?.at(3));
-            }
             this.db.addStats(out, colorSchemeID, wikidataIDs, this.language);
         }
         return out;
