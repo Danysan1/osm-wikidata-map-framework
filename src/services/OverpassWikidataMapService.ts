@@ -5,6 +5,7 @@ import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
 
+type FeatureCollection = GeoJSON & EtymologyResponse;
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 
 export class OverpassWikidataMapService {
@@ -66,10 +67,10 @@ export class OverpassWikidataMapService {
 
     private async fetchAndMergeMapData(
         sourceID: string,
-        fetchOverpass: () => Promise<GeoJSON & EtymologyResponse>,
-        fetchWikidata: () => Promise<GeoJSON & EtymologyResponse>,
+        fetchOverpass: () => Promise<FeatureCollection>,
+        fetchWikidata: () => Promise<FeatureCollection>,
         bbox: BBox
-    ): Promise<GeoJSON & EtymologyResponse> {
+    ): Promise<FeatureCollection> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
             if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { sourceID, bbox, language: this.language, out });
@@ -92,17 +93,25 @@ export class OverpassWikidataMapService {
         return out;
     }
 
-    private mergeMapData(overpassData: GeoJSON & EtymologyResponse, wikidataData: GeoJSON & EtymologyResponse): GeoJSON & EtymologyResponse {
+    private mergeMapData(overpassData: FeatureCollection, wikidataData: FeatureCollection): FeatureCollection {
         const out = wikidataData.features.reduce((acc, wikidataFeature: Feature) => {
-            const existingFeature: Feature | undefined = overpassData.features.find((overpassFeature: Feature) => {
-                const sameWikidata = overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata,
-                    //sameCommons = overpassFeature.properties?.commons !== undefined && overpassFeature.properties?.commons === wikidataFeature.properties?.commons,
-                    sameOSM = overpassFeature.properties?.osm_id !== undefined && overpassFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && overpassFeature.properties?.osm_type !== undefined && overpassFeature.properties?.osm_type === wikidataFeature.properties?.osm_type;
-                return sameWikidata || sameOSM;
+            const existingFeatures = acc.features.filter((overpassFeature: Feature) => {
+                if (overpassFeature.properties?.from_wikidata === true)
+                    return false; // Already merged with another Wikidata feature => ignore
+
+                if (overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata)
+                    return true; // Same Wikidata => merge
+
+                if (overpassFeature.properties?.osm_id !== undefined && overpassFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && overpassFeature.properties?.osm_type !== undefined && overpassFeature.properties?.osm_type === wikidataFeature.properties?.osm_type)
+                    return true; // Same OSM => merge
+
+                return false; // Different feature => ignore
             });
-            if (!existingFeature) {
-                acc.features.push(wikidataFeature);
-            } else {
+
+            if (!existingFeatures.length)
+                acc.features.push(wikidataFeature); // No existing OSM feature to merge with => Add the standalone Wikidata feature
+
+            existingFeatures.forEach((existingFeature: Feature) => {
                 if (!existingFeature.properties)
                     existingFeature.properties = {};
                 existingFeature.properties.from_wikidata = true;
@@ -147,7 +156,8 @@ export class OverpassWikidataMapService {
                             existingFeature.properties.etymologies.push(ety);
                     }
                 });
-            }
+            });
+
             return acc;
         }, overpassData);
 
