@@ -440,47 +440,54 @@ export class EtymologyMap extends Map {
             const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
                 thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
             if (debug) console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
-            const sourceControl = new SourceControl(
-                getCorrectFragmentParams().source,
-                this.updateDataSource.bind(this),
-                t,
-                minZoomLevel
-            );
-            setTimeout(() => this.addControl(sourceControl, 'top-left'), 25); // Delay needed to make sure the dropdown is always under the search bar
 
-            const colorControl = new EtymologyColorControl(
-                getCorrectFragmentParams().colorScheme,
-                (colorSchemeID) => {
-                    if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
-                    const params = getCorrectFragmentParams();
-                    if (params.colorScheme != colorSchemeID) {
-                        setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
-                        this.updateDataSource();
-                    }
-                },
-                (color) => {
-                    if (debug) console.debug("initWikidataControls set layer color", { color });
-                    [
-                        ["wikidata_source_layer_point", "circle-color"],
-                        ["wikidata_source_layer_lineString", 'line-color'],
-                        ["wikidata_source_layer_polygon_fill", 'fill-color'],
-                        ["wikidata_source_layer_polygon_border", 'line-color'],
-                    ].forEach(([layerID, property]) => {
-                        if (this?.getLayer(layerID)) {
-                            this.setPaintProperty(layerID, property, color);
-                        } else {
-                            console.warn("Layer does not exist, can't set property", { layerID, property, color });
-                        }
-                    });
-                },
-                t,
-                WIKIDATA_SOURCE,
-                thresholdZoomLevel
-            );
+            /* Set up controls in the top LEFT corner */
+
             setTimeout(() => {
+                const colorControl = new EtymologyColorControl(
+                    getCorrectFragmentParams().colorScheme,
+                    (colorSchemeID) => {
+                        if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
+                        const params = getCorrectFragmentParams();
+                        if (params.colorScheme != colorSchemeID) {
+                            setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                            this.updateDataSource();
+                        }
+                    },
+                    (color) => {
+                        if (debug) console.debug("initWikidataControls set layer color", { color });
+                        [
+                            ["wikidata_source_layer_point", "circle-color"],
+                            ["wikidata_source_layer_lineString", 'line-color'],
+                            ["wikidata_source_layer_polygon_fill", 'fill-color'],
+                            ["wikidata_source_layer_polygon_border", 'line-color'],
+                        ].forEach(([layerID, property]) => {
+                            if (this?.getLayer(layerID)) {
+                                this.setPaintProperty(layerID, property, color);
+                            } else {
+                                console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                            }
+                        });
+                    },
+                    t,
+                    WIKIDATA_SOURCE,
+                    thresholdZoomLevel
+                );
                 this.addControl(colorControl, 'top-left');
                 colorControl.updateChart();
-            }, 50); // Delay needed to make sure the dropdown is always under the search bar
+            }, 20); // Delay needed to make sure the dropdown is always under the search bar
+
+            setTimeout(() => {
+                const sourceControl = new SourceControl(
+                    getCorrectFragmentParams().source,
+                    this.updateDataSource.bind(this),
+                    t,
+                    minZoomLevel
+                );
+                this.addControl(sourceControl, 'top-left')
+            }, 30); // Delay needed to make sure the dropdown is always under the search bar
+
+            /* Set up controls in the top RIGHT corner */
 
             if (debug) console.debug("Initializing link controls", { minZoomLevel });
             this.addControl(new LinkControl(
