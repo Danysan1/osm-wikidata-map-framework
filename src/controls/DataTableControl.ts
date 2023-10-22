@@ -7,18 +7,17 @@ import { Etymology, EtymologyFeature, EtymologyResponse } from '../generated/owm
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
 import { WikidataService } from '../services/WikidataService';
 import { WikidataDetailsService } from '../services/WikidataDetailsService';
+import { loadTranslator } from '../i18n';
 
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
     private button?: HTMLButtonElement;
-    private title: string;
     private layers: string[];
     private map?: Map;
     private sourceDataHandler: (e: MapSourceDataEvent) => void;
     private moveEndHandler: (e: MapEvent) => void;
 
-    constructor(title: string, sourceId: string, minZoomLevel = 0) {
-        this.title = title;
+    constructor(sourceId: string, minZoomLevel = 0) {
         this.layers = [
             sourceId + "_layer_point",
             sourceId + "_layer_lineString",
@@ -43,9 +42,14 @@ export class DataTableControl implements IControl {
         this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl data-table-ctrl';
 
         this.button = document.createElement("button");
-        this.button.title = this.title;
-        this.button.ariaLabel = this.title;
         this.button.addEventListener("click", () => this.openTable(map.getZoom()));
+        loadTranslator().then(t => {
+            if (this.button) {
+                const title = t("data_table.view_data_table", "View the data in a table");
+                this.button.title = title;
+                this.button.ariaLabel = title;
+            }
+        });
 
         const icon = document.createElement("img");
         icon.className = "button_img";
@@ -87,22 +91,40 @@ export class DataTableControl implements IControl {
         if (map !== undefined) {
             const features: EtymologyFeature[] = map.queryRenderedFeatures({ layers: this.layers }),
                 table = document.createElement("table"),
-                thead = document.createElement("thead"),
-                head_tr = document.createElement("tr"),
-                tbody = document.createElement("tbody"),
                 popup = new Popup({
                     closeButton: true,
                     closeOnClick: true,
                     closeOnMove: true,
                     className: "owmf_data_table_popup"
-                }),
-                wikidataIDs = new Set<string>();
+                });
             table.className = "owmf_data_table";
-            table.appendChild(thead);
-            thead.appendChild(head_tr);
-            table.appendChild(tbody);
 
-            ["Name", "Alt names", "Actions", "Linked entities"].forEach(column => {
+            this.fillTable(table, features, currentZoomLevel);
+
+            popup.setLngLat(map.unproject([0, 0]))
+                .setDOMContent(table)
+                .addTo(map);
+            if (debug) console.debug("DataTableControl", { popup })
+            // console.table(data.features?.map(f => f.properties));
+        }
+    }
+
+    private fillTable(table: HTMLTableElement, features: EtymologyFeature[], currentZoomLevel: number) {
+        const thead = document.createElement("thead"),
+            head_tr = document.createElement("tr"),
+            tbody = document.createElement("tbody"),
+            wikidataIDs = new Set<string>();
+
+        table.appendChild(thead);
+        thead.appendChild(head_tr);
+        table.appendChild(tbody);
+
+        loadTranslator().then(t => {
+            [
+                t("data_table.names", "Names"),
+                t("data_table.actions", "Actions"),
+                t("data_table.linked_entities", "Linked entities")
+            ].forEach(column => {
                 const th = document.createElement("th");
                 th.innerText = column;
                 head_tr.appendChild(th);
@@ -119,15 +141,25 @@ export class DataTableControl implements IControl {
                 }
                 tbody.appendChild(tr);
 
-                const name = f.properties?.name,
-                    alt_names = f.properties?.alt_name,
+                const nameArray: string[] = [];
+                if (f.properties?.alt_name)
+                    nameArray.push(...f.properties.alt_name.split(";"));
+                if (f.properties?.name) {
+                    const name = f.properties.name.toLowerCase().replaceAll('“', '"').replaceAll('”', '"'),
+                        includedInAnyAltName = nameArray.some(alt_name => alt_name.toLowerCase().includes(name));
+                    if (!includedInAnyAltName)
+                        nameArray.push(f.properties.name);
+                }
+
+                const names = nameArray.join(" / "),
                     destinationZoomLevel = Math.max(currentZoomLevel, 18),
                     buttons = featureToButtonsDomElement(f, destinationZoomLevel),
                     etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
                     featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
                     linked_wikidata = etymologies ? this.etymologyLinks(featureWikidataIDs) : undefined;
                 featureWikidataIDs?.forEach(id => wikidataIDs.add(id));
-                [name, alt_names, buttons, linked_wikidata].forEach(value => {
+
+                [names, buttons, linked_wikidata].forEach(value => {
                     const td = document.createElement("td");
                     if (value instanceof HTMLElement)
                         td.appendChild(value);
@@ -136,15 +168,9 @@ export class DataTableControl implements IControl {
                     tr.appendChild(td);
                 });
             });
+        });
 
-            popup.setLngLat(map.unproject([0, 0]))
-                .setDOMContent(table)
-                .addTo(map);
-            if (debug) console.debug("DataTableControl", { popup })
-            // console.table(data.features?.map(f => f.properties));
-
-            this.downloadLinkLabels(wikidataIDs, tbody);
-        }
+        this.downloadLinkLabels(wikidataIDs, tbody);
     }
 
     private etymologyLinks(wikidataIDs?: string[]): HTMLElement | undefined {
