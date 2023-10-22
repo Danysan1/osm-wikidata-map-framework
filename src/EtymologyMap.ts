@@ -508,10 +508,7 @@ export class EtymologyMap extends Map {
                 minZoomLevel
             ), 'top-right');
 
-            this.addControl(new DataTableControl(
-                t("data_table.show", "Show data table"), WIKIDATA_SOURCE, thresholdZoomLevel
-            ), 'top-right');
-
+            this.addControl(new DataTableControl(WIKIDATA_SOURCE, thresholdZoomLevel), 'top-right');
             this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
             this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
 
