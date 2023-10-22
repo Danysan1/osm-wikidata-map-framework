@@ -83,7 +83,7 @@ export class EtymologyMap extends Map {
         this.backendService = new OwmfBackendService(db);
 
         try {
-            openInfoWindow(this);
+            openInfoWindow(this, false);
         } catch (e) {
             console.error("Info window error:", e);
         }
@@ -361,9 +361,9 @@ export class EtymologyMap extends Map {
             WIKIDATA_SOURCE,
             {
                 type: 'geojson',
-                //buffer: 512, // This only works on already downloaded data
+                // buffer: 512, // This only works on already downloaded data
                 data,
-                attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
+                // attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
             }
         );
 
@@ -441,8 +441,10 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
             if (debug) console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
 
-            /* Set up controls in the top LEFT corner */
-
+            /*
+             * Set up controls in the top LEFT corner
+             * Delay needed to make sure the dropdowns are under the search bar
+             */
             setTimeout(() => {
                 const colorControl = new EtymologyColorControl(
                     getCorrectFragmentParams().colorScheme,
@@ -475,21 +477,19 @@ export class EtymologyMap extends Map {
                 );
                 this.addControl(colorControl, 'top-left');
                 colorControl.updateChart();
-            }, 20); // Delay needed to make sure the dropdown is always under the search bar
 
-            setTimeout(() => {
                 const sourceControl = new SourceControl(
                     getCorrectFragmentParams().source,
                     this.updateDataSource.bind(this),
                     t,
                     minZoomLevel
                 );
-                this.addControl(sourceControl, 'top-left')
-            }, 30); // Delay needed to make sure the dropdown is always under the search bar
+                this.addControl(sourceControl, 'top-left');
+
+                this.addControl(new InfoControl(), 'top-left');
+            }, 20);
 
             /* Set up controls in the top RIGHT corner */
-
-            if (debug) console.debug("Initializing link controls", { minZoomLevel });
             this.addControl(new LinkControl(
                 "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg",
                 t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
@@ -901,7 +901,6 @@ export class EtymologyMap extends Map {
         if (this.projectionControl)
             this.addControl(this.projectionControl, 'top-right');
 
-        this.addControl(new InfoControl(), 'top-right');
         this.initWikidataControls();
     }
 

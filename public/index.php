@@ -166,9 +166,9 @@ $jsScript = $jsScripts[0];
                 <p class="i18n_description"></p>
             </header>
 
-            <p class="i18n_click_anywhere">Click anywhere on the map to explore.</p>
-            <div>
-                <span class="i18n_use_controls">Use the controls on the side to see other data:</span>
+            <div class="instructions_container hiddenElement">
+                <p class="i18n_click_anywhere">Click anywhere on the map to explore.</p>
+                <p class="i18n_use_controls">Use the controls on the side to see other data:</p>
                 <table>
                     <tr>
                         <td>📊</td>
@@ -200,6 +200,7 @@ $jsScript = $jsScripts[0];
                     </tr>
                 </table>
             </div>
+
             <p>
                 <a title="Contribute to the map" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href="<?= (string)$conf->get("contributing_url") ?>">
                     <span class="button_img">📖</span> &nbsp;
@@ -220,24 +221,23 @@ $jsScript = $jsScripts[0];
                     <a target="_blank" title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . (string)$conf->get("framework_image_tag") : ""; ?>
                 </p>
-                <p>
-                    <?php if ($conf->has("issues_url")) { ?>
-                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= (string)$conf->get("issues_url") ?>">Report a problem</a>
+                <div>
+                    <?php if ($conf->has("paypal_id")) { ?>
+                        <form action="https://www.paypal.com/donate" method="post" target="_top" id="paypal_donate">
+                            <input type="hidden" name="business" value="<?= (string)$conf->get("paypal_id") ?>" />
+                            <input type="hidden" name="no_recurring" value="0" />
+                            <input type="hidden" name="item_name" value="This donation will help this project to stay up and running. Thank you!" />
+                            <input type="hidden" name="currency_code" value="EUR" />
+                            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" class="paypal_donate_img" />
+                        </form>
                         |
                     <?php } ?>
                     <a target="_blank" title="Personal website of the author of OSM-Wikidata Map Framework" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
-                </p>
-
-                <?php if ($conf->has("paypal_id")) { ?>
-                    <form action="https://www.paypal.com/donate" method="post" target="_top">
-                        <input type="hidden" name="business" value="<?= (string)$conf->get("paypal_id") ?>" />
-                        <input type="hidden" name="no_recurring" value="0" />
-                        <input type="hidden" name="item_name" value="This donation will help this project to stay up and running. Thank you!" />
-                        <input type="hidden" name="currency_code" value="EUR" />
-                        <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" class="paypal_donate_img" />
-                        <img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
-                    </form>
-                <?php } ?>
+                    <?php if ($conf->has("issues_url")) { ?>
+                        |
+                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= (string)$conf->get("issues_url") ?>">Report a problem</a>
+                    <?php } ?>
+                </div>
             </footer>
         </div>
     </template>
