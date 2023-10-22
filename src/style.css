@@ -31,8 +31,9 @@ div.mapboxgl-popup.owmf_info_popup {
   /*width: 80%;*/
   /*height: 80%;*/
   /*position: absolute;*/
-  top: 0.3%;
-  left: 0.5%;
+  margin-top: 1em;
+  bottom: 0;
+  left: 0;
   z-index: 1000;
 }
 
@@ -47,6 +48,11 @@ div.mapboxgl-popup.owmf_info_popup .dataset_button {
 div.maplibregl-popup.owmf_info_popup table tr td:first-child,
 div.mapboxgl-popup.owmf_info_popup table tr td:first-child {
   text-align: center;
+}
+
+div.maplibregl-popup.owmf_info_popup #paypal_donate,
+div.mapboxgl-popup.owmf_info_popup #paypal_donate {
+  display: inline-block;
 }
 
 div.button_row {

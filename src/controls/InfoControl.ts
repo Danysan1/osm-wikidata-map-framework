@@ -7,25 +7,29 @@ import { getLocale, loadTranslator, translateContent, translateAnchorTitle } fro
 /**
  * Opens the information intro window
  */
-function openInfoWindow(map: Map) {
+function openInfoWindow(map: Map, showInstructions: boolean) {
     const intro_template = document.getElementById('intro_template');
     if (!(intro_template instanceof HTMLTemplateElement))
         throw new Error("Missing intro template");
 
-    const popupPosition = map.unproject([0, 0]),
+    // const popupPosition = map.unproject([0, 0]),
+    const popupPosition = map.getBounds().getSouthWest().toArray(),
         introDomElement = intro_template.content.cloneNode(true) as HTMLElement;
 
     translateContent(introDomElement, ".i18n_title", "title", "OSM-Wikidata Map Framework");
     translateContent(introDomElement, ".i18n_description", "description", "");
-    translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere", "Click anywhere on the map to explore");
-    translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls", "Use the controls on the sides to see other data:");
-    translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics", "to see statistics about elements (only at high zoom)");
-    translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source", "to choose which data source to use");
-    translateContent(introDomElement, ".i18n_to_view_data_table", "info_box.to_view_data_table", "to view data in a table (only at high zoom)");
-    translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background", "to change the background map style");
-    translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again", "to open again this popup");
-    translateContent(introDomElement, ".i18n_to_overpass_query", "info_box.to_overpass_query", "to view the source OverpassQL query (only with Overpass sources)");
-    translateContent(introDomElement, ".i18n_to_wikidata_query", "info_box.to_wikidata_query", "to view the source SPARQL query (only with Wikidata sources)");
+    if (showInstructions) {
+        introDomElement.querySelector(".instructions_container")?.classList?.remove("hiddenElement");
+        translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere", "Click anywhere on the map to explore");
+        translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls", "Use the controls on the sides to see other data:");
+        translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics", "to see statistics about elements (only at high zoom)");
+        translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source", "to choose which data source to use");
+        translateContent(introDomElement, ".i18n_to_view_data_table", "info_box.to_view_data_table", "to view data in a table (only at high zoom)");
+        translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background", "to change the background map style");
+        translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again", "to open again this popup");
+        translateContent(introDomElement, ".i18n_to_overpass_query", "info_box.to_overpass_query", "to view the source OverpassQL query (only with Overpass sources)");
+        translateContent(introDomElement, ".i18n_to_wikidata_query", "info_box.to_wikidata_query", "to view the source SPARQL query (only with Wikidata sources)");
+    }
     translateContent(introDomElement, ".i18n_contribute", "info_box.contribute", "Contribute to the map");
     translateAnchorTitle(introDomElement, ".title_i18n_contribute", "info_box.contribute", "Contribute to the map");
     translateContent(introDomElement, ".i18n_based_on", "info_box.based_on", "Based on");
@@ -52,24 +56,19 @@ function openInfoWindow(map: Map) {
         .setDOMContent(introDomElement)
         .addTo(map);
 
-    const donateImg = popup.getElement().querySelector<HTMLInputElement>("input.paypal_donate_img");
-    if (donateImg) {
-        const locale = getLocale(),
-            lang = document.documentElement.lang,
-            originalUrl = donateImg.src,
+    translateDonateButton(popup);
+}
+
+function translateDonateButton(popup: Popup) {
+    const donateImg = popup.getElement().querySelector<HTMLInputElement>("input.paypal_donate_img"),
+        lang = document.documentElement.lang;
+    if (donateImg && lang && lang !== "en") {
+        const originalUrl = donateImg.src,
             urlWithLang = originalUrl.replace("en_US", lang + "_" + lang.toUpperCase()),
-            onUrlWithLangFailed = () => donateImg.src = originalUrl,
-            onUrlWithLocaleFailed = () => {
-                donateImg.addEventListener("error", onUrlWithLangFailed, { once: true });
-                donateImg.src = urlWithLang;
-            };
-        if (locale) {
-            const urlWithLocale = originalUrl.replace("en_US", locale.replace("-", "_"));
-            donateImg.addEventListener("error", onUrlWithLocaleFailed, { once: true });
-            donateImg.src = urlWithLocale;
-        } else {
-            onUrlWithLocaleFailed();
-        }
+            fallbackToOriginalUrl = () => donateImg.src = originalUrl;
+
+        donateImg.addEventListener("error", fallbackToOriginalUrl, { once: true });
+        donateImg.src = urlWithLang;
     }
 }
 
@@ -88,7 +87,7 @@ class InfoControl implements IControl {
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon';
         ctrlBtn.textContent = 'ℹ️';
-        ctrlBtn.onclick = () => openInfoWindow(map);
+        ctrlBtn.onclick = () => openInfoWindow(map, true);
         container.appendChild(ctrlBtn);
 
         loadTranslator().then(t => {
