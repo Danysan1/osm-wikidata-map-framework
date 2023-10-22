@@ -9,6 +9,7 @@
         "to_choose_source": "per scegliere quale fonte dati utilizzare",
         "to_overpass_query": "per visualizzare la query OverpassQL di origine (solo con le fonti Overpass)",
         "to_wikidata_query": "per visualizzare la query SPARQL di origine (solo con le fonti Wikidata)",
+        "to_view_data_table": "per visualizzare i dati in una tabella (solo ad alto zoom)",
         "to_change_background": "per cambiare lo sfondo della mappa",
         "to_open_again": "per riaprire questa finestra",
         "contribute": "Contribuisci alla mappa",
@@ -18,8 +19,7 @@
         "report_issue": "Segnala un problema",
         "report_issue_title": "Segnala un problema o un bug di questa applicazione",
         "about_me": "Su di me",
-        "about_me_title": "Sito personale dell'autore di OSM-Wikidata Map Framework",
-        "to_view_data_table": "per visualizzare i dati in una tabella (solo ad alto zoom)"
+        "about_me_title": "Sito personale dell'autore di OSM-Wikidata Map Framework"
     },
     "snackbar": {
         "zoom_in": "Zoomare per visualizzare i dati",
@@ -43,7 +43,6 @@
         "choose_scheme": "Scegli colori e statistiche",
         "blue": "Blu",
         "feature_source": "Per fonte degli elementi",
-        "etymology_source": "Per fonte delle entità collegate",
         "gender": "Per genere",
         "type": "Per tipo",
         "country": "Per paese",
@@ -52,13 +51,14 @@
         "feature_picture": "Per disponibilità di immagini",
         "available": "Disponibile",
         "unavailable": "Non disponibile",
-        "black": "Nero",
-        "red": "Rosso",
-        "orange": "Arancione",
+        "osm_text_only": "OSM (solo testo)",
         "uniform": "Colori uniformi",
         "feature_statistics": "Statistiche sugli elementi della mappa",
         "etymology_statistics": "Statistiche sulle entità collegate",
-        "osm_text_only": "OSM (solo testo)"
+        "black": "Nero",
+        "red": "Rosso",
+        "orange": "Arancione",
+        "etymology_source": "Per fonte delle entità collegate"
     },
     "feature_details": {
         "source": "Fonte:",
@@ -71,6 +71,12 @@
     "etymology_details": {
         "propagation": "propagazione",
         "propagation_title": "Descrizione del meccanismo di propagazione"
+    },
+    "data_table": {
+        "view_data_table": "Visualizza i dati in una tabella (solo ad alto zoom)",
+        "names": "Nomi",
+        "actions": "Azioni",
+        "linked_entities": "Entità collegate"
     },
     "change_language": "Cambia lingua",
     "choose_basemap": "Scegli lo sfondo della mappa",
