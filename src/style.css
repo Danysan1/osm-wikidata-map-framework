@@ -433,6 +433,8 @@ button.mapboxgl-popup-close-button:hover {
   transform: translateY(0);
 }
 
+.owmf_etymology_popup .maplibregl-popup-tip,
+.owmf_etymology_popup .mapboxgl-popup-tip,
 span.button_text {
   display: none;
 }

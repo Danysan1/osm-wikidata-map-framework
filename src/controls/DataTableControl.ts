@@ -111,35 +111,30 @@ export class DataTableControl implements IControl {
 
     private async fillTable(table: HTMLTableElement, features: EtymologyFeature[], currentZoomLevel: number) {
         const thead = document.createElement("thead"),
-            head_tr = document.createElement("tr"),
+            head_row = document.createElement("tr"),
+            namesHeadCell = document.createElement("th"),
+            actionsHeadCell = document.createElement("th"),
+            linkedEntitiesHeadCell = document.createElement("th"),
             tbody = document.createElement("tbody"),
             t = await loadTranslator(),
             wikidataIDs = new Set<string>();
+        let anyLinkedEntity = false;
 
         table.appendChild(thead);
-        thead.appendChild(head_tr);
+        thead.appendChild(head_row);
         table.appendChild(tbody);
 
-        [
-            t("data_table.names", "Names"),
-            t("data_table.actions", "Actions"),
-            t("data_table.linked_entities", "Linked entities")
-        ].forEach(column => {
-            const th = document.createElement("th");
-            th.innerText = column;
-            head_tr.appendChild(th);
-        });
-
+        /* Add the table body */
         features?.forEach(f => {
-            const tr = document.createElement("tr"),
+            const row = document.createElement("tr"),
                 id = f.properties?.wikidata?.toString() || f.properties?.name?.replaceAll('"', "");
             if (id) {
                 if (debug) console.debug("createFeatureRow", { id, f });
                 if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
                     return;
-                tr.dataset.featureId = id;
+                row.dataset.featureId = id;
             }
-            tbody.appendChild(tr);
+            tbody.appendChild(row);
 
             const nameArray: string[] = [];
             if (f.properties?.alt_name)
@@ -153,37 +148,53 @@ export class DataTableControl implements IControl {
 
             const names = nameArray.join(" / "),
                 destinationZoomLevel = Math.max(currentZoomLevel, 18),
-                buttons = featureToButtonsDomElement(f, destinationZoomLevel),
                 etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
                 featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
-                linked_wikidata = etymologies ? this.etymologyLinks(featureWikidataIDs) : undefined;
-            featureWikidataIDs?.forEach(id => wikidataIDs.add(id));
+                namesCell = document.createElement("td"),
+                actionsCell = document.createElement("td"),
+                linkedCell = document.createElement("td");
 
-            [names, buttons, linked_wikidata].forEach(value => {
-                const td = document.createElement("td");
-                if (value instanceof HTMLElement)
-                    td.appendChild(value);
-                else
-                    td.innerText = value ?? "";
-                tr.appendChild(td);
-            });
+            namesCell.innerText = names;
+            row.appendChild(namesCell);
+
+            actionsCell.appendChild(featureToButtonsDomElement(f, destinationZoomLevel));
+            row.appendChild(actionsCell);
+
+            if (featureWikidataIDs?.length || f.properties?.text_etymology) {
+                if (featureWikidataIDs?.length === 1)
+                    linkedCell.appendChild(this.wikidataLink(featureWikidataIDs[0]));
+                else if (featureWikidataIDs?.length)
+                    linkedCell.appendChild(this.etymologyLinks(featureWikidataIDs));
+                else if (f.properties?.text_etymology)
+                    linkedCell.innerText = f.properties.text_etymology;
+
+                row.appendChild(linkedCell);
+                anyLinkedEntity = true;
+            }
+            featureWikidataIDs?.forEach(id => wikidataIDs.add(id));
         });
+
+        /* Add the table header */
+        namesHeadCell.innerText = t("data_table.names", "Names");
+        head_row.appendChild(namesHeadCell);
+        actionsHeadCell.innerText = t("data_table.actions", "Actions");
+        head_row.appendChild(actionsHeadCell);
+        if (anyLinkedEntity) {
+            linkedEntitiesHeadCell.innerText = t("data_table.linked_entities", "Linked entities");
+            head_row.appendChild(linkedEntitiesHeadCell);
+        }
 
         this.downloadLinkLabels(wikidataIDs, tbody);
     }
 
-    private etymologyLinks(wikidataIDs?: string[]): HTMLElement | undefined {
-        if (!wikidataIDs || wikidataIDs.length === 0) {
-            return undefined;
-        } else {
-            const ul = document.createElement("ul");
-            wikidataIDs.forEach(id => {
-                const li = document.createElement("li");
-                li.appendChild(this.wikidataLink(id));
-                ul.appendChild(li);
-            });
-            return ul;
-        }
+    private etymologyLinks(wikidataIDs: string[]): HTMLElement {
+        const ul = document.createElement("ul");
+        wikidataIDs.forEach(id => {
+            const li = document.createElement("li");
+            li.appendChild(this.wikidataLink(id));
+            ul.appendChild(li);
+        });
+        return ul;
     }
 
     private wikidataLink(wikidataID: string): HTMLAnchorElement {
