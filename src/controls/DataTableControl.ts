@@ -109,64 +109,63 @@ export class DataTableControl implements IControl {
         }
     }
 
-    private fillTable(table: HTMLTableElement, features: EtymologyFeature[], currentZoomLevel: number) {
+    private async fillTable(table: HTMLTableElement, features: EtymologyFeature[], currentZoomLevel: number) {
         const thead = document.createElement("thead"),
             head_tr = document.createElement("tr"),
             tbody = document.createElement("tbody"),
+            t = await loadTranslator(),
             wikidataIDs = new Set<string>();
 
         table.appendChild(thead);
         thead.appendChild(head_tr);
         table.appendChild(tbody);
 
-        loadTranslator().then(t => {
-            [
-                t("data_table.names", "Names"),
-                t("data_table.actions", "Actions"),
-                t("data_table.linked_entities", "Linked entities")
-            ].forEach(column => {
-                const th = document.createElement("th");
-                th.innerText = column;
-                head_tr.appendChild(th);
-            });
+        [
+            t("data_table.names", "Names"),
+            t("data_table.actions", "Actions"),
+            t("data_table.linked_entities", "Linked entities")
+        ].forEach(column => {
+            const th = document.createElement("th");
+            th.innerText = column;
+            head_tr.appendChild(th);
+        });
 
-            features?.forEach(f => {
-                const tr = document.createElement("tr"),
-                    id = f.properties?.wikidata?.toString() || f.properties?.name?.replaceAll('"', "");
-                if (id) {
-                    if (debug) console.debug("createFeatureRow", { id, f });
-                    if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
-                        return;
-                    tr.dataset.featureId = id;
-                }
-                tbody.appendChild(tr);
+        features?.forEach(f => {
+            const tr = document.createElement("tr"),
+                id = f.properties?.wikidata?.toString() || f.properties?.name?.replaceAll('"', "");
+            if (id) {
+                if (debug) console.debug("createFeatureRow", { id, f });
+                if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
+                    return;
+                tr.dataset.featureId = id;
+            }
+            tbody.appendChild(tr);
 
-                const nameArray: string[] = [];
-                if (f.properties?.alt_name)
-                    nameArray.push(...f.properties.alt_name.split(";"));
-                if (f.properties?.name) {
-                    const name = f.properties.name.toLowerCase().replaceAll('“', '"').replaceAll('”', '"'),
-                        includedInAnyAltName = nameArray.some(alt_name => alt_name.toLowerCase().includes(name));
-                    if (!includedInAnyAltName)
-                        nameArray.push(f.properties.name);
-                }
+            const nameArray: string[] = [];
+            if (f.properties?.alt_name)
+                nameArray.push(...f.properties.alt_name.split(";"));
+            if (f.properties?.name) {
+                const name = f.properties.name.toLowerCase().replaceAll('“', '"').replaceAll('”', '"'),
+                    includedInAnyAltName = nameArray.some(alt_name => alt_name.toLowerCase().includes(name));
+                if (!includedInAnyAltName)
+                    nameArray.push(f.properties.name);
+            }
 
-                const names = nameArray.join(" / "),
-                    destinationZoomLevel = Math.max(currentZoomLevel, 18),
-                    buttons = featureToButtonsDomElement(f, destinationZoomLevel),
-                    etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
-                    featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
-                    linked_wikidata = etymologies ? this.etymologyLinks(featureWikidataIDs) : undefined;
-                featureWikidataIDs?.forEach(id => wikidataIDs.add(id));
+            const names = nameArray.join(" / "),
+                destinationZoomLevel = Math.max(currentZoomLevel, 18),
+                buttons = featureToButtonsDomElement(f, destinationZoomLevel),
+                etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
+                featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
+                linked_wikidata = etymologies ? this.etymologyLinks(featureWikidataIDs) : undefined;
+            featureWikidataIDs?.forEach(id => wikidataIDs.add(id));
 
-                [names, buttons, linked_wikidata].forEach(value => {
-                    const td = document.createElement("td");
-                    if (value instanceof HTMLElement)
-                        td.appendChild(value);
-                    else
-                        td.innerText = value ?? "";
-                    tr.appendChild(td);
-                });
+            [names, buttons, linked_wikidata].forEach(value => {
+                const td = document.createElement("td");
+                if (value instanceof HTMLElement)
+                    td.appendChild(value);
+                else
+                    td.innerText = value ?? "";
+                tr.appendChild(td);
             });
         });
 
