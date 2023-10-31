@@ -40,7 +40,7 @@ WITH {
         MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt. } # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
         ?stmt ps:${indirectProperty} ?item.
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
-        MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
+        MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
         SERVICE wikibase:box {
             ?item wdt:P625 ?location.
             bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
