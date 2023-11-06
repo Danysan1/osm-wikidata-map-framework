@@ -38,6 +38,7 @@ abstract class CurlQuery extends BaseRemoteQuery
             CURLOPT_USERAGENT => $userAgent,
             CURLOPT_SSL_VERIFYHOST => false,
             CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_TIMEOUT => 40,
         ];
     }
 

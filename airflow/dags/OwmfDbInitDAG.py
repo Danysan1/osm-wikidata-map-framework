@@ -13,8 +13,12 @@ from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
 from airflow.utils.edgemodifier import Label
 from airflow.sensors.time_delta import TimeDeltaSensorAsync
+from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
+from airflow.exceptions import AirflowNotFoundException
 from Osm2pgsqlOperator import Osm2pgsqlOperator
 from OemDockerOperator import OemDockerOperator
+from TippecanoeOperator import TippecanoeOperator
+from Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
@@ -33,12 +37,12 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
     pg_hook = PostgresHook(postgres_conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
-            with open(filepath) as file:
+            with open(filepath, "r", encoding="utf-8") as file:
                 cursor.execute(f'SET search_path TO {schema}')
                 cursor.copy_from(file, table, separator, columns = columns)
             print("Inserted rows:", cursor.rowcount)
 
-def check_postgre_conn_id(conn_id:str) -> bool:
+def check_postgre_conn_id(conn_id:str, **context) -> bool:
     """
         # Check DB connecton ID
 
@@ -51,19 +55,26 @@ def check_postgre_conn_id(conn_id:str) -> bool:
         * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
-    connection_is_ok = False
+    if not "upload_to_db" in context["params"] or not context["params"]["upload_to_db"]:
+        print("Upload to remote DB disabled in the DAG parameters, skipping upload")
+        return False
+
     if not conn_id:
-        print("Empty conn_id")
-    else:
+        print("Remote DB connection ID not specified, skipping upload")
+        return False
+    
+    try:
         pg_hook = PostgresHook(conn_id)
         with pg_hook.get_conn() as pg_conn:
             with pg_conn.cursor() as cursor:
                 cursor.execute("SELECT version()")
                 postgis_version = cursor.fetchone()
-                connection_is_ok = True
                 print(f"conn_id available, PostGIS version {postgis_version}")
-
-    return connection_is_ok
+    except AirflowNotFoundException:
+        print(f"Remote DB connection ID ('{conn_id}') not available, skipping upload")
+        return False
+    
+    return True
 
 def choose_load_osm_data_task(**context) -> str:
     """
@@ -109,9 +120,9 @@ def choose_propagation_method(propagate_data:str) -> str:
         # Check whether and how to propagate
 
         Links:
-        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
-        * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/stable/core-concepts/variables.html)
+        * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/concepts/params.html)
+        * [Variables documentation](https://airflow.apache.org/docs/apache-airflow/2.7.0/core-concepts/variables.html)
     """
 
     if propagate_data == "global" or propagate_data == "true":
@@ -130,7 +141,7 @@ class OwmfDbInitDAG(DAG):
     def __init__(self,
             local_db_conn_id:str="local_owmf_postgis_db",
             upload_db_conn_id:str=None,
-            prefix:str=None,
+            prefix:str="owmf",
             use_osm2pgsql:bool=False,
             days_before_cleanup:int=1,
             **kwargs
@@ -180,9 +191,10 @@ class OwmfDbInitDAG(DAG):
 
         default_params={
             "prefix": prefix,
-            #"upload_db_conn_id": upload_db_conn_id,
             "use_osm2pgsql": use_osm2pgsql,
             "drop_temporary_tables": True,
+            "upload_to_db": True,
+            "generate_pmtiles": True,
         }
 
         super().__init__(
@@ -346,7 +358,12 @@ class OwmfDbInitDAG(DAG):
             conn_id = local_db_conn_id,
             sql = "sql/06-create-key-index.sql",
             dag = self,
-            task_group=elaborate_group
+            task_group=elaborate_group,
+            doc_md = """
+                # Create the indexes on `osmdata`
+
+                Creates the indexes on the `osmdata` table, necessary for the next elaboration steps
+            """
         )
         task_remove_ele_too_big >> task_create_key_index
 
@@ -367,6 +384,20 @@ class OwmfDbInitDAG(DAG):
             """
         )
         task_create_key_index >> task_convert_ele_wd_cods
+
+        task_ele_wd_index = SQLExecuteQueryOperator(
+            task_id = "element_wikidata_index",
+            conn_id = local_db_conn_id,
+            sql = "sql/07-element-wikidata-index.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Create the indexes on `element_wikidata_cods`
+
+                Creates the indexes on the `element_wikidata_cods` table, necessary for the next elaboration steps
+            """
+        )
+        task_convert_ele_wd_cods >> task_ele_wd_index
 
         task_convert_wd_ent = SQLExecuteQueryOperator(
             task_id = "convert_wikidata_entities",
@@ -559,7 +590,12 @@ class OwmfDbInitDAG(DAG):
             conn_id = local_db_conn_id,
             sql = "sql/14-create-source-index.sql",
             dag = self,
-            task_group=post_elaborate_group
+            task_group=post_elaborate_group,
+            doc_md = """
+                # Create the indexes on `etymology`
+
+                Creates the indexes on the `etymology` table, necessary for the runtime queries
+            """
         )
         task_setup_ety_fk >> task_create_source_index
 
@@ -592,6 +628,24 @@ class OwmfDbInitDAG(DAG):
             """
         )
         task_check_whether_to_drop >> task_drop_temp_tables
+
+        task_etymology_map = SQLExecuteQueryOperator(
+            task_id = "setup_etymology_map",
+            conn_id = local_db_conn_id,
+            sql = "sql/13-setup-rpc.jinja.sql",
+            dag = self,
+            task_group=post_elaborate_group,
+            doc_md="""
+                # Setup the vector tiles RPC functions
+
+                Create in the local PostGIS DB the functions used by Maplibre Martin for generating the vector tiles.
+
+                Links:
+                * [Maplibre Martin documentation](https://maplibre.org/martin/)
+                * [Martin PostgreSQL function sources](https://maplibre.org/martin/33-sources-pg-functions.html)
+            """
+        )
+        task_setup_ety_fk >> task_etymology_map
 
         task_global_map = SQLExecuteQueryOperator(
             task_id = "setup_global_map",
@@ -652,6 +706,160 @@ class OwmfDbInitDAG(DAG):
         )
         [task_setup_schema,task_read_last_update] >> task_save_last_update
 
+        task_join_post_elaboration = EmptyOperator(
+            task_id = "join_post_elaboration",
+            trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
+            dag = self,
+            task_group=post_elaborate_group
+        )
+        [task_create_source_index, task_drop_temp_tables, task_etymology_map, task_global_map, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
+
+        group_pmtiles = TaskGroup("generate_pmtiles", tooltip="Generate the pmtiles file", dag=self)
+
+        task_check_pmtiles = ShortCircuitOperator(
+            task_id = "check_pmtiles",
+            python_callable=lambda **context: "generate_pmtiles" in context["params"] and context["params"]["generate_pmtiles"],
+            dag = self,
+            task_group = group_pmtiles,
+            doc_md="Check whether pmtiles should be generated"
+        )
+        task_join_post_elaboration >> task_check_pmtiles
+
+        task_dump_etymology_map = Ogr2ogrDumpOperator(
+            task_id = "dump_etymology_map",
+            dag = self,
+            task_group=group_pmtiles,
+            postgres_conn_id = local_db_conn_id,
+            dest_format = "GeoJSON",
+            dest_path = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.geojson',
+            query = "SELECT * FROM owmf.etymology_map_dump",
+            doc_md=    """
+            # GeoJSON dump
+
+            Dump all the elements from the local DB with their respective etymologies into a GeoJSON file
+            """
+        )
+        task_check_pmtiles >> task_dump_etymology_map
+
+        task_dump_elements = Ogr2ogrDumpOperator(
+            task_id = "dump_elements",
+            dag = self,
+            task_group=group_pmtiles,
+            postgres_conn_id = local_db_conn_id,
+            dest_format = "GeoJSON",
+            dest_path = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.geojson',
+            query = "SELECT * FROM owmf.elements_dump",
+            doc_md=    """
+            # GeoJSON elements dump
+
+            Dump all the centroids of the elements from the local DB into a GeoJSON file
+            """
+        )
+        task_check_pmtiles >> task_dump_elements
+
+        task_generate_etymology_map = TippecanoeOperator(
+            task_id = "generate_etymology_map",
+            dag = self,
+            task_group = group_pmtiles,
+            input_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.geojson',
+            output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.pmtiles',
+            min_zoom = 13,
+            max_zoom = 17,
+            extra_params = "",
+            doc_md = TippecanoeOperator.__doc__
+        )
+        task_dump_etymology_map >> task_generate_etymology_map
+
+        task_generate_elements = TippecanoeOperator(
+            task_id = "generate_elements",
+            dag = self,
+            task_group = group_pmtiles,
+            input_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.geojson',
+            output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.pmtiles',
+            min_zoom = 1,
+            max_zoom = 13,
+            extra_params = "-r1 --cluster-distance=150 --accumulate-attribute=num:sum",
+            doc_md = TippecanoeOperator.__doc__
+        )
+        task_dump_elements >> task_generate_elements
+
+        task_etymology_map_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_etymology_map_to_s3",
+            dag = self,
+            filename = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.pmtiles',
+            dest_key = f"{{{{ var.value.pmtiles_base_s3_key }}}}/{prefix}/etymology_map.pmtiles",
+            replace = True,
+            aws_conn_id = "aws_s3",
+            task_group = group_pmtiles,
+            doc_md = """
+                # Upload etymology_map.pmtiles to S3
+
+                Upload the PMTiles etymology_map file to AWS S3.
+
+                Links:
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+            """
+        )
+        task_generate_etymology_map >> task_etymology_map_s3
+
+        task_elements_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_elements_to_s3",
+            dag = self,
+            filename = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.pmtiles',
+            dest_key = f"{{{{ var.value.pmtiles_base_s3_key }}}}/{prefix}/elements.pmtiles",
+            replace = True,
+            aws_conn_id = "aws_s3",
+            task_group = group_pmtiles,
+            doc_md = """
+                # Upload elements.pmtiles to S3
+
+                Upload the PMTiles elements file to AWS S3.
+
+                Links:
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+            """
+        )
+        task_generate_elements >> task_elements_s3
+
+        task_date_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_date_to_s3",
+            dag = self,
+            filename = pg_date_path,
+            dest_key = f"{{{{ var.value.pmtiles_base_s3_key }}}}/{prefix}/date.txt",
+            replace = True,
+            aws_conn_id = "aws_s3",
+            task_group = group_pmtiles,
+            doc_md = """
+                # Upload elements.pmtiles to S3
+
+                Upload the PMTiles elements file to AWS S3.
+
+                Links:
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+            """
+        )
+        [task_etymology_map_s3, task_elements_s3] >> task_date_s3
+        
+        group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
+
+        task_check_pg_restore = ShortCircuitOperator(
+            task_id = "check_upload_conn_id",
+            python_callable=check_postgre_conn_id,
+            op_kwargs = {
+                "conn_id": upload_db_conn_id,# "{{ params.upload_db_conn_id }}",
+            },
+            dag = self,
+            task_group = group_upload,
+            doc_md=check_postgre_conn_id.__doc__
+        )
+        task_join_post_elaboration >> task_check_pg_restore
+        
         task_pg_dump = BashOperator(
             task_id = "pg_dump",
             trigger_rule = TriggerRule.NONE_FAILED,
@@ -665,6 +873,7 @@ class OwmfDbInitDAG(DAG):
                 "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
             },
             dag = self,
+            task_group=group_upload,
             doc_md="""
                 # Backup the data from the local DB
 
@@ -677,22 +886,8 @@ class OwmfDbInitDAG(DAG):
                 * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
             """
         )
-        [task_create_source_index, task_drop_temp_tables, task_global_map, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_pg_dump
+        task_check_pg_restore >> task_pg_dump
 
-        group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
-
-        task_check_pg_restore = ShortCircuitOperator(
-            task_id = "check_upload_conn_id",
-            python_callable=check_postgre_conn_id,
-            op_kwargs = {
-                "conn_id": upload_db_conn_id,# "{{ params.upload_db_conn_id }}",
-            },
-            dag = self,
-            task_group = group_upload,
-            doc_md=check_postgre_conn_id.__doc__
-        )
-        task_pg_dump >> task_check_pg_restore
-        
         task_setup_db_ext = SQLExecuteQueryOperator(
             task_id = "setup_upload_db_extensions",
             conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
@@ -705,7 +900,7 @@ class OwmfDbInitDAG(DAG):
                 Setup PostGIS and HSTORE on the remote DB configured in upload_db_conn_id if they are not already set up.
             """
         )
-        task_check_pg_restore >> task_setup_db_ext
+        task_pg_dump >> task_setup_db_ext
 
         task_prepare_upload = SQLExecuteQueryOperator(
             task_id = "prepare_db_for_upload",
@@ -770,7 +965,7 @@ class OwmfDbInitDAG(DAG):
                 * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
             """
         )
-        task_pg_dump >> task_wait_cleanup
+        task_join_post_elaboration >> task_wait_cleanup
     
         task_cleanup = BashOperator(
             task_id = "cleanup",

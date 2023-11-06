@@ -1,11 +1,11 @@
-import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 
-// import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat } from 'mapbox-gl';
+// import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource } from 'mapbox-gl';
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
-import { getCorrectFragmentParams, setFragmentParams } from './fragment';
+import { getCorrectFragmentParams, getFragmentParams, setFragmentParams } from './fragment';
 import { BackgroundStyle, BackgroundStyleControl } from './controls/BackgroundStyleControl';
 import { EtymologyColorControl, getCurrentColorScheme } from './controls/EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
@@ -27,9 +27,14 @@ import { OwmfBackendService } from './services/OwmfBackendService';
 import { OsmWikidataMatcherControl } from './controls/OsmWikidataMatcherControl';
 import { MapCompleteControl } from './controls/MapCompleteControl';
 import { iDEditorControl } from './controls/iDEditorControl';
+import { Protocol } from 'pmtiles';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'mapbox_streets',
     WIKIDATA_SOURCE = "wikidata_source",
+    wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
+    wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
+    wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
+    wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill',
     ELEMENTS_SOURCE = "elements_source",
     GLOBAL_SOURCE = "global_source";
 
@@ -225,13 +230,16 @@ export class EtymologyMap extends Map {
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
+            sourceID = getCorrectFragmentParams().source,
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
             elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
-            enableElementsLayers = !enableWikidataLayers && zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea;
+            enableElementsLayers = !enableWikidataLayers && (
+                (zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea) || sourceID.startsWith("pmtiles")
+            );
         if (debug) console.debug("updateDataSource", {
             area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers,
         });
@@ -240,38 +248,71 @@ export class EtymologyMap extends Map {
             this.updateElementsSource(southWest, northEast, minZoomLevel, thresholdZoomLevel);
         else if (enableWikidataLayers)
             this.updateWikidataSource(southWest, northEast, thresholdZoomLevel);
-        else if (getBoolConfig("db_enable"))
+        else if (sourceID.startsWith("db"))
             this.prepareGlobalLayers(minZoomLevel);
         else
             loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
     }
 
-    private isBBoxUnchanged(sourceID: string, bbox: BBox) {
-        const isBBoxUnchanged =
-            this.lastSourceID === sourceID &&
-            this.lastBBox &&
-            this.lastBBox[0] <= bbox[0] &&
-            this.lastBBox[1] <= bbox[1] &&
-            this.lastBBox[2] >= bbox[2] &&
-            this.lastBBox[3] >= bbox[3];
-        if (debug) console.debug("isBBoxUnchanged", { isBBoxUnchanged, lastSourceID: this.lastSourceID, sourceID, lastBBox: this.lastBBox, bbox });
-        return isBBoxUnchanged;
+    private isBBoxChanged(bbox: BBox): boolean {
+        const isBBoxChanged = !!this.lastBBox && (
+            this.lastBBox[0] > bbox[0] ||
+            this.lastBBox[1] > bbox[1] ||
+            this.lastBBox[2] < bbox[2] ||
+            this.lastBBox[3] < bbox[3]
+        );
+        if (debug) console.debug("isBBoxChanged", isBBoxChanged, { lastBBox: this.lastBBox, bbox });
+        return isBBoxChanged;
     }
 
-    private async updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
+    private updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
         const sourceID = getCorrectFragmentParams().source,
-            bbox: BBox = [
+            fullSourceID = "elements-" + sourceID,
+            sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
+
+        if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
+            if (debug) console.debug("Updating pmtiles elements source", sourceID);
+            this.lastSourceID = fullSourceID;
+            this.preparePMTilesSource(
+                ELEMENTS_SOURCE,
+                "elements.pmtiles",
+                undefined,
+                thresholdZoomLevel
+            );
+            this.prepareElementsLayers(thresholdZoomLevel);
+
+            // pmtiles vector source covers both very-low-zoom and medium-zoom levels
+            // GeoJSON sources cover them separately
+            if (debug) console.debug("Initialized PMTiles elements source, removing global GeoJSON source");
+            this.removeSourceWithLayers(GLOBAL_SOURCE);
+        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
+            if (debug) console.debug("Updating vector elements source", sourceID);
+            this.lastSourceID = fullSourceID;
+            this.prepareVectorSource(
+                ELEMENTS_SOURCE,
+                `elements?source=${sourceID.replace("vector_", "")}`,
+                undefined,
+                thresholdZoomLevel
+            );
+            this.prepareElementsLayers(thresholdZoomLevel);
+        } else {
+            const bbox: BBox = [
                 Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
                 Math.floor(southWest.lat * 10) / 10,
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-        if (this.isBBoxUnchanged("elements-" + sourceID, bbox))
-            return;
+            if (sourceIDChanged || this.isBBoxChanged(bbox)) {
+                if (debug) console.debug("Updating GeoJSON elements source:", sourceID);
+                this.lastSourceID = fullSourceID;
+                this.lastBBox = bbox;
+                this.updateElementsGeoJSONSource(sourceID, bbox, minZoomLevel, thresholdZoomLevel);
+            }
+        }
+    }
 
+    private async updateElementsGeoJSONSource(sourceID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         this.fetchInProgress = true;
-        this.lastSourceID = "elements-" + sourceID;
-        this.lastBBox = bbox;
 
         try {
             showLoadingSpinner(true);
@@ -285,32 +326,64 @@ export class EtymologyMap extends Map {
             else if (this.backendService.canHandleSource(sourceID))
                 data = await this.backendService.fetchMapClusterElements(sourceID, bbox);
             else
-                throw new Error("No service found");
+                throw new Error("No service found for source ID " + sourceID);
 
             if (!data)
                 throw new Error("No data found");
 
-            this.prepareElementsLayers(data, minZoomLevel, thresholdZoomLevel);
+            this.prepareGeoJSONSourceAndClusteredLayers(
+                ELEMENTS_SOURCE,
+                data,
+                minZoomLevel,
+                thresholdZoomLevel,
+                undefined,
+                "point_count",
+                "point_count_abbreviated"
+            );
         } catch (e) {
-            logErrorMessage("Error fetching map data", "error", { sourceID, bbox, e });
+            logErrorMessage("updateElementsGeoJSONSource: Error fetching map data", "error", { sourceID, bbox, e });
             this.fetchCompleted();
         }
     }
 
-    private async updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
+    private updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
         const sourceID = getCorrectFragmentParams().source,
-            bbox: BBox = [
+            fullSourceID = "details-" + sourceID,
+            sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
+
+        if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
+            this.lastSourceID = fullSourceID;
+            this.preparePMTilesSource(
+                WIKIDATA_SOURCE,
+                "etymology_map.pmtiles",
+                thresholdZoomLevel
+            );
+            this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
+        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
+            this.lastSourceID = fullSourceID;
+            this.prepareVectorSource(
+                WIKIDATA_SOURCE,
+                `etymology_map?source=${sourceID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
+                thresholdZoomLevel
+            );
+            this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
+        } else {
+            const bbox: BBox = [
                 Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
                 Math.floor(southWest.lat * 100) / 100,
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-        if (this.isBBoxUnchanged("details" + sourceID, bbox))
-            return;
+            if (sourceIDChanged || this.isBBoxChanged(bbox)) {
+                this.lastSourceID = fullSourceID;
+                this.lastBBox = bbox;
+                this.prepareWikidataGeoJSONSource(sourceID, bbox, thresholdZoomLevel);
+            }
+        }
+    }
 
+    private async prepareWikidataGeoJSONSource(sourceID: string, bbox: BBox, minZoom: number) {
         this.fetchInProgress = true;
-        this.lastSourceID = "details" + sourceID;
-        this.lastBBox = bbox;
 
         try {
             showLoadingSpinner(true);
@@ -324,16 +397,85 @@ export class EtymologyMap extends Map {
             else if (this.backendService.canHandleSource(sourceID))
                 data = await this.backendService.fetchMapElementDetails(sourceID, bbox);
             else
-                throw new Error("No service found");
+                throw new Error("No service found for source ID " + sourceID);
 
             if (!data)
                 throw new Error("No data found");
 
-            this.prepareWikidataLayers(data, thresholdZoomLevel);
+            this.addOrUpdateGeoJSONSource(
+                WIKIDATA_SOURCE,
+                {
+                    type: 'geojson',
+                    // buffer: 512, // This only works on already downloaded data
+                    data,
+                    // attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
+                }
+            );
+            this.prepareWikidataLayers(minZoom);
         } catch (e) {
-            logErrorMessage("Error fetching map data", "error", { sourceID, bbox, e });
+            logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { sourceID, bbox, e });
             this.fetchCompleted();
         }
+    }
+
+    private prepareVectorSource(sourceID: string, sourceURL: string, minZoom?: number, maxZoom?: number) {
+        const oldSource = this.getSource(sourceID);
+        if (oldSource && oldSource.type === "vector" && (oldSource as VectorTileSource).url !== sourceURL)
+            (oldSource as VectorTileSource).url = sourceURL;
+
+        if (oldSource && oldSource.type !== "vector")
+            this.removeSourceWithLayers(sourceID);
+
+        if (!this.getSource(sourceID)) {
+            this.addSource(sourceID, {
+                type: 'vector',
+                url: sourceURL,
+                maxzoom: maxZoom || 15,
+                minzoom: minZoom || 0,
+            });
+        }
+    }
+
+    /**
+     * Prepares or updates the source for the layers from the PMTiles file.
+     * 
+     * @see https://docs.protomaps.com/
+     * @see https://docs.protomaps.com/pmtiles/maplibre
+     */
+    private preparePMTilesSource(sourceID: string, fileName: string, minZoom?: number, maxZoom?: number) {
+        const pmtilesBaseURL = getConfig("pmtiles_base_url");
+        if (!pmtilesBaseURL)
+            throw new Error("Invalid pmtiles URL");
+
+        const oldSource = this.getSource(sourceID),
+            fullPMTilesURL = `pmtiles://${pmtilesBaseURL}${fileName}`;
+        if (oldSource && oldSource.type === "vector" && (oldSource as VectorTileSource).url !== fullPMTilesURL)
+            (oldSource as VectorTileSource).url = fullPMTilesURL;
+
+        if (oldSource && oldSource.type !== "vector")
+            this.removeSourceWithLayers(sourceID);
+
+        if (!this.getSource(sourceID)) {
+            const protocol = new Protocol();
+            mapLibrary.addProtocol("pmtiles", protocol.tile);
+
+            this.addSource(sourceID, {
+                type: 'vector',
+                url: fullPMTilesURL,
+                maxzoom: maxZoom || 15,
+                minzoom: minZoom || 0,
+            });
+        }
+    }
+
+    private removeSourceWithLayers(sourceID: string) {
+        if (this.getLayer(sourceID + '_layer_cluster')) this.removeLayer(sourceID + '_layer_cluster');
+        if (this.getLayer(sourceID + '_layer_count')) this.removeLayer(sourceID + '_layer_count');
+        if (this.getLayer(sourceID + '_layer_point')) this.removeLayer(sourceID + '_layer_point');
+        if (this.getLayer(sourceID + '_layer_lineString')) this.removeLayer(sourceID + '_layer_lineString');
+        if (this.getLayer(sourceID + '_layer_polygon_border')) this.removeLayer(sourceID + '_layer_polygon_border');
+        if (this.getLayer(sourceID + '_layer_polygon_fill')) this.removeLayer(sourceID + '_layer_polygon_fill');
+        if (this.getSource(sourceID)) this.removeSource(sourceID);
     }
 
     /**
@@ -349,26 +491,12 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    private prepareWikidataLayers(data: string | GeoJSON, minZoom: number) {
-        const colorSchemeColor = getCurrentColorScheme().color || '#223b53',
-            wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
-            wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
-            wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
-            wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill';
-        if (debug) console.debug("prepareWikidataLayers set layer color", { colorSchemeColor });
+    private prepareWikidataLayers(minZoom: number, source_layer?: string) {
+        const colorSchemeColor = getCurrentColorScheme().color || '#223b53';
 
-        this.addOrUpdateGeoJSONSource(
-            WIKIDATA_SOURCE,
-            {
-                type: 'geojson',
-                // buffer: 512, // This only works on already downloaded data
-                data,
-                // attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
-            }
-        );
 
         if (!this.getLayer(wikidata_layer_point)) {
-            this.addLayer({
+            const spec: CircleLayerSpecification = {
                 'id': wikidata_layer_point,
                 'source': WIKIDATA_SOURCE,
                 'type': 'circle',
@@ -380,12 +508,15 @@ export class EtymologyMap extends Map {
                     'circle-color': colorSchemeColor,
                     'circle-stroke-color': 'white'
                 }
-            });
+            };
+            if (source_layer)
+                spec["source-layer"] = source_layer;
+            this.addLayer(spec);
             this.initWikidataLayer(wikidata_layer_point);
         }
 
         if (!this.getLayer(wikidata_layer_lineString)) {
-            this.addLayer({
+            const spec: LineLayerSpecification = {
                 'id': wikidata_layer_lineString,
                 'source': WIKIDATA_SOURCE,
                 'type': 'line',
@@ -396,12 +527,15 @@ export class EtymologyMap extends Map {
                     'line-opacity': 0.5,
                     'line-width': 18
                 }
-            }, wikidata_layer_point);
+            };
+            if (source_layer)
+                spec["source-layer"] = source_layer;
+            this.addLayer(spec, wikidata_layer_point);
             this.initWikidataLayer(wikidata_layer_lineString);
         }
 
         if (!this.getLayer(wikidata_layer_polygon_border)) {
-            this.addLayer({ // https://github.com/mapbox/mapbox-gl-js/issues/3018#issuecomment-277117802
+            const spec: LineLayerSpecification = {
                 'id': wikidata_layer_polygon_border,
                 'source': WIKIDATA_SOURCE,
                 'type': 'line',
@@ -413,12 +547,15 @@ export class EtymologyMap extends Map {
                     'line-width': 12,
                     'line-offset': 6, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
                 }
-            }, wikidata_layer_lineString);
+            };
+            if (source_layer)
+                spec["source-layer"] = source_layer;
+            this.addLayer(spec, wikidata_layer_lineString);
             this.initWikidataLayer(wikidata_layer_polygon_border);
         }
 
         if (!this.getLayer(wikidata_layer_polygon_fill)) {
-            this.addLayer({
+            const spec: FillLayerSpecification = {
                 'id': wikidata_layer_polygon_fill,
                 'source': WIKIDATA_SOURCE,
                 'type': 'fill',
@@ -429,7 +566,10 @@ export class EtymologyMap extends Map {
                     'fill-opacity': 0.5,
                     'fill-outline-color': "rgba(0, 0, 0, 0)",
                 }
-            }, wikidata_layer_polygon_border);
+            };
+            if (source_layer)
+                spec["source-layer"] = source_layer;
+            this.addLayer(spec, wikidata_layer_polygon_border);
             this.initWikidataLayer(wikidata_layer_polygon_fill);
         }
     }
@@ -481,8 +621,7 @@ export class EtymologyMap extends Map {
                 const sourceControl = new SourceControl(
                     getCorrectFragmentParams().source,
                     this.updateDataSource.bind(this),
-                    t,
-                    minZoomLevel
+                    t
                 );
                 this.addControl(sourceControl, 'top-left');
 
@@ -518,7 +657,7 @@ export class EtymologyMap extends Map {
     }
 
     /**
-     * Completes low-level details of the high zoom Wikidata layer
+     * Completes low-level details of one of the high zoom Wikidata layers
      * 
      * @see prepareWikidataLayers
      * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
@@ -592,22 +731,30 @@ export class EtymologyMap extends Map {
         }
     }
 
-    /**
-     * Initializes the mid-zoom-level clustered layer.
-     * 
-     * @see prepareClusteredLayers
-     */
-    private prepareElementsLayers(data: string | GeoJSON, minZoom: number, maxZoom: number) {
+    private prepareElementsLayers(maxZoom: number) {
         this.prepareClusteredLayers(
             ELEMENTS_SOURCE,
-            data,
-            minZoom,
-            maxZoom
+            (layerName: string, e: MapMouseEvent) => {
+                const feature = this.getClickedClusterFeature(layerName, e),
+                    center = this.getClusterFeatureCenter(feature);
+                this.easeTo({
+                    center: center,
+                    zoom: maxZoom ? maxZoom + 0.5 : 9
+                });
+            },
+            "num",
+            "num",
+            undefined,
+            maxZoom,
+            "elements"
         );
     }
 
     private addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
-        let sourceObject = this.getSource(id) as GeoJSONSource | null;
+        if (this.getSource(WIKIDATA_SOURCE)?.type === "vector")
+            this.removeSourceWithLayers(WIKIDATA_SOURCE);
+
+        let sourceObject = this.getSource(id) as GeoJSONSource | undefined;
         const newSourceDataURL = ["string", "object"].includes(typeof config.data) ? config.data as string | GeoJSON : null,
             oldSourceDataURL = (sourceObject as any)?._data,
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
@@ -648,42 +795,70 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
      * @see https://github.com/mapbox/mapbox-gl-js/issues/2898
      */
-    private prepareClusteredLayers(
+    private prepareGeoJSONSourceAndClusteredLayers(
         sourceName: string,
         data: string | GeoJSON,
-        minZoom: number | undefined = undefined,
-        maxZoom: number | undefined = undefined,
-        clusterProperties: object | undefined = undefined,
-        countFieldName: string | undefined = 'point_count',
-        countShowFieldName: string | undefined = 'point_count_abbreviated'
+        minZoom: number | undefined,
+        maxZoom: number | undefined,
+        clusterProperties: object | undefined,
+        countFieldName: string,
+        countShowFieldName: string
+    ) {
+        const sourceObject = this.addOrUpdateGeoJSONSource(
+            sourceName,
+            {
+                type: 'geojson',
+                buffer: 256,
+                data,
+                cluster: true,
+                maxzoom: maxZoom,
+                //clusterMaxZoom: maxZoom, // Max zoom to cluster points on
+                clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
+                clusterProperties: clusterProperties,
+                clusterMinPoints: 1
+            }
+        );
+
+        this.prepareClusteredLayers(
+            sourceName,
+            (layerName: string, e: MapMouseEvent) => {
+                const feature = this.getClickedClusterFeature(layerName, e),
+                    clusterId = EtymologyMap.getClusterFeatureId(feature),
+                    center = this.getClusterFeatureCenter(feature),
+                    defaultZoom = maxZoom ? maxZoom + 0.5 : 9;
+                sourceObject.getClusterExpansionZoom(
+                    clusterId,
+                    (err, zoom) => this.easeToClusterCenter(err, zoom || 1, defaultZoom, center)
+                );
+            },
+            countFieldName,
+            countShowFieldName,
+            minZoom,
+            maxZoom
+        );
+    }
+
+    private prepareClusteredLayers(
+        sourceName: string,
+        onClusterClick: (layerName: string, e: MapMouseEvent) => void,
+        countFieldName: string,
+        countShowFieldName: string,
+        minZoom?: number,
+        maxZoom?: number,
+        sourceLayer?: string
     ) {
         const clusterLayerName = sourceName + '_layer_cluster',
             countLayerName = sourceName + '_layer_count',
-            pointLayerName = sourceName + '_layer_point',
-            sourceObject = this.addOrUpdateGeoJSONSource(
-                sourceName,
-                {
-                    type: 'geojson',
-                    buffer: 256,
-                    data,
-                    cluster: true,
-                    maxzoom: maxZoom,
-                    //clusterMaxZoom: maxZoom, // Max zoom to cluster points on
-                    clusterRadius: 125, // Radius of each cluster when clustering points (defaults to 50)
-                    clusterProperties: clusterProperties,
-                    clusterMinPoints: 1
-                }
-            );
-
+            pointLayerName = sourceName + '_layer_point';
         if (!this.getLayer(clusterLayerName)) {
-            const minThreshold = 3000,
-                maxThreshold = 40000,
+            const minThreshold = 3_000,
+                maxThreshold = 60_000,
                 layerDefinition = {
                     id: clusterLayerName,
                     source: sourceName,
                     type: 'circle',
-                    maxzoom: maxZoom,
-                    minzoom: minZoom,
+                    maxzoom: maxZoom || 15,
+                    minzoom: minZoom || 0,
                     filter: ['has', countFieldName],
                     paint: {
                         // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -704,20 +879,13 @@ export class EtymologyMap extends Map {
                         ]
                     },
                 } as CircleLayerSpecification;
+            if (sourceLayer)
+                layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
 
 
             // inspect a cluster on click
-            this.on('click', clusterLayerName, (e) => {
-                //
-                const feature = this.getClickedClusterFeature(clusterLayerName, e),
-                    clusterId = EtymologyMap.getClusterFeatureId(feature),
-                    center = EtymologyMap.getClusterFeatureCenter(feature),
-                    defaultZoom = maxZoom ? maxZoom + 0.5 : 9;
-                sourceObject.getClusterExpansionZoom(
-                    clusterId, (err, zoom) => this.easeToClusterCenter(err, zoom || 1, defaultZoom, center)
-                );
-            });
+            this.on('click', clusterLayerName, e => onClusterClick(clusterLayerName, e));
 
             this.on('mouseenter', clusterLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', clusterLayerName, () => this.getCanvas().style.cursor = '');
@@ -732,8 +900,8 @@ export class EtymologyMap extends Map {
                 id: countLayerName,
                 type: 'symbol',
                 source: sourceName,
-                maxzoom: maxZoom,
-                minzoom: minZoom,
+                maxzoom: maxZoom || 15,
+                minzoom: minZoom || 0,
                 filter: ['has', countShowFieldName],
                 layout: {
                     'text-font': ["Open Sans Regular"],
@@ -741,6 +909,8 @@ export class EtymologyMap extends Map {
                     'text-size': 12
                 }
             } as SymbolLayerSpecification;
+            if (sourceLayer)
+                layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
             if (debug) console.debug("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
         }
@@ -750,8 +920,8 @@ export class EtymologyMap extends Map {
                 id: pointLayerName,
                 type: 'circle',
                 source: sourceName,
-                maxzoom: maxZoom,
-                minzoom: minZoom,
+                maxzoom: maxZoom || 15,
+                minzoom: minZoom || 0,
                 filter: ['!', ['has', countFieldName]],
                 paint: {
                     'circle-color': '#51bbd6',
@@ -761,11 +931,13 @@ export class EtymologyMap extends Map {
                     //'circle-stroke-color': '#fff'
                 }
             } as CircleLayerSpecification;
+            if (sourceLayer)
+                layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
 
             this.on('click', pointLayerName, (e) => {
                 const feature = this.getClickedClusterFeature(pointLayerName, e),
-                    center = EtymologyMap.getClusterFeatureCenter(feature);
+                    center = this.getClusterFeatureCenter(feature);
                 this.easeTo({
                     center: center,
                     zoom: maxZoom ? maxZoom + 0.5 : 9
@@ -796,7 +968,7 @@ export class EtymologyMap extends Map {
         return clusterId;
     }
 
-    static getClusterFeatureCenter(feature: GeoJSONFeature): LngLatLike {
+    private getClusterFeatureCenter(feature: GeoJSONFeature): LngLatLike {
         return (feature.geometry as any).coordinates as LngLatLike;
     }
 
@@ -904,10 +1076,13 @@ export class EtymologyMap extends Map {
     /**
      * Initializes the low-zoom-level clustered layer.
      * 
-     * @see prepareClusteredLayers
+     * @see prepareGeoJSONSourceAndClusteredLayers
      */
     private prepareGlobalLayers(maxZoom: number): void {
-        this.prepareClusteredLayers(
+        const sourceID = getCorrectFragmentParams().source;
+        this.lastSourceID = "global-" + sourceID;
+
+        this.prepareGeoJSONSourceAndClusteredLayers(
             GLOBAL_SOURCE,
             './global-map.php',
             0,
@@ -916,6 +1091,13 @@ export class EtymologyMap extends Map {
             'el_num',
             'el_num'
         );
+
+        // pmtiles vector source covers both very-low-zoom and medium-zoom levels
+        // GeoJSON sources cover them separately
+        if (this.getSource(ELEMENTS_SOURCE)?.type !== "geojson") {
+            if (debug) console.debug("Initialized global GeoJSON source, removing vector/PMTiles elements source");
+            this.removeSourceWithLayers(ELEMENTS_SOURCE);
+        }
     }
 
     /**

@@ -120,10 +120,15 @@ function prepareHTML(Configuration $conf)
 
 	$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
 
+	$pmtilesConnect = '';
+	if ($conf->has('pmtiles_base_url') && !str_starts_with((string)$conf->get('pmtiles_base_url'), 'http://localhost')) {
+		$pmtilesConnect = (string)$conf->get('pmtiles_base_url');
+	}
+
 	header(
 		"Content-Security-Policy: " .
 			"child-src blob: ; " .
-			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg ; " .
+			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $pmtilesConnect; " .
 			"default-src 'self' ; " .
 			"font-src 'self' ; " .
 			"form-action https://www.paypal.com/donate ; " .

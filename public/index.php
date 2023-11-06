@@ -15,7 +15,8 @@ if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
         $lastUpdate = (string)$dbh->query("SELECT owmf.last_data_update()")->fetchColumn();
-        $lastUpdateString = empty($lastUpdate) ? '' : "<p><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
+        $hiddenClass = empty($lastUpdate) ? "hiddenElement" : "";
+        $lastUpdateString = "<p class=\"last_db_update_container $hiddenClass\"><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
     } catch (Exception $e) {
         error_log("Error fetching last update: " . $e->getMessage());
     }
@@ -112,6 +113,8 @@ $jsScript = $jsScripts[0];
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
     <?= $conf->getMetaTag("db_enable", true); ?>
+    <?= $conf->getMetaTag("vector_tiles_enable", true); ?>
+    <?= $conf->getMetaTag("pmtiles_base_url", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
     <?= $conf->getMetaTag("osm_text_key", true); ?>
     <?= $conf->getMetaTag("osm_description_key", true); ?>
@@ -215,7 +218,7 @@ $jsScript = $jsScripts[0];
             </p>
 
             <footer>
-                <p><?= $lastUpdateString; ?></p>
+                <?= $lastUpdateString; ?>
                 <p>
                     <span class="i18n_based_on">Based on</span>
                     <a target="_blank" title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>

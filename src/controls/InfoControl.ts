@@ -3,6 +3,8 @@ import { IControl, Map, Popup } from 'maplibre-gl';
 // import { IControl, Map, Popup } from 'mapbox-gl';
 
 import { getLocale, loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
+import { getConfig } from '../config';
+import { logErrorMessage } from '../monitoring';
 
 /**
  * Opens the information intro window
@@ -57,6 +59,7 @@ function openInfoWindow(map: Map, showInstructions: boolean) {
         .addTo(map);
 
     translateDonateButton(popup);
+    getLastDBUpdateDate(popup);
 }
 
 function translateDonateButton(popup: Popup) {
@@ -69,6 +72,29 @@ function translateDonateButton(popup: Popup) {
 
         donateImg.addEventListener("error", fallbackToOriginalUrl, { once: true });
         donateImg.src = urlWithLang;
+    }
+}
+
+async function getLastDBUpdateDate(popup: Popup) {
+    const container = popup.getElement().querySelector<HTMLElement>(".last_db_update_container:empty");
+    if (!container)
+        return;
+
+    const pmtilesBaseURL = getConfig("pmtiles_base_url");
+    if (!pmtilesBaseURL)
+        return;
+
+    const dateURL = pmtilesBaseURL + "/date.txt";
+    try {
+        const response = await fetch(dateURL);
+        if (!response.ok)
+            return;
+
+        const date = await response.text();
+        if (date)
+            container.innerText = date;
+    } catch (e) {
+        console.warn("Error while fetching date.txt", e);
     }
 }
 

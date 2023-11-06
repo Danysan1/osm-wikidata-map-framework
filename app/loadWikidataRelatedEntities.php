@@ -75,15 +75,35 @@ function loadWikidataRelatedEntities(
     assert(is_int($n_todo));
     echo "Counted $n_todo Wikidata codes to check." . PHP_EOL;
 
+    $pageSize = 40000;
     $wikidataCodsQuery =
         "SELECT DISTINCT \"$wikidataCodsColumn\" AS wikidata_cod
         FROM $wikidataCodsTable
         WHERE $wikidataCodsFilter
-        ORDER BY \"$wikidataCodsColumn\"";
+        ORDER BY \"$wikidataCodsColumn\"
+        LIMIT $pageSize
+        OFFSET :offset";
     echo "Using Wikidata cods query:" . PHP_EOL;
     echo $wikidataCodsQuery . PHP_EOL . PHP_EOL;
+    $wikidataCodsStmt = $dbh->prepare($wikidataCodsQuery);
+    if (!$wikidataCodsStmt)
+        throw new Exception("Failed to prepare Wikidata cods query");
 
-    $insertQuery =
+    $insertWikidataStmt = $dbh->prepare(
+        "INSERT INTO owmf.wikidata (wd_wikidata_cod)
+        SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
+        FROM json_array_elements((:response::JSON)->'results'->'bindings')
+        WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
+        UNION
+        SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
+        FROM json_array_elements((:response::JSON)->'results'->'bindings')
+        WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
+        ON CONFLICT (wd_wikidata_cod) DO NOTHING"
+    );
+    if (!$insertWikidataStmt)
+        throw new Exception("Failed to prepare relation insertion query");
+
+    $insertEtymologyQuery =
         "INSERT INTO owmf.etymology ($insertFields)
         SELECT DISTINCT $insertValues
         FROM json_array_elements((:response::JSON)->'results'->'bindings')
@@ -95,15 +115,21 @@ function loadWikidataRelatedEntities(
         ON CONFLICT (et_el_id, et_wd_id) DO NOTHING";
     // This does not work because of multiple rows with same entities but different relation: ON CONFLICT (et_el_id, et_wd_id) DO UPDATE SET et_from_key_ids = etymology.et_from_key_ids || EXCLUDED.et_from_key_ids
     echo "Using insert query:" . PHP_EOL;
-    echo $insertQuery . PHP_EOL . PHP_EOL;
+    echo $insertEtymologyQuery . PHP_EOL . PHP_EOL;
+    $insertEtymologyStmt = $dbh->prepare($insertEtymologyQuery);
+    if (!$insertEtymologyStmt)
+        throw new Exception("Failed to prepare Wikidata cods query");
 
-    $pageSize = 40000;
     for ($offset = 0; $offset < $n_todo; $offset += $pageSize) {
-        $truePageSize = min($pageSize, $n_todo - $offset);
-        echo "Checking Wikidata \"$relationName\" data ($truePageSize starting from $offset out of $n_todo)..." . PHP_EOL;
-        $wikidataCodsResult = $dbh->query("$wikidataCodsQuery LIMIT $pageSize OFFSET $offset")->fetchAll();
+        echo "Checking Wikidata IDs to check ($pageSize starting from $offset out of $n_todo)..." . PHP_EOL;
+        $wikidataCodsStmt->bindValue('offset', $offset, PDO::PARAM_INT);
+        $wikidataCodsStmt->execute();
+        $wikidataCodsResult = $wikidataCodsStmt->fetchAll();
+        echo "Query completed";
         $wikidataCods = array_column($wikidataCodsResult, "wikidata_cod");
+        $truePageSize = count($wikidataCods);
 
+        echo "DB check completed, checking $truePageSize Wikidata IDs..." . PHP_EOL;
         $wdCheckQuery = new RelatedEntitiesCheckWikidataQuery($wikidataCods, $relationProps, null, $instanceOfCods, $config, $inverse);
         try {
             $wikidataCods = $wdCheckQuery->sendAndGetWikidataCods();
@@ -126,29 +152,17 @@ function loadWikidataRelatedEntities(
             }
 
             echo "Loading Wikidata \"$relationName\" data..." . PHP_EOL;
-            $sth_wd = $dbh->prepare(
-                "INSERT INTO owmf.wikidata (wd_wikidata_cod)
-                SELECT DISTINCT REPLACE(value->'element'->>'value', 'http://www.wikidata.org/entity/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                WHERE LEFT(value->'element'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                UNION
-                SELECT DISTINCT REPLACE(value->'related'->>'value', 'http://www.wikidata.org/entity/', '')
-                FROM json_array_elements((:response::JSON)->'results'->'bindings')
-                WHERE LEFT(value->'related'->>'value', 31) = 'http://www.wikidata.org/entity/'
-                ON CONFLICT (wd_wikidata_cod) DO NOTHING"
-            );
-            $sth_wd->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-            $sth_wd->execute();
-            $n_wd = $sth_wd->rowCount();
+            $insertWikidataStmt->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+            $insertWikidataStmt->execute();
+            $n_wd = $insertWikidataStmt->rowCount();
 
             if ($n_wd === 0) {
                 echo "WARNING: No Wikidata entities loaded (possible error in the details query)" . PHP_EOL;
             } else {
-                $sth_wna = $dbh->prepare($insertQuery);
                 try {
-                    $sth_wna->bindValue('response', $jsonResult, PDO::PARAM_LOB);
-                    $sth_wna->execute();
-                    $n_wna = $sth_wna->rowCount();
+                    $insertEtymologyStmt->bindValue('response', $jsonResult, PDO::PARAM_LOB);
+                    $insertEtymologyStmt->execute();
+                    $n_wna = $insertEtymologyStmt->rowCount();
                     echo "Loaded $n_wd Wikidata entities and $n_wna \"$relationName\" relationships." . PHP_EOL;
                 } catch (Exception $e) {
                     echo "Failed to load Wikidata \"$relationName\" data" . PHP_EOL;
