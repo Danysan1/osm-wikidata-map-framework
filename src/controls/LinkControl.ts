@@ -80,39 +80,25 @@ export class LinkControl implements IControl {
 
     createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIds.includes(e.sourceId))
+            if (!e.isSourceLoaded || e.dataType !== "source")
+                return;
+            if (e.source.type !== "geojson" || !sourceIds.includes(e.sourceId))
                 return;
 
-            const data = (e.source as any)?.data;
+            const content = (e.source as any)?.data;
+            if (typeof content !== "object")
+                return;
 
-            try {
-                let content: GeoJSON & EtymologyResponse;
-                if (typeof data === "object") {
-                    content = data;
-                } else if (typeof data === "string") {
-                    const response = await fetch(data, {
-                        mode: "same-origin",
-                        cache: "only-if-cached",
-                    });
-                    content = await response.json();
-                } else {
-                    throw new Error("Invalid data type");
-                }
-
-                const query = content[mapEventField];
-                if (typeof query !== "string" || !query.length) {
-                    //if (enable_debug_log) console.info("Missing query field, hiding", { content, mapEventField });
-                    this.show(false);
-                } else {
-                    const encodedQuery = encodeURIComponent(query),
-                        linkUrl = baseUrl + encodedQuery;
-                    if (debug) console.info("Query field found, showing URL", { linkUrl, mapEventField });
-                    this.setURL(linkUrl);
-                    this.show();
-                }
-            } catch (err) {
-                logErrorMessage("Failed retrieving last etymologyMap response, make sure cache is enabled", "error", { err });
+            const query = content[mapEventField];
+            if (typeof query !== "string" || !query.length) {
+                if (debug) console.info("Missing query field, hiding", { content, mapEventField });
                 this.show(false);
+            } else {
+                const encodedQuery = encodeURIComponent(query),
+                    linkUrl = baseUrl + encodedQuery;
+                if (debug) console.info("Query field found, showing URL", { linkUrl, mapEventField });
+                this.setURL(linkUrl);
+                this.show();
             }
         }
     }

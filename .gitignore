@@ -10,6 +10,7 @@ public/map-cache/*
 *.geojson
 *.gz
 *.mvt
+*.pmtiles
 owmf.ini
 owmf.log
 LAST_UPDATE

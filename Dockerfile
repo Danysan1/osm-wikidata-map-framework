@@ -5,7 +5,7 @@
 FROM php:8.2.8-apache-bookworm AS base
 WORKDIR /var/www
 
-RUN a2enmod headers ssl rewrite deflate expires
+RUN a2enmod headers ssl rewrite deflate expires proxy proxy_http
 
 COPY ./apache.conf /etc/apache2/conf-available/owmf.conf
 RUN a2enconf owmf.conf

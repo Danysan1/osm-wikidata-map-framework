@@ -89,17 +89,19 @@ x-airflow-common:
     # https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/connection.html#storing-connections-in-environment-variables
     # Connections defined in environment variables will not show up in the Airflow UI or using 'airflow connections list'
     AIRFLOW_CONN_TORRENT_DAEMON: http://torrent-daemon:9091 # docker-compose "torrent-daemon" service
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgres://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:5432/${owmf_db_database} # connection to the configured OWMF PostGIS DB
-    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgres://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:5432/planet # connection to the configured OWMF PostGIS DB
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_db_database} # connection to the configured OWMF PostGIS DB
+    AIRFLOW_CONN_LOCAL_OWMF_POSTGIS_PLANET_DB: postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/planet # connection to the configured OWMF PostGIS DB
     AIRFLOW_CONN_WIKIDATA_API: ${owmf_wikidata_endpoint}
     # https://airflow.apache.org/docs/apache-airflow/stable/howto/variable.html#storing-variables-in-environment-variables
     AIRFLOW_VAR_OSM_FILTER_TAGS: ${owmf_osm_filter_tags:-}
     AIRFLOW_VAR_OSM_TEXT_KEY: ${owmf_osm_text_key:-}
     AIRFLOW_VAR_OSM_DESCRIPTION_KEY: ${owmf_osm_description_key:-}
+    AIRFLOW_VAR_DEFAULT_LANGUAGE: ${owmf_default_language:-}
     AIRFLOW_VAR_OSM_WIKIDATA_KEYS: ${owmf_osm_wikidata_keys:-}
     AIRFLOW_VAR_OSM_WIKIDATA_PROPERTIES: ${owmf_osm_wikidata_properties:-}
     AIRFLOW_VAR_PROPAGATE_DATA: ${owmf_propagate_data:-false}
     AIRFLOW_VAR_GLOBAL_MAP_THRESHOLD: ${owmf_global_map_threshold:-0}
+    AIRFLOW_VAR_PMTILES_BASE_S3_KEY: ${owmf_pmtiles_base_s3_key}
     AIRFLOW_VAR_WORKDIR_BIND_TYPE: "volume"
     AIRFLOW_VAR_WORKDIR_BIND_SOURCE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_db-init-work-dir" # docker-compose "db-init-work-dir" volume
     AIRFLOW_VAR_POSTGIS_BRIDGE: "${COMPOSE_PROJECT_NAME:-osm-wikidata-map-framework}_airflow-postgis-bridge" # docker-compose "airflow-postgis-bridge" network
@@ -391,8 +393,8 @@ services:
       - airflow-torrent-bridge
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:9091/transmission/web/"]
-      interval: 10s
-      timeout: 10s
+      interval: 20s
+      timeout: 1s
       retries: 5
     ports:
       - 9091:9091
@@ -404,7 +406,7 @@ services:
       - airflow
 
   owmf-postgis:
-    image: postgis/postgis:15-3.3-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
+    image: postgis/postgis:15-3.4-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
     #image: odidev/postgis:13-3.1-alpine # supports arm64
     shm_size: 100m
     environment:
@@ -423,7 +425,8 @@ services:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${owmf_db_user}"]
-      interval: 5s
+      interval: 10s
+      timeout: 1s
       retries: 5
     restart: unless-stopped
     profiles:
@@ -433,7 +436,7 @@ services:
       - db
 
   pgadmin:
-    image: dpage/pgadmin4:7.1
+    image: dpage/pgadmin4:7.8
     ports:
       - "${owmf_pgadmin_port:-8000}:80"
     depends_on:
@@ -448,8 +451,8 @@ services:
       - pgadmin-db-bridge
     healthcheck:
       test: ["CMD", "wget", "-O", "-", "http://localhost:80/misc/ping"]
-      interval: 10s
-      timeout: 10s
+      interval: 20s
+      timeout: 1s
       retries: 5
     restart: unless-stopped
     profiles:
@@ -468,8 +471,8 @@ services:
       - API_URL=owmf.yaml
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/"]
-      interval: 10s
-      timeout: 10s
+      interval: 20s
+      timeout: 1s
       retries: 5
     restart: unless-stopped
     profiles:
@@ -490,8 +493,8 @@ services:
       - owmf-internal
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
-      interval: 10s
-      timeout: 10s
+      interval: 20s
+      timeout: 1s
       retries: 5
     restart: unless-stopped
     volumes:
@@ -542,6 +545,26 @@ services:
       - letsencrypt-certs:/etc/letsencrypt/
     profiles:
       - prod
+
+  # https://maplibre.org/martin/
+  # https://maplibre.org/martin/23-run-with-docker-compose.html
+  owmf-martin:
+    image: ghcr.io/maplibre/martin:v0.9.3
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    networks:
+      - owmf-internal
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://localhost:3000/health"]
+      interval: 20s
+      timeout: 1s
+      retries: 5
+    environment:
+      - DATABASE_URL=postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_db_database}
+      - DEFAULT_SRID=4326
+    profiles:
+      - martin
 
   promtail:
     image: grafana/promtail:2.8.2
