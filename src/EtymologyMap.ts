@@ -118,6 +118,7 @@ export class EtymologyMap extends Map {
     private mapStyleDataHandler(e: MapDataEvent) {
         if (debug) console.debug("mapStyleDataHandler", e);
         this.setCulture();
+        this.lastSourceID = undefined;
         this.updateDataSource();
     }
 
