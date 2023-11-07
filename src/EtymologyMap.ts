@@ -43,7 +43,7 @@ export class EtymologyMap extends Map {
     private startBackgroundStyle: BackgroundStyle;
     private geocoderControl?: IControl;
     private projectionControl?: IControl;
-    private anyDetailShownBefore = false;
+    private anyFeatureClickedBefore = false;
     private wikidataSourceInitialized = false;
     private wikidataMapService: WikidataMapService;
     private overpassService: OverpassService;
@@ -190,16 +190,18 @@ export class EtymologyMap extends Map {
             });
             this.fetchCompleted();
 
-            const wikidataFeatureCount = this.querySourceFeatures(WIKIDATA_SOURCE).length;
+            const noFeatures = wikidataSourceEvent &&
+                e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
+                this.querySourceFeatures(WIKIDATA_SOURCE).length === 0;
             loadTranslator().then(t => {
                 if (!this.wikidataSourceInitialized)
                     this.wikidataSourceInitialized = true;
-                else if (wikidataSourceEvent && wikidataFeatureCount === 0)
-                    showSnackbar(t("snackbar.no_data_in_this_area"), "wheat", 3000);
-                else if (wikidataSourceEvent && !this.anyDetailShownBefore)
-                    showSnackbar(t("snackbar.data_loaded_instructions"), "lightgreen", 10000);
+                else if (noFeatures)
+                    showSnackbar(t("snackbar.no_data_in_this_area", "No data in this area"), "wheat", 3000);
+                else if (wikidataSourceEvent && !this.anyFeatureClickedBefore)
+                    showSnackbar(t("snackbar.data_loaded_instructions", "Data loaded, click on any highlighted element to show its details"), "lightgreen", 10000);
                 else
-                    showSnackbar(t("snackbar.data_loaded"), "lightgreen", 3000);
+                    showSnackbar(t("snackbar.data_loaded", "Data loaded"), "lightgreen", 3000);
             });
         }
     }
@@ -728,7 +730,7 @@ export class EtymologyMap extends Map {
 
             element_loading.style.display = 'none';
             ev.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
-            this.anyDetailShownBefore = true;
+            this.anyFeatureClickedBefore = true;
         }
     }
 
