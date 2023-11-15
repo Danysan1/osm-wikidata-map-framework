@@ -2,7 +2,8 @@ import { DropdownControl } from './DropdownControl';
 
 export interface BackgroundStyle {
     id: string;
-    text: string;
+    vendorText: string,
+    styleText: string;
     styleUrl: string;
     keyPlaceholder?: string;
     key?: string
@@ -14,7 +15,8 @@ export interface BackgroundStyle {
 export function maptilerStyle(id: string, text: string, maptilerId: string, maptilerKey: string): BackgroundStyle {
     return {
         id: id,
-        text: text,
+        vendorText: "Maptiler",
+        styleText: text,
         styleUrl: `https://api.maptiler.com/maps/${maptilerId}/style.json?key=${maptilerKey}`
     };
 }
@@ -23,11 +25,12 @@ export function maptilerStyle(id: string, text: string, maptilerId: string, mapt
  * @see https://tiles.stadiamaps.com/data/openmaptiles.json
  * @see https://docs.stadiamaps.com/themes/
  */
-export function stadiaStyle(id: string, text: string, stadiaId: string, beta = false): BackgroundStyle {
+export function stadiaStyle(id: string, text: string, stadiaID: string): BackgroundStyle {
     return {
         id: id,
-        text: text,
-        styleUrl: `https://tiles${beta ? '-beta' : ''}.stadiamaps.com/styles/${stadiaId}.json`
+        vendorText: "Stadia Maps",
+        styleText: text,
+        styleUrl: `https://tiles.stadiamaps.com/styles/${stadiaID}.json`
     };
 }
 
@@ -38,7 +41,8 @@ export function stadiaStyle(id: string, text: string, stadiaId: string, beta = f
 export function mapboxStyle(id: string, text: string, mapboxUser: string, mapboxId: string, mapboxToken: string): BackgroundStyle {
     return {
         id: id,
-        text: text,
+        vendorText: "Mapbox",
+        styleText: text,
         styleUrl: `https://api.mapbox.com/styles/v1/${mapboxUser}/${mapboxId}/?access_token=${mapboxToken}`
     };
 }
@@ -51,7 +55,8 @@ export function mapboxStyle(id: string, text: string, mapboxUser: string, mapbox
 export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: string): BackgroundStyle {
     return {
         id: id,
-        text: text,
+        vendorText: "Jawg Maps",
+        styleText: text,
         styleUrl: `https://api.jawg.io/styles/${jawgId}.json?access-token=${jawgToken}`
     };
 }
@@ -65,7 +70,8 @@ export class BackgroundStyleControl extends DropdownControl {
             '🌍',
             backgroundStyles.map(style => ({
                 id: style.id,
-                text: style.text,
+                category: style.vendorText,
+                text: style.styleText,
                 onSelect: () => this.setBackgroundStyle(style)
             })),
             startBackgroundStyleId ? startBackgroundStyleId : backgroundStyles[0]?.id,
