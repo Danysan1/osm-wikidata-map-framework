@@ -29,52 +29,54 @@ const maptiler_key = getConfig("maptiler_key"),
 
 if (mapbox_token) {
     backgroundStyles.push(
-        mapboxStyle('mapbox_streets', 'Mapbox Streets', 'mapbox', 'streets-v12', mapbox_token),
-        mapboxStyle('mapbox_outdoors', 'Mapbox Outdoors', 'mapbox', 'outdoors-v12', mapbox_token),
-        mapboxStyle('mapbox_light', 'Mapbox Light', 'mapbox', 'light-v11', mapbox_token),
-        mapboxStyle('mapbox_dark', 'Mapbox Dark', 'mapbox', 'dark-v11', mapbox_token),
-        mapboxStyle('mapbox_satellite', 'Mapbox Satellite', 'mapbox', 'satellite-streets-v12', mapbox_token),
+        mapboxStyle('mapbox_streets', 'Streets', 'mapbox', 'streets-v12', mapbox_token),
+        mapboxStyle('mapbox_outdoors', 'Outdoors', 'mapbox', 'outdoors-v12', mapbox_token),
+        mapboxStyle('mapbox_light', 'Light', 'mapbox', 'light-v11', mapbox_token),
+        mapboxStyle('mapbox_dark', 'Dark', 'mapbox', 'dark-v11', mapbox_token),
+        mapboxStyle('mapbox_satellite', 'Satellite', 'mapbox', 'satellite-streets-v12', mapbox_token),
     );
 }
 
 if (enable_stadia_maps) {
     backgroundStyles.push(
-        stadiaStyle('stadia_alidade_dark', "Stadia Alidade smooth dark", 'alidade_smooth_dark'),
-        stadiaStyle('stadia_alidade', "Stadia Alidade smooth", 'alidade_smooth'),
-        //stadiaStyle('stadia_satellite', "Stadia Alidade Satellite", 'alidade_satellite'),
-        stadiaStyle('stadia_outdoors', "Stadia Outdoors", 'outdoors'),
-        stadiaStyle('stadia_osm_bright', "Stadia OSM Bright", 'osm_bright'),
-        stadiaStyle('stamen_toner', "Stamen Toner", 'stamen_toner'),
+        stadiaStyle('stadia_alidade_dark', "Alidade smooth dark", 'alidade_smooth_dark'),
+        stadiaStyle('stadia_alidade', "Alidade smooth", 'alidade_smooth'),
+        //stadiaStyle('stadia_satellite', "Alidade Satellite", 'alidade_satellite'),
+        stadiaStyle('stadia_outdoors', "Outdoors", 'outdoors'),
+        stadiaStyle('stadia_osm_bright', "OSM Bright", 'osm_bright'),
         stadiaStyle('stamen_terrain', "Stamen Terrain", 'stamen_terrain'),
+        stadiaStyle('stamen_toner', "Stamen Toner", 'stamen_toner'),
+        stadiaStyle('stamen_toner_lite', "Stamen Toner Lite", 'stamen_toner_lite'),
+        stadiaStyle('stamen_watercolor', "Stamen Watercolor", 'stamen_watercolor'),
     );
 }
 
 if (jawg_token) {
     backgroundStyles.push(
-        jawgStyle('jawg_streets', 'Jawg Streets', 'jawg-streets', jawg_token),
-        jawgStyle('jawg_sunny', 'Jawg Sunny', 'jawg-sunny', jawg_token),
-        jawgStyle('jawg_light', 'Jawg Light', 'jawg-light', jawg_token),
-        jawgStyle('jawg_terrain', 'Jawg Terrain', 'jawg-terrain', jawg_token),
-        jawgStyle('jawg_dark', 'Jawg Dark', 'jawg-dark', jawg_token),
+        jawgStyle('jawg_streets', 'Streets', 'jawg-streets', jawg_token),
+        jawgStyle('jawg_sunny', 'Sunny', 'jawg-sunny', jawg_token),
+        jawgStyle('jawg_light', 'Light', 'jawg-light', jawg_token),
+        jawgStyle('jawg_terrain', 'Terrain', 'jawg-terrain', jawg_token),
+        jawgStyle('jawg_dark', 'Dark', 'jawg-dark', jawg_token),
     );
 }
 
 if (maptiler_key) {
     backgroundStyles.push(
-        { id: "maputnik_osm_liberty", text: "Maputnik OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
-        maptilerStyle('maptiler_backdrop', 'Maptiler Backdrop', 'backdrop', maptiler_key),
-        maptilerStyle('maptiler_basic', 'Maptiler Basic', 'basic-v2', maptiler_key),
-        maptilerStyle('maptiler_bright', 'Maptiler Bright', 'bright-v2', maptiler_key),
-        maptilerStyle('maptiler_dataviz', 'Maptiler Dataviz', 'dataviz', maptiler_key),
-        maptilerStyle('maptiler_dark', 'Maptiler Dark', 'dataviz-dark', maptiler_key),
-        maptilerStyle('maptiler_ocean', 'Maptiler Ocean', 'ocean', maptiler_key),
-        maptilerStyle('maptiler_osm_carto', 'Maptiler OSM Carto', 'openstreetmap', maptiler_key),
-        maptilerStyle('maptiler_outdoors', 'Maptiler Outdoors', 'outdoor-v2', maptiler_key),
-        maptilerStyle('maptiler_satellite_hybrid', 'Maptiler Satellite', 'hybrid', maptiler_key),
-        maptilerStyle('maptiler_streets', 'Maptiler Streets', 'streets-v2', maptiler_key),
-        maptilerStyle('maptiler_toner', 'Maptiler Toner', 'toner-v2', maptiler_key),
-        maptilerStyle('maptiler_topo', 'Maptiler Topo', 'topo-v2', maptiler_key),
-        maptilerStyle('maptiler_winter', 'Maptiler Winter', "winter-v2", maptiler_key),
+        { id: "maputnik_osm_liberty", vendorText:"Maputnik", styleText: "OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
+        maptilerStyle('maptiler_backdrop', 'Backdrop', 'backdrop', maptiler_key),
+        maptilerStyle('maptiler_basic', 'Basic', 'basic-v2', maptiler_key),
+        maptilerStyle('maptiler_bright', 'Bright', 'bright-v2', maptiler_key),
+        maptilerStyle('maptiler_dataviz', 'Dataviz', 'dataviz', maptiler_key),
+        maptilerStyle('maptiler_dark', 'Dark', 'dataviz-dark', maptiler_key),
+        maptilerStyle('maptiler_ocean', 'Ocean', 'ocean', maptiler_key),
+        maptilerStyle('maptiler_osm_carto', 'OSM Carto', 'openstreetmap', maptiler_key),
+        maptilerStyle('maptiler_outdoors', 'Outdoors', 'outdoor-v2', maptiler_key),
+        maptilerStyle('maptiler_satellite_hybrid', 'Satellite', 'hybrid', maptiler_key),
+        maptilerStyle('maptiler_streets', 'Streets', 'streets-v2', maptiler_key),
+        maptilerStyle('maptiler_toner', 'Toner', 'toner-v2', maptiler_key),
+        maptilerStyle('maptiler_topo', 'Topo', 'topo-v2', maptiler_key),
+        maptilerStyle('maptiler_winter', 'Winter', "winter-v2", maptiler_key),
     );
 }
 

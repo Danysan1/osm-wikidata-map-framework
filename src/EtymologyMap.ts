@@ -29,7 +29,7 @@ import { MapCompleteControl } from './controls/MapCompleteControl';
 import { iDEditorControl } from './controls/iDEditorControl';
 import { Protocol } from 'pmtiles';
 
-const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'mapbox_streets',
+const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     WIKIDATA_SOURCE = "wikidata_source",
     wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
     wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
