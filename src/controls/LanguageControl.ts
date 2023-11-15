@@ -4,6 +4,7 @@ import { IControl } from 'maplibre-gl';
 
 import { debug, getJsonConfig } from '../config';
 import { loadTranslator } from '../i18n';
+import { languageToDomElement } from '../components/FlagImage';
 
 /**
  * Let the user choose the language.
@@ -16,13 +17,7 @@ export class LanguageControl implements IControl {
     private container?: HTMLElement;
 
     onAdd(): HTMLElement {
-        const flags: Record<string, string> = { // https://commons.wikimedia.org/wiki/Category:SVG_sovereign_state_flags
-            "en": "https://upload.wikimedia.org/wikipedia/commons/8/83/Flag_of_the_United_Kingdom_%283-5%29.svg",
-            "fr": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Flag_of_France_%282020%E2%80%93present%29.svg",
-            "de": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg",
-            "it": "https://upload.wikimedia.org/wikipedia/commons/0/03/Flag_of_Italy.svg",
-            "es": "https://upload.wikimedia.org/wikipedia/commons/8/89/Bandera_de_Espa%C3%B1a.svg",
-        };
+
         this.container = document.createElement('div');
         this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl language-ctrl';
 
@@ -41,13 +36,24 @@ export class LanguageControl implements IControl {
         }
 
         const languageTable = document.createElement("table"),
-            languageRow = document.createElement("tr");
-        languageTable.className = "language-ctrl-table custom-ctrl-table";
-        languages.forEach((lang) => {
+            languageRow = document.createElement("tr"),
+            translateCell = document.createElement("td"),
+            translateLink = document.createElement("a");
+
+        translateLink.title = "Translate";
+        translateLink.href = "https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/";
+        translateLink.target = "_blank";
+        translateLink.className = "language-select-link language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon hiddenElement";
+        translateLink.appendChild(languageToDomElement("Translate"));
+
+        translateCell.className = "content-cell";
+        translateCell.appendChild(translateLink);
+        languageRow.appendChild(translateCell);
+
+        languages.filter(lang => lang !== language).forEach((lang) => {
             const cell = document.createElement("td"),
                 link = document.createElement("button"),
-                flagImg = document.createElement("img");
-            flagImg.src = flags[lang];
+                flagImg = languageToDomElement(lang);
             link.title = lang;
             link.className = "language-select-link language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon hiddenElement";
             link.addEventListener("click", () => window.location.search = "?lang=" + lang);
@@ -57,12 +63,15 @@ export class LanguageControl implements IControl {
             cell.appendChild(link);
             languageRow?.appendChild(cell);
         });
+
+        languageTable.className = "language-ctrl-table custom-ctrl-table";
         languageTable.appendChild(languageRow);
+
         this.container.appendChild(languageTable);
 
         const languageCell = document.createElement("td"),
             languageButton = document.createElement("button");
-        languageButton.innerText = "🔣";
+        languageButton.appendChild(languageToDomElement(language));
         loadTranslator().then(t => languageButton.title = t("change_language", "Change language"));
         languageButton.className = "language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon";
         languageButton.addEventListener("click", () => {
