@@ -9,6 +9,7 @@
         "to_choose_source": "um die zu verwendende Datenquelle auszuwählen",
         "to_overpass_query": "um die Quell-OverpassQL-Abfrage anzuzeigen (nur mit der Overpass-Quelle)",
         "to_wikidata_query": "um die Quell-SPARQL-Abfrage anzuzeigen (nur mit der Wikidata-Quelle)",
+        "to_view_data_table": "um Daten in einer Tabelle anzuzeigen (nur bei hohem zoom)",
         "to_change_background": "um den Stil der Hintergrundkarte zu ändern",
         "to_open_again": "um dieses Popup erneut zu öffnen",
         "contribute": "Zur Karte beitragen",
@@ -18,8 +19,7 @@
         "report_issue": "Ein Problem melden",
         "report_issue_title": "Melden Sie ein Problem oder einen Fehler in dieser Anwendung",
         "about_me": "Über mich",
-        "about_me_title": "Persönliche Website des Autors von OSM-Wikidata Map Framework",
-        "to_view_data_table": "um Daten in einer Tabelle anzuzeigen (nur bei hohem zoom)"
+        "about_me_title": "Persönliche Website des Autors von OSM-Wikidata Map Framework"
     },
     "snackbar": {
         "zoom_in": "Bitte zoomen, um die Daten zu sehen",
@@ -43,7 +43,6 @@
         "choose_scheme": "Farbschema und Statistiken auswählen",
         "blue": "Blau",
         "feature_source": "Nach Quelle der Elemente",
-        "etymology_source": "Nach Quelle der verknüpften Entitäten",
         "gender": "Nach Geschlecht",
         "type": "Nach Typ",
         "country": "Nach Ländern",
@@ -52,13 +51,14 @@
         "feature_picture": "Nach Bildverfügbarkeit",
         "available": "Verfügbar",
         "unavailable": "Nicht verfügbar",
+        "osm_text_only": "OSM (nur Text)",
+        "uniform": "Einheitliche Farben",
+        "feature_statistics": "Statistiken zu Kartenelementen",
+        "etymology_statistics": "Statistiken zu verknüpften Entitäten",
         "black": "Schwarz",
         "red": "Rot",
         "orange": "Orange",
-        "etymology_statistics": "Statistiken zu verknüpften Entitäten",
-        "feature_statistics": "Statistiken zu Kartenelementen",
-        "uniform": "Einheitliche Farben",
-        "osm_text_only": "OSM (nur Text)"
+        "etymology_source": "Nach Quelle der verknüpften Entitäten"
     },
     "feature_details": {
         "source": "Quelle:",
@@ -71,6 +71,12 @@
     "etymology_details": {
         "propagation": "vermehrung",
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
+    },
+    "data_table": {
+        "view_data_table": "Sehen Sie sich die Daten in einer Tabelle an (nur bei hohem zoom)",
+        "names": "Namen",
+        "actions": "Aktionen",
+        "linked_entities": "Verknüpften Entitäten"
     },
     "change_language": "Sprache ändern",
     "choose_basemap": "Hintergrundstil auswählen",
