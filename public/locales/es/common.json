@@ -9,6 +9,7 @@
         "to_choose_source": "para elegir qué fuente de datos utilizar",
         "to_overpass_query": "para ver la consulta OverpassQL de origen (solo con la fuente de Overpass)",
         "to_wikidata_query": "para ver la consulta SPARQL de origen (solo con la fuente de Wikidata)",
+        "to_view_data_table": "para ver datos en una tabla (solo con zoom alto)",
         "to_change_background": "para cambiar el fondo del mapa",
         "to_open_again": "para reabrir esta ventana",
         "contribute": "Contribuir al mapa",
@@ -18,8 +19,7 @@
         "report_issue": "Reportar un problema",
         "report_issue_title": "Reportar un problema o error con esta aplicación",
         "about_me": "Sobre mí",
-        "about_me_title": "Sitio personal del autor de OSM-Wikidata Map Framework",
-        "to_view_data_table": "para ver datos en una tabla (solo con zoom alto)"
+        "about_me_title": "Sitio personal del autor de OSM-Wikidata Map Framework"
     },
     "snackbar": {
         "zoom_in": "Zoom para ver los datos",
@@ -51,14 +51,14 @@
         "feature_picture": "Por disponibilidad de imágenes",
         "available": "Disponible",
         "unavailable": "Indisponible",
+        "osm_text_only": "OSM (solo texto)",
+        "uniform": "Colores uniformes",
+        "feature_statistics": "Estadísticas sobre elementos del mapa",
+        "etymology_statistics": "Estadísticas de entidades conectadas",
         "black": "Negro",
         "red": "Rojo",
         "orange": "Naranja",
-        "etymology_source": "Por fuente de entidades conectadas",
-        "etymology_statistics": "Estadísticas de entidades conectadas",
-        "feature_statistics": "Estadísticas sobre elementos del mapa",
-        "uniform": "Colores uniformes",
-        "osm_text_only": "OSM (solo texto)"
+        "etymology_source": "Por fuente de entidades conectadas"
     },
     "feature_details": {
         "source": "Fuente:",
@@ -71,6 +71,12 @@
     "etymology_details": {
         "propagation": "propagación",
         "propagation_title": "Descripción del mecanismo de propagación"
+    },
+    "data_table": {
+        "view_data_table": "Ver los datos en una tabla (solo con zoom alto)",
+        "names": "Nombres",
+        "actions": "Acciones",
+        "linked_entities": "Entidades conectadas"
     },
     "change_language": "Cambiar idioma",
     "choose_basemap": "Elige el fondo del mapa",
