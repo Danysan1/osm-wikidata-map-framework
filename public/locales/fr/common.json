@@ -9,6 +9,7 @@
         "to_choose_source": "pour choisir la source de données à afficher",
         "to_overpass_query": "pour voir la requête OverpassQL d'origine (en utilisant les données de Overpass)",
         "to_wikidata_query": "pour voir la requête SPARQL d'origine (en utilisant les données de Wikidata)",
+        "to_view_data_table": "pour afficher les données dans un tableau (en zoomant beaucoup)",
         "to_change_background": "pour changer la couche de la carte",
         "to_open_again": "pour rouvrir la légende",
         "contribute": "Contribuer à la carte",
@@ -18,8 +19,7 @@
         "report_issue": "Signaler un problème",
         "report_issue_title": "Signaler un problème ou un bogue de cette application",
         "about_me": "À propos de moi",
-        "about_me_title": "Site personnel de l'auteur du cadre de carte OSM-Wikidata",
-        "to_view_data_table": "pour afficher les données dans un tableau (en zoomant beaucoup)"
+        "about_me_title": "Site personnel de l'auteur du cadre de carte OSM-Wikidata"
     },
     "snackbar": {
         "zoom_in": "Veuillez zoomer pour afficher les données",
@@ -51,14 +51,14 @@
         "feature_picture": "Par disponibilité des images",
         "available": "Disponible",
         "unavailable": "Indisponible",
+        "osm_text_only": "OSM (texte uniquement)",
+        "uniform": "Couleurs uniformes",
+        "feature_statistics": "Statistiques sur les éléments cartographiques",
+        "etymology_statistics": "Statistiques des entités liées",
         "black": "Noir",
         "red": "Rouge",
         "orange": "Orange",
-        "etymology_source": "Par source d'entités liées",
-        "etymology_statistics": "Statistiques des entités liées",
-        "feature_statistics": "Statistiques sur les éléments cartographiques",
-        "uniform": "Couleurs uniformes",
-        "osm_text_only": "OSM (texte uniquement)"
+        "etymology_source": "Par source d'entités liées"
     },
     "feature_details": {
         "source": "Source:",
@@ -71,6 +71,12 @@
     "etymology_details": {
         "propagation": "propagation",
         "propagation_title": "Description du mécanisme de propagation"
+    },
+    "data_table": {
+        "view_data_table": "Afficher les données dans un tableau (uniquement avec un zoom élevé)",
+        "names": "Noms",
+        "actions": "Actions",
+        "linked_entities": "Entités liées"
     },
     "change_language": "Changer de langue",
     "choose_basemap": "Choisissez le style de fond",
