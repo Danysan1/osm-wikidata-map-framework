@@ -515,7 +515,7 @@ services:
           - "linux/amd64"
           - "linux/arm64"
         tags:
-          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag}
+          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag:-latest}
           - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
         cache-from:
           - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache
