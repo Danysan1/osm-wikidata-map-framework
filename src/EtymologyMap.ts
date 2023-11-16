@@ -42,7 +42,6 @@ const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private startBackgroundStyle: BackgroundStyle;
-    private geocoderControl?: IControl;
     private anyFeatureClickedBefore = false;
     private wikidataSourceInitialized = false;
     private wikidataMapService: WikidataMapService;
@@ -609,7 +608,7 @@ export class EtymologyMap extends Map {
                 WIKIDATA_SOURCE,
                 thresholdZoomLevel
             );
-            this.addControl(colorControl, 'bottom-left');
+            this.addControl(colorControl, 'top-left');
             colorControl.updateChart();
 
             const sourceControl = new SourceControl(
@@ -617,9 +616,9 @@ export class EtymologyMap extends Map {
                 this.updateDataSource.bind(this),
                 t
             );
-            this.addControl(sourceControl, 'bottom-left');
+            this.addControl(sourceControl, 'top-left');
 
-            this.addControl(new InfoControl(), 'bottom-left');
+            this.addControl(new InfoControl(), 'top-left');
 
             /* Set up controls in the top RIGHT corner */
             this.addControl(new LinkControl(
@@ -1020,15 +1019,19 @@ export class EtymologyMap extends Map {
                 // webpackExports: ["GeocodingControl"]
                 "@maptiler/geocoding-control/maplibregl"
             ).then(({ GeocodingControl }) => {
-                const geocoderControl = new GeocodingControl({ apiKey: maptiler_key, marker: false });
+                const geocoderControl = new GeocodingControl({
+                    apiKey: maptiler_key,
+                    collapsed: true,
+                    marker: false, // Markers require to pass maplibregl as argument
+                });
+                this.addControl(geocoderControl, 'bottom-left');
+
                 document.addEventListener("keydown", (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key == "f") {
+                    if ((e.ctrlKey || e.metaKey) && e.key === "f" && document.getElementsByClassName("owmf_data_table").length === 0) {
                         geocoderControl.focus();
                         e.preventDefault();
                     }
                 });
-                this.addControl(geocoderControl, 'top-left');
-                this.geocoderControl = geocoderControl;
             });
         }
     }
