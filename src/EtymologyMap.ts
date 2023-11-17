@@ -20,11 +20,6 @@ import { loadTranslator } from './i18n';
 import { LinkControl } from './controls/LinkControl';
 import { DataTableControl } from './controls/DataTableControl';
 import './style.css';
-import { WikidataMapService } from './services/WikidataMapService';
-import { OverpassService } from './services/OverpassService';
-import { OverpassWikidataMapService } from './services/OverpassWikidataMapService';
-import { MapDatabase } from './db/MapDatabase';
-import { OwmfBackendService } from './services/OwmfBackendService';
 import { OsmWikidataMatcherControl } from './controls/OsmWikidataMatcherControl';
 import { MapCompleteControl } from './controls/MapCompleteControl';
 import { iDEditorControl } from './controls/iDEditorControl';
@@ -44,10 +39,10 @@ export class EtymologyMap extends Map {
     private startBackgroundStyle: BackgroundStyle;
     private anyFeatureClickedBefore = false;
     private wikidataSourceInitialized = false;
-    private wikidataMapService: WikidataMapService;
-    private overpassService: OverpassService;
-    private overpassWikidataService: OverpassWikidataMapService;
-    private backendService: OwmfBackendService;
+    private wikidataMapService?: import("./services").WikidataMapService;
+    private overpassService?: import("./services").OverpassService;
+    private overpassWikidataService?: import("./services").OverpassWikidataMapService;
+    private backendService?: import("./services").OwmfBackendService;
     private lastSourceID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
@@ -76,12 +71,15 @@ export class EtymologyMap extends Map {
         });
         this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
-        const db = new MapDatabase();
-        this.wikidataMapService = new WikidataMapService(db);
-        this.overpassService = new OverpassService(db);
-        this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService, db);
-        this.backendService = new OwmfBackendService(db);
-
+        import("./services").then(({
+            MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService, OwmfBackendService
+        }) => {
+            const db = new MapDatabase();
+            this.wikidataMapService = new WikidataMapService(db);
+            this.overpassService = new OverpassService(db);
+            this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService, db);
+            this.backendService = new OwmfBackendService(db);
+        });
         try {
             openInfoWindow(this, false);
         } catch (e) {
@@ -315,13 +313,13 @@ export class EtymologyMap extends Map {
         try {
             showLoadingSpinner(true);
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService.canHandleSource(sourceID))
+            if (this.wikidataMapService?.canHandleSource(sourceID))
                 data = await this.wikidataMapService.fetchMapData(sourceID, bbox);
-            else if (this.overpassService.canHandleSource(sourceID))
+            else if (this.overpassService?.canHandleSource(sourceID))
                 data = await this.overpassService.fetchMapClusterElements(sourceID, bbox);
-            else if (this.overpassWikidataService.canHandleSource(sourceID))
+            else if (this.overpassWikidataService?.canHandleSource(sourceID))
                 data = await this.overpassWikidataService.fetchMapClusterElements(sourceID, bbox);
-            else if (this.backendService.canHandleSource(sourceID))
+            else if (this.backendService?.canHandleSource(sourceID))
                 data = await this.backendService.fetchMapClusterElements(sourceID, bbox);
             else
                 throw new Error("No service found for source ID " + sourceID);
@@ -386,13 +384,13 @@ export class EtymologyMap extends Map {
         try {
             showLoadingSpinner(true);
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService.canHandleSource(sourceID))
+            if (this.wikidataMapService?.canHandleSource(sourceID))
                 data = await this.wikidataMapService.fetchMapData(sourceID, bbox);
-            else if (this.overpassService.canHandleSource(sourceID))
+            else if (this.overpassService?.canHandleSource(sourceID))
                 data = await this.overpassService.fetchMapElementDetails(sourceID, bbox);
-            else if (this.overpassWikidataService.canHandleSource(sourceID))
+            else if (this.overpassWikidataService?.canHandleSource(sourceID))
                 data = await this.overpassWikidataService.fetchMapElementDetails(sourceID, bbox);
-            else if (this.backendService.canHandleSource(sourceID))
+            else if (this.backendService?.canHandleSource(sourceID))
                 data = await this.backendService.fetchMapElementDetails(sourceID, bbox);
             else
                 throw new Error("No service found for source ID " + sourceID);

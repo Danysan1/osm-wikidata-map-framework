@@ -5,8 +5,6 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } f
 import { debug } from '../config';
 import { Etymology, EtymologyFeature, EtymologyResponse } from '../generated/owmf';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
-import { WikidataService } from '../services/WikidataService';
-import { WikidataDetailsService } from '../services/WikidataDetailsService';
 import { loadTranslator } from '../i18n';
 
 export class DataTableControl implements IControl {
@@ -206,19 +204,20 @@ export class DataTableControl implements IControl {
         return a;
     }
 
-    private downloadLinkLabels(wikidataIDs: Set<string>, container: HTMLElement) {
+    private async downloadLinkLabels(wikidataIDs: Set<string>, container: HTMLElement) {
         if (wikidataIDs.size > 0) {
-            new WikidataDetailsService().fetchEtymologyDetails(wikidataIDs).then(details => {
-                wikidataIDs.forEach(wikidataID => {
-                    if (wikidataID in details) {
-                        const detail = details[wikidataID],
-                            links = container.querySelectorAll<HTMLAnchorElement>(`a[data-wikidata-id="${detail.wikidata}"]`);
-                        links.forEach(a => {
-                            if (detail.name)
-                                a.innerText = detail.name;
-                        });
-                    }
-                });
+            const detailsService = new (await import("../services")).WikidataDetailsService(),
+                details = await detailsService.fetchEtymologyDetails(wikidataIDs);
+
+            wikidataIDs.forEach(wikidataID => {
+                if (wikidataID in details) {
+                    const detail = details[wikidataID],
+                        links = container.querySelectorAll<HTMLAnchorElement>(`a[data-wikidata-id="${detail.wikidata}"]`);
+                    links.forEach(a => {
+                        if (detail.name)
+                            a.innerText = detail.name;
+                    });
+                }
             });
         }
     }

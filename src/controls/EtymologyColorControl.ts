@@ -8,7 +8,6 @@ import { debug, getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../colorScheme.model';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { TFunction } from 'i18next';
-import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 import { Etymology, EtymologyFeature, GeoJSONFeatureID } from '../generated/owmf';
 import { showLoadingSpinner } from '../snackbar';
 import { logErrorMessage } from '../monitoring';
@@ -121,14 +120,15 @@ class EtymologyColorControl extends DropdownControl {
         this.pictureUnavailable = t("color_scheme.unavailable", "Unavailable");
     }
 
-    public updateChart(event?: MapEvent | Event) {
+    public async updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             console.error("updateChart: dropdown not yet initialized", { event });
             return;
         } else {
             const colorSchemeID = dropdown.value as ColorSchemeID,
-                colorScheme = colorSchemes[colorSchemeID];
+                colorScheme = colorSchemes[colorSchemeID],
+                statsQueries = (await import("../services")).statsQueries;
 
             if (colorSchemeID === 'feature_source') {
                 if (debug) console.debug("updateChart: showing feature source stats", { event, colorSchemeID });
@@ -145,7 +145,7 @@ class EtymologyColorControl extends DropdownControl {
                 this.loadPictureAvailabilityChartData();
                 if (event)
                     this.showDropdown();
-            } else if (statsQueries[colorSchemeID]) {
+            } else if (colorSchemeID in statsQueries) {
                 if (debug) console.debug("updateChart: downloading stats from Wikidata", { event, colorSchemeID });
                 this.downloadChartDataFromWikidata(colorSchemeID);
                 if (event)
@@ -349,7 +349,8 @@ class EtymologyColorControl extends DropdownControl {
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = uniqueIDs;
             try {
-                const stats = await new WikidataStatsService().fetchStats(uniqueIDs, colorSchemeID);
+                const statsService = new (await import("../services")).WikidataStatsService(),
+                    stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
                 if (stats.length > 0) {
                     this.setChartStats(stats)
                     this.setLayerColorForStats(stats);
