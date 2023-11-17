@@ -726,14 +726,6 @@ export class EtymologyMap extends Map {
     private prepareElementsLayers(maxZoom: number) {
         this.prepareClusteredLayers(
             ELEMENTS_SOURCE,
-            (layerName: string, e: MapMouseEvent) => {
-                const feature = this.getClickedClusterFeature(layerName, e),
-                    center = this.getClusterFeatureCenter(feature);
-                this.easeTo({
-                    center: center,
-                    zoom: maxZoom ? maxZoom + 0.5 : 9
-                });
-            },
             "num",
             "num",
             undefined,
@@ -813,16 +805,6 @@ export class EtymologyMap extends Map {
 
         this.prepareClusteredLayers(
             sourceName,
-            (layerName: string, e: MapMouseEvent) => {
-                const feature = this.getClickedClusterFeature(layerName, e),
-                    clusterId = EtymologyMap.getClusterFeatureId(feature),
-                    center = this.getClusterFeatureCenter(feature),
-                    defaultZoom = maxZoom ? maxZoom + 0.5 : 9;
-                sourceObject.getClusterExpansionZoom(
-                    clusterId,
-                    (err, zoom) => this.easeToClusterCenter(err, zoom || 1, defaultZoom, center)
-                );
-            },
             countFieldName,
             countShowFieldName,
             minZoom,
@@ -832,7 +814,6 @@ export class EtymologyMap extends Map {
 
     private prepareClusteredLayers(
         sourceName: string,
-        onClusterClick: (layerName: string, e: MapMouseEvent) => void,
         countFieldName: string,
         countShowFieldName: string,
         minZoom?: number,
@@ -877,7 +858,7 @@ export class EtymologyMap extends Map {
 
 
             // inspect a cluster on click
-            this.on('click', clusterLayerName, e => onClusterClick(clusterLayerName, e));
+            this.on('click', clusterLayerName, e => this.onClusterClick(clusterLayerName, e));
 
             this.on('mouseenter', clusterLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', clusterLayerName, () => this.getCanvas().style.cursor = '');
@@ -927,14 +908,7 @@ export class EtymologyMap extends Map {
                 layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
 
-            this.on('click', pointLayerName, (e) => {
-                const feature = this.getClickedClusterFeature(pointLayerName, e),
-                    center = this.getClusterFeatureCenter(feature);
-                this.easeTo({
-                    center: center,
-                    zoom: maxZoom ? maxZoom + 0.5 : 9
-                });
-            });
+            this.on('click', pointLayerName, e => this.onClusterClick(pointLayerName, e));
 
             this.on('mouseenter', pointLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', pointLayerName, () => this.getCanvas().style.cursor = '');
@@ -945,48 +919,21 @@ export class EtymologyMap extends Map {
         }
     }
 
+    private onClusterClick(layerName: string, e: MapMouseEvent) {
+        const feature = this.getClickedClusterFeature(layerName, e),
+            center: LngLatLike = (feature.geometry as any).coordinates;
+        this.easeTo({
+            center: center,
+            zoom: this.getZoom() + 5
+        });
+    }
+
     private getClickedClusterFeature(layerId: string, event: MapMouseEvent): GeoJSONFeature {
         const features = this.queryRenderedFeatures(event.point, { layers: [layerId] }),
             feature = features[0];
         if (!feature)
             throw new Error("No feature found in cluster click");
         return feature;
-    }
-
-    static getClusterFeatureId(feature: GeoJSONFeature): number {
-        const clusterId = feature.properties?.cluster_id;
-        if (typeof clusterId != 'number')
-            throw new Error("No valid cluster ID found");
-        return clusterId;
-    }
-
-    private getClusterFeatureCenter(feature: GeoJSONFeature): LngLatLike {
-        return (feature.geometry as any).coordinates as LngLatLike;
-    }
-
-    /**
-     * Callback for getClusterExpansionZoom which eases the map to the cluster center at the calculated zoom
-
-    * @param defaultZoom Default zoom, in case the calculated one is empty (for some reason sometimes it happens)
-    * 
-    * @see https://docs.mapbox.com/mapbox-gl-js/api/sources/#geojsonsource#getclusterexpansionzoom
-    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#easeto
-    * @see https://docs.mapbox.com/mapbox-gl-js/api/properties/#cameraoptions
-    */
-    private easeToClusterCenter(err: any, zoom: number, defaultZoom: number, center: LngLatLike) {
-        if (err) {
-            logErrorMessage("easeToClusterCenter: Not easing because of an error", "error", err);
-        } else {
-            if (!zoom) {
-                zoom = defaultZoom
-                console.warn("easeToClusterCenter: Empty zoom, using default");
-            }
-            if (debug) console.debug("easeToClusterCenter", { zoom, center });
-            this.easeTo({
-                center: center,
-                zoom: zoom
-            });
-        }
     }
 
     /**
