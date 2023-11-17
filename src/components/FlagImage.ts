@@ -44,6 +44,8 @@ export class LanguageFlagElement extends HTMLImageElement {
         this.src = this._language in flags ? flags[this._language] : defaultIcon;
         this.alt = this._language;
         this.loading = "lazy";
+        this.width = 23;
+        this.height = 15;
         this.classList.remove("hiddenElement");
     }
 }

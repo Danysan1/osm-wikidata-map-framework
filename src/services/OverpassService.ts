@@ -67,18 +67,18 @@ export class OverpassService {
                 use_wikidata: boolean,
                 search_text_key = osm_text_key;
 
-            if (sourceID.endsWith("overpass_wd")) {
+            if (sourceID.includes("overpass_wd")) {
                 // Search only elements with wikidata=*
                 keys = [];
                 search_text_key = null;
                 use_wikidata = true;
             } else if (!this.wikidata_keys) {
                 throw new Error(`No keys configured, invalid sourceID ${this.wikidata_keys}`)
-            } else if (sourceID.endsWith("overpass_all_wd")) {
+            } else if (sourceID.includes("overpass_all_wd")) {
                 // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
                 keys = this.wikidata_keys;
                 use_wikidata = true;
-            } else if (sourceID.endsWith("overpass_all")) {
+            } else if (sourceID.includes("overpass_all")) {
                 // Search all elements with an etymology
                 keys = this.wikidata_keys;
                 use_wikidata = false;
@@ -108,7 +108,7 @@ export class OverpassService {
 
             if (debug) console.time("overpass_transform");
             out = osmtogeojson(res);
-            if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features );
+            if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
 
             out.features.forEach((feature: Feature) => {
                 if (!feature.id && feature.properties?.id)
@@ -163,15 +163,13 @@ export class OverpassService {
             this.db.addMap(out);
         }
         if (debug) console.timeEnd("overpass_transform");
-        if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features );
+        if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
         return out;
     }
 
     private buildOverpassQuery(
         wd_keys: string[], bbox: BBox, osm_text_key: string | null, use_wikidata: boolean, outClause: string
     ): string {
-        let query = `[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];\n(\n`;
-
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxRelationMembers = getConfig("max_relation_members"),
             maxMembersFilter = maxRelationMembers ? `(if:count_members()<${maxRelationMembers})` : "",
@@ -180,13 +178,23 @@ export class OverpassService {
             filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
-            extra_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        if (debug) console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, extra_wd_keys, osm_text_key });
+            non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
+        if (debug) console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
+        let query = `
+[out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
+(
+// Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
+// Secondary Wikidata keys: ${wd_keys.length ? wd_keys.join(", ") : "NONE"}
+// Text key: ${osm_text_key || "NONE"}
+// ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
+// Max relation members: ${maxRelationMembers || "UNLIMITED"}
+`;
+
         filter_wd_keys.forEach(
-            key => query += `nwr${notTooBig}["${key}"]; // "${key}" is both filter and secondary wikidata key\n`
+            key => query += `nwr${notTooBig}["${key}"]; // filter & secondary wikidata key\n`
         );
         if (text_etymology_key_is_filter)
-            query += `nwr${notTooBig}["${osm_text_key}"]; // "${osm_text_key}" is both filter and text etymology key\n`;
+            query += `nwr${notTooBig}["${osm_text_key}"]; // filter & text etymology key\n`;
         if (use_wikidata && !filter_tags && !osm_text_key)
             query += `nwr${notTooBig}["wikidata"];\n`;
 
@@ -197,18 +205,21 @@ export class OverpassService {
                 filter_clause = filter_value ? `"${filter_key}"="${filter_value}"` : `"${filter_key}"`;
 
             if (!wd_keys.includes(filter_key) && osm_text_key !== filter_key) {
-                extra_wd_keys.forEach(
-                    key => query += `nwr${notTooBig}[${filter_clause}]["${key}"]; // ${filter_clause} is a filter, "${key}" is a secondary wikidata key\n`
+                non_filter_wd_keys.forEach(
+                    key => query += `nwr${notTooBig}[${filter_clause}]["${key}"]; // filter + secondary wikidata key\n`
                 );
                 if (osm_text_key && !text_etymology_key_is_filter)
-                    query += `nwr${notTooBig}[${filter_clause}]["${osm_text_key}"]; // ${filter_clause} is a filter, "${osm_text_key}" is a text etymology key\n`;
+                    query += `nwr${notTooBig}[${filter_clause}]["${osm_text_key}"]; // filter + text etymology key\n`;
                 if (use_wikidata)
-                    query += `nwr${notTooBig}[${filter_clause}]["wikidata"]; // ${filter_clause} is a filter\n`;
+                    query += `nwr${notTooBig}[${filter_clause}]["wikidata"]; // filter + wikidata=*\n`;
             }
         });
 
         const maxElements = getConfig("max_map_elements");
-        query += `);\n${outClause}`.replace("${maxElements}", maxElements || "");
+        query += `);
+// Max elements: ${getConfig("max_map_elements") || "NONE"}
+${outClause.replace("${maxElements}", maxElements || "")}
+`;
 
         return query;
     }

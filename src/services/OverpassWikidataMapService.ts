@@ -34,7 +34,7 @@ export class OverpassWikidataMapService {
         if (overpassSourceID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
             return this.wikidataService.fetchMapData(wikidataSourceID, bbox);
 
-        const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_wd" : overpassSourceID;
+        const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_all" : overpassSourceID;
         return await this.fetchAndMergeMapData(
             "elements-" + sourceID,
             () => this.overpassService.fetchMapClusterElements(actualOverpassSourceID, bbox),
