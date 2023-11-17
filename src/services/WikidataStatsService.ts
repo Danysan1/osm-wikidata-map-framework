@@ -10,7 +10,7 @@ import { EtymologyStat } from "../controls/EtymologyColorControl";
 import { debug } from "../config";
 import { StatsDatabase } from "../db/StatsDatabase";
 
-export const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
+const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
     gender: "csv/wikidata_genders.csv",
     country: "csv/wikidata_countries.csv",

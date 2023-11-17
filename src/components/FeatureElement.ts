@@ -6,13 +6,11 @@ import { etymologyToDomElement } from "./EtymologyElement";
 import { debug } from "../config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n";
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
-import { WikidataService } from "../services/WikidataService";
 import { imageToDomElement } from "./CommonsImageElement";
 import { logErrorMessage } from "../monitoring";
 import { EtymologyDetails } from '../feature.model';
 import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
-import { WikidataDetailsService } from '../services/WikidataDetailsService';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -118,17 +116,7 @@ export class FeatureElement extends HTMLDivElement {
             feature_pictures.classList.remove("hiddenElement");
         } else if (has_wikidata) {
             if (debug) console.info("Using picture from feature 'wikidata' property", { wikidata });
-            new WikidataService().getCommonsImageFromWikidataID(wikidata).then(img => {
-                if (img) {
-                    feature_pictures.appendChild(imageToDomElement(img));
-                    feature_pictures.classList.remove("hiddenElement");
-                } else {
-                    feature_pictures.classList.add("hiddenElement");
-                }
-            }).catch(err => {
-                logErrorMessage("Failed getting image from Wikidata", 'error', err);
-                feature_pictures.classList.add("hiddenElement");
-            });
+            this.showDetails(wikidata, feature_pictures);
         } else {
             feature_pictures.classList.add("hiddenElement");
         }
@@ -187,6 +175,20 @@ export class FeatureElement extends HTMLDivElement {
         if (debug) console.info("FeatureElement: rendering", { detail_container });
         this.appendChild(detail_container);
         this.classList.remove("hiddenElement");
+    }
+
+    private async showDetails(wikidataID: string, feature_pictures: HTMLElement) {
+        try {
+            const wikidataService = new (await import("../services/WikidataService")).WikidataService(),
+                image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
+            if (image) {
+                feature_pictures.appendChild(imageToDomElement(image));
+                feature_pictures.classList.remove("hiddenElement");
+            }
+        } catch (err) {
+            logErrorMessage("Failed getting image from Wikidata", 'error');
+            feature_pictures.classList.add("hiddenElement");
+        }
     }
 
     private showEtymologies(properties: EtymologyFeatureProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
@@ -262,7 +264,8 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         try {
-            const downlodedEtymologies = await new WikidataDetailsService().fetchEtymologyDetails(etymologyIDs);
+            const detailsService = new (await import("../services")).WikidataDetailsService(),
+                downlodedEtymologies = await detailsService.fetchEtymologyDetails(etymologyIDs);
             return sortedIDs.map(
                 (wikidataID): Etymology => ({
                     ...etymologies.find(oldEty => oldEty.wikidata === wikidataID),
