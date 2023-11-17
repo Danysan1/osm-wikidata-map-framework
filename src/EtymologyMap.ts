@@ -921,7 +921,7 @@ export class EtymologyMap extends Map {
      * Handles the click on a cluster.
      * For GeoJSON cluster layers, the optimal zoom destination could be obtained with getClusterExpansionZoom().
      * However, this method is not available for vector sources.
-     * So for uniformity, the zoom is always calculated as the current zoom + 4.
+     * So for uniformity, the zoom is always calculated as the current zoom + 3.
      * 
      * @see GeoJSONSource.getClusterExpansionZoom
      * @see https://maplibre.org/maplibre-gl-js/docs/examples/cluster/
@@ -932,7 +932,7 @@ export class EtymologyMap extends Map {
             center: LngLatLike = (feature.geometry as any).coordinates;
         this.easeTo({
             center: center,
-            zoom: this.getZoom() + 4
+            zoom: this.getZoom() + 3
         });
     }
 
@@ -982,7 +982,10 @@ export class EtymologyMap extends Map {
                 this.addControl(geocoderControl, 'bottom-left');
 
                 document.addEventListener("keydown", (e) => {
-                    if ((e.ctrlKey || e.metaKey) && e.key === "f" && document.getElementsByClassName("owmf_data_table").length === 0) {
+                    if ((e.ctrlKey || e.metaKey) &&
+                        e.key === "f" &&
+                        document.getElementsByClassName("owmf_data_table").length === 0 &&
+                        document.getElementsByClassName("detail_container").length === 0) {
                         geocoderControl.focus();
                         e.preventDefault();
                     }
