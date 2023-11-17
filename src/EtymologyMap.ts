@@ -520,8 +520,8 @@ export class EtymologyMap extends Map {
                 "minzoom": minZoom,
                 'paint': {
                     'line-color': colorSchemeColor,
-                    'line-opacity': 0.5,
-                    'line-width': 18
+                    'line-opacity': 0.6,
+                    'line-width': 16
                 }
             };
             if (source_layer)
@@ -539,9 +539,9 @@ export class EtymologyMap extends Map {
                 "minzoom": minZoom,
                 'paint': {
                     'line-color': colorSchemeColor,
-                    'line-opacity': 0.5,
-                    'line-width': 12,
-                    'line-offset': 6, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+                    'line-opacity': 0.6,
+                    'line-width': 8,
+                    'line-offset': 4, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
                 }
             };
             if (source_layer)
@@ -559,7 +559,7 @@ export class EtymologyMap extends Map {
                 "minzoom": minZoom,
                 'paint': {
                     'fill-color': colorSchemeColor,
-                    'fill-opacity': 0.5,
+                    'fill-opacity': 0.4,
                     'fill-outline-color': "rgba(0, 0, 0, 0)",
                 }
             };
@@ -840,7 +840,7 @@ export class EtymologyMap extends Map {
                             '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
                             '#f28cb1' // count > maxThreshold => Pink circle
                         ],
-                        'circle-opacity': 0.7,
+                        'circle-opacity': 0.8,
                         'circle-radius': [
                             'interpolate', ['linear'],
                             ['get', countFieldName],
@@ -896,7 +896,7 @@ export class EtymologyMap extends Map {
                 filter: ['!', ['has', countFieldName]],
                 paint: {
                     'circle-color': '#51bbd6',
-                    'circle-opacity': 0.7,
+                    'circle-opacity': 0.8,
                     'circle-radius': 15,
                     //'circle-stroke-width': 1,
                     //'circle-stroke-color': '#fff'
@@ -917,12 +917,22 @@ export class EtymologyMap extends Map {
         }
     }
 
+    /**
+     * Handles the click on a cluster.
+     * For GeoJSON cluster layers, the optimal zoom destination could be obtained with getClusterExpansionZoom().
+     * However, this method is not available for vector sources.
+     * So for uniformity, the zoom is always calculated as the current zoom + 4.
+     * 
+     * @see GeoJSONSource.getClusterExpansionZoom
+     * @see https://maplibre.org/maplibre-gl-js/docs/examples/cluster/
+     * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
+     */
     private onClusterClick(layerName: string, e: MapMouseEvent) {
         const feature = this.getClickedClusterFeature(layerName, e),
             center: LngLatLike = (feature.geometry as any).coordinates;
         this.easeTo({
             center: center,
-            zoom: this.getZoom() + 5
+            zoom: this.getZoom() + 4
         });
     }
 

@@ -179,7 +179,7 @@ export class FeatureElement extends HTMLDivElement {
 
     private async showDetails(wikidataID: string, feature_pictures: HTMLElement) {
         try {
-            const wikidataService = new (await import("../services/WikidataService")).WikidataService(),
+            const wikidataService = new (await import("../services")).WikidataService(),
                 image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
             if (image) {
                 feature_pictures.appendChild(imageToDomElement(image));

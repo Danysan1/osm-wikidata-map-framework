@@ -107,6 +107,9 @@ $jsScript = $jsScripts[0];
     <?php if (str_starts_with((string)$conf->get("default_background_style"), "mapbox")) { ?>
         <link rel="preconnect" href="https://api.mapbox.com">
     <?php } ?>
+    <?php if (str_starts_with((string)$conf->get("default_background_style"), "stadia")) { ?>
+        <link rel="preconnect" href="https://tiles.stadiamaps.com">
+    <?php } ?>
     <?php if ($conf->has("paypal_id")) { ?>
         <link rel="preconnect" href="https://www.paypalobjects.com" />
     <?php } ?>
