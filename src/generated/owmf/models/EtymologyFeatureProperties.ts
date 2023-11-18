@@ -51,25 +51,25 @@ export interface EtymologyFeatureProperties {
      */
     etymologies?: Array<Etymology>;
     /**
-     * Whether OpenStreetMap is the original source of the geometry of this feature
+     * Whether OpenStreetMap is the original source of the geometry and names of this feature.
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */
     from_osm?: boolean;
     /**
-     * Whether Wikidata is the original source of this feature
+     * Whether Wikidata is the original source of the geometry and/or names of this feature.
      * @type {boolean}
      * @memberof EtymologyFeatureProperties
      */
     from_wikidata?: boolean;
     /**
-     * Q-ID of the Wikidata entity this feature has been extracted from
+     * Q-ID of the Wikidata entity this feature's geometry has been extracted from. This may or may not be the same as the Wikidata entity of this feature.
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
     from_wikidata_entity?: string;
     /**
-     * P-ID of the Wikidata property that links from the source Wikidata entity to this feature's geometry (directly or through a qualifier)
+     * P-ID of the Wikidata property that links from the source Wikidata entity to the geometry of this feature. This may represent a direct geo statement (ex. P625) or a statement with a geo qualifier (ex. P625 on P119, in this case P119 must be used).
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
