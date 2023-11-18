@@ -26,6 +26,7 @@ import {
  * @interface EtymologyFeatureProperties
  */
 export interface EtymologyFeatureProperties {
+    [key: string]: string | any;
     /**
      * Alternative names of the feature, separated by a semicolon
      * @type {string}
@@ -167,6 +168,7 @@ export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscrim
     }
     return {
         
+            ...json,
         'alt_name': !exists(json, 'alt_name') ? undefined : json['alt_name'],
         'commons': !exists(json, 'commons') ? undefined : json['commons'],
         'el_id': !exists(json, 'el_id') ? undefined : json['el_id'],
@@ -197,6 +199,7 @@ export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeaturePropert
     }
     return {
         
+            ...value,
         'alt_name': value.alt_name,
         'commons': value.commons,
         'el_id': value.el_id,

@@ -542,6 +542,8 @@ components:
               type: object
               nullable: true
               title: EtymologyFeatureProperties
+              additionalProperties:
+                type: string
               properties:
                 alt_name:
                   type: string
