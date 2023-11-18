@@ -7,12 +7,16 @@ info:
 servers:
   - url: http://localhost
     description: Local instance
-  - url: https://etymology.dsantini.it
-    description: Open Etymology Map
-  - url: https://burial.dsantini.it
-    description: Open Burial Map
   - url: https://artist.dsantini.it
     description: Open Artist Map
+  - url: https://architect.dsantini.it
+    description: Open Architect Map
+  - url: https://burial.dsantini.it
+    description: Open Burial Map
+  - url: https://etymology.dsantini.it
+    description: Open Etymology Map
+  - url: https://osmwd.dsantini.it
+    description: OSM-Wikidata Map
 
 tags:
   - name: owmf
@@ -503,6 +507,14 @@ components:
           type: string
           description: P-ID of the Wikidata property that links from the source Wikidata entity to this etymology entity
           example: P138
+        osm_wd_join_field:
+          type: string
+          description: If this etymology's feature has both an OSM element and Wikidata entity, this field specifies the clause used to join them. In theory the OSM-WD link should be biunivocal and this field should be on the feature (not on the etymology), however in practice this is not always the case (ex. https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/18) so to debug the etymology source it's necessary to specify it for each etymology.
+          enum:
+            - OSM # The OSM element (node/way/relation) links to the Wikidata entity through wikidata=*
+            - P11693 # The Wikidata entity links to the OSM node through P11693
+            - P10689 # The Wikidata entity links to the OSM way through P10689
+            - P402 # The Wikidata entity links to the OSM relation through P402
         from_parts_of_wikidata_cod:
           type: string
           description: Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
@@ -553,17 +565,17 @@ components:
                     $ref: "#/components/schemas/Etymology"
                 from_osm:
                   type: boolean
-                  description: Whether OpenStreetMap is the original source of the geometry of this feature
+                  description: Whether OpenStreetMap is the original source of the geometry and names of this feature.
                 from_wikidata:
                   type: boolean
-                  description: Whether Wikidata is the original source of this feature
+                  description: Whether Wikidata is the original source of the geometry and/or names of this feature.
                 from_wikidata_entity:
                   type: string
-                  description: Q-ID of the Wikidata entity this feature has been extracted from
+                  description: Q-ID of the Wikidata entity this feature's geometry has been extracted from. This may or may not be the same as the Wikidata entity of this feature.
                   example: Q1
                 from_wikidata_prop:
                   type: string
-                  description: P-ID of the Wikidata property that links from the source Wikidata entity to this feature's geometry (directly or through a qualifier)
+                  description: P-ID of the Wikidata property that links from the source Wikidata entity to the geometry of this feature. This may represent a direct geo statement (ex. P625) or a statement with a geo qualifier (ex. P625 on P119, in this case P119 must be used).
                   example: P625
                 name:
                   type: string

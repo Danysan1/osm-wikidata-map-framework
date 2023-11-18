@@ -294,23 +294,31 @@ export class EtymologyElement extends HTMLDivElement {
             ety_pictures.style.display = 'none';
         }
 
-        const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm');
+        const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
+            src_osm_plus_wd = etyDomElement.querySelector<HTMLAnchorElement>('.src_osm_plus_wd'),
+            src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
+            showOsmJoinSource = this.etymology.osm_wd_join_field === "OSM" && this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm,
+            showWdJoinSource = this.etymology.osm_wd_join_field && this.etymology.osm_wd_join_field !== "OSM" && this.etymology.from_wikidata_entity && src_wd;
         if (!src_osm) {
             console.warn("Missing .etymology_src_osm");
-        } else if (this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm) {
+        } else if (showOsmJoinSource) {
             const osmURL = `https://www.openstreetmap.org/${this.etymology.from_osm_type}/${this.etymology.from_osm_id}`;
             if (debug) console.info("Showing OSM etymology source", { ety: this.etymology, osmURL, src_osm });
+            src_osm.innerText = "OpenStreetMap";
             src_osm.href = osmURL;
+            src_osm.classList.remove('hiddenElement');
+        } else if (showWdJoinSource) {
+            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.from_wikidata_entity}#${this.etymology.osm_wd_join_field}`;
+            src_osm.innerText = "Wikidata";
+            src_osm.href = wdURL;
             src_osm.classList.remove('hiddenElement');
         } else {
             src_osm.classList.add('hiddenElement');
         }
 
-        const src_osm_plus_wd = etyDomElement.querySelector<HTMLAnchorElement>('.src_osm_plus_wd'),
-            src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd');
         if (!src_osm_plus_wd)
             console.warn("Missing .src_osm_plus_wd");
-        else if (this.etymology.from_osm_type && this.etymology.from_osm_id && this.etymology.from_wikidata_entity)
+        else if ((showOsmJoinSource || showWdJoinSource) && this.etymology.from_wikidata_entity)
             src_osm_plus_wd.classList.remove("hiddenElement");
         else
             src_osm_plus_wd.classList.add("hiddenElement");

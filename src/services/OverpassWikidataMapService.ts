@@ -1,12 +1,18 @@
 import { debug, getConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
-import { Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
+import { Etymology, EtymologyFeature, EtymologyFeaturePropertiesOsmTypeEnum, EtymologyOsmWdJoinFieldEnum, EtymologyResponse } from "../generated/owmf";
 import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
 
 type FeatureCollection = GeoJSON & EtymologyResponse;
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
+
+const JOIN_FIELD_MAP: Record<EtymologyFeaturePropertiesOsmTypeEnum, EtymologyOsmWdJoinFieldEnum> = {
+    node: "P11693",
+    way: "P10689",
+    relation: "P402"
+};
 
 export class OverpassWikidataMapService {
     private db: MapDatabase;
@@ -95,23 +101,32 @@ export class OverpassWikidataMapService {
 
     private mergeMapData(overpassData: FeatureCollection, wikidataData: FeatureCollection): FeatureCollection {
         const out = wikidataData.features.reduce((acc, wikidataFeature: Feature) => {
-            const existingFeatures = acc.features.filter((overpassFeature: Feature) => {
+            const existingFeaturesToMerge = acc.features.filter((overpassFeature: Feature) => {
                 if (overpassFeature.properties?.from_wikidata === true)
                     return false; // Already merged with another Wikidata feature => ignore
 
-                if (overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata)
+                if (overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata) {
+                    wikidataFeature.properties.etymologies?.forEach(ety => {
+                        ety.osm_wd_join_field = "OSM";
+                        ety.from_osm_id = overpassFeature.properties?.osm_id;
+                        ety.from_osm_type = overpassFeature.properties?.osm_type;
+                    });
                     return true; // Same Wikidata => merge
+                }
 
-                if (overpassFeature.properties?.osm_id !== undefined && overpassFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && overpassFeature.properties?.osm_type !== undefined && overpassFeature.properties?.osm_type === wikidataFeature.properties?.osm_type)
+                if (overpassFeature.properties?.osm_id !== undefined && overpassFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && overpassFeature.properties?.osm_type !== undefined && overpassFeature.properties?.osm_type === wikidataFeature.properties?.osm_type) {
+                    const join_field = JOIN_FIELD_MAP[wikidataFeature.properties.osm_type];
+                    wikidataFeature.properties.etymologies?.forEach(ety => { ety.osm_wd_join_field = join_field; });
                     return true; // Same OSM => merge
+                }
 
                 return false; // Different feature => ignore
             });
 
-            if (!existingFeatures.length)
+            if (!existingFeaturesToMerge.length)
                 acc.features.push(wikidataFeature); // No existing OSM feature to merge with => Add the standalone Wikidata feature
 
-            existingFeatures.forEach((existingFeature: Feature) => {
+            existingFeaturesToMerge.forEach((existingFeature: Feature) => {
                 if (!existingFeature.properties)
                     existingFeature.properties = {};
                 existingFeature.properties.from_wikidata = true;
@@ -122,11 +137,11 @@ export class OverpassWikidataMapService {
                 if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
                     existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;
 
-                if (!existingFeature.properties?.alt_name && existingFeature.properties?.name && wikidataFeature.properties?.name) {
+                if (existingFeature.properties?.name && wikidataFeature.properties?.name) {
                     const lowerOsmName = existingFeature.properties.name.toLowerCase(),
                         lowerWikidataName = wikidataFeature.properties.name.toLowerCase();
                     if (!lowerWikidataName.includes(lowerOsmName) && !lowerOsmName.includes(lowerWikidataName))
-                        existingFeature.properties.alt_name = wikidataFeature.properties.name;
+                        existingFeature.properties.alt_name = [existingFeature.properties.alt_name, wikidataFeature.properties.name].join(";");
                 }
 
                 // For other key, give priority to Overpass
@@ -143,17 +158,12 @@ export class OverpassWikidataMapService {
                     if (etymology.wikidata && existingFeature.properties?.etymologies?.some(ety => ety.wikidata === etymology.wikidata)) {
                         if (debug) console.warn("Overpass+Wikidata: Ignoring duplicate etymology", { wd_id: etymology.wikidata, existing: existingFeature.properties, new: wikidataFeature.properties });
                     } else {
-                        const ety: Etymology = {
-                            ...etymology,
-                            from_osm_id: existingFeature.properties?.osm_id,
-                            from_osm_type: existingFeature.properties?.osm_type
-                        };
                         if (!existingFeature.properties)
                             existingFeature.properties = {};
                         if (!existingFeature.properties.etymologies)
-                            existingFeature.properties.etymologies = [ety];
+                            existingFeature.properties.etymologies = [etymology];
                         else
-                            existingFeature.properties.etymologies.push(ety);
+                            existingFeature.properties.etymologies.push(etymology);
                     }
                 });
             });

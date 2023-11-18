@@ -62,6 +62,12 @@ export interface Etymology {
      */
     from_wikidata_prop?: string;
     /**
+     * If this etymology's feature has both an OSM element and Wikidata entity, this field specifies the clause used to join them. In theory the OSM-WD link should be biunivocal and this field should be on the feature (not on the etymology), however in practice this is not always the case (ex. https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/18) so to debug the etymology source it's necessary to specify it for each etymology.
+     * @type {string}
+     * @memberof Etymology
+     */
+    osm_wd_join_field?: EtymologyOsmWdJoinFieldEnum;
+    /**
      * Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
      * @type {string}
      * @memberof Etymology
@@ -98,6 +104,17 @@ export const EtymologyFromOsmTypeEnum = {
 } as const;
 export type EtymologyFromOsmTypeEnum = typeof EtymologyFromOsmTypeEnum[keyof typeof EtymologyFromOsmTypeEnum];
 
+/**
+ * @export
+ */
+export const EtymologyOsmWdJoinFieldEnum = {
+    Osm: 'OSM',
+    P11693: 'P11693',
+    P10689: 'P10689',
+    P402: 'P402'
+} as const;
+export type EtymologyOsmWdJoinFieldEnum = typeof EtymologyOsmWdJoinFieldEnum[keyof typeof EtymologyOsmWdJoinFieldEnum];
+
 
 /**
  * Check if a given object implements the Etymology interface.
@@ -125,6 +142,7 @@ export function EtymologyFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'from_wikidata': !exists(json, 'from_wikidata') ? undefined : json['from_wikidata'],
         'from_wikidata_entity': !exists(json, 'from_wikidata_entity') ? undefined : json['from_wikidata_entity'],
         'from_wikidata_prop': !exists(json, 'from_wikidata_prop') ? undefined : json['from_wikidata_prop'],
+        'osm_wd_join_field': !exists(json, 'osm_wd_join_field') ? undefined : json['osm_wd_join_field'],
         'from_parts_of_wikidata_cod': !exists(json, 'from_parts_of_wikidata_cod') ? undefined : json['from_parts_of_wikidata_cod'],
         'propagated': !exists(json, 'propagated') ? undefined : json['propagated'],
         'wd_id': !exists(json, 'wd_id') ? undefined : json['wd_id'],
@@ -148,6 +166,7 @@ export function EtymologyToJSON(value?: Etymology | null): any {
         'from_wikidata': value.from_wikidata,
         'from_wikidata_entity': value.from_wikidata_entity,
         'from_wikidata_prop': value.from_wikidata_prop,
+        'osm_wd_join_field': value.osm_wd_join_field,
         'from_parts_of_wikidata_cod': value.from_parts_of_wikidata_cod,
         'propagated': value.propagated,
         'wd_id': value.wd_id,
