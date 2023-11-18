@@ -237,7 +237,7 @@ export class EtymologyMap extends Map {
                 (zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea) || sourceID.startsWith("pmtiles")
             );
         if (debug) console.debug("updateDataSource", {
-            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers,
+            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, sourceID
         });
 
         if (enableElementsLayers)
@@ -247,7 +247,7 @@ export class EtymologyMap extends Map {
         else if (sourceID.startsWith("db"))
             this.prepareGlobalLayers(minZoomLevel);
         else
-            loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in"), "wheat", 15_000));
+            loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
     }
 
     private isBBoxChanged(bbox: BBox): boolean {
@@ -267,7 +267,7 @@ export class EtymologyMap extends Map {
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
         if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
-            if (debug) console.debug("Updating pmtiles elements source", sourceID);
+            if (debug) console.debug("Updating pmtiles elements source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
                 ELEMENTS_SOURCE,
@@ -282,7 +282,7 @@ export class EtymologyMap extends Map {
             if (debug) console.debug("Initialized PMTiles elements source, removing global GeoJSON source");
             this.removeSourceWithLayers(GLOBAL_SOURCE);
         } else if (sourceIDChanged && sourceID.startsWith("vector")) {
-            if (debug) console.debug("Updating vector elements source", sourceID);
+            if (debug) console.debug("Updating vector elements source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 ELEMENTS_SOURCE,
@@ -348,6 +348,7 @@ export class EtymologyMap extends Map {
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
         if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
+            if (debug) console.debug("Updating pmtiles wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
                 WIKIDATA_SOURCE,
@@ -356,6 +357,7 @@ export class EtymologyMap extends Map {
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
         } else if (sourceIDChanged && sourceID.startsWith("vector")) {
+            if (debug) console.debug("Updating vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 WIKIDATA_SOURCE,
@@ -371,6 +373,7 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lat * 100) / 100
             ];
             if (sourceIDChanged || this.isBBoxChanged(bbox)) {
+                if (debug) console.debug("Updating GeoJSON wikidata source:", sourceID);
                 this.lastSourceID = fullSourceID;
                 this.lastBBox = bbox;
                 this.prepareWikidataGeoJSONSource(sourceID, bbox, thresholdZoomLevel);
@@ -417,7 +420,7 @@ export class EtymologyMap extends Map {
     private prepareVectorSource(sourceID: string, sourceURL: string, minZoom?: number, maxZoom?: number) {
         const oldSource = this.getSource(sourceID);
         if (oldSource && oldSource.type === "vector" && (oldSource as VectorTileSource).url !== sourceURL)
-            (oldSource as VectorTileSource).url = sourceURL;
+            (oldSource as VectorTileSource).setUrl(sourceURL);
 
         if (oldSource && oldSource.type !== "vector")
             this.removeSourceWithLayers(sourceID);
@@ -446,7 +449,7 @@ export class EtymologyMap extends Map {
         const oldSource = this.getSource(sourceID),
             fullPMTilesURL = `pmtiles://${pmtilesBaseURL}${fileName}`;
         if (oldSource && oldSource.type === "vector" && (oldSource as VectorTileSource).url !== fullPMTilesURL)
-            (oldSource as VectorTileSource).url = fullPMTilesURL;
+            (oldSource as VectorTileSource).setUrl(fullPMTilesURL);
 
         if (oldSource && oldSource.type !== "vector")
             this.removeSourceWithLayers(sourceID);
