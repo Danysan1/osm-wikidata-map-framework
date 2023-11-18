@@ -72,10 +72,13 @@ export class FeatureElement extends HTMLDivElement {
         translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem", "Report a problem in this element");
         translateContent(detail_container, ".i18n_source", "feature_details.source", "Source:");
 
-        const element_name = detail_container.querySelector<HTMLElement>('.element_name');
+        const element_name = detail_container.querySelector<HTMLElement>('.element_name'),
+            local_name = properties["name:" + document.documentElement.lang];
         if (!element_name) {
             if (debug) console.info("Missing element_name");
-        } else if (properties.name && properties.name != 'null') {
+        } else if (local_name && local_name !== 'null') {
+            element_name.innerText = '📍 ' + local_name;
+        } else if (properties.name && properties.name !== 'null') {
             element_name.innerText = '📍 ' + properties.name;
         }
 
