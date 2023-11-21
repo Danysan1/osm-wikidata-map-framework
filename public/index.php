@@ -106,12 +106,18 @@ $jsScript = $jsScripts[0];
     <link rel="preconnect" href="https://upload.wikimedia.org" />
     <?php if (str_starts_with((string)$conf->get("default_background_style"), "mapbox")) { ?>
         <link rel="preconnect" href="https://api.mapbox.com">
-    <?php } ?>
-    <?php if (str_starts_with((string)$conf->get("default_background_style"), "stadia")) { ?>
+    <?php
+    }
+    if (str_starts_with((string)$conf->get("default_background_style"), "stadia")) { ?>
         <link rel="preconnect" href="https://tiles.stadiamaps.com">
-    <?php } ?>
-    <?php if ($conf->has("paypal_id")) { ?>
+    <?php
+    }
+    if ($conf->has("paypal_id")) { ?>
         <link rel="preconnect" href="https://www.paypalobjects.com" />
+    <?php
+    }
+    if ($conf->has("paypal_id")) { ?>
+        <link rel="preconnect" href="https://liberapay.com" />
     <?php } ?>
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
@@ -227,8 +233,16 @@ $jsScript = $jsScripts[0];
                     <a target="_blank" title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . (string)$conf->get("framework_image_tag") : ""; ?>
                 </p>
-                <div>
-                    <?php if ($conf->has("paypal_id")) { ?>
+                <div id="last_info_row">
+                    <?php if ($conf->has("liberapay_id")) { ?>
+                        <a href="https://liberapay.com/<?= (string)$conf->get("liberapay_id") ?>/donate" id="liberapay_donate">
+                            <img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg">
+                        </a>
+                        |
+                    <?php
+                    } 
+                    if ($conf->has("paypal_id")) {
+                    ?>
                         <form action="https://www.paypal.com/donate" method="post" target="_top" id="paypal_donate">
                             <input type="hidden" name="business" value="<?= (string)$conf->get("paypal_id") ?>" />
                             <input type="hidden" name="no_recurring" value="0" />

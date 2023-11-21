@@ -118,7 +118,17 @@ function prepareHTML(Configuration $conf)
 
 	$overpassConnect = implode(" ", $conf->getArray('overpass_endpoints'));
 
-	$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
+	$liberapayImg = '';
+	if($conf->has("liberapay_id")) {
+		$liberapayImg = "https://liberapay.com";
+	}
+
+	$payPalForm = '';
+	$payPalImg = '';
+	if($conf->has("paypal_id")) {
+		$payPalForm = "https://www.paypal.com/donate";
+		$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
+	}
 
 	$pmtilesConnect = '';
 	if ($conf->has('pmtiles_base_url') && !str_starts_with((string)$conf->get('pmtiles_base_url'), 'http://localhost')) {
@@ -131,9 +141,9 @@ function prepareHTML(Configuration $conf)
 			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $pmtilesConnect; " .
 			"default-src 'self' ; " .
 			"font-src 'self' ; " .
-			"form-action https://www.paypal.com/donate ; " .
+			"form-action 'self' $payPalForm ; " .
 			"frame-ancestors 'none' ; " .
-			"img-src 'self' data: blob: $wikimediaImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
+			"img-src 'self' data: blob: $wikimediaImg $liberapayImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
 			"object-src 'none'; " .
 			"script-src 'self' $sentryScript $matomoScript $mapboxScript $googleAnalyticsScript ; " .
 			"style-src 'self' https://fonts.googleapis.com ; " .
