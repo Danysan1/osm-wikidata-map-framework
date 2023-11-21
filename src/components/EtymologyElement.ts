@@ -297,7 +297,7 @@ export class EtymologyElement extends HTMLDivElement {
         const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
             src_osm_plus_wd = etyDomElement.querySelector<HTMLAnchorElement>('.src_osm_plus_wd'),
             src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
-            showOsmJoinSource = this.etymology.osm_wd_join_field === "OSM" && this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm,
+            showOsmJoinSource = (this.etymology.osm_wd_join_field === "OSM" || this.etymology.from_osm || this.etymology.propagated) && this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm,
             showWdJoinSource = this.etymology.osm_wd_join_field && this.etymology.osm_wd_join_field !== "OSM" && this.etymology.from_wikidata_entity && src_wd;
         if (!src_osm) {
             console.warn("Missing .etymology_src_osm");
