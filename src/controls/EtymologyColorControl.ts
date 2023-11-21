@@ -176,7 +176,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private loadFeatureSourceChartData() {
-        this._lastColorSchemeID = "feature_source";
+        this._lastColorSchemeID = ColorSchemeID.feature_source;
         this._lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             (features: EtymologyFeature[]) => {
@@ -211,7 +211,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private loadEtymologySourceChartData() {
-        this._lastColorSchemeID = "etymology_source";
+        this._lastColorSchemeID = ColorSchemeID.etymology_source;
         this._lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             (features: EtymologyFeature[]) => {
@@ -289,7 +289,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private loadPictureAvailabilityChartData() {
-        this._lastColorSchemeID = "picture";
+        this._lastColorSchemeID = ColorSchemeID.picture;
         this._lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             (features: EtymologyFeature[]) => {

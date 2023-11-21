@@ -1,4 +1,17 @@
-export type ColorSchemeID = "blue" | "gender" | "type" | "country" | "startCentury" | "endCentury" | "feature_source" | "etymology_source" | "picture" | "black" | "red" | "orange";
+export enum ColorSchemeID {
+    blue = "blue",
+    gender = "gender",
+    type = "type",
+    country = "country",
+    startCentury = "startCentury",
+    endCentury = "endCentury",
+    feature_source = "feature_source",
+    etymology_source = "etymology_source",
+    picture = "picture",
+    black = "black",
+    red = "red",
+    orange = "orange",
+};
 
 export interface ColorScheme {
     /** i18n translation key for the label to be shown in the dropdown item for this color scheme */

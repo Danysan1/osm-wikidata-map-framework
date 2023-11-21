@@ -51,7 +51,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             throw new Error("Missing feature buttons template");
 
         const properties = this.feature.properties,
-            etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
+            etymologies: EtymologyDetails[] | undefined = typeof properties?.etymologies === 'string' ? JSON.parse(properties.etymologies) : properties?.etymologies,
             detail_container = feature_buttons_template.content.cloneNode(true) as HTMLElement,
             osm_full_id = properties?.osm_type && properties?.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
 
@@ -148,7 +148,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
         }
 
         const element_id_button = detail_container.querySelector<HTMLAnchorElement>('.element_id_button');
-        if(!element_id_button) {
+        if (!element_id_button) {
             if (debug) console.info("Missing element_id_button");
         } else if (properties?.osm_type && properties?.osm_id) {
             element_id_button.href = `https://www.openstreetmap.org/edit?editor=id&${properties.osm_type}=${properties.osm_id}`;

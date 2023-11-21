@@ -688,7 +688,7 @@ export class EtymologyMap extends Map {
         } else if (!ev.features) {
             console.warn("onWikidataLayerClick: missing or empty clicked features list", ev);
         } else {
-            const feature = ev.features[0] as GeoJSONFeature,
+            const feature = ev.features[0],
                 //popupPosition = e.lngLat,
                 //popupPosition = this.getBounds().getNorthWest(),
                 popupPosition = this.unproject([0, 0]),
@@ -827,7 +827,7 @@ export class EtymologyMap extends Map {
         if (!this.getLayer(clusterLayerName)) {
             const minThreshold = 3_000,
                 maxThreshold = 60_000,
-                layerDefinition = {
+                layerDefinition: CircleLayerSpecification = {
                     id: clusterLayerName,
                     source: sourceName,
                     type: 'circle',
@@ -852,7 +852,7 @@ export class EtymologyMap extends Map {
                             maxThreshold, 45,
                         ]
                     },
-                } as CircleLayerSpecification;
+                };
             if (sourceLayer)
                 layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
@@ -870,7 +870,7 @@ export class EtymologyMap extends Map {
         }
 
         if (!this.getLayer(countLayerName)) {
-            const layerDefinition = {
+            const layerDefinition: SymbolLayerSpecification = {
                 id: countLayerName,
                 type: 'symbol',
                 source: sourceName,
@@ -882,7 +882,7 @@ export class EtymologyMap extends Map {
                     'text-field': '{' + countShowFieldName + '}',
                     'text-size': 12
                 }
-            } as SymbolLayerSpecification;
+            };
             if (sourceLayer)
                 layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
@@ -890,7 +890,7 @@ export class EtymologyMap extends Map {
         }
 
         if (!this.getLayer(pointLayerName)) {
-            const layerDefinition = {
+            const layerDefinition: CircleLayerSpecification = {
                 id: pointLayerName,
                 type: 'circle',
                 source: sourceName,
@@ -904,7 +904,7 @@ export class EtymologyMap extends Map {
                     //'circle-stroke-width': 1,
                     //'circle-stroke-color': '#fff'
                 }
-            } as CircleLayerSpecification;
+            };
             if (sourceLayer)
                 layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
