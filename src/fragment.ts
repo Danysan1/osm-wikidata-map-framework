@@ -7,8 +7,9 @@ const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lat = default_center_lat_raw ? parseFloat(default_center_lat_raw) : 0,
     default_center_lon = default_center_lon_raw ? parseFloat(default_center_lon_raw) : 0,
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
-    defaultColorScheme: ColorSchemeID = getConfig("default_color_scheme") as ColorSchemeID,
-    defaultSource = getConfig("default_source");
+    defaultColorSchemeRaw = getConfig("default_color_scheme"),
+    defaultColorScheme = defaultColorSchemeRaw && defaultColorSchemeRaw in ColorSchemeID ? defaultColorSchemeRaw as ColorSchemeID : ColorSchemeID.blue,
+    defaultSource = getConfig("default_source") || "overpass_all";
 
 interface FragmentParams {
     lon: number | null;
@@ -23,13 +24,13 @@ interface FragmentParams {
  */
 function getFragmentParams(): FragmentParams {
     const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
-        out = {
+        out: FragmentParams = {
             lon: (hashParams && hashParams[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : null,
             lat: (hashParams && hashParams[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : null,
             zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : null,
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
             source: (hashParams && hashParams[4]) ? hashParams[4] : null,
-        } as FragmentParams;
+        };
     //if(enable_debug_log) console.info("getFragmentParams", { hashParams, out });
     return out;
 }
@@ -68,30 +69,16 @@ interface CorrectFragmentParams {
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {
-    const p = getFragmentParams();
-    if ((p.lat !== null && p.lat < -90) || (p.lat !== null && p.lat > 90)) {
-        console.error("Invalid latitude", p.lat);
-        p.lat = null;
-    }
-
-    if (p.lon === null || p.lat === null || p.zoom === null) {
-        if (debug) console.info("getCorrectFragmentParams: using default position", { p, default_center_lon, default_center_lat, default_zoom });
-        p.lon = default_center_lon;
-        p.lat = default_center_lat;
-        p.zoom = default_zoom;
-    }
-
-    if (!p.colorScheme || p.colorScheme === 'null' || p.colorScheme === 'undefined') {
-        if (debug) console.info("getCorrectFragmentParams: using default color scheme", { p, defaultColorScheme });
-        p.colorScheme = defaultColorScheme;
-    }
-
-    if (!p.source || p.source === 'null' || p.source === 'undefined') {
-        if (debug) console.info("getCorrectFragmentParams: using default color scheme", { p, defaultSource });
-        p.source = defaultSource;
-    }
-
-    return p as CorrectFragmentParams;
+    const raw = getFragmentParams(),
+        correct: CorrectFragmentParams = {
+            lon: raw.lon ? raw.lon : default_center_lon,
+            lat: raw.lat && raw.lat >= -90 && raw.lat <= 90 ? raw.lat : default_center_lat,
+            zoom: raw.zoom ? raw.zoom : default_zoom,
+            colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
+            source: raw.source || defaultSource,
+        };
+    //if (debug) console.info("getCorrectFragmentParams", { raw, correct });
+    return correct;
 }
 
 export { CorrectFragmentParams, getFragmentParams, getCorrectFragmentParams, setFragmentParams };

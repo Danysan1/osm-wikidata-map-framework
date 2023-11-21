@@ -57,7 +57,7 @@ export class FeatureElement extends HTMLDivElement {
         if (!(detail_template instanceof HTMLTemplateElement))
             throw new Error("Missing etymology template");
 
-        const properties = this.feature.properties as EtymologyFeatureProperties,
+        const properties: EtymologyFeatureProperties = this.feature.properties,
             etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
             detail_container = detail_template.content.cloneNode(true) as HTMLElement,
             osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;

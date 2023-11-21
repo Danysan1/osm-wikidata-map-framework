@@ -1,6 +1,6 @@
 import { debug, getConfig, getJsonConfig } from "../config";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
-import { ElementResponse, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
+import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import { MapDatabase } from "../db/MapDatabase";
 import osmtogeojson from "osmtogeojson";
@@ -63,24 +63,24 @@ export class OverpassService {
             if (debug) console.debug("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
             const osm_text_key = getConfig("osm_text_key"),
                 osm_description_key = getConfig("osm_description_key");
-            let keys: string[],
+            let osm_keys: string[],
                 use_wikidata: boolean,
                 search_text_key = osm_text_key;
 
             if (sourceID.includes("overpass_wd")) {
                 // Search only elements with wikidata=*
-                keys = [];
+                osm_keys = [];
                 search_text_key = null;
                 use_wikidata = true;
             } else if (!this.wikidata_keys) {
                 throw new Error(`No keys configured, invalid sourceID ${this.wikidata_keys}`)
             } else if (sourceID.includes("overpass_all_wd")) {
                 // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
-                keys = this.wikidata_keys;
+                osm_keys = this.wikidata_keys;
                 use_wikidata = true;
             } else if (sourceID.includes("overpass_all")) {
                 // Search all elements with an etymology
-                keys = this.wikidata_keys;
+                osm_keys = this.wikidata_keys;
                 use_wikidata = false;
             } else {
                 // Search a specific etymology key
@@ -91,14 +91,14 @@ export class OverpassService {
                 else if (!this.wikidata_key_codes || !(sourceKeyCode in this.wikidata_key_codes))
                     throw new Error(`Invalid sourceID: ${sourceID}`);
                 else
-                    keys = [this.wikidata_key_codes[sourceKeyCode]];
+                    osm_keys = [this.wikidata_key_codes[sourceKeyCode]];
 
                 search_text_key = null;
                 use_wikidata = false;
             }
 
             if (debug) console.time("overpass_query");
-            const query = this.buildOverpassQuery(keys, bbox, search_text_key, use_wikidata, outClause),
+            const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, outClause),
                 res = await this.api.postOverpassQuery({ data: query });
             if (debug) console.timeEnd("overpass_query");
             if (debug) console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
@@ -140,11 +140,11 @@ export class OverpassService {
                     feature.properties.name = feature.properties["name:" + this.language];
                 // Default language is intentionally not used as it could overwrite a more specific language in name=*
 
-                feature.properties.etymologies = keys
+                feature.properties.etymologies = osm_keys
                     .map(key => feature.properties?.[key])
                     .flatMap((value?: string) => value?.split(";"))
                     .filter(value => value && /^Q[0-9]+/.test(value))
-                    .map(value => ({
+                    .map<Etymology>(value => ({
                         from_osm: true,
                         from_osm_id: osm_id,
                         from_osm_type: osm_type,
