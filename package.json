@@ -31,7 +31,7 @@
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "dev": "webpack --config webpack.dev.js",
-        "watch": "webpack --config webpack.dev.js --watch",
+        "watch": "webpack --config webpack.watch.js",
         "prod": "webpack --config webpack.prod.js",
         "generate": "npx @openapitools/openapi-generator-cli generate"
     },
