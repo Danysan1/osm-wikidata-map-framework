@@ -137,12 +137,21 @@ export class OverpassWikidataMapService {
                 if (existingFeature.properties && wikidataFeature.properties?.wikipedia)
                     existingFeature.properties.wikipedia = wikidataFeature.properties?.wikipedia;
 
-                if (existingFeature.properties?.name && wikidataFeature.properties?.name) {
-                    const lowerOsmName = existingFeature.properties.name.toLowerCase(),
-                        lowerWikidataName = wikidataFeature.properties.name.toLowerCase();
-                    if (!lowerWikidataName.includes(lowerOsmName) && !lowerOsmName.includes(lowerWikidataName))
-                        existingFeature.properties.alt_name = [existingFeature.properties.alt_name, wikidataFeature.properties.name].join(";");
-                }
+                const lowerOsmName = existingFeature.properties.name?.toLowerCase(),
+                    lowerOsmAltName = existingFeature.properties.alt_name?.toLowerCase(),
+                    lowerWikidataName = wikidataFeature.properties?.name?.toLowerCase();
+                if (!lowerOsmName && lowerWikidataName) // If OSM has no name but Wikidata has a name, use it as name
+                    existingFeature.properties.name = wikidataFeature.properties?.name;
+                else if (!lowerOsmAltName && lowerWikidataName) // If OSM has no alt_name but Wikidata has a name, use it as alt_name
+                    existingFeature.properties.alt_name = wikidataFeature.properties?.name;
+                else if (lowerOsmName &&
+                    lowerOsmAltName &&
+                    lowerWikidataName &&
+                    !lowerWikidataName.includes(lowerOsmName) &&
+                    !lowerOsmName.includes(lowerWikidataName) &&
+                    !lowerWikidataName.includes(lowerOsmAltName) &&
+                    !lowerOsmAltName.includes(lowerWikidataName)) // If OSM has a name and an alt_name and Wikidata has a different name, append it to alt_name
+                    existingFeature.properties.alt_name = [existingFeature.properties.alt_name, wikidataFeature.properties?.name].join(";");
 
                 // For other key, give priority to Overpass
                 ["name", "description", "picture", "commons", "wikidata"].forEach(key => {
