@@ -15,9 +15,8 @@ WHERE {
     SERVICE wikibase:box {
         ?stmt pq:P625 ?location.
         bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
-            wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+                        wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     OPTIONAL { ?stmt pq:P373 ?commons. }
     ${pictureQuery}
     OPTIONAL { ?stmt pq:P11693 ?osm_node. }

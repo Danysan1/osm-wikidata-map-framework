@@ -1,5 +1,5 @@
 #defaultView:Map
-SELECT DISTINCT
+SELECT
     ?item
     (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
     (SAMPLE(?itemDescription) AS ?itemDescription)
@@ -11,19 +11,21 @@ SELECT DISTINCT
     (SAMPLE(?osm_way) AS ?osm_way)
     (SAMPLE(?osm_rel) AS ?osm_rel)
 WHERE {
-    SERVICE wikibase:box {
-        ?item wdt:P625 ?location.
-        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral .
-        bd:serviceParam wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral .
-    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+    ?item p:P625 ?locationStatement;
+          rdfs:label ?anyLabel.
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
-    ?item rdfs:label ?anyLabel.
+    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+    SERVICE wikibase:box {
+        ?locationStatement ps:P625 ?location.
+        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
+                        wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
     OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
     OPTIONAL { ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = '${language}'). }
-    OPTIONAL { ?item wdt:P373 ?commons }
+    OPTIONAL { ?item wdt:P373 ?commons. }
     OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
-    OPTIONAL { ?item wdt:P18 ?picture }
+    OPTIONAL { ?item wdt:P18 ?picture. }
     OPTIONAL { ?item wdt:P11693 ?osm_node. }
     OPTIONAL { ?item wdt:P10689 ?osm_way. }
     OPTIONAL { ?item wdt:P402 ?osm_rel. }
