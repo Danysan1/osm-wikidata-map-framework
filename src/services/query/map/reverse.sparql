@@ -15,17 +15,18 @@ SELECT
     (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
-    MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
     ?stmt ps:${indirectProperty} ?item.
+    ?item p:P625 ?locationStatement;
+          rdfs:label ?anyLabel.
+    MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
     MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
+    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
     SERVICE wikibase:box {
-        ?item wdt:P625 ?location.
+        ?locationStatement ps:P625 ?location.
         bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
-            wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+                        wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
-    ?item rdfs:label ?anyLabel.
     OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
     OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
     OPTIONAL { ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = '${language}'). }
