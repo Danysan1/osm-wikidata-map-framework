@@ -64,7 +64,7 @@ $$ LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE;
 
 
 CREATE OR REPLACE
-    FUNCTION owmf.elements(zoom integer, x integer, y integer, query_params json)
+    FUNCTION owmf.elements(zoom integer, x integer, y integer)
     RETURNS bytea AS $$
 DECLARE
   mvt bytea;
@@ -79,7 +79,10 @@ BEGIN
         COUNT(DISTINCT LOWER(el_tags->>'name')) AS num
     FROM owmf.element AS el
     WHERE el.el_geometry && ST_Transform(ST_TileEnvelope(zoom, x, y), 4326)
-    GROUP BY ST_ReducePrecision(ST_Centroid(el_geometry), 0.1)
+    GROUP BY ST_ReducePrecision(
+      ST_Centroid(el_geometry),
+      50.9787 - 13.6638 * zoom + 1.22125 * POWER(zoom,2) - 0.03625 * POWER(zoom,3) -- https://www.wolframalpha.com/input?i=interpolating+polynomial+calculator&assumption=%7B%22F%22%2C+%22InterpolatingPolynomialCalculator%22%2C+%22data2%22%7D+-%3E%22%7B%7B3%2C20%7D%2C%7B9%2C0.5%7D%2C%7B11%2C0.2%7D%2C%7B13%2C0.1%7D%7D%22
+    )
   ) as tile WHERE geom IS NOT NULL;
 
   RETURN mvt;
