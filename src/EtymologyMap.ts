@@ -233,8 +233,8 @@ export class EtymologyMap extends Map {
             elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
-            enableElementsLayers = !enableWikidataLayers && (
-                (zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea) || sourceID.startsWith("pmtiles")
+            enableElementsLayers = !enableWikidataLayers && thresholdZoomLevel > minZoomLevel && (
+                (zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea) || sourceID.startsWith("pmtiles") || sourceID.startsWith("vector")
             );
         if (debug) console.debug("updateDataSource", {
             area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, sourceID
@@ -1049,24 +1049,30 @@ export class EtymologyMap extends Map {
      * @see prepareGeoJSONSourceAndClusteredLayers
      */
     private prepareGlobalLayers(maxZoom: number): void {
-        const sourceID = getCorrectFragmentParams().source;
-        this.lastSourceID = "global-" + sourceID;
+        const sourceID = getCorrectFragmentParams().source,
+            fullSourceID = "global-" + sourceID,
+            sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
-        this.prepareGeoJSONSourceAndClusteredLayers(
-            GLOBAL_SOURCE,
-            './global-map.php',
-            0,
-            maxZoom,
-            { "el_num": ["+", ["get", "num"]] },
-            'el_num',
-            'el_num'
-        );
+        if (sourceIDChanged && sourceID.startsWith("db")) {
+            if (debug) console.debug("Updating GeoJSON global map source:", sourceID);
+            this.lastSourceID = fullSourceID;
+            this.prepareGeoJSONSourceAndClusteredLayers(
+                GLOBAL_SOURCE,
+                './global-map.php',
+                0,
+                maxZoom,
+                { "el_num": ["+", ["get", "num"]] },
+                'el_num',
+                'el_num'
+            );
 
-        // pmtiles vector source covers both very-low-zoom and medium-zoom levels
-        // GeoJSON sources cover them separately
-        if (this.getSource(ELEMENTS_SOURCE)?.type !== "geojson") {
-            if (debug) console.debug("Initialized global GeoJSON source, removing vector/PMTiles elements source");
-            this.removeSourceWithLayers(ELEMENTS_SOURCE);
+            // vector tile sources cover both very-low-zoom and medium-zoom levels
+            // GeoJSON sources cover them separately
+            // so when we switch from a vector tile source to a GeoJSON source, we must remove the vector tile source
+            if (this.getSource(ELEMENTS_SOURCE)?.type !== "geojson") {
+                if (debug) console.debug("Initialized global GeoJSON source, removing vector/PMTiles elements source");
+                this.removeSourceWithLayers(ELEMENTS_SOURCE);
+            }
         }
     }
 
