@@ -29,11 +29,12 @@ export class WikidataMapService extends WikidataService {
     }
 
     async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        let out = await this.db.getMap(sourceID, bbox, this.language);
+        const language = document.documentElement.lang.split('-').at(0) || '';
+        let out = await this.db.getMap(sourceID, bbox, language);
         if (out) {
-            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: this.language, out });
+            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
         } else {
-            if (debug) console.info("Wikidata map cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.info("Wikidata map cache miss, fetching data", { sourceID, bbox, language: language });
             let sparqlQueryTemplate: string;
             if (sourceID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
@@ -43,7 +44,7 @@ export class WikidataMapService extends WikidataService {
                 sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
             const maxElements = getConfig("max_map_elements"),
                 sparqlQuery = sparqlQueryTemplate
-                    .replaceAll('${language}', this.language || '')
+                    .replaceAll('${language}', language || '')
                     .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
                     .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
@@ -62,7 +63,7 @@ export class WikidataMapService extends WikidataService {
             out.wikidata_query = sparqlQuery;
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
-            out.language = this.language;
+            out.language = language;
             out.truncated = !!maxElements && ret.results.bindings.length === parseInt(maxElements);
             if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);

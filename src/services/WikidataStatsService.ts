@@ -33,7 +33,8 @@ export class WikidataStatsService extends WikidataService {
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        let out = await this.db.getStats(colorSchemeID, wikidataIDs, this.language);
+        const language = document.documentElement.lang.split('-').at(0) || '';
+        let out = await this.db.getStats(colorSchemeID, wikidataIDs, language);
         if (out) {
             if (debug) console.info("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
@@ -42,7 +43,7 @@ export class WikidataStatsService extends WikidataService {
                 sparqlQuery = statsQueries[colorSchemeID];
             if (!sparqlQuery)
                 throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
-            const res = await this.etymologyIDsQuery(wikidataIDs, sparqlQuery);
+            const res = await this.etymologyIDsQuery(language, wikidataIDs, sparqlQuery);
             let csvData: string[][] | undefined;
             if (csvPath) {
                 const csvResponse = await fetch(csvPath),
@@ -65,7 +66,7 @@ export class WikidataStatsService extends WikidataService {
                     color: x.color?.value || csvData?.find(row => row[0] === x.id?.value || row[0] === x.class?.value)?.at(3),
                 };
             }) as EtymologyStat[];
-            this.db.addStats(out, colorSchemeID, wikidataIDs, this.language);
+            this.db.addStats(out, colorSchemeID, wikidataIDs, language);
         }
         return out;
     }

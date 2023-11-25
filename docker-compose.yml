@@ -547,7 +547,7 @@ services:
       - prod
 
   # https://maplibre.org/martin/
-  # https://maplibre.org/martin/23-run-with-docker-compose.html
+  # https://maplibre.org/martin/run-with-docker-compose.html
   owmf-martin:
     image: ghcr.io/maplibre/martin:v0.9.3
     restart: unless-stopped
