@@ -72,16 +72,16 @@ BEGIN
   SELECT INTO mvt ST_AsMVT(tile, 'elements', 4096, 'geom') FROM (
     SELECT
         ST_AsMVTGeom(
-            ST_Transform(ST_Centroid(ST_Collect(el_geometry)), 3857),
+            ST_Transform(ST_Centroid(ST_Collect(geom)), 3857),
             ST_TileEnvelope(zoom, x, y),
             4096, 64, true
         ) AS geom,
-        COUNT(DISTINCT LOWER(el_tags->>'name')) AS num
-    FROM owmf.element AS el
-    WHERE el.el_geometry && ST_Transform(ST_TileEnvelope(zoom, x, y), 4326)
+        SUM(el_num) AS el_num
+    FROM owmf.vm_elements
+    WHERE geom && ST_Transform(ST_TileEnvelope(zoom, x, y), 4326)
     GROUP BY ST_ReducePrecision(
-      ST_Centroid(el_geometry),
-      50.9787 - 13.6638 * zoom + 1.22125 * POWER(zoom,2) - 0.03625 * POWER(zoom,3) -- https://www.wolframalpha.com/input?i=interpolating+polynomial+calculator&assumption=%7B%22F%22%2C+%22InterpolatingPolynomialCalculator%22%2C+%22data2%22%7D+-%3E%22%7B%7B3%2C20%7D%2C%7B9%2C0.5%7D%2C%7B11%2C0.2%7D%2C%7B13%2C0.1%7D%7D%22
+      ST_Centroid(geom),
+      64.835 - 17.6596 * zoom + 1.60667 * POWER(zoom,2) - 0.04875 * POWER(zoom,3) -- https://www.wolframalpha.com/input?i=interpolate+%7B%7B3%2C25%7D%2C+%7B9%2C0.5%7D%2C+%7B11%2C0.1%7D%2C+%7B12%2C0.04%7D%7D
     )
   ) as tile WHERE geom IS NOT NULL;
 

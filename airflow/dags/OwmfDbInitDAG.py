@@ -629,6 +629,20 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_whether_to_drop >> task_drop_temp_tables
 
+        task_global_map = SQLExecuteQueryOperator(
+            task_id = "setup_global_map",
+            conn_id = local_db_conn_id,
+            sql = "sql/13-global-map-view.jinja.sql",
+            dag = self,
+            task_group=post_elaborate_group,
+            doc_md="""
+                # Save the global map view
+
+                Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
+            """
+        )
+        task_setup_ety_fk >> task_global_map
+
         task_etymology_map = SQLExecuteQueryOperator(
             task_id = "setup_etymology_map",
             conn_id = local_db_conn_id,
@@ -645,21 +659,7 @@ class OwmfDbInitDAG(DAG):
                 * [Martin PostgreSQL function sources](https://maplibre.org/martin/33-sources-pg-functions.html)
             """
         )
-        task_setup_ety_fk >> task_etymology_map
-
-        task_global_map = SQLExecuteQueryOperator(
-            task_id = "setup_global_map",
-            conn_id = local_db_conn_id,
-            sql = "sql/13-global-map-view.jinja.sql",
-            dag = self,
-            task_group=post_elaborate_group,
-            doc_md="""
-                # Save the global map view
-
-                Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
-            """
-        )
-        task_setup_ety_fk >> task_global_map
+        task_global_map >> task_etymology_map
 
         task_dataset_view = SQLExecuteQueryOperator(
             task_id = "setup_dataset_view",
@@ -748,7 +748,7 @@ class OwmfDbInitDAG(DAG):
             postgres_conn_id = local_db_conn_id,
             dest_format = "GeoJSON",
             dest_path = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.geojson',
-            query = "SELECT * FROM owmf.elements_dump",
+            query = "SELECT * FROM owmf.vm_elements",
             doc_md=    """
             # GeoJSON elements dump
 
@@ -778,7 +778,7 @@ class OwmfDbInitDAG(DAG):
             output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.pmtiles',
             min_zoom = 1,
             max_zoom = 13,
-            extra_params = "-r1 --cluster-distance=150 --accumulate-attribute=num:sum",
+            extra_params = "-r1 --cluster-distance=150 --accumulate-attribute=el_num:sum",
             doc_md = TippecanoeOperator.__doc__
         )
         task_dump_elements >> task_generate_elements

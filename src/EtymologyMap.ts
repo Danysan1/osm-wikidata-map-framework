@@ -233,8 +233,10 @@ export class EtymologyMap extends Map {
             elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
-            enableElementsLayers = !enableWikidataLayers && thresholdZoomLevel > minZoomLevel && (
-                (zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea) || sourceID.startsWith("pmtiles") || sourceID.startsWith("vector")
+            enableElementsLayers = !enableWikidataLayers && (
+                (zoomLevel >= minZoomLevel && thresholdZoomLevel > minZoomLevel && area < elementsBBoxMaxArea) ||
+                sourceID.startsWith("pmtiles") ||
+                sourceID.startsWith("vector")
             );
         if (debug) console.debug("updateDataSource", {
             area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, sourceID
@@ -286,7 +288,7 @@ export class EtymologyMap extends Map {
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 ELEMENTS_SOURCE,
-                `elements?source=${sourceID.replace("vector_", "")}`,
+                `elements`,
                 undefined,
                 thresholdZoomLevel
             );
@@ -727,8 +729,8 @@ export class EtymologyMap extends Map {
     private prepareElementsLayers(maxZoom: number) {
         this.prepareClusteredLayers(
             ELEMENTS_SOURCE,
-            "num",
-            "num",
+            "el_num",
+            "el_num",
             undefined,
             maxZoom,
             "elements"
@@ -838,7 +840,7 @@ export class EtymologyMap extends Map {
                         // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
                         // with three steps to implement three types of circles:
                         'circle-color': [
-                            'step', ['get', countFieldName],
+                            'step', ['to-number', ['get', countFieldName]],
                             '#51bbd6', minThreshold, // count < minThreshold => Blue circle
                             '#f1f075', maxThreshold, // minThreshold <= count < maxThreshold => Yellow circle
                             '#f28cb1' // count > maxThreshold => Pink circle
@@ -846,9 +848,9 @@ export class EtymologyMap extends Map {
                         'circle-opacity': 0.8,
                         'circle-radius': [
                             'interpolate', ['linear'],
-                            ['get', countFieldName],
+                            ['to-number', ['get', countFieldName]],
                             0, 15,
-                            minThreshold, 30,
+                            minThreshold, 25,
                             maxThreshold, 45,
                         ]
                     },
@@ -1061,7 +1063,7 @@ export class EtymologyMap extends Map {
                 './global-map.php',
                 0,
                 maxZoom,
-                { "el_num": ["+", ["get", "num"]] },
+                { "el_num": ["+", ["get", "el_num"]] },
                 'el_num',
                 'el_num'
             );

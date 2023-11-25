@@ -418,9 +418,9 @@ components:
             properties:
               type: object
               required:
-                - num
+                - el_num
               properties:
-                num:
+                el_num:
                   type: integer
 
     GlobalMapResponse:
