@@ -14,12 +14,13 @@ export class WikidataDetailsService extends WikidataService {
     }
 
     public async fetchEtymologyDetails(wikidataIDs: Set<string>): Promise<Record<string, EtymologyDetails>> {
-        let out = await this.db.getDetails(wikidataIDs, this.language);
+        const language = document.documentElement.lang.split('-').at(0) || '';
+        let out = await this.db.getDetails(wikidataIDs, language);
         if (out) {
-            if (debug) console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: this.language, wikidataIDs, out });
+            if (debug) console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: language, wikidataIDs, out });
         } else {
-            if (debug) console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: this.language, wikidataIDs });
-            const res = await this.etymologyIDsQuery([...wikidataIDs], detailsQuery);
+            if (debug) console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: language, wikidataIDs });
+            const res = await this.etymologyIDsQuery(language, [...wikidataIDs], detailsQuery);
 
             if (!res?.results?.bindings?.length) {
                 console.warn("fetchEtymologyDetails: no results");
@@ -63,10 +64,10 @@ export class WikidataDetailsService extends WikidataService {
                 return acc;
             }, {});
             try {
-                if (debug) console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { lang: this.language, wikidataIDs });
-                this.db.addDetails(out, wikidataIDs, this.language);
+                if (debug) console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { lang: language, wikidataIDs });
+                this.db.addDetails(out, wikidataIDs, language);
             } catch (e) {
-                logErrorMessage("Failed to store details data in cache", "warning", { lang: this.language, wikidataIDs, out, e });
+                logErrorMessage("Failed to store details data in cache", "warning", { lang: language, wikidataIDs, out, e });
             }
         }
         return out;
