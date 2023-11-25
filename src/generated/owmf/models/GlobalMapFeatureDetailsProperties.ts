@@ -24,7 +24,7 @@ export interface GlobalMapFeatureDetailsProperties {
      * @type {number}
      * @memberof GlobalMapFeatureDetailsProperties
      */
-    num: number;
+    el_num: number;
 }
 
 /**
@@ -32,7 +32,7 @@ export interface GlobalMapFeatureDetailsProperties {
  */
 export function instanceOfGlobalMapFeatureDetailsProperties(value: object): boolean {
     let isInstance = true;
-    isInstance = isInstance && "num" in value;
+    isInstance = isInstance && "el_num" in value;
 
     return isInstance;
 }
@@ -47,7 +47,7 @@ export function GlobalMapFeatureDetailsPropertiesFromJSONTyped(json: any, ignore
     }
     return {
         
-        'num': json['num'],
+        'el_num': json['el_num'],
     };
 }
 
@@ -60,7 +60,7 @@ export function GlobalMapFeatureDetailsPropertiesToJSON(value?: GlobalMapFeature
     }
     return {
         
-        'num': value.num,
+        'el_num': value.el_num,
     };
 }
 

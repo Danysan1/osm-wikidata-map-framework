@@ -1,7 +1,10 @@
-CREATE OR REPLACE VIEW owmf.elements_dump AS
-SELECT ST_Centroid(ST_Collect(el_geometry)) AS geom, 1 AS num
-FROM owmf.element AS el
-GROUP BY ST_ReducePrecision(ST_Centroid(el_geometry), 0.1), LOWER(el_tags->>'name');
+CREATE MATERIALIZED VIEW IF NOT EXISTS owmf.vm_elements AS
+SELECT
+    ST_ReducePrecision(ST_Centroid(el_geometry), 0.04::double precision) AS geom,
+    COUNT(DISTINCT LOWER(el_tags ->> 'name'::text)) AS el_num
+FROM owmf.element
+GROUP BY (ST_ReducePrecision(ST_Centroid(el_geometry), 0.04::double precision))
+HAVING COUNT(DISTINCT LOWER(el_tags ->> 'name'::text)) > 2;
 
 CREATE OR REPLACE VIEW owmf.etymology_map_dump AS
 SELECT
@@ -55,7 +58,7 @@ GROUP BY el.el_id;
 CREATE MATERIALIZED VIEW IF NOT EXISTS owmf.vm_global_map AS
 SELECT
     ST_ReducePrecision(ST_Centroid(el_geometry), 0.3) AS geom,
-    COUNT(DISTINCT LOWER(el_tags->>'name')) AS num
+    COUNT(DISTINCT LOWER(el_tags->>'name')) AS el_num
 FROM owmf.element
 GROUP BY geom
 HAVING COUNT(DISTINCT LOWER(el_tags->>'name')) > {{var.value.global_map_threshold}}
