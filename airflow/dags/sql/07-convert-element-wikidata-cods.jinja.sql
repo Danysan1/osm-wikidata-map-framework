@@ -1,6 +1,5 @@
 UPDATE owmf.osmdata
-SET osm_wikdata_cod = UPPER(SUBSTRING(osm_tags->>'wikidata' FROM '^\d+'))
-FROM owmf.osmdata
+SET osm_wikidata_cod = UPPER(SUBSTRING(osm_tags->>'wikidata' FROM '^\d+'))
 WHERE osm_tags ? 'wikidata'
 AND osm_tags->>'wikidata' ~* '^Q\d+';
 

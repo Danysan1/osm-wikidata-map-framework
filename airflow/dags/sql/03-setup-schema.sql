@@ -58,8 +58,8 @@ CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fi
 CREATE TABLE owmf.element (
     el_id BIGINT NOT NULL PRIMARY KEY,
     el_geometry GEOMETRY(Geometry,4326) NOT NULL,
-    el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
-    el_osm_id BIGINT NOT NULL,
+    el_osm_type VARCHAR(8) CHECK (el_osm_type IN ('node','way','relation')),
+    el_osm_id BIGINT,
     el_tags JSONB,
     el_has_text_etymology BOOLEAN DEFAULT FALSE,
     el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
@@ -82,7 +82,6 @@ CREATE TABLE owmf.etymology (
     et_from_osm BOOLEAN DEFAULT FALSE,
     et_from_key_ids VARCHAR ARRAY,
     et_from_osm_wikidata_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
-    et_from_parts_of_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from whose P527 (has parts) property this etymology has been derived
     et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- Wikidata property through which the etymology is derived
     CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );

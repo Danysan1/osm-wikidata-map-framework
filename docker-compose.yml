@@ -623,7 +623,7 @@ services:
     networks:
       - owmf-internal
     profiles:
-      - build-only
+      - load-related
 
 
 volumes:

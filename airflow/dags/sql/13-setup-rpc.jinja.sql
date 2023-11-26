@@ -15,8 +15,8 @@ BEGIN
         el.el_id,
         el.el_osm_type AS osm_type,
         el.el_osm_id AS osm_id,
-        TRUE as from_osm,
-        FALSE as from_wikidata,
+        el.el_osm_id IS NOT NULL AS from_osm,
+        el.el_osm_id IS NULL AS from_wikidata,
         COALESCE(
             el.el_tags->>CONCAT('name:', query_params->>'lang'),
             el.el_tags->>'name',
@@ -39,7 +39,6 @@ BEGIN
             'from_wikidata', et_from_osm_wikidata_wd_id IS NOT NULL,
             'from_wikidata_entity', from_wd.wd_wikidata_cod,
             'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
-            'from_parts_of_wikidata_cod', from_parts_of_wd.wd_wikidata_cod,
             'propagated', et_recursion_depth != 0,
             'wd_id', wd.wd_id,
             'wikidata', wd.wd_wikidata_cod
@@ -49,7 +48,6 @@ BEGIN
     LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
     LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
     LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd_id
-    LEFT JOIN owmf.wikidata AS from_parts_of_wd ON from_parts_of_wd.wd_id = et.et_from_parts_of_wd_id
     LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
     WHERE el.el_geometry && ST_Transform(ST_TileEnvelope(zoom, x, y), 4326)
     AND (query_params->'source' IS NULL OR query_params->>'source' = 'all' OR query_params->>'source' = ANY(et.et_from_key_ids))

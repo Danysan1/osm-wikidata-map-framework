@@ -5,4 +5,6 @@ COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.loa
 COPY "./src" "/npm_app/src"
 RUN npm install && \
 	npm run load-related && \
-	npm install --omit=dev
+	mv /npm_app/public/dist/load-related/main.js /load-related.js && \
+	rm -rf /npm_app/*
+CMD ["node", "/load-related.js"]

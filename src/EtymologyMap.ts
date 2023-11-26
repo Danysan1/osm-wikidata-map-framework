@@ -967,10 +967,13 @@ export class EtymologyMap extends Map {
     }
 
     /**
+     * Adds the geocoding control (from Maptiler if possible, Stadia Maps otherwise).
+     * Listens for Ctrl/Cmd + F to focus the geocoder.
      * 
+     * @see https://www.npmjs.com/package/@maptiler/geocoding-control
+     * @see https://docs.stadiamaps.com/sdks/maplibre-gl-js-autocomplete-search-plugin/
      * @see https://maplibre.org/maplibre-gl-js-docs/example/geocoder/
      * @see https://github.com/maplibre/maplibre-gl-geocoder
-     * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
      * @see https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
      */
     private async setupGeocoder() {

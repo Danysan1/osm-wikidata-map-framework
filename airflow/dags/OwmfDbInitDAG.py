@@ -16,7 +16,7 @@ from airflow.sensors.time_delta import TimeDeltaSensorAsync
 from airflow.providers.amazon.aws.transfers.local_to_s3 import LocalFilesystemToS3Operator
 from airflow.exceptions import AirflowNotFoundException
 from Osm2pgsqlOperator import Osm2pgsqlOperator
-from OemDockerOperator import OemDockerOperator
+from LoadRelatedDockerOperator import LoadRelatedDockerOperator
 from TippecanoeOperator import TippecanoeOperator
 from Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 
@@ -436,41 +436,37 @@ class OwmfDbInitDAG(DAG):
         )
         task_convert_ety >> task_check_load_wd_related
 
-        task_load_wd_direct = OemDockerOperator(
+        task_load_wd_direct = LoadRelatedDockerOperator(
             task_id = "download_wikidata_direct_related",
-            container_name = "osm-wikidata_map_framework-download_wikidata_related",
-            command = "php app/loadWikidataDirectRelatedEntities.php",
+            container_name = "osm-wikidata_map_framework-load_direct_related",
             postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
             doc_md = dedent("""
                 # Load Wikidata direct related entities
 
-                For each existing Wikidata entity representing an OSM element:
+                * load into the `osmdata` table of the local PostGIS DB all the Wikidata enitities with a location and the configured direct properties which do not already exist
                 * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
                 * load into the `etymology` table of the local PostGIS DB the direct related relationships
                 
-                Uses the Wikidata SPARQL query service through `OemDockerOperator`:
-            """) + dedent(OemDockerOperator.__doc__)
+                Uses the Wikidata SPARQL query service through `LoadRelatedDockerOperator`:
+            """) + dedent(LoadRelatedDockerOperator.__doc__)
         )
         task_check_load_wd_related >> task_load_wd_direct
 
-        task_load_wd_reverse = OemDockerOperator(
+        task_load_wd_reverse = EmptyOperator(
             task_id = "download_wikidata_reverse_related",
-            container_name = "osm-wikidata_map_framework-download_wikidata_related",
-            command = "php app/loadWikidataReverseRelatedEntities.php",
-            postgres_conn_id = local_db_conn_id,
             dag = self,
             task_group=elaborate_group,
             doc_md = dedent("""
                 # Load Wikidata reverse related entities
+                            
+                # YET TO BE IMPLEMENTED
 
                 For each existing Wikidata entity representing an OSM element:
                 * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
                 * load into the `etymology` table of the local PostGIS DB the reverse related relationships
-                
-                Uses the Wikidata SPARQL query service through `OemDockerOperator`:
-            """) + dedent(OemDockerOperator.__doc__)
+            """)
         )
         task_check_load_wd_related >> task_load_wd_reverse
 
@@ -523,25 +519,6 @@ class OwmfDbInitDAG(DAG):
             """
         )
         [task_check_propagation, task_propagate_locally, task_propagate_globally] >> join_post_propagation
-        
-        task_load_parts = OemDockerOperator(
-            task_id = "download_parts_of_wikidata_entities",
-            container_name = "osm-wikidata_map_framework-download_parts_of_wikidata_entities",
-            command = "php app/loadWikidataPartsOfEntities.php",
-            postgres_conn_id = local_db_conn_id,
-            dag = self,
-            task_group=elaborate_group,
-            doc_md = dedent("""
-                # Load Wikidata parts of entities
-
-                For each existing Wikidata entity representing the etymology for and OSM element:
-                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are part of the entity
-                * load into the `etymology` table of the local PostGIS DB the entity parts as etymology for the elements for which the container is an etymology
-                
-                Uses the Wikidata SPARQL query service through `OemDockerOperator`:
-            """) + dedent(OemDockerOperator.__doc__)
-        )
-        join_post_propagation >> task_load_parts
 
         post_elaborate_group = TaskGroup("post_elaboration", tooltip="Actions after data elaboration", dag=self)
 
@@ -571,7 +548,7 @@ class OwmfDbInitDAG(DAG):
                 Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
             """
         )
-        [task_load_parts, task_check_text_ety] >> task_move_ele
+        [join_post_propagation, task_check_text_ety] >> task_move_ele
 
         task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",

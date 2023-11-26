@@ -1,21 +1,20 @@
 import { WikidataBulkService } from './services/WikidataBulkService';
 import directMapQuery from "./services/query/loadRelated/direct.sparql";
 
-
-const jsonPropsList = process.argv[2],
-    jsonProps = jsonPropsList ? JSON.parse(jsonPropsList) : [];
-if (!Array.isArray(jsonProps))
-    throw new Error("Invalid JSON passed in first argument (properties list): " + jsonPropsList);
-
-const queryMap: Record<string, string> = {
-    "direct": directMapQuery,
-},
-    type: string = process.argv[3];
+const type: string = process.argv[2] || "direct",
+    queryMap: Record<string, string> = {
+        "direct": directMapQuery,
+    };
 if (!(type in queryMap))
-    throw new Error("Invalid query type passed in second argument: " + type);
+    throw new Error("Invalid query type passed in first argument: " + type);
+
+const jsonPropsList = process.argv[3] || process.env.owmf_osm_wikidata_properties,
+    jsonProps = jsonPropsList ? JSON.parse(jsonPropsList) : null;
+if (!Array.isArray(jsonProps))
+    throw new Error("Invalid JSON passed in second argument (properties list): " + jsonPropsList);
 
 const sparqlQuery: string = queryMap[type].replace("${properties}", jsonProps.map(prop => `wdt:${prop}`).join(" ")),
-    db_connection_uri = process.argv[4] || process.env.DB_CONNECTION_URI;
+    db_connection_uri = process.argv[4] || process.env.owmf_db_uri;
 if (!db_connection_uri)
     throw new Error("No DB connection URI passed (no third argument and no DB_CONNECTION_URI env variable)");
 
