@@ -232,7 +232,9 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wikidata wdt:P527 ?part.
+        VALUES ?groupType { wd:Q16334295 wd:Q10648343 wd:Q219160 } # Group of humans / Duo / Couple
+        ?wikidata wdt:P31/wdt:P279? ?groupType;
+                  wdt:P527 ?part.
     }
 }
 GROUP BY ?wikidata
