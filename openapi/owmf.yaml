@@ -523,11 +523,16 @@ components:
           description: Whether this etymology has been obtained through propagation
         wd_id:
           type: integer
-          description: Internal ID for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
+          description: Internal ID (not Q-ID) for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
         wikidata:
           type: string
           description: Q-ID of this etymology Wikidata item
           example: Q42
+        parts:
+          type: array
+          description: List of Wikidata Q-IDs of entities that are part of this etymology
+          items:
+            type: string
 
     EtymologyFeature:
       allOf:

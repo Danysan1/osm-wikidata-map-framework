@@ -161,8 +161,8 @@ export class OverpassService {
             const maxElements = getConfig("max_map_elements");
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
             this.db.addMap(out);
+            if (debug) console.timeEnd("overpass_transform");
         }
-        if (debug) console.timeEnd("overpass_transform");
         if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
         return out;
     }

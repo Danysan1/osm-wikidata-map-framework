@@ -59,6 +59,7 @@ export class WikidataDetailsService extends WikidataService {
                     wikipedia: row.wikipedia?.value,
                     wkt_coords: row.wkt_coords?.value,
                     wikidata: wdQID,
+                    parts: row.parts?.value?.split(";")?.map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")),
                 };
                 return acc;
             }, {});

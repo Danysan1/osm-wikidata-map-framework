@@ -163,6 +163,7 @@ $jsScript = $jsScripts[0];
     <?= $conf->getMetaTag("elements_bbox_max_area", true); ?>
     <?= $conf->getMetaTag("wikidata_bbox_max_area", true); ?>
     <?= $conf->getMetaTag("max_relation_members", true); ?>
+    <?= $conf->getMetaTag("fetch_parts_of_linked_entities", true); ?>
 </head>
 
 <body>
@@ -387,7 +388,9 @@ $jsScript = $jsScripts[0];
                 <span class="etymology_src_part_of_wd_wrapper hiddenElement">
                     +
                     <a class="etymology_src_part_of_wd">Wikidata</a>
-                </span> </span>
+                </span>
+            </span>
+            <div class="etymology_parts_container hiddenElement"></div>
         </div>
     </template>
 </body>
