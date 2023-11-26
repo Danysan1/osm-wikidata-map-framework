@@ -84,7 +84,7 @@ function prepareHTML(Configuration $conf)
 
 	$stadiaConnect = '';
 	if ($conf->getBool("enable_stadia_maps")) {
-		$stadiaConnect = 'https://tiles.stadiamaps.com/ https://tiles-beta.stadiamaps.com/';
+		$stadiaConnect = 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/';
 	}
 
 	$jawgConnect = '';
@@ -119,13 +119,13 @@ function prepareHTML(Configuration $conf)
 	$overpassConnect = implode(" ", $conf->getArray('overpass_endpoints'));
 
 	$liberapayImg = '';
-	if($conf->has("liberapay_id")) {
+	if ($conf->has("liberapay_id")) {
 		$liberapayImg = "https://liberapay.com";
 	}
 
 	$payPalForm = '';
 	$payPalImg = '';
-	if($conf->has("paypal_id")) {
+	if ($conf->has("paypal_id")) {
 		$payPalForm = "https://www.paypal.com/donate";
 		$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
 	}

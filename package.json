@@ -39,6 +39,7 @@
         "@maptiler/geocoding-control": "^0.0.98",
         "@openapitools/openapi-generator-cli": "^2.7.0",
         "@sentry/browser": "^7.34.0",
+        "@stadiamaps/maplibre-search-box": "^1.0.1",
         "@transifex/i18next": "^5.4.0",
         "@types/chart.js": "^2.9.37",
         "@types/gtag.js": "^0.0.11",

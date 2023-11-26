@@ -1,6 +1,7 @@
 import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
+import "@stadiamaps/maplibre-search-box/dist/style.css";
 
 // import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource } from 'mapbox-gl';
 // import 'mapbox-gl/dist/mapbox-gl.css';
@@ -972,30 +973,32 @@ export class EtymologyMap extends Map {
      * @see https://github.com/maplibre/maplibre-gl-geocoder/blob/main/API.md
      * @see https://docs.mapbox.com/mapbox-gl-js/example/mapbox-gl-geocoder/
      */
-    private setupGeocoder() {
+    private async setupGeocoder() {
         const maptiler_key = getConfig("maptiler_key");
         if (maptiler_key) {
-            import(
-                // webpackExports: ["GeocodingControl"]
-                "@maptiler/geocoding-control/maplibregl"
-            ).then(({ GeocodingControl }) => {
-                const geocoderControl = new GeocodingControl({
+            const { GeocodingControl } = await import("@maptiler/geocoding-control/maplibregl"),
+                geocoderControl = new GeocodingControl({
                     apiKey: maptiler_key,
                     collapsed: true,
                     marker: false, // Markers require to pass maplibregl as argument
                 });
-                this.addControl(geocoderControl, 'bottom-left');
+            this.addControl(geocoderControl, 'bottom-left');
+            if (debug) console.debug("setupGeocoder: added MapTiler geocoder control", geocoderControl);
 
-                document.addEventListener("keydown", (e) => {
-                    if ((e.ctrlKey || e.metaKey) &&
-                        e.key === "f" &&
-                        document.getElementsByClassName("owmf_data_table").length === 0 &&
-                        document.getElementsByClassName("detail_container").length === 0) {
-                        geocoderControl.focus();
-                        e.preventDefault();
-                    }
-                });
+            document.addEventListener("keydown", (e) => {
+                if ((e.ctrlKey || e.metaKey) &&
+                    e.key === "f" &&
+                    document.getElementsByClassName("owmf_data_table").length === 0 &&
+                    document.getElementsByClassName("detail_container").length === 0) {
+                    geocoderControl.focus();
+                    e.preventDefault();
+                }
             });
+        } else if (getBoolConfig("enable_stadia_maps")) {
+            const { MapLibreSearchControl } = await import("@stadiamaps/maplibre-search-box"),
+                geocoderControl = new MapLibreSearchControl({});
+            if (debug) console.debug("setupGeocoder: added Stadia geocoder control", geocoderControl);
+            this.addControl(geocoderControl, 'bottom-left');
         }
     }
 
