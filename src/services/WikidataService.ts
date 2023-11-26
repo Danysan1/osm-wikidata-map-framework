@@ -1,4 +1,3 @@
-import { getConfig } from "../config";
 import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
 
 export class WikidataService {
@@ -6,14 +5,10 @@ export class WikidataService {
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     protected api: SparqlApi;
     protected defaultLanguage: string;
-    protected language: string;
 
-    public constructor() {
-        this.api = new SparqlApi(new Configuration({
-            basePath: getConfig("wikidata_endpoint") || "https://query.wikidata.org"
-        }));
-        this.defaultLanguage = getConfig("default_language") || 'en';
-        this.language = document.documentElement.lang.split('-').at(0) || this.defaultLanguage;
+    public constructor(basePath = 'https://query.wikidata.org', defaultLanguage = 'en') {
+        this.api = new SparqlApi(new Configuration({ basePath }));
+        this.defaultLanguage = defaultLanguage;
     }
 
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
@@ -27,11 +22,11 @@ export class WikidataService {
         }
     }
 
-    async etymologyIDsQuery(etymologyIDs: string[], sparqlQueryTemplate: string): Promise<SparqlResponse> {
+    async etymologyIDsQuery(language: string, etymologyIDs: string[], sparqlQueryTemplate: string): Promise<SparqlResponse> {
         const wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
             sparqlQuery = sparqlQueryTemplate
                 .replaceAll('${wikidataValues}', wikidataValues)
-                .replaceAll('${language}', this.language || '')
+                .replaceAll('${language}', language)
                 .replaceAll('${defaultLanguage}', this.defaultLanguage);
         return await this.api.postSparqlQuery({ format: "json", query: sparqlQuery });
     }

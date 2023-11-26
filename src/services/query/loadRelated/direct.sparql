@@ -1,0 +1,15 @@
+SELECT
+    ?item
+    ?location
+    ?etymology
+    ?from_prop
+WHERE {
+    VALUES ?from_prop { ${properties} }
+    ?item p:P625 ?locationStatement;
+          ?from_prop ?etymology.
+    ?locationStatement ps:P625 ?location.
+    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
+    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+}
+${limit}

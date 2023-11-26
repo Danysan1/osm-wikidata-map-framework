@@ -1,15 +1,10 @@
 const path = require("path");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-  target: "web",
-  entry: path.resolve(__dirname, "src", "index.ts"),
+  target: "node",
+  entry: path.resolve(__dirname, "src", "load-related.ts"),
   module: {
     rules: [
-      {
-        test: /\.css$/i,
-        use: [MiniCssExtractPlugin.loader, "css-loader"],
-      },
       {
         test: /\.s(par)?ql$/,
         type: 'asset/source',
@@ -29,8 +24,8 @@ module.exports = {
     usedExports: true,
   },
   output: {
-    path: path.resolve(__dirname, "public", "dist"),
-    filename: "[name]-[contenthash].js"
+    path: path.resolve(__dirname, "public", "dist", "load-related"),
+    filename: "[name].js"
   },
-  plugins: [new MiniCssExtractPlugin()],
+  mode: "development",
 };
