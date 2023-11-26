@@ -27,6 +27,7 @@ SELECT ?wikidata
     (SAMPLE(?birth_place_name) AS ?birth_place)
     (SAMPLE(?death_place_name) AS ?death_place)
     (SAMPLE(?wkt_coords) AS ?wkt_coords)
+    (GROUP_CONCAT(DISTINCT ?part; SEPARATOR=';') AS ?parts)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
@@ -228,6 +229,10 @@ WHERE {
     OPTIONAL {
         ?countryID ^wdt:P17|^wdt:P27 ?wikidata;
             rdfs:label ?country_name FILTER(lang(?country_name)='${language}').
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P527 ?part.
     }
 }
 GROUP BY ?wikidata

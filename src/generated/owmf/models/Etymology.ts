@@ -80,7 +80,7 @@ export interface Etymology {
      */
     propagated?: boolean;
     /**
-     * Internal ID for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
+     * Internal ID (not Q-ID) for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
      * @type {number}
      * @memberof Etymology
      */
@@ -91,6 +91,12 @@ export interface Etymology {
      * @memberof Etymology
      */
     wikidata?: string;
+    /**
+     * List of Wikidata Q-IDs of entities that are part of this etymology
+     * @type {Array<string>}
+     * @memberof Etymology
+     */
+    parts?: Array<string>;
 }
 
 
@@ -147,6 +153,7 @@ export function EtymologyFromJSONTyped(json: any, ignoreDiscriminator: boolean):
         'propagated': !exists(json, 'propagated') ? undefined : json['propagated'],
         'wd_id': !exists(json, 'wd_id') ? undefined : json['wd_id'],
         'wikidata': !exists(json, 'wikidata') ? undefined : json['wikidata'],
+        'parts': !exists(json, 'parts') ? undefined : json['parts'],
     };
 }
 
@@ -171,6 +178,7 @@ export function EtymologyToJSON(value?: Etymology | null): any {
         'propagated': value.propagated,
         'wd_id': value.wd_id,
         'wikidata': value.wikidata,
+        'parts': value.parts,
     };
 }
 

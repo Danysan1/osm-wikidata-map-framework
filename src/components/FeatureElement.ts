@@ -3,7 +3,7 @@ import { GeoJSONFeature } from 'maplibre-gl';
 // import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
 
 import { etymologyToDomElement } from "./EtymologyElement";
-import { debug } from "../config";
+import { debug, getBoolConfig } from "../config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n";
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
 import { imageToDomElement } from "./CommonsImageElement";
@@ -75,7 +75,7 @@ export class FeatureElement extends HTMLDivElement {
         const element_name = detail_container.querySelector<HTMLElement>('.element_name'),
             local_name = properties["name:" + document.documentElement.lang];
         if (!element_name) {
-            if (debug) console.info("Missing element_name");
+            if (debug) console.info("Missing .element_name");
         } else if (local_name && local_name !== 'null') {
             element_name.innerText = '📍 ' + local_name;
         } else if (properties.name && properties.name !== 'null') {
@@ -87,7 +87,7 @@ export class FeatureElement extends HTMLDivElement {
                 name => name && name !== 'null' && name !== properties.name
             );
         if (!element_alt_names) {
-            if (debug) console.info("Missing element_alt_names");
+            if (debug) console.info("Missing .element_alt_names");
         } else if (alt_names.length > 0) {
             element_alt_names.innerText =
                 "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
@@ -95,7 +95,7 @@ export class FeatureElement extends HTMLDivElement {
 
         const element_description = detail_container.querySelector<HTMLElement>('.element_description');
         if (!element_description) {
-            if (debug) console.info("Missing element_description");
+            if (debug) console.info("Missing .element_description");
         } else if (properties.description) {
             element_description.innerText = properties.description;
         }
@@ -108,7 +108,7 @@ export class FeatureElement extends HTMLDivElement {
             has_picture = picture && picture !== 'null',
             feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
         if (!feature_pictures) {
-            if (debug) console.info("Missing pictures element");
+            if (debug) console.info("Missing .feature_pictures");
         } else if (has_picture) {
             if (debug) console.info("Using picture from feature 'picture' property", { picture });
             feature_pictures.appendChild(imageToDomElement(picture))
@@ -129,15 +129,9 @@ export class FeatureElement extends HTMLDivElement {
 
         const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
         if (!etymologies_container) {
-            if (debug) console.info("Missing etymologies_container");
-        } else {
-            const placeholder = etymologies_container.querySelector<HTMLDivElement>(".etymology_loading");
-            showLoadingSpinner(true);
-            this.downloadEtymologyDetails(etymologies).then(filledEtymologies => {
-                this.showEtymologies(properties, filledEtymologies, etymologies_container, this.currentZoom);
-                placeholder?.classList.add("hiddenElement");
-                showLoadingSpinner(false);
-            });
+            if (debug) console.info("Missing .etymologies_container");
+        } else if (etymologies) {
+            this.fetchAndShowEtymologies(properties, etymologies, etymologies_container);
         }
 
         const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm'),
@@ -180,6 +174,37 @@ export class FeatureElement extends HTMLDivElement {
         this.classList.remove("hiddenElement");
     }
 
+    private async fetchAndShowEtymologies(properties: EtymologyFeatureProperties, etymologies: Etymology[], etymologies_container: HTMLElement) {
+        const placeholder = etymologies_container.querySelector<HTMLDivElement>(".etymology_loading");
+        showLoadingSpinner(true);
+
+        const filledEtymologies = await this.downloadEtymologyDetails(etymologies);
+        this.showEtymologies(filledEtymologies, etymologies_container, this.currentZoom);
+        this.showTextEtymologies(properties, filledEtymologies, etymologies_container);
+        placeholder?.classList.add("hiddenElement");
+
+        const parts_containers = etymologies_container.querySelectorAll<HTMLElement>(".etymology_parts_container")
+        if (getBoolConfig("fetch_parts_of_linked_entities") && parts_containers.length > 0) {
+            if (debug) console.info("fetchAndShowEtymologies: fetching parts of linked entities", { filledEtymologies });
+            const parts: Etymology[] = filledEtymologies.flatMap(ety => ety.parts?.map(part => ({
+                ...ety,
+                from_parts_of_wikidata_cod: ety.wikidata,
+                wikidata: part
+            })) || []),
+                filledParts = await this.downloadEtymologyDetails(parts);
+
+            if (debug) console.info("fetchAndShowEtymologies: showing parts of linked entities", { filledParts, parts_containers });
+            parts_containers.forEach(parts_container => {
+                const wdID = parts_container.dataset.wikidataCod,
+                    partsOfThisEntity = filledParts.filter(ety => wdID && ety.from_parts_of_wikidata_cod === wdID);
+                this.showEtymologies(partsOfThisEntity, parts_container, this.currentZoom);
+                parts_container.classList.remove("hiddenElement");
+            });
+        }
+
+        showLoadingSpinner(false);
+    }
+
     private async showDetails(wikidataID: string, feature_pictures: HTMLElement) {
         try {
             const wikidataService = new (await import("../services")).WikidataService(),
@@ -194,20 +219,22 @@ export class FeatureElement extends HTMLDivElement {
         }
     }
 
-    private showEtymologies(properties: EtymologyFeatureProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
+    private showEtymologies(etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
         // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
         etymologies.sort((a, b) => (a.wikidata?.length || 0) - (b.wikidata?.length || 0)).forEach((ety) => {
             if (ety?.wikidata) {
                 try {
                     etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
                 } catch (err) {
-                    console.error("Failed adding etymology", { properties, ety, err });
+                    console.error("Failed adding etymology", { ety, err });
                 }
             } else if (debug) {
-                console.warn("Found etymology without Wikidata ID", { properties, ety });
+                console.warn("Found etymology without Wikidata ID", { ety });
             }
         });
+    }
 
+    private showTextEtymologies(properties: EtymologyFeatureProperties, etymologies: EtymologyDetails[], etymologies_container: HTMLElement) {
         const textEtyName = properties.text_etymology === "null" ? undefined : properties.text_etymology,
             textEtyNameExists = typeof textEtyName === "string" && !!textEtyName,
             textEtyNames = textEtyNameExists ? textEtyName.split(";") : [],
@@ -238,7 +265,7 @@ export class FeatureElement extends HTMLDivElement {
                     from_osm: true,
                     from_osm_type: properties.osm_type,
                     from_osm_id: properties.osm_id,
-                }, currentZoom));
+                }));
             }
         }
     }

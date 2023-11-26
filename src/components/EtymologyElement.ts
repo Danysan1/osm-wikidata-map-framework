@@ -109,7 +109,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
         if (!etymology_name) {
-            console.warn("Missing etymology_name");
+            console.warn("Missing .etymology_name");
         } else if (this.etymology.name) {
             etymology_name.innerText = this.etymology.name;
             etymology_name.style.display = 'block';
@@ -119,7 +119,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const etymology_description = etyDomElement.querySelector<HTMLElement>('.etymology_description');
         if (!etymology_description) {
-            console.warn("Missing etymology_description");
+            console.warn("Missing .etymology_description");
         } else if (this.etymology.description) {
             etymology_description.innerText = this.etymology.description;
             etymology_description.style.display = 'block';
@@ -129,7 +129,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const wikidata_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikidata_button');
         if (!wikidata_button) {
-            console.warn("Missing wikidata_button");
+            console.warn("Missing .wikidata_button");
         } else if (this.etymology.wikidata) {
             wikidata_button.href = 'https://www.wikidata.org/wiki/' + this.etymology.wikidata
             wikidata_button.classList.remove("hiddenElement");
@@ -139,7 +139,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const entitree_button = etyDomElement.querySelector<HTMLAnchorElement>('.entitree_button');
         if (!entitree_button) {
-            console.warn("Missing entitree_button");
+            console.warn("Missing .entitree_button");
         } else if (lang && this.etymology.wikidata && this.etymology.instanceID == "Q5") {
             entitree_button.href = `https://www.entitree.com/${lang}/family_tree/${this.etymology.wikidata}`;
             entitree_button.classList.remove("hiddenElement");
@@ -149,7 +149,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const wikipedia_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikipedia_button');
         if (!wikipedia_button) {
-            console.warn("Missing wikipedia_button");
+            console.warn("Missing .wikipedia_button");
         } else if (this.etymology.wikipedia) {
             wikipedia_button.href = this.etymology.wikipedia.startsWith("http") ? this.etymology.wikipedia : `https://www.wikipedia.org/wiki/${this.etymology.wikipedia}`;
             wikipedia_button.classList.remove("hiddenElement");
@@ -159,7 +159,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const commons_button = etyDomElement.querySelector<HTMLAnchorElement>('.commons_button');
         if (!commons_button) {
-            console.warn("Missing commons_button");
+            console.warn("Missing .commons_button");
         } else if (this.etymology.commons) {
             if (this.etymology.commons.startsWith("http"))
                 commons_button.href = this.etymology.commons;
@@ -174,7 +174,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const location_button = etyDomElement.querySelector<HTMLAnchorElement>('.subject_location_button');
         if (!location_button) {
-            console.warn("Missing location_button");
+            console.warn("Missing .location_button");
         } else {
             let ety_lat = NaN, ety_lon = NaN;
             if (this.etymology.wkt_coords) {
@@ -204,7 +204,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const wikipedia_extract = etyDomElement.querySelector<HTMLElement>('.wikipedia_extract');
         if (!wikipedia_extract) {
-            console.warn("Missing wikipedia_extract");
+            console.warn("Missing .wikipedia_extract");
         } else if (this.etymology.wikipedia) {
             new WikipediaService().fetchExtract(this.etymology.wikipedia)
                 .then(res => {
@@ -220,7 +220,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const start_end_date = etyDomElement.querySelector<HTMLElement>('.start_end_date')
         if (!start_end_date) {
-            console.warn("Missing start_end_date");
+            console.warn("Missing .start_end_date");
         } else if (this.etymology.birth_date || this.etymology.birth_place || this.etymology.death_date || this.etymology.death_place) {
             const birth_date = this.etymology.birth_date ? formatDate(this.etymology.birth_date, this.etymology.birth_date_precision) : "?",
                 birth_place = this.etymology.birth_place ? this.etymology.birth_place : "?",
@@ -240,7 +240,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const event_place = etyDomElement.querySelector<HTMLElement>('.event_place');
         if (!event_place) {
-            console.warn("Missing event_place");
+            console.warn("Missing .event_place");
         } else if (this.etymology.event_place) {
             event_place.innerText = '📍 ' + this.etymology.event_place;
         } else {
@@ -249,7 +249,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const citizenship = etyDomElement.querySelector<HTMLElement>('.citizenship');
         if (!citizenship) {
-            console.warn("Missing citizenship");
+            console.warn("Missing .citizenship");
         } else if (this.etymology.citizenship) {
             citizenship.innerText = '🌍 ' + this.etymology.citizenship;
         } else {
@@ -258,7 +258,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const gender = etyDomElement.querySelector<HTMLElement>('.gender');
         if (!gender) {
-            console.warn("Missing gender");
+            console.warn("Missing .gender");
         } else if (this.etymology.gender) {
             gender.innerText = '⚧️ ' + this.etymology.gender;
         } else {
@@ -267,7 +267,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const occupations = etyDomElement.querySelector<HTMLElement>('.occupations');
         if (!occupations) {
-            console.warn("Missing occupations");
+            console.warn("Missing .occupations");
         } else if (this.etymology.occupations) {
             occupations.innerText = '🛠️ ' + this.etymology.occupations;
         } else {
@@ -276,7 +276,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const prizes = etyDomElement.querySelector<HTMLElement>('.prizes');
         if (!prizes) {
-            console.warn("Missing prizes");
+            console.warn("Missing .prizes");
         } else if (this.etymology.prizes) {
             prizes.innerText = '🏆 ' + this.etymology.prizes;
         } else {
@@ -285,7 +285,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const ety_pictures = etyDomElement.querySelector<HTMLDivElement>('.ety_pictures');
         if (!ety_pictures) {
-            console.warn("Missing pictures");
+            console.warn("Missing .pictures");
         } else if (this.etymology.pictures) {
             this.etymology.pictures.slice(0, 5).forEach(
                 img => ety_pictures.appendChild(imageToDomElement(img))
@@ -337,7 +337,7 @@ export class EtymologyElement extends HTMLDivElement {
         const src_part_of_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_part_of_wd'),
             src_part_of_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_part_of_wd_wrapper');
         if (!src_part_of_wd_wrapper) {
-            console.warn("Missing etymology_src_part_of_wd_wrapper");
+            console.warn("Missing .etymology_src_part_of_wd_wrapper");
         } else if (this.etymology.from_parts_of_wikidata_cod && src_part_of_wd) {
             src_part_of_wd.href = `https://www.wikidata.org/wiki/${this.etymology.from_parts_of_wikidata_cod}#P527`;
             src_part_of_wd_wrapper.classList.remove("hiddenElement");
@@ -350,6 +350,14 @@ export class EtymologyElement extends HTMLDivElement {
             propagated.classList.remove("hiddenElement");
         } else if (propagated) {
             propagated.classList.add("hiddenElement");
+        }
+
+        const etymology_parts_container = etyDomElement.querySelector<HTMLDivElement>('.etymology_parts_container');
+        if (!etymology_parts_container) {
+            console.warn("Missing .etymology_parts_container");
+        } else if (this.etymology.parts) {
+            etymology_parts_container.dataset.wikidataCod = this.etymology.wikidata;
+            etymology_parts_container.classList.add("hiddenElement");
         }
 
         this.innerHTML = "";
