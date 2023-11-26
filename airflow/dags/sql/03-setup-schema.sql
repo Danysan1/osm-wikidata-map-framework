@@ -30,9 +30,10 @@ Documentation:
 CREATE TABLE owmf.osmdata (
     osm_id BIGSERIAL NOT NULL PRIMARY KEY,
     osm_geometry GEOMETRY(Geometry,4326) NOT NULL,
-    osm_osm_type VARCHAR(8) NOT NULL CHECK (osm_osm_type IN ('node','way','relation')),
-    osm_osm_id BIGINT NOT NULL,
+    osm_osm_type VARCHAR(8) CHECK (osm_osm_type IN ('node','way','relation')),
+    osm_osm_id BIGINT,
     osm_tags JSONB,
+    osm_wikidata_cod VARCHAR CHECK (osm_wikidata_cod ~* '^Q\d+$'),
     osm_has_text_etymology BOOLEAN DEFAULT FALSE
 );
 
@@ -40,8 +41,6 @@ CREATE TABLE owmf.element_wikidata_cods (
     --ew_id BIGSERIAL NOT NULL PRIMARY KEY,
     ew_el_id BIGINT NOT NULL,
     ew_wikidata_cod VARCHAR(15) NOT NULL CHECK (ew_wikidata_cod  ~* '^Q\d+$'),
-    ew_from_name_etymology BOOLEAN,
-    ew_from_osm BOOLEAN,
     ew_from_key_id VARCHAR
 );
 
@@ -62,7 +61,7 @@ CREATE TABLE owmf.element (
     el_osm_type VARCHAR(8) NOT NULL CHECK (el_osm_type IN ('node','way','relation')),
     el_osm_id BIGINT NOT NULL,
     el_tags JSONB,
-    el_has_text_etymology BOOLEAN,
+    el_has_text_etymology BOOLEAN DEFAULT FALSE,
     el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
     el_commons VARCHAR,
     el_wikipedia VARCHAR
