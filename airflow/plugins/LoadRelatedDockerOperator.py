@@ -1,28 +1,21 @@
 from airflow.providers.docker.operators.docker import DockerOperator
 from os import environ
 
-class OemDockerOperator(DockerOperator):
+class LoadRelatedDockerOperator(DockerOperator):
     """
     ## Operator for PHP scripts
 
-    Execute PHP scripts on a dedicated Docker container using this project's production Docker image
+    Execute PHP scripts on a dedicated Docker container using this project's dedicated Docker image
 
     Links:
-    * [Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/3.5.0/_api/airflow/providers/docker/operators/docker/index.html?highlight=dockeroperator#airflow.providers.docker.operators.docker.DockerOperator)
     """
     def __init__(self, postgres_conn_id:str, **kwargs) -> None:
         super().__init__(
             docker_url='unix://var/run/docker.sock',
-            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework",
+            image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related",
             environment = {
-                "owmf_db_enable": True,
-                "owmf_db_host": f'{{{{ conn["{postgres_conn_id}"].host }}}}',
-                "owmf_db_port": f'{{{{ (conn["{postgres_conn_id}"].port)|string }}}}',
-                "owmf_db_user": f'{{{{ conn["{postgres_conn_id}"].login }}}}',
-                "owmf_db_database": f'{{{{ conn["{postgres_conn_id}"].schema }}}}',
-                "owmf_db_password": f'{{{{ conn["{postgres_conn_id}"].password }}}}',
-                "owmf_wikidata_endpoint": 'https://{{ conn.wikidata_api.host }}',
+                "owmf_db_uri": f'{{{{ conn["{postgres_conn_id}"].get_uri() }}}}',
                 "owmf_osm_wikidata_keys": '{{ var.value.osm_wikidata_keys }}',
                 "owmf_osm_wikidata_properties": '{{ var.value.osm_wikidata_properties }}',
             },

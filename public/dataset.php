@@ -22,7 +22,7 @@ try {
 }
 
 $fields = implode(",", [
-    'wikidata_id', 'element_name', 'count_osm', 'count_osm_wikidata', 'count_wikidata', 'count_part_of', 'count_propagation'
+    'wikidata_id', 'element_name', 'count_osm', 'count_osm_wikidata', 'count_wikidata', 'count_propagation'
 ]); // All fields are DB columns and contain no spaces or commas, no escaping necessary
 $stm = $db->query("SELECT $fields FROM owmf.vm_dataset");
 

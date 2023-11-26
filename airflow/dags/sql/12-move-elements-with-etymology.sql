@@ -15,7 +15,7 @@ INSERT INTO owmf.element (
     osm_osm_id,
     osm_tags,
     osm_has_text_etymology,
-    SUBSTRING(osm_tags->>'wikidata' FROM '^(Q\d+)'),
+    osm_wikidata_cod,
     SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
 FROM owmf.osmdata
