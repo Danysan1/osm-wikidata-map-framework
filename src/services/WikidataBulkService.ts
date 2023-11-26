@@ -4,8 +4,8 @@ import elementQuery from "./query/loadRelated/element.sql";
 import wikidataQuery from "./query/loadRelated/wikidata.sql";
 import etymologyQuery from "./query/loadRelated/etymology.sql";
 
-const PAGE_SIZE = 40_000,
-    SLEEP_TIME_MS = 1_000;
+const PAGE_SIZE = 400_000,
+    SLEEP_TIME_MS = 5_000;
 
 export class WikidataBulkService extends WikidataService {
     async loadRelatedEntities(sparqlQueryTemplate: string, dbConnectionURI: string) {
@@ -26,19 +26,20 @@ export class WikidataBulkService extends WikidataService {
             console.debug("Using query:", sparqlQueryTemplate);
             let offset = 0,
                 lastLoadCount;
-            do {
+            // do {
                 const sparqlQuery = sparqlQueryTemplate.replace('${limit}', `LIMIT ${PAGE_SIZE} OFFSET ${offset}`);
-                console.debug(`Fetching elements for offset ${offset}...`);
+                console.debug(`Fetching ${PAGE_SIZE} elements for offset ${offset}...`);
                 try {
                     lastLoadCount = await this.loadRelatedEntitiesPage(sparqlQuery, elementStatement, wikidataStatement, etymologyStatement);
                 } catch (e) {
-                    console.warn(`First attempt for offset ${offset} failed, trying again...`, e);
+                    console.log(`First attempt for offset ${offset} failed, sleeping and trying again...`, e);
+                    await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
                     lastLoadCount = await this.loadRelatedEntitiesPage(sparqlQuery, elementStatement, wikidataStatement, etymologyStatement);
                 }
                 console.debug(`Loaded elements and etymologies, sleeping`);
                 offset += PAGE_SIZE;
-                await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
-            } while (lastLoadCount > 0);
+                // await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
+            // } while (lastLoadCount > 0);
 
             console.debug("Tearing down connections...");
             await etymologyStatement.close();
@@ -63,12 +64,16 @@ export class WikidataBulkService extends WikidataService {
             json = await response.raw.text();
         try {
             console.debug(`Loading elements...`);
-            await elementStatement.execute({ params: [json] });
-            console.debug(`Loading wikidata entities...`);
-            await wikidataStatement.execute({ params: [json] });
-            console.debug(`Loading etymologies...`);
-            const dbResult = await etymologyStatement.execute({ params: [json] });
-            return dbResult.rowsAffected || 0;
+            const elementResult = await elementStatement.execute({ params: [json] });
+            console.debug(`Loaded ${elementResult.rowsAffected || 0} elements, loading wikidata entities...`);
+
+            const wikidataResult = await wikidataStatement.execute({ params: [json] });
+            console.debug(`Loaded ${wikidataResult.rowsAffected || 0} wikidata entities, loading etymologies...`);
+
+            const etymologyResult = await etymologyStatement.execute({ params: [json] });
+            console.debug(`Loaded ${etymologyResult.rowsAffected || 0} etymologies`);
+
+            return (elementResult.rowsAffected || 0) + (wikidataResult.rowsAffected || 0) + (etymologyResult.rowsAffected || 0);
         } catch (e) {
             const fs = await import("fs");
             fs.writeFileSync('bad-output.json', json);

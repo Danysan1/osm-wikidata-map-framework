@@ -12,5 +12,4 @@ WHERE {
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
 }
-ORDER BY ?item ?etymology
 ${limit}

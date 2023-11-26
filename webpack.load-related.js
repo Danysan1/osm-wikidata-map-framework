@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
   target: "node",
-  entry: path.resolve(__dirname, "src", "loadRelatedEntities.ts"),
+  entry: path.resolve(__dirname, "src", "load-related.ts"),
   module: {
     rules: [
       {
@@ -24,7 +24,7 @@ module.exports = {
     usedExports: true,
   },
   output: {
-    path: path.resolve(__dirname, "public", "dist", "loadRelated"),
+    path: path.resolve(__dirname, "public", "dist", "load-related"),
     filename: "[name].js"
   },
   mode: "development",
