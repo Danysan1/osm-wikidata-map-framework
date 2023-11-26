@@ -42,7 +42,7 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
                 cursor.copy_from(file, table, separator, columns = columns)
             print("Inserted rows:", cursor.rowcount)
 
-def check_postgre_conn_id(conn_id:str, **context) -> bool:
+def check_postgre_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
     """
         # Check DB connecton ID
 
@@ -55,7 +55,7 @@ def check_postgre_conn_id(conn_id:str, **context) -> bool:
         * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
-    if not "upload_to_db" in context["params"] or not context["params"]["upload_to_db"]:
+    if require_upload and (not "upload_to_db" in context["params"] or not context["params"]["upload_to_db"]):
         print("Upload to remote DB disabled in the DAG parameters, skipping upload")
         return False
 
@@ -214,6 +214,7 @@ class OwmfDbInitDAG(DAG):
             python_callable=check_postgre_conn_id,
             op_kwargs = {
                 "conn_id": local_db_conn_id,
+                "require_upload": False,
             },
             dag = self,
             task_group = db_prepare_group,
@@ -830,6 +831,7 @@ class OwmfDbInitDAG(DAG):
             python_callable=check_postgre_conn_id,
             op_kwargs = {
                 "conn_id": upload_db_conn_id,# "{{ params.upload_db_conn_id }}",
+                "require_upload": True,
             },
             dag = self,
             task_group = group_upload,
