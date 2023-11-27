@@ -184,9 +184,7 @@ At this point you need to load a dump of the DB on the DB exposed on localhost:5
 The front-end code is composed by [index.php](public/index.php) and the Typescript code under the [src folder](src/).
 The map is created using [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/) and the charts are created using [chart.js](https://www.chartjs.org/).
 
-At very low zoom level (zoom < [`min_zoom_level`](.env.example)), clustered element count is shown from `global-map.php` (for example https://etymology.dsantini.it/global-map.php ).
-
-At low zoom level ([`threshold_zoom_level`](.env.example) > zoom > [`min_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](public/elements.php).
+At low zoom level (zoom < [`threshold_zoom_level`](.env.example)) clustered count is obtained from the back-end with [elements.php](public/elements.php).
 
 At high enough zoom level (zoom > [`threshold_zoom_level`](.env.example)) actual elements and their etymologies are obtained from the back-end with [etymologyMap.php](public/etymologyMap.php) .
 

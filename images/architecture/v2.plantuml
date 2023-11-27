@@ -5,7 +5,6 @@ frame owmf as "OSM-Wikidata Map Framework v2" {
     database db as "PostgreSQL DB"
     node fe as "Front-end"
     node be as "Back-end" {
-        component globalMap as "global-map.php"
         component elements as "elements.php"
         component etymologyMap as "etymologyMap.php"
         component stats as "stats.php"
@@ -36,7 +35,6 @@ index <--> fe
 
 user --> fe
 
-fe -(0- globalMap
 fe -(0- etymologyMap
 fe -(0- elements
 fe -(0- stats
@@ -56,7 +54,6 @@ BBoxEtymologyCenterPostGISQuery --|> PostGISQuery
 EtymologyIDListJSONWikidataQuery --|> JSONWikidataQuery
 JSONWikidataQuery --|> BaseWikidataQuery
 
-globalMap ..> PostGIS_PDO
 PostGISQuery ..> PostGIS_PDO
 PostGIS_PDO --(0- db
 BBoxTextPostGISQuery ..> EtymologyIDListJSONWikidataQuery
