@@ -27,8 +27,3 @@ export * from './GeoJSONPoint';
 export * from './GeoJSONPointAllOf';
 export * from './GeoJSONPolygon';
 export * from './GeoJSONPolygonAllOf';
-export * from './GlobalMapFeature';
-export * from './GlobalMapFeatureDetails';
-export * from './GlobalMapFeatureDetailsProperties';
-export * from './GlobalMapFeatures';
-export * from './GlobalMapResponse';

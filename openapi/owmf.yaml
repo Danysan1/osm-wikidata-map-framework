@@ -23,31 +23,6 @@ tags:
     description: Fetch map clusters or features with their details and etymologies
 
 paths:
-  /global-map.php:
-    get:
-      operationId: get_global_map
-      tags:
-        - owmf
-      summary: Get clusters of etymologies worldwide
-      responses:
-        200:
-          description: The GeoJSON response containing the features and etymologies
-          content:
-            application/geo+json:
-              schema:
-                $ref: "#/components/schemas/GlobalMapResponse"
-        409:
-          description: The DB is not enabled in this instance,
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDetails"
-        500:
-          description: Unexpected error
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorDetails"
   /elements.php:
     get:
       operationId: get_elements
@@ -408,31 +383,6 @@ components:
             $ref: "#/components/schemas/GeoJSONFeature"
         bbox:
           $ref: "#/components/schemas/GeoJSONBoundingBox"
-
-    GlobalMapFeature:
-      allOf:
-        - $ref: "#/components/schemas/GeoJSONFeature"
-        - type: object
-          title: GlobalMapFeatureDetails
-          properties:
-            properties:
-              type: object
-              required:
-                - el_num
-              properties:
-                el_num:
-                  type: integer
-
-    GlobalMapResponse:
-      allOf:
-        - $ref: "#/components/schemas/GeoJSONFeatureCollection"
-        - type: object
-          title: GlobalMapFeatures
-          properties:
-            features:
-              type: array
-              items:
-                $ref: "#/components/schemas/GlobalMapFeature"
 
     DetailedFeatureCollection:
       description: GeoJSON Feature collection with additional OWMF-related details

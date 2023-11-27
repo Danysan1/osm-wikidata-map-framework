@@ -607,10 +607,10 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_whether_to_drop >> task_drop_temp_tables
 
-        task_global_map = SQLExecuteQueryOperator(
-            task_id = "setup_global_map",
+        task_backend_views = SQLExecuteQueryOperator(
+            task_id = "setup_backend_views",
             conn_id = local_db_conn_id,
-            sql = "sql/13-global-map-view.jinja.sql",
+            sql = "sql/13-backend-views.jinja.sql",
             dag = self,
             task_group=post_elaborate_group,
             doc_md="""
@@ -619,7 +619,7 @@ class OwmfDbInitDAG(DAG):
                 Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
             """
         )
-        task_setup_ety_fk >> task_global_map
+        task_setup_ety_fk >> task_backend_views
 
         task_etymology_map = SQLExecuteQueryOperator(
             task_id = "setup_etymology_map",
@@ -637,7 +637,7 @@ class OwmfDbInitDAG(DAG):
                 * [Martin PostgreSQL function sources](https://maplibre.org/martin/33-sources-pg-functions.html)
             """
         )
-        task_global_map >> task_etymology_map
+        task_backend_views >> task_etymology_map
 
         task_dataset_view = SQLExecuteQueryOperator(
             task_id = "setup_dataset_view",
@@ -690,7 +690,7 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group
         )
-        [task_create_source_index, task_drop_temp_tables, task_etymology_map, task_global_map, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
+        [task_create_source_index, task_drop_temp_tables, task_etymology_map, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
 
         group_pmtiles = TaskGroup("generate_pmtiles", tooltip="Generate the pmtiles file", dag=self)
 

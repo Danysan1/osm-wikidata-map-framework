@@ -18,7 +18,6 @@ import type {
   ElementResponse,
   ErrorDetails,
   EtymologyResponse,
-  GlobalMapResponse,
 } from '../models';
 import {
     ElementResponseFromJSON,
@@ -27,8 +26,6 @@ import {
     ErrorDetailsToJSON,
     EtymologyResponseFromJSON,
     EtymologyResponseToJSON,
-    GlobalMapResponseFromJSON,
-    GlobalMapResponseToJSON,
 } from '../models';
 
 export interface GetElementsRequest {
@@ -200,32 +197,6 @@ export class OwmfApi extends runtime.BaseAPI {
      */
     async getEtymologies(requestParameters: GetEtymologiesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<EtymologyResponse> {
         const response = await this.getEtymologiesRaw(requestParameters, initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get clusters of etymologies worldwide
-     */
-    async getGlobalMapRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalMapResponse>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {};
-
-        const response = await this.request({
-            path: `/global-map.php`,
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters,
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalMapResponseFromJSON(jsonValue));
-    }
-
-    /**
-     * Get clusters of etymologies worldwide
-     */
-    async getGlobalMap(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalMapResponse> {
-        const response = await this.getGlobalMapRaw(initOverrides);
         return await response.value();
     }
 

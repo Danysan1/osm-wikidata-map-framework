@@ -5,7 +5,7 @@ import { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 
 const PMTILES_GROUP = "PMTiles",
-    DB_GROUP = "DB",
+    DB_GROUP = "DB (GeoJSON)",
     VECTOR_GROUP = "DB (Vector Tiles)",
     OVERPASS_GROUP = "OpenStreetMap (Overpass API)",
     WIKIDATA_GROUP = "Wikidata Query Service",
@@ -71,12 +71,14 @@ export class SourceControl extends DropdownControl {
         });
 
         if (wdDirectProperties?.length) {
-            if (vectorTilesEnabled)
+            if (vectorTilesEnabled) {
                 dropdownItems.push(buildDropdownItem("vector_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), VECTOR_GROUP));
-
-            if (dbEnabled)
+                dropdownItems.push(buildDropdownItem("vector_wd_direct", "Wikidata " + wdDirectProperties.join("/"), WIKIDATA_GROUP));
+            }
+            if (dbEnabled) {
                 dropdownItems.push(buildDropdownItem("db_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), DB_GROUP));
-
+                dropdownItems.push(buildDropdownItem("db_wd_direct", "Wikidata " + wdDirectProperties.join("/"), WIKIDATA_GROUP));
+            }
             dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), WIKIDATA_GROUP));
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), OSM_WD_GROUP));
             if (keys?.length)

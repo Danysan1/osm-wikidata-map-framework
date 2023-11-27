@@ -32,8 +32,7 @@ const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("
     wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
     wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
     wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill',
-    ELEMENTS_SOURCE = "elements_source",
-    GLOBAL_SOURCE = "global_source";
+    ELEMENTS_SOURCE = "elements_source";
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
@@ -175,12 +174,11 @@ export class EtymologyMap extends Map {
             return;
 
         const wikidataSourceEvent = e.sourceId === WIKIDATA_SOURCE,
-            elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE,
-            globalSourceEvent = e.sourceId === GLOBAL_SOURCE;
+            elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
 
-        if (wikidataSourceEvent || elementsSourceEvent || globalSourceEvent) {
+        if (wikidataSourceEvent || elementsSourceEvent) {
             if (debug) console.debug("mapSourceDataHandler: data loaded", {
-                wikidataSourceEvent, elementsSourceEvent, globalSourceEvent, e, source: e.sourceId
+                wikidataSourceEvent, elementsSourceEvent, e, source: e.sourceId
             });
             this.fetchCompleted();
 
@@ -206,7 +204,7 @@ export class EtymologyMap extends Map {
      */
     private mapErrorHandler(err: any) {
         let errorMessage;
-        if ([GLOBAL_SOURCE, ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId)) {
+        if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId)) {
             this.fetchCompleted();
             loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error")));
             errorMessage = "An error occurred while fetching " + err.sourceId;
@@ -247,8 +245,6 @@ export class EtymologyMap extends Map {
             this.updateElementsSource(southWest, northEast, minZoomLevel, thresholdZoomLevel);
         else if (enableWikidataLayers)
             this.updateWikidataSource(southWest, northEast, thresholdZoomLevel);
-        else if (sourceID.startsWith("db"))
-            this.prepareGlobalLayers(minZoomLevel);
         else
             loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
     }
@@ -270,7 +266,7 @@ export class EtymologyMap extends Map {
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
         if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
-            if (debug) console.debug("Updating pmtiles elements source:", sourceID);
+            if (debug) console.debug("Updating pmtiles vector elements source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
                 ELEMENTS_SOURCE,
@@ -279,13 +275,8 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareElementsLayers(thresholdZoomLevel);
-
-            // pmtiles vector source covers both very-low-zoom and medium-zoom levels
-            // GeoJSON sources cover them separately
-            if (debug) console.debug("Initialized PMTiles elements source, removing global GeoJSON source");
-            this.removeSourceWithLayers(GLOBAL_SOURCE);
-        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
-            if (debug) console.debug("Updating vector elements source:", sourceID);
+        } else if (sourceIDChanged && sourceID.startsWith("db")) {
+            if (debug) console.debug("Updating DB vector element source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 ELEMENTS_SOURCE,
@@ -351,7 +342,7 @@ export class EtymologyMap extends Map {
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
         if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
-            if (debug) console.debug("Updating pmtiles wikidata source:", sourceID);
+            if (debug) console.debug("Updating pmtiles vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
                 WIKIDATA_SOURCE,
@@ -359,8 +350,8 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
-            if (debug) console.debug("Updating vector wikidata source:", sourceID);
+        } else if (sourceIDChanged && sourceID.startsWith("db")) {
+            if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 WIKIDATA_SOURCE,
@@ -1049,39 +1040,6 @@ export class EtymologyMap extends Map {
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
         this.initWikidataControls();
-    }
-
-    /**
-     * Initializes the low-zoom-level clustered layer.
-     * 
-     * @see prepareGeoJSONSourceAndClusteredLayers
-     */
-    private prepareGlobalLayers(maxZoom: number): void {
-        const sourceID = getCorrectFragmentParams().source,
-            fullSourceID = "global-" + sourceID,
-            sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
-
-        if (sourceIDChanged && sourceID.startsWith("db")) {
-            if (debug) console.debug("Updating GeoJSON global map source:", sourceID);
-            this.lastSourceID = fullSourceID;
-            this.prepareGeoJSONSourceAndClusteredLayers(
-                GLOBAL_SOURCE,
-                './global-map.php',
-                0,
-                maxZoom,
-                { "el_num": ["+", ["get", "el_num"]] },
-                'el_num',
-                'el_num'
-            );
-
-            // vector tile sources cover both very-low-zoom and medium-zoom levels
-            // GeoJSON sources cover them separately
-            // so when we switch from a vector tile source to a GeoJSON source, we must remove the vector tile source
-            if (this.getSource(ELEMENTS_SOURCE)?.type !== "geojson") {
-                if (debug) console.debug("Initialized global GeoJSON source, removing vector/PMTiles elements source");
-                this.removeSourceWithLayers(ELEMENTS_SOURCE);
-            }
-        }
     }
 
     /**
