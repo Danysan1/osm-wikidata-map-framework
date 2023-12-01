@@ -275,7 +275,7 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareElementsLayers(thresholdZoomLevel);
-        } else if (sourceIDChanged && sourceID.startsWith("db")) {
+        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
             if (debug) console.debug("Updating DB vector element source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
@@ -350,7 +350,7 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else if (sourceIDChanged && sourceID.startsWith("db")) {
+        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
             if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(

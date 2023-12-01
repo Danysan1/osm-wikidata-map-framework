@@ -227,10 +227,10 @@ class EtymologyColorControl extends DropdownControl {
                     if (etymologies?.some(ety => ety.wikidata)) {
                         etymologies.forEach(etymology => {
                             if (!etymology.wikidata) {
-                                if (debug) console.warn("Skipping etymology with no Wikidata ID in source calculation", etymology);
+                                if (debug) console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
                             } else if (etymology.propagated) {
                                 propagation_IDs.add(etymology.wikidata);
-                            } else if (etymology.from_osm_id && etymology.from_wikidata) {
+                            } else if (feature.properties?.from_osm && etymology.from_wikidata) {
                                 osm_wikidata_IDs.add(etymology.wikidata);
                             } else if (etymology.from_wikidata) {
                                 wikidata_IDs.add(etymology.wikidata);
