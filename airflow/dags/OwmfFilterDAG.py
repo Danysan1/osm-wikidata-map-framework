@@ -35,7 +35,6 @@ class OwmfFilterDAG(DAG):
     def __init__(self,
             upload_db_conn_id:str=None,
             prefix:str=None,
-            use_osm2pgsql:bool=False,
             days_before_cleanup:int=1,
             **kwargs
         ):
@@ -46,8 +45,6 @@ class OwmfFilterDAG(DAG):
         ----------
         prefix: str
             prefix to search in the PBF filename 
-        use_osm2pgsql: bool
-            use osm2pgsql instead of osmium export
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
@@ -76,7 +73,6 @@ class OwmfFilterDAG(DAG):
         default_params={
             "prefix": prefix,
             "upload_db_conn_id": upload_db_conn_id,
-            "use_osm2pgsql": use_osm2pgsql,
             "pg_path": pg_path,
         }
 
