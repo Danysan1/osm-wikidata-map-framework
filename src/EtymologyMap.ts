@@ -347,7 +347,8 @@ export class EtymologyMap extends Map {
             this.preparePMTilesSource(
                 WIKIDATA_SOURCE,
                 "etymology_map.pmtiles",
-                thresholdZoomLevel
+                thresholdZoomLevel,
+                thresholdZoomLevel // https://gis.stackexchange.com/a/330575/196469
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
         } else if (sourceIDChanged && sourceID.startsWith("vector")) {
