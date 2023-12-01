@@ -742,8 +742,7 @@ class OwmfDbInitDAG(DAG):
             input_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.geojson',
             output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.pmtiles',
             min_zoom = 13,
-            max_zoom = 17,
-            extra_params = "",
+            extra_params = "-zg --drop-densest-as-needed", # Automatically choose maxzoom; If the tiles are too big at low zoom levels, drop the least-visible features
             doc_md = TippecanoeOperator.__doc__
         )
         task_dump_etymology_map >> task_generate_etymology_map
@@ -755,8 +754,7 @@ class OwmfDbInitDAG(DAG):
             input_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.geojson',
             output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.pmtiles',
             min_zoom = 1,
-            max_zoom = 13,
-            extra_params = "-r1 --cluster-distance=150 --accumulate-attribute=el_num:sum",
+            extra_params = "-z 13 -r1 --cluster-distance=150 --accumulate-attribute=el_num:sum", # Max zoom 13; Do not automatically drop points; Cluster together features that are closer than about 150 pixels from each other; Sum the el_num attribute in features that are clustered together
             doc_md = TippecanoeOperator.__doc__
         )
         task_dump_elements >> task_generate_elements

@@ -9,5 +9,6 @@ SELECT
 FROM owmf.etymology AS ety
 JOIN owmf.wikidata AS wd ON wd.wd_id = ety.et_wd_id
 JOIN owmf.element AS ele ON ele.el_id = ety.et_el_id
+WHERE ele.el_tags ? 'name'
 GROUP BY wd.wd_id, ele.el_tags->>'name'
 ORDER BY LENGTH(wd.wd_wikidata_cod), wd.wd_wikidata_cod, ele.el_tags->>'name'
