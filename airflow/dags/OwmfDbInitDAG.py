@@ -8,6 +8,7 @@ from airflow.operators.python import PythonOperator, BranchPythonOperator, Short
 from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
 from airflow.models.taskinstance import TaskInstance
+from airflow.models.param import Param
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.trigger_rule import TriggerRule
 from airflow.utils.task_group import TaskGroup
@@ -80,21 +81,29 @@ def choose_load_osm_data_task(**context) -> str:
     """
         # Check how to load data into the DB
 
-        Check whether to load the OSM data from the filtered PBF file through `osmium export` or through `osm2pgsql`.
-        Unless the `use_osm2pgsql` parameter is present and True, `osmium export` is choosen by default.
-        This choice is due to the facts that
+        Check whether to load the OSM data from the filtered PBF file through `osmium export`, `osm2pgsql` or imposm.
+
+        The `load_on_db_method` parameter is passed through the params object to allow customization when triggering the DAG.
+        Osmium is the default choice due to the facts that
         * loading with `osmium export` is split in two parts (conversion with `osmium export` from PBF to PG tab-separated-values which takes most of the time and loading with Postgres `COPY` which is fast), so if something goes wrong during loading or downstream it's faster to fix the problem and load again from the PG file
-        * loading with `osmium export`+`COPY` is faster than loading `osm2pgsql`
-
-        The `use_osm2pgsql` parameter is passed through the params object to allow customization when triggering the DAG.
-
+        * loading with `osmium export`+`COPY` is often faster than loading `osm2pgsql`
+        * it would anyway be impossible to use osm2pgsql data update features
+ 
         Links:
         * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
-    p = context["params"]
-    use_osm2pgsql = "use_osm2pgsql" in p and p["use_osm2pgsql"]
-    return "load_elements_with_osm2pgsql" if use_osm2pgsql else "load_elements_from_pg_file"
+    
+    if context["params"]["load_on_db_method"] == "osmium":
+        return "load_elements_from_pg_file"
+    
+    if context["params"]["load_on_db_method"] == "osm2pgsql":
+        return "load_elements_with_osm2pgsql"
+    
+    if context["params"]["load_on_db_method"] == "imposm":
+        return "load_elements_with_imposm"
+    
+    raise Exception(f"Unknown load_on_db_method: '{context['params']['load_on_db_method']}'")
 
 def choose_load_wikidata_task(**context) -> str:
     """
@@ -142,7 +151,6 @@ class OwmfDbInitDAG(DAG):
             local_db_conn_id:str="local_owmf_postgis_db",
             upload_db_conn_id:str=None,
             prefix:str="owmf",
-            use_osm2pgsql:bool=False,
             days_before_cleanup:int=1,
             **kwargs
         ):
@@ -157,8 +165,8 @@ class OwmfDbInitDAG(DAG):
             Postgres connection ID for the production Database the DAG will upload to
         prefix: str
             prefix to search in the PBF filename 
-        use_osm2pgsql: bool
-            use osm2pgsql instead of osmium export
+        load_on_db_method: string
+            choose which tool to use to upload the filtered OSM data
         days_before_cleanup: int
             number of days to wait before cleaning up the DAG run temporary folder
 
@@ -191,7 +199,7 @@ class OwmfDbInitDAG(DAG):
 
         default_params={
             "prefix": prefix,
-            "use_osm2pgsql": use_osm2pgsql,
+            "load_on_db_method": Param(default="osmium", type="string", enum=["osmium","osm2pgsql","imposm"]),
             "drop_temporary_tables": True,
             "upload_to_db": True,
             "generate_pmtiles": True,
