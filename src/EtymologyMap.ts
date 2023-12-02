@@ -83,6 +83,7 @@ export class EtymologyMap extends Map {
                 new OverpassWikidataMapService(overpassService, wikidataService, db),
                 new QLeverMapService(db)
             ];
+            if (debug) console.debug(this.services.length, "map services initialized:", this.services);
         });
         try {
             openInfoWindow(this, false);
@@ -305,21 +306,17 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private updateElementsGeoJSONSource(sourceID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
+    private async updateElementsGeoJSONSource(sourceID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
-            let data: GeoJSON | undefined;
-            this.services?.forEach(async service => {
-                if (!data && service.canHandleSource(sourceID)) {
-                    data = await service.fetchMapClusterElements(sourceID, bbox);
-                    console.debug("Service can handle:", sourceID, service, data);
-                }
-            });
 
-            if (!data)
-                throw new Error("No data found or no service found for source ID " + sourceID);
+            const service = this.services?.find(service => service.canHandleSource(sourceID));
+            if(!service)
+            throw new Error("No service found for source ID " + sourceID);
+
+            const data = await service.fetchMapClusterElements(sourceID, bbox);
 
             this.prepareGeoJSONSourceAndClusteredLayers(
                 ELEMENTS_SOURCE,
@@ -381,14 +378,12 @@ export class EtymologyMap extends Map {
 
         try {
             showLoadingSpinner(true);
-            let data: GeoJSON | undefined;
-            this.services?.forEach(async service => {
-                if (!data && service.canHandleSource(sourceID))
-                    data = await service.fetchMapElementDetails(sourceID, bbox);
-            });
 
-            if (!data)
-                throw new Error("No data found or no service found for source ID " + sourceID);
+            const service = this.services?.find(service => service.canHandleSource(sourceID));
+            if(!service)
+            throw new Error("No service found for source ID " + sourceID);
+
+            const data = await service.fetchMapElementDetails(sourceID, bbox);
 
             this.addOrUpdateGeoJSONSource(
                 WIKIDATA_SOURCE,

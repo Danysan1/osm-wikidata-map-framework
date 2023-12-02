@@ -56,11 +56,15 @@ export class SourceControl extends DropdownControl {
         if (vectorTilesEnabled)
             dropdownItems.push(buildDropdownItem("vector_all", t("source.db_all", "All sources from DB"), VECTOR_GROUP_NAME));
 
-        if (keys && keys?.length > 1)
+        if (keys && keys?.length > 1) {
+            dropdownItems.push(buildDropdownItem("qlever_osm_all", t("source.all_osm_keys", "All OSM keys"), QLEVER_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys", "All OSM keys"), OVERPASS_GROUP_NAME));
+        }
 
         keys?.forEach(key => {
             const keyID = "osm_" + key.replace(":wikidata", "").replace(":", "_");
+            if (qleverEnabled)
+                dropdownItems.push(buildDropdownItem("qlever_" + keyID, "OSM " + key, QLEVER_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_" + keyID, "OSM " + key, OVERPASS_GROUP_NAME));
             if (vectorTilesEnabled)
                 dropdownItems.push(buildDropdownItem("vector_" + keyID, "OSM " + key, VECTOR_GROUP_NAME));

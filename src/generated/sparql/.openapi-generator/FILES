@@ -2,6 +2,7 @@ apis/SparqlApi.ts
 apis/index.ts
 index.ts
 models/QLeverResponse.ts
+models/SparqlBackend.ts
 models/SparqlResponse.ts
 models/SparqlResponseHead.ts
 models/SparqlResponseResults.ts
