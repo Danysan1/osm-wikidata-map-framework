@@ -1,8 +1,3 @@
-UPDATE owmf.osmdata
-SET osm_wikidata_cod = UPPER(SUBSTRING(osm_tags->>'wikidata' FROM '^Q\d+'))
-WHERE osm_tags ? 'wikidata'
-AND osm_tags->>'wikidata' ~* '^Q\d+';
-
 INSERT INTO owmf.element_wikidata_cods (ew_el_id, ew_wikidata_cod, ew_from_key_id)
 {% for osm_key in var.json.osm_wikidata_keys %}
 {% if loop.index != 1 %}UNION{% endif %}

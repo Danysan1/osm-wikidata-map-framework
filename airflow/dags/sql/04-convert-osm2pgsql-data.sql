@@ -14,4 +14,5 @@ SELECT
     CASE WHEN osm_id > 0 THEN osm_id ELSE -osm_id END AS osm_id,
     hstore_to_jsonb(tags),
     way AS geom
-FROM planet_osm_polygon;
+FROM planet_osm_polygon
+ON CONFLICT (osm_osm_type, osm_osm_id, osm_wd_id) DO NOTHING; --! osm2pgsql creates duplicates: https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels

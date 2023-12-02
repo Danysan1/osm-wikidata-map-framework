@@ -394,20 +394,6 @@ class OwmfDbInitDAG(DAG):
         )
         task_create_key_index >> task_convert_ele_wd_cods
 
-        task_ele_wd_index = SQLExecuteQueryOperator(
-            task_id = "element_wikidata_index",
-            conn_id = local_db_conn_id,
-            sql = "sql/07-element-wikidata-index.sql",
-            dag = self,
-            task_group=elaborate_group,
-            doc_md = """
-                # Create the indexes on `element_wikidata_cods`
-
-                Creates the indexes on the `element_wikidata_cods` table, necessary for the next elaboration steps
-            """
-        )
-        task_convert_ele_wd_cods >> task_ele_wd_index
-
         task_convert_wd_ent = SQLExecuteQueryOperator(
             task_id = "convert_wikidata_entities",
             conn_id = local_db_conn_id,

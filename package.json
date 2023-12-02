@@ -33,7 +33,7 @@
         "dev": "webpack --config webpack.dev.js",
         "watch": "webpack --config webpack.watch.js",
         "prod": "webpack --config webpack.prod.js",
-        "load-related": "webpack --config webpack.load-related.js",
+        "build-load-related": "webpack --config webpack.load-related.js",
         "generate": "npx @openapitools/openapi-generator-cli generate"
     },
     "devDependencies": {

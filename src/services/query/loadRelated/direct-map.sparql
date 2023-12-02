@@ -1,0 +1,20 @@
+#defaultView:Map
+SELECT DISTINCT
+    ?item
+    ?itemLabel
+    ?commons
+    ?location
+    ?etymology
+    ?from_prop
+WHERE {
+    VALUES ?from_prop { ${properties} }
+    ?item p:P625 ?locationStatement;
+          ?from_prop ?etymology.
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
+    FILTER (STRENDS(STR(?item), '${pageNumber}') && isIRI(?etymology) && !wikibase:isSomeValue(?etymology)) # Paging through ORDER BY + LIMIT + OFFSET is too slow
+    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+
+    ?locationStatement ps:P625 ?location.
+    OPTIONAL { ?item rdfs:label ?itemLabel FILTER(LANG(?itemLabel) = "en") }
+    OPTIONAL { ?item wdt:P373 ?commons. }
+}
