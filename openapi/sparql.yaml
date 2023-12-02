@@ -26,13 +26,8 @@ paths:
         - name: backend
           in: path
           required: true
-          description: In WDQS must be equal to "sparql". In QLever varies and specifies the source of the data.
           schema:
-            type: string
-            enum:
-              - sparql
-              - wikidata
-              - osm-planet
+            $ref: '#/components/schemas/SparqlBackend'
         - name: query
           in: query
           description: The SPARQL query
@@ -56,16 +51,11 @@ paths:
       summary: Run SPARQL query via POST
       operationId: post_sparql_query
       parameters:
-        - in: path
-          name: backend
+        - name: backend
+          in: path
           required: true
-          description: In WDQS must be equal to "sparql". In QLever varies and specifies the source of the data.
           schema:
-            type: string
-            enum:
-              - sparql
-              - wikidata
-              - osm-planet
+            $ref: '#/components/schemas/SparqlBackend'
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -100,6 +90,13 @@ paths:
 
 components:
   schemas:
+    SparqlBackend:
+      description: In WDQS must be equal to "sparql". In QLever varies and specifies the source of the data.
+      type: string
+      enum:
+        - sparql
+        - wikidata
+        - osm-planet
     SparqlResponse:
       type: object
       properties:

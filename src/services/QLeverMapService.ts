@@ -11,7 +11,7 @@ import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from 
 import { logErrorMessage } from "../monitoring";
 import { MapDatabase } from "../db/MapDatabase";
 import { MapService } from "./MapService";
-import { Configuration, SparqlApi } from "../generated/sparql";
+import { Configuration, SparqlApi, SparqlBackend } from "../generated/sparql";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 
@@ -29,7 +29,7 @@ export class QLeverMapService implements MapService {
     }
 
     canHandleSource(sourceID: string): boolean {
-        return /^qlever_wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID);
+        return /^qlever_(wd_(direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(sourceID);
     }
 
     public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
@@ -47,15 +47,19 @@ export class QLeverMapService implements MapService {
             if (debug) console.info(`QLever map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
         } else {
             if (debug) console.info("QLever map cache miss, fetching data", { sourceID, bbox, language: language });
-            let sparqlQueryTemplate: string;
-            if (sourceID === "wd_base")
+            let backend: SparqlBackend, sparqlQueryTemplate: string;
+            if (sourceID === "osm_wd") {
+                backend = "osm-planet";
                 sparqlQueryTemplate = baseMapQuery;
-            else if (sourceID.includes("wd_direct"))
+            } else if (sourceID.includes("wd_direct")) {
+                backend = "wikidata";
                 sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
-            else if (sourceID.includes("wd_indirect"))
+            } else if (sourceID.includes("wd_indirect")) {
+                backend = "wikidata";
                 sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
-            else
+            } else {
                 throw new Error("Invalid sourceID: " + sourceID);
+            }
 
             const maxElements = getConfig("max_map_elements"),
                 sparqlQuery = sparqlQueryTemplate

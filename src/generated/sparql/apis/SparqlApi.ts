@@ -16,22 +16,25 @@
 import * as runtime from '../runtime';
 import type {
   QLeverResponse,
+  SparqlBackend,
   SparqlResponse,
 } from '../models';
 import {
     QLeverResponseFromJSON,
     QLeverResponseToJSON,
+    SparqlBackendFromJSON,
+    SparqlBackendToJSON,
     SparqlResponseFromJSON,
     SparqlResponseToJSON,
 } from '../models';
 
 export interface GetSparqlQueryRequest {
-    backend: GetSparqlQueryBackendEnum;
+    backend: SparqlBackend;
     query: string;
 }
 
 export interface PostSparqlQueryRequest {
-    backend: PostSparqlQueryBackendEnum;
+    backend: SparqlBackend;
     query: string;
     format?: string;
 }
@@ -137,22 +140,3 @@ export class SparqlApi extends runtime.BaseAPI {
     }
 
 }
-
-/**
- * @export
- */
-export const GetSparqlQueryBackendEnum = {
-    Sparql: 'sparql',
-    Wikidata: 'wikidata',
-    OsmPlanet: 'osm-planet'
-} as const;
-export type GetSparqlQueryBackendEnum = typeof GetSparqlQueryBackendEnum[keyof typeof GetSparqlQueryBackendEnum];
-/**
- * @export
- */
-export const PostSparqlQueryBackendEnum = {
-    Sparql: 'sparql',
-    Wikidata: 'wikidata',
-    OsmPlanet: 'osm-planet'
-} as const;
-export type PostSparqlQueryBackendEnum = typeof PostSparqlQueryBackendEnum[keyof typeof PostSparqlQueryBackendEnum];
