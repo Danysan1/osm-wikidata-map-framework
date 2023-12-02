@@ -75,7 +75,7 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
             lat: raw.lat && raw.lat >= -90 && raw.lat <= 90 ? raw.lat : default_center_lat,
             zoom: raw.zoom ? raw.zoom : default_zoom,
             colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
-            source: raw.source || defaultSource,
+            source: raw.source?.replace("db_", "vector_") || defaultSource,
         };
     //if (debug) console.info("getCorrectFragmentParams", { raw, correct });
     return correct;

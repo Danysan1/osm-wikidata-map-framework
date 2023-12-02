@@ -27,6 +27,8 @@ import { iDEditorControl } from './controls/iDEditorControl';
 import { Protocol } from 'pmtiles';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
+    PMTILES_PREFIX = "pmtiles",
+    VECTOR_PREFIX = "vector",
     WIKIDATA_SOURCE = "wikidata_source",
     wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
     wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
@@ -42,7 +44,6 @@ export class EtymologyMap extends Map {
     private wikidataMapService?: import("./services").WikidataMapService;
     private overpassService?: import("./services").OverpassService;
     private overpassWikidataService?: import("./services").OverpassWikidataMapService;
-    private backendService?: import("./services").OwmfBackendService;
     private lastSourceID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
@@ -72,13 +73,12 @@ export class EtymologyMap extends Map {
         this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
         import("./services").then(({
-            MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService, OwmfBackendService
+            MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService
         }) => {
             const db = new MapDatabase();
             this.wikidataMapService = new WikidataMapService(db);
             this.overpassService = new OverpassService(db);
             this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService, db);
-            this.backendService = new OwmfBackendService(db);
         });
         try {
             openInfoWindow(this, false);
@@ -234,8 +234,8 @@ export class EtymologyMap extends Map {
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
             enableElementsLayers = !enableWikidataLayers && (
                 (zoomLevel >= minZoomLevel && thresholdZoomLevel > minZoomLevel && area < elementsBBoxMaxArea) ||
-                sourceID.startsWith("pmtiles") ||
-                sourceID.startsWith("vector")
+                sourceID.startsWith(PMTILES_PREFIX) ||
+                sourceID.startsWith(VECTOR_PREFIX)
             );
         if (debug) console.debug("updateDataSource", {
             area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, sourceID
@@ -265,7 +265,7 @@ export class EtymologyMap extends Map {
             fullSourceID = "elements-" + sourceID,
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
-        if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
+        if (sourceIDChanged && sourceID.startsWith(PMTILES_PREFIX)) {
             if (debug) console.debug("Updating pmtiles vector elements source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
@@ -275,7 +275,7 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareElementsLayers(thresholdZoomLevel);
-        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
+        } else if (sourceIDChanged && sourceID.startsWith(VECTOR_PREFIX)) {
             if (debug) console.debug("Updating DB vector element source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
@@ -313,8 +313,6 @@ export class EtymologyMap extends Map {
                 data = await this.overpassService.fetchMapClusterElements(sourceID, bbox);
             else if (this.overpassWikidataService?.canHandleSource(sourceID))
                 data = await this.overpassWikidataService.fetchMapClusterElements(sourceID, bbox);
-            else if (this.backendService?.canHandleSource(sourceID))
-                data = await this.backendService.fetchMapClusterElements(sourceID, bbox);
             else
                 throw new Error("No service found for source ID " + sourceID);
 
@@ -341,7 +339,7 @@ export class EtymologyMap extends Map {
             fullSourceID = "details-" + sourceID,
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
-        if (sourceIDChanged && sourceID.startsWith("pmtiles")) {
+        if (sourceIDChanged && sourceID.startsWith(PMTILES_PREFIX)) {
             if (debug) console.debug("Updating pmtiles vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
@@ -351,7 +349,7 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel // https://gis.stackexchange.com/a/330575/196469
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else if (sourceIDChanged && sourceID.startsWith("vector")) {
+        } else if (sourceIDChanged && sourceID.startsWith(VECTOR_PREFIX)) {
             if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
@@ -388,8 +386,6 @@ export class EtymologyMap extends Map {
                 data = await this.overpassService.fetchMapElementDetails(sourceID, bbox);
             else if (this.overpassWikidataService?.canHandleSource(sourceID))
                 data = await this.overpassWikidataService.fetchMapElementDetails(sourceID, bbox);
-            else if (this.backendService?.canHandleSource(sourceID))
-                data = await this.backendService.fetchMapElementDetails(sourceID, bbox);
             else
                 throw new Error("No service found for source ID " + sourceID);
 
