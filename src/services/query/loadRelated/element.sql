@@ -1,9 +1,17 @@
-INSERT INTO owmf.osmdata (osm_geometry, osm_wikidata_cod)
-SELECT DISTINCT
+INSERT INTO owmf.osmdata (
+    osm_geometry,
+    osm_wd_id,
+    osm_tags
+)
+SELECT
     ST_GeomFromText(value->'location'->>'value', 4326),
-    REPLACE(value->'item'->>'value', 'http://www.wikidata.org/entity/', '')
+    wd_id,
+    JSON_BUILD_OBJECT (
+        'name:en', value->'itemLabel'->>'value',
+        'wikimedia_commons', 'Category:' || (value->'commons'->>'value')
+    )
 FROM json_array_elements(($1::JSON)->'results'->'bindings')
-LEFT JOIN owmf.osmdata
-    ON osm_wikidata_cod = REPLACE(value->'item'->>'value', 'http://www.wikidata.org/entity/', '')
+JOIN owmf.wikidata ON wd_wikidata_cod = REPLACE(value->'item'->>'value', 'http://www.wikidata.org/entity/', '')
+LEFT JOIN owmf.osmdata ON osm_wd_id = wd_id
 WHERE osm_id IS NULL -- Only insert items that are not already in the table
-AND value->'location'->>'value' LIKE 'Point(%';
+AND value->'location'->>'value' ^@ 'Point('

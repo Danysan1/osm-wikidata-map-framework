@@ -27,15 +27,28 @@ Documentation:
 - https://www.postgresql.org/docs/current/functions-datetime.html#FUNCTIONS-DATETIME-EXTRACT
 ';
 
+CREATE TABLE owmf.wikidata (
+    wd_id SERIAL NOT NULL PRIMARY KEY,
+    wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
+    wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    wd_notes VARCHAR
+);
+CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='100');
+CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fillfactor='100');
+
 CREATE TABLE owmf.osmdata (
     osm_id BIGSERIAL NOT NULL PRIMARY KEY,
     osm_geometry GEOMETRY(Geometry,4326) NOT NULL,
     osm_osm_type VARCHAR(8) CHECK (osm_osm_type IN ('node','way','relation')),
     osm_osm_id BIGINT,
     osm_tags JSONB,
-    osm_wikidata_cod VARCHAR CHECK (osm_wikidata_cod ~* '^Q\d+$'),
-    osm_has_text_etymology BOOLEAN DEFAULT FALSE
+    osm_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL,
+    osm_name VARCHAR,
+    osm_commons VARCHAR,
+    osm_has_text_etymology BOOLEAN DEFAULT FALSE,
+    CONSTRAINT osmdata_unique_ids UNIQUE (osm_osm_type, osm_osm_id, osm_wd_id)
 );
+CREATE INDEX osmdata_wd_id_idx ON owmf.osmdata (osm_wd_id) WITH (fillfactor='100');
 
 CREATE TABLE owmf.element_wikidata_cods (
     --ew_id BIGSERIAL NOT NULL PRIMARY KEY,
@@ -43,17 +56,6 @@ CREATE TABLE owmf.element_wikidata_cods (
     ew_wikidata_cod VARCHAR(15) NOT NULL CHECK (ew_wikidata_cod  ~* '^Q\d+$'),
     ew_from_key_id VARCHAR
 );
-
-CREATE TABLE owmf.wikidata (
-    wd_id SERIAL NOT NULL PRIMARY KEY,
-    wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
-    wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    wd_notes VARCHAR
-);
-
-CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='100');
-
-CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fillfactor='100');
 
 CREATE TABLE owmf.element (
     el_id BIGINT NOT NULL PRIMARY KEY,
@@ -64,12 +66,10 @@ CREATE TABLE owmf.element (
     el_has_text_etymology BOOLEAN DEFAULT FALSE,
     el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
     el_commons VARCHAR,
-    el_wikipedia VARCHAR
-    --CONSTRAINT element_unique_osm_id UNIQUE (el_osm_type, el_osm_id) --! causes errors with osm2pgsql as it creates duplicates, see https://dev.openstreetmap.narkive.com/24KCpw1d/osm-dev-osm2pgsql-outputs-neg-and-duplicate-osm-ids-and-weird-attributes-in-table-rels
+    el_wikipedia VARCHAR,
+    CONSTRAINT element_unique_ids UNIQUE (el_osm_type, el_osm_id, el_wikidata_cod)
 );
-
 CREATE UNIQUE INDEX element_id_idx ON owmf.element (el_id) WITH (fillfactor='100');
-
 CREATE INDEX element_geometry_idx ON owmf.element USING GIST (el_geometry) WITH (fillfactor='100');
 
 CREATE TABLE owmf.etymology (
@@ -82,8 +82,7 @@ CREATE TABLE owmf.etymology (
     et_from_osm BOOLEAN DEFAULT FALSE,
     et_from_key_ids VARCHAR ARRAY,
     et_from_osm_wikidata_wd_id INT REFERENCES owmf.wikidata(wd_id) DEFAULT NULL, -- Wikidata entity from which this etymology has been derived from
-    et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- Wikidata property through which the etymology is derived
+    et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- P-ID of the Wikidata property through which the etymology is derived
     CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );
-
 CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='100');

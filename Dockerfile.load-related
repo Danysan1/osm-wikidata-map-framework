@@ -4,7 +4,7 @@ WORKDIR /npm_app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.load-related.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"
 RUN npm install && \
-	npm run load-related && \
+	npm run build-load-related && \
 	mv /npm_app/public/dist/load-related/main.js /load-related.js && \
 	rm -rf /npm_app/*
 CMD ["node", "/load-related.js"]
