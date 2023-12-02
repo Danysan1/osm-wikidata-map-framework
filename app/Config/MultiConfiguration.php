@@ -37,7 +37,7 @@ class MultiConfiguration extends BaseConfiguration
 
 	public function has(string $key): bool
 	{
-		$domainKey = empty($_SERVER["SERVER_NAME"]) ? null : $key . "_" . str_replace(".", "_", $_SERVER["SERVER_NAME"]);
+		$domainKey = empty($_SERVER["SERVER_NAME"]) ? null : $key . "_" . str_replace([".","-"], "_", $_SERVER["SERVER_NAME"]);
 		foreach ($this->configs as $config) {
 			if ($config->has($key) || ($domainKey != null && $config->has($domainKey)))
 				return true;
@@ -47,7 +47,7 @@ class MultiConfiguration extends BaseConfiguration
 
 	public function get(string $key): mixed
 	{
-		$domainKey = empty($_SERVER["SERVER_NAME"]) ? null : $key . "_" . str_replace(".", "_", $_SERVER["SERVER_NAME"]);
+		$domainKey = empty($_SERVER["SERVER_NAME"]) ? null : $key . "_" . str_replace([".","-"], "_", $_SERVER["SERVER_NAME"]);
 		foreach ($this->configs as $config) {
 			if ($domainKey != null && $config->has($domainKey))
 				return $config->get($domainKey);
