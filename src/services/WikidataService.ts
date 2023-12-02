@@ -28,6 +28,6 @@ export class WikidataService {
                 .replaceAll('${wikidataValues}', wikidataValues)
                 .replaceAll('${language}', language)
                 .replaceAll('${defaultLanguage}', this.defaultLanguage);
-        return await this.api.postSparqlQuery({ format: "json", query: sparqlQuery });
+        return await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
     }
 }

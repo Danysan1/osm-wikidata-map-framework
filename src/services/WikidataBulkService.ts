@@ -57,7 +57,7 @@ export class WikidataBulkService extends WikidataService {
         etymologyStatement: PreparedStatement // Adds the etymologies to the etymology table
     ): Promise<number> {
         console.time("fetch");
-        const response = await this.api.postSparqlQueryRaw({ format: "json", query: sparqlQuery }),
+        const response = await this.api.postSparqlQueryRaw({ backend: "sparql", format: "json", query: sparqlQuery }),
             json = await response.raw.text();
         console.timeEnd("fetch");
         console.debug(`Fetched data, loading Wikidata entities...`);

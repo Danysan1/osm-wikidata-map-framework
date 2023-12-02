@@ -1,4 +1,3 @@
-.openapi-generator-ignore
 apis/OwmfApi.ts
 apis/index.ts
 index.ts
@@ -29,10 +28,5 @@ models/GeoJSONPoint.ts
 models/GeoJSONPointAllOf.ts
 models/GeoJSONPolygon.ts
 models/GeoJSONPolygonAllOf.ts
-models/GlobalMapFeature.ts
-models/GlobalMapFeatureDetails.ts
-models/GlobalMapFeatureDetailsProperties.ts
-models/GlobalMapFeatures.ts
-models/GlobalMapResponse.ts
 models/index.ts
 runtime.ts

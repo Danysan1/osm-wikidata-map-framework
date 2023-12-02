@@ -121,7 +121,7 @@ $jsScript = $jsScripts[0];
     <?php } ?>
     <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
 
-    <?= $conf->getMetaTag("db_enable", true); ?>
+    <?= $conf->getMetaTag("qlever_enable", true); ?>
     <?= $conf->getMetaTag("vector_tiles_enable", true); ?>
     <?= $conf->getMetaTag("pmtiles_base_url", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>

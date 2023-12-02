@@ -25,6 +25,7 @@ import { OsmWikidataMatcherControl } from './controls/OsmWikidataMatcherControl'
 import { MapCompleteControl } from './controls/MapCompleteControl';
 import { iDEditorControl } from './controls/iDEditorControl';
 import { Protocol } from 'pmtiles';
+import { MapService } from './services/MapService';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     PMTILES_PREFIX = "pmtiles",
@@ -41,9 +42,7 @@ export class EtymologyMap extends Map {
     private startBackgroundStyle: BackgroundStyle;
     private anyFeatureClickedBefore = false;
     private wikidataSourceInitialized = false;
-    private wikidataMapService?: import("./services").WikidataMapService;
-    private overpassService?: import("./services").OverpassService;
-    private overpassWikidataService?: import("./services").OverpassWikidataMapService;
+    private services?: MapService[];
     private lastSourceID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
@@ -73,12 +72,17 @@ export class EtymologyMap extends Map {
         this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
         import("./services").then(({
-            MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService
+            MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService
         }) => {
-            const db = new MapDatabase();
-            this.wikidataMapService = new WikidataMapService(db);
-            this.overpassService = new OverpassService(db);
-            this.overpassWikidataService = new OverpassWikidataMapService(this.overpassService, this.wikidataMapService, db);
+            const db = new MapDatabase(),
+                overpassService = new OverpassService(db),
+                wikidataService = new WikidataMapService(db);
+            this.services = [
+                wikidataService,
+                overpassService,
+                new OverpassWikidataMapService(overpassService, wikidataService, db),
+                new QLeverMapService(db)
+            ];
         });
         try {
             openInfoWindow(this, false);
@@ -301,23 +305,21 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private async updateElementsGeoJSONSource(sourceID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
+    private updateElementsGeoJSONSource(sourceID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService?.canHandleSource(sourceID))
-                data = await this.wikidataMapService.fetchMapData(sourceID, bbox);
-            else if (this.overpassService?.canHandleSource(sourceID))
-                data = await this.overpassService.fetchMapClusterElements(sourceID, bbox);
-            else if (this.overpassWikidataService?.canHandleSource(sourceID))
-                data = await this.overpassWikidataService.fetchMapClusterElements(sourceID, bbox);
-            else
-                throw new Error("No service found for source ID " + sourceID);
+            this.services?.forEach(async service => {
+                if (!data && service.canHandleSource(sourceID)) {
+                    data = await service.fetchMapClusterElements(sourceID, bbox);
+                    console.debug("Service can handle:", sourceID, service, data);
+                }
+            });
 
             if (!data)
-                throw new Error("No data found");
+                throw new Error("No data found or no service found for source ID " + sourceID);
 
             this.prepareGeoJSONSourceAndClusteredLayers(
                 ELEMENTS_SOURCE,
@@ -380,17 +382,13 @@ export class EtymologyMap extends Map {
         try {
             showLoadingSpinner(true);
             let data: GeoJSON | undefined;
-            if (this.wikidataMapService?.canHandleSource(sourceID))
-                data = await this.wikidataMapService.fetchMapData(sourceID, bbox);
-            else if (this.overpassService?.canHandleSource(sourceID))
-                data = await this.overpassService.fetchMapElementDetails(sourceID, bbox);
-            else if (this.overpassWikidataService?.canHandleSource(sourceID))
-                data = await this.overpassWikidataService.fetchMapElementDetails(sourceID, bbox);
-            else
-                throw new Error("No service found for source ID " + sourceID);
+            this.services?.forEach(async service => {
+                if (!data && service.canHandleSource(sourceID))
+                    data = await service.fetchMapElementDetails(sourceID, bbox);
+            });
 
             if (!data)
-                throw new Error("No data found");
+                throw new Error("No data found or no service found for source ID " + sourceID);
 
             this.addOrUpdateGeoJSONSource(
                 WIKIDATA_SOURCE,

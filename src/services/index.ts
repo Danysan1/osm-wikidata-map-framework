@@ -5,3 +5,4 @@ export { WikidataMapService } from "./WikidataMapService";
 export { OverpassWikidataMapService } from "./OverpassWikidataMapService";
 export { WikidataDetailsService } from "./WikidataDetailsService";
 export { WikidataStatsService, statsQueries } from "./WikidataStatsService";
+export { QLeverMapService } from "./QLeverMapService";

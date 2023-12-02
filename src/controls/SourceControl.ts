@@ -7,8 +7,9 @@ import { logErrorMessage } from '../monitoring';
 const PMTILES_GROUP_NAME = "PMTiles",
     VECTOR_GROUP_NAME = "DB",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
-    WIKIDATA_GROUP_NAME = "Wikidata Query Service",
-    OSM_WD_GROUP_NAME = "OSM (Overpass API) + Wikidata Query Service";
+    WDQS_GROUP_NAME = "Wikidata Query Service",
+    OVERPASS_WDQS_GROUP_NAME = "OSM (Overpass API) + Wikidata Query Service",
+    QLEVER_GROUP_NAME = "QLever";
 
 /**
  * Let the user choose the map style.
@@ -23,6 +24,7 @@ export class SourceControl extends DropdownControl {
             wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getBoolConfig("propagate_data"),
+            qleverEnabled = getBoolConfig("qlever_enable"),
             vectorTilesEnabled = getBoolConfig("vector_tiles_enable"),
             pmtilesURL = getBoolConfig("pmtiles_base_url"),
             dropdownItems: DropdownItem[] = [],
@@ -69,32 +71,49 @@ export class SourceControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("vector_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), VECTOR_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("vector_wd_direct", "Wikidata " + wdDirectProperties.join("/"), VECTOR_GROUP_NAME));
             }
-            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), WIKIDATA_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), OSM_WD_GROUP_NAME));
+            if (qleverEnabled) {
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_direct", "Wikidata " + wdDirectProperties.join("/"), QLEVER_GROUP_NAME));
+            }
+            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), OVERPASS_WDQS_GROUP_NAME));
             if (keys?.length)
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", t("source.all_osm_keys", "All OSM keys") + " + Wikidata " + wdDirectProperties.join("/"), OSM_WD_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", t("source.all_osm_keys", "All OSM keys") + " + Wikidata " + wdDirectProperties.join("/"), OVERPASS_WDQS_GROUP_NAME));
         }
 
         if (indirectWdProperty) {
             if (vectorTilesEnabled)
                 dropdownItems.push(buildDropdownItem("vector_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", `Wikidata entities referenced with OSM wikidata=* and ${indirectWdProperty}`, { indirectWdProperty }), VECTOR_GROUP_NAME));
 
-            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), WIKIDATA_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), WIKIDATA_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), WIKIDATA_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), OSM_WD_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), OSM_WD_GROUP_NAME));
+            if (qleverEnabled) {
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), QLEVER_GROUP_NAME));
+            }
+            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("qlever_indirect", t("source.wd_indirect", { indirectWdProperty }), QLEVER_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("qlever_qualifier", t("source.wd_qualifier", { indirectWdProperty }), QLEVER_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("qlever_reverse", t("source.wd_reverse", { indirectWdProperty }), QLEVER_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
             if (keys?.length) {
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), OSM_WD_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), OSM_WD_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), OSM_WD_GROUP_NAME));
+                if (qleverEnabled) {
+                    dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), QLEVER_GROUP_NAME));
+                    dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), QLEVER_GROUP_NAME));
+                    dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), QLEVER_GROUP_NAME));
+                }
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
             }
         }
 
         if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty && !osm_text_key) {
             dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", OSM_WD_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", WIKIDATA_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("qlever_base", "Wikidata", QLEVER_GROUP_NAME));
         }
 
         if (propagationEnabled && vectorTilesEnabled)
