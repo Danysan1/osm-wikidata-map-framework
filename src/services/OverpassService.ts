@@ -4,10 +4,11 @@ import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from 
 import { Configuration, OverpassApi } from "../generated/overpass";
 import { MapDatabase } from "../db/MapDatabase";
 import osmtogeojson from "osmtogeojson";
+import { MapService } from "./MapService";
 
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 
-export class OverpassService {
+export class OverpassService implements MapService {
     private api: OverpassApi;
     private db: MapDatabase;
     private language: string;

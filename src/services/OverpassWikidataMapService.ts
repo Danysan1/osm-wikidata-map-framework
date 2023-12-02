@@ -1,6 +1,7 @@
 import { debug, getConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
 import { Etymology, EtymologyFeature, EtymologyFeaturePropertiesOsmTypeEnum, EtymologyOsmWdJoinFieldEnum, EtymologyResponse } from "../generated/owmf";
+import { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
@@ -14,7 +15,7 @@ const JOIN_FIELD_MAP: Record<EtymologyFeaturePropertiesOsmTypeEnum, EtymologyOsm
     relation: "P402"
 };
 
-export class OverpassWikidataMapService {
+export class OverpassWikidataMapService implements MapService {
     private db: MapDatabase;
     private language: string;
     private overpassService: OverpassService;
@@ -38,13 +39,13 @@ export class OverpassWikidataMapService {
             throw new Error("Invalid sourceID");
 
         if (overpassSourceID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
-            return this.wikidataService.fetchMapData(wikidataSourceID, bbox);
+            return this.wikidataService.fetchMapClusterElements(wikidataSourceID, bbox);
 
         const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_all" : overpassSourceID;
         return await this.fetchAndMergeMapData(
             "elements-" + sourceID,
             () => this.overpassService.fetchMapClusterElements(actualOverpassSourceID, bbox),
-            () => this.wikidataService.fetchMapData(wikidataSourceID, bbox),
+            () => this.wikidataService.fetchMapClusterElements(wikidataSourceID, bbox),
             bbox
         );
     }
@@ -57,7 +58,7 @@ export class OverpassWikidataMapService {
         const out = await this.fetchAndMergeMapData(
             "details-" + sourceID,
             () => this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
-            () => this.wikidataService.fetchMapData(wikidataSourceID, bbox),
+            () => this.wikidataService.fetchMapElementDetails(wikidataSourceID, bbox),
             bbox
         );
         out.features = out.features.filter(

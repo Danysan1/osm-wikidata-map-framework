@@ -1,26 +1,38 @@
 openapi: 3.0.3
 info:
-  title: Wikidata Query Service (WDQS)
+  title: SPARQL endpoint API
   version: 1.0.0
 externalDocs:
   url: https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service
 
 servers:
   - url: https://query.wikidata.org
-    description: Wikidata Query Service
+    description: Official Wikidata Query Service (WDQS) endpoint
+  - url: https://qlever.cs.uni-freiburg.de/api
+    description: Official QLever endpoint
 
 tags:
   - name: sparql
     description: Perform a SPARQL query against the data
 
 paths:
-  /sparql:
+  /{backend}:
     get:
       tags:
         - sparql
       summary: Run SPARQL query via GET
       operationId: get_sparql_query
       parameters:
+        - name: backend
+          in: path
+          required: true
+          description: In WDQS must be equal to "sparql". In QLever varies and specifies the source of the data.
+          schema:
+            type: string
+            enum:
+              - sparql
+              - wikidata
+              - osm-planet
         - name: query
           in: query
           description: The SPARQL query
@@ -33,7 +45,7 @@ paths:
           content:
             application/sparql-results+json:
               schema:
-                type: object
+                $ref: '#/components/schemas/SparqlResponse'
         '400':
           description: Bad request or malformed SPARQL
         '500':
@@ -43,6 +55,17 @@ paths:
         - sparql
       summary: Run SPARQL query via POST
       operationId: post_sparql_query
+      parameters:
+        - in: path
+          name: backend
+          required: true
+          description: In WDQS must be equal to "sparql". In QLever varies and specifies the source of the data.
+          schema:
+            type: string
+            enum:
+              - sparql
+              - wikidata
+              - osm-planet
       requestBody:
         content:
           application/x-www-form-urlencoded:
@@ -67,6 +90,9 @@ paths:
             application/sparql-results+xml:
               schema:
                 $ref: '#/components/schemas/SparqlResponse'
+            application/qlever-results+json:
+              schema:
+                $ref: '#/components/schemas/QLeverResponse'
         '400':
           description: Bad request or malformed query
         '500':
@@ -95,3 +121,35 @@ components:
               items:
                 type: object
                 title: SparqlResponseBinding
+    QLeverResponse:
+      type: object
+      properties:
+        query:
+          type: string
+        res:
+          type: array
+          description: The result set
+          items:
+            type: array
+            description: A row in the result set
+            items:
+              type: string
+              description: A cell in the row
+        resultSize:
+          type: integer
+        runtimeInformation:
+          type: object
+        selected:
+          type: array
+          description: The names of the columns in the result set (the variables selected in the query)
+          items:
+            type: string
+            description: The name of a column
+        status:
+          type: string
+        time:
+          type: object
+        warnings:
+          type: array
+          items:
+            type: string

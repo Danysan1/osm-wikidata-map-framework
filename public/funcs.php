@@ -130,6 +130,11 @@ function prepareHTML(Configuration $conf)
 		$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
 	}
 
+	$qleverConnect = '';
+	if ($conf->getBool('qlever_enable')) {
+		$qleverConnect = 'https://qlever.cs.uni-freiburg.de/api/';
+	}
+
 	$pmtilesConnect = '';
 	if ($conf->has('pmtiles_base_url') && !str_starts_with((string)$conf->get('pmtiles_base_url'), 'http://localhost')) {
 		$pmtilesConnect = (string)$conf->get('pmtiles_base_url');
@@ -138,7 +143,7 @@ function prepareHTML(Configuration $conf)
 	header(
 		"Content-Security-Policy: " .
 			"child-src blob: ; " .
-			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $pmtilesConnect; " .
+			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect; " .
 			"default-src 'self' ; " .
 			"font-src 'self' ; " .
 			"form-action 'self' $payPalForm ; " .

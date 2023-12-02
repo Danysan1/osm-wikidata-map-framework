@@ -11,19 +11,25 @@ import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from 
 import { logErrorMessage } from "../monitoring";
 import { MapDatabase } from "../db/MapDatabase";
 import { MapService } from "./MapService";
+import { Configuration, SparqlApi } from "../generated/sparql";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 
-export class WikidataMapService extends WikidataService implements MapService {
-    protected db: MapDatabase;
+export class QLeverMapService implements MapService {
+    public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
+    public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
+    private api: SparqlApi;
+    private defaultLanguage: string;
+    private db: MapDatabase;
 
-    constructor(db: MapDatabase) {
-        super();
+    constructor(db: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api', defaultLanguage = 'en') {
+        this.api = new SparqlApi(new Configuration({ basePath }));
         this.db = db;
+        this.defaultLanguage = defaultLanguage;
     }
 
     canHandleSource(sourceID: string): boolean {
-        return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID);
+        return /^qlever_wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID);
     }
 
     public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
@@ -38,9 +44,9 @@ export class WikidataMapService extends WikidataService implements MapService {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getMap(sourceID, bbox, language);
         if (out) {
-            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
+            if (debug) console.info(`QLever map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
         } else {
-            if (debug) console.info("Wikidata map cache miss, fetching data", { sourceID, bbox, language: language });
+            if (debug) console.info("QLever map cache miss, fetching data", { sourceID, bbox, language: language });
             let sparqlQueryTemplate: string;
             if (sourceID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
@@ -58,7 +64,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
                     .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
                     .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
-                ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
+                ret = await this.api.postSparqlQuery({ backend: "wikidata", format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)
                 throw new Error("Invalid response from Wikidata (no bindings)");
@@ -74,7 +80,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             out.sourceID = sourceID;
             out.language = language;
             out.truncated = !!maxElements && ret.results.bindings.length === parseInt(maxElements);
-            if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+            if (debug) console.info(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }
         return out;
