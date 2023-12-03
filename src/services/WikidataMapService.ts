@@ -44,9 +44,9 @@ export class WikidataMapService extends WikidataService implements MapService {
             let sparqlQueryTemplate: string;
             if (sourceID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
-            else if (sourceID.includes("wd_direct"))
+            else if (sourceID.startsWith("wd_direct"))
                 sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
-            else if (sourceID.includes("wd_indirect"))
+            else if (/^wd_(reverse|qualifier|indirect)$/.test(sourceID))
                 sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
             else
                 throw new Error("Invalid sourceID: " + sourceID);
@@ -84,7 +84,7 @@ export class WikidataMapService extends WikidataService implements MapService {
 
     private getDirectSparqlQuery(sourceID: string): string {
         let properties: string[];
-        const sourceProperty = /^wd_\w+_(P\d+)$/.exec(sourceID)?.at(1),
+        const sourceProperty = /^wd_direct_(P\d+)$/.exec(sourceID)?.at(1),
             directProperties = getJsonConfig("osm_wikidata_properties"),
             sparqlQueryTemplate = directMapQuery as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
@@ -106,11 +106,11 @@ export class WikidataMapService extends WikidataService implements MapService {
             throw new Error("No indirect property defined");
 
         let sparqlQueryTemplate: string;
-        if (sourceID.startsWith("wd_indirect"))
+        if (sourceID === "wd_indirect")
             sparqlQueryTemplate = indirectMapQuery;
-        else if (sourceID.startsWith("wd_reverse"))
+        else if (sourceID === "wd_reverse")
             sparqlQueryTemplate = reverseMapQuery;
-        else if (sourceID.startsWith("wd_qualifier"))
+        else if (sourceID === "wd_qualifier")
             sparqlQueryTemplate = qualifierMapQuery;
         else
             throw new Error("Invalid sourceID: " + sourceID);
