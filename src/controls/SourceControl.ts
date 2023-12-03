@@ -57,7 +57,8 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("vector_all", t("source.db_all", "All sources from DB"), VECTOR_GROUP_NAME));
 
         if (keys && keys?.length > 1) {
-            dropdownItems.push(buildDropdownItem("qlever_osm_all", t("source.all_osm_keys", "All OSM keys"), QLEVER_GROUP_NAME));
+            if (qleverEnabled)
+                dropdownItems.push(buildDropdownItem("qlever_osm_all", t("source.all_osm_keys", "All OSM keys"), QLEVER_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys", "All OSM keys"), OVERPASS_GROUP_NAME));
         }
 
@@ -96,9 +97,11 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("qlever_indirect", t("source.wd_indirect", { indirectWdProperty }), QLEVER_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("qlever_qualifier", t("source.wd_qualifier", { indirectWdProperty }), QLEVER_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("qlever_reverse", t("source.wd_reverse", { indirectWdProperty }), QLEVER_GROUP_NAME));
+            if (qleverEnabled) {
+                dropdownItems.push(buildDropdownItem("qlever_indirect", t("source.wd_indirect", { indirectWdProperty }), QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_qualifier", t("source.wd_qualifier", { indirectWdProperty }), QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_reverse", t("source.wd_reverse", { indirectWdProperty }), QLEVER_GROUP_NAME));
+            }
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
             if (keys?.length) {
@@ -115,9 +118,13 @@ export class SourceControl extends DropdownControl {
 
         if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty && !osm_text_key) {
             dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata + Wikidata", OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata=* + Wikidata", OVERPASS_WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("qlever_base", "Wikidata", QLEVER_GROUP_NAME));
+            if (qleverEnabled) {
+                dropdownItems.push(buildDropdownItem("qlever_osm_wd", "OSM wikidata=*", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_wd_base", "OSM wikidata=* + Wikidata", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_base", "Wikidata", QLEVER_GROUP_NAME));
+            }
         }
 
         if (propagationEnabled && vectorTilesEnabled)

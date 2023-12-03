@@ -80,9 +80,11 @@ export class EtymologyMap extends Map {
             this.services = [
                 wikidataService,
                 overpassService,
-                new OverpassWikidataMapService(overpassService, wikidataService, db),
-                new QLeverMapService(db)
+                new OverpassWikidataMapService(overpassService, wikidataService, db)
             ];
+            if (getBoolConfig("qlever_enable"))
+                this.services.push(new QLeverMapService(db));
+
             if (debug) console.debug(this.services.length, "map services initialized:", this.services);
         });
         try {
@@ -313,8 +315,8 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(true);
 
             const service = this.services?.find(service => service.canHandleSource(sourceID));
-            if(!service)
-            throw new Error("No service found for source ID " + sourceID);
+            if (!service)
+                throw new Error("No service found for source ID " + sourceID);
 
             const data = await service.fetchMapClusterElements(sourceID, bbox);
 
@@ -380,8 +382,8 @@ export class EtymologyMap extends Map {
             showLoadingSpinner(true);
 
             const service = this.services?.find(service => service.canHandleSource(sourceID));
-            if(!service)
-            throw new Error("No service found for source ID " + sourceID);
+            if (!service)
+                throw new Error("No service found for source ID " + sourceID);
 
             const data = await service.fetchMapElementDetails(sourceID, bbox);
 
@@ -624,23 +626,25 @@ export class EtymologyMap extends Map {
                 minZoomLevel
             ), 'top-right');
 
-            this.addControl(new LinkControl(
-                "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
-                t("qlever_query", "Source SPARQL query on QLever UI"),
-                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
-                "qlever_wd_query",
-                "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
-                minZoomLevel
-            ), 'top-right');
+            if (getBoolConfig("qlever_enable")) {
+                this.addControl(new LinkControl(
+                    "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
+                    t("qlever_query", "Source SPARQL query on QLever UI"),
+                    [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                    "qlever_wd_query",
+                    "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
+                    minZoomLevel
+                ), 'top-right');
 
-            this.addControl(new LinkControl(
-                "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
-                t("qlever_query", "Source SPARQL query on QLever UI"),
-                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
-                "qlever_osm_query",
-                "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
-                minZoomLevel
-            ), 'top-right');
+                this.addControl(new LinkControl(
+                    "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
+                    t("qlever_query", "Source SPARQL query on QLever UI"),
+                    [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                    "qlever_osm_query",
+                    "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
+                    minZoomLevel
+                ), 'top-right');
+            }
 
             this.addControl(new DataTableControl(WIKIDATA_SOURCE, thresholdZoomLevel), 'top-right');
             this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
