@@ -48,13 +48,13 @@ export class QLeverMapService implements MapService {
         } else {
             if (debug) console.info("QLever map cache miss, fetching data", { sourceID, bbox, language: language });
             let backend: SparqlBackend, sparqlQueryTemplate: string;
-            if (sourceID === "osm_wd") {
+            if (sourceID === "qlever_wd_base") {
                 backend = "osm-planet";
                 sparqlQueryTemplate = baseMapQuery;
-            } else if (sourceID.includes("wd_direct")) {
+            } else if (sourceID.startsWith("qlever_wd_direct")) {
                 backend = "wikidata";
                 sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
-            } else if (sourceID.includes("wd_indirect")) {
+            } else if (/^qlever_wd_(reverse|qualifier|indirect)$/.test(sourceID)) {
                 backend = "wikidata";
                 sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
             } else {
@@ -66,10 +66,10 @@ export class QLeverMapService implements MapService {
                     .replaceAll('${language}', language || '')
                     .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${centerLon}', ((bbox[0]+bbox[2])/2).toString())
-                    .replaceAll('${centerLat}', ((bbox[1]+bbox[3])/2).toString())
+                    .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toString())
+                    .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toString())
                     .replaceAll('${maxDistanceKm}', Math.max(
-                        Math.abs(bbox[2]-bbox[0])*111*Math.cos(bbox[0]*Math.PI/180), Math.abs(bbox[3]-bbox[1])*111 // https://stackoverflow.com/a/1253545/2347196
+                        Math.abs(bbox[2] - bbox[0]) * 111 * Math.cos(bbox[0] * Math.PI / 180), Math.abs(bbox[3] - bbox[1]) * 111 // https://stackoverflow.com/a/1253545/2347196
                     ).toFixed(3)),
                 ret = await this.api.postSparqlQuery({ backend: "wikidata", format: "json", query: sparqlQuery });
 
@@ -82,9 +82,9 @@ export class QLeverMapService implements MapService {
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-            if(backend === "wikidata")
+            if (backend === "wikidata")
                 out.qlever_wd_query = sparqlQuery;
-            else if(backend === "osm-planet")
+            else if (backend === "osm-planet")
                 out.qlever_osm_query = sparqlQuery;
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
@@ -98,7 +98,7 @@ export class QLeverMapService implements MapService {
 
     private getDirectSparqlQuery(sourceID: string): string {
         let properties: string[];
-        const sourceProperty = /^qlever_wd_\w+_(P\d+)$/.exec(sourceID)?.at(1),
+        const sourceProperty = /^qlever_wd_direct_(P\d+)$/.exec(sourceID)?.at(1),
             directProperties = getJsonConfig("osm_wikidata_properties"),
             sparqlQueryTemplate = directMapQuery as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
@@ -120,11 +120,11 @@ export class QLeverMapService implements MapService {
             throw new Error("No indirect property defined");
 
         let sparqlQueryTemplate: string;
-        if (sourceID.startsWith("qlever_wd_indirect"))
+        if (sourceID === "qlever_wd_indirect")
             sparqlQueryTemplate = indirectMapQuery;
-        else if (sourceID.startsWith("qlever_wd_reverse"))
+        else if (sourceID === "qlever_wd_reverse")
             sparqlQueryTemplate = reverseMapQuery;
-        else if (sourceID.startsWith("qlever_wd_qualifier"))
+        else if (sourceID === "qlever_wd_qualifier")
             sparqlQueryTemplate = qualifierMapQuery;
         else
             throw new Error("Invalid sourceID: " + sourceID);
