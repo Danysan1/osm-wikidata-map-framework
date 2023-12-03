@@ -38,11 +38,23 @@ export interface FeatureCollectionDetails {
      */
     etymology_count?: number;
     /**
-     * Wikidata SPARQL query used to fetch the features
+     * SPARQL query used to fetch the features from Wikidata Query Service
      * @type {string}
      * @memberof FeatureCollectionDetails
      */
-    wikidata_query?: string;
+    wdqs_query?: string;
+    /**
+     * SPARQL query used to fetch the features from Wikidata through QLever
+     * @type {string}
+     * @memberof FeatureCollectionDetails
+     */
+    qlever_wd_query?: string;
+    /**
+     * SPARQL query used to fetch the features from OpenStreetMap through QLever
+     * @type {string}
+     * @memberof FeatureCollectionDetails
+     */
+    qlever_osm_query?: string;
     /**
      * OverpassQL query used to fetch the features
      * @type {string}
@@ -85,7 +97,9 @@ export function FeatureCollectionDetailsFromJSONTyped(json: any, ignoreDiscrimin
         'sourceID': !exists(json, 'sourceID') ? undefined : json['sourceID'],
         'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
         'etymology_count': !exists(json, 'etymology_count') ? undefined : json['etymology_count'],
-        'wikidata_query': !exists(json, 'wikidata_query') ? undefined : json['wikidata_query'],
+        'wdqs_query': !exists(json, 'wdqs_query') ? undefined : json['wdqs_query'],
+        'qlever_wd_query': !exists(json, 'qlever_wd_query') ? undefined : json['qlever_wd_query'],
+        'qlever_osm_query': !exists(json, 'qlever_osm_query') ? undefined : json['qlever_osm_query'],
         'overpass_query': !exists(json, 'overpass_query') ? undefined : json['overpass_query'],
         'truncated': !exists(json, 'truncated') ? undefined : json['truncated'],
         'language': !exists(json, 'language') ? undefined : json['language'],
@@ -104,7 +118,9 @@ export function FeatureCollectionDetailsToJSON(value?: FeatureCollectionDetails 
         'sourceID': value.sourceID,
         'timestamp': value.timestamp,
         'etymology_count': value.etymology_count,
-        'wikidata_query': value.wikidata_query,
+        'wdqs_query': value.wdqs_query,
+        'qlever_wd_query': value.qlever_wd_query,
+        'qlever_osm_query': value.qlever_osm_query,
         'overpass_query': value.overpass_query,
         'truncated': value.truncated,
         'language': value.language,

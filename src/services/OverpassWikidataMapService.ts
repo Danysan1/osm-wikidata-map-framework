@@ -181,7 +181,7 @@ export class OverpassWikidataMapService implements MapService {
             return acc;
         }, overpassData);
 
-        out.wikidata_query = wikidataData.wikidata_query;
+        out.wdqs_query = wikidataData.wdqs_query;
         out.truncated = out.truncated || wikidataData.truncated;
         if (debug) console.debug(`Overpass+Wikidata mergeMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;

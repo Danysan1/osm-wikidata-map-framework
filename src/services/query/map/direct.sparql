@@ -23,8 +23,8 @@ WHERE {
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
     SERVICE wikibase:box {
         ?locationStatement ps:P625 ?location.
-        bd:serviceParam wikibase:cornerWest '${southWestWKT}'^^geo:wktLiteral;
-                        wikibase:cornerEast '${northEastWKT}'^^geo:wktLiteral.
+        bd:serviceParam wikibase:cornerWest 'POINT(${southLon} ${westLat})'^^geo:wktLiteral;
+                        wikibase:cornerEast 'POINT(${northLon} ${eastLat})'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
     OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }

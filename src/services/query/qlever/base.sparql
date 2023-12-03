@@ -1,4 +1,11 @@
-#defaultView:Map
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
 SELECT
     ?item
     (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
@@ -10,23 +17,19 @@ SELECT
     (SAMPLE(?osm_node) AS ?osm_node)
     (SAMPLE(?osm_way) AS ?osm_way)
     (SAMPLE(?osm_rel) AS ?osm_rel)
-    ?etymology
-    (?etymology AS ?from_entity)
-    (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
-    ?etymology p:${indirectProperty} ?stmt.
-    ?stmt ps:${indirectProperty} ?item.
     ?item p:P625 ?locationStatement;
           rdfs:label ?anyLabel.
-    MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
-    MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
-    SERVICE wikibase:box {
-        ?locationStatement ps:P625 ?location.
-        bd:serviceParam wikibase:cornerWest 'POINT(${southLon} ${westLat})'^^geo:wktLiteral;
-                        wikibase:cornerEast 'POINT(${northLon} ${eastLat})'^^geo:wktLiteral.
-    } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+    ?locationStatement ps:P625 ?location.
+    # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
+    #     ?location,
+    #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
+    # )) #! Not yet supported by QLever
+    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+    BIND (geof:distance(?location, ?center) AS ?distance)
+    FILTER (?distance <= ${maxDistanceKm})
     OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
     OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
     OPTIONAL { ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = '${language}'). }
@@ -37,5 +40,5 @@ WHERE {
     OPTIONAL { ?item wdt:P10689 ?osm_way. }
     OPTIONAL { ?item wdt:P402 ?osm_rel. }
 }
-GROUP BY ?item ?etymology
+GROUP BY ?item
 ${limit}
