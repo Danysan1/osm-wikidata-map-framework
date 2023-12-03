@@ -29,7 +29,7 @@ export class QLeverMapService implements MapService {
     }
 
     canHandleSource(sourceID: string): boolean {
-        return /^qlever_(wd_(direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(sourceID);
+        return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(sourceID);
     }
 
     public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
