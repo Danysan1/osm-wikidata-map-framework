@@ -69,10 +69,10 @@ function prepareHTML(Configuration $conf)
 	}
 
 	$mapboxScript = '';
-	$mapboxConnect = 'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js';
+	$mapboxConnect = 'https://unpkg.com/@mapbox/';
 	if ($conf->has("mapbox_token")) {
 		$mapboxScript = 'https://api.mapbox.com';
-		$mapboxConnect = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+		$mapboxConnect .= ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 	}
 
 	$maptilerConnect = '';

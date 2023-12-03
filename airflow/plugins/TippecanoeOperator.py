@@ -15,6 +15,6 @@ class TippecanoeOperator(OsmDockerOperator):
         super().__init__(
             container_name = "osm-wikidata_map_framework-generate_pmtiles",
             image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/tippecanoe:2.35.0",
-            command = f"tippecanoe --output='{output_file}' '{input_file}' -Z {min_zoom} -Z {max_zoom} {extra_params}",
+            command = f"tippecanoe --output='{output_file}' '{input_file}' -Z {min_zoom} -z {max_zoom} {extra_params}",
             **kwargs
         )
