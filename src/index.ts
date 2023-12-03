@@ -101,7 +101,7 @@ function initMap() {
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     mapLibrary.setRTLTextPlugin(
-        'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/v0.2.3/mapbox-gl-rtl-text.js',
+        'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
         err => {
             if (err)
                 console.error("Error loading mapbox-gl-rtl-text", err)

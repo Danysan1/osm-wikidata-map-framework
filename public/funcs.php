@@ -69,7 +69,7 @@ function prepareHTML(Configuration $conf)
 	}
 
 	$mapboxScript = '';
-	$mapboxConnect = 'https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-rtl-text/';
+	$mapboxConnect = 'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js';
 	if ($conf->has("mapbox_token")) {
 		$mapboxScript = 'https://api.mapbox.com';
 		$mapboxConnect = 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
@@ -130,8 +130,10 @@ function prepareHTML(Configuration $conf)
 		$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
 	}
 
+	$qleverImg = '';
 	$qleverConnect = '';
 	if ($conf->getBool('qlever_enable')) {
+		$qleverImg = 'https://qlever.cs.uni-freiburg.de/static/favicon.ico';
 		$qleverConnect = 'https://qlever.cs.uni-freiburg.de/api/';
 	}
 
@@ -148,7 +150,7 @@ function prepareHTML(Configuration $conf)
 			"font-src 'self' ; " .
 			"form-action 'self' $payPalForm ; " .
 			"frame-ancestors 'none' ; " .
-			"img-src 'self' data: blob: $wikimediaImg $liberapayImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
+			"img-src 'self' data: blob: $qleverImg $wikimediaImg $liberapayImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
 			"object-src 'none'; " .
 			"script-src 'self' $sentryScript $matomoScript $mapboxScript $googleAnalyticsScript ; " .
 			"style-src 'self' https://fonts.googleapis.com ; " .
