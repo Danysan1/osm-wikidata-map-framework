@@ -56,8 +56,10 @@ export class WikidataMapService extends WikidataService implements MapService {
                     .replaceAll('${language}', language || '')
                     .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
-                    .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
+                    .replaceAll('${southLon}', bbox[0].toString())
+                    .replaceAll('${westLat}', bbox[1].toString())
+                    .replaceAll('${northLon}', bbox[2].toString())
+                    .replaceAll('${eastLat}', bbox[3].toString()),
                 ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)
@@ -69,7 +71,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-            out.wikidata_query = sparqlQuery;
+            out.wdqs_query = sparqlQuery;
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
             out.language = language;

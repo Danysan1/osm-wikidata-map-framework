@@ -619,8 +619,26 @@ export class EtymologyMap extends Map {
                 "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg",
                 t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
                 [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
-                "wikidata_query",
+                "wdqs_query",
                 "https://query.wikidata.org/#",
+                minZoomLevel
+            ), 'top-right');
+
+            this.addControl(new LinkControl(
+                "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
+                t("qlever_query", "Source SPARQL query on QLever UI"),
+                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                "qlever_wd_query",
+                "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
+                minZoomLevel
+            ), 'top-right');
+
+            this.addControl(new LinkControl(
+                "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
+                t("qlever_query", "Source SPARQL query on QLever UI"),
+                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                "qlever_osm_query",
+                "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
                 minZoomLevel
             ), 'top-right');
 

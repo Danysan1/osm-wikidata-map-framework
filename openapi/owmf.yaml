@@ -400,9 +400,17 @@ components:
             etymology_count:
               type: integer
               description: Total number of etymologies linked to the features
-            wikidata_query:
+            wdqs_query:
               type: string
-              description: Wikidata SPARQL query used to fetch the features
+              description: SPARQL query used to fetch the features from Wikidata Query Service
+              example: "SELECT ... WHERE { ... }"
+            qlever_wd_query:
+              type: string
+              description: SPARQL query used to fetch the features from Wikidata through QLever
+              example: "SELECT ... WHERE { ... }"
+            qlever_osm_query:
+              type: string
+              description: SPARQL query used to fetch the features from OpenStreetMap through QLever
               example: "SELECT ... WHERE { ... }"
             overpass_query:
               type: string

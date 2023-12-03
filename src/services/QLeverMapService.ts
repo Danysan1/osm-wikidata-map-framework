@@ -1,9 +1,9 @@
 import { WikidataService } from "./WikidataService";
-import indirectMapQuery from "./query/map/indirect.sparql";
-import reverseMapQuery from "./query/map/reverse.sparql";
-import qualifierMapQuery from "./query/map/qualifier.sparql";
-import directMapQuery from "./query/map/direct.sparql";
-import baseMapQuery from "./query/map/base.sparql";
+import indirectMapQuery from "./query/qlever/indirect.sparql";
+import reverseMapQuery from "./query/qlever/reverse.sparql";
+import qualifierMapQuery from "./query/qlever/qualifier.sparql";
+import directMapQuery from "./query/qlever/direct.sparql";
+import baseMapQuery from "./query/qlever/base.sparql";
 import { debug, getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
@@ -66,8 +66,11 @@ export class QLeverMapService implements MapService {
                     .replaceAll('${language}', language || '')
                     .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${southWestWKT}', `Point(${bbox[0]} ${bbox[1]})`)
-                    .replaceAll('${northEastWKT}', `Point(${bbox[2]} ${bbox[3]})`),
+                    .replaceAll('${centerLon}', ((bbox[0]+bbox[2])/2).toString())
+                    .replaceAll('${centerLat}', ((bbox[1]+bbox[3])/2).toString())
+                    .replaceAll('${maxDistanceKm}', Math.max(
+                        Math.abs(bbox[2]-bbox[0])*111*Math.cos(bbox[0]*Math.PI/180), Math.abs(bbox[3]-bbox[1])*111 // https://stackoverflow.com/a/1253545/2347196
+                    ).toFixed(3)),
                 ret = await this.api.postSparqlQuery({ backend: "wikidata", format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)
@@ -79,7 +82,10 @@ export class QLeverMapService implements MapService {
                 features: ret.results.bindings.reduce(this.featureReducer, [])
             };
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-            out.wikidata_query = sparqlQuery;
+            if(backend === "wikidata")
+                out.qlever_wd_query = sparqlQuery;
+            else if(backend === "osm-planet")
+                out.qlever_osm_query = sparqlQuery;
             out.timestamp = new Date().toISOString();
             out.sourceID = sourceID;
             out.language = language;
@@ -92,7 +98,7 @@ export class QLeverMapService implements MapService {
 
     private getDirectSparqlQuery(sourceID: string): string {
         let properties: string[];
-        const sourceProperty = /^wd_\w+_(P\d+)$/.exec(sourceID)?.at(1),
+        const sourceProperty = /^qlever_wd_\w+_(P\d+)$/.exec(sourceID)?.at(1),
             directProperties = getJsonConfig("osm_wikidata_properties"),
             sparqlQueryTemplate = directMapQuery as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
@@ -114,17 +120,17 @@ export class QLeverMapService implements MapService {
             throw new Error("No indirect property defined");
 
         let sparqlQueryTemplate: string;
-        if (sourceID.startsWith("wd_indirect"))
+        if (sourceID.startsWith("qlever_wd_indirect"))
             sparqlQueryTemplate = indirectMapQuery;
-        else if (sourceID.startsWith("wd_reverse"))
+        else if (sourceID.startsWith("qlever_wd_reverse"))
             sparqlQueryTemplate = reverseMapQuery;
-        else if (sourceID.startsWith("wd_qualifier"))
+        else if (sourceID.startsWith("qlever_wd_qualifier"))
             sparqlQueryTemplate = qualifierMapQuery;
         else
             throw new Error("Invalid sourceID: " + sourceID);
 
         const imageProperty = getConfig("wikidata_image_property"),
-            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
+            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
         return sparqlQueryTemplate
             .replaceAll('${indirectProperty}', indirectProperty)
             .replaceAll('${pictureQuery}', pictureQuery);
