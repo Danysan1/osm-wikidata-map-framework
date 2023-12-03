@@ -68,10 +68,10 @@ function prepareHTML(Configuration $conf)
 		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
 	}
 
-	$mapboxScript = '';
+	$mapboxScript = 'https://unpkg.com/@mapbox/';
 	$mapboxConnect = 'https://unpkg.com/@mapbox/';
 	if ($conf->has("mapbox_token")) {
-		$mapboxScript = 'https://api.mapbox.com';
+		$mapboxScript .= ' https://api.mapbox.com';
 		$mapboxConnect .= ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
 	}
 

@@ -58,7 +58,7 @@ if (jawg_token) {
 
 if (maptiler_key) {
     backgroundStyles.push(
-        { id: "maputnik_osm_liberty", vendorText:"Maputnik", styleText: "OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
+        { id: "maputnik_osm_liberty", vendorText: "Maputnik", styleText: "OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
         maptilerStyle('maptiler_backdrop', 'Backdrop', 'backdrop', maptiler_key),
         maptilerStyle('maptiler_basic', 'Basic', 'basic-v2', maptiler_key),
         maptilerStyle('maptiler_bright', 'Bright', 'bright-v2', maptiler_key),
@@ -95,8 +95,15 @@ function initMap() {
     /********** End of Mapbox GL JS specific code **********/
 
     /********** Start of Maplibre GL JS specific code **********/
-    if (mapbox_token)
-        requestTransformFunc = (url, resourceType) => isMapboxURL(url) ? transformMapboxUrl(url, resourceType as string, mapbox_token) : { url };
+    if (mapbox_token) {
+        requestTransformFunc = (url, resourceType) => {
+            if (isMapboxURL(url))
+                return transformMapboxUrl(url, resourceType as string, mapbox_token);
+            if(/^http:\/\/[^\/]+\/(elements|etymology_map)\//.test(url))
+                return { url: url.replace("http", "https") };
+            return { url };
+        };
+    }
     /********** End of Maplibre GL JS specific code **********/
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
