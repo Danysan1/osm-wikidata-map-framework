@@ -99,7 +99,7 @@ function initMap() {
         requestTransformFunc = (url, resourceType) => {
             if (isMapboxURL(url))
                 return transformMapboxUrl(url, resourceType as string, mapbox_token);
-            if(/^http:\/\/[^\/]+\/(elements|etymology_map)\//.test(url))
+            if(/^http:\/\/[^\/]+(?<!localhost)\/(elements|etymology_map)\//.test(url))
                 return { url: url.replace("http", "https") };
             return { url };
         };
