@@ -138,8 +138,10 @@ function prepareHTML(Configuration $conf)
 	}
 
 	$pmtilesConnect = '';
-	if ($conf->has('pmtiles_base_url') && !str_starts_with((string)$conf->get('pmtiles_base_url'), 'http://localhost')) {
-		$pmtilesConnect = (string)$conf->get('pmtiles_base_url');
+	if ($conf->has('pmtiles_base_url')) {
+		$pmTilesBaseURL = (string)$conf->get('pmtiles_base_url');
+		if (!str_starts_with($pmTilesBaseURL, 'http://localhost'))
+			$pmtilesConnect = "$pmTilesBaseURL pmtiles://$pmTilesBaseURL";
 	}
 
 	header(
