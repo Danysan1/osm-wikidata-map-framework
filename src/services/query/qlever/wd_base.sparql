@@ -17,24 +17,21 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
-    ?etymology
-    (?item AS ?from_entity)
-    (SAMPLE(?_from_prop) AS ?from_prop)
+    (false AS ?from_osm)
 WHERE {
-    VALUES ?_from_prop { ${directProperties} }
     ?item p:P625 ?locationStatement;
-          ?_from_prop ?etymology;
           rdfs:label ?anyLabel.
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
     ?locationStatement ps:P625 ?_location.
+
     # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
     #     ?_location,
     #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
     # )) #! Not yet supported by QLever
     BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    BIND (geof:distance(?_location, ?center) AS ?distance)
-    FILTER (?distance <= ${maxDistanceKm})
+    FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+    
     OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
     OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
     OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
@@ -45,5 +42,5 @@ WHERE {
     OPTIONAL { ?item wdt:P10689 ?_osm_way. }
     OPTIONAL { ?item wdt:P402 ?_osm_rel. }
 }
-GROUP BY ?item ?etymology
+GROUP BY ?item
 ${limit}
