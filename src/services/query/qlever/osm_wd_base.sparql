@@ -1,0 +1,36 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT
+  ?item
+  ?osm
+  (SAMPLE(?_location) AS ?location)
+  #(SAMPLE(COALESCE(?osm_name,?wd_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
+  (SAMPLE(COALESCE(?osm_name,?osm_default_name)) AS ?itemLabel)
+  (SAMPLE(?osm_descr) AS ?itemDescription)
+  (true AS ?from_osm)
+WHERE {
+  ?osm osm:wikidata ?item;
+    geo:hasGeometry ?_location.
+
+  # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
+  #     ?_location,
+  #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
+  # )) #! Not yet supported by QLever
+  BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+  FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+
+  OPTIONAL { ?osm osmkey:name:${language} ?osm_name. }
+  OPTIONAL { ?osm osmkey:name ?osm_default_name. }
+  OPTIONAL { ?osm osmkey:description ?osm_descr. }
+
+  # SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
+  #   OPTIONAL { ?item @${language}@rdfs:label ?wd_label. }
+  #   OPTIONAL { ?item @en@rdfs:label ?wd_default_label. }
+  # }
+}
+GROUP BY ?item ?osm

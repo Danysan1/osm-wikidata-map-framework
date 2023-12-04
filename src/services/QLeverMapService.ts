@@ -1,9 +1,11 @@
 import { WikidataService } from "./WikidataService";
-import indirectMapQuery from "./query/qlever/indirect.sparql";
-import reverseMapQuery from "./query/qlever/reverse.sparql";
-import qualifierMapQuery from "./query/qlever/qualifier.sparql";
-import directMapQuery from "./query/qlever/direct.sparql";
-import baseMapQuery from "./query/qlever/base.sparql";
+import osmWikidataMapQuery from "./query/qlever/osm_wd.sparql";
+import osmWikidataPlusBaseMapQuery from "./query/qlever/osm_wd_base.sparql";
+import indirectMapQuery from "./query/qlever/wd_indirect.sparql";
+import reverseMapQuery from "./query/qlever/wd_reverse.sparql";
+import qualifierMapQuery from "./query/qlever/wd_qualifier.sparql";
+import directMapQuery from "./query/qlever/wd_direct.sparql";
+import baseMapQuery from "./query/qlever/wd_base.sparql";
 import { debug, getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
@@ -48,8 +50,14 @@ export class QLeverMapService implements MapService {
         } else {
             if (debug) console.info("QLever map cache miss, fetching data", { sourceID, bbox, language: language });
             let backend: SparqlBackend, sparqlQueryTemplate: string;
-            if (sourceID === "qlever_wd_base") {
+            if (sourceID === "qlever_osm_wd") {
                 backend = "osm-planet";
+                sparqlQueryTemplate = osmWikidataMapQuery;
+            } else if (sourceID === "qlever_osm_wd_base") {
+                backend = "osm-planet";
+                sparqlQueryTemplate = osmWikidataPlusBaseMapQuery;
+            } else if (sourceID === "qlever_wd_base") {
+                backend = "wikidata";
                 sparqlQueryTemplate = baseMapQuery;
             } else if (sourceID.startsWith("qlever_wd_direct")) {
                 backend = "wikidata";
@@ -66,12 +74,12 @@ export class QLeverMapService implements MapService {
                     .replaceAll('${language}', language || '')
                     .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toString())
-                    .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toString())
+                    .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(3))
+                    .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(3))
                     .replaceAll('${maxDistanceKm}', Math.max(
                         Math.abs(bbox[2] - bbox[0]) * 111 * Math.cos(bbox[0] * Math.PI / 180), Math.abs(bbox[3] - bbox[1]) * 111 // https://stackoverflow.com/a/1253545/2347196
                     ).toFixed(3)),
-                ret = await this.api.postSparqlQuery({ backend: "wikidata", format: "json", query: sparqlQuery });
+                ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)
                 throw new Error("Invalid response from Wikidata (no bindings)");
@@ -145,7 +153,7 @@ export class QLeverMapService implements MapService {
         const wkt_geometry = row.location.value as string,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
-            if (debug) console.info("Failed to parse WKT coordinates", { wkt_geometry, row });
+            if (debug) console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
 
@@ -167,8 +175,8 @@ export class QLeverMapService implements MapService {
             if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
-                from_osm: false,
-                from_wikidata: true,
+                from_osm: row.from_prop?.value === "false",
+                from_wikidata: row.from_prop?.value === "true",
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
                 propagated: false,
@@ -176,7 +184,8 @@ export class QLeverMapService implements MapService {
             } : null;
 
             if (!existingFeature) { // Add the new feature for this item 
-                let osm_id: number | undefined, osm_type: "node" | "way" | "relation" | undefined;
+                let osm_id: number | undefined,
+                    osm_type: "node" | "way" | "relation" | undefined;
                 if (row.osm_rel?.value) {
                     osm_type = "relation";
                     osm_id = parseInt(row.osm_rel.value);
@@ -186,6 +195,12 @@ export class QLeverMapService implements MapService {
                 } else if (row.osm_node?.value) {
                     osm_type = "node";
                     osm_id = parseInt(row.osm_node.value);
+                } else if (row.osm?.value) {
+                    const splits = /^https:\/\/www.openstreetmap.org\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
+                    if (splits?.length === 3) {
+                        osm_type = splits[1] as "node" | "way" | "relation";
+                        osm_id = parseInt(splits[2]);
+                    }
                 }
 
                 acc.push({
@@ -196,8 +211,8 @@ export class QLeverMapService implements MapService {
                         commons: row.commons?.value,
                         description: row.itemDescription?.value,
                         etymologies: etymology ? [etymology] : undefined,
-                        from_osm: false,
-                        from_wikidata: true,
+                        from_osm: row.from_osm?.value === "true",
+                        from_wikidata: row.from_osm?.value === "false",
                         from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                         from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
                         name: row.itemLabel?.value,

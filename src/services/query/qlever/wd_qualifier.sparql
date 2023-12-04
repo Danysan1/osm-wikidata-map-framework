@@ -16,17 +16,19 @@ SELECT DISTINCT
     ?osm_rel
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
+    (false AS ?from_osm)
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
     ?stmt pq:P625 ?location.
+
     # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
     #     ?location,
     #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
     # )) #! Not yet supported by QLever
     BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    BIND (geof:distance(?location, ?center) AS ?distance)
-    FILTER (?distance <= ${maxDistanceKm})
+    FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+    
     OPTIONAL { ?stmt pq:P373 ?commons. }
     ${pictureQuery}
     OPTIONAL { ?stmt pq:P11693 ?osm_node. }

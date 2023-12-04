@@ -20,6 +20,7 @@ SELECT
     ?etymology
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
+    (false AS ?from_osm)
 WITH { 
     SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel
     WHERE {
@@ -27,13 +28,14 @@ WITH {
         MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
         MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt} # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
         ?stmt pq:P625 ?_location.
+
         # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
         #     ?_location,
         #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
         # )) #! Not yet supported by QLever
         BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-        BIND (geof:distance(?_location, ?center) AS ?distance)
-        FILTER (?distance <= ${maxDistanceKm})
+        FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+        
         OPTIONAL { ?stmt pq:P373 ?_commons. }
         ${pictureQuery}
         OPTIONAL { ?stmt pq:P11693 ?_osm_node. }
