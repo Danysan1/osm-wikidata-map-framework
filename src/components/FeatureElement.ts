@@ -133,8 +133,8 @@ export class FeatureElement extends HTMLDivElement {
         const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
         if (!etymologies_container) {
             if (debug) console.info("Missing .etymologies_container");
-        } else if (etymologies) {
-            this.fetchAndShowEtymologies(properties, etymologies, etymologies_container);
+        } else {
+            this.fetchAndShowEtymologies(properties, etymologies_container, etymologies);
         }
 
         const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm'),
@@ -177,8 +177,13 @@ export class FeatureElement extends HTMLDivElement {
         this.classList.remove("hiddenElement");
     }
 
-    private async fetchAndShowEtymologies(properties: EtymologyFeatureProperties, etymologies: Etymology[], etymologies_container: HTMLElement) {
+    private async fetchAndShowEtymologies(properties: EtymologyFeatureProperties, etymologies_container: HTMLElement, etymologies?: Etymology[]) {
         const placeholder = etymologies_container.querySelector<HTMLDivElement>(".etymology_loading");
+        if (!etymologies) {
+            placeholder?.classList.add("hiddenElement");
+            return;
+        }
+
         showLoadingSpinner(true);
 
         const filledEtymologies = await this.downloadEtymologyDetails(etymologies);
