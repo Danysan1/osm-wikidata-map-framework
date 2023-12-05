@@ -7,7 +7,9 @@ SELECT
     ST_GeomFromText(value->'location'->>'value', 4326),
     wd_id,
     JSON_BUILD_OBJECT (
-        'name:en', value->'itemLabel'->>'value',
+        'name:de', value->'label_de'->>'value',
+        'name', value->'label_en'->>'value',
+        'name:it', value->'label_it'->>'value',
         'wikimedia_commons', 'Category:' || (value->'commons'->>'value')
     )
 FROM json_array_elements(($1::JSON)->'results'->'bindings')

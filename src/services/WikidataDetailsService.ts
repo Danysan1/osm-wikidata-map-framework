@@ -17,9 +17,9 @@ export class WikidataDetailsService extends WikidataService {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getDetails(wikidataIDs, language);
         if (out) {
-            if (debug) console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: language, wikidataIDs, out });
+            if (debug) console.debug("fetchEtymologyDetails: Cache hit, using cached response", { language, wikidataIDs, out });
         } else {
-            if (debug) console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: language, wikidataIDs });
+            if (debug) console.debug("fetchEtymologyDetails: Cache miss, fetching data", { language, wikidataIDs });
             const res = await this.etymologyIDsQuery(language, [...wikidataIDs], detailsQuery);
 
             if (!res?.results?.bindings?.length) {
@@ -31,7 +31,16 @@ export class WikidataDetailsService extends WikidataService {
                 const wdURI = row?.wikidata?.value;
                 if (typeof wdURI !== "string")
                     throw new Error("Bad row (no Wikidata URI): ", row);
+
                 const wdQID = wdURI.replace(WikidataService.WD_ENTITY_PREFIX, "");
+                if (!wdQID.length)
+                    throw new Error("Bad row (empty Wikidata QID): ", row);
+
+                const parts = (row.parts?.value as string | undefined)
+                    ?.split(";")
+                    ?.map(id => id.replace(WikidataService.WD_ENTITY_PREFIX, ""))
+                    ?.filter(id => id.length);
+
                 acc[wdQID] = {
                     birth_date: row.birth_date?.value,
                     birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,
@@ -60,15 +69,15 @@ export class WikidataDetailsService extends WikidataService {
                     wikipedia: row.wikipedia?.value,
                     wkt_coords: row.wkt_coords?.value,
                     wikidata: wdQID,
-                    parts: row.parts?.value?.split(";")?.map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")),
+                    parts,
                 };
                 return acc;
             }, {});
             try {
-                if (debug) console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { lang: language, wikidataIDs });
+                if (debug) console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { language, wikidataIDs, out });
                 this.db.addDetails(out, wikidataIDs, language);
             } catch (e) {
-                logErrorMessage("Failed to store details data in cache", "warning", { lang: language, wikidataIDs, out, e });
+                logErrorMessage("Failed to store details data in cache", "warning", { language, wikidataIDs, out, e });
             }
         }
         return out;

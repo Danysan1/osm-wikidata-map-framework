@@ -2,6 +2,7 @@ INSERT INTO owmf.etymology (
     et_el_id,
     et_wd_id,
     et_from_key_ids,
+    et_from_el_id,
     et_from_osm_wikidata_wd_id,
     et_from_osm_wikidata_prop_cod
 )
@@ -9,6 +10,7 @@ SELECT
     osm_id,
     to_wd.wd_id,
     CASE WHEN osm_osm_id IS NULL THEN ARRAY['wd_direct'] ELSE ARRAY['wd_direct','osm_wikidata_direct'] END,
+    osm_id,
     from_wd.wd_id,
     REPLACE(value->'from_prop'->>'value', 'http://www.wikidata.org/prop/direct/', '')
 FROM json_array_elements(($1::JSON)->'results'->'bindings')
