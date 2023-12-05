@@ -6,6 +6,7 @@ WITH relevant_element AS (
         FROM owmf.osmdata
         WHERE osm_tags ? 'highway' -- Include only highways
         AND osm_tags ? 'name' -- Include only elements with a name
+        AND NOT osm_has_text_etymology
         AND NOT osm_tags->>'name' ILIKE '%th street%' -- Exclude known problematic names
         AND NOT osm_tags->>'name' ILIKE '%th ave%' -- Exclude known problematic names
     ),

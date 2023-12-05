@@ -465,6 +465,20 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_load_wd_related >> task_load_wd_reverse
 
+        task_check_text_ety = SQLExecuteQueryOperator(
+            task_id = "check_text_etymology",
+            conn_id = local_db_conn_id,
+            sql = "sql/10-check-text-etymology.jinja.sql",
+            dag = self,
+            task_group=elaborate_group,
+            doc_md = """
+                # Check elements with a text etymology
+
+                Check elements with an etymology that comes from the key configured in 'osm_text_key' or 'osm_description_key'.
+            """
+        )
+        task_remove_ele_too_big >> task_check_text_ety
+
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
@@ -476,12 +490,12 @@ class OwmfDbInitDAG(DAG):
             task_group=elaborate_group,
             doc_md = choose_propagation_method.__doc__
         )
-        [task_check_load_wd_related, task_load_wd_direct, task_load_wd_reverse] >> task_check_propagation
+        [task_check_load_wd_related, task_load_wd_direct, task_load_wd_reverse, task_check_text_ety] >> task_check_propagation
 
         task_propagate_globally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_globally",
             conn_id = local_db_conn_id,
-            sql = "sql/10-propagate-etymologies-global.sql",
+            sql = "sql/11-propagate-etymologies-global.sql",
             dag = self,
             task_group=elaborate_group,
             doc_md = """
@@ -496,7 +510,7 @@ class OwmfDbInitDAG(DAG):
         task_propagate_locally = SQLExecuteQueryOperator(
             task_id = "propagate_etymologies_locally",
             conn_id = local_db_conn_id,
-            sql = "sql/10-propagate-etymologies-global.sql",
+            sql = "sql/11-propagate-etymologies-global.sql",
             dag = self,
             task_group=elaborate_group,
         )
@@ -517,20 +531,6 @@ class OwmfDbInitDAG(DAG):
 
         post_elaborate_group = TaskGroup("post_elaboration", tooltip="Actions after data elaboration", dag=self)
 
-        task_check_text_ety = SQLExecuteQueryOperator(
-            task_id = "check_text_etymology",
-            conn_id = local_db_conn_id,
-            sql = "sql/11-check-text-etymology.jinja.sql",
-            dag = self,
-            task_group=post_elaborate_group,
-            doc_md = """
-                # Check elements with a text etymology
-
-                Check elements with an etymology that comes from the key configured in 'osm_text_key' or 'osm_description_key'.
-            """
-        )
-        task_remove_ele_too_big >> task_check_text_ety
-
         task_move_ele = SQLExecuteQueryOperator(
             task_id = "move_elements_with_etymology",
             conn_id = local_db_conn_id,
@@ -543,7 +543,7 @@ class OwmfDbInitDAG(DAG):
                 Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
             """
         )
-        [join_post_propagation, task_check_text_ety] >> task_move_ele
+        join_post_propagation >> task_move_ele
 
         task_setup_ety_fk = SQLExecuteQueryOperator(
             task_id = "setup_etymology_foreign_key",
