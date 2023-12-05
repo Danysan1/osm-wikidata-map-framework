@@ -577,9 +577,13 @@ components:
                   type: string
                   description: Q-ID of the Wikidata entity for this feature
                   example: "Q1"
+                wikidata_alias:
+                  type: string
+                  description: Q-ID of a duplicate Wikidata entity which represents this same feature (linked through owl:sameAs)
+                  example: "Q2"
                 wikipedia:
                   type: string
-                  description: Title of a Wikipedia page for this feature prefixed with its language code (lang:Name)
+                  description: Title of a Wikipedia page for this feature prefixed with its language code (<language>:<Page name>)
                   example: "en:Colosseum"
 
     EtymologyResponse:

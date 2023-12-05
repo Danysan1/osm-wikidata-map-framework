@@ -162,7 +162,8 @@ export class WikidataMapService extends WikidataService implements MapService {
             } : null;
 
             if (!existingFeature) { // Add the new feature for this item 
-                let osm_id: number | undefined, osm_type: "node" | "way" | "relation" | undefined;
+                let osm_id: number | undefined,
+                    osm_type: "node" | "way" | "relation" | undefined;
                 if (row.osm_rel?.value) {
                     osm_type = "relation";
                     osm_id = parseInt(row.osm_rel.value);
@@ -191,6 +192,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                         osm_type,
                         picture: row.picture?.value,
                         wikidata: feature_wd_id,
+                        wikidata_alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikipedia: row.wikipedia?.value,
                     }
                 });

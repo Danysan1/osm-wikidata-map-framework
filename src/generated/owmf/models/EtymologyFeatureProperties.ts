@@ -130,7 +130,13 @@ export interface EtymologyFeatureProperties {
      */
     wikidata?: string;
     /**
-     * Title of a Wikipedia page for this feature prefixed with its language code (lang:Name)
+     * Q-ID of a duplicate Wikidata entity which represents this same feature (linked through owl:sameAs)
+     * @type {string}
+     * @memberof EtymologyFeatureProperties
+     */
+    wikidata_alias?: string;
+    /**
+     * Title of a Wikipedia page for this feature prefixed with its language code (<language>:<Page name>)
      * @type {string}
      * @memberof EtymologyFeatureProperties
      */
@@ -186,6 +192,7 @@ export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscrim
         'text_etymology': !exists(json, 'text_etymology') ? undefined : json['text_etymology'],
         'text_etymology_descr': !exists(json, 'text_etymology_descr') ? undefined : json['text_etymology_descr'],
         'wikidata': !exists(json, 'wikidata') ? undefined : json['wikidata'],
+        'wikidata_alias': !exists(json, 'wikidata_alias') ? undefined : json['wikidata_alias'],
         'wikipedia': !exists(json, 'wikipedia') ? undefined : json['wikipedia'],
     };
 }
@@ -217,6 +224,7 @@ export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeaturePropert
         'text_etymology': value.text_etymology,
         'text_etymology_descr': value.text_etymology_descr,
         'wikidata': value.wikidata,
+        'wikidata_alias': value.wikidata_alias,
         'wikipedia': value.wikipedia,
     };
 }

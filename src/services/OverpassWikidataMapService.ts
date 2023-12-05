@@ -106,7 +106,10 @@ export class OverpassWikidataMapService implements MapService {
                 if (overpassFeature.properties?.from_wikidata === true)
                     return false; // Already merged with another Wikidata feature => ignore
 
-                if (overpassFeature.properties?.wikidata !== undefined && overpassFeature.properties?.wikidata === wikidataFeature.properties?.wikidata) {
+                if (overpassFeature.properties?.wikidata !== undefined && (
+                    overpassFeature.properties.wikidata === wikidataFeature.properties?.wikidata ||
+                    overpassFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
+                )) {
                     wikidataFeature.properties.etymologies?.forEach(ety => {
                         ety.osm_wd_join_field = "OSM";
                         ety.from_osm_id = overpassFeature.properties?.osm_id;

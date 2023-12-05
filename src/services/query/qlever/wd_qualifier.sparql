@@ -20,8 +20,9 @@ SELECT DISTINCT
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
+    
+    # Filter by location
     ?stmt pq:P625 ?location.
-
     # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
     #     ?location,
     #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral

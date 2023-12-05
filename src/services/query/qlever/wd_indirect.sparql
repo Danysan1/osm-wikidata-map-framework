@@ -27,8 +27,9 @@ WITH {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
         MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt} # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
+        
+        # Filter by location
         ?stmt pq:P625 ?_location.
-
         # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
         #     ?_location,
         #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
@@ -55,14 +56,16 @@ WITH {
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
         MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
         MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+        
+        # Filter by location
         ?locationStatement ps:P625 ?_location.
         # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
         #     ?_location,
         #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
         # )) #! Not yet supported by QLever
         BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-        BIND (geof:distance(?_location, ?center) AS ?distance)
-        FILTER (?distance <= ${maxDistanceKm})
+        FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+
         OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
         OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
         OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
