@@ -2,37 +2,42 @@
 SELECT
     ?item
     (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
-    (SAMPLE(?itemDescription) AS ?itemDescription)
-    (SAMPLE(?location) AS ?location)
-    (SAMPLE(?commons) AS ?commons)
-    (SAMPLE(?wikipedia) AS ?wikipedia)
-    (SAMPLE(?picture) AS ?picture)
-    (SAMPLE(?osm_node) AS ?osm_node)
-    (SAMPLE(?osm_way) AS ?osm_way)
-    (SAMPLE(?osm_rel) AS ?osm_rel)
+    (SAMPLE(?_itemDescription) AS ?itemDescription)
+    (SAMPLE(?_location) AS ?location)
+    (SAMPLE(?_commons) AS ?commons)
+    (SAMPLE(?_wikipedia) AS ?wikipedia)
+    (SAMPLE(?_picture) AS ?picture)
+    (SAMPLE(?_osm_node) AS ?osm_node)
+    (SAMPLE(?_osm_way) AS ?osm_way)
+    (SAMPLE(?_osm_rel) AS ?osm_rel)
+    (SAMPLE(?_alias) AS ?alias)
     ?etymology
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
 WITH { 
-    SELECT ?etymology ?location ?commons ?picture ?osm_node ?osm_way ?osm_rel
+    SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
         MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt} # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
+        
+        # Filter by location
         SERVICE wikibase:box {
-            ?stmt pq:P625 ?location.
+            ?stmt pq:P625 ?_location.
             bd:serviceParam wikibase:cornerWest 'POINT(${southLon} ${westLat})'^^geo:wktLiteral;
                             wikibase:cornerEast 'POINT(${northLon} ${eastLat})'^^geo:wktLiteral.
         } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
-        OPTIONAL { ?stmt pq:P373 ?commons. }
+
+        OPTIONAL { ?stmt pq:P373 ?_commons. }
         ${pictureQuery}
-        OPTIONAL { ?stmt pq:P11693 ?osm_node. }
-        OPTIONAL { ?stmt pq:P10689 ?osm_way. }
-        OPTIONAL { ?stmt pq:P402 ?osm_rel. }
+        OPTIONAL { ?stmt pq:P11693 ?_osm_node. }
+        OPTIONAL { ?stmt pq:P10689 ?_osm_way. }
+        OPTIONAL { ?stmt pq:P402 ?_osm_rel. }
+        OPTIONAL { ?_alias owl:sameAs ?item. }
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?location ?item ?anyLabel ?langLabel ?defaultLabel ?itemDescription ?commons ?wikipedia ?picture ?osm_node ?osm_way ?osm_rel
+    SELECT ?etymology ?_location ?item ?anyLabel ?langLabel ?defaultLabel ?_itemDescription ?_commons ?_wikipedia ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         ?stmt ps:${indirectProperty} ?item.
@@ -43,20 +48,24 @@ WITH {
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
         MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
         MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+
+        # Filter by location
         SERVICE wikibase:box {
-            ?locationStatement ps:P625 ?location.
+            ?locationStatement ps:P625 ?_location.
             bd:serviceParam wikibase:cornerWest 'POINT(${southLon} ${westLat})'^^geo:wktLiteral;
                             wikibase:cornerEast 'POINT(${northLon} ${eastLat})'^^geo:wktLiteral.
         } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+        
         OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
         OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
-        OPTIONAL { ?item schema:description ?itemDescription FILTER(LANG(?itemDescription) = '${language}'). }
-        OPTIONAL { ?item wdt:P373 ?commons. }
-        OPTIONAL { ?wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
-        OPTIONAL { ?item wdt:P18 ?picture. }
-        OPTIONAL { ?item wdt:P11693 ?osm_node. }
-        OPTIONAL { ?item wdt:P10689 ?osm_way. }
-        OPTIONAL { ?item wdt:P402 ?osm_rel. }
+        OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
+        OPTIONAL { ?item wdt:P373 ?_commons. }
+        OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
+        OPTIONAL { ?item wdt:P18 ?_picture. }
+        OPTIONAL { ?item wdt:P11693 ?_osm_node. }
+        OPTIONAL { ?item wdt:P10689 ?_osm_way. }
+        OPTIONAL { ?item wdt:P402 ?_osm_rel. }
+        OPTIONAL { ?_alias owl:sameAs ?item. }
     }
 } AS %reverse
 WHERE {
