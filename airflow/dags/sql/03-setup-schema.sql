@@ -30,11 +30,13 @@ Documentation:
 CREATE TABLE owmf.wikidata (
     wd_id SERIAL NOT NULL PRIMARY KEY,
     wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
+    wd_alias_cod VARCHAR(15) UNIQUE CHECK (wd_alias_cod ~* '^Q\d+$'),
     wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     wd_notes VARCHAR
 );
-CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='100');
-CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fillfactor='100');
+CREATE UNIQUE INDEX wikidata_id_idx ON owmf.wikidata (wd_id) WITH (fillfactor='80');
+CREATE UNIQUE INDEX wikidata_cod_idx ON owmf.wikidata (wd_wikidata_cod) WITH (fillfactor='80');
+CREATE UNIQUE INDEX wikidata_alias_idx ON owmf.wikidata (wd_alias_cod) WITH (fillfactor='80');
 
 CREATE TABLE owmf.osmdata (
     osm_id BIGSERIAL NOT NULL PRIMARY KEY,
@@ -48,7 +50,7 @@ CREATE TABLE owmf.osmdata (
     osm_has_text_etymology BOOLEAN DEFAULT FALSE,
     CONSTRAINT osmdata_unique_ids UNIQUE (osm_osm_type, osm_osm_id, osm_wd_id)
 );
-CREATE INDEX osmdata_wd_id_idx ON owmf.osmdata (osm_wd_id) WITH (fillfactor='100');
+CREATE INDEX osmdata_wd_id_idx ON owmf.osmdata (osm_wd_id) WITH (fillfactor='70');
 
 CREATE TABLE owmf.element_wikidata_cods (
     --ew_id BIGSERIAL NOT NULL PRIMARY KEY,
@@ -85,4 +87,4 @@ CREATE TABLE owmf.etymology (
     et_from_osm_wikidata_prop_cod VARCHAR CHECK (et_from_osm_wikidata_prop_cod ~* '^P\d+$') DEFAULT NULL, -- P-ID of the Wikidata property through which the etymology is derived
     CONSTRAINT et_unique_element_wikidata UNIQUE (et_el_id, et_wd_id)
 );
-CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='100');
+CREATE INDEX etymology_el_id_idx ON owmf.etymology (et_el_id) WITH (fillfactor='80');

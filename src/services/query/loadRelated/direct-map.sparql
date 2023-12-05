@@ -6,6 +6,7 @@ SELECT DISTINCT
     ?location
     ?etymology
     ?from_prop
+    ?alias
 WHERE {
     VALUES ?from_prop { ${properties} }
     ?item p:P625 ?locationStatement;
@@ -17,4 +18,5 @@ WHERE {
     ?locationStatement ps:P625 ?location.
     OPTIONAL { ?item rdfs:label ?itemLabel FILTER(LANG(?itemLabel) = "en") }
     OPTIONAL { ?item wdt:P373 ?commons. }
+    OPTIONAL { ?alias owl:sameAs ?item. }
 }
