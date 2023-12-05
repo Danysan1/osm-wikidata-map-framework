@@ -66,6 +66,11 @@ export class WikidataBulkService extends WikidataService {
         const response = await this.api.postSparqlQueryRaw({ backend: "sparql", format: "json", query: sparqlQuery }),
             json = await response.raw.text();
         console.timeEnd("fetch");
+        if (response.raw.status !== 200)
+            throw new Error(`Failed to fetch data: ${json}`);
+        if (json.includes("java.util.concurrent.TimeoutException"))
+            throw new Error("Timeout while fetching data");
+
         console.debug(`Fetched data, loading Wikidata entities...`);
 
         try {
@@ -91,8 +96,9 @@ export class WikidataBulkService extends WikidataService {
 
             return (wikidataResult.rowsAffected || 0) + (elementUpdateResult.rowsAffected || 0) + (elementInsertResult.rowsAffected || 0) + (etymologyResult.rowsAffected || 0);
         } catch (e) {
-            const fs = await import("fs");
-            fs.writeFileSync('bad-output.json', json);
+            console.debug("Error while handling JSON: ", json);
+            //const fs = await import("fs");
+            //fs.writeFileSync('bad-output.json', json);
             throw e;
         }
     }

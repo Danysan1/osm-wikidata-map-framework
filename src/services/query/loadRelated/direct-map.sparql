@@ -1,7 +1,9 @@
 #defaultView:Map
 SELECT DISTINCT
     ?item
-    ?itemLabel
+    ?label_de
+    ?label_en
+    ?label_it
     ?commons
     ?location
     ?etymology
@@ -11,12 +13,14 @@ WHERE {
     VALUES ?from_prop { ${properties} }
     ?item p:P625 ?locationStatement;
           ?from_prop ?etymology.
-    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     FILTER (STRENDS(STR(?item), '${pageNumber}') && isIRI(?etymology) && !wikibase:isSomeValue(?etymology)) # Paging through ORDER BY + LIMIT + OFFSET is too slow
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
 
     ?locationStatement ps:P625 ?location.
-    OPTIONAL { ?item rdfs:label ?itemLabel FILTER(LANG(?itemLabel) = "en") }
+    OPTIONAL { ?item rdfs:label ?label_de FILTER(LANG(?label_de) = "de") }
+    OPTIONAL { ?item rdfs:label ?label_en FILTER(LANG(?label_en) = "en") }
+    OPTIONAL { ?item rdfs:label ?label_it FILTER(LANG(?label_it) = "it") }
     OPTIONAL { ?item wdt:P373 ?commons. }
     OPTIONAL { ?alias owl:sameAs ?item. }
 }
