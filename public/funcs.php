@@ -141,13 +141,13 @@ function prepareHTML(Configuration $conf)
 	if ($conf->has('pmtiles_base_url')) {
 		$pmTilesBaseURL = (string)$conf->get('pmtiles_base_url');
 		if (!str_starts_with($pmTilesBaseURL, 'http://localhost'))
-			$pmtilesConnect = "$pmTilesBaseURL pmtiles://$pmTilesBaseURL";
+			$pmtilesConnect = "$pmTilesBaseURL";
 	}
 
 	header(
 		"Content-Security-Policy: " .
 			"child-src blob: ; " .
-			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect; " .
+			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect ; " .
 			"default-src 'self' ; " .
 			"font-src 'self' ; " .
 			"form-action 'self' $payPalForm ; " .
