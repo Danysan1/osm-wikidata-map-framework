@@ -237,7 +237,7 @@ $jsScript = $jsScripts[0];
                 <div id="last_info_row">
                     <?php if ($conf->has("liberapay_id")) { ?>
                         <a href="https://liberapay.com/<?= (string)$conf->get("liberapay_id") ?>/donate" id="liberapay_donate">
-                            <img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg">
+                            <img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" width="72" height="26">
                         </a>
                         |
                     <?php

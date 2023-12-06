@@ -228,11 +228,19 @@ export class EtymologyMap extends Map {
             if (debug) console.debug("updateDataSource: Fetch already in progress, skipping source update");
             return;
         }
+
+        const sourceID = getCorrectFragmentParams().source,
+            pmtilesBaseURL = getConfig("pmtiles_base_url");
+        if (sourceID.startsWith(PMTILES_PREFIX) && !pmtilesBaseURL?.length) {
+            loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
+            logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
+            return;
+        }
+
         const bounds = this.getBounds(),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
-            sourceID = getCorrectFragmentParams().source,
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
@@ -989,6 +997,11 @@ export class EtymologyMap extends Map {
                     marker: false, // Markers require to pass maplibregl as argument
                 });
             this.addControl(geocoderControl, 'bottom-left');
+            const searchButton = document.querySelector<HTMLButtonElement>("div.maplibregl-ctrl-geocoder button.search-button");
+            if (searchButton) {
+                searchButton.ariaLabel = "Search";
+                searchButton.title = "Search";
+            }
             if (debug) console.debug("setupGeocoder: added MapTiler geocoder control", geocoderControl);
 
             document.addEventListener("keydown", (e) => {
@@ -1014,15 +1027,18 @@ export class EtymologyMap extends Map {
     private mapLoadedHandler() {
         this.on("style.load", this.mapStyleLoadHandler);
 
-        this.updateDataForMapPosition();
+        try {
+            this.updateDataForMapPosition();
+        } catch (e) {
+            logErrorMessage("mapLoadedHandler: Error initializing map", "error", { e });
+        }
+
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
         //map.on('idle', updateDataSource); //! Called continuously, avoid
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
         this.on('moveend', this.mapMoveEndHandler);
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
         //map.on('zoomend', updateDataSource); // moveend is sufficient
-
-        this.setupGeocoder();
 
         // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
         this.addControl(new NavigationControl({
@@ -1052,6 +1068,8 @@ export class EtymologyMap extends Map {
         this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
         this.initWikidataControls();
+
+        this.setupGeocoder();
     }
 
     /**
