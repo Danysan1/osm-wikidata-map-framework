@@ -169,7 +169,7 @@ class EtymologyColorControl extends DropdownControl {
 
         const features = this.getMap()?.queryRenderedFeatures({ layers: this.layerIDs }),
             stats = calculateChartData(features || []);
-        if (debug) console.debug("calculateAndLoadChartData", { etys: features?.map(f => f.properties?.etymologies), stats, layerColor });
+        if (debug) console.debug("calculateAndLoadChartData", { etymologies: features?.map(f => f.properties?.etymologies), stats, layerColor });
         this.setChartStats(stats);
 
         this.setLayerColor(layerColor);
@@ -183,18 +183,20 @@ class EtymologyColorControl extends DropdownControl {
                 const osm_IDs = new Set<string>(),
                     osm_wikidata_IDs = new Set<string>(),
                     wikidata_IDs = new Set<string>();
-                features.forEach((feature: EtymologyFeature) => {
+                features.forEach((feature: EtymologyFeature, i) => {
+                    const id = feature.properties?.wikidata || feature.properties?.name?.toLowerCase() || feature.id?.toString() || i.toString();
                     if (feature.properties?.from_osm && feature.properties?.from_wikidata)
-                        osm_wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                        osm_wikidata_IDs.add(id);
                     else if (feature.properties?.from_osm)
-                        osm_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                        osm_IDs.add(id);
                     else if (feature.properties?.from_wikidata)
-                        wikidata_IDs.add(feature.properties?.wikidata || feature.id?.toString() || "");
+                        wikidata_IDs.add(id);
                 });
                 const stats: EtymologyStat[] = [];
                 if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size });
                 if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
                 if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
+                if (debug) console.debug("loadFeatureSourceChartData", { stats, osm_wikidata_IDs, wikidata_IDs, osm_IDs });
                 return stats;
             },
             [
@@ -248,6 +250,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
                 if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
                 if (osm_text_names.size) stats.push({ name: this.osmTextOnly, color: FALLBACK_COLOR, id: "osm_text", count: osm_text_names.size });
+                if (debug) console.debug("loadEtymologySourceChartData", { stats, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names });
                 return stats;
             },
             [
@@ -427,19 +430,24 @@ class EtymologyColorControl extends DropdownControl {
      * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     private setChartData(data: ChartData<"pie">) {
+        if (this._chartInitInProgress) {
+            if (debug) console.debug("setChartData: chart already loading");
+            return;
+        }
+
         if (debug) console.debug("setChartData", {
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
         });
+
         if (this._chartJsObject && this._chartDomElement) {
             this.updateChartObject(data);
-        } else if (this._chartInitInProgress) {
-            if (debug) console.debug("setChartData: chart already loading");
         } else {
-            if (debug) console.debug("setChartData: Loading chart.js and initializing the chart");
             this.initChartObject(data);
         }
+
+        this.updateChartTable(data);
     }
 
     /**
@@ -447,6 +455,7 @@ class EtymologyColorControl extends DropdownControl {
      * 
      * @see https://www.chartjs.org/docs/latest/getting-started/integration.html#bundlers-webpack-rollup-etc
      * @see https://www.chartjs.org/docs/latest/charts/doughnut.html#pie
+     * @see https://www.chartjs.org/docs/latest/general/accessibility.html
      */
     private async initChartObject(data: ChartData<"pie">) {
         if (this._chartJsObject)
@@ -454,15 +463,22 @@ class EtymologyColorControl extends DropdownControl {
         if (this._chartInitInProgress)
             throw new Error("initChartObject: chart initialization already in progress");
 
+        const container = this.getContainer();
+        if (!container)
+            throw new Error("Missing container");
+
+        if (debug) console.debug("initChartObject: Loading chart.js and initializing the chart");
+
         this._chartInitInProgress = true
+
         const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
-        const container = this.getContainer();
-        if (container)
-            container.appendChild(this._chartDomElement);
-        else
-            throw new Error("Missing container");
+        this._chartDomElement.ariaLabel = 'Chart';
+        this._chartDomElement.width = 300;
+        this._chartDomElement.height = 300;
+        container.appendChild(this._chartDomElement);
+
         const ctx = this._chartDomElement.getContext('2d');
         if (!ctx)
             throw new Error("Missing context");
@@ -477,6 +493,27 @@ class EtymologyColorControl extends DropdownControl {
                 }
             }*/
         });
+
+        const table = document.createElement('table');
+        table.className = 'chart-fallback-table';
+        table.ariaLabel = "Statistics table";
+        this._chartDomElement.appendChild(table);
+
+        const thead = document.createElement('thead'),
+            tr_head = document.createElement('tr'),
+            th_name = document.createElement('th'),
+            th_count = document.createElement('th');
+        table.appendChild(thead);
+        thead.appendChild(tr_head);
+        th_name.innerText = 'Name';
+        tr_head.appendChild(th_name);
+        th_count.innerText = 'Count';
+        tr_head.appendChild(th_count);
+
+        const tbody = document.createElement('tbody');
+        tbody.className = 'chart-table-body';
+        table.appendChild(tbody);
+
         this._chartInitInProgress = false;
     }
 
@@ -493,6 +530,25 @@ class EtymologyColorControl extends DropdownControl {
         this._chartJsObject.data.labels = data.labels;
         this._chartJsObject.data.datasets[0].data = data.datasets[0].data;
         this._chartJsObject.update();
+    }
+
+    private updateChartTable(data: ChartData<"pie">) {
+        const chartTableBody = document.querySelector('.chart-table-body');
+        if (!chartTableBody) {
+            if (debug) console.warn("setChartData: chart table body not found");
+            return;
+        }
+        chartTableBody.innerHTML = '';
+        data.labels?.forEach((label, i) => {
+            const tr = document.createElement('tr'),
+                td_name = document.createElement('td'),
+                td_count = document.createElement('td');
+            chartTableBody.appendChild(tr);
+            td_name.innerText = label as string;
+            tr.appendChild(td_name);
+            td_count.innerText = data.datasets[0].data[i].toString();
+            tr.appendChild(td_count);
+        });
     }
 
     private removeChart() {
