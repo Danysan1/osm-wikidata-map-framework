@@ -73,7 +73,7 @@
         "propagation_title": "Beskrivelse af udbredelsesmekanismen"
     },
     "data_table": {
-        "view_data_table": "Se data i en tabel (kun ved høj zoom)",
+        "view_data_table": "Se data i en tabel",
         "names": "Navne",
         "actions": "Handlinger",
         "linked_entities": "Forbundne objekter"

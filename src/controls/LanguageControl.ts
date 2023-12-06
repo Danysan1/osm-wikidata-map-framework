@@ -20,6 +20,7 @@ export class LanguageControl implements IControl {
 
         this.container = document.createElement('div');
         this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl language-ctrl';
+        this.container.ariaHidden = "true";
 
         const language = document.documentElement.lang.split('-').at(0),
             i18n_override = getJsonConfig("i18n_override");
@@ -39,14 +40,18 @@ export class LanguageControl implements IControl {
             languageRow = document.createElement("tr"),
             translateCell = document.createElement("td"),
             translateLink = document.createElement("a");
+        languageTable.ariaHidden = "true";
+        languageRow.ariaHidden = "true";
 
         translateLink.title = "Translate";
+        translateLink.ariaLabel = "Translate";
         translateLink.href = "https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/";
         translateLink.target = "_blank";
         translateLink.className = "language-select-link language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon hiddenElement";
         translateLink.appendChild(languageToDomElement("Translate"));
 
         translateCell.className = "content-cell";
+        translateCell.ariaHidden = "true";
         translateCell.appendChild(translateLink);
         languageRow.appendChild(translateCell);
 
@@ -55,10 +60,12 @@ export class LanguageControl implements IControl {
                 link = document.createElement("button"),
                 flagImg = languageToDomElement(lang);
             link.title = lang;
+            link.ariaLabel = lang;
             link.className = "language-select-link language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon hiddenElement";
             link.addEventListener("click", () => window.location.search = "?lang=" + lang);
             //link.href = "?lang=" + lang;
             cell.className = "content-cell";
+            cell.ariaHidden = "true";
             link.appendChild(flagImg);
             cell.appendChild(link);
             languageRow?.appendChild(cell);
@@ -72,7 +79,11 @@ export class LanguageControl implements IControl {
         const languageCell = document.createElement("td"),
             languageButton = document.createElement("button");
         languageButton.appendChild(languageToDomElement(language));
-        loadTranslator().then(t => languageButton.title = t("change_language", "Change language"));
+        loadTranslator().then(t => {
+            const title = t("change_language", "Change language");
+            languageButton.title = title;
+            languageButton.ariaLabel = title;
+        });
         languageButton.className = "language-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon";
         languageButton.addEventListener("click", () => {
             if (debug) console.debug("LanguageControl: Toggling language selection links");

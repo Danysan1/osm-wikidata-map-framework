@@ -61,12 +61,15 @@ export class DropdownControl implements IControl {
 
         this._container = document.createElement('div');
         this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl dropdown-ctrl';
+        this._container.ariaHidden = "true";
 
         const table = document.createElement('table');
         table.className = "dropdown-ctrl-table custom-ctrl-table";
+        table.ariaHidden = "true";
         this._container.appendChild(table);
 
         const tr = document.createElement('tr');
+        tr.ariaHidden = "true";
         table.appendChild(tr);
 
         const btnCell = document.createElement('td'),
@@ -157,7 +160,7 @@ export class DropdownControl implements IControl {
 
     private btnClickHandler(event: MouseEvent) {
         if (debug) console.debug("EtymologyColorControl button click", event);
-        this.toggleDropdown();
+        this.toggleDropdown(true);
     }
 
     private dropDownChangeHandler(event: Event) {
@@ -228,11 +231,14 @@ export class DropdownControl implements IControl {
         }
     }
 
-    toggleDropdown() {
+    toggleDropdown(focusOnShow = false) {
         if (!this._ctrlDropDown) {
             console.warn("Missing control dropdown, failed toggling it");
+        } else if (this._ctrlDropDown.classList.contains("hiddenElement")) {
+            this.showDropdown(true);
+            if (focusOnShow) this._ctrlDropDown?.focus();
         } else {
-            this.showDropdown(this._ctrlDropDown.classList.contains("hiddenElement"));
+            this.showDropdown(false);
         }
     }
 

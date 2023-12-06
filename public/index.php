@@ -167,7 +167,7 @@ $jsScript = $jsScripts[0];
 </head>
 
 <body>
-    <div id='map' class="hiddenElement"></div>
+    <div id='map' class="hiddenElement" aria-label="Map"></div>
     <noscript>
         <strong>ERROR: you need Javascript enabled to run this web app</strong>
     </noscript>
