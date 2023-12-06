@@ -474,7 +474,7 @@ class EtymologyColorControl extends DropdownControl {
         const { Chart, ArcElement, PieController, Tooltip, Legend } = await import('chart.js');
         this._chartDomElement = document.createElement('canvas');
         this._chartDomElement.className = 'chart';
-        this._chartDomElement.ariaLabel = 'Chart';
+        this._chartDomElement.ariaLabel = 'Statistics chart';
         this._chartDomElement.width = 300;
         this._chartDomElement.height = 300;
         container.appendChild(this._chartDomElement);

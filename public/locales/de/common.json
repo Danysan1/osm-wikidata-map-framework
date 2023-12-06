@@ -73,7 +73,7 @@
         "propagation_title": "Beschreibung des Ausbreitungsmechanismus"
     },
     "data_table": {
-        "view_data_table": "Sehen Sie sich die Daten in einer Tabelle an (nur bei hohem zoom)",
+        "view_data_table": "Sehen Sie sich die Daten in einer Tabelle an",
         "names": "Namen",
         "actions": "Aktionen",
         "linked_entities": "Verknüpften Entitäten"

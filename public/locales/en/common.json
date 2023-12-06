@@ -73,7 +73,7 @@
         "propagation_title": "Description of the propagation mechanism"
     },
     "data_table": {
-        "view_data_table": "View the data in a table (only at high zoom)",
+        "view_data_table": "View the data in a table",
         "names": "Names",
         "actions": "Actions",
         "linked_entities": "Linked entities"

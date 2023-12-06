@@ -73,7 +73,7 @@
         "propagation_title": "Descrizione del meccanismo di propagazione"
     },
     "data_table": {
-        "view_data_table": "Visualizza i dati in una tabella (solo ad alto zoom)",
+        "view_data_table": "Visualizza i dati in una tabella",
         "names": "Nomi",
         "actions": "Azioni",
         "linked_entities": "Entità collegate"
