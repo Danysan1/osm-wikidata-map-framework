@@ -8,7 +8,7 @@ PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
 SELECT
     ?item
-    (SAMPLE(COALESCE(?langLabel,?defaultLabel)) AS ?itemLabel)
+    (SAMPLE(COALESCE(?lang_label,?default_label)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
@@ -17,7 +17,6 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
-    (false AS ?from_osm)
 WHERE {
     ?item p:P625 ?locationStatement.
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
@@ -29,8 +28,8 @@ WHERE {
     BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
     FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
     
-    OPTIONAL { ?item @${language}@rdfs:label ?langLabel. }
-    OPTIONAL { ?item @en@rdfs:label ?defaultLabel. }
+    OPTIONAL { ?item @${language}@rdfs:label ?lang_label. }
+    OPTIONAL { ?item @en@rdfs:label ?default_label. }
     OPTIONAL { ?item @${language}@schema:description ?_itemDescription. }
     OPTIONAL { ?item wdt:P373 ?_commons. }
     OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }

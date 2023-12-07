@@ -16,7 +16,6 @@ SELECT DISTINCT
     ?osm_rel
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
-    (false AS ?from_osm)
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date

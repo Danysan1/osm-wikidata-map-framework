@@ -9,7 +9,7 @@ const PMTILES_GROUP_NAME = "PMTiles",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
     WDQS_GROUP_NAME = "Wikidata Query Service",
     OVERPASS_WDQS_GROUP_NAME = "OSM (Overpass API) + Wikidata Query Service",
-    QLEVER_GROUP_NAME = "QLever";
+    QLEVER_GROUP_NAME = "QLever (BETA)";
 
 /**
  * Let the user choose the map style.

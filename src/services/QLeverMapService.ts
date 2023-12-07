@@ -77,8 +77,9 @@ export class QLeverMapService implements MapService {
                     .replaceAll('${northLat}', bbox[3].toString())
                     .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(4))
                     .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(4))
-                    .replaceAll('${maxDistanceKm}', Math.max(
-                        Math.abs(bbox[2] - bbox[0]) * 111 * Math.cos(bbox[0] * Math.PI / 180), Math.abs(bbox[3] - bbox[1]) * 111 // https://stackoverflow.com/a/1253545/2347196
+                    .replaceAll('${maxDistanceKm}', Math.max(  // https://stackoverflow.com/a/1253545/2347196
+                        Math.abs(bbox[2] - bbox[0]) * 100 * Math.cos(bbox[1] * Math.PI / 180),
+                        Math.abs(bbox[3] - bbox[1]) * 100
                     ).toFixed(4)),
                 ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
@@ -212,8 +213,8 @@ export class QLeverMapService implements MapService {
                         commons: row.commons?.value,
                         description: row.itemDescription?.value,
                         etymologies: etymology ? [etymology] : undefined,
-                        from_osm: row.from_osm?.value === "true",
-                        from_wikidata: row.from_osm?.value === "false",
+                        from_osm: !!row.osm?.value,
+                        from_wikidata: !!row.item?.value, //! TODO fix (ideally with value from query, but requires BOUND() or isIRI())
                         from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                         from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
                         name: row.itemLabel?.value,
