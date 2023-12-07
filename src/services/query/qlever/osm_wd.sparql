@@ -9,7 +9,7 @@ SELECT
     ?item
     ?osm
     ?location
-    (COALESCE(?osm_name,?osm_default_name) AS ?itemLabel)
+    (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
     (?osm_descr AS ?itemDescription)
     (true AS ?from_osm)
 WHERE {
@@ -21,7 +21,7 @@ WHERE {
     BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
     FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
 
-    OPTIONAL { ?osm osmkey:name:${language} ?osm_name. }
+    OPTIONAL { ?osm osmkey:name:${language} ?osm_lang_name. }
     OPTIONAL { ?osm osmkey:name ?osm_default_name. }
     OPTIONAL { ?osm osmkey:description ?osm_descr. }
 }

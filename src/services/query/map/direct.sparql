@@ -1,7 +1,7 @@
 #defaultView:Map
 SELECT
     ?item
-    (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
+    (SAMPLE(COALESCE(?lang_label,?default_label,?anyLabel)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
@@ -30,8 +30,8 @@ WHERE {
                         wikibase:cornerEast 'POINT(${eastLon} ${northLat})'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
     
-    OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
-    OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = 'en'). }
+    OPTIONAL { ?item rdfs:label ?lang_label FILTER(LANG(?lang_label) = '${language}'). }
+    OPTIONAL { ?item rdfs:label ?default_label FILTER(LANG(?default_label) = 'en'). }
     OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
     OPTIONAL { ?item wdt:P373 ?_commons. }
     OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }

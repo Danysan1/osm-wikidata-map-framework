@@ -1,7 +1,7 @@
 #defaultView:Map
 SELECT
     ?item
-    (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
+    (SAMPLE(COALESCE(?lang_label,?default_label,?anyLabel)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
@@ -37,7 +37,7 @@ WITH {
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?_location ?item ?anyLabel ?langLabel ?defaultLabel ?_itemDescription ?_commons ?_wikipedia ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_alias
+    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_wikipedia ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         ?stmt ps:${indirectProperty} ?item.
@@ -56,8 +56,8 @@ WITH {
                             wikibase:cornerEast 'POINT(${eastLon} ${northLat})'^^geo:wktLiteral.
         } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
         
-        OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
-        OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = 'en'). }
+        OPTIONAL { ?item rdfs:label ?lang_label FILTER(LANG(?lang_label) = '${language}'). }
+        OPTIONAL { ?item rdfs:label ?default_label FILTER(LANG(?default_label) = 'en'). }
         OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
         OPTIONAL { ?item wdt:P373 ?_commons. }
         OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
