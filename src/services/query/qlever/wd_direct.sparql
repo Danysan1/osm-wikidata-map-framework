@@ -8,7 +8,7 @@ PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
 SELECT
     ?item
-    (SAMPLE(COALESCE(?langLabel,?defaultLabel,?anyLabel)) AS ?itemLabel)
+    (SAMPLE(COALESCE(?langLabel,?defaultLabel)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
@@ -24,23 +24,19 @@ SELECT
 WHERE {
     VALUES ?_from_prop { ${directProperties} }
     ?item p:P625 ?locationStatement;
-          ?_from_prop ?etymology;
-          rdfs:label ?anyLabel.
-    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999) []. } # Ignore if the feature has an end date
+          ?_from_prop ?etymology.
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
     
     # Filter by location
     ?locationStatement ps:P625 ?_location.
-    # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
-    #     ?_location,
-    #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
-    # )) #! Not yet supported by QLever
+    # ?_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
     BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
     FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
 
-    OPTIONAL { ?item rdfs:label ?langLabel FILTER(LANG(?langLabel) = '${language}'). }
-    OPTIONAL { ?item rdfs:label ?defaultLabel FILTER(LANG(?defaultLabel) = '${defaultLanguage}'). }
-    OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
+    OPTIONAL { ?item @${language}@rdfs:label ?langLabel. }
+    OPTIONAL { ?item @en@rdfs:label ?defaultLabel. }
+    OPTIONAL { ?item @${language}@schema:description ?_itemDescription. }
     OPTIONAL { ?item wdt:P373 ?_commons. }
     OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
     OPTIONAL { ?item wdt:P18 ?_picture. }
