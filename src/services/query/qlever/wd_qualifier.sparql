@@ -23,12 +23,9 @@ WHERE {
     
     # Filter by location
     ?stmt pq:P625 ?location.
-    # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
-    #     ?location,
-    #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
-    # )) #! Not yet supported by QLever
+    # ?location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
     BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+    FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
     
     OPTIONAL { ?stmt pq:P373 ?commons. }
     ${pictureQuery}

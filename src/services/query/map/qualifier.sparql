@@ -17,8 +17,8 @@ WHERE {
     # Filter by location
     SERVICE wikibase:box {
         ?stmt pq:P625 ?location.
-        bd:serviceParam wikibase:cornerWest 'POINT(${southLon} ${westLat})'^^geo:wktLiteral;
-                        wikibase:cornerEast 'POINT(${northLon} ${eastLat})'^^geo:wktLiteral.
+        bd:serviceParam wikibase:cornerWest 'POINT(${westLon} ${southLat})'^^geo:wktLiteral;
+                        wikibase:cornerEast 'POINT(${eastLon} ${northLat})'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
 
     OPTIONAL { ?stmt pq:P373 ?commons. }

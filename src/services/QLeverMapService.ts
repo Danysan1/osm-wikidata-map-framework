@@ -21,13 +21,11 @@ export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     private api: SparqlApi;
-    private defaultLanguage: string;
     private db: MapDatabase;
 
-    constructor(db: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api', defaultLanguage = 'en') {
+    constructor(db: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
         this.api = new SparqlApi(new Configuration({ basePath }));
         this.db = db;
-        this.defaultLanguage = defaultLanguage;
     }
 
     canHandleSource(sourceID: string): boolean {
@@ -54,7 +52,7 @@ export class QLeverMapService implements MapService {
                 backend = "osm-planet";
                 sparqlQueryTemplate = osmWikidataMapQuery;
             } else if (sourceID === "qlever_osm_wd_base") {
-                backend = "osm-planet";
+                backend = "wikidata";
                 sparqlQueryTemplate = osmWikidataPlusBaseMapQuery;
             } else if (sourceID === "qlever_wd_base") {
                 backend = "wikidata";
@@ -72,13 +70,16 @@ export class QLeverMapService implements MapService {
             const maxElements = getConfig("max_map_elements"),
                 sparqlQuery = sparqlQueryTemplate
                     .replaceAll('${language}', language || '')
-                    .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(3))
-                    .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(3))
+                    .replaceAll('${westLon}', bbox[0].toString())
+                    .replaceAll('${southLat}', bbox[1].toString())
+                    .replaceAll('${eastLon}', bbox[2].toString())
+                    .replaceAll('${northLat}', bbox[3].toString())
+                    .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(4))
+                    .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(4))
                     .replaceAll('${maxDistanceKm}', Math.max(
                         Math.abs(bbox[2] - bbox[0]) * 111 * Math.cos(bbox[0] * Math.PI / 180), Math.abs(bbox[3] - bbox[1]) * 111 // https://stackoverflow.com/a/1253545/2347196
-                    ).toFixed(3)),
+                    ).toFixed(4)),
                 ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)

@@ -52,15 +52,15 @@ WHERE {
             FILTER(lang(?other_name)='${language}').
         }
         ?name ^rdfs:label ?wikidata.
-        FILTER(lang(?name)='${defaultLanguage}').
+        FILTER(lang(?name)='en').
         OPTIONAL {
             ?description ^schema:description ?wikidata.
-            FILTER(lang(?description)='${defaultLanguage}').
+            FILTER(lang(?description)='en').
         }
     } UNION {
         MINUS {
             ?other_name ^rdfs:label ?wikidata.
-            FILTER(lang(?other_name)='${language}' || lang(?other_name)='${defaultLanguage}').
+            FILTER(lang(?other_name)='${language}' || lang(?other_name)='en').
         }
         ?name ^rdfs:label ?wikidata.
     }

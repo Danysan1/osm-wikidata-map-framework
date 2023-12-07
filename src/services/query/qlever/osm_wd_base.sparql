@@ -1,38 +1,57 @@
 PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
 PREFIX osmrel: <https://www.openstreetmap.org/relation/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
 PREFIX osm: <https://www.openstreetmap.org/>
 PREFIX ogc: <http://www.opengis.net/rdf#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
 SELECT
     ?item
     ?osm
-    (SAMPLE(?_location) AS ?location)
-    #(SAMPLE(COALESCE(?osm_name,?wd_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
-    (SAMPLE(COALESCE(?osm_name,?osm_default_name)) AS ?itemLabel)
-    (SAMPLE(?osm_descr) AS ?itemDescription)
-    (true AS ?from_osm)
+    (SAMPLE(COALESCE(?osm_location,?wd_location)) AS ?location)
+    (SAMPLE(COALESCE(?osm_name,?wd_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
+    (SAMPLE(COALESCE(?osm_descr,?wd_descr)) AS ?itemDescription)
 WHERE {
-    ?osm osm:wikidata ?item;
-         geo:hasGeometry ?_location.
+    {
+        SERVICE <https://qlever.cs.uni-freiburg.de/api/osm-planet> {
+            SELECT DISTINCT ?osm ?item ?osm_location ?osm_name ?osm_default_name ?osm_descr
+            WHERE {
+                ?osm osm:wikidata ?item; # osmkey:wikidata returns the tag value (Q-ID), osm:wikidata return the URI
+                    geo:hasGeometry ?osm_location.
 
-    # Filter by location
-    # FILTER(geo:sfContains( # https://opengeospatial.github.io/ogc-geosparql/geosparql11/spec.html#_f_2_1_query_parameters
-    #     ?_location,
-    #     "POLYGON((${southLon} ${westLat}, ${southLon} ${eastLat}, ${northLon} ${eastLat}, ${northLon} ${westLat}, ${southLon} ${westLat}))"^^geo:wktLiteral
-    # )) #! Not yet supported by QLever
-    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+                # Filter by location
+                # ?osm_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
+                BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+                FILTER (geof:distance(?osm_location, ?center) <= ${maxDistanceKm})
 
-    OPTIONAL { ?osm osmkey:name:${language} ?osm_name. }
-    OPTIONAL { ?osm osmkey:name ?osm_default_name. }
-    OPTIONAL { ?osm osmkey:description ?osm_descr. }
+                OPTIONAL { ?osm osmkey:name:${language} ?osm_name. }
+                OPTIONAL { ?osm osmkey:name ?osm_default_name. }
+                OPTIONAL { ?osm osmkey:description ?osm_descr. }
+            }
+        }
+    } UNION {
+        ?item p:P625 ?locationStatement.
+        MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
+        MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+        
+        # Filter by location
+        ?locationStatement ps:P625 ?wd_location.
+        # ?wd_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
+        BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+        FILTER (geof:distance(?wd_location, ?center) <= ${maxDistanceKm})
+    }
 
-    # SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
-    #   OPTIONAL { ?item @${language}@rdfs:label ?wd_label. }
-    #   OPTIONAL { ?item @en@rdfs:label ?wd_default_label. }
-    #   OPTIONAL { ?alias owl:sameAs ?item. }
-    # }
+    OPTIONAL { ?item @${language}@rdfs:label ?wd_label. }
+    OPTIONAL { ?item @en@rdfs:label ?wd_default_label. }
+    OPTIONAL { ?item @${language}@schema:description ?wd_descr. }
+    OPTIONAL { ?item wdt:P373 ?_commons. }
+    OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
+    OPTIONAL { ?item wdt:P18 ?_picture. }
 }
 GROUP BY ?item ?osm
+${limit}

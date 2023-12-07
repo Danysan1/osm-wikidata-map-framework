@@ -4,11 +4,9 @@ export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     protected api: SparqlApi;
-    protected defaultLanguage: string;
 
-    public constructor(basePath = 'https://query.wikidata.org', defaultLanguage = 'en') {
+    public constructor(basePath = 'https://query.wikidata.org') {
         this.api = new SparqlApi(new Configuration({ basePath }));
-        this.defaultLanguage = defaultLanguage;
     }
 
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
@@ -26,8 +24,7 @@ export class WikidataService {
         const wikidataValues = etymologyIDs.map(id => "wd:" + id).join(" "),
             sparqlQuery = sparqlQueryTemplate
                 .replaceAll('${wikidataValues}', wikidataValues)
-                .replaceAll('${language}', language)
-                .replaceAll('${defaultLanguage}', this.defaultLanguage);
+                .replaceAll('${language}', language);
         return await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
     }
 }

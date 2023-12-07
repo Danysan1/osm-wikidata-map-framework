@@ -54,12 +54,11 @@ export class WikidataMapService extends WikidataService implements MapService {
             const maxElements = getConfig("max_map_elements"),
                 sparqlQuery = sparqlQueryTemplate
                     .replaceAll('${language}', language || '')
-                    .replaceAll('${defaultLanguage}', this.defaultLanguage)
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${southLon}', bbox[0].toString())
-                    .replaceAll('${westLat}', bbox[1].toString())
-                    .replaceAll('${northLon}', bbox[2].toString())
-                    .replaceAll('${eastLat}', bbox[3].toString()),
+                    .replaceAll('${westLon}', bbox[0].toString())
+                    .replaceAll('${southLat}', bbox[1].toString())
+                    .replaceAll('${eastLon}', bbox[2].toString())
+                    .replaceAll('${northLat}', bbox[3].toString()),
                 ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)
