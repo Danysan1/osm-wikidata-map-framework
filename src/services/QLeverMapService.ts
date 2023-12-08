@@ -1,11 +1,12 @@
 import { WikidataService } from "./WikidataService";
-import osmWikidataMapQuery from "./query/qlever/osm_wd.sparql";
-import osmWikidataPlusBaseMapQuery from "./query/qlever/osm_wd_base.sparql";
-import indirectMapQuery from "./query/qlever/wd_indirect.sparql";
-import reverseMapQuery from "./query/qlever/wd_reverse.sparql";
-import qualifierMapQuery from "./query/qlever/wd_qualifier.sparql";
-import directMapQuery from "./query/qlever/wd_direct.sparql";
-import baseMapQuery from "./query/qlever/wd_base.sparql";
+import osm_wd_query from "./query/qlever/osm_wd.sparql";
+import osm_standard_query from "./query/qlever/osm_standard.sparql";
+import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
+import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
+import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
+import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
+import wd_direct_query from "./query/qlever/wd_direct.sparql";
+import wd_base_query from "./query/qlever/wd_base.sparql";
 import { debug, getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
@@ -16,16 +17,26 @@ import { MapService } from "./MapService";
 import { Configuration, SparqlApi, SparqlBackend } from "../generated/sparql";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
+const OSMKEY = "https://www.openstreetmap.org/wiki/Key:"; // https://stackoverflow.com/a/5824414/2347196
 
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     private api: SparqlApi;
     private db: MapDatabase;
+    private osmFilterExpression: string;
 
     constructor(db: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
         this.api = new SparqlApi(new Configuration({ basePath }));
         this.db = db;
+        const osm_filter_tags = getJsonConfig("osm_filter_tags") as string[] | undefined;
+        this.osmFilterExpression = osm_filter_tags?.length ? "{ " + osm_filter_tags
+            ?.map(tag => {
+                if (tag.includes("=*") || !tag.includes("="))
+                    return `?osm <${OSMKEY + tag.replace("=*", "")}> []`;
+                return "?osm <" + OSMKEY + tag.replace(/=(.+)$/, "> '$1'");
+            })
+            ?.join(" } UNION { ") + " }" : "";
     }
 
     canHandleSource(sourceID: string): boolean {
@@ -50,13 +61,16 @@ export class QLeverMapService implements MapService {
             let backend: SparqlBackend, sparqlQueryTemplate: string;
             if (sourceID === "qlever_osm_wd") {
                 backend = "osm-planet";
-                sparqlQueryTemplate = osmWikidataMapQuery;
+                sparqlQueryTemplate = osm_wd_query;
+            } else if (/^qlever_osm_[^w]/.test(sourceID)) {
+                backend = "osm-planet";
+                sparqlQueryTemplate = osm_standard_query;
             } else if (sourceID === "qlever_osm_wd_base") {
                 backend = "wikidata";
-                sparqlQueryTemplate = osmWikidataPlusBaseMapQuery;
+                sparqlQueryTemplate = osm_wd_base_query;
             } else if (sourceID === "qlever_wd_base") {
                 backend = "wikidata";
-                sparqlQueryTemplate = baseMapQuery;
+                sparqlQueryTemplate = wd_base_query;
             } else if (sourceID.startsWith("qlever_wd_direct")) {
                 backend = "wikidata";
                 sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
@@ -68,7 +82,15 @@ export class QLeverMapService implements MapService {
             }
 
             const maxElements = getConfig("max_map_elements"),
+                osm_text_key = getConfig("osm_text_key"),
+                osm_description_key = getConfig("osm_description_key"),
+                osm_wikidata_keys = getJsonConfig("osm_wikidata_keys") as string[] | undefined,
+                osmEtymologyExpression = osm_wikidata_keys?.length ? "?osm " + osm_wikidata_keys?.map(key => "<" + OSMKEY + key + ">")?.join('|') + " ?etymology." : "",
                 sparqlQuery = sparqlQueryTemplate
+                    .replaceAll('${osmTextSelect}', osm_text_key ? '?etymologyText' : "")
+                    .replaceAll('${osmDescriptionSelect}', osm_description_key ? '?etymologyDescription' : "")
+                    .replaceAll('${osmFilterExpression}', this.osmFilterExpression)
+                    .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression)
                     .replaceAll('${language}', language || '')
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
                     .replaceAll('${westLon}', bbox[0].toString())
@@ -110,7 +132,7 @@ export class QLeverMapService implements MapService {
         let properties: string[];
         const sourceProperty = /^qlever_wd_direct_(P\d+)$/.exec(sourceID)?.at(1),
             directProperties = getJsonConfig("osm_wikidata_properties"),
-            sparqlQueryTemplate = directMapQuery as string;
+            sparqlQueryTemplate = wd_direct_query as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
             throw new Error("Empty direct properties");
 
@@ -131,11 +153,11 @@ export class QLeverMapService implements MapService {
 
         let sparqlQueryTemplate: string;
         if (sourceID === "qlever_wd_indirect")
-            sparqlQueryTemplate = indirectMapQuery;
+            sparqlQueryTemplate = wd_indirect_query;
         else if (sourceID === "qlever_wd_reverse")
-            sparqlQueryTemplate = reverseMapQuery;
+            sparqlQueryTemplate = wd_reverse_query;
         else if (sourceID === "qlever_wd_qualifier")
-            sparqlQueryTemplate = qualifierMapQuery;
+            sparqlQueryTemplate = wd_qualifier_query;
         else
             throw new Error("Invalid sourceID: " + sourceID);
 
@@ -213,8 +235,8 @@ export class QLeverMapService implements MapService {
                         commons: row.commons?.value,
                         description: row.itemDescription?.value,
                         etymologies: etymology ? [etymology] : undefined,
-                        from_osm: !!row.osm?.value,
-                        from_wikidata: !!row.item?.value, //! TODO fix (ideally with value from query, but requires BOUND() or isIRI())
+                        from_osm: row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
+                        from_wikidata: row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
                         from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                         from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
                         name: row.itemLabel?.value,

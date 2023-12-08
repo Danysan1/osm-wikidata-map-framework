@@ -1,0 +1,32 @@
+PREFIX osmkey: <https://www.openstreetmap.org/wiki/Key:>
+PREFIX osmrel: <https://www.openstreetmap.org/relation/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX osm: <https://www.openstreetmap.org/>
+PREFIX ogc: <http://www.opengis.net/rdf#>
+PREFIX geo: <http://www.opengis.net/ont/geosparql#>
+PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+SELECT
+    ?item
+    ?etymology
+    ?osm
+    ?location
+    ${osmTextSelect}
+    ${osmDescriptionSelect}
+    (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
+    (?osm_descr AS ?itemDescription)
+    (true AS ?from_osm)
+WHERE {
+    ${osmFilterExpression}
+    ${osmEtymologyExpression}
+    ?osm geo:hasGeometry ?location.
+
+    # Filter by location
+    # ?location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
+    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+    FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
+
+    OPTIONAL { ?osm osm:wikidata ?item. }
+    OPTIONAL { ?osm osmkey:name:${language} ?osm_lang_name. }
+    OPTIONAL { ?osm osmkey:name ?osm_default_name. }
+    OPTIONAL { ?osm osmkey:description ?osm_descr. }
+}
