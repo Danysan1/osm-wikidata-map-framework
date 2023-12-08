@@ -20,6 +20,8 @@ SELECT
     ?etymology
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
+    (false AS ?from_osm)
+    (true AS ?from_wikidata)
 WITH { 
     SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel
     WHERE {

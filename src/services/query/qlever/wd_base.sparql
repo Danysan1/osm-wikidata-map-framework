@@ -17,6 +17,8 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
+    (false AS ?from_osm)
+    (true AS ?from_wikidata)
 WHERE {
     ?item p:P625 ?locationStatement.
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth

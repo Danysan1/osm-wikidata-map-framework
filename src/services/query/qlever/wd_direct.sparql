@@ -20,6 +20,8 @@ SELECT
     ?etymology
     (?item AS ?from_entity)
     (SAMPLE(?_from_prop) AS ?from_prop)
+    (false AS ?from_osm)
+    (true AS ?from_wikidata)
 WHERE {
     VALUES ?_from_prop { ${directProperties} }
     ?item p:P625 ?locationStatement;

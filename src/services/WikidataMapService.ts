@@ -66,15 +66,15 @@ export class WikidataMapService extends WikidataService implements MapService {
 
             out = {
                 type: "FeatureCollection",
-                bbox,
-                features: ret.results.bindings.reduce(this.featureReducer, [])
+                bbox: bbox,
+                features: ret.results.bindings.reduce(this.featureReducer, []),
+                wdqs_query: sparqlQuery,
+                timestamp: new Date().toISOString(),
+                sourceID: sourceID,
+                language: language,
+                truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-            out.wdqs_query = sparqlQuery;
-            out.timestamp = new Date().toISOString();
-            out.sourceID = sourceID;
-            out.language = language;
-            out.truncated = !!maxElements && ret.results.bindings.length === parseInt(maxElements);
             if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }
