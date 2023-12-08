@@ -7,7 +7,6 @@ SELECT DISTINCT
     ?osm_node
     ?osm_way
     ?osm_rel
-    ?alias
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
 WHERE {
@@ -26,6 +25,5 @@ WHERE {
     OPTIONAL { ?stmt pq:P11693 ?osm_node. }
     OPTIONAL { ?stmt pq:P10689 ?osm_way. }
     OPTIONAL { ?stmt pq:P402 ?osm_rel. }
-    OPTIONAL { ?alias owl:sameAs ?item. }
 }
 ${limit}
