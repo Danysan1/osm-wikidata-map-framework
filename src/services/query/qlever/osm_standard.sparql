@@ -7,16 +7,16 @@ PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 SELECT
     ?item
-    ?etymology
     ?osm
     ?location
+    ?etymology
     ${osmTextSelect}
     ${osmDescriptionSelect}
     (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
     (?osm_descr AS ?itemDescription)
     (true AS ?from_osm)
+    (false AS ?from_wikidata)
 WHERE {
-    ${osmFilterExpression}
     ${osmEtymologyExpression}
     ?osm geo:hasGeometry ?location.
 

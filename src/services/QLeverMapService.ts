@@ -17,26 +17,24 @@ import { MapService } from "./MapService";
 import { Configuration, SparqlApi, SparqlBackend } from "../generated/sparql";
 
 export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
-const OSMKEY = "https://www.openstreetmap.org/wiki/Key:"; // https://stackoverflow.com/a/5824414/2347196
+const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
+/**
+ * Translates an OSM key to a Wikidata predicate.
+ * 
+ * We can't simply use the "osmkey:" prefix, we need the full URI, because keys can contain colons (e.g. "addr:street") which are not accepted in SPARQL prefixed names.
+ * @see https://stackoverflow.com/a/5824414/2347196
+ */
+const keyPredicate = (key: string) => "<" + OSMKEY + key + ">";
 
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     private api: SparqlApi;
     private db: MapDatabase;
-    private osmFilterExpression: string;
 
     constructor(db: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
         this.api = new SparqlApi(new Configuration({ basePath }));
         this.db = db;
-        const osm_filter_tags = getJsonConfig("osm_filter_tags") as string[] | undefined;
-        this.osmFilterExpression = osm_filter_tags?.length ? "{ " + osm_filter_tags
-            ?.map(tag => {
-                if (tag.includes("=*") || !tag.includes("="))
-                    return `?osm <${OSMKEY + tag.replace("=*", "")}> []`;
-                return "?osm <" + OSMKEY + tag.replace(/=(.+)$/, "> '$1'");
-            })
-            ?.join(" } UNION { ") + " }" : "";
     }
 
     canHandleSource(sourceID: string): boolean {
@@ -58,51 +56,12 @@ export class QLeverMapService implements MapService {
             if (debug) console.info(`QLever map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
         } else {
             if (debug) console.info("QLever map cache miss, fetching data", { sourceID, bbox, language: language });
-            let backend: SparqlBackend, sparqlQueryTemplate: string;
-            if (sourceID === "qlever_osm_wd") {
-                backend = "osm-planet";
-                sparqlQueryTemplate = osm_wd_query;
-            } else if (/^qlever_osm_[^w]/.test(sourceID)) {
-                backend = "osm-planet";
-                sparqlQueryTemplate = osm_standard_query;
-            } else if (sourceID === "qlever_osm_wd_base") {
-                backend = "wikidata";
-                sparqlQueryTemplate = osm_wd_base_query;
-            } else if (sourceID === "qlever_wd_base") {
-                backend = "wikidata";
-                sparqlQueryTemplate = wd_base_query;
-            } else if (sourceID.startsWith("qlever_wd_direct")) {
-                backend = "wikidata";
-                sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
-            } else if (/^qlever_wd_(reverse|qualifier|indirect)$/.test(sourceID)) {
-                backend = "wikidata";
-                sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
-            } else {
-                throw new Error("Invalid sourceID: " + sourceID);
-            }
-
             const maxElements = getConfig("max_map_elements"),
-                osm_text_key = getConfig("osm_text_key"),
-                osm_description_key = getConfig("osm_description_key"),
-                osm_wikidata_keys = getJsonConfig("osm_wikidata_keys") as string[] | undefined,
-                osmEtymologyExpression = osm_wikidata_keys?.length ? "?osm " + osm_wikidata_keys?.map(key => "<" + OSMKEY + key + ">")?.join('|') + " ?etymology." : "",
-                sparqlQuery = sparqlQueryTemplate
-                    .replaceAll('${osmTextSelect}', osm_text_key ? '?etymologyText' : "")
-                    .replaceAll('${osmDescriptionSelect}', osm_description_key ? '?etymologyDescription' : "")
-                    .replaceAll('${osmFilterExpression}', this.osmFilterExpression)
-                    .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression)
+                backend = this.getBackend(sourceID),
+                sparqlQueryTemplate = this.getSparqlQueryTemplate(sourceID),
+                sparqlQuery = this.fillPlaceholders(sourceID, sparqlQueryTemplate, bbox)
                     .replaceAll('${language}', language || '')
-                    .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${westLon}', bbox[0].toString())
-                    .replaceAll('${southLat}', bbox[1].toString())
-                    .replaceAll('${eastLon}', bbox[2].toString())
-                    .replaceAll('${northLat}', bbox[3].toString())
-                    .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(4))
-                    .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(4))
-                    .replaceAll('${maxDistanceKm}', Math.max(  // https://stackoverflow.com/a/1253545/2347196
-                        Math.abs(bbox[2] - bbox[0]) * 100 * Math.cos(bbox[1] * Math.PI / 180),
-                        Math.abs(bbox[3] - bbox[1]) * 100
-                    ).toFixed(4)),
+                    .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : ""),
                 ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
             if (!ret.results?.bindings)
@@ -110,62 +69,141 @@ export class QLeverMapService implements MapService {
 
             out = {
                 type: "FeatureCollection",
-                bbox,
-                features: ret.results.bindings.reduce(this.featureReducer, [])
+                bbox: bbox,
+                features: ret.results.bindings.reduce(this.featureReducer, []),
+                timestamp: new Date().toISOString(),
+                sourceID: sourceID,
+                language: language,
+                truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
             if (backend === "wikidata")
                 out.qlever_wd_query = sparqlQuery;
             else if (backend === "osm-planet")
                 out.qlever_osm_query = sparqlQuery;
-            out.timestamp = new Date().toISOString();
-            out.sourceID = sourceID;
-            out.language = language;
-            out.truncated = !!maxElements && ret.results.bindings.length === parseInt(maxElements);
+
             if (debug) console.info(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }
         return out;
     }
 
-    private getDirectSparqlQuery(sourceID: string): string {
-        let properties: string[];
-        const sourceProperty = /^qlever_wd_direct_(P\d+)$/.exec(sourceID)?.at(1),
-            directProperties = getJsonConfig("osm_wikidata_properties"),
-            sparqlQueryTemplate = wd_direct_query as string;
-        if (!Array.isArray(directProperties) || !directProperties.length)
-            throw new Error("Empty direct properties");
+    private getBackend(sourceID: string): SparqlBackend {
+        if (sourceID === "qlever_osm_wd" || /^qlever_osm_[^w]/.test(sourceID))
+            return "osm-planet";
 
-        if (!sourceProperty)
-            properties = directProperties;
-        else if (!directProperties.includes(sourceProperty))
-            throw new Error("Invalid sourceProperty: " + sourceProperty);
-        else
-            properties = [sourceProperty];
-
-        return sparqlQueryTemplate.replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
+        return "wikidata";
     }
 
-    private getIndirectSparqlQuery(sourceID: string): string {
-        const indirectProperty = getConfig("wikidata_indirect_property");
-        if (!indirectProperty)
-            throw new Error("No indirect property defined");
-
-        let sparqlQueryTemplate: string;
-        if (sourceID === "qlever_wd_indirect")
-            sparqlQueryTemplate = wd_indirect_query;
+    private getSparqlQueryTemplate(sourceID: string): string {
+        if (sourceID === "qlever_osm_wd")
+            return osm_wd_query;
+        else if (/^qlever_osm_[^w]/.test(sourceID))
+            return osm_standard_query;
+        else if (sourceID === "qlever_osm_wd_base")
+            return osm_wd_base_query;
+        else if (sourceID === "qlever_wd_base")
+            return wd_base_query;
+        else if (sourceID.startsWith("qlever_wd_direct"))
+            return wd_direct_query;
+        else if (sourceID === "qlever_wd_indirect")
+            return wd_indirect_query;
         else if (sourceID === "qlever_wd_reverse")
-            sparqlQueryTemplate = wd_reverse_query;
+            return wd_reverse_query;
         else if (sourceID === "qlever_wd_qualifier")
-            sparqlQueryTemplate = wd_qualifier_query;
+            return wd_qualifier_query;
         else
             throw new Error("Invalid sourceID: " + sourceID);
+    }
 
-        const imageProperty = getConfig("wikidata_image_property"),
-            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
-        return sparqlQueryTemplate
-            .replaceAll('${indirectProperty}', indirectProperty)
-            .replaceAll('${pictureQuery}', pictureQuery);
+    private fillPlaceholders(sourceID: string, sparqlQuery: string, bbox: BBox): string {
+        if (sourceID.includes("osm")) {
+            const use_wikidata = sourceID.startsWith("qlever_osm_w"),
+                osm_text_key = getConfig("osm_text_key"),
+                osm_description_key = getConfig("osm_description_key"),
+                osm_wikidata_keys = getJsonConfig("osm_wikidata_keys") as string[] | undefined,
+                raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
+                filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
+                filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
+                filter_keys = filter_tags?.filter(tag => !tag.includes("=")),
+                filter_wd_keys = filter_tags ? osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : osm_wikidata_keys,
+                non_filter_wd_keys = osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
+                filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !osm_wikidata_keys?.includes(key)),
+                filterExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " []; " : "",
+                osmEtymologyUnionBranches: string[] = [];
+
+            if (filter_tags_with_value?.length) {
+                filter_tags_with_value.forEach(tag => {
+                    osmEtymologyUnionBranches.push(`?osm ${tag.replace("=", " '")}'`);
+                });
+            }
+
+            if (filter_wd_keys?.length) {
+                const wikidata_predicate = filter_wd_keys.map(keyPredicate)?.join('|');
+                osmEtymologyUnionBranches.push(`?osm ${wikidata_predicate} ?etymology.`);
+            }
+
+            if (non_filter_wd_keys?.length) {
+                const wikidata_predicate = non_filter_wd_keys.map(keyPredicate)?.join('|');
+                osmEtymologyUnionBranches.push(`?osm ${filterExpression}${wikidata_predicate} ?etymology.`);
+            }
+
+            if (osm_text_key?.length)
+                osmEtymologyUnionBranches.push(`?osm ${filterExpression}${keyPredicate(osm_text_key)} ?etymology_text.`);
+
+            if (osm_description_key?.length)
+                osmEtymologyUnionBranches.push(`?osm ${filterExpression}${keyPredicate(osm_description_key)} ?etymology_description.`);
+
+            let osmEtymologyExpression = "";
+            if (osmEtymologyUnionBranches.length === 1)
+                osmEtymologyExpression = osmEtymologyUnionBranches[0];
+            if (osmEtymologyUnionBranches.length > 1)
+                osmEtymologyExpression = "{\n    " + osmEtymologyUnionBranches.join("\n    } UNION {\n        ") + "\n    }";
+            sparqlQuery = sparqlQuery
+                .replaceAll('${osmTextSelect}', osm_text_key?.length ? '?etymology_text' : "")
+                .replaceAll('${osmDescriptionSelect}', osm_description_key?.length ? '?etymology_description' : "")
+                .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression);
+        }
+
+        if (sourceID.includes("indirect") || sourceID.includes("reverse") || sourceID.includes("qualifier")) {
+            const indirectProperty = getConfig("wikidata_indirect_property");
+            if (!indirectProperty)
+                throw new Error("No indirect property defined");
+            const imageProperty = getConfig("wikidata_image_property"),
+                pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
+
+            sparqlQuery = sparqlQuery
+                .replaceAll('${indirectProperty}', indirectProperty)
+                .replaceAll('${pictureQuery}', pictureQuery);
+        } else if (sourceID.includes("direct")) {
+            let properties: string[];
+            const sourceProperty = /_direct_(P\d+)$/.exec(sourceID)?.at(1),
+                directProperties = getJsonConfig("osm_wikidata_properties");
+            if (!Array.isArray(directProperties) || !directProperties.length)
+                throw new Error("Empty direct properties");
+
+            if (!sourceProperty)
+                properties = directProperties;
+            else if (!directProperties.includes(sourceProperty))
+                throw new Error("Invalid sourceProperty: " + sourceProperty);
+            else
+                properties = [sourceProperty];
+
+            sparqlQuery = sparqlQuery
+                .replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
+        }
+
+        return sparqlQuery
+            .replaceAll('${westLon}', bbox[0].toString())
+            .replaceAll('${southLat}', bbox[1].toString())
+            .replaceAll('${eastLon}', bbox[2].toString())
+            .replaceAll('${northLat}', bbox[3].toString())
+            .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(4))
+            .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(4))
+            .replaceAll('${maxDistanceKm}', Math.max(  // https://stackoverflow.com/a/1253545/2347196
+                Math.abs(bbox[2] - bbox[0]) * 100 * Math.cos(bbox[1] * Math.PI / 180),
+                Math.abs(bbox[3] - bbox[1]) * 100
+            ).toFixed(4));
     }
 
     private featureReducer(acc: Feature[], row: any): Feature[] {
@@ -235,6 +273,8 @@ export class QLeverMapService implements MapService {
                         commons: row.commons?.value,
                         description: row.itemDescription?.value,
                         etymologies: etymology ? [etymology] : undefined,
+                        text_etymology: row.etymology_text?.value,
+                        description_etymology: row.etymology_description?.value,
                         from_osm: row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
                         from_wikidata: row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
                         from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
