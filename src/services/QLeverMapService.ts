@@ -201,8 +201,8 @@ export class QLeverMapService implements MapService {
             .replaceAll('${centerLon}', ((bbox[0] + bbox[2]) / 2).toFixed(4))
             .replaceAll('${centerLat}', ((bbox[1] + bbox[3]) / 2).toFixed(4))
             .replaceAll('${maxDistanceKm}', Math.max(  // https://stackoverflow.com/a/1253545/2347196
-                Math.abs(bbox[2] - bbox[0]) * 100 * Math.cos(bbox[1] * Math.PI / 180),
-                Math.abs(bbox[3] - bbox[1]) * 100
+                Math.abs(bbox[2] - bbox[0]) * 111 * Math.cos(bbox[1] * Math.PI / 180) / 2,
+                Math.abs(bbox[3] - bbox[1]) * 111 / 2
             ).toFixed(4));
     }
 
