@@ -477,7 +477,7 @@ class OwmfDbInitDAG(DAG):
                 Check elements with an etymology that comes from the key configured in 'osm_text_key' or 'osm_description_key'.
             """
         )
-        task_remove_ele_too_big >> task_check_text_ety
+        task_create_key_index >> task_check_text_ety
 
         task_check_propagation = BranchPythonOperator(
             task_id = "choose_propagation_method",
