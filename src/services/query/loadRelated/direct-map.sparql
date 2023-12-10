@@ -1,8 +1,17 @@
-#defaultView:Map
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX owl: <http://www.w3.org/2002/07/owl#>
+PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX p: <http://www.wikidata.org/prop/>
+PREFIX ps: <http://www.wikidata.org/prop/statement/>
+PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+
 SELECT DISTINCT
     ?item
+    ?label_da
     ?label_de
     ?label_en
+    ?label_es
+    ?label_fr
     ?label_it
     ?commons
     ?location
@@ -14,12 +23,14 @@ WHERE {
     ?item p:P625 ?locationStatement;
           ?from_prop ?etymology.
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
-    FILTER (STRENDS(STR(?item), '${pageNumber}') && isIRI(?etymology) && !wikibase:isSomeValue(?etymology)) # Paging through ORDER BY + LIMIT + OFFSET is too slow
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
 
     ?locationStatement ps:P625 ?location.
+    OPTIONAL { ?item rdfs:label ?label_da FILTER(LANG(?label_da) = "da") }
     OPTIONAL { ?item rdfs:label ?label_de FILTER(LANG(?label_de) = "de") }
     OPTIONAL { ?item rdfs:label ?label_en FILTER(LANG(?label_en) = "en") }
+    OPTIONAL { ?item rdfs:label ?label_es FILTER(LANG(?label_es) = "es") }
+    OPTIONAL { ?item rdfs:label ?label_fr FILTER(LANG(?label_fr) = "fr") }
     OPTIONAL { ?item rdfs:label ?label_it FILTER(LANG(?label_it) = "it") }
     OPTIONAL { ?item wdt:P373 ?commons. }
     OPTIONAL { ?alias owl:sameAs ?item. }
