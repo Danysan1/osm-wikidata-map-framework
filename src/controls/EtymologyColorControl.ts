@@ -70,6 +70,7 @@ class EtymologyColorControl extends DropdownControl {
         setLayerColor: (color: string | ExpressionSpecification) => void,
         t: TFunction,
         sourceId: string,
+        layerIDs: string[],
         minZoomLevel: number
     ) {
         const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
@@ -110,11 +111,7 @@ class EtymologyColorControl extends DropdownControl {
             }
         );
         this.setLayerColor = setLayerColor;
-        this.layerIDs = [
-            sourceId + "_layer_point",
-            sourceId + "_layer_lineString",
-            sourceId + "_layer_polygon_fill"
-        ];
+        this.layerIDs = layerIDs;
         this.osmTextOnly = t("color_scheme.osm_text_only", "OSM (Text only)");
         this.pictureAvailable = t("color_scheme.available", "Available");
         this.pictureUnavailable = t("color_scheme.unavailable", "Unavailable");

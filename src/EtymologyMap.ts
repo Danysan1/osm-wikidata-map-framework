@@ -1,4 +1,4 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification, ExpressionSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 import "@stadiamaps/maplibre-search-box/dist/style.css";
@@ -26,16 +26,20 @@ import { MapCompleteControl } from './controls/MapCompleteControl';
 import { iDEditorControl } from './controls/iDEditorControl';
 import { Protocol } from 'pmtiles';
 import { MapService } from './services/MapService';
+import { ColorSchemeID } from './colorScheme.model';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     PMTILES_PREFIX = "pmtiles",
     VECTOR_PREFIX = "vector",
-    WIKIDATA_SOURCE = "wikidata_source",
-    wikidata_layer_point = WIKIDATA_SOURCE + '_layer_point',
-    wikidata_layer_lineString = WIKIDATA_SOURCE + '_layer_lineString',
-    wikidata_layer_polygon_border = WIKIDATA_SOURCE + '_layer_polygon_border',
-    wikidata_layer_polygon_fill = WIKIDATA_SOURCE + '_layer_polygon_fill',
-    ELEMENTS_SOURCE = "elements_source";
+    DETAILS_SOURCE = "detail_source",
+    POINT_LAYER = '_layer_point',
+    LINE_LAYER = '_layer_lineString_line',
+    LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
+    POLYGON_BORDER_LAYER = '_layer_polygon_border',
+    POLYGON_FILL_LAYER = '_layer_polygon_fill',
+    ELEMENTS_SOURCE = "elements_source",
+    CLUSTER_LAYER = '_layer_cluster',
+    COUNT_LAYER = '_layer_count';
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
@@ -180,7 +184,7 @@ export class EtymologyMap extends Map {
         if (!e.isSourceLoaded || e.dataType !== "source")
             return;
 
-        const wikidataSourceEvent = e.sourceId === WIKIDATA_SOURCE,
+        const wikidataSourceEvent = e.sourceId === DETAILS_SOURCE,
             elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
 
         if (wikidataSourceEvent || elementsSourceEvent) {
@@ -191,7 +195,7 @@ export class EtymologyMap extends Map {
 
             const noFeatures = wikidataSourceEvent &&
                 e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
-                this.querySourceFeatures(WIKIDATA_SOURCE).length === 0;
+                this.querySourceFeatures(DETAILS_SOURCE).length === 0;
             loadTranslator().then(t => {
                 if (!this.wikidataSourceInitialized)
                     this.wikidataSourceInitialized = true;
@@ -211,7 +215,7 @@ export class EtymologyMap extends Map {
      */
     private mapErrorHandler(err: any) {
         let errorMessage;
-        if ([ELEMENTS_SOURCE, WIKIDATA_SOURCE].includes(err.sourceId)) {
+        if ([ELEMENTS_SOURCE, DETAILS_SOURCE].includes(err.sourceId)) {
             this.fetchCompleted();
             loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error")));
             errorMessage = "An error occurred while fetching " + err.sourceId;
@@ -352,7 +356,7 @@ export class EtymologyMap extends Map {
             if (debug) console.debug("Updating pmtiles vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
-                WIKIDATA_SOURCE,
+                DETAILS_SOURCE,
                 "etymology_map.pmtiles",
                 thresholdZoomLevel,
                 thresholdZoomLevel // https://gis.stackexchange.com/a/330575/196469
@@ -362,7 +366,7 @@ export class EtymologyMap extends Map {
             if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
-                WIKIDATA_SOURCE,
+                DETAILS_SOURCE,
                 `etymology_map?source=${sourceID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
                 thresholdZoomLevel
             );
@@ -396,7 +400,7 @@ export class EtymologyMap extends Map {
             const data = await service.fetchMapElementDetails(sourceID, bbox);
 
             this.addOrUpdateGeoJSONSource(
-                WIKIDATA_SOURCE,
+                DETAILS_SOURCE,
                 {
                     type: 'geojson',
                     // buffer: 512, // This only works on already downloaded data
@@ -462,21 +466,18 @@ export class EtymologyMap extends Map {
     }
 
     private removeSourceWithLayers(sourceID: string) {
-        if (this.getLayer(sourceID + '_layer_cluster')) this.removeLayer(sourceID + '_layer_cluster');
-        if (this.getLayer(sourceID + '_layer_count')) this.removeLayer(sourceID + '_layer_count');
-        if (this.getLayer(sourceID + '_layer_point')) this.removeLayer(sourceID + '_layer_point');
-        if (this.getLayer(sourceID + '_layer_lineString')) this.removeLayer(sourceID + '_layer_lineString');
-        if (this.getLayer(sourceID + '_layer_polygon_border')) this.removeLayer(sourceID + '_layer_polygon_border');
-        if (this.getLayer(sourceID + '_layer_polygon_fill')) this.removeLayer(sourceID + '_layer_polygon_fill');
+        this.getLayersOrder()
+            .filter(layerID => layerID.startsWith(sourceID))
+            .forEach(layerID => this.removeLayer(layerID));
+
         if (this.getSource(sourceID)) this.removeSource(sourceID);
     }
 
     /**
      * Initializes the high-zoom-level complete (un-clustered) layer.
      * 
-     * The order of declaration is important:
-     * initWikidataLayer() adds the click handler. If a point and a polygon are overlapped, the point has precedence. This is imposed by declaring it first.
-     * On the other side, the polygon must be show underneath the point. This is imposed by specifying the second parameter of addLayer()
+     * @param minZoom The minimum zoom level at which the layers should be visible
+     * @param source_layer The name of the source layer to use, in case the source is a vector tile source
      * 
      * @see initWikidataLayer
      * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
@@ -488,10 +489,10 @@ export class EtymologyMap extends Map {
         const colorSchemeColor = getCurrentColorScheme().color || '#223b53';
 
 
-        if (!this.getLayer(wikidata_layer_point)) {
+        if (!this.getLayer(DETAILS_SOURCE + POINT_LAYER)) {
             const spec: CircleLayerSpecification = {
-                'id': wikidata_layer_point,
-                'source': WIKIDATA_SOURCE,
+                'id': DETAILS_SOURCE + POINT_LAYER,
+                'source': DETAILS_SOURCE,
                 'type': 'circle',
                 "filter": ["==", ["geometry-type"], "Point"],
                 "minzoom": minZoom,
@@ -504,33 +505,52 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            this.addLayer(spec);
-            this.initWikidataLayer(wikidata_layer_point);
+            this.addLayer(spec); // Points are shown on top of lines and polygons
+            this.initWikidataLayer(DETAILS_SOURCE + POINT_LAYER);
         }
 
-        if (!this.getLayer(wikidata_layer_lineString)) {
+        if (!this.getLayer(DETAILS_SOURCE + LINE_TAP_AREA_LAYER)) {
             const spec: LineLayerSpecification = {
-                'id': wikidata_layer_lineString,
-                'source': WIKIDATA_SOURCE,
+                'id': DETAILS_SOURCE + LINE_TAP_AREA_LAYER,
+                'source': DETAILS_SOURCE,
+                'type': 'line',
+                "filter": ["==", ["geometry-type"], "LineString"],
+                "minzoom": minZoom,
+                'paint': {
+                    'line-color': '#ffffff',
+                    'line-opacity': 0,
+                    'line-width': 24,
+                }
+            };
+            if (source_layer)
+                spec["source-layer"] = source_layer;
+            this.addLayer(spec, DETAILS_SOURCE + POINT_LAYER); // Lines are shown below points but on top of polygons
+            this.initWikidataLayer(DETAILS_SOURCE + LINE_TAP_AREA_LAYER);
+        }
+
+        if (!this.getLayer(DETAILS_SOURCE + LINE_LAYER)) {
+            const spec: LineLayerSpecification = {
+                'id': DETAILS_SOURCE + LINE_LAYER,
+                'source': DETAILS_SOURCE,
                 'type': 'line',
                 "filter": ["==", ["geometry-type"], "LineString"],
                 "minzoom": minZoom,
                 'paint': {
                     'line-color': colorSchemeColor,
                     'line-opacity': 0.6,
-                    'line-width': 16
+                    'line-width': 12,
                 }
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            this.addLayer(spec, wikidata_layer_point);
-            this.initWikidataLayer(wikidata_layer_lineString);
+            this.addLayer(spec, DETAILS_SOURCE + POINT_LAYER); // Lines are shown below points but on top of polygons
+            this.initWikidataLayer(DETAILS_SOURCE + LINE_LAYER);
         }
 
-        if (!this.getLayer(wikidata_layer_polygon_border)) {
+        if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
-                'id': wikidata_layer_polygon_border,
-                'source': WIKIDATA_SOURCE,
+                'id': DETAILS_SOURCE + POLYGON_BORDER_LAYER,
+                'source': DETAILS_SOURCE,
                 'type': 'line',
                 "filter": ["==", ["geometry-type"], "Polygon"],
                 "minzoom": minZoom,
@@ -543,27 +563,27 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            this.addLayer(spec, wikidata_layer_lineString);
-            this.initWikidataLayer(wikidata_layer_polygon_border);
+            this.addLayer(spec, DETAILS_SOURCE + LINE_LAYER); // Polygon borders are shown below lines and points but on top of polygon fill
+            this.initWikidataLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER);
         }
 
-        if (!this.getLayer(wikidata_layer_polygon_fill)) {
+        if (!this.getLayer(DETAILS_SOURCE + POLYGON_FILL_LAYER)) {
             const spec: FillLayerSpecification = {
-                'id': wikidata_layer_polygon_fill,
-                'source': WIKIDATA_SOURCE,
+                'id': DETAILS_SOURCE + POLYGON_FILL_LAYER,
+                'source': DETAILS_SOURCE,
                 'type': 'fill',
                 "filter": ["==", ["geometry-type"], "Polygon"],
                 "minzoom": minZoom,
                 'paint': {
                     'fill-color': colorSchemeColor,
-                    'fill-opacity': 0.4,
+                    'fill-opacity': 0.3,
                     'fill-outline-color': "rgba(0, 0, 0, 0)",
                 }
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            this.addLayer(spec, wikidata_layer_polygon_border);
-            this.initWikidataLayer(wikidata_layer_polygon_fill);
+            this.addLayer(spec, DETAILS_SOURCE + POLYGON_BORDER_LAYER); // Polygon fill is shown below everything else
+            this.initWikidataLayer(DETAILS_SOURCE + POLYGON_FILL_LAYER);
         }
     }
 
@@ -574,23 +594,21 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
             if (debug) console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
 
-            const colorControl = new EtymologyColorControl(
-                getCorrectFragmentParams().colorScheme,
-                (colorSchemeID) => {
-                    if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
-                    const params = getCorrectFragmentParams();
-                    if (params.colorScheme != colorSchemeID) {
-                        setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
-                        this.updateDataSource();
-                    }
-                },
-                (color) => {
+            const onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
+                if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
+                const params = getCorrectFragmentParams();
+                if (params.colorScheme != colorSchemeID) {
+                    setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                    this.updateDataSource();
+                }
+            },
+                setLayerColor = (color: string | ExpressionSpecification) => {
                     if (debug) console.debug("initWikidataControls set layer color", { color });
                     [
-                        ["wikidata_source_layer_point", "circle-color"],
-                        ["wikidata_source_layer_lineString", 'line-color'],
-                        ["wikidata_source_layer_polygon_fill", 'fill-color'],
-                        ["wikidata_source_layer_polygon_border", 'line-color'],
+                        [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
+                        [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
+                        [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-color'],
+                        [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
                     ].forEach(([layerID, property]) => {
                         if (this?.getLayer(layerID)) {
                             this.setPaintProperty(layerID, property, color);
@@ -599,10 +617,15 @@ export class EtymologyMap extends Map {
                         }
                     });
                 },
-                t,
-                WIKIDATA_SOURCE,
-                thresholdZoomLevel
-            );
+                colorControl = new EtymologyColorControl(
+                    getCorrectFragmentParams().colorScheme,
+                    onColorSchemeChange,
+                    setLayerColor,
+                    t,
+                    DETAILS_SOURCE,
+                    [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
+                    thresholdZoomLevel
+                );
             this.addControl(colorControl, 'top-left');
             colorControl.updateChart();
 
@@ -619,7 +642,7 @@ export class EtymologyMap extends Map {
             this.addControl(new LinkControl(
                 "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg",
                 t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
-                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                [ELEMENTS_SOURCE, DETAILS_SOURCE],
                 "overpass_query",
                 "https://overpass-turbo.eu/?Q=",
                 minZoomLevel
@@ -628,7 +651,7 @@ export class EtymologyMap extends Map {
             this.addControl(new LinkControl(
                 "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg",
                 t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
-                [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                [ELEMENTS_SOURCE, DETAILS_SOURCE],
                 "wdqs_query",
                 "https://query.wikidata.org/#",
                 minZoomLevel
@@ -638,7 +661,7 @@ export class EtymologyMap extends Map {
                 this.addControl(new LinkControl(
                     "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
                     t("qlever_query", "Source SPARQL query on QLever UI"),
-                    [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                    [ELEMENTS_SOURCE, DETAILS_SOURCE],
                     "qlever_wd_query",
                     "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
                     minZoomLevel
@@ -647,14 +670,18 @@ export class EtymologyMap extends Map {
                 this.addControl(new LinkControl(
                     "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
                     t("qlever_query", "Source SPARQL query on QLever UI"),
-                    [ELEMENTS_SOURCE, WIKIDATA_SOURCE],
+                    [ELEMENTS_SOURCE, DETAILS_SOURCE],
                     "qlever_osm_query",
                     "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
                     minZoomLevel
                 ), 'top-right');
             }
 
-            this.addControl(new DataTableControl(WIKIDATA_SOURCE, thresholdZoomLevel), 'top-right');
+            this.addControl(new DataTableControl(
+                DETAILS_SOURCE,
+                [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
+                thresholdZoomLevel
+            ), 'top-right');
             this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
             this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
 
@@ -664,7 +691,9 @@ export class EtymologyMap extends Map {
     }
 
     /**
-     * Completes low-level details of one of the high zoom Wikidata layers
+     * Completes low-level common details of one of the high zoom Wikidata layers
+     * - Handles clicks/taps on layer features
+     * - Shows a hand pointing cursor when hovering over a layer feature
      * 
      * @see prepareWikidataLayers
      * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
@@ -750,8 +779,8 @@ export class EtymologyMap extends Map {
     }
 
     private addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
-        if (this.getSource(WIKIDATA_SOURCE)?.type === "vector")
-            this.removeSourceWithLayers(WIKIDATA_SOURCE);
+        if (this.getSource(DETAILS_SOURCE)?.type === "vector")
+            this.removeSourceWithLayers(DETAILS_SOURCE);
 
         let sourceObject = this.getSource(id) as GeoJSONSource | undefined;
         const newSourceDataURL = ["string", "object"].includes(typeof config.data) ? config.data as string | GeoJSON : null,
@@ -835,9 +864,9 @@ export class EtymologyMap extends Map {
         maxZoom?: number,
         sourceLayer?: string
     ) {
-        const clusterLayerName = sourceName + '_layer_cluster',
-            countLayerName = sourceName + '_layer_count',
-            pointLayerName = sourceName + '_layer_point';
+        const clusterLayerName = sourceName + CLUSTER_LAYER,
+            countLayerName = sourceName + COUNT_LAYER,
+            pointLayerName = sourceName + POINT_LAYER;
         if (!this.getLayer(clusterLayerName)) {
             const minThreshold = 3_000,
                 maxThreshold = 60_000,
