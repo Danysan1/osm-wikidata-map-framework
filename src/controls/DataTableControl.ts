@@ -15,12 +15,8 @@ export class DataTableControl implements IControl {
     private sourceDataHandler: (e: MapSourceDataEvent) => void;
     private moveEndHandler: (e: MapEvent) => void;
 
-    constructor(sourceId: string, minZoomLevel = 0) {
-        this.layers = [
-            sourceId + "_layer_point",
-            sourceId + "_layer_lineString",
-            sourceId + "_layer_polygon_fill"
-        ];
+    constructor(sourceId: string, layerIDs: string[], minZoomLevel = 0) {
+        this.layers = layerIDs;
 
         this.sourceDataHandler = e => {
             if (e.isSourceLoaded && e.dataType === "source" && sourceId === e.sourceId)
