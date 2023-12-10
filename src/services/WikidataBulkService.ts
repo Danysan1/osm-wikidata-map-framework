@@ -1,12 +1,22 @@
-import { WikidataService } from "./WikidataService";
 import { Connection, DataTypeOIDs, PreparedStatement } from 'postgresql-client';
 import elementUpdateQuery from "./query/loadRelated/element-update.sql";
 import elementInsertQuery from "./query/loadRelated/element-insert.sql";
 import wikidataQuery from "./query/loadRelated/wikidata.sql";
+import { Configuration, SparqlApi, SparqlBackend } from "../generated/sparql";
 
 const SLEEP_TIME_MS = 5_000;
 
-export class WikidataBulkService extends WikidataService {
+export class WikidataBulkService {
+    private api: SparqlApi;
+    private backend: SparqlBackend;
+
+    constructor(useQLever = true) {
+        this.backend = useQLever ? "wikidata" : "sparql";
+        this.api = new SparqlApi(new Configuration({
+            basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query.wikidata.org"
+        }));
+    }
+
     async loadRelatedEntities(sparqlQueryTemplate: string, etymologySqlQuery: string, dbConnectionURI: string) {
         console.info("Setting up connections...")
         const dbConnection = new Connection(dbConnectionURI);
@@ -25,20 +35,17 @@ export class WikidataBulkService extends WikidataService {
             const etymologyStatement = await dbConnection.prepare(etymologySqlQuery, { paramTypes: [DataTypeOIDs.json] });
 
             console.debug("Using SPARQL query:\n", sparqlQueryTemplate);
-            for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
-                const sparqlQuery = sparqlQueryTemplate.replace('${pageNumber}', pageNumber.toString());
-                console.debug(`Fetching elements and linked entities for page ${pageNumber}...`);
-                try {
-                    await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
-                } catch (e) {
-                    console.log(`First attempt for page ${pageNumber} failed, sleeping and trying again...`, e);
-                    await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
-                    await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
-                }
-                console.debug(`Fetched and loaded elements and linked entities for page ${pageNumber}...`);
 
-                //await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
-            };
+            const sparqlQuery = sparqlQueryTemplate;
+            console.debug(`Fetching elements and linked entities...`);
+            try {
+                await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
+            } catch (e) {
+                console.log(`First attempt failed, sleeping and trying again...`, e);
+                await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
+                await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
+            }
+            console.debug(`Fetched and loaded elements and linked entities...`);
 
             console.debug("Tearing down connections...");
             await wikidataStatement.close();
@@ -63,8 +70,10 @@ export class WikidataBulkService extends WikidataService {
         etymologyStatement: PreparedStatement // Adds the etymologies to the etymology table
     ): Promise<number> {
         console.time("fetch");
-        const response = await this.api.postSparqlQueryRaw({ backend: "sparql", format: "json", query: sparqlQuery }),
-            json = await response.raw.text();
+        const response = await this.api.postSparqlQueryRaw({
+            backend: this.backend, format: "json", query: sparqlQuery
+        });
+        const json = await response.raw.text();
         console.timeEnd("fetch");
         if (response.raw.status !== 200)
             throw new Error(`Failed to fetch data: ${json}`);

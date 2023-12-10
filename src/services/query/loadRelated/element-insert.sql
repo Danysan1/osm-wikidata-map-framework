@@ -7,8 +7,11 @@ SELECT
     ST_GeomFromText(value->'location'->>'value', 4326),
     wd_id,
     JSON_BUILD_OBJECT (
+        'name:da', value->'label_da'->>'value',
         'name:de', value->'label_de'->>'value',
         'name', value->'label_en'->>'value',
+        'name:es', value->'label_es'->>'value',
+        'name:fr', value->'label_fr'->>'value',
         'name:it', value->'label_it'->>'value',
         'wikimedia_commons', 'Category:' || (value->'commons'->>'value')
     )
