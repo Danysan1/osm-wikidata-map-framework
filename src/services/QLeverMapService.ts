@@ -1,7 +1,8 @@
 import { WikidataService } from "./WikidataService";
 import osm_wd_query from "./query/qlever/osm_wd.sparql";
-import osm_standard_query from "./query/qlever/osm_standard.sparql";
+import osm_all_query from "./query/qlever/osm_all.sparql";
 import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
+import osm_all_direct_query from "./query/qlever/osm_all_direct.sparql";
 import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
 import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
@@ -99,9 +100,11 @@ export class QLeverMapService implements MapService {
         if (sourceID === "qlever_osm_wd")
             return osm_wd_query;
         else if (/^qlever_osm_[^w]/.test(sourceID))
-            return osm_standard_query;
+            return osm_all_query;
         else if (sourceID === "qlever_osm_wd_base")
             return osm_wd_base_query;
+        else if (sourceID === "qlever_osm_wikidata_direct")
+            return osm_all_direct_query;
         else if (sourceID === "qlever_wd_base")
             return wd_base_query;
         else if (sourceID.startsWith("qlever_wd_direct"))

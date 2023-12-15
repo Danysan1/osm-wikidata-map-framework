@@ -15,24 +15,27 @@ SELECT
     ?item
     ?osm
     (SAMPLE(COALESCE(?osm_location,?wd_location)) AS ?location)
-    #(SAMPLE(COALESCE(?osm_lang_name,?wd_lang_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
-    (SAMPLE(COALESCE(?wd_lang_label,?wd_default_label)) AS ?itemLabel)
-    #(SAMPLE(COALESCE(?osm_descr,?wd_descr)) AS ?itemDescription)
-    (SAMPLE(?wd_descr) AS ?itemDescription)
+    (SAMPLE(COALESCE(?osm_lang_name,?wd_lang_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
+    (SAMPLE(COALESCE(?osm_descr,?wd_descr)) AS ?itemDescription)
     (SAMPLE(?_commons) AS ?commons)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_picture) AS ?picture)
+    ?etymology
+    (?item AS ?from_entity)
+    (SAMPLE(?_from_prop) AS ?from_prop)
     #(BOUND(?osm) AS ?from_osm)
     #(BOUND(?item) AS ?from_wikidata)
 WHERE {
-    ?item p:P625 ?locationStatement.
+    VALUES ?_from_prop { ${directProperties} }
+    ?item p:P625 ?locationStatement;
+          ?_from_prop ?etymology.
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
-    ?locationStatement ps:P625 ?wd_location.
+    ?locationStatement ps:P625 ?_location.
 
     SERVICE <https://qlever.cs.uni-freiburg.de/api/osm-planet> {
-        ?osm osm:wikidata ?osm_wikidata; # osmkey:wikidata returns the tag value (Q-ID), osm:wikidata returns the URI
-            geo:hasGeometry ?osm_location.
+        ${osmEtymologyExpression}
+        ?osm geo:hasGeometry ?osm_location.
 
         # Filter by location
         # ?osm_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
@@ -42,13 +45,12 @@ WHERE {
         #OPTIONAL { ?osm osmkey:name ?osm_default_name. }
         #OPTIONAL { ?osm osmkey:description ?osm_descr. }
     }
-
+    
     OPTIONAL { ?osm_wikidata owl:sameAs ?item. }
 
     # Filter by location
-    # COALESCE(?osm_location,?wd_location) geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
-    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    FILTER (geof:distance(COALESCE(?osm_location,?wd_location), ?center) <= ${maxDistanceKm})
+    # ?wd_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
+    FILTER (geof:distance(?wd_location, "POINT(${centerLon} ${centerLat})"^^geo:wktLiteral) <= ${maxDistanceKm})
 
     OPTIONAL { ?item @${language}@rdfs:label ?wd_lang_label. }
     OPTIONAL { ?item @en@rdfs:label ?wd_default_label. }
