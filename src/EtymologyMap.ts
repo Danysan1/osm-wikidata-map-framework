@@ -544,7 +544,7 @@ export class EtymologyMap extends Map {
             if (source_layer)
                 spec["source-layer"] = source_layer;
             this.addLayer(spec, DETAILS_SOURCE + POINT_LAYER); // Lines are shown below points but on top of polygons
-            this.initWikidataLayer(DETAILS_SOURCE + LINE_LAYER);
+            // this.initWikidataLayer(DETAILS_SOURCE + LINE_LAYER); // The tap area layer handles all clicks and hovers
         }
 
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
