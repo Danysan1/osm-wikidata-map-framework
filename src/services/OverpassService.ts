@@ -1,4 +1,4 @@
-import { debug, getConfig, getJsonConfig } from "../config";
+import { debug, getConfig, getJsonConfig, getKeyID } from "../config";
 import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
 import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
 import { Configuration, OverpassApi } from "../generated/overpass";
@@ -24,8 +24,7 @@ export class OverpassService implements MapService {
         this.db = db;
         this.wikidata_keys = getJsonConfig("osm_wikidata_keys") || undefined;
         this.wikidata_key_codes = this.wikidata_keys?.reduce((acc: Record<string, string>, key) => {
-            const keyCode = key.replace(":wikidata", "").replace(":", "_");
-            acc[keyCode] = key;
+            acc[getKeyID(key)] = key;
             return acc;
         }, {});
         if (debug) console.debug("OverpassService initialized", { wikidata_keys: this.wikidata_keys, wikidata_key_codes: this.wikidata_key_codes });

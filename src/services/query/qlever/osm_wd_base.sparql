@@ -11,6 +11,7 @@ PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX schema: <http://schema.org/>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wd: <http://www.wikidata.org/entity/>
 SELECT
     ?item
     ?osm
@@ -26,6 +27,7 @@ SELECT
     #(BOUND(?item) AS ?from_wikidata)
 WHERE {
     ?item p:P625 ?locationStatement.
+    ${wikidataCountryQuery}
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
     ?locationStatement ps:P625 ?wd_location.
@@ -33,12 +35,13 @@ WHERE {
     SERVICE <https://qlever.cs.uni-freiburg.de/api/osm-planet> {
         ?osm osm:wikidata ?osm_wikidata; # osmkey:wikidata returns the tag value (Q-ID), osm:wikidata returns the URI
             geo:hasGeometry ?osm_location.
+        ${osmCountryQuery}
 
         # Filter by location
         # ?osm_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
         FILTER (geof:distance(?osm_location, "POINT(${centerLon} ${centerLat})"^^geo:wktLiteral) <= ${maxDistanceKm})
 
-        #OPTIONAL { ?osm osmkey:name:${language} ?osm_lang_name. }
+        #OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
         #OPTIONAL { ?osm osmkey:name ?osm_default_name. }
         #OPTIONAL { ?osm osmkey:description ?osm_descr. }
     }

@@ -12,12 +12,14 @@ SELECT
     ?etymology
     ${osmTextSelect}
     ${osmDescriptionSelect}
-    (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
+    #(COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
+    (?osm_default_name AS ?itemLabel)
     (?osm_descr AS ?itemDescription)
     (true AS ?from_osm)
     (false AS ?from_wikidata)
 WHERE {
     ${osmEtymologyExpression}
+    ${osmCountryQuery}
     ?osm geo:hasGeometry ?location.
 
     # Filter by location
@@ -26,7 +28,7 @@ WHERE {
     FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
 
     OPTIONAL { ?osm osm:wikidata ?item. }
-    OPTIONAL { ?osm osmkey:name:${language} ?osm_lang_name. }
+    #OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
     OPTIONAL { ?osm osmkey:name ?osm_default_name. }
     OPTIONAL { ?osm osmkey:description ?osm_descr. }
 }

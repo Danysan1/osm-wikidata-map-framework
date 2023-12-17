@@ -1,4 +1,4 @@
-import { getConfig, getBoolConfig, debug, getJsonConfig } from '../config';
+import { getConfig, getBoolConfig, debug, getJsonConfig, getKeyID } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
@@ -63,7 +63,7 @@ export class SourceControl extends DropdownControl {
         }
 
         keys?.forEach(key => {
-            const keyID = "osm_" + key.replace(":wikidata", "").replace(":", "_");
+            const keyID = getKeyID(key);
             if (qleverEnabled)
                 dropdownItems.push(buildDropdownItem("qlever_" + keyID, "OSM " + key + " (beta)", QLEVER_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_" + keyID, "OSM " + key, OVERPASS_GROUP_NAME));
@@ -78,6 +78,7 @@ export class SourceControl extends DropdownControl {
             }
             if (qleverEnabled) {
                 dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/") + " (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", t("source.all_osm_keys", "All OSM keys") + " + Wikidata " + wdDirectProperties.join("/") + " (beta)", QLEVER_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("qlever_wd_direct", "Wikidata " + wdDirectProperties.join("/") + " (beta)", QLEVER_GROUP_NAME));
             }
             dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), WDQS_GROUP_NAME));

@@ -2,13 +2,13 @@ import { WikidataService } from "./WikidataService";
 import osm_wd_query from "./query/qlever/osm_wd.sparql";
 import osm_all_query from "./query/qlever/osm_all.sparql";
 import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
-import osm_all_direct_query from "./query/qlever/osm_all_direct.sparql";
+import osm_all_wd_direct_query from "./query/qlever/osm_all_wd_direct.sparql";
 import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
 import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
 import wd_direct_query from "./query/qlever/wd_direct.sparql";
 import wd_base_query from "./query/qlever/wd_base.sparql";
-import { debug, getConfig, getJsonConfig } from "../config";
+import { debug, getConfig, getJsonConfig, getKeyID } from "../config";
 import { parse as parseWKT } from "wellknown";
 import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
 import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
@@ -25,7 +25,7 @@ const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
  * We can't simply use the "osmkey:" prefix, we need the full URI, because keys can contain colons (e.g. "addr:street") which are not accepted in SPARQL prefixed names.
  * @see https://stackoverflow.com/a/5824414/2347196
  */
-const keyPredicate = (key: string) => "<" + OSMKEY + key + ">";
+const keyPredicate = (key: string) => key.includes(":") ? "<" + OSMKEY + key + ">" : "osmkey:" + key;
 
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
@@ -99,12 +99,14 @@ export class QLeverMapService implements MapService {
     private getSparqlQueryTemplate(sourceID: string): string {
         if (sourceID === "qlever_osm_wd")
             return osm_wd_query;
-        else if (/^qlever_osm_[^w]/.test(sourceID))
-            return osm_all_query;
         else if (sourceID === "qlever_osm_wd_base")
             return osm_wd_base_query;
         else if (sourceID === "qlever_osm_wikidata_direct")
-            return osm_all_direct_query;
+            return osm_all_wd_direct_query;
+        else if (sourceID === "qlever_osm_all_wd_direct")
+            return osm_all_wd_direct_query;
+        else if (/^qlever_osm_[^w]/.test(sourceID))
+            return osm_all_query;
         else if (sourceID === "qlever_wd_base")
             return wd_base_query;
         else if (sourceID.startsWith("qlever_wd_direct"))
@@ -121,18 +123,22 @@ export class QLeverMapService implements MapService {
 
     private fillPlaceholders(sourceID: string, sparqlQuery: string, bbox: BBox): string {
         if (sourceID.includes("osm")) {
-            const use_wikidata = sourceID.startsWith("qlever_osm_w"),
-                osm_text_key = getConfig("osm_text_key"),
-                osm_description_key = getConfig("osm_description_key"),
+            const selected_key_id = /^qlever_osm_[^w]/.test(sourceID) ? sourceID.replace("qlever_", "") : null,
+                all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
+                osm_text_key = all_osm_wikidata_keys_selected ? getConfig("osm_text_key") : undefined,
+                osm_description_key = all_osm_wikidata_keys_selected ? getConfig("osm_description_key") : undefined,
                 osm_wikidata_keys = getJsonConfig("osm_wikidata_keys") as string[] | undefined,
                 raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
-                filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
+                selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? osm_wikidata_keys : osm_wikidata_keys?.filter(key => getKeyID(key) === selected_key_id);
+            if (!selected_osm_wikidata_keys?.length)
+                throw new Error(`Invalid selected_key_id: ${sourceID} => ${selected_key_id} not in ${osm_wikidata_keys}`);
+            const filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
                 filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
                 filter_keys = filter_tags?.filter(tag => !tag.includes("=")),
-                filter_wd_keys = filter_tags ? osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : osm_wikidata_keys,
-                non_filter_wd_keys = osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
+                filter_wd_keys = filter_tags?.length ? selected_osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : selected_osm_wikidata_keys,
+                non_filter_wd_keys = selected_osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
                 filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !osm_wikidata_keys?.includes(key)),
-                filterExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " []; " : "",
+                filterExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_v; " : "", // "[]" would be more appropriate than "?_v", but it's not working by QLever
                 osmEtymologyUnionBranches: string[] = [];
 
             if (filter_tags_with_value?.length) {
@@ -161,7 +167,7 @@ export class QLeverMapService implements MapService {
             if (osmEtymologyUnionBranches.length === 1)
                 osmEtymologyExpression = osmEtymologyUnionBranches[0];
             if (osmEtymologyUnionBranches.length > 1)
-                osmEtymologyExpression = "{\n    " + osmEtymologyUnionBranches.join("\n    } UNION {\n        ") + "\n    }";
+                osmEtymologyExpression = "{\n        " + osmEtymologyUnionBranches.join("\n    } UNION {\n        ") + "\n    }";
             sparqlQuery = sparqlQuery
                 .replaceAll('${osmTextSelect}', osm_text_key?.length ? '?etymology_text' : "")
                 .replaceAll('${osmDescriptionSelect}', osm_description_key?.length ? '?etymology_description' : "")
@@ -196,7 +202,14 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
         }
 
+        const wikidataCountry = getConfig("wikidata_country"),
+            wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
+            osmCountry = getConfig("osm_country"),
+            osmCountryQuery = osmCountry ? `osmrel:${osmCountry} ogc:sfContains ?osm.` : '';
+
         return sparqlQuery
+            .replaceAll('${osmCountryQuery}', osmCountryQuery)
+            .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
             .replaceAll('${westLon}', bbox[0].toString())
             .replaceAll('${southLat}', bbox[1].toString())
             .replaceAll('${eastLon}', bbox[2].toString())
@@ -239,14 +252,16 @@ export class QLeverMapService implements MapService {
         if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
-            const etymology: Etymology | null = etymology_wd_id ? {
-                from_osm: row.from_prop?.value === "false",
-                from_wikidata: row.from_prop?.value === "true",
-                from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
-                propagated: false,
-                wikidata: etymology_wd_id,
-            } : null;
+            const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
+                feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
+                etymology: Etymology | null = etymology_wd_id ? {
+                    from_osm: feature_from_osm,
+                    from_wikidata: feature_from_wikidata,
+                    from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                    from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
+                    propagated: false,
+                    wikidata: etymology_wd_id,
+                } : null;
 
             if (!existingFeature) { // Add the new feature for this item 
                 let osm_id: number | undefined,
@@ -278,8 +293,8 @@ export class QLeverMapService implements MapService {
                         etymologies: etymology ? [etymology] : undefined,
                         text_etymology: row.etymology_text?.value,
                         description_etymology: row.etymology_description?.value,
-                        from_osm: row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
-                        from_wikidata: row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
+                        from_osm: feature_from_osm,
+                        from_wikidata: feature_from_wikidata,
                         from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                         from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
                         name: row.itemLabel?.value,
