@@ -217,7 +217,7 @@ export class EtymologyMap extends Map {
         let errorMessage;
         if ([ELEMENTS_SOURCE, DETAILS_SOURCE].includes(err.sourceId)) {
             this.fetchCompleted();
-            loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error")));
+            loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data")));
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
             loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
@@ -410,8 +410,10 @@ export class EtymologyMap extends Map {
             );
             this.prepareWikidataLayers(minZoom);
         } catch (e) {
-            logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { sourceID, bbox, e });
             this.fetchCompleted();
+            logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { sourceID, bbox, e });
+            const t = await loadTranslator();
+            showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
         }
     }
 

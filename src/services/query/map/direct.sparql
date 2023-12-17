@@ -19,6 +19,7 @@ WHERE {
     ?item p:P625 ?locationStatement;
           ?_from_prop ?etymology;
           rdfs:label ?anyLabel.
+    ${wikidataCountryQuery}
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
