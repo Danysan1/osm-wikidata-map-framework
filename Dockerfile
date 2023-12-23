@@ -2,7 +2,7 @@
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
 # https://hub.docker.com/_/php
-FROM php:8.2.8-apache-bookworm AS base
+FROM php:8.3.0-apache-bookworm AS base
 WORKDIR /var/www
 
 RUN a2enmod headers ssl rewrite deflate expires proxy proxy_http
@@ -39,7 +39,7 @@ RUN npm install -g npm && \
 
 
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:20.5.0-alpine AS npm-install
+FROM node:21.5.0-alpine AS npm-install
 WORKDIR /npm_app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.common.js", "./webpack.prod.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"
@@ -86,12 +86,12 @@ COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/
 # https://bref.sh/docs/web-apps/docker
 # https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-types
 # https://gallery.ecr.aws/lambda/provided
-FROM bref/php-82-fpm-dev:2 as lambda-dev
-COPY --from=bref/extra-pgsql-php-82 /opt /opt
+FROM bref/php-83-fpm-dev:2 as lambda-dev
+COPY --from=bref/extra-pgsql-php-83 /opt /opt
 COPY --from=dev /var/www /var/task
 ENV HANDLER=html/lambda.php
 
-FROM bref/php-82-fpm:2 as lambda-prod
-COPY --from=bref/extra-pgsql-php-82 /opt /opt
+FROM bref/php-83-fpm:2 as lambda-prod
+COPY --from=bref/extra-pgsql-php-83 /opt /opt
 COPY --from=prod /var/www /var/task
 CMD ["html/lambda.php"]

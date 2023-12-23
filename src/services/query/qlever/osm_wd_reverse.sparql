@@ -15,6 +15,7 @@ PREFIX wd: <http://www.wikidata.org/entity/>
 SELECT
     ?item
     ?osm
+    ?etymology
     (SAMPLE(?osm_location) AS ?location)
     # (SAMPLE(COALESCE(?osm_lang_name,?wd_lang_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
     (SAMPLE(COALESCE(?osm_lang_name,?osm_default_name)) AS ?itemLabel)
@@ -29,9 +30,14 @@ SELECT
     (true AS ?from_wikidata)
 WHERE {
     SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
-        ?item p:P625 ?locationStatement.
+        ?etymology p:${indirectProperty} ?stmt.
+        ?stmt ps:${indirectProperty} ?item.
+        ?item p:P625 ?locationStatement;
+            rdfs:label ?anyLabel.
         ${wikidataCountryQuery}
+        MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
+        MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
         MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
         ?locationStatement ps:P625 ?wd_location.
 
@@ -70,5 +76,5 @@ WHERE {
     OPTIONAL { ?osm osmkey:wikimedia_commons ?_wikimedia_commons. }
     OPTIONAL { ?osm osmkey:image ?_image. }
 }
-GROUP BY ?item ?osm
+GROUP BY ?item ?osm ?etymology
 ${limit}

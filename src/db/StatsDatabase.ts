@@ -1,7 +1,7 @@
 import Dexie, { Table } from 'dexie';
 import { debug, getConfig } from '../config';
 import { EtymologyStat } from '../controls/EtymologyColorControl';
-import { ColorSchemeID } from '../colorScheme.model';
+import { ColorSchemeID } from '../model/colorScheme';
 
 interface StatsRow {
     id?: number;

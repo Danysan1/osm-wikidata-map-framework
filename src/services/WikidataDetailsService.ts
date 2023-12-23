@@ -1,6 +1,6 @@
 import { debug, getConfig } from "../config";
 import detailsQuery from "./query/etymology-details.sparql";
-import { EtymologyDetails } from "../feature.model";
+import { EtymologyDetails } from "../model/feature";
 import { logErrorMessage } from "../monitoring";
 import { DetailsDatabase } from "../db/DetailsDatabase";
 import { WikidataService } from "./WikidataService";

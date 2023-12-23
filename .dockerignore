@@ -2,12 +2,16 @@
 samples/
 airflow/
 
-public/*.json
+public/dist/
+public/elements/
+public/etymology_map/
 public/map-cache/*
 !public/map-cache/.gitkeep
+*.zip
 *.geojson
 *.gz
 *.mvt
+*.pmtiles
 owmf.ini
 owmf.log
 LAST_UPDATE

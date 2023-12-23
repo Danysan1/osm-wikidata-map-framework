@@ -54,11 +54,8 @@ export class WikidataMapService extends WikidataService implements MapService {
             const maxElements = getConfig("max_map_elements"),
                 wikidataCountry = getConfig("wikidata_country"),
                 wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-                osmCountry = getConfig("osm_country"),
-                osmCountryQuery = osmCountry ? `osmrel:${osmCountry} ogc:sfContains ?osm.` : '',
                 sparqlQuery = sparqlQueryTemplate
-                .replaceAll('${osmCountryQuery}', osmCountryQuery)
-                .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
+                    .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
                     .replaceAll('${language}', language || '')
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
                     .replaceAll('${westLon}', bbox[0].toString())

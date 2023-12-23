@@ -4,8 +4,8 @@ import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 
-const PMTILES_GROUP_NAME = "PMTiles",
-    VECTOR_GROUP_NAME = "DB",
+const PMTILES_GROUP_NAME = "Database (PMTiles)",
+    VECTOR_GROUP_NAME = "Database (Martin tile server)",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
     WDQS_GROUP_NAME = "Wikidata Query Service",
     OVERPASS_WDQS_GROUP_NAME = "OSM (Overpass API) + Wikidata Query Service",
@@ -56,64 +56,75 @@ export class SourceControl extends DropdownControl {
         if (vectorTilesEnabled)
             dropdownItems.push(buildDropdownItem("vector_all", t("source.db_all", "All sources from DB"), VECTOR_GROUP_NAME));
 
+        const allKeysText = t("source.all_osm_keys", "All OSM keys");
         if (keys && keys?.length > 1) {
             if (qleverEnabled)
-                dropdownItems.push(buildDropdownItem("qlever_osm_all", t("source.all_osm_keys", "All OSM keys") + " (beta)", QLEVER_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_all", t("source.all_osm_keys", "All OSM keys"), OVERPASS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
         }
 
         keys?.forEach(key => {
-            const keyID = getKeyID(key);
+            const keyID = getKeyID(key),
+                keyText = "OSM " + key;
             if (qleverEnabled)
-                dropdownItems.push(buildDropdownItem("qlever_" + keyID, "OSM " + key + " (beta)", QLEVER_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_" + keyID, "OSM " + key, OVERPASS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
+            if (pmtilesURL)
+                dropdownItems.push(buildDropdownItem("pmtiles_" + keyID, keyText, PMTILES_GROUP_NAME));
             if (vectorTilesEnabled)
-                dropdownItems.push(buildDropdownItem("vector_" + keyID, "OSM " + key, VECTOR_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("vector_" + keyID, keyText, VECTOR_GROUP_NAME));
         });
 
         if (wdDirectProperties?.length) {
+            const wikidataDirectText = "Wikidata " + wdDirectProperties.join("/"), // Ex: "Wikidata P138/P825/P547"
+                osmWikidataDirectText = `OSM wikidata=* + ${wikidataDirectText}`; // Ex: "OSM wikidata=* + Wikidata P138/P825/P547"
+            if (pmtilesURL) {
+                dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
+            }
             if (vectorTilesEnabled) {
-                dropdownItems.push(buildDropdownItem("vector_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), VECTOR_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("vector_wd_direct", "Wikidata " + wdDirectProperties.join("/"), VECTOR_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("vector_osm_wikidata_direct", osmWikidataDirectText, VECTOR_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("vector_wd_direct", wikidataDirectText, VECTOR_GROUP_NAME));
             }
             if (qleverEnabled) {
-                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/") + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", t("source.all_osm_keys", "All OSM keys") + " + Wikidata " + wdDirectProperties.join("/") + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_wd_direct", "Wikidata " + wdDirectProperties.join("/") + " (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_direct", `${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", `${osmWikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
+                //dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", `${allKeysText} + ${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
             }
-            dropdownItems.push(buildDropdownItem("wd_direct", "Wikidata " + wdDirectProperties.join("/"), WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", "OSM wikidata + Wikidata " + wdDirectProperties.join("/"), OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_direct", wikidataDirectText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", osmWikidataDirectText, OVERPASS_WDQS_GROUP_NAME));
             if (keys?.length)
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", t("source.all_osm_keys", "All OSM keys") + " + Wikidata " + wdDirectProperties.join("/"), OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", `${allKeysText} + ${wikidataDirectText}`, OVERPASS_WDQS_GROUP_NAME));
         }
 
         if (indirectWdProperty) {
+            const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty }),
+                qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty }),
+                reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty });
             if (vectorTilesEnabled)
-                dropdownItems.push(buildDropdownItem("vector_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", `Wikidata entities referenced with OSM wikidata=* and ${indirectWdProperty}`, { indirectWdProperty }), VECTOR_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("vector_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", `Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}`, { indirectWdProperty }), VECTOR_GROUP_NAME));
 
             if (qleverEnabled) {
-                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_indirect", `${indirectText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_qualifier", `${qualifierText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_reverse", `${reverseText} (beta)`, QLEVER_GROUP_NAME));
+                // dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", `OSM wikidata=* + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", `OSM wikidata=* + ${reverseText} (beta)`, QLEVER_GROUP_NAME));
             }
-            dropdownItems.push(buildDropdownItem("wd_indirect", t("source.wd_indirect", { indirectWdProperty }), WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", t("source.wd_qualifier", { indirectWdProperty }), WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_reverse", t("source.wd_reverse", { indirectWdProperty }), WDQS_GROUP_NAME));
-            if (qleverEnabled) {
-                dropdownItems.push(buildDropdownItem("qlever_indirect", t("source.wd_indirect", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_qualifier", t("source.wd_qualifier", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_reverse", t("source.wd_reverse", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
-            }
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", "OSM wikidata + " + t("source.wd_indirect", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", "OSM wikidata + " + t("source.wd_reverse", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", qualifierText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", `OSM wikidata=* + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", `OSM wikidata=* + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
             if (keys?.length) {
                 if (qleverEnabled) {
-                    dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_indirect", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
-                    dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
-                    dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_reverse", { indirectWdProperty }) + " (beta)", QLEVER_GROUP_NAME));
+                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", `${allKeysText} + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", `${allKeysText} + ${qualifierText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", `${allKeysText} + ${reverseText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                 }
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_indirect", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_qualifier", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", t("source.all_osm_keys", "All OSM keys") + " + " + t("source.wd_reverse", { indirectWdProperty }), OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
             }
         }
 
@@ -122,12 +133,14 @@ export class SourceControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata=* + Wikidata", OVERPASS_WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", WDQS_GROUP_NAME));
             if (qleverEnabled) {
-                dropdownItems.push(buildDropdownItem("qlever_osm_wd", "OSM wikidata=*" + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_osm_wd_base", "OSM wikidata=* + Wikidata" + " (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_wd_base", "Wikidata" + " (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_wd", "OSM wikidata=* (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_wd_base", "OSM wikidata=* + Wikidata (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_base", "Wikidata (beta)", QLEVER_GROUP_NAME));
             }
         }
 
+        if (propagationEnabled && pmtilesURL)
+            dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
         if (propagationEnabled && vectorTilesEnabled)
             dropdownItems.push(buildDropdownItem("vector_propagated", t("source.propagated", "Propagated"), VECTOR_GROUP_NAME));
 

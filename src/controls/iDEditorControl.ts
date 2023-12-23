@@ -28,7 +28,8 @@ export class iDEditorControl implements IControl {
         const icon = document.createElement("img");
         icon.className = "button_img";
         icon.alt = "iD editor logo";
-        icon.src = "https://upload.wikimedia.org/wikipedia/commons/1/1f/OpenStreetMap-Editor_iD_Logo.svg";
+        icon.src = "img/OpenStreetMap-Editor_iD_Logo.svg";
+        icon.loading = "lazy";
         icon.width = 23;
         icon.height = 23;
         button.appendChild(icon);

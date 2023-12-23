@@ -21,13 +21,22 @@ SELECT DISTINCT
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
-    
-    # Filter by location
     ?stmt pq:P625 ?location.
-    # ?location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
-    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
+
+    # # Filter by location (geo:sfWithin)
+    # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)
+    # ?location geo:sfWithin ?bbox.
     
+    # # Filter by location (geof:latitude/longitude)
+    BIND(geof:latitude(?location) AS ?lat)
+    BIND(geof:longitude(?location) AS ?lon)
+    FILTER (?lat > ${southLat} && ?lat < ${northLat} && ?lon > ${westLon} && ?lon < ${eastLon})
+    
+    # # Filter by location (geof:distance)
+    # BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+    # FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
+    
+    # # Extra details
     OPTIONAL { ?stmt pq:P373 ?commons. }
     ${pictureQuery}
     OPTIONAL { ?stmt pq:P11693 ?osm_node. }

@@ -159,7 +159,7 @@ export class DropdownControl implements IControl {
     }
 
     private btnClickHandler(event: MouseEvent) {
-        if (debug) console.debug("EtymologyColorControl button click", event);
+        if (debug) console.debug("DropdownControl button click", event);
         this.toggleDropdown(true);
     }
 

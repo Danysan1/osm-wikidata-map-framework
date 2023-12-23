@@ -1,11 +1,11 @@
-const defaultIcon = "https://upload.wikimedia.org/wikipedia/commons/0/02/Translation_-_Noun_project_987.svg",
+const defaultIcon = "img/Translation_-_Noun_project_987.svg",
     flags: Record<string, string> = { // https://commons.wikimedia.org/wiki/Category:SVG_sovereign_state_flags
-        "en": "https://upload.wikimedia.org/wikipedia/commons/8/83/Flag_of_the_United_Kingdom_%283-5%29.svg",
-        "fr": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Flag_of_France_%282020%E2%80%93present%29.svg",
-        "de": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Flag_of_Germany.svg",
-        "it": "https://upload.wikimedia.org/wikipedia/commons/0/03/Flag_of_Italy.svg",
-        "es": "https://upload.wikimedia.org/wikipedia/commons/8/89/Bandera_de_Espa%C3%B1a.svg",
-        "da": "https://upload.wikimedia.org/wikipedia/commons/9/9c/Flag_of_Denmark.svg",
+        "en": "img/Flag_of_the_United_Kingdom_%283-5%29.svg",
+        "fr": "img/Flag_of_France_%282020%E2%80%93present%29.svg",
+        "de": "img/Flag_of_Germany.svg",
+        "it": "img/Flag_of_Italy.svg",
+        "es": "img/Bandera_de_Espa%C3%B1a.svg",
+        "da": "img/Flag_of_Denmark.svg",
     };
 
 /**

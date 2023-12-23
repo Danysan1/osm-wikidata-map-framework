@@ -1,4 +1,4 @@
-import { ColorSchemeID } from "../colorScheme.model";
+import { ColorSchemeID } from "../model/colorScheme";
 import typeStatsQuery from "./query/stats/type.sparql";
 import genderStatsQuery from "./query/stats/gender.sparql";
 import countryStatsQuery from "./query/stats/country.sparql";

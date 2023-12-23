@@ -48,7 +48,8 @@ export class DataTableControl implements IControl {
         const icon = document.createElement("img");
         icon.className = "button_img";
         icon.alt = "Data table symbol";
-        icon.src = "https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg";
+        icon.src = "img/Simple_icon_table.svg";
+        icon.loading = "lazy";
         icon.width = 23;
         icon.height = 19;
         this.button.appendChild(icon);

@@ -1,4 +1,4 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification, ExpressionSpecification } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification, ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 import "@stadiamaps/maplibre-search-box/dist/style.css";
@@ -8,25 +8,17 @@ import "@stadiamaps/maplibre-search-box/dist/style.css";
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, getFragmentParams, setFragmentParams } from './fragment';
-import { BackgroundStyle, BackgroundStyleControl } from './controls/BackgroundStyleControl';
-import { EtymologyColorControl, getCurrentColorScheme } from './controls/EtymologyColorControl';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debug, getBoolConfig, getConfig } from './config';
-import { SourceControl } from './controls/SourceControl';
-import { LanguageControl } from './controls/LanguageControl';
 import { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
-import { LinkControl } from './controls/LinkControl';
-import { DataTableControl } from './controls/DataTableControl';
 import './style.css';
-import { OsmWikidataMatcherControl } from './controls/OsmWikidataMatcherControl';
-import { MapCompleteControl } from './controls/MapCompleteControl';
-import { iDEditorControl } from './controls/iDEditorControl';
 import { Protocol } from 'pmtiles';
 import { MapService } from './services/MapService';
-import { ColorSchemeID } from './colorScheme.model';
+import { ColorSchemeID, colorSchemes } from './model/colorScheme';
+import { BackgroundStyle } from './model/backgroundStyle';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     PMTILES_PREFIX = "pmtiles",
@@ -48,6 +40,7 @@ export class EtymologyMap extends Map {
     private wikidataSourceInitialized = false;
     private services?: MapService[];
     private lastSourceID?: string;
+    private lastKeyID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
     private shouldFetchAgain = false
@@ -89,8 +82,9 @@ export class EtymologyMap extends Map {
             if (getBoolConfig("qlever_enable"))
                 this.services.push(new QLeverMapService(db));
 
-            if (debug) console.debug(this.services.length, "map services initialized:", this.services);
-        });
+            if (debug) console.debug("EtymologyMap: map services initialized", this.services);
+        }).finally(() => this.addSecondaryControls());
+
         try {
             openInfoWindow(this, false);
         } catch (e) {
@@ -108,6 +102,8 @@ export class EtymologyMap extends Map {
         //eslint-disable-next-line
         const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
         window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
+
+        this.addBaseControls();
     }
 
     /**
@@ -281,10 +277,12 @@ export class EtymologyMap extends Map {
 
     private updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
         const sourceID = getCorrectFragmentParams().source,
+            isPMTilesSource = sourceID.startsWith(PMTILES_PREFIX),
+            isVectorSource = sourceID.startsWith(VECTOR_PREFIX),
             fullSourceID = "elements-" + sourceID,
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
-        if (sourceIDChanged && sourceID.startsWith(PMTILES_PREFIX)) {
+        if (sourceIDChanged && isPMTilesSource) {
             if (debug) console.debug("Updating pmtiles vector elements source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
@@ -294,17 +292,17 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareElementsLayers(thresholdZoomLevel);
-        } else if (sourceIDChanged && sourceID.startsWith(VECTOR_PREFIX)) {
+        } else if (sourceIDChanged && isVectorSource) {
             if (debug) console.debug("Updating DB vector element source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 ELEMENTS_SOURCE,
-                `elements`,
+                `${window.location.protocol}//${window.location.host}/elements/{z}/{x}/{y}`,
                 undefined,
                 thresholdZoomLevel
             );
             this.prepareElementsLayers(thresholdZoomLevel);
-        } else {
+        } else if (!isPMTilesSource && !isVectorSource && this.services !== undefined) {
             const bbox: BBox = [
                 Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
                 Math.floor(southWest.lat * 10) / 10,
@@ -317,6 +315,10 @@ export class EtymologyMap extends Map {
                 this.lastBBox = bbox;
                 this.updateElementsGeoJSONSource(sourceID, bbox, minZoomLevel, thresholdZoomLevel);
             }
+        } else if (debug && this.services === undefined) {
+            console.warn("updateElementsSource: Services are still initializing, skipping source update");
+        } else if (debug) {
+            console.warn("updateElementsSource: Unexpected source ID", sourceID);
         }
     }
 
@@ -349,10 +351,12 @@ export class EtymologyMap extends Map {
 
     private updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
         const sourceID = getCorrectFragmentParams().source,
+            isPMTilesSource = sourceID.startsWith(PMTILES_PREFIX),
+            isVectorSource = sourceID.startsWith(VECTOR_PREFIX),
             fullSourceID = "details-" + sourceID,
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
-        if (sourceIDChanged && sourceID.startsWith(PMTILES_PREFIX)) {
+        if (sourceIDChanged && isPMTilesSource) {
             if (debug) console.debug("Updating pmtiles vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
@@ -361,29 +365,37 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel,
                 thresholdZoomLevel // https://gis.stackexchange.com/a/330575/196469
             );
-            this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else if (sourceIDChanged && sourceID.startsWith(VECTOR_PREFIX)) {
+            this.prepareWikidataLayers(
+                thresholdZoomLevel,
+                "etymology_map",
+                sourceID == "pmtiles_all" ? undefined : sourceID.replace("pmtiles_", "")
+            );
+        } else if (sourceIDChanged && isVectorSource) {
             if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
                 DETAILS_SOURCE,
-                `etymology_map?source=${sourceID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
+                `${window.location.protocol}//${window.location.host}/etymology_map/{z}/{x}/{y}?source=${sourceID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
                 thresholdZoomLevel
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else {
+        } else if (!isPMTilesSource && !isVectorSource && this.services !== undefined) {
             const bbox: BBox = [
                 Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
                 Math.floor(southWest.lat * 100) / 100,
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-            if (sourceIDChanged || this.isBBoxChanged(bbox)) {
+            if (sourceIDChanged || (this.isBBoxChanged(bbox))) {
                 if (debug) console.debug("Updating GeoJSON wikidata source:", sourceID);
                 this.lastSourceID = fullSourceID;
                 this.lastBBox = bbox;
                 this.prepareWikidataGeoJSONSource(sourceID, bbox, thresholdZoomLevel);
             }
+        } else if (debug && this.services === undefined) {
+            console.warn("updateWikidataSource: Services are still initializing, skipping source update");
+        } else if (debug) {
+            console.warn("updateWikidataSource: Unexpected source ID", sourceID);
         }
     }
 
@@ -417,18 +429,25 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private prepareVectorSource(sourceID: string, sourceURL: string, minZoom?: number, maxZoom?: number) {
+    private prepareVectorSource(sourceID: string, tileURL: string, minZoom?: number, maxZoom?: number) {
         const oldSource = this.getSource(sourceID);
-        if (oldSource && oldSource.type === "vector" && (oldSource as VectorTileSource).url !== sourceURL)
-            (oldSource as VectorTileSource).setUrl(sourceURL);
-
-        if (oldSource && oldSource.type !== "vector")
+        if (oldSource?.type === "vector") {
+            const source = oldSource as VectorTileSource;
+            if (source.url) { // PMTiles source currently active
+                this.removeSourceWithLayers(sourceID);
+            } else if (!source.tiles?.length || source.tiles[0] !== tileURL) { // Vector source already active
+                if (debug) console.debug("Updating Vector tiles source URL", { old: source.tiles, new: tileURL });
+                source.setTiles([tileURL]);
+            }
+        } else if (oldSource) { // GeoJSON source currently active
             this.removeSourceWithLayers(sourceID);
+        }
 
         if (!this.getSource(sourceID)) {
+            if (debug) console.debug("Creating Vector tiles source", { tileURL });
             this.addSource(sourceID, {
                 type: 'vector',
-                url: sourceURL,
+                tiles: [tileURL],
                 maxzoom: maxZoom || 15,
                 minzoom: minZoom || 0,
             });
@@ -441,24 +460,32 @@ export class EtymologyMap extends Map {
      * @see https://docs.protomaps.com/
      * @see https://docs.protomaps.com/pmtiles/maplibre
      */
-    private preparePMTilesSource(sourceID: string, fileName: string, minZoom?: number, maxZoom?: number) {
+    private async preparePMTilesSource(vectorSourceID: string, fileName: string, minZoom?: number, maxZoom?: number) {
         const pmtilesBaseURL = getConfig("pmtiles_base_url");
         if (!pmtilesBaseURL)
             throw new Error("Missing pmtiles URL");
 
-        const oldSource = this.getSource(sourceID),
+        const oldSource = this.getSource(vectorSourceID),
             fullPMTilesURL = `pmtiles://${pmtilesBaseURL}${fileName}`;
-        if (oldSource && oldSource.type === "vector" && (oldSource as VectorTileSource).url !== fullPMTilesURL)
-            (oldSource as VectorTileSource).setUrl(fullPMTilesURL);
+        if (oldSource?.type === "vector") {
+            const source = oldSource as VectorTileSource;
+            if (!source.url) { // Vector source currently active
+                this.removeSourceWithLayers(vectorSourceID);
+            } else if (source.url !== fullPMTilesURL) { // PMTiles source already active
+                if (debug) console.debug("Updating PMTiles source URL", { old: source.url, new: fullPMTilesURL });
+                source.setUrl(fullPMTilesURL);
+            }
+        } else if (oldSource) { // GeoJSON source currently active
+            this.removeSourceWithLayers(vectorSourceID);
+        }
 
-        if (oldSource && oldSource.type !== "vector")
-            this.removeSourceWithLayers(sourceID);
+        if (!this.getSource(vectorSourceID)) {
+            if (debug) console.debug("Creating PMTiles source", { fullPMTilesURL });
 
-        if (!this.getSource(sourceID)) {
             const protocol = new Protocol();
             mapLibrary.addProtocol("pmtiles", protocol.tile);
 
-            this.addSource(sourceID, {
+            this.addSource(vectorSourceID, {
                 type: 'vector',
                 url: fullPMTilesURL,
                 maxzoom: maxZoom || 15,
@@ -467,12 +494,17 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private removeSourceWithLayers(sourceID: string) {
+    private removeSourceLayers(sourceID: string) {
         this.getLayersOrder()
             .filter(layerID => layerID.startsWith(sourceID))
             .forEach(layerID => this.removeLayer(layerID));
+    }
 
-        if (this.getSource(sourceID)) this.removeSource(sourceID);
+    private removeSourceWithLayers(sourceID: string) {
+        if (this.getSource(sourceID)) {
+            this.removeSourceLayers(sourceID);
+            this.removeSource(sourceID);
+        }
     }
 
     /**
@@ -487,21 +519,26 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    private prepareWikidataLayers(minZoom: number, source_layer?: string) {
-        const colorSchemeColor = getCurrentColorScheme().color || '#223b53';
+    private prepareWikidataLayers(minZoom: number, source_layer?: string, key_id?: string) {
+        const createFilter = (geometryType: string): FilterSpecification => key_id ? ["all", ["==", ["geometry-type"], geometryType], ["in", key_id, ["get", "from_key_ids"]]] : ["==", ["geometry-type"], geometryType];
 
+        if (this.lastKeyID !== key_id) {
+            if (debug) console.debug("prepareWikidataLayers: key ID changed, removing old layers");
+            this.removeSourceLayers(DETAILS_SOURCE);
+        }
+        this.lastKeyID = key_id;
 
         if (!this.getLayer(DETAILS_SOURCE + POINT_LAYER)) {
             const spec: CircleLayerSpecification = {
                 'id': DETAILS_SOURCE + POINT_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'circle',
-                "filter": ["==", ["geometry-type"], "Point"],
+                "filter": createFilter("Point"),
                 "minzoom": minZoom,
                 'paint': {
+                    'circle-color': colorSchemes.blue.color,
                     'circle-radius': 12,
                     'circle-stroke-width': 2,
-                    'circle-color': colorSchemeColor,
                     'circle-stroke-color': 'white'
                 }
             };
@@ -516,7 +553,7 @@ export class EtymologyMap extends Map {
                 'id': DETAILS_SOURCE + LINE_TAP_AREA_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'line',
-                "filter": ["==", ["geometry-type"], "LineString"],
+                "filter": createFilter("LineString"),
                 "minzoom": minZoom,
                 'paint': {
                     'line-color': '#ffffff',
@@ -535,10 +572,10 @@ export class EtymologyMap extends Map {
                 'id': DETAILS_SOURCE + LINE_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'line',
-                "filter": ["==", ["geometry-type"], "LineString"],
+                "filter": createFilter("LineString"),
                 "minzoom": minZoom,
                 'paint': {
-                    'line-color': colorSchemeColor,
+                    'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
                     'line-width': 12,
                 }
@@ -554,10 +591,10 @@ export class EtymologyMap extends Map {
                 'id': DETAILS_SOURCE + POLYGON_BORDER_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'line',
-                "filter": ["==", ["geometry-type"], "Polygon"],
+                "filter": createFilter("Polygon"),
                 "minzoom": minZoom,
                 'paint': {
-                    'line-color': colorSchemeColor,
+                    'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
                     'line-width': 8,
                     'line-offset': 4, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
@@ -574,10 +611,10 @@ export class EtymologyMap extends Map {
                 'id': DETAILS_SOURCE + POLYGON_FILL_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'fill',
-                "filter": ["==", ["geometry-type"], "Polygon"],
+                "filter": createFilter("Polygon"),
                 "minzoom": minZoom,
                 'paint': {
-                    'fill-color': colorSchemeColor,
+                    'fill-color': colorSchemes.blue.color,
                     'fill-opacity': 0.3,
                     'fill-outline-color': "rgba(0, 0, 0, 0)",
                 }
@@ -589,107 +626,115 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private initWikidataControls() {
-        if (debug) console.debug("Initializing Wikidata controls");
-        loadTranslator().then(t => {
-            const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
-                thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
-            if (debug) console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
+    private async addSecondaryControls() {
+        if (debug) console.debug("Initializing translated controls");
 
-            const onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
-                if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
-                const params = getCorrectFragmentParams();
-                if (params.colorScheme != colorSchemeID) {
-                    setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
-                    this.updateDataSource();
-                }
-            },
-                setLayerColor = (color: string | ExpressionSpecification) => {
-                    if (debug) console.debug("initWikidataControls set layer color", { color });
-                    [
-                        [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
-                        [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
-                        [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-color'],
-                        [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
-                    ].forEach(([layerID, property]) => {
-                        if (this?.getLayer(layerID)) {
-                            this.setPaintProperty(layerID, property, color);
-                        } else {
-                            console.warn("Layer does not exist, can't set property", { layerID, property, color });
-                        }
-                    });
-                },
-                colorControl = new EtymologyColorControl(
-                    getCorrectFragmentParams().colorScheme,
-                    onColorSchemeChange,
-                    setLayerColor,
-                    t,
-                    DETAILS_SOURCE,
-                    [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
-                    thresholdZoomLevel
-                );
-            this.addControl(colorControl, 'top-left');
-            colorControl.updateChart();
+        const [
+            t,
+            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, SourceControl }
+        ] = await Promise.all([
+            loadTranslator(),
+            import("./controls")
+        ]);
 
-            const sourceControl = new SourceControl(
-                getCorrectFragmentParams().source,
-                this.updateDataSource.bind(this),
-                t
-            );
-            this.addControl(sourceControl, 'top-left');
+        this.addControl(new LanguageControl(), 'top-right');
+        this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
-            this.addControl(new InfoControl(), 'top-left');
+        const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
+            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
+        if (debug) console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
 
-            /* Set up controls in the top RIGHT corner */
-            this.addControl(new LinkControl(
-                "https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg",
-                t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
-                [ELEMENTS_SOURCE, DETAILS_SOURCE],
-                "overpass_query",
-                "https://overpass-turbo.eu/?Q=",
-                minZoomLevel
-            ), 'top-right');
-
-            this.addControl(new LinkControl(
-                "https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg",
-                t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
-                [ELEMENTS_SOURCE, DETAILS_SOURCE],
-                "wdqs_query",
-                "https://query.wikidata.org/#",
-                minZoomLevel
-            ), 'top-right');
-
-            if (getBoolConfig("qlever_enable")) {
-                this.addControl(new LinkControl(
-                    "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
-                    t("qlever_query", "Source SPARQL query on QLever UI"),
-                    [ELEMENTS_SOURCE, DETAILS_SOURCE],
-                    "qlever_wd_query",
-                    "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
-                    minZoomLevel
-                ), 'top-right');
-
-                this.addControl(new LinkControl(
-                    "https://qlever.cs.uni-freiburg.de/static/favicon.ico",
-                    t("qlever_query", "Source SPARQL query on QLever UI"),
-                    [ELEMENTS_SOURCE, DETAILS_SOURCE],
-                    "qlever_osm_query",
-                    "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
-                    minZoomLevel
-                ), 'top-right');
+        const onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
+            if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
+            const params = getCorrectFragmentParams();
+            if (params.colorScheme != colorSchemeID) {
+                setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+                this.updateDataSource();
             }
-
-            this.addControl(new DataTableControl(
+        },
+            setLayerColor = (color: string | ExpressionSpecification) => {
+                if (debug) console.debug("initWikidataControls set layer color", { color });
+                [
+                    [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
+                    [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
+                    [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-color'],
+                    [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
+                ].forEach(([layerID, property]) => {
+                    if (this?.getLayer(layerID)) {
+                        this.setPaintProperty(layerID, property, color);
+                    } else {
+                        console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                    }
+                });
+            },
+            colorControl = new EtymologyColorControl(
+                getCorrectFragmentParams().colorScheme,
+                onColorSchemeChange,
+                setLayerColor,
+                t,
                 DETAILS_SOURCE,
                 [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
                 thresholdZoomLevel
-            ), 'top-right');
-            this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
-            this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
+            );
+        this.addControl(colorControl, 'top-left');
+        colorControl.updateChart();
 
-            if (getConfig("mapcomplete_theme"))
-                this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
-        });
+        const sourceControl = new SourceControl(
+            getCorrectFragmentParams().source,
+            this.updateDataSource.bind(this),
+            t
+        );
+        this.addControl(sourceControl, 'top-left');
+
+        /* Set up controls in the top RIGHT corner */
+        this.addControl(new LinkControl(
+            "img/Overpass-turbo.svg",
+            t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
+            [ELEMENTS_SOURCE, DETAILS_SOURCE],
+            "overpass_query",
+            "https://overpass-turbo.eu/?Q=",
+            minZoomLevel
+        ), 'top-right');
+
+        this.addControl(new LinkControl(
+            "img/Wikidata_Query_Service_Favicon.svg",
+            t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
+            [ELEMENTS_SOURCE, DETAILS_SOURCE],
+            "wdqs_query",
+            "https://query.wikidata.org/#",
+            minZoomLevel
+        ), 'top-right');
+
+        if (getBoolConfig("qlever_enable")) {
+            this.addControl(new LinkControl(
+                "img/qlever.ico",
+                t("qlever_query", "Source SPARQL query on QLever UI"),
+                [ELEMENTS_SOURCE, DETAILS_SOURCE],
+                "qlever_wd_query",
+                "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
+                minZoomLevel
+            ), 'top-right');
+
+            this.addControl(new LinkControl(
+                "img/qlever.ico",
+                t("qlever_query", "Source SPARQL query on QLever UI"),
+                [ELEMENTS_SOURCE, DETAILS_SOURCE],
+                "qlever_osm_query",
+                "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
+                minZoomLevel
+            ), 'top-right');
+        }
+
+        this.addControl(new DataTableControl(
+            DETAILS_SOURCE,
+            [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
+            thresholdZoomLevel
+        ), 'top-right');
+        this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
+        this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
+
+        if (getConfig("mapcomplete_theme"))
+            this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
     }
 
     /**
@@ -1071,6 +1116,13 @@ export class EtymologyMap extends Map {
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
         //map.on('zoomend', updateDataSource); // moveend is sufficient
 
+        // this.addBaseControls(); // It should be done earlier
+        // this.addSecondaryControls(); // It can be done earlier; done here would improve speed on devices with slow networks but would not be executed if initial source loading fails
+
+        this.setupGeocoder();
+    }
+
+    addBaseControls() {
         // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
         this.addControl(new NavigationControl({
             visualizePitch: true
@@ -1095,12 +1147,8 @@ export class EtymologyMap extends Map {
         }), 'bottom-left');
 
         this.addControl(new FullscreenControl(), 'top-right');
-        this.addControl(new LanguageControl(), 'top-right');
-        this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
 
-        this.initWikidataControls();
-
-        this.setupGeocoder();
+        this.addControl(new InfoControl(), 'top-left');
     }
 
     /**

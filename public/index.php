@@ -66,6 +66,17 @@ usort($jsScripts, function (string $x, string $y): int {
 }); // Finds the latest version of the Webpack-generated Javascript entrypoint file
 $jsScript = $jsScripts[0];
 //error_log(json_encode($jsScripts) . " => " . $jsScript)
+
+$preloads = [
+    '<link rel="preload" href="locales/' . $defaultLanguage . '/common.json" as="fetch" crossorigin="anonymous" />',
+];
+if ((string)$conf->get("default_background_style") == "stadia_alidade") {
+    $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/styles/alidade_smooth.json" as="fetch" crossorigin="anonymous" />';
+    $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/data/openmaptiles.json" as="fetch" crossorigin="anonymous" />';
+}
+if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNamespace]["title"]))
+    $preloads[] = '<link rel="preload" href="locales/' . $language . '/common.json" as="fetch" crossorigin="anonymous" />';
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -103,23 +114,9 @@ $jsScript = $jsScripts[0];
     <link rel="apple-touch-icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" type="image/png" href="apple-touch-icon.png" />
 
-    <link rel="preconnect" href="https://upload.wikimedia.org" />
-    <?php if (str_starts_with((string)$conf->get("default_background_style"), "mapbox")) { ?>
-        <link rel="preconnect" href="https://api.mapbox.com">
-    <?php
-    }
-    if (str_starts_with((string)$conf->get("default_background_style"), "stadia")) { ?>
-        <link rel="preconnect" href="https://tiles.stadiamaps.com">
-    <?php
-    }
-    if ($conf->has("paypal_id")) { ?>
-        <link rel="preconnect" href="https://www.paypalobjects.com" />
-    <?php
-    }
-    if ($conf->has("paypal_id")) { ?>
-        <link rel="preconnect" href="https://liberapay.com" />
-    <?php } ?>
-    <link rel="preload" href="locales/<?= (string)$conf->get("default_language"); ?>/common.json" as="fetch" crossorigin="anonymous" fetchpriority="low" />
+    <?php foreach ($preloads as $preload) {
+        echo $preload;
+    } ?>
 
     <?= $conf->getMetaTag("qlever_enable", true); ?>
     <?= $conf->getMetaTag("vector_tiles_enable", true); ?>
@@ -177,8 +174,8 @@ $jsScript = $jsScripts[0];
     <template id="intro_template">
         <div class="intro">
             <header>
-                <h1 class="i18n_title"></h1>
-                <p class="i18n_description"></p>
+                <h1 class="i18n_title"><?= $title; ?></h1>
+                <p class="i18n_description"><?= $description; ?></p>
             </header>
 
             <div class="instructions_container hiddenElement">
@@ -194,15 +191,15 @@ $jsScript = $jsScripts[0];
                         <td class="i18n_to_choose_source">to choose which data source to use</td>
                     </tr>
                     <tr>
-                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/c3/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" /></td>
+                        <td><img src="img/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" /></td>
                         <td class="i18n_to_overpass_query">to view the source OverpassQL query (only with Overpass sources)</td>
                     </tr>
                     <tr>
-                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/1/1a/Wikidata_Query_Service_Favicon.svg" width="16" height="16" alt="Wikidata Query Service logo" /></td>
+                        <td><img src="img/Wikidata_Query_Service_Favicon.svg" width="16" height="16" alt="Wikidata Query Service logo" /></td>
                         <td class="i18n_to_wikidata_query">to view the source SPARQL query (only with Wikidata sources)</td>
                     </tr>
                     <tr>
-                        <td><img src="https://upload.wikimedia.org/wikipedia/commons/c/cc/Simple_icon_table.svg" width="16" height="13" alt="Table" /></td>
+                        <td><img src="img/Simple_icon_table.svg" width="16" height="13" alt="Table" /></td>
                         <td class="i18n_to_view_data_table">to view data in a table (only at high zoom)</td>
                     </tr>
                     <tr>
@@ -239,11 +236,11 @@ $jsScript = $jsScripts[0];
                 <div id="last_info_row">
                     <?php if ($conf->has("liberapay_id")) { ?>
                         <a href="https://liberapay.com/<?= (string)$conf->get("liberapay_id") ?>/donate" id="liberapay_donate">
-                            <img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" width="72" height="26">
+                            <img alt="Donate using Liberapay" src="img/liberapay_donate.svg" width="72" height="26">
                         </a>
                         |
                     <?php
-                    } 
+                    }
                     if ($conf->has("paypal_id")) {
                     ?>
                         <form action="https://www.paypal.com/donate" method="post" target="_top" id="paypal_donate">
@@ -268,19 +265,19 @@ $jsScript = $jsScripts[0];
     <template id="feature_buttons_template">
         <div class="button_row">
             <a title="Wikipedia" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
-                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
+                <img class="button_img" src="img/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                 <span class="button_text"> Wikipedia</span>
             </a>
             <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
-                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
+                <img class="button_img" src="img/Commons-logo.svg" alt="Wikimedia Commons logo">
                 <span class="button_text"> Commons</span>
             </a>
             <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
-                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
+                <img class="button_img" src="img/Wikidata.svg" alt="Wikidata logo">
                 <span class="button_text"> Wikidata</span>
             </a>
             <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
-                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/b/b0/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
+                <img class="button_img" src="img/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
                 <span class="button_text"> OpenStreetMap</span>
             </a>
             <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button">
@@ -292,7 +289,7 @@ $jsScript = $jsScripts[0];
                 <span class="button_text"> Mapcomplete</span>
             </a>
             <a title="iD editor" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_id_button">
-                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/1/1f/OpenStreetMap-Editor_iD_Logo.svg" alt="iD editor logo">
+                <img class="button_img" src="img/OpenStreetMap-Editor_iD_Logo.svg" alt="iD editor logo">
                 <span class="button_text"> iD editor</span>
             </a>
             <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
@@ -345,15 +342,15 @@ $jsScript = $jsScripts[0];
                     <div class="info column">
                         <div class="button_row">
                             <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
-                                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/8/80/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
+                                <img class="button_img" src="img/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
                             <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
-                                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" alt="Wikimedia Commons logo">
+                                <img class="button_img" src="img/Commons-logo.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>
                             </a>
                             <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikidata_button">
-                                <img class="button_img" src="https://upload.wikimedia.org/wikipedia/commons/7/71/Wikidata.svg" alt="Wikidata logo">
+                                <img class="button_img" src="img/Wikidata.svg" alt="Wikidata logo">
                                 <span class="button_text"> Wikidata</span>
                             </a>
                             <a title="EntiTree" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">

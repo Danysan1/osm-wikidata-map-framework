@@ -17,7 +17,9 @@ export class WikidataBulkService {
         }));
     }
 
-    async loadRelatedEntities(sparqlQueryTemplate: string, etymologySqlQuery: string, dbConnectionURI: string) {
+    async loadRelatedEntities(
+        sparqlQueryTemplate: string, etymologySqlQuery: string, dbConnectionURI: string, wikidataCountry?: string
+    ) {
         console.info("Setting up connections...")
         const dbConnection = new Connection(dbConnectionURI);
         console.debug("Connected:", dbConnectionURI, dbConnection.config);
@@ -34,9 +36,10 @@ export class WikidataBulkService {
             console.info("Preparing etymology query:\n", etymologySqlQuery);
             const etymologyStatement = await dbConnection.prepare(etymologySqlQuery, { paramTypes: [DataTypeOIDs.json] });
 
-            console.debug("Using SPARQL query:\n", sparqlQueryTemplate);
 
-            const sparqlQuery = sparqlQueryTemplate;
+            const wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
+                sparqlQuery = sparqlQueryTemplate.replaceAll("${wikidataCountryQuery}", wikidataCountryQuery);
+            console.debug("Using SPARQL query:\n", sparqlQuery);
             console.debug(`Fetching elements and linked entities...`);
             try {
                 await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);

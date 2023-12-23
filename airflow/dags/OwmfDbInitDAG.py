@@ -196,12 +196,13 @@ class OwmfDbInitDAG(DAG):
         pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
         pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
         pg_dataset = Dataset(f'file://{pg_path}')
+        workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
 
         default_params={
             "prefix": prefix,
             "load_on_db_method": Param(default="osmium", type="string", enum=["osmium","osm2pgsql","imposm"]),
             "drop_temporary_tables": True,
-            "upload_to_db": True,
+            "upload_to_db": False,
             "generate_pmtiles": True,
         }
 
@@ -232,7 +233,7 @@ class OwmfDbInitDAG(DAG):
         task_create_work_dir = BashOperator(
             task_id = "create_work_dir",
             bash_command = 'mkdir -p "$workDir"',
-            env = { "workDir": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}", },
+            env = { "workDir": workdir, },
             dag = self,
         )
         
@@ -686,83 +687,95 @@ class OwmfDbInitDAG(DAG):
         )
         [task_create_source_index, task_drop_temp_tables, task_etymology_map, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
 
-        group_pmtiles = TaskGroup("generate_pmtiles", tooltip="Generate the pmtiles file", dag=self)
+        group_vector_tiles = TaskGroup("vector_tiles", tooltip="Generate the vector tiles and/or PMTiles", dag=self)
+
+        task_check_dump = ShortCircuitOperator(
+            task_id = "check_dump",
+            python_callable=lambda **context: ("generate_pmtiles" in context["params"] and context["params"]["generate_pmtiles"]) or ("generate_mbtiles" in context["params"] and context["params"]["generate_mbtiles"]),
+            dag = self,
+            task_group = group_vector_tiles,
+            doc_md="Check whether data should be dumped to FlatGeobuf for vector tiles and/or PMTiles generation"
+        )
+        task_join_post_elaboration >> task_check_dump
+
+        task_dump_etymology_map = Ogr2ogrDumpOperator(
+            task_id = "dump_etymology_map",
+            dag = self,
+            task_group=group_vector_tiles,
+            postgres_conn_id = local_db_conn_id,
+            dest_format = "FlatGeobuf",
+            dest_path = join(workdir,'etymology_map.geojson'), # or .fgb
+            query = "SELECT * FROM owmf.etymology_map_dump",
+            doc_md=    """
+            # FlatGeobuf dump
+
+            Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
+            """
+        )
+        task_check_dump >> task_dump_etymology_map
+
+        task_dump_elements = Ogr2ogrDumpOperator(
+            task_id = "dump_elements",
+            dag = self,
+            task_group=group_vector_tiles,
+            postgres_conn_id = local_db_conn_id,
+            dest_format = "FlatGeobuf",
+            dest_path = join(workdir,'elements.geojson'), # or .fgb
+            query = "SELECT * FROM owmf.vm_elements",
+            doc_md=    """
+            # FlatGeobuf elements dump
+
+            Dump all the centroids of the elements from the local DB into a FlatGeobuf file
+            """
+        )
+        task_check_dump >> task_dump_elements
 
         task_check_pmtiles = ShortCircuitOperator(
             task_id = "check_pmtiles",
             python_callable=lambda **context: "generate_pmtiles" in context["params"] and context["params"]["generate_pmtiles"],
             dag = self,
-            task_group = group_pmtiles,
+            task_group = group_vector_tiles,
             doc_md="Check whether pmtiles should be generated"
         )
-        task_join_post_elaboration >> task_check_pmtiles
+        [task_dump_etymology_map,task_dump_elements] >> task_check_pmtiles
 
-        task_dump_etymology_map = Ogr2ogrDumpOperator(
-            task_id = "dump_etymology_map",
+        task_generate_etymology_map_pmtiles = TippecanoeOperator(
+            task_id = "generate_etymology_map_pmtiles",
             dag = self,
-            task_group=group_pmtiles,
-            postgres_conn_id = local_db_conn_id,
-            dest_format = "GeoJSON",
-            dest_path = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.geojson',
-            query = "SELECT * FROM owmf.etymology_map_dump",
-            doc_md=    """
-            # GeoJSON dump
-
-            Dump all the elements from the local DB with their respective etymologies into a GeoJSON file
-            """
-        )
-        task_check_pmtiles >> task_dump_etymology_map
-
-        task_dump_elements = Ogr2ogrDumpOperator(
-            task_id = "dump_elements",
-            dag = self,
-            task_group=group_pmtiles,
-            postgres_conn_id = local_db_conn_id,
-            dest_format = "GeoJSON",
-            dest_path = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.geojson',
-            query = "SELECT * FROM owmf.vm_elements",
-            doc_md=    """
-            # GeoJSON elements dump
-
-            Dump all the centroids of the elements from the local DB into a GeoJSON file
-            """
-        )
-        task_check_pmtiles >> task_dump_elements
-
-        task_generate_etymology_map = TippecanoeOperator(
-            task_id = "generate_etymology_map",
-            dag = self,
-            task_group = group_pmtiles,
-            input_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.geojson',
-            output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.pmtiles',
+            task_group = group_vector_tiles,
+            input_file = join(workdir,'etymology_map.geojson'), # or .fgb
+            output_file = join(workdir,'etymology_map.pmtiles'),
+            layer_name = "etymology_map",
             min_zoom = 13,
             max_zoom = 13,
-            extra_params = "",
+            extra_params = "-f",
             doc_md = TippecanoeOperator.__doc__
         )
-        task_dump_etymology_map >> task_generate_etymology_map
+        task_check_pmtiles >> task_generate_etymology_map_pmtiles
 
-        task_generate_elements = TippecanoeOperator(
-            task_id = "generate_elements",
+        elements_extra_params = "-f -r1 --cluster-distance=150 --accumulate-attribute=el_num:sum" # Do not automatically drop points; Cluster together features that are closer than about 150 pixels from each other; Sum the el_num attribute in features that are clustered together
+        task_generate_elements_pmtiles = TippecanoeOperator(
+            task_id = "generate_elements_pmtiles",
             dag = self,
-            task_group = group_pmtiles,
-            input_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.geojson',
-            output_file = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.pmtiles',
+            task_group = group_vector_tiles,
+            input_file = join(workdir,'elements.geojson'), # or .fgb
+            output_file = join(workdir,'elements.pmtiles'),
+            layer_name = "elements",
             min_zoom = 1,
             max_zoom = 12,
-            extra_params = "-r1 --cluster-distance=150 --accumulate-attribute=el_num:sum", # Do not automatically drop points; Cluster together features that are closer than about 150 pixels from each other; Sum the el_num attribute in features that are clustered together
+            extra_params = elements_extra_params,
             doc_md = TippecanoeOperator.__doc__
         )
-        task_dump_elements >> task_generate_elements
+        task_check_pmtiles >> task_generate_elements_pmtiles
 
-        task_etymology_map_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_etymology_map_to_s3",
+        task_etymology_map_pmtiles_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_etymology_map_pmtiles_to_s3",
             dag = self,
-            filename = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/etymology_map.pmtiles',
-            dest_key = f"{{{{ var.value.pmtiles_base_s3_key }}}}/{prefix}/etymology_map.pmtiles",
+            filename = join(workdir,'etymology_map.pmtiles'),
+            dest_key = join("{{ var.value.pmtiles_base_s3_key }}",prefix,"etymology_map.pmtiles"),
             replace = True,
             aws_conn_id = "aws_s3",
-            task_group = group_pmtiles,
+            task_group = group_vector_tiles,
             doc_md = """
                 # Upload etymology_map.pmtiles to S3
 
@@ -774,16 +787,16 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        task_generate_etymology_map >> task_etymology_map_s3
+        task_generate_etymology_map_pmtiles >> task_etymology_map_pmtiles_s3
 
-        task_elements_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_elements_to_s3",
+        task_elements_pmtiles_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_elements_pmtiles_to_s3",
             dag = self,
-            filename = '/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/elements.pmtiles',
-            dest_key = f"{{{{ var.value.pmtiles_base_s3_key }}}}/{prefix}/elements.pmtiles",
+            filename = join(workdir,'elements.pmtiles'),
+            dest_key = join("{{ var.value.pmtiles_base_s3_key }}",prefix,"elements.pmtiles"),
             replace = True,
             aws_conn_id = "aws_s3",
-            task_group = group_pmtiles,
+            task_group = group_vector_tiles,
             doc_md = """
                 # Upload elements.pmtiles to S3
 
@@ -795,20 +808,20 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        task_generate_elements >> task_elements_s3
+        task_generate_elements_pmtiles >> task_elements_pmtiles_s3
 
-        task_date_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_date_to_s3",
+        task_date_pmtiles_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_date_pmtiles_to_s3",
             dag = self,
             filename = pg_date_path,
-            dest_key = f"{{{{ var.value.pmtiles_base_s3_key }}}}/{prefix}/date.txt",
+            dest_key = join('{{ var.value.pmtiles_base_s3_key }}',prefix,'date.txt'),
             replace = True,
             aws_conn_id = "aws_s3",
-            task_group = group_pmtiles,
+            task_group = group_vector_tiles,
             doc_md = """
-                # Upload elements.pmtiles to S3
+                # Upload PMTiles date to S3
 
-                Upload the PMTiles elements file to AWS S3.
+                Upload the date file for PMTiles to AWS S3.
 
                 Links:
                 * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
@@ -816,7 +829,7 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        [task_etymology_map_s3, task_elements_s3] >> task_date_s3
+        [task_etymology_map_pmtiles_s3, task_elements_pmtiles_s3] >> task_date_pmtiles_s3
         
         group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 
@@ -838,7 +851,7 @@ class OwmfDbInitDAG(DAG):
             trigger_rule = TriggerRule.NONE_FAILED,
             bash_command='pg_dump --file="$backupFilePath" --host="$host" --port="$port" --dbname="$dbname" --username="$user" --no-password --format=c --blobs --section=pre-data --section=data --section=post-data --schema="owmf" --verbose --no-owner --no-privileges --no-tablespaces',
             env= {
-                "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
+                "backupFilePath": join(workdir,"db.backup"),
                 "host": f'{{{{ conn["{local_db_conn_id}"].host }}}}',
                 "port": f'{{{{ (conn["{local_db_conn_id}"].port)|string }}}}',
                 "user": f'{{{{ conn["{local_db_conn_id}"].login }}}}',
@@ -897,7 +910,7 @@ class OwmfDbInitDAG(DAG):
             task_id = "pg_restore",
             bash_command='pg_restore --host "$host" --port "$port" --dbname "$dbname" --username "$user" --no-password --role "$user" --schema "owmf" --verbose --no-owner --no-privileges --no-tablespaces "$backupFilePath"',
             env= {
-                "backupFilePath": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/db.backup",
+                "backupFilePath": join(workdir,"db.backup"),
                 "host": f"{{{{ conn['{upload_db_conn_id}'].host }}}}", # "{{ conn[params.upload_db_conn_id].host }}",
                 "port": f"{{{{ (conn['{upload_db_conn_id}'].port)|string }}}}", # "{{ (conn[params.upload_db_conn_id].port)|string }}",
                 "user": f"{{{{ conn['{upload_db_conn_id}'].login }}}}", # "{{ conn[params.upload_db_conn_id].login }}",
@@ -943,7 +956,7 @@ class OwmfDbInitDAG(DAG):
         task_cleanup = BashOperator(
             task_id = "cleanup",
             bash_command = 'rm -r "$workDir"',
-            env = { "workDir": "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}", },
+            env = { "workDir": workdir, },
             dag = self,
             task_group = group_cleanup,
             doc_md = """
