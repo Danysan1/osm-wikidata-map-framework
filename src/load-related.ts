@@ -23,6 +23,10 @@ const sparqlQuery = sparqlQueryMap[type].replace("${properties}", jsonProps.map(
 if (!db_connection_uri)
     throw new Error("No DB connection URI passed (no third argument and no DB_CONNECTION_URI env variable)");
 
+const wikidata_country = process.env.owmf_wikidata_country || undefined;
+
 console.debug("Setting up services");
 const wikidata_api = new WikidataBulkService();
-wikidata_api.loadRelatedEntities(sparqlQuery, etymologyQuery, db_connection_uri);
+wikidata_api.loadRelatedEntities(
+    sparqlQuery, etymologyQuery, db_connection_uri, wikidata_country
+);

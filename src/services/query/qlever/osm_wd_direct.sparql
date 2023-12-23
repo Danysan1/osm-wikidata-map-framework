@@ -15,6 +15,7 @@ PREFIX wd: <http://www.wikidata.org/entity/>
 SELECT
     ?item
     ?osm
+    ?etymology
     (SAMPLE(?osm_location) AS ?location)
     # (SAMPLE(COALESCE(?osm_lang_name,?wd_lang_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
     (SAMPLE(COALESCE(?osm_lang_name,?osm_default_name)) AS ?itemLabel)
@@ -29,7 +30,9 @@ SELECT
     (true AS ?from_wikidata)
 WHERE {
     SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
-        ?item p:P625 ?locationStatement.
+        VALUES ?_from_prop { ${directProperties} }
+        ?item p:P625 ?locationStatement;
+            ?_from_prop ?etymology.
         ${wikidataCountryQuery}
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
         MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
@@ -70,5 +73,5 @@ WHERE {
     OPTIONAL { ?osm osmkey:wikimedia_commons ?_wikimedia_commons. }
     OPTIONAL { ?osm osmkey:image ?_image. }
 }
-GROUP BY ?item ?osm
+GROUP BY ?item ?osm ?etymology
 ${limit}

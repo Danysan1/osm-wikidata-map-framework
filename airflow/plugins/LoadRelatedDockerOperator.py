@@ -18,6 +18,7 @@ class LoadRelatedDockerOperator(DockerOperator):
                 "owmf_db_uri": f'{{{{ conn["{postgres_conn_id}"].get_uri() }}}}',
                 "owmf_osm_wikidata_keys": '{{ var.value.osm_wikidata_keys }}',
                 "owmf_osm_wikidata_properties": '{{ var.value.osm_wikidata_properties }}',
+                "owmf_wikidata_country": '{{ var.value.wikidata_country }}',
             },
             retries = 3,
             network_mode = environ.get("AIRFLOW_VAR_POSTGIS_BRIDGE"), # The container needs to talk with the local DB

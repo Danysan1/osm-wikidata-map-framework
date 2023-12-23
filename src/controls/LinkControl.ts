@@ -47,6 +47,7 @@ export class LinkControl implements IControl {
 
         const img = document.createElement("img");
         img.src = this.iconUrl;
+        img.loading = "lazy";
         img.className = "mapboxgl-ctrl-icon";
         img.width = 23;
         img.height = 23;
@@ -67,8 +68,10 @@ export class LinkControl implements IControl {
     }
 
     setURL(url: string) {
-        if (this.anchor)
+        if (this.anchor && this.anchor.href !== url) {
+            if (debug) console.info("LinkControl: Setting link URL", { url });
             this.anchor.href = url;
+        }
     }
 
     show(show = true) {
@@ -80,9 +83,7 @@ export class LinkControl implements IControl {
 
     createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType !== "source")
-                return;
-            if (e.source.type !== "geojson" || !sourceIds.includes(e.sourceId))
+            if (!e.isSourceLoaded || e.dataType !== "source" || e.source.type !== "geojson" || !sourceIds.includes(e.sourceId))
                 return;
 
             const content = (e.source as any)?.data;
@@ -96,7 +97,6 @@ export class LinkControl implements IControl {
             } else {
                 const encodedQuery = encodeURIComponent(query),
                     linkUrl = baseUrl + encodedQuery;
-                if (debug) console.info("Query field found, showing URL", { linkUrl, mapEventField });
                 this.setURL(linkUrl);
                 this.show();
             }

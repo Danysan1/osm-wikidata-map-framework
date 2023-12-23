@@ -7,6 +7,8 @@ import osmtogeojson from "osmtogeojson";
 import { MapService } from "./MapService";
 
 type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
+const commonsCategoryRegex = /(Category:[^;]+)/;
+const commonsFileRegex = /(File:[^;]+)/;
 
 export class OverpassService implements MapService {
     private api: OverpassApi;
@@ -110,49 +112,7 @@ export class OverpassService implements MapService {
             out = osmtogeojson(res);
             if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
 
-            out.features.forEach((feature: Feature) => {
-                if (!feature.id && feature.properties?.id)
-                    feature.id = feature.properties?.id;
-                if (!feature.properties)
-                    feature.properties = {};
-
-                feature.properties.from_osm = true;
-                feature.properties.from_wikidata = false;
-
-                const osm_type = feature.properties.id?.split("/")?.[0],
-                    osm_id = feature.properties.id ? parseInt(feature.properties.id.split("/")[1]) : undefined;
-                feature.properties.osm_id = osm_id;
-                feature.properties.osm_type = osm_type;
-
-                if (osm_text_key)
-                    feature.properties.text_etymology = feature.properties[osm_text_key];
-                if (osm_description_key)
-                    feature.properties.text_etymology_descr = feature.properties[osm_description_key];
-
-                if (typeof feature.properties.wikimedia_commons === "string") {
-                    if (feature.properties.wikimedia_commons?.includes("File:"))
-                        feature.properties.picture = feature.properties.wikimedia_commons;
-                    else
-                        feature.properties.commons = feature.properties.wikimedia_commons;
-                }
-
-                if (feature.properties["name:" + this.language])
-                    feature.properties.name = feature.properties["name:" + this.language];
-                // Default language is intentionally not used as it could overwrite a more specific language in name=*
-
-                feature.properties.etymologies = osm_keys
-                    .map(key => feature.properties?.[key])
-                    .flatMap((value?: string) => value?.split(";"))
-                    .filter(value => value && /^Q[0-9]+/.test(value))
-                    .map<Etymology>(value => ({
-                        from_osm: true,
-                        from_osm_id: osm_id,
-                        from_osm_type: osm_type,
-                        from_wikidata: false,
-                        propagated: false,
-                        wikidata: value
-                    }));
-            });
+            out.features.forEach(f => this.transformFeature(f, osm_keys, osm_text_key, osm_description_key));
             out.overpass_query = query;
             out.timestamp = new Date().toISOString();
             out.bbox = bbox;
@@ -165,6 +125,47 @@ export class OverpassService implements MapService {
         }
         if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
         return out;
+    }
+
+    private transformFeature(feature: Feature, osm_keys: string[], osm_text_key: string | null, osm_description_key: string | null) {
+        if (!feature.id && feature.properties?.id)
+            feature.id = feature.properties?.id;
+        if (!feature.properties)
+            feature.properties = {};
+
+        feature.properties.from_osm = true;
+        feature.properties.from_wikidata = false;
+
+        const osm_type = feature.properties.id?.split("/")?.[0],
+            osm_id = feature.properties.id ? parseInt(feature.properties.id.split("/")[1]) : undefined;
+        feature.properties.osm_id = osm_id;
+        feature.properties.osm_type = osm_type;
+
+        if (osm_text_key)
+            feature.properties.text_etymology = feature.properties[osm_text_key];
+        if (osm_description_key)
+            feature.properties.text_etymology_descr = feature.properties[osm_description_key];
+
+        feature.properties.commons = typeof feature.properties.wikimedia_commons === "string" ? commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1) : undefined;
+        feature.properties.picture = (typeof feature.properties.wikimedia_commons === "string" ? commonsFileRegex.exec(feature.properties.wikimedia_commons)?.at(1) : undefined) || (typeof feature.properties.image === "string" ? commonsFileRegex.exec(feature.properties.image)?.at(1) : undefined);
+        console.debug("transformFeature", feature.properties)
+
+        if (feature.properties["name:" + this.language])
+            feature.properties.name = feature.properties["name:" + this.language];
+        // Default language is intentionally not used as it could overwrite a more specific language in name=*
+
+        feature.properties.etymologies = osm_keys
+            .map(key => feature.properties?.[key])
+            .flatMap((value?: string) => value?.split(";"))
+            .filter(value => value && /^Q[0-9]+/.test(value))
+            .map<Etymology>(value => ({
+                from_osm: true,
+                from_osm_id: osm_id,
+                from_osm_type: osm_type,
+                from_wikidata: false,
+                propagated: false,
+                wikidata: value
+            }));
     }
 
     private buildOverpassQuery(

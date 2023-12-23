@@ -1,7 +1,7 @@
 import { Point, LineString, Polygon, MultiPolygon } from "geojson";
 import { debug, getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
-import { EtymologyDetails } from '../feature.model';
+import { EtymologyDetails } from '../model/feature';
 import { EtymologyFeature, EtymologyFeatureProperties } from '../generated/owmf';
 import { setFragmentParams } from '../fragment';
 

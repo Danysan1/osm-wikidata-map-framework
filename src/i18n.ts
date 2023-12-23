@@ -1,7 +1,4 @@
 import { Resource, TFunction } from "i18next";
-import ChainedBackend from 'i18next-chained-backend'
-import resourcesToBackend from 'i18next-resources-to-backend'
-import HttpBackend from 'i18next-http-backend'
 import { debug, getBoolConfig, getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
@@ -43,33 +40,37 @@ export function setPageLocale() {
 }
 
 let tPromise: Promise<TFunction>;
-export async function loadTranslator() {
-    if (!tPromise) {
-        const defaultNamespace = "app",
-            defaultLanguage = getConfig("default_language") || 'en',
-            locale = document.documentElement.lang,
-            language = locale.split('-').at(0),
-            i18nOverride: Resource | null = getJsonConfig("i18n_override"),
-            backends: object[] = [HttpBackend],
-            backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
-        if (i18nOverride) {
-            if (debug) console.info("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
-            backends.unshift(resourcesToBackend(i18nOverride));
-            backendOptions.unshift({});
-        }
-        tPromise = import("i18next").then(i18next => i18next.use(ChainedBackend).init({
-            debug: getBoolConfig("enable_debug_log"),
-            fallbackLng: defaultLanguage,
-            //lng: locale, // comment to use the language only, UNcomment to use the full locale
-            lng: language, // UNcomment to use the language only, comment to use the full locale
-            backend: { backends, backendOptions },
-            ns: ["common", defaultNamespace],
-            fallbackNS: "common",
-            defaultNS: defaultNamespace
-        }));
-    }
+export function loadTranslator() {
+    if (!tPromise)
+        tPromise = loadI18n();
 
     return tPromise;
+}
+
+async function loadI18n() {
+    const defaultNamespace = "app",
+        defaultLanguage = getConfig("default_language") || 'en',
+        locale = document.documentElement.lang,
+        language = locale.split('-').at(0),
+        { ChainedBackend, HttpBackend, i18next, resourcesToBackend } = await import('./i18next'),
+        i18nOverride: Resource | null = getJsonConfig("i18n_override"),
+        backends: object[] = [HttpBackend],
+        backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
+    if (i18nOverride) {
+        if (debug) console.info("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
+        backends.unshift(resourcesToBackend(i18nOverride));
+        backendOptions.unshift({});
+    }
+    return await i18next.use(ChainedBackend).init({
+        debug: getBoolConfig("enable_debug_log"),
+        fallbackLng: defaultLanguage,
+        //lng: locale, // comment to use the language only, UNcomment to use the full locale
+        lng: language, // UNcomment to use the language only, comment to use the full locale
+        backend: { backends, backendOptions },
+        ns: ["common", defaultNamespace],
+        fallbackNS: "common",
+        defaultNS: defaultNamespace
+    });
 }
 
 export function translateContent(parent: HTMLElement, selector: string, key: string, defaultValue: string) {

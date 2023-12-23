@@ -9,6 +9,7 @@ PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
 SELECT
     ?item
+    ?etymology
     (SAMPLE(COALESCE(?lang_label,?default_label)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
@@ -18,7 +19,6 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
-    ?etymology
     (?item AS ?from_entity)
     (SAMPLE(?_from_prop) AS ?from_prop)
     (false AS ?from_osm)
@@ -30,13 +30,22 @@ WHERE {
     ${wikidataCountryQuery}
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
-    
-    # Filter by location
     ?locationStatement ps:P625 ?_location.
-    # ?_location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
-    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
+    
+    # # Filter by location (geo:sfWithin)
+    # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)
+    # ?_location geo:sfWithin ?bbox.
+    
+    # # Filter by location (geof:latitude/longitude)
+    BIND(geof:latitude(?_location) AS ?lat)
+    BIND(geof:longitude(?_location) AS ?lon)
+    FILTER (?lat > ${southLat} && ?lat < ${northLat} && ?lon > ${westLon} && ?lon < ${eastLon})
+    
+    # # Filter by location (geof:distance)
+    # BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+    # FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
 
+    # # Extra details
     OPTIONAL { ?item @${language}@rdfs:label ?lang_label. }
     OPTIONAL { ?item @en@rdfs:label ?default_label. }
     OPTIONAL { ?item @${language}@schema:description ?_itemDescription. }

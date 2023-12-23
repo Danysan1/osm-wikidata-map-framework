@@ -5,7 +5,7 @@ import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-trans
 
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
-import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './controls/BackgroundStyleControl';
+import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './model/backgroundStyle';
 import { debug, getBoolConfig, getConfig } from './config';
 import { setPageLocale } from './i18n';
 import './style.css';
@@ -99,7 +99,7 @@ function initMap() {
         requestTransformFunc = (url, resourceType) => {
             if (isMapboxURL(url))
                 return transformMapboxUrl(url, resourceType as string, mapbox_token);
-            if(/^http:\/\/[^\/]+(?<!localhost)\/(elements|etymology_map)\//.test(url))
+            if (/^http:\/\/[^/]+(?<!localhost)\/(elements|etymology_map)\//.test(url))
                 return { url: url.replace("http", "https") };
             return { url };
         };

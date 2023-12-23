@@ -13,6 +13,7 @@
         "name:*",
         "wikipedia",
         "wikimedia_commons",
+        "image",
         "wikidata",
         "*:wikidata"
     ]

@@ -1,4 +1,4 @@
-import { ColorSchemeID } from "./colorScheme.model";
+import { ColorSchemeID } from "./model/colorScheme";
 import { debug, getConfig } from "./config";
 
 const default_center_lat_raw = getConfig("default_center_lat"),

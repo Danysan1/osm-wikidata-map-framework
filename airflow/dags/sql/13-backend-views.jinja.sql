@@ -6,6 +6,7 @@ SELECT
     el.el_osm_id AS osm_id,
     el.el_osm_id IS NOT NULL AS from_osm,
     el.el_osm_id IS NULL AS from_wikidata,
+    STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     el.el_tags->>'name' AS name,
     el.el_tags->>'name:ar' AS "name:ar",
     el.el_tags->>'name:da' AS "name:da",

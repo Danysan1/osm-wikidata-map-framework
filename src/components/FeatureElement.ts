@@ -8,7 +8,7 @@ import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n"
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
 import { imageToDomElement } from "./CommonsImageElement";
 import { logErrorMessage } from "../monitoring";
-import { EtymologyDetails } from '../feature.model';
+import { EtymologyDetails } from '../model/feature';
 import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
 

@@ -118,11 +118,6 @@ function prepareHTML(Configuration $conf)
 
 	$overpassConnect = implode(" ", $conf->getArray('overpass_endpoints'));
 
-	$liberapayImg = '';
-	if ($conf->has("liberapay_id")) {
-		$liberapayImg = "https://liberapay.com";
-	}
-
 	$payPalForm = '';
 	$payPalImg = '';
 	if ($conf->has("paypal_id")) {
@@ -130,10 +125,8 @@ function prepareHTML(Configuration $conf)
 		$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
 	}
 
-	$qleverImg = '';
 	$qleverConnect = '';
 	if ($conf->getBool('qlever_enable')) {
-		$qleverImg = 'https://qlever.cs.uni-freiburg.de/static/favicon.ico';
 		$qleverConnect = 'https://qlever.cs.uni-freiburg.de/api/';
 	}
 
@@ -152,7 +145,7 @@ function prepareHTML(Configuration $conf)
 			"font-src 'self' ; " .
 			"form-action 'self' $payPalForm ; " .
 			"frame-ancestors 'none' ; " .
-			"img-src 'self' data: blob: $qleverImg $wikimediaImg $liberapayImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
+			"img-src 'self' data: blob: $wikimediaImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
 			"object-src 'none'; " .
 			"script-src 'self' $sentryScript $matomoScript $mapboxScript $googleAnalyticsScript ; " .
 			"style-src 'self' https://fonts.googleapis.com ; " .

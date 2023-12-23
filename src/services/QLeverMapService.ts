@@ -2,7 +2,8 @@ import { WikidataService } from "./WikidataService";
 import osm_wd_query from "./query/qlever/osm_wd.sparql";
 import osm_all_query from "./query/qlever/osm_all.sparql";
 import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
-import osm_all_wd_direct_query from "./query/qlever/osm_all_wd_direct.sparql";
+import osm_wd_direct_query from "./query/qlever/osm_wd_direct.sparql";
+import osm_wd_reverse_query from "./query/qlever/osm_wd_reverse.sparql";
 import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
 import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
@@ -26,6 +27,8 @@ const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
  * @see https://stackoverflow.com/a/5824414/2347196
  */
 const keyPredicate = (key: string) => key.includes(":") ? "<" + OSMKEY + key + ">" : "osmkey:" + key;
+const commonsCategoryRegex = /(Category:[^;]+)/;
+const commonsFileRegex = /(File:[^;]+)/;
 
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
@@ -90,10 +93,7 @@ export class QLeverMapService implements MapService {
     }
 
     private getBackend(sourceID: string): SparqlBackend {
-        if (sourceID === "qlever_osm_wd" || /^qlever_osm_[^w]/.test(sourceID))
-            return "osm-planet";
-
-        return "wikidata";
+        return sourceID.startsWith("qlever_osm_") ? "osm-planet" : "wikidata";
     }
 
     private getSparqlQueryTemplate(sourceID: string): string {
@@ -102,9 +102,9 @@ export class QLeverMapService implements MapService {
         else if (sourceID === "qlever_osm_wd_base")
             return osm_wd_base_query;
         else if (sourceID === "qlever_osm_wikidata_direct")
-            return osm_all_wd_direct_query;
-        else if (sourceID === "qlever_osm_all_wd_direct")
-            return osm_all_wd_direct_query;
+            return osm_wd_direct_query;
+        else if (sourceID === "qlever_osm_wikidata_reverse")
+            return osm_wd_reverse_query;
         else if (/^qlever_osm_[^w]/.test(sourceID))
             return osm_all_query;
         else if (sourceID === "qlever_wd_base")
@@ -130,38 +130,44 @@ export class QLeverMapService implements MapService {
                 osm_wikidata_keys = getJsonConfig("osm_wikidata_keys") as string[] | undefined,
                 raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? osm_wikidata_keys : osm_wikidata_keys?.filter(key => getKeyID(key) === selected_key_id);
-            if (!selected_osm_wikidata_keys?.length)
+            if (osm_wikidata_keys?.length && !selected_osm_wikidata_keys?.length)
                 throw new Error(`Invalid selected_key_id: ${sourceID} => ${selected_key_id} not in ${osm_wikidata_keys}`);
+
             const filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
                 filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
                 filter_keys = filter_tags?.filter(tag => !tag.includes("=")),
-                filter_wd_keys = filter_tags?.length ? selected_osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : selected_osm_wikidata_keys,
-                non_filter_wd_keys = selected_osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
+                filter_osm_wd_keys = filter_tags?.length ? selected_osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : selected_osm_wikidata_keys,
+                non_filter_osm_wd_keys = selected_osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
                 filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !osm_wikidata_keys?.includes(key)),
-                filterExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_v; " : "", // "[]" would be more appropriate than "?_v", but it's not working by QLever
+                filterKeysExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_v; " : "", // "[]" would be more appropriate than "?_v", but it's not working by QLever
+                non_filter_osm_wd_predicate = non_filter_osm_wd_keys?.map(keyPredicate)?.join('|'),
                 osmEtymologyUnionBranches: string[] = [];
+            if (debug) console.debug("fillPlaceholders", {
+                filter_tags, filter_tags_with_value, filter_keys, filter_osm_wd_keys, non_filter_wd_keys: non_filter_osm_wd_keys, filter_non_etymology_keys, filterExpression: filterKeysExpression
+            });
+
+            if (filter_osm_wd_keys?.length) {
+                const wikidata_predicate = filter_osm_wd_keys.map(keyPredicate)?.join('|');
+                osmEtymologyUnionBranches.push(`?osm ${wikidata_predicate} ?etymology. # Key is both filter and etymology`);
+            }
+
+            if (non_filter_osm_wd_keys?.length) {
+                osmEtymologyUnionBranches.push(`?osm ${filterKeysExpression}${non_filter_osm_wd_predicate} ?etymology. # Filter key + Etymology key`);
+            }
 
             if (filter_tags_with_value?.length) {
                 filter_tags_with_value.forEach(tag => {
-                    osmEtymologyUnionBranches.push(`?osm ${tag.replace("=", " '")}'`);
+                    const predicate = keyPredicate(tag.split("=")[0]),
+                        value = tag.split("=")[1];
+                    osmEtymologyUnionBranches.push(`?osm ${predicate} '${value}'; ${non_filter_osm_wd_predicate} ?etymology. # Filter tag + Etymology key`);
                 });
             }
 
-            if (filter_wd_keys?.length) {
-                const wikidata_predicate = filter_wd_keys.map(keyPredicate)?.join('|');
-                osmEtymologyUnionBranches.push(`?osm ${wikidata_predicate} ?etymology.`);
-            }
-
-            if (non_filter_wd_keys?.length) {
-                const wikidata_predicate = non_filter_wd_keys.map(keyPredicate)?.join('|');
-                osmEtymologyUnionBranches.push(`?osm ${filterExpression}${wikidata_predicate} ?etymology.`);
-            }
-
             if (osm_text_key?.length)
-                osmEtymologyUnionBranches.push(`?osm ${filterExpression}${keyPredicate(osm_text_key)} ?etymology_text.`);
+                osmEtymologyUnionBranches.push(`?osm ${filterKeysExpression}${keyPredicate(osm_text_key)} ?etymology_text. # Etymology text key`);
 
             if (osm_description_key?.length)
-                osmEtymologyUnionBranches.push(`?osm ${filterExpression}${keyPredicate(osm_description_key)} ?etymology_description.`);
+                osmEtymologyUnionBranches.push(`?osm ${filterKeysExpression}${keyPredicate(osm_description_key)} ?etymology_description. # Etymology description key`);
 
             let osmEtymologyExpression = "";
             if (osmEtymologyUnionBranches.length === 1)
@@ -236,8 +242,10 @@ export class QLeverMapService implements MapService {
         }
 
         const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            etymology_wd_id: string | undefined = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            existingFeature = acc.find(feature => {
+            etymology_wd_ids: string[] | undefined = typeof row.etymology?.value === "string" ? row.etymology.value.split(";").map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")) : undefined;
+
+        (etymology_wd_ids || [undefined]).forEach(etymology_wd_id => { // [undefined] is used when there are no linked entities (like in https://osmwd.dsantini.it )
+            const existingFeature = acc.find(feature => {
                 if (feature.id !== feature_wd_id)
                     return false; // Not the same feature
 
@@ -249,66 +257,71 @@ export class QLeverMapService implements MapService {
                 return feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-        if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
-        } else {
-            const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
-                feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
-                etymology: Etymology | null = etymology_wd_id ? {
-                    from_osm: feature_from_osm,
-                    from_wikidata: feature_from_wikidata,
-                    from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                    from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
-                    propagated: false,
-                    wikidata: etymology_wd_id,
-                } : null;
-
-            if (!existingFeature) { // Add the new feature for this item 
-                let osm_id: number | undefined,
-                    osm_type: "node" | "way" | "relation" | undefined;
-                if (row.osm_rel?.value) {
-                    osm_type = "relation";
-                    osm_id = parseInt(row.osm_rel.value);
-                } else if (row.osm_way?.value) {
-                    osm_type = "way";
-                    osm_id = parseInt(row.osm_way.value);
-                } else if (row.osm_node?.value) {
-                    osm_type = "node";
-                    osm_id = parseInt(row.osm_node.value);
-                } else if (row.osm?.value) {
-                    const splits = /^https:\/\/www.openstreetmap.org\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
-                    if (splits?.length === 3) {
-                        osm_type = splits[1] as "node" | "way" | "relation";
-                        osm_id = parseInt(splits[2]);
-                    }
-                }
-
-                acc.push({
-                    type: "Feature",
-                    id: feature_wd_id,
-                    geometry,
-                    properties: {
-                        commons: row.commons?.value,
-                        description: row.itemDescription?.value,
-                        etymologies: etymology ? [etymology] : undefined,
-                        text_etymology: row.etymology_text?.value,
-                        description_etymology: row.etymology_description?.value,
+            if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+                if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
+            } else {
+                const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
+                    feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
+                    etymology: Etymology | null = etymology_wd_id ? {
                         from_osm: feature_from_osm,
                         from_wikidata: feature_from_wikidata,
-                        from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                        from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
-                        name: row.itemLabel?.value,
-                        osm_id,
-                        osm_type,
-                        picture: row.picture?.value,
-                        wikidata: feature_wd_id,
-                        wikipedia: row.wikipedia?.value,
+                        from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                        from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
+                        propagated: false,
+                        wikidata: etymology_wd_id,
+                    } : null;
+
+                if (!existingFeature) { // Add the new feature for this item 
+                    let osm_id: number | undefined,
+                        osm_type: "node" | "way" | "relation" | undefined;
+                    if (row.osm_rel?.value) {
+                        osm_type = "relation";
+                        osm_id = parseInt(row.osm_rel.value);
+                    } else if (row.osm_way?.value) {
+                        osm_type = "way";
+                        osm_id = parseInt(row.osm_way.value);
+                    } else if (row.osm_node?.value) {
+                        osm_type = "node";
+                        osm_id = parseInt(row.osm_node.value);
+                    } else if (row.osm?.value) {
+                        const splits = /^https:\/\/www.openstreetmap.org\/([a-z]+)\/([0-9]+)$/.exec(row.osm.value);
+                        if (splits?.length === 3) {
+                            osm_type = splits[1] as "node" | "way" | "relation";
+                            osm_id = parseInt(splits[2]);
+                        }
                     }
-                });
-            } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                existingFeature.properties?.etymologies?.push(etymology);
+
+                    const commons: string | undefined = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
+                        picture: string | undefined = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
+                    if (debug) console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
+
+                    acc.push({
+                        type: "Feature",
+                        id: feature_wd_id,
+                        geometry,
+                        properties: {
+                            commons: commons,
+                            description: row.itemDescription?.value,
+                            etymologies: etymology ? [etymology] : undefined,
+                            text_etymology: row.etymology_text?.value,
+                            description_etymology: row.etymology_description?.value,
+                            from_osm: feature_from_osm,
+                            from_wikidata: feature_from_wikidata,
+                            from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
+                            from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+                            name: row.itemLabel?.value,
+                            osm_id,
+                            osm_type,
+                            picture: picture,
+                            wikidata: feature_wd_id,
+                            wikipedia: row.wikipedia?.value,
+                        }
+                    });
+                } else if (etymology) { // Add the new etymology to the existing feature for this feature
+                    existingFeature.properties?.etymologies?.push(etymology);
+                }
             }
-        }
+        });
         return acc;
     }
 }

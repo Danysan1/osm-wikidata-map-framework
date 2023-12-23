@@ -16,7 +16,10 @@ INSERT INTO owmf.element (
     osm_tags,
     osm_has_text_etymology,
     wd_wikidata_cod,
-    SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
+    COALESCE(
+        SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),
+        SUBSTRING(osm_tags->>'image' FROM '(File:[^;]+)')
+    ),
     SUBSTRING(osm_tags->>'wikipedia' FROM '^([^;]+)')
 FROM owmf.osmdata
 LEFT JOIN owmf.wikidata ON osm_wd_id = wd_id

@@ -1,4 +1,4 @@
-import { Etymology } from "./generated/owmf";
+import { Etymology } from "../generated/owmf";
 
 /**
  * Date precision as documented in https://www.wikidata.org/wiki/Help:Dates#Precision

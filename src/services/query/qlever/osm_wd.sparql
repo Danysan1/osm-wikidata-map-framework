@@ -9,9 +9,10 @@ SELECT
     ?item
     ?osm
     ?location
-    #(COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
-    (?osm_default_name AS ?itemLabel)
+    (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
     (?osm_descr AS ?itemDescription)
+    ?image
+    ?wikimedia_commons
     (true AS ?from_osm)
     (false AS ?from_wikidata)
 WHERE {
@@ -19,12 +20,23 @@ WHERE {
          geo:hasGeometry ?location.
     ${osmCountryQuery}
 
-    # Filter by location
-    # ?location geo:sfWithin "POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral.
-    BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
-    FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
+    # # Filter by location (geo:sfWithin)
+    # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)
+    # ?location geo:sfWithin ?bbox.
+    
+    # # Filter by location (geof:latitude/longitude)
+    BIND(geof:latitude(?location) AS ?lat)
+    BIND(geof:longitude(?location) AS ?lon)
+    FILTER (?lat > ${southLat} && ?lat < ${northLat} && ?lon > ${westLon} && ?lon < ${eastLon})
+    
+    # # Filter by location (geof:distance)
+    # BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
+    # FILTER (geof:distance(?location, ?center) <= ${maxDistanceKm})
 
-    #OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
+    # # Extra details
+    OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
     OPTIONAL { ?osm osmkey:name ?osm_default_name. }
     OPTIONAL { ?osm osmkey:description ?osm_descr. }
+    OPTIONAL { ?osm osmkey:image ?image. }
+    OPTIONAL { ?osm osmkey:wikimedia_commons ?wikimedia_commons. }
 }

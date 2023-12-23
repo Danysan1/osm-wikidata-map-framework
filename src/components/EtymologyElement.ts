@@ -1,6 +1,6 @@
 import { imageToDomElement } from "./CommonsImageElement";
 import { debug } from "../config";
-import { DatePrecision, EtymologyDetails } from "../feature.model";
+import { DatePrecision, EtymologyDetails } from "../model/feature";
 import { setFragmentParams } from "../fragment";
 import { translateContent, translateAnchorTitle } from "../i18n";
 import { WikipediaService } from "../services/WikipediaService";
