@@ -26,7 +26,7 @@ SELECT
     #(SAMPLE(?_picture) AS ?picture)
     (SAMPLE(?_wikimedia_commons) AS ?wikimedia_commons)
     (SAMPLE(?_image) AS ?image)
-    #(BOUND(?osm) AS ?from_osm) # TODO: BOUND() is not yet implemented in QLever
+    (true AS ?from_osm) # TODO check if bound - https://github.com/ad-freiburg/qlever/wiki/Current-deviations-from-the-SPARQL-1.1-standard#sparql-11-features-that-are-not-yet-implemented-but-have-an-easy-workaround 
     (true AS ?from_wikidata)
 WHERE {
     SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
