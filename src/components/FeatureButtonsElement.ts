@@ -65,7 +65,6 @@ export class FeatureButtonsElement extends HTMLDivElement {
         const wikidata = properties?.wikidata,
             has_wikidata = wikidata && wikidata !== 'null',
             commons = properties?.commons,
-            has_commons = commons && commons !== 'null',
             element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
         if (!element_wikidata_button) {
             if (debug) console.info("Missing element_wikidata_button");
@@ -91,13 +90,14 @@ export class FeatureButtonsElement extends HTMLDivElement {
         const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
         if (!element_commons_button) {
             if (debug) console.info("Missing element_commons_button");
-        } else if (has_commons) {
-            if (commons.startsWith("http"))
-                element_commons_button.href = commons;
-            else if (commons.startsWith("Category:"))
-                element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
-            else
-                element_commons_button.href = `https://commons.wikimedia.org/wiki/Category:${commons}`;
+        } else if (commons?.startsWith("http") && commons?.includes("Category:")) {
+            element_commons_button.href = commons;
+            element_commons_button.classList.remove("hiddenElement");
+        } else if (commons?.startsWith("Category:")) {
+            element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
+            element_commons_button.classList.remove("hiddenElement");
+        } else if (!commons?.includes("File:")) {
+            element_commons_button.href = `https://commons.wikimedia.org/wiki/Category:${commons}`;
             element_commons_button.classList.remove("hiddenElement");
         } else {
             element_commons_button.classList.add("hiddenElement");
