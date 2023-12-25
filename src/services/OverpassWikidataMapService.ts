@@ -36,7 +36,7 @@ export class OverpassWikidataMapService implements MapService {
     async fetchMapClusterElements(sourceID: string, bbox: BBox) {
         const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
         if (!overpassSourceID || !wikidataSourceID)
-            throw new Error("Invalid sourceID");
+            throw new Error(`Invalid combined cluster sourceID: "${sourceID}"`);
 
         if (overpassSourceID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
             return this.wikidataService.fetchMapClusterElements(wikidataSourceID, bbox);
@@ -53,7 +53,7 @@ export class OverpassWikidataMapService implements MapService {
     async fetchMapElementDetails(sourceID: string, bbox: BBox) {
         const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
         if (!overpassSourceID || !wikidataSourceID)
-            throw new Error("Invalid sourceID");
+            throw new Error(`Invalid combined details sourceID: "${sourceID}"`);
 
         const out = await this.fetchAndMergeMapData(
             "details-" + sourceID,
