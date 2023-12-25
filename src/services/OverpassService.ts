@@ -75,7 +75,7 @@ export class OverpassService implements MapService {
                 search_text_key = null;
                 use_wikidata = true;
             } else if (!this.wikidata_keys) {
-                throw new Error(`No keys configured, invalid sourceID ${this.wikidata_keys}`)
+                throw new Error(`No Wikidata keys configured, invalid Overpass sourceID: "${this.wikidata_keys}"`)
             } else if (sourceID.includes("overpass_all_wd")) {
                 // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
                 osm_keys = this.wikidata_keys;
@@ -86,12 +86,13 @@ export class OverpassService implements MapService {
                 use_wikidata = false;
             } else {
                 // Search a specific etymology key
-                const sourceKeyCode = /^.*overpass_osm_([_a-z]+)$/.exec(sourceID)?.at(1);
+                const sourceKeyCode = /^.*overpass_(osm_[_a-z]+)$/.exec(sourceID)?.at(1);
 
+                if (debug) console.debug("Overpass fetchMapData", { sourceID, sourceKeyCode, wikidata_key_codes: this.wikidata_key_codes });
                 if (!sourceKeyCode)
-                    throw new Error(`Failed to extract sourceKeyCode from sourceID ${sourceID}`);
+                    throw new Error(`Failed to extract sourceKeyCode from sourceID: "${sourceID}"`);
                 else if (!this.wikidata_key_codes || !(sourceKeyCode in this.wikidata_key_codes))
-                    throw new Error(`Invalid sourceID: ${sourceID}`);
+                    throw new Error(`Invalid Overpass sourceID: "${sourceID}"`);
                 else
                     osm_keys = [this.wikidata_key_codes[sourceKeyCode]];
 

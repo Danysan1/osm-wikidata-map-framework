@@ -118,7 +118,7 @@ export class QLeverMapService implements MapService {
         else if (sourceID === "qlever_wd_qualifier")
             return wd_qualifier_query;
         else
-            throw new Error("Invalid sourceID: " + sourceID);
+            throw new Error(`Invalid QLever sourceID: "${sourceID}"`);
     }
 
     private fillPlaceholders(sourceID: string, sparqlQuery: string, bbox: BBox): string {

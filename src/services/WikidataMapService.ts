@@ -49,7 +49,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             else if (/^wd_(reverse|qualifier|indirect)$/.test(sourceID))
                 sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
             else
-                throw new Error("Invalid sourceID: " + sourceID);
+                throw new Error(`Invalid Wikidata sourceID: "${sourceID}"`);
 
             const maxElements = getConfig("max_map_elements"),
                 wikidataCountry = getConfig("wikidata_country"),
@@ -115,7 +115,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         else if (sourceID === "wd_qualifier")
             sparqlQueryTemplate = qualifierMapQuery;
         else
-            throw new Error("Invalid sourceID: " + sourceID);
+            throw new Error(`Invalid Wikidata indirect sourceID: "${sourceID}"`);
 
         const imageProperty = getConfig("wikidata_image_property"),
             pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
