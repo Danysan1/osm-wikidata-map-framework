@@ -56,24 +56,24 @@ export class SourceControl extends DropdownControl {
         if (vectorTilesEnabled)
             dropdownItems.push(buildDropdownItem("vector_all", t("source.db_all", "All sources from DB"), VECTOR_GROUP_NAME));
 
-        const allKeysText = t("source.all_osm_keys", "All OSM keys");
-        if (keys && keys?.length > 1) {
-            if (qleverEnabled)
-                dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
-        }
-
         keys?.forEach(key => {
             const keyID = getKeyID(key),
                 keyText = "OSM " + key;
-            if (qleverEnabled)
-                dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
             if (pmtilesURL)
                 dropdownItems.push(buildDropdownItem("pmtiles_" + keyID, keyText, PMTILES_GROUP_NAME));
             if (vectorTilesEnabled)
                 dropdownItems.push(buildDropdownItem("vector_" + keyID, keyText, VECTOR_GROUP_NAME));
+            if (qleverEnabled)
+                dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
         });
+
+        const allKeysText = t("source.all_osm_keys", "All OSM keys");
+        if (keys && keys.length > 1) {
+            dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
+            if (qleverEnabled)
+                dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
+        }
 
         if (wdDirectProperties?.length) {
             const wikidataDirectText = "Wikidata " + wdDirectProperties.join("/"), // Ex: "Wikidata P138/P825/P547"
@@ -101,9 +101,14 @@ export class SourceControl extends DropdownControl {
             const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty }),
                 qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty }),
                 reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty });
+
             if (vectorTilesEnabled)
                 dropdownItems.push(buildDropdownItem("vector_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", `Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}`, { indirectWdProperty }), VECTOR_GROUP_NAME));
-
+            dropdownItems.push(buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", qualifierText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", `OSM wikidata=* + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", `OSM wikidata=* + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
             if (qleverEnabled) {
                 dropdownItems.push(buildDropdownItem("qlever_wd_indirect", `${indirectText} (beta)`, QLEVER_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("qlever_wd_qualifier", `${qualifierText} (beta)`, QLEVER_GROUP_NAME));
@@ -111,20 +116,16 @@ export class SourceControl extends DropdownControl {
                 // dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", `OSM wikidata=* + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                 dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", `OSM wikidata=* + ${reverseText} (beta)`, QLEVER_GROUP_NAME));
             }
-            dropdownItems.push(buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", qualifierText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", `OSM wikidata=* + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", `OSM wikidata=* + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
+
             if (keys?.length) {
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
                 if (qleverEnabled) {
                     // dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", `${allKeysText} + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                     // dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", `${allKeysText} + ${qualifierText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                     // dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", `${allKeysText} + ${reverseText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                 }
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
             }
         }
 
