@@ -87,16 +87,17 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_wikipedia_button.classList.add("hiddenElement");
         }
 
-        const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button');
+        const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button'),
+            isURL = commons?.startsWith("http");
         if (!element_commons_button) {
             if (debug) console.info("Missing element_commons_button");
-        } else if (commons?.startsWith("http") && commons?.includes("Category:")) {
+        } else if (isURL && commons?.includes("Category:")) {
             element_commons_button.href = commons;
             element_commons_button.classList.remove("hiddenElement");
         } else if (commons?.startsWith("Category:")) {
             element_commons_button.href = `https://commons.wikimedia.org/wiki/${commons}`;
             element_commons_button.classList.remove("hiddenElement");
-        } else if (!commons?.includes("File:")) {
+        } else if (commons && !isURL && !commons?.includes("File:")) {
             element_commons_button.href = `https://commons.wikimedia.org/wiki/Category:${commons}`;
             element_commons_button.classList.remove("hiddenElement");
         } else {
