@@ -58,10 +58,11 @@ WHERE {
         # FILTER (geof:distance(?wd_location, ?center) <= ${maxDistanceKm})
 
         # # Extra details
+        # TODO: QLever currently doesn't support OPTIONAL inside SERVICE
         # OPTIONAL { ?item @${language}@rdfs:label ?wd_lang_label. }
         # OPTIONAL { ?item @en@rdfs:label ?wd_default_label. }
         # OPTIONAL { ?item @${language}@schema:description ?wd_descr. }
-        # OPTIONAL { ?item wdt:P373 ?_commons. }
+        # OPTIONAL { ?item wdt:P910?/wdt:P373 ?_commons. }
         # OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
         # OPTIONAL { ?item wdt:P18 ?_picture. }
     }

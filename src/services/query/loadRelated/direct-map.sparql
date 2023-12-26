@@ -35,6 +35,6 @@ WHERE {
     OPTIONAL { ?item rdfs:label ?label_es FILTER(LANG(?label_es) = "es") }
     OPTIONAL { ?item rdfs:label ?label_fr FILTER(LANG(?label_fr) = "fr") }
     OPTIONAL { ?item rdfs:label ?label_it FILTER(LANG(?label_it) = "it") }
-    OPTIONAL { ?item wdt:P373 ?commons. }
+    OPTIONAL { ?item wdt:P910?/wdt:P373 ?commons. }
     OPTIONAL { ?alias owl:sameAs ?item. }
 }
