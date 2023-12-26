@@ -25,6 +25,13 @@ export function setPageLocale() {
     metaLanguage.content = lang;
     document.head.appendChild(metaLanguage);
 
+    const preloadLang = document.createElement("link");
+    preloadLang.rel = "preload";
+    preloadLang.as = "fetch";
+    preloadLang.crossOrigin = "anonymous";
+    preloadLang.href = `locales/${lang}/common.json`;
+    document.head.appendChild(preloadLang);
+
     loadTranslator().then(t => {
         const title = document.head.querySelector<HTMLTitleElement>("title"),
             descr = document.head.querySelector<HTMLMetaElement>('meta[name="description"]'),
