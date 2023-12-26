@@ -204,7 +204,7 @@ WHERE {
     }
 
     OPTIONAL {
-        ?commons ^wdt:P373 ?wikidata.
+        ?wikidata wdt:P910?/wdt:P373 ?commons.
     }
 
     OPTIONAL {
