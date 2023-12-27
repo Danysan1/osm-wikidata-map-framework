@@ -3,6 +3,7 @@ export enum ColorSchemeID {
     gender = "gender",
     type = "type",
     country = "country",
+    occupation = "occupation",
     startCentury = "startCentury",
     endCentury = "endCentury",
     feature_source = "feature_source",
@@ -11,7 +12,7 @@ export enum ColorSchemeID {
     black = "black",
     red = "red",
     orange = "orange",
-};
+}
 
 export interface ColorScheme {
     /** i18n translation key for the label to be shown in the dropdown item for this color scheme */
@@ -46,6 +47,9 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     },
     country: {
         textKey: 'color_scheme.country', defaultText: "By country", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    },
+    occupation: {
+        textKey: 'color_scheme.occupation', defaultText: "By occupation", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
     startCentury: {
         textKey: 'color_scheme.start_century', defaultText: "By start/birth century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",

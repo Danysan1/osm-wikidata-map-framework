@@ -2,6 +2,7 @@ import { ColorSchemeID } from "../model/colorScheme";
 import typeStatsQuery from "./query/stats/type.sparql";
 import genderStatsQuery from "./query/stats/gender.sparql";
 import countryStatsQuery from "./query/stats/country.sparql";
+import occupationStatsQuery from "./query/stats/occupation.sparql";
 import startCenturyStatsQuery from "./query/stats/start-century.sparql";
 import endCenturyStatsQuery from "./query/stats/end-century.sparql";
 import { WikidataService } from "./WikidataService";
@@ -14,12 +15,14 @@ const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
     gender: "csv/wikidata_genders.csv",
     country: "csv/wikidata_countries.csv",
+    occupation: "csv/wikidata_occupations.csv",
 }
 
 export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
     type: typeStatsQuery,
     gender: genderStatsQuery,
     country: countryStatsQuery,
+    occupation: occupationStatsQuery,
     startCentury: startCenturyStatsQuery,
     endCentury: endCenturyStatsQuery,
 }
