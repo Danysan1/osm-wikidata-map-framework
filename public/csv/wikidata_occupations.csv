@@ -1,0 +1,112 @@
+Q1622272,university teacher,teacher,#ff0000
+Q37226,teacher,teacher,#ff0000
+Q121594,professor,teacher,#ff0000
+Q974144,educator,teacher,#ff0000
+Q82955,politician,politician,#bc002d
+Q193391,diplomat,politician,#bc002d
+Q599151,official,politician,#bc002d
+Q36180,writer,writer,#ef2b2d
+Q49757,poet,writer,#ef2b2d
+Q28389,screenwriter,writer,#ef2b2d
+Q214917,playwright,writer,#ef2b2d
+Q6625963,novelist,writer,#ef2b2d
+Q1607826,editor,writer,#ef2b2d
+Q39631,physician,physician,#006600
+Q774306,surgeon,physician,#006600
+Q42603,priest,priest,#169b62
+Q250867,Catholic priest,priest,#169b62
+Q611644,Catholic bishop,priest,#169b62
+Q25393460,Catholic deacon,priest,#169b62
+Q49476,arcibishop,priest,#169b62
+Q1028181,painter,painter,#436F4D
+Q42973,architect,architect,#F1BF00
+Q33999,actor,actor,#B22234
+Q10800557,film actor,actor,#B22234
+Q2259451,stage actor,actor,#B22234
+Q1930187,journalist,journalist,#C8102E
+Q47064,military personnel,military personnel,#00A1DE
+Q4991371,soldier,military personnel,#00A1DE
+Q189290,military officer,military personnel,#00A1DE
+Q753110,songwriter,songwriter,#003580
+Q36834,composer,songwriter,#003580
+Q1281618,sculptor,sculptor,#006aa7
+Q40348,lawyer,jurist,#c60c30
+Q185351,jurist,jurist,#c60c30
+Q16533,judge,jurist,#c60c30
+Q201788,historian,historian,#dc143c
+Q1792450,art historian,historian,#dc143c
+Q81096,engineer,engineer,#006a4e
+Q333634,translator,translator,#007FFF
+Q639669,musician,musician,#da291c
+Q177220,singer,musician,#da291c
+Q2865819,opera singer,musician,#da291c
+Q43845,businessperson,businessperson,#ed2939
+Q131524,enterpreneur,businessperson,#ed2939
+Q806798,banker,businessperson,#ed2939
+Q3455803,director,director,#0d5eaf
+Q2526255,film director,director,#0d5eaf
+Q170790,mathematician,mathematician,#ff0000
+Q2095549,aircraft pilot,aircraft pilot,#006600
+Q273108,condottiero,sovereign,#FF9B00
+Q116,monarch,sovereign,#FF9B00
+Q2304859,sovereign,sovereign,#FF9B00
+Q39018,emperor,sovereign,#FF9B00
+Q212948,partisan,partisan,#006847
+Q1234713,theologian,theologian,#002395
+Q937857,soccer player,athlete,#de2910
+Q2066131,athlete,athlete,#de2910
+Q155,Brazil,Brazil,#009b3a
+Q159,Russia,Russia,#d52b1e
+Q2184,Russian Soviet Federative Socialist Republic,Russia,#d52b1e
+Q34266,Russian Empire,Russia,#d52b1e
+Q139319,Russian Republic,Russia,#d52b1e
+Q2305208,Soviet Russia,Russia,#d52b1e
+Q183,Germany,Germany,#FFCC00
+Q713750,West Germany,Germany,#FFCC00
+Q16957,East Germany,Germany,#FFCC00
+Q41304,Weimar Republic,Germany,#FFCC00
+Q43287,German Empire,Germany,#FFCC00
+Q27306,Kingdom of Prussia,Germany,#FFCC00
+Q7318,Nazi Germany,Germany,#FFCC00
+Q151624,German Confederation,Germany,#FFCC00
+Q33496,Czechoslovakia,Czechoslovakia,#0000ff
+Q212,Ukraine,Ukraine,#005bbb
+Q243610,Ukrainian People's Republic,Ukraine,#005bbb
+Q133356,Ukrainian Soviet Socialist Republic,Ukraine,#005bbb
+Q1508143,Ukrainian State,Ukraine,#005bbb
+Q215,Slovenia,Slovenia,#005da4
+Q218,Romania,Romania,#002B7F
+Q222,Albania,Albania,#DA291C
+Q224,Croatia,Croatia,#FF0000
+Q213,Czech Republic,Czech Republic,#e8000d
+Q214,Slovakia,Slovakia,#e8000d
+Q237,Vatican City,Vatican City,#FFE000
+Q170174,Papal States,Vatican City,#FFE000
+Q241,Cuba,Cuba,#002a8f
+Q298,Chile,Chile,#0039a6
+Q334,Singapore,Singapore,#C73b3C
+Q403,Serbia,Serbia,#0c4076
+Q684030,Principality of Serbia,Serbia,#0c4076
+Q241748,Kingdom of Serbia,Serbia,#0c4076
+Q2415003,Kingdom of Serbia,Serbia,#0c4076
+Q414,Argentina,Argentina,#75AADB
+Q408,Australia,Australia,#FFCD00
+Q664,New Zealand,New Zealand,#000000
+Q668,India,India,#000080
+Q1775277,Dominion of India,India,#000080
+Q129286,British Raj,India,#000080
+Q83618,Maratha Empire,India,#000080
+Q794,Iran,Iran,#da0000
+Q63158027,Qajar Iran,Iran,#da0000
+Q107258515,Pahlavi Iran,Iran,#da0000
+Q18234383,Safavid Iran,Iran,#da0000
+Q801,Israel,Israel,#0038a8
+Q833,Malaysia,Malaysia,#FFD100
+Q865,Taiwan,Taiwan,#ff0000
+Q869,Thailand,Thailand,#00247D
+Q1081620,Siam,Thailand,#00247D
+Q928,Philippines,Philippines,#0038a8
+Q15180,Soviet Union,Soviet Union,#ff0000
+Q1747689,Ancient Rome,Ancient Rome,#ff0000
+Q12544,Byzantine Empire,Byzantine Empire,#ff0000
+Q12548,Holy Roman Empire,Holy Roman Empire,#ff0000
