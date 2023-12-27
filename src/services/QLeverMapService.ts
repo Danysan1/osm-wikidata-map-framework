@@ -151,12 +151,10 @@ export class QLeverMapService implements MapService {
                 osmEtymologyUnionBranches.push(`?osm ${wikidata_predicate} ?etymology. # Key is both filter and etymology`);
             }
 
-            if (non_filter_osm_wd_keys?.length) {
+            if (non_filter_osm_wd_predicate) {
                 osmEtymologyUnionBranches.push(`?osm ${filterKeysExpression}${non_filter_osm_wd_predicate} ?etymology. # Filter key + Etymology key`);
-            }
 
-            if (filter_tags_with_value?.length) {
-                filter_tags_with_value.forEach(tag => {
+                filter_tags_with_value?.forEach(tag => {
                     const predicate = keyPredicate(tag.split("=")[0]),
                         value = tag.split("=")[1];
                     osmEtymologyUnionBranches.push(`?osm ${predicate} '${value}'; ${non_filter_osm_wd_predicate} ?etymology. # Filter tag + Etymology key`);
