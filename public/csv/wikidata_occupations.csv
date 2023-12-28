@@ -1,112 +1,122 @@
-Q1622272,university teacher,teacher,#ff0000
-Q37226,teacher,teacher,#ff0000
-Q121594,professor,teacher,#ff0000
-Q974144,educator,teacher,#ff0000
+Q3400985,academic,academic,#ff0000
+Q1622272,university teacher,academic,#ff0000
+Q37226,teacher,academic,#ff0000
+Q16145150,music teacher,academic,#ff0000
+Q121594,professor,academic,#ff0000
+Q974144,educator,academic,#ff0000
+Q5428874,academic staff,academic,#ff0000
 Q82955,politician,politician,#bc002d
 Q193391,diplomat,politician,#bc002d
 Q599151,official,politician,#bc002d
-Q36180,writer,writer,#ef2b2d
-Q49757,poet,writer,#ef2b2d
-Q28389,screenwriter,writer,#ef2b2d
-Q214917,playwright,writer,#ef2b2d
-Q6625963,novelist,writer,#ef2b2d
-Q1607826,editor,writer,#ef2b2d
+Q15627169,trade unionist,politician,#bc002d
+Q3068305,salonnière,politician,#bc002d
+Q372436,statesperson,politician,#bc002d
+Q6673651,literary,literary,#ef2b2d
+Q36180,writer,literary,#ef2b2d
+Q49757,poet,literary,#ef2b2d
+Q28389,screenwriter,literary,#ef2b2d
+Q214917,playwright,literary,#ef2b2d
+Q487596,dramaturge,literary,#ef2b2d
+Q8178443,librettist,literary,#ef2b2d
+Q6625963,novelist,literary,#ef2b2d
+Q1607826,editor,literary,#ef2b2d
+Q4263842,literary critic,literary,#ef2b2d
+Q18814623,autobiographer,literary,#ef2b2d
+Q11774202,essayist,literary,#ef2b2d
+Q12144794,prose writer,literary,#ef2b2d
+Q4853732,children's writer,literary,#ef2b2d
+Q14467526,linguist,literary,#ef2b2d
 Q39631,physician,physician,#006600
 Q774306,surgeon,physician,#006600
-Q42603,priest,priest,#169b62
-Q250867,Catholic priest,priest,#169b62
-Q611644,Catholic bishop,priest,#169b62
-Q25393460,Catholic deacon,priest,#169b62
-Q49476,arcibishop,priest,#169b62
-Q1028181,painter,painter,#436F4D
+Q133485,rabbi,religious figure,#169b62
+Q42603,religious figure,religious figure,#169b62
+Q250867,Catholic priest,religious figure,#169b62
+Q611644,Catholic bishop,religious figure,#169b62
+Q25393460,Catholic deacon,religious figure,#169b62
+Q1469535,Latin Catholic priest,religious figure,#169b62
+Q49476,arcibishop,religious figure,#169b62
+Q831474,presbyter,religious figure,#169b62
+Q219477,missionary,religious figure,#169b62
+Q1234713,theologian,religious figure,#169b62
+Q42857,prophet,religious figure,#169b62
+Q432386,preacher,religious figure,#169b62
+Q3391743,visual artist,visual artist,#436F4D
+Q1028181,painter,visual artist,#436F4D
+Q15296811,drawer,visual artist,#436F4D
+Q1281618,sculptor,visual artist,#436F4D
+Q11569986,printmaker,visual artist,#436F4D
+Q329439,engraver,visual artist,#436F4D
+Q5322166,designer,visual artist,#436F4D
+Q627325,graphic designer,visual artist,#436F4D
 Q42973,architect,architect,#F1BF00
+Q14623005,architectural draftsperson,architect,#F1BF00
 Q33999,actor,actor,#B22234
 Q10800557,film actor,actor,#B22234
 Q2259451,stage actor,actor,#B22234
 Q1930187,journalist,journalist,#C8102E
+Q1642960,pundit,journalist,#C8102E
 Q47064,military personnel,military personnel,#00A1DE
 Q4991371,soldier,military personnel,#00A1DE
 Q189290,military officer,military personnel,#00A1DE
 Q753110,songwriter,songwriter,#003580
 Q36834,composer,songwriter,#003580
-Q1281618,sculptor,sculptor,#006aa7
 Q40348,lawyer,jurist,#c60c30
 Q185351,jurist,jurist,#c60c30
+Q1999841,Islamic jurist,jurist,#c60c30
 Q16533,judge,jurist,#c60c30
 Q201788,historian,historian,#dc143c
 Q1792450,art historian,historian,#dc143c
+Q3621491,archaeologist,historian,#dc143c
 Q81096,engineer,engineer,#006a4e
 Q333634,translator,translator,#007FFF
 Q639669,musician,musician,#da291c
 Q177220,singer,musician,#da291c
 Q2865819,opera singer,musician,#da291c
+Q158852,conductor,musician,#da291c
+Q1198887,music director,musician,#da291c
+Q14915627,musicologist,musician,#da291c
+Q486748,pianist,musician,#da291c
 Q43845,businessperson,businessperson,#ed2939
 Q131524,enterpreneur,businessperson,#ed2939
 Q806798,banker,businessperson,#ed2939
+Q1979607,financier,businessperson,#ed2939
+Q205375,inventor,businessperson,#ed2939
+Q12362622,philanthropist,businessperson,#ed2939
 Q3455803,director,director,#0d5eaf
+Q3387717,theatrical director,director,#0d5eaf
 Q2526255,film director,director,#0d5eaf
-Q170790,mathematician,mathematician,#ff0000
-Q2095549,aircraft pilot,aircraft pilot,#006600
+Q3282637,film producer,director,#0d5eaf
+Q901,scientist,scientist,#ff0000
+Q169470,physicist,scientist,#ff0000
+Q170790,mathematician,scientist,#ff0000
+Q593644,chemist,scientist,#ff0000
+Q864503,biologist,scientist,#ff0000
+Q188094,economist,scientist,#ff0000
+Q11063,astronomer,scientist,#ff0000
+Q901402,geographer,scientist,#ff0000
+Q378622,racing driver,pilot,#006600
+Q2095549,aircraft pilot,pilot,#006600
+Q3014296,motorcycle racer,pilot,#006600
+Q10349745,racing automobile driver,pilot,#006600
 Q273108,condottiero,sovereign,#FF9B00
 Q116,monarch,sovereign,#FF9B00
 Q2304859,sovereign,sovereign,#FF9B00
 Q39018,emperor,sovereign,#FF9B00
 Q212948,partisan,partisan,#006847
-Q1234713,theologian,theologian,#002395
+Q1397808,resistance fighter,partisan,#006847
+Q23833535,French Resistance fighter,partisan,#006847
 Q937857,soccer player,athlete,#de2910
 Q2066131,athlete,athlete,#de2910
-Q155,Brazil,Brazil,#009b3a
-Q159,Russia,Russia,#d52b1e
-Q2184,Russian Soviet Federative Socialist Republic,Russia,#d52b1e
-Q34266,Russian Empire,Russia,#d52b1e
-Q139319,Russian Republic,Russia,#d52b1e
-Q2305208,Soviet Russia,Russia,#d52b1e
-Q183,Germany,Germany,#FFCC00
-Q713750,West Germany,Germany,#FFCC00
-Q16957,East Germany,Germany,#FFCC00
-Q41304,Weimar Republic,Germany,#FFCC00
-Q43287,German Empire,Germany,#FFCC00
-Q27306,Kingdom of Prussia,Germany,#FFCC00
-Q7318,Nazi Germany,Germany,#FFCC00
-Q151624,German Confederation,Germany,#FFCC00
-Q33496,Czechoslovakia,Czechoslovakia,#0000ff
-Q212,Ukraine,Ukraine,#005bbb
-Q243610,Ukrainian People's Republic,Ukraine,#005bbb
-Q133356,Ukrainian Soviet Socialist Republic,Ukraine,#005bbb
-Q1508143,Ukrainian State,Ukraine,#005bbb
-Q215,Slovenia,Slovenia,#005da4
-Q218,Romania,Romania,#002B7F
-Q222,Albania,Albania,#DA291C
-Q224,Croatia,Croatia,#FF0000
-Q213,Czech Republic,Czech Republic,#e8000d
-Q214,Slovakia,Slovakia,#e8000d
-Q237,Vatican City,Vatican City,#FFE000
-Q170174,Papal States,Vatican City,#FFE000
-Q241,Cuba,Cuba,#002a8f
-Q298,Chile,Chile,#0039a6
-Q334,Singapore,Singapore,#C73b3C
-Q403,Serbia,Serbia,#0c4076
-Q684030,Principality of Serbia,Serbia,#0c4076
-Q241748,Kingdom of Serbia,Serbia,#0c4076
-Q2415003,Kingdom of Serbia,Serbia,#0c4076
-Q414,Argentina,Argentina,#75AADB
-Q408,Australia,Australia,#FFCD00
-Q664,New Zealand,New Zealand,#000000
-Q668,India,India,#000080
-Q1775277,Dominion of India,India,#000080
-Q129286,British Raj,India,#000080
-Q83618,Maratha Empire,India,#000080
-Q794,Iran,Iran,#da0000
-Q63158027,Qajar Iran,Iran,#da0000
-Q107258515,Pahlavi Iran,Iran,#da0000
-Q18234383,Safavid Iran,Iran,#da0000
-Q801,Israel,Israel,#0038a8
-Q833,Malaysia,Malaysia,#FFD100
-Q865,Taiwan,Taiwan,#ff0000
-Q869,Thailand,Thailand,#00247D
-Q1081620,Siam,Thailand,#00247D
-Q928,Philippines,Philippines,#0038a8
-Q15180,Soviet Union,Soviet Union,#ff0000
-Q1747689,Ancient Rome,Ancient Rome,#ff0000
-Q12544,Byzantine Empire,Byzantine Empire,#ff0000
-Q12548,Holy Roman Empire,Holy Roman Empire,#ff0000
+Q2309784,sport cyclist,athlete,#de2910
+Q4964182,philosopher,philosopher,#009b3a
+Q384593,police officer,officer,#d52b1e
+Q13386767,carabinier,officer,#d52b1e
+Q19801630,gendarme,officer,#d52b1e
+Q2374149,botanist,botanist,#FFCC00
+Q3242115,revolutionary,revolutionary,#0000ff
+Q131512,farmer,farmer,#005bbb
+Q10732476,art collector,art collector,#005da4
+Q11900058,explorer,explorer,#002B7F
+Q15977971,woodworker,artisan,#DA291C
+Q1294787,artisan,artisan,#DA291C
+Q326358,joiner,artisan,#DA291C
