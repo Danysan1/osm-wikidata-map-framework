@@ -46,6 +46,7 @@
         "gender": "Per genere",
         "type": "Per tipo",
         "country": "Per paese",
+        "occupation": "Per occupazione",
         "start_century": "Per secolo di inizio/nascita",
         "end_century": "Per secolo di fine/morte",
         "feature_picture": "Per disponibilità di immagini",
