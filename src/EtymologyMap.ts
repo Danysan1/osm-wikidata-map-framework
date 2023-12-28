@@ -1,4 +1,4 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillLayerSpecification, ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 import "@stadiamaps/maplibre-search-box/dist/style.css";
@@ -607,16 +607,22 @@ export class EtymologyMap extends Map {
         }
 
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_FILL_LAYER)) {
-            const spec: FillLayerSpecification = {
+            const spec: FillExtrusionLayerSpecification = {
                 'id': DETAILS_SOURCE + POLYGON_FILL_LAYER,
                 'source': DETAILS_SOURCE,
-                'type': 'fill',
+                'type': 'fill-extrusion',
                 "filter": createFilter("Polygon"),
                 "minzoom": minZoom,
                 'paint': {
-                    'fill-color': colorSchemes.blue.color,
-                    'fill-opacity': 0.3,
-                    'fill-outline-color': "rgba(0, 0, 0, 0)",
+                    'fill-extrusion-color': colorSchemes.blue.color,
+                    'fill-extrusion-opacity': 0.3,
+                    'fill-extrusion-height': [
+                        "case",
+                        ["has", "height"], ["+", 1, ["to-number", ["get", "height"]]],
+                        ["has", "building:levels"], ["*", 4, ["to-number", ["get", "building:levels"]]],
+                        ["has", "building"], 6,
+                        0
+                    ],
                 }
             };
             if (source_layer)
@@ -657,7 +663,7 @@ export class EtymologyMap extends Map {
                 [
                     [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
                     [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
-                    [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-color'],
+                    [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-extrusion-color'],
                     [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
                 ].forEach(([layerID, property]) => {
                     if (this?.getLayer(layerID)) {
