@@ -33,7 +33,6 @@ class OwmfFilterDAG(DAG):
     """
 
     def __init__(self,
-            upload_db_conn_id:str=None,
             prefix:str=None,
             days_before_cleanup:int=1,
             **kwargs
@@ -72,7 +71,6 @@ class OwmfFilterDAG(DAG):
 
         default_params={
             "prefix": prefix,
-            "upload_db_conn_id": upload_db_conn_id,
             "pg_path": pg_path,
         }
 

@@ -112,6 +112,12 @@ export interface EtymologyFeatureProperties {
      */
     picture?: string;
     /**
+     * Height of the feature in meters
+     * @type {number}
+     * @memberof EtymologyFeatureProperties
+     */
+    render_height?: number;
+    /**
      * Textual name of the etymology
      * @type {string}
      * @memberof EtymologyFeatureProperties
@@ -189,6 +195,7 @@ export function EtymologyFeaturePropertiesFromJSONTyped(json: any, ignoreDiscrim
         'osm_type': !exists(json, 'osm_type') ? undefined : json['osm_type'],
         'osm_id': !exists(json, 'osm_id') ? undefined : json['osm_id'],
         'picture': !exists(json, 'picture') ? undefined : json['picture'],
+        'render_height': !exists(json, 'render_height') ? undefined : json['render_height'],
         'text_etymology': !exists(json, 'text_etymology') ? undefined : json['text_etymology'],
         'text_etymology_descr': !exists(json, 'text_etymology_descr') ? undefined : json['text_etymology_descr'],
         'wikidata': !exists(json, 'wikidata') ? undefined : json['wikidata'],
@@ -221,6 +228,7 @@ export function EtymologyFeaturePropertiesToJSON(value?: EtymologyFeaturePropert
         'osm_type': value.osm_type,
         'osm_id': value.osm_id,
         'picture': value.picture,
+        'render_height': value.render_height,
         'text_etymology': value.text_etymology,
         'text_etymology_descr': value.text_etymology_descr,
         'wikidata': value.wikidata,

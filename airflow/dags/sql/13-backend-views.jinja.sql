@@ -4,8 +4,8 @@ SELECT
     el.el_id as id,
     el.el_osm_type AS osm_type,
     el.el_osm_id AS osm_id,
-    el.el_osm_id IS NOT NULL AS from_osm,
-    el.el_osm_id IS NULL AS from_wikidata,
+    CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
+    CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
     STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     el.el_tags->>'name' AS name,
     el.el_tags->>'name:ar' AS "name:ar",
@@ -22,6 +22,12 @@ SELECT
     el.el_tags->>'official_name' AS official_name,
     el.el_tags->>'{{var.value.osm_text_key}}' AS text_etymology,
     el.el_tags->>'{{var.value.osm_description_key}}' AS text_etymology_descr,
+    CASE
+        WHEN el.el_tags ? 'height' AND el.el_tags->>'height' ~ '^\d+$' THEN (el.el_tags->>'height')::INTEGER
+        WHEN el.el_tags ? 'building:levels' AND el.el_tags->>'building:levels' ~ '^\d+$' THEN (el.el_tags->>'building:levels')::INTEGER * 4
+        WHEN el.el_tags ? 'building' THEN 6
+        ELSE NULL
+    END AS render_height,
     el.el_commons AS commons,
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
@@ -37,8 +43,7 @@ SELECT
         'propagated', et_recursion_depth != 0,
         'wd_id', wd.wd_id,
         'wikidata', wd.wd_wikidata_cod
-    )) AS etymologies,
-    COUNT(wd.wd_id) AS num_etymologies
+    )) AS etymologies
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id

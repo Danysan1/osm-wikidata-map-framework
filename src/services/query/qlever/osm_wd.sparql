@@ -11,8 +11,11 @@ SELECT
     ?location
     (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
     (?osm_descr AS ?itemDescription)
-    ?image
     ?wikimedia_commons
+    ?image
+    ?height
+    ?levels
+    ?building
     (true AS ?from_osm)
     (false AS ?from_wikidata)
 WHERE {
@@ -37,6 +40,9 @@ WHERE {
     OPTIONAL { ?osm <https://www.openstreetmap.org/wiki/Key:name:${language}> ?osm_lang_name. }
     OPTIONAL { ?osm osmkey:name ?osm_default_name. }
     OPTIONAL { ?osm osmkey:description ?osm_descr. }
-    OPTIONAL { ?osm osmkey:image ?image. }
     OPTIONAL { ?osm osmkey:wikimedia_commons ?wikimedia_commons. }
+    OPTIONAL { ?osm osmkey:image ?image. }
+    OPTIONAL { ?osm osmkey:height ?height. }
+    OPTIONAL { ?osm osmkey:building:levels ?levels. }
+    OPTIONAL { ?osm osmkey:building ?building. }
 }

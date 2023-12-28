@@ -152,7 +152,8 @@ export class FeatureElement extends HTMLDivElement {
 
         const src_osm_and_wd = detail_container.querySelector<HTMLAnchorElement>('.src_osm_and_wd'),
             src_wd = detail_container.querySelector<HTMLAnchorElement>('.feature_src_wd'),
-            show_src_wd = properties.from_wikidata && properties.from_wikidata_entity;
+            from_entity = properties.from_wikidata_entity || properties.wikidata,
+            show_src_wd = properties.from_wikidata && from_entity;
         if (!src_osm_and_wd)
             console.warn("Missing .src_osm_and_wd");
         else if (show_src_osm && show_src_wd)
@@ -163,7 +164,8 @@ export class FeatureElement extends HTMLDivElement {
         if (!src_wd) {
             console.warn("Missing .feature_src_wd");
         } else if (show_src_wd) {
-            const wdURL = `https://www.wikidata.org/wiki/${properties.from_wikidata_entity}#${properties.from_wikidata_prop || "P625"}`;
+            const from_prop = properties.from_wikidata_prop || "P625",
+                wdURL = `https://www.wikidata.org/wiki/${from_entity}#${from_prop}`;
             if (debug) console.info("Showing WD feature source", { properties, wdURL, src_wd });
             src_wd.href = wdURL;
             src_wd.classList.remove("hiddenElement");

@@ -26,6 +26,9 @@ SELECT
     #(SAMPLE(?_picture) AS ?picture)
     (SAMPLE(?_wikimedia_commons) AS ?wikimedia_commons)
     (SAMPLE(?_image) AS ?image)
+    (SAMPLE(?_height) AS ?height)
+    (SAMPLE(?_levels) AS ?levels)
+    (SAMPLE(?_building) AS ?building)
     (true AS ?from_osm) # TODO check if bound - https://github.com/ad-freiburg/qlever/wiki/Current-deviations-from-the-SPARQL-1.1-standard#sparql-11-features-that-are-not-yet-implemented-but-have-an-easy-workaround 
     (true AS ?from_wikidata)
 WHERE {
@@ -76,6 +79,9 @@ WHERE {
 	OPTIONAL { ?osm osmkey:wikipedia ?_wikipedia }
     OPTIONAL { ?osm osmkey:wikimedia_commons ?_wikimedia_commons. }
     OPTIONAL { ?osm osmkey:image ?_image. }
+    OPTIONAL { ?osm osmkey:height ?_height. }
+    OPTIONAL { ?osm osmkey:building:levels ?_levels. }
+    OPTIONAL { ?osm osmkey:building ?_building. }
 }
 GROUP BY ?item ?osm ?etymology
 ${limit}

@@ -703,8 +703,8 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
-            dest_format = "GeoJSON", # TODO switch to FlatGeobuf when https://github.com/felt/tippecanoe/issues/180 is fixed
-            dest_path = join(workdir,'etymology_map.geojson'), # TODO switch to .fgb
+            dest_format = "FlatGeobuf",
+            dest_path = join(workdir,'etymology_map.fgb'),
             query = "SELECT * FROM owmf.etymology_map_dump",
             doc_md=    """
             # FlatGeobuf dump
@@ -719,8 +719,8 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
-            dest_format = "GeoJSON", # TODO switch to FlatGeobuf when https://github.com/felt/tippecanoe/issues/180 is fixed
-            dest_path = join(workdir,'elements.geojson'), # TODO switch to .fgb
+            dest_format = "FlatGeobuf",
+            dest_path = join(workdir,'elements.fgb'),
             query = "SELECT * FROM owmf.vm_elements",
             doc_md=    """
             # FlatGeobuf elements dump
@@ -743,7 +743,7 @@ class OwmfDbInitDAG(DAG):
             task_id = "generate_etymology_map_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
-            input_file = join(workdir,'etymology_map.geojson'), # TODO switch to .fgb when https://github.com/felt/tippecanoe/issues/180 is fixed
+            input_file = join(workdir,'etymology_map.fgb'),
             output_file = join(workdir,'etymology_map.pmtiles'),
             layer_name = "etymology_map",
             min_zoom = 13,
@@ -758,7 +758,7 @@ class OwmfDbInitDAG(DAG):
             task_id = "generate_elements_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
-            input_file = join(workdir,'elements.geojson'), # TODO switch to .fgb when https://github.com/felt/tippecanoe/issues/180 is fixed
+            input_file = join(workdir,'elements.fgb'),
             output_file = join(workdir,'elements.pmtiles'),
             layer_name = "elements",
             min_zoom = 1,
