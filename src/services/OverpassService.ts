@@ -149,7 +149,6 @@ export class OverpassService implements MapService {
 
         feature.properties.commons = typeof feature.properties.wikimedia_commons === "string" ? commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1) : undefined;
         feature.properties.picture = (typeof feature.properties.wikimedia_commons === "string" ? commonsFileRegex.exec(feature.properties.wikimedia_commons)?.at(1) : undefined) || (typeof feature.properties.image === "string" ? commonsFileRegex.exec(feature.properties.image)?.at(1) : undefined);
-        console.debug("transformFeature", feature.properties)
 
         if (feature.properties["name:" + this.language])
             feature.properties.name = feature.properties["name:" + this.language];
