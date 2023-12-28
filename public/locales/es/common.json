@@ -46,6 +46,7 @@
         "gender": "Por genero",
         "type": "Por tipo",
         "country": "Por país",
+        "occupation": "Por ocupación",
         "start_century": "Por siglo de inicio/nacimiento",
         "end_century": "Por siglo de fin/muerte",
         "feature_picture": "Por disponibilidad de imágenes",
@@ -81,6 +82,7 @@
     "change_language": "Cambiar idioma",
     "choose_basemap": "Elige el fondo del mapa",
     "choose_projection": "Elija la proyección del mapa",
-    "overpass_turbo_query": "Consulta OverpassQL en Overpass Turbo",
-    "wdqs_query": "Consulta SPARQL en Wikidata Query Service"
+    "overpass_turbo_query": "Consulta fuente OverpassQL en Overpass Turbo",
+    "wdqs_query": "Consulta SPARQL de origen en Wikidata Query Service",
+    "qlever_query": "Consulta SPARQL de origen en QLever UI"
 }
