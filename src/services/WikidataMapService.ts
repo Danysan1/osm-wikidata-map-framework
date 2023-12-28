@@ -193,6 +193,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                         osm_id,
                         osm_type,
                         picture: row.picture?.value,
+                        render_height: parseInt(row.height?.value) || (parseInt(row.levels?.value) * 4) || undefined,
                         wikidata: feature_wd_id,
                         wikidata_alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikipedia: row.wikipedia?.value,

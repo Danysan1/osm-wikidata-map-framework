@@ -29,6 +29,7 @@ Q14467526,linguist,literary,#ef2b2d
 Q39631,physician,physician,#006600
 Q774306,surgeon,physician,#006600
 Q133485,rabbi,religious figure,#169b62
+Q733786,monk,religious figure,#169b62
 Q42603,religious figure,religious figure,#169b62
 Q250867,Catholic priest,religious figure,#169b62
 Q611644,Catholic bishop,religious figure,#169b62
@@ -48,6 +49,7 @@ Q11569986,printmaker,visual artist,#436F4D
 Q329439,engraver,visual artist,#436F4D
 Q5322166,designer,visual artist,#436F4D
 Q627325,graphic designer,visual artist,#436F4D
+Q33231,photographer,visual artist,#436F4D
 Q42973,architect,architect,#F1BF00
 Q14623005,architectural draftsperson,architect,#F1BF00
 Q33999,actor,actor,#B22234
@@ -76,6 +78,8 @@ Q158852,conductor,musician,#da291c
 Q1198887,music director,musician,#da291c
 Q14915627,musicologist,musician,#da291c
 Q486748,pianist,musician,#da291c
+Q765778,organist,musician,#da291c
+Q1259917,violinist,musician,#da291c
 Q43845,businessperson,businessperson,#ed2939
 Q131524,enterpreneur,businessperson,#ed2939
 Q806798,banker,businessperson,#ed2939
@@ -94,6 +98,9 @@ Q864503,biologist,scientist,#ff0000
 Q188094,economist,scientist,#ff0000
 Q11063,astronomer,scientist,#ff0000
 Q901402,geographer,scientist,#ff0000
+Q520549,geologist,scientist,#ff0000
+Q1662561,paleontologist,scientist,#ff0000
+Q18805,naturalist,scientist,#ff0000
 Q378622,racing driver,pilot,#006600
 Q2095549,aircraft pilot,pilot,#006600
 Q3014296,motorcycle racer,pilot,#006600

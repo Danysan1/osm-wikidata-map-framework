@@ -3,9 +3,15 @@
         "type": true,
         "id": true
     },
-    "linear_tags": ["area=no", "junction=roundabout"],
+    "linear_tags": [
+        "area=no",
+        "junction=roundabout"
+    ],
     "area_tags": null,
     "include_tags": [
+        "building",
+        "building:levels",
+        "height",
         "highway",
         "name",
         "alt_name",

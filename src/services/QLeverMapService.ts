@@ -307,6 +307,7 @@ export class QLeverMapService implements MapService {
                             from_wikidata: feature_from_wikidata,
                             from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                             from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+                            render_height: parseInt(row.height?.value) || (parseInt(row.levels?.value) * 4) || row.building?.value ? 6 : 0,
                             name: row.itemLabel?.value,
                             osm_id,
                             osm_type,

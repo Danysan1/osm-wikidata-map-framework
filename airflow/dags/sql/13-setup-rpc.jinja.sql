@@ -42,8 +42,7 @@ BEGIN
             'propagated', et_recursion_depth != 0,
             'wd_id', wd.wd_id,
             'wikidata', wd.wd_wikidata_cod
-        )) AS etymologies,
-        COUNT(wd.wd_id) AS num_etymologies
+        )) AS etymologies
     FROM owmf.element AS el
     LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
     LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id

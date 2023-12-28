@@ -567,6 +567,9 @@ components:
                   type: string
                   description: Title of a Wikimedia Commons picture for this feature
                   example: "File:Colosseo 2020.jpg"
+                render_height:
+                  type: integer
+                  description: Height of the feature in meters
                 text_etymology:
                   type: string
                   description: Textual name of the etymology

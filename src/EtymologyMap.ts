@@ -612,17 +612,11 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'fill-extrusion',
                 "filter": createFilter("Polygon"),
-                "minzoom": minZoom,
-                'paint': {
+                "minzoom": minZoom + 2,
+                'paint': { // https://maplibre.org/maplibre-gl-js/docs/examples/3d-buildings/
                     'fill-extrusion-color': colorSchemes.blue.color,
                     'fill-extrusion-opacity': 0.3,
-                    'fill-extrusion-height': [
-                        "case",
-                        ["has", "height"], ["+", 1, ["to-number", ["get", "height"]]],
-                        ["has", "building:levels"], ["*", 4, ["to-number", ["get", "building:levels"]]],
-                        ["has", "building"], 6,
-                        0
-                    ],
+                    'fill-extrusion-height': ["to-number", ["get", "render_height"]],
                 }
             };
             if (source_layer)
