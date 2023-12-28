@@ -46,6 +46,7 @@
         "gender": "Efter køn",
         "type": "Efter type",
         "country": "Efter land",
+        "occupation": "Efter beskæftigelse",
         "start_century": "Efter start/fødselsårhundrede",
         "end_century": "Efter slut/dødsårhundrede",
         "feature_picture": "Efter billedtilgængelighed",
@@ -81,6 +82,7 @@
     "change_language": "Skift sprog",
     "choose_basemap": "Vælg baggrundsstil",
     "choose_projection": "Vælg kortprojektion",
-    "overpass_turbo_query": "OverpassQL-forespørgsel på Overpass Turbo",
-    "wdqs_query": "SPARQL-forespørgsel på Wikidata Query Service"
+    "overpass_turbo_query": "Kilde OverpassQL-forespørgslel på Overpass Turbo",
+    "wdqs_query": "Kilden SPARQL-forespørgsel på Wikidata Query Service",
+    "qlever_query": "SPARQL-forespørgsel på QLever UI"
 }
