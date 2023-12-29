@@ -141,7 +141,13 @@ export class OverpassService implements MapService {
             osm_id = feature.properties.id ? parseInt(feature.properties.id.split("/")[1]) : undefined;
         feature.properties.osm_id = osm_id;
         feature.properties.osm_type = osm_type;
-        feature.properties.render_height = parseInt(feature.properties.height) || parseInt(feature.properties["building:levels"]) * 4 || feature.properties.building ? 6 : 0;
+
+        if (typeof feature.properties.height === "string")
+            feature.properties.render_height = parseInt(feature.properties.height);
+        else if (typeof feature.properties["building:levels"] === "string")
+            feature.properties.render_height = parseInt(feature.properties["building:levels"]) * 4;
+        else if (feature.properties.building)
+            feature.properties.render_height = 6;
 
         if (osm_text_key)
             feature.properties.text_etymology = feature.properties[osm_text_key];
