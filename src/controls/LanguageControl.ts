@@ -1,4 +1,4 @@
-import { IControl } from 'maplibre-gl';
+import type { IControl } from 'maplibre-gl';
 
 // import { IControl } from 'mapbox-gl';
 
@@ -55,7 +55,7 @@ export class LanguageControl implements IControl {
         translateCell.appendChild(translateLink);
         languageRow.appendChild(translateCell);
 
-        languages.filter(lang => lang !== language).forEach((lang) => {
+        languages.forEach((lang) => {
             const cell = document.createElement("td"),
                 link = document.createElement("button"),
                 flagImg = languageToDomElement(lang);
@@ -78,7 +78,7 @@ export class LanguageControl implements IControl {
 
         const languageCell = document.createElement("td"),
             languageButton = document.createElement("button");
-        languageButton.appendChild(languageToDomElement(language));
+        languageButton.appendChild(languageToDomElement("Translate"));
         loadTranslator().then(t => {
             const title = t("change_language", "Change language");
             languageButton.title = title;
