@@ -467,11 +467,10 @@ services:
     ports:
       - "${owmf_swagger_port:-8001}:8080"
     volumes:
-      - ./openapi/owmf.yaml:/usr/share/nginx/html/owmf.yaml
       - ./openapi/overpass.yaml:/usr/share/nginx/html/overpass.yaml
       - ./openapi/wikidata.yaml:/usr/share/nginx/html/wikidata.yaml
     environment:
-      - API_URL=owmf.yaml
+      - API_URL=overpass.yaml
     healthcheck:
       test: ["CMD", "curl", "--fail", "http://localhost:80/"]
       interval: 20s
@@ -479,8 +478,7 @@ services:
       retries: 5
     restart: unless-stopped
     profiles:
-      - dev
-      - lambda-dev
+      - swagger
 
   owmf-web-dev:
     build:

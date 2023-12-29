@@ -1,5 +1,5 @@
 import Dexie, { Table } from "dexie";
-import { EtymologyDetails } from "../model/feature";
+import { EtymologyDetails } from "../model/EtymologyDetails";
 import { debug, getConfig } from "../config";
 
 interface DetailsRow {

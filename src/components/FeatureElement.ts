@@ -8,8 +8,9 @@ import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n"
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
 import { imageToDomElement } from "./CommonsImageElement";
 import { logErrorMessage } from "../monitoring";
-import { EtymologyDetails } from '../model/feature';
-import { Etymology, EtymologyFeatureProperties } from '../generated/owmf';
+import type { EtymologyDetails } from '../model/EtymologyDetails';
+import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
+import type { Etymology } from '../model/Etymology';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
 
 export class FeatureElement extends HTMLDivElement {

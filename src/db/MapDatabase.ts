@@ -1,9 +1,9 @@
 import Dexie, { Table } from 'dexie';
 import { debug, getConfig } from '../config';
-import { EtymologyResponse } from '../generated/owmf';
-import { BBox, GeoJSON } from 'geojson';
+import type { EtymologyResponse } from '../model/EtymologyResponse';
+import type { BBox } from 'geojson';
 
-type MapRow = GeoJSON & EtymologyResponse & { id?: number };
+type MapRow = EtymologyResponse & { id?: number };
 
 export class MapDatabase extends Dexie {
     public maps!: Table<MapRow, number>;

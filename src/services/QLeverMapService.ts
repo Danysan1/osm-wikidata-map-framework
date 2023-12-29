@@ -11,14 +11,15 @@ import wd_direct_query from "./query/qlever/wd_direct.sparql";
 import wd_base_query from "./query/qlever/wd_base.sparql";
 import { debug, getConfig, getJsonConfig, getKeyID } from "../config";
 import { parse as parseWKT } from "wellknown";
-import { Feature as GeoJsonFeature, GeoJSON, GeoJsonProperties, Point, BBox } from "geojson";
-import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
+import { Point, BBox } from "geojson";
+import type { Etymology } from "../model/Etymology";
+import type { EtymologyResponse, EtymologyFeature } from "../model/EtymologyResponse";
+
 import { logErrorMessage } from "../monitoring";
 import { MapDatabase } from "../db/MapDatabase";
 import { MapService } from "./MapService";
 import { Configuration, SparqlApi, SparqlBackend } from "../generated/sparql";
 
-export type Feature = GeoJsonFeature<Point, GeoJsonProperties> & EtymologyFeature;
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
  * Translates an OSM key to a Wikidata predicate.
@@ -45,15 +46,15 @@ export class QLeverMapService implements MapService {
         return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(sourceID);
     }
 
-    public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
+    public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
         return this.fetchMapData(sourceID, bbox);
     }
 
-    public fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+    public fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
         return this.fetchMapData(sourceID, bbox);
     }
 
-    private async fetchMapData(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+    private async fetchMapData(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getMap(sourceID, bbox, language);
         if (out) {
@@ -226,7 +227,7 @@ export class QLeverMapService implements MapService {
             ).toFixed(4));
     }
 
-    private featureReducer(acc: Feature[], row: any): Feature[] {
+    private featureReducer(acc: EtymologyFeature[], row: any): EtymologyFeature[] {
         if (!row.location?.value) {
             logErrorMessage("Invalid response from Wikidata (no location)", "warning", row);
             return acc;
@@ -252,7 +253,7 @@ export class QLeverMapService implements MapService {
                     return true; // Both features have the same Wikidata ID
 
                 // Both features have no Wikidata ID, check if they have the same coordinates
-                return feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
+                return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
             if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
