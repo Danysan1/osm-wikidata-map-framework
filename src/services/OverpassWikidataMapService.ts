@@ -1,15 +1,14 @@
 import { debug, getConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
-import { Etymology, EtymologyFeature, EtymologyFeaturePropertiesOsmTypeEnum, EtymologyOsmWdJoinFieldEnum, EtymologyResponse } from "../generated/owmf";
-import { MapService } from "./MapService";
+import type { EtymologyResponse } from "../model/EtymologyResponse";
+import type { OsmType } from "../model/EtymologyFeatureProperties";
+import type { Etymology, EtymologyOsmWdJoinFieldEnum } from "../model/Etymology";
+import type { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
 import { WikidataMapService } from "./WikidataMapService";
-import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
+import type { BBox } from "geojson";
 
-type FeatureCollection = GeoJSON & EtymologyResponse;
-type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
-
-const JOIN_FIELD_MAP: Record<EtymologyFeaturePropertiesOsmTypeEnum, EtymologyOsmWdJoinFieldEnum> = {
+const JOIN_FIELD_MAP: Record<OsmType, EtymologyOsmWdJoinFieldEnum> = {
     node: "P11693",
     way: "P10689",
     relation: "P402"
@@ -55,29 +54,27 @@ export class OverpassWikidataMapService implements MapService {
         if (!overpassSourceID || !wikidataSourceID)
             throw new Error(`Invalid combined details sourceID: "${sourceID}"`);
 
-        const out = await this.fetchAndMergeMapData(
+        const out: EtymologyResponse = await this.fetchAndMergeMapData(
             "details-" + sourceID,
             () => this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
             () => this.wikidataService.fetchMapElementDetails(wikidataSourceID, bbox),
             bbox
         );
         out.features = out.features.filter(
-            (feature: Feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
+            (feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
-        out.etymology_count = out.features.reduce(
-            (acc, feature) => acc + (feature.properties?.etymologies?.length || 0),
-            0
-        );
+        out.etymology_count = out.features.map(feature => feature.properties?.etymologies?.length || 0)
+            .reduce((acc: number, num: number) => acc + num, 0);
         if (debug) console.debug(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 
     private async fetchAndMergeMapData(
         sourceID: string,
-        fetchOverpass: () => Promise<FeatureCollection>,
-        fetchWikidata: () => Promise<FeatureCollection>,
+        fetchOverpass: () => Promise<EtymologyResponse>,
+        fetchWikidata: () => Promise<EtymologyResponse>,
         bbox: BBox
-    ): Promise<FeatureCollection> {
+    ): Promise<EtymologyResponse> {
         let out = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
             if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { sourceID, bbox, language: this.language, out });
@@ -100,9 +97,9 @@ export class OverpassWikidataMapService implements MapService {
         return out;
     }
 
-    private mergeMapData(overpassData: FeatureCollection, wikidataData: FeatureCollection): FeatureCollection {
-        const out = wikidataData.features.reduce((acc, wikidataFeature: Feature) => {
-            const existingFeaturesToMerge = acc.features.filter((overpassFeature: Feature) => {
+    private mergeMapData(overpassData: EtymologyResponse, wikidataData: EtymologyResponse): EtymologyResponse {
+        const out = wikidataData.features.reduce((acc, wikidataFeature) => {
+            const existingFeaturesToMerge = acc.features.filter((overpassFeature) => {
                 if (overpassFeature.properties?.from_wikidata === true)
                     return false; // Already merged with another Wikidata feature => ignore
 
@@ -110,7 +107,7 @@ export class OverpassWikidataMapService implements MapService {
                     overpassFeature.properties.wikidata === wikidataFeature.properties?.wikidata ||
                     overpassFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
                 )) {
-                    wikidataFeature.properties.etymologies?.forEach(ety => {
+                    wikidataFeature.properties?.etymologies?.forEach(ety => {
                         ety.osm_wd_join_field = "OSM";
                         ety.from_osm_id = overpassFeature.properties?.osm_id;
                         ety.from_osm_type = overpassFeature.properties?.osm_type;
@@ -130,7 +127,7 @@ export class OverpassWikidataMapService implements MapService {
             if (!existingFeaturesToMerge.length)
                 acc.features.push(wikidataFeature); // No existing OSM feature to merge with => Add the standalone Wikidata feature
 
-            existingFeaturesToMerge.forEach((existingFeature: Feature) => {
+            existingFeaturesToMerge.forEach((existingFeature) => {
                 if (!existingFeature.properties)
                     existingFeature.properties = {};
                 existingFeature.properties.from_wikidata = true;

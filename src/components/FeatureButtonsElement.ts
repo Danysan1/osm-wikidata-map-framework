@@ -1,9 +1,9 @@
-import { Point, LineString, Polygon, MultiPolygon } from "geojson";
+import type { Position } from "geojson";
 import { debug, getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
-import { EtymologyDetails } from '../model/feature';
-import { EtymologyFeature, EtymologyFeatureProperties } from '../generated/owmf';
+import type { EtymologyDetails } from '../model/EtymologyDetails';
 import { setFragmentParams } from '../fragment';
+import type { EtymologyFeature } from "../model/EtymologyResponse";
 
 export class FeatureButtonsElement extends HTMLDivElement {
     private _destinationZoom = 12;
@@ -114,12 +114,18 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_osm_button.classList.add("hiddenElement");
         }
 
-        let coord = (this.feature.geometry as Point | LineString | Polygon | MultiPolygon).coordinates;
-        while (Array.isArray(coord) && Array.isArray(coord[0])) {
-            coord = coord[0];
+        let pos: Position | undefined;
+        if (this.feature.geometry.type === "Point") {
+            pos = this.feature.geometry.coordinates;
+        } else if (this.feature.geometry.type === "LineString") {
+            pos = this.feature.geometry.coordinates[0];
+        } else if (this.feature.geometry.type === "Polygon") {
+            pos = this.feature.geometry.coordinates[0][0];
+        } else if (this.feature.geometry.type === "MultiPolygon") {
+            pos = this.feature.geometry.coordinates[0][0][0];
         }
-        const lon = typeof coord[0] === "number" ? coord[0] : undefined,
-            lat = typeof coord[1] === "number" ? coord[1] : undefined;
+        const lon = pos?.at(0),
+            lat = pos?.at(1);
 
         const element_matcher_button = detail_container.querySelector<HTMLAnchorElement>('.element_matcher_button'),
             show_osm_matcher = osm_full_id && !properties?.wikidata && lat !== undefined && lon !== undefined,

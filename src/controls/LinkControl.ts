@@ -3,9 +3,7 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'ma
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 
 import { debug } from '../config';
-import { logErrorMessage } from '../monitoring';
-import { EtymologyResponse } from '../generated/owmf';
-import { GeoJSON } from 'geojson';
+import { EtymologyResponse } from '../model/EtymologyResponse';
 
 export class LinkControl implements IControl {
     private container?: HTMLDivElement;

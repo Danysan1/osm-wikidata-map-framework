@@ -1,24 +1,24 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, AddLayerObject, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 import "@stadiamaps/maplibre-search-box/dist/style.css";
 
-// import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, IControl, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource } from 'mapbox-gl';
+// import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'mapbox-gl';
 // import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
-import { getCorrectFragmentParams, getFragmentParams, setFragmentParams } from './fragment';
+import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { debug, getBoolConfig, getConfig } from './config';
-import { GeoJSON, BBox } from 'geojson';
+import type { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
 import './style.css';
 import { Protocol } from 'pmtiles';
-import { MapService } from './services/MapService';
+import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
-import { BackgroundStyle } from './model/backgroundStyle';
+import type { BackgroundStyle } from './model/backgroundStyle';
 
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     PMTILES_PREFIX = "pmtiles",
@@ -1021,12 +1021,14 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
      */
     private onClusterClick(layerName: string, e: MapMouseEvent) {
-        const feature = this.getClickedClusterFeature(layerName, e),
-            center: LngLatLike = (feature.geometry as any).coordinates;
-        this.easeTo({
-            center: center,
-            zoom: this.getZoom() + 3
-        });
+        const feature = this.getClickedClusterFeature(layerName, e);
+        if (feature.geometry.type === "Point") {
+            const center = feature.geometry.coordinates as LngLatLike;
+            this.easeTo({
+                center: center,
+                zoom: this.getZoom() + 3
+            });
+        }
     }
 
     private getClickedClusterFeature(layerId: string, event: MapMouseEvent): GeoJSONFeature {

@@ -3,7 +3,8 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } f
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent, Popup } from 'mapbox-gl';
 
 import { debug } from '../config';
-import { Etymology, EtymologyFeature, EtymologyResponse } from '../generated/owmf';
+import type { Etymology } from '../model/Etymology';
+import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
 import { loadTranslator } from '../i18n';
 

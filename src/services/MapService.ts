@@ -1,5 +1,5 @@
-import { ElementResponse, EtymologyResponse } from "../generated/owmf";
-import { GeoJSON, BBox } from "geojson";
+import type { EtymologyResponse } from "../model/EtymologyResponse";
+import type { BBox } from "geojson";
 
 export interface MapService {
     /**
@@ -10,10 +10,10 @@ export interface MapService {
     /**
      * Fetch elements for clustering for low-zoom map view in the given bounding box.
      */
-    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse>;
+    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<EtymologyResponse>;
 
     /**
      * Fetch elements with details for high-zoom map view in the given bounding box.
      */
-    fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse>;
+    fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<EtymologyResponse>;
 }

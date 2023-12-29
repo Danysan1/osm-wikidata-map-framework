@@ -8,7 +8,8 @@ import { debug, getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { TFunction } from 'i18next';
-import { Etymology, EtymologyFeature, GeoJSONFeatureID } from '../generated/owmf';
+import { Etymology } from '../model/Etymology';
+import { EtymologyFeature } from '../model/EtymologyResponse';
 import { showLoadingSpinner } from '../snackbar';
 import { logErrorMessage } from '../monitoring';
 import { WikidataStatsService, statsQueries } from '../services';
@@ -297,8 +298,8 @@ class EtymologyColorControl extends DropdownControl {
         this.calculateAndLoadChartData(
             ColorSchemeID.picture,
             (features: EtymologyFeature[]) => {
-                const with_picture_IDs = new Set<GeoJSONFeatureID>(),
-                    without_picture_IDs = new Set<GeoJSONFeatureID>();
+                const with_picture_IDs = new Set<string | number>(),
+                    without_picture_IDs = new Set<string | number>();
                 features.forEach((feature: EtymologyFeature) => {
                     const id = feature.id || feature.properties?.wikidata || feature.properties?.osm_type + '/' + feature.properties?.osm_id;
                     if (feature.properties?.picture || feature.properties?.commons)

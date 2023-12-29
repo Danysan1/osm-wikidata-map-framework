@@ -1,12 +1,12 @@
 import { debug, getConfig, getJsonConfig, getKeyID } from "../config";
-import { GeoJSON, BBox, Feature as GeoJSONFeature, Geometry, GeoJsonProperties } from "geojson";
-import { ElementResponse, Etymology, EtymologyFeature, EtymologyResponse } from "../generated/owmf";
+import type { BBox } from "geojson";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import { MapDatabase } from "../db/MapDatabase";
 import osmtogeojson from "osmtogeojson";
-import { MapService } from "./MapService";
+import type { MapService } from "./MapService";
+import type { Etymology } from "../model/Etymology";
+import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
 
-type Feature = GeoJSONFeature<Geometry, GeoJsonProperties> & EtymologyFeature;
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
 
@@ -39,26 +39,26 @@ export class OverpassService implements MapService {
         return true;
     }
 
-    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<GeoJSON & ElementResponse> {
+    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
         return this.fetchMapData(
             "out ids center ${maxElements};", "elements-" + sourceID, bbox
         );
     }
 
-    async fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
+    async fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
         const out = await this.fetchMapData(
             "out body ${maxElements}; >; out skel qt;", "details-" + sourceID, bbox
         );
         out.features = out.features.filter(
-            (feature: Feature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && sourceID.endsWith("_wd"))
+            (feature: EtymologyFeature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && sourceID.endsWith("_wd"))
         );
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
         if (debug) console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 
-    private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<GeoJSON & EtymologyResponse> {
-        let out = await this.db.getMap(sourceID, bbox, this.language);
+    private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
+        let out: EtymologyResponse | undefined = await this.db.getMap(sourceID, bbox, this.language);
         if (out) {
             if (debug) console.debug("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
         } else {
@@ -128,7 +128,7 @@ export class OverpassService implements MapService {
         return out;
     }
 
-    private transformFeature(feature: Feature, osm_keys: string[], osm_text_key: string | null, osm_description_key: string | null) {
+    private transformFeature(feature: EtymologyFeature, osm_keys: string[], osm_text_key: string | null, osm_description_key: string | null) {
         if (!feature.id && feature.properties?.id)
             feature.id = feature.properties?.id;
         if (!feature.properties)
@@ -154,8 +154,13 @@ export class OverpassService implements MapService {
         if (osm_description_key)
             feature.properties.text_etymology_descr = feature.properties[osm_description_key];
 
-        feature.properties.commons = typeof feature.properties.wikimedia_commons === "string" ? commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1) : undefined;
-        feature.properties.picture = (typeof feature.properties.wikimedia_commons === "string" ? commonsFileRegex.exec(feature.properties.wikimedia_commons)?.at(1) : undefined) || (typeof feature.properties.image === "string" ? commonsFileRegex.exec(feature.properties.image)?.at(1) : undefined);
+        if (typeof feature.properties.wikimedia_commons === "string")
+            feature.properties.commons = commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1);
+
+        if (typeof feature.properties.wikimedia_commons === "string")
+            feature.properties.picture = commonsFileRegex.exec(feature.properties.wikimedia_commons)?.at(1);
+        else if (typeof feature.properties.image === "string")
+            feature.properties.picture = commonsFileRegex.exec(feature.properties.image)?.at(1);
 
         if (feature.properties["name:" + this.language])
             feature.properties.name = feature.properties["name:" + this.language];

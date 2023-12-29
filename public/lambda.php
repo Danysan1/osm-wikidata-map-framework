@@ -4,11 +4,10 @@ require_once(__DIR__ . "/../vendor/autoload.php");
 
 $routeWhitelist = [
     "/^\/$/" => ["index.php", "text/html"],
-    "/^\/((?:health|index|elements|etymologyMap|stats).php)$/" => ['$1', "text/html"],
+    "/^\/((?:health|index|stats).php)$/" => ['$1', "text/html"],
     "/^\/(dist\/[\d\w]+.js)$/" => ['$1', "application/javascript"],
     "/^\/(dist\/[\d\w]+.css)$/" => ['$1', "text/css"],
     "/^\/((?:stats|taginfo|toolinfo).json)$/" => ['$1.php', "application/json"],
-    "/^\/((?:elements|etymologyMap).geojson)$/" => ['$1.php', "application/geo+json"],
     "/^\/lambda.php$/" => ["health.php", "text/html"],
 ];
 
