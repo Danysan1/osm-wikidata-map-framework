@@ -13,4 +13,4 @@ WHERE {
 }
 GROUP BY ?name ?id
 ORDER BY DESC(?count)
-LIMIT 50
+LIMIT 100

@@ -673,7 +673,7 @@ export class EtymologyMap extends Map {
                 setLayerColor,
                 t,
                 DETAILS_SOURCE,
-                [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
+                [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER],
                 thresholdZoomLevel
             );
         this.addControl(colorControl, 'top-left');

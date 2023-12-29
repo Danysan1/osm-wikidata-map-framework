@@ -1,129 +1,148 @@
-Q3400985,academic,academic,#ff0000
-Q1622272,university teacher,academic,#ff0000
-Q37226,teacher,academic,#ff0000
-Q16145150,music teacher,academic,#ff0000
-Q121594,professor,academic,#ff0000
-Q974144,educator,academic,#ff0000
-Q5428874,academic staff,academic,#ff0000
-Q82955,politician,politician,#bc002d
-Q193391,diplomat,politician,#bc002d
-Q599151,official,politician,#bc002d
-Q15627169,trade unionist,politician,#bc002d
-Q3068305,salonnière,politician,#bc002d
-Q372436,statesperson,politician,#bc002d
-Q6673651,literary,literary,#ef2b2d
-Q36180,writer,literary,#ef2b2d
-Q49757,poet,literary,#ef2b2d
-Q28389,screenwriter,literary,#ef2b2d
-Q214917,playwright,literary,#ef2b2d
-Q487596,dramaturge,literary,#ef2b2d
-Q8178443,librettist,literary,#ef2b2d
-Q6625963,novelist,literary,#ef2b2d
-Q1607826,editor,literary,#ef2b2d
-Q4263842,literary critic,literary,#ef2b2d
-Q18814623,autobiographer,literary,#ef2b2d
-Q11774202,essayist,literary,#ef2b2d
-Q12144794,prose writer,literary,#ef2b2d
-Q4853732,children's writer,literary,#ef2b2d
-Q14467526,linguist,literary,#ef2b2d
-Q39631,physician,physician,#006600
-Q774306,surgeon,physician,#006600
-Q133485,rabbi,religious figure,#169b62
-Q733786,monk,religious figure,#169b62
-Q42603,religious figure,religious figure,#169b62
-Q250867,Catholic priest,religious figure,#169b62
-Q611644,Catholic bishop,religious figure,#169b62
-Q25393460,Catholic deacon,religious figure,#169b62
-Q1469535,Latin Catholic priest,religious figure,#169b62
-Q49476,arcibishop,religious figure,#169b62
-Q831474,presbyter,religious figure,#169b62
-Q219477,missionary,religious figure,#169b62
-Q1234713,theologian,religious figure,#169b62
-Q42857,prophet,religious figure,#169b62
-Q432386,preacher,religious figure,#169b62
-Q3391743,visual artist,visual artist,#436F4D
-Q1028181,painter,visual artist,#436F4D
-Q15296811,drawer,visual artist,#436F4D
-Q1281618,sculptor,visual artist,#436F4D
-Q11569986,printmaker,visual artist,#436F4D
-Q329439,engraver,visual artist,#436F4D
-Q5322166,designer,visual artist,#436F4D
-Q627325,graphic designer,visual artist,#436F4D
-Q33231,photographer,visual artist,#436F4D
-Q42973,architect,architect,#F1BF00
-Q14623005,architectural draftsperson,architect,#F1BF00
-Q33999,actor,actor,#B22234
-Q10800557,film actor,actor,#B22234
-Q2259451,stage actor,actor,#B22234
-Q1930187,journalist,journalist,#C8102E
-Q1642960,pundit,journalist,#C8102E
-Q47064,military personnel,military personnel,#00A1DE
-Q4991371,soldier,military personnel,#00A1DE
-Q189290,military officer,military personnel,#00A1DE
-Q753110,songwriter,songwriter,#003580
-Q36834,composer,songwriter,#003580
-Q40348,lawyer,jurist,#c60c30
-Q185351,jurist,jurist,#c60c30
-Q1999841,Islamic jurist,jurist,#c60c30
-Q16533,judge,jurist,#c60c30
-Q201788,historian,historian,#dc143c
-Q1792450,art historian,historian,#dc143c
-Q3621491,archaeologist,historian,#dc143c
-Q81096,engineer,engineer,#006a4e
-Q333634,translator,translator,#007FFF
-Q639669,musician,musician,#da291c
-Q177220,singer,musician,#da291c
-Q2865819,opera singer,musician,#da291c
-Q158852,conductor,musician,#da291c
-Q1198887,music director,musician,#da291c
-Q14915627,musicologist,musician,#da291c
-Q486748,pianist,musician,#da291c
-Q765778,organist,musician,#da291c
-Q1259917,violinist,musician,#da291c
-Q43845,businessperson,businessperson,#ed2939
-Q131524,enterpreneur,businessperson,#ed2939
-Q806798,banker,businessperson,#ed2939
-Q1979607,financier,businessperson,#ed2939
-Q205375,inventor,businessperson,#ed2939
-Q12362622,philanthropist,businessperson,#ed2939
-Q3455803,director,director,#0d5eaf
-Q3387717,theatrical director,director,#0d5eaf
-Q2526255,film director,director,#0d5eaf
-Q3282637,film producer,director,#0d5eaf
-Q901,scientist,scientist,#ff0000
-Q169470,physicist,scientist,#ff0000
-Q170790,mathematician,scientist,#ff0000
-Q593644,chemist,scientist,#ff0000
-Q864503,biologist,scientist,#ff0000
-Q188094,economist,scientist,#ff0000
-Q11063,astronomer,scientist,#ff0000
-Q901402,geographer,scientist,#ff0000
-Q520549,geologist,scientist,#ff0000
-Q1662561,paleontologist,scientist,#ff0000
-Q18805,naturalist,scientist,#ff0000
-Q378622,racing driver,pilot,#006600
-Q2095549,aircraft pilot,pilot,#006600
-Q3014296,motorcycle racer,pilot,#006600
-Q10349745,racing automobile driver,pilot,#006600
-Q273108,condottiero,sovereign,#FF9B00
-Q116,monarch,sovereign,#FF9B00
-Q2304859,sovereign,sovereign,#FF9B00
-Q39018,emperor,sovereign,#FF9B00
-Q212948,partisan,partisan,#006847
-Q1397808,resistance fighter,partisan,#006847
-Q23833535,French Resistance fighter,partisan,#006847
-Q937857,soccer player,athlete,#de2910
-Q2066131,athlete,athlete,#de2910
-Q2309784,sport cyclist,athlete,#de2910
-Q4964182,philosopher,philosopher,#009b3a
-Q384593,police officer,officer,#d52b1e
-Q13386767,carabinier,officer,#d52b1e
-Q19801630,gendarme,officer,#d52b1e
-Q2374149,botanist,botanist,#FFCC00
-Q3242115,revolutionary,revolutionary,#0000ff
-Q131512,farmer,farmer,#005bbb
-Q10732476,art collector,art collector,#005da4
-Q11900058,explorer,explorer,#002B7F
-Q15977971,woodworker,artisan,#DA291C
-Q1294787,artisan,artisan,#DA291C
-Q326358,joiner,artisan,#DA291C
+Q47064,military personnel,fighters,#ff3333
+Q4991371,soldier,fighters,#ff3333
+Q189290,military officer,fighters,#ff3333
+Q212948,partisan,fighters,#ff3333
+Q1397808,resistance fighter,fighters,#ff3333
+Q23833535,French Resistance fighter,fighters,#ff3333
+Q3242115,revolutionary,fighters,#ff3333
+Q11900058,explorer,fighters,#ff3333
+Q384593,police officer,fighters,#ff3333
+Q13386767,carabinier,fighters,#ff3333
+Q19801630,gendarme,fighters,#ff3333
+Q2095549,aircraft pilot,fighters,#ff3333
+Q178197,mercenary,fighters,#ff3333
+Q10669499,naval officer,fighters,#ff3333
+Q38142,samurai,fighters,#ff3333
+Q82955,politician,politics,#ff9933
+Q193391,diplomat,politics,#ff9933
+Q599151,official,politics,#ff9933
+Q15627169,trade unionist,politics,#ff9933
+Q3068305,salonnière,politics,#ff9933
+Q372436,statesperson,politics,#ff9933
+Q273108,condottiero,politics,#ff9933
+Q1097498,ruler,politics,#ff9933
+Q116,monarch,politics,#ff9933
+Q2304859,sovereign,politics,#ff9933
+Q39018,emperor,politics,#ff9933
+Q2478141,aristocrat,politics,#ff9933
+Q3400985,academic,teaching,#ffff33
+Q1622272,university teacher,teaching,#ffff33
+Q37226,teacher,teaching,#ffff33
+Q16145150,music teacher,teaching,#ffff33
+Q121594,professor,teaching,#ffff33
+Q974144,educator,teaching,#ffff33
+Q5428874,academic staff,teaching,#ffff33
+Q6673651,literary,literature,#99ff33
+Q36180,writer,literature,#99ff33
+Q49757,poet,literature,#99ff33
+Q28389,screenwriter,literature,#99ff33
+Q214917,playwright,literature,#99ff33
+Q487596,dramaturge,literature,#99ff33
+Q8178443,librettist,literature,#99ff33
+Q6625963,novelist,literature,#99ff33
+Q1607826,editor,literature,#99ff33
+Q105044823,publisher,literature,#99ff33
+Q4263842,literary critic,literature,#99ff33
+Q18814623,autobiographer,literature,#99ff33
+Q11774202,essayist,literature,#99ff33
+Q12144794,prose writer,literature,#99ff33
+Q4853732,children's writer,literature,#99ff33
+Q14467526,linguist,literature,#99ff33
+Q333634,translator,literature,#99ff33
+Q4964182,philosopher,literature,#99ff33
+Q182436,librarian,literature,#99ff33
+Q483501,artist,art,#33ff33
+Q3391743,visual artist,art,#33ff33
+Q1028181,painter,art,#33ff33
+Q15296811,drawer,art,#33ff33
+Q1281618,sculptor,art,#33ff33
+Q11569986,printmaker,art,#33ff33
+Q329439,engraver,art,#33ff33
+Q5322166,designer,art,#33ff33
+Q627325,graphic designer,art,#33ff33
+Q33231,photographer,art,#33ff33
+Q33999,actor,art,#33ff33
+Q10800557,film actor,art,#33ff33
+Q2259451,stage actor,art,#33ff33
+Q3455803,director,art,#33ff33
+Q3387717,theatrical director,art,#33ff33
+Q2526255,film director,art,#33ff33
+Q3282637,film producer,art,#33ff33
+Q10732476,art collector,art,#33ff33
+Q15977971,woodworker,art,#33ff33
+Q1294787,artisan,art,#33ff33
+Q326358,joiner,art,#33ff33
+Q22669155,fresco painter,art,#33ff33
+Q17391638,art theorist,art,#33ff33
+Q639669,musician,music,#33ff99
+Q177220,singer,music,#33ff99
+Q2865819,opera singer,music,#33ff99
+Q158852,conductor,music,#33ff99
+Q1198887,music director,music,#33ff99
+Q14915627,musicologist,music,#33ff99
+Q486748,pianist,music,#33ff99
+Q765778,organist,music,#33ff99
+Q1259917,violinist,music,#33ff99
+Q753110,songwriter,music,#33ff99
+Q36834,composer,music,#33ff99
+Q133485,rabbi,religion,#33ffff
+Q733786,monk,religion,#33ffff
+Q52769526,parochus,religion,#33ffff
+Q42603,religious figure,religion,#33ffff
+Q250867,Catholic priest,religion,#33ffff
+Q611644,Catholic bishop,religion,#33ffff
+Q25393460,Catholic deacon,religion,#33ffff
+Q1469535,Latin Catholic priest,religion,#33ffff
+Q49476,arcibishop,religion,#33ffff
+Q831474,presbyter,religion,#33ffff
+Q219477,missionary,religion,#33ffff
+Q1234713,theologian,religion,#33ffff
+Q42857,prophet,religion,#33ffff
+Q432386,preacher,religion,#33ffff
+Q19546,pope,religion,#33ffff
+Q161944,deacon,religion,#33ffff
+Q854997,Buddhist monk,religion,#33ffff
+Q1930187,journalist,reporters,#3399ff
+Q1642960,pundit,reporters,#3399ff
+Q201788,historian,reporters,#3399ff
+Q1792450,art historian,reporters,#3399ff
+Q3621491,archaeologist,reporters,#3399ff
+Q6606110,industrialist,businessperson,#3333ff
+Q43845,businessperson,businessperson,#3333ff
+Q131524,enterpreneur,businessperson,#3333ff
+Q806798,banker,businessperson,#3333ff
+Q1979607,financier,businessperson,#3333ff
+Q205375,inventor,businessperson,#3333ff
+Q12362622,philanthropist,businessperson,#3333ff
+Q901,scientist,STEM,#9933ff
+Q169470,physicist,STEM,#9933ff
+Q170790,mathematician,STEM,#9933ff
+Q593644,chemist,STEM,#9933ff
+Q864503,biologist,STEM,#9933ff
+Q188094,economist,STEM,#9933ff
+Q11063,astronomer,STEM,#9933ff
+Q901402,geographer,STEM,#9933ff
+Q520549,geologist,STEM,#9933ff
+Q1662561,paleontologist,STEM,#9933ff
+Q18805,naturalist,STEM,#9933ff
+Q39631,physician,STEM,#9933ff
+Q774306,surgeon,STEM,#9933ff
+Q42973,architect,STEM,#9933ff
+Q14623005,architectural draftsperson,STEM,#9933ff
+Q81096,engineer,STEM,#9933ff
+Q2374149,botanist,STEM,#9933ff
+Q131512,farmer,STEM,#9933ff
+Q937857,soccer player,sport,#ff33ff
+Q2066131,athlete,sport,#ff33ff
+Q2309784,sport cyclist,sport,#ff33ff
+Q378622,racing driver,sport,#ff33ff
+Q3014296,motorcycle racer,sport,#ff33ff
+Q10349745,racing automobile driver,sport,#ff33ff
+Q1130252,sporting director,sport,#ff33ff
+Q838476,sporting director,sport,#ff33ff
+Q10841764,Formula One driver,sport,#ff33ff
+Q13381572,artistic gymnast,sport,#ff33ff
+Q40348,lawyer,jurist,#ff3399
+Q185351,jurist,jurist,#ff3399
+Q1999841,Islamic jurist,jurist,#ff3399
+Q16533,judge,jurist,#ff3399

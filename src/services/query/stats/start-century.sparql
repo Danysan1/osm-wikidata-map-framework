@@ -21,4 +21,4 @@ WHERE {
 }
 GROUP BY ?century ?red ?green ?blue
 ORDER BY DESC(?count)
-LIMIT 50
+LIMIT 100

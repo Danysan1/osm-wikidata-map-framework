@@ -1,6 +1,6 @@
-import { LngLatBounds, MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, MapGeoJSONFeature } from 'maplibre-gl';
+import { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, MapGeoJSONFeature } from 'maplibre-gl';
 
-// import { LngLatBounds, MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
+// import { MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification, MapGeoJSONFeature } from 'mapbox-gl';
 
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { getCorrectFragmentParams } from '../fragment';
@@ -11,8 +11,9 @@ import { TFunction } from 'i18next';
 import { Etymology } from '../model/Etymology';
 import { EtymologyFeature } from '../model/EtymologyResponse';
 import { showLoadingSpinner } from '../snackbar';
-import { logErrorMessage } from '../monitoring';
 import { WikidataStatsService, statsQueries } from '../services';
+
+const MAX_CHART_ITEMS = 30;
 
 /** Statistics row with a name and a numeric value */
 export interface EtymologyStat {
@@ -266,27 +267,27 @@ class EtymologyColorControl extends DropdownControl {
             },
             [
                 "case",
-                ["coalesce", ["!", ["has", "etymologies"]], false], FALLBACK_COLOR,
-                ["coalesce", ["==", ["length", ["get", "etymologies"]], 0], false], FALLBACK_COLOR,
-                ["coalesce", ["==", ["get", "etymologies"], "[]"], false], FALLBACK_COLOR,
+                ["!", ["has", "etymologies"]], FALLBACK_COLOR,
+                ["==", ["length", ["get", "etymologies"]], 0], FALLBACK_COLOR,
+                ["==", ["get", "etymologies"], "[]"], FALLBACK_COLOR,
 
                 // Checks for vector tiles and PMTiles (where the etymologies array is JSON-encoded with spaces)
-                ["coalesce", ["in", ['literal', '"propagated" : true'], ["get", "etymologies"]], false], PROPAGATED_COLOR,
+                ["coalesce", ["in", '"propagated" : true', ["get", "etymologies"]], false], PROPAGATED_COLOR,
                 ["coalesce", ["all",
                     ["to-boolean", ["get", "from_osm"]],
-                    ["in", ['literal', '"from_wikidata" : true'], ["get", "etymologies"]],
+                    ["in", '"from_wikidata" : true', ["get", "etymologies"]],
                 ], false], OSM_WIKIDATA_COLOR,
-                ["coalesce", ["in", ['literal', '"from_wikidata" : true'], ["get", "etymologies"]], false], WIKIDATA_COLOR,
-                ["coalesce", ["in", ['literal', '"from_osm" : true'], ["get", "etymologies"]], false], OSM_COLOR,
+                ["coalesce", ["in", '"from_wikidata" : true', ["get", "etymologies"]], false], WIKIDATA_COLOR,
+                ["coalesce", ["in", '"from_osm" : true', ["get", "etymologies"]], false], OSM_COLOR,
 
                 // Checks for cases where the map library JSON-encodes the etymologies array without spaces
-                ["coalesce", ["in", ['literal', '"propagated":true'], ["to-string", ["get", "etymologies"]]], false], PROPAGATED_COLOR,
+                ["coalesce", ["in", '"propagated":true', ["to-string", ["get", "etymologies"]]], false], PROPAGATED_COLOR,
                 ["coalesce", ["all",
                     ["to-boolean", ["get", "from_osm"]],
-                    ["in", ['literal', '"from_wikidata":true'], ["to-string", ["get", "etymologies"]]],
+                    ["in", '"from_wikidata":true', ["to-string", ["get", "etymologies"]]],
                 ], false], OSM_WIKIDATA_COLOR,
-                ["coalesce", ["in", ['literal', '"from_wikidata":true'], ["to-string", ["get", "etymologies"]]], false], WIKIDATA_COLOR,
-                ["coalesce", ["in", ['literal', '"from_osm":true'], ["to-string", ["get", "etymologies"]]], false], OSM_COLOR,
+                ["coalesce", ["in", '"from_wikidata":true', ["to-string", ["get", "etymologies"]]], false], WIKIDATA_COLOR,
+                ["coalesce", ["in", '"from_osm":true', ["to-string", ["get", "etymologies"]]], false], OSM_COLOR,
 
                 FALLBACK_COLOR
             ]
@@ -326,9 +327,10 @@ class EtymologyColorControl extends DropdownControl {
         try {
             features = this.getMap()?.queryRenderedFeatures({ layers: this.layerIDs });
         } catch (error) {
-            logErrorMessage("Error querying rendered features", "error", {
+            if (debug) console.error("Error querying rendered features", {
                 colorSchemeID, layers: this.layerIDs, error
             });
+            return;
         }
 
         const wikidataIDs = features
@@ -344,12 +346,13 @@ class EtymologyColorControl extends DropdownControl {
             })
             ?.map(etymology => etymology.wikidata)
             ?.filter(id => typeof id === 'string') as string[] || [],
-            uniqueIDs = [...new Set(wikidataIDs)].sort(); // de-duplicate
-        if (uniqueIDs.length === 0) {
+            idSet = new Set(wikidataIDs); // de-duplicate
+        if (idSet.size === 0) {
             if (debug) console.debug("Skipping stats update for 0 IDs");
-        } else if (colorSchemeID === this._lastColorSchemeID && uniqueIDs.length === this._lastWikidataIDs?.length && this._lastWikidataIDs.every((id, i) => uniqueIDs[i] === id)) {
-            if (debug) console.debug("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+        } else if (colorSchemeID === this._lastColorSchemeID && this._lastWikidataIDs?.length === idSet.size && this._lastWikidataIDs?.every(id => id in idSet)) {
+            if (debug) console.debug("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, idSet, lastWikidataIDs: this._lastWikidataIDs });
         } else {
+            const uniqueIDs = Array.from(idSet);
             if (debug) console.debug("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = uniqueIDs;
@@ -371,10 +374,45 @@ class EtymologyColorControl extends DropdownControl {
         showLoadingSpinner(false);
     }
 
+    private setLayerColorForStats(stats: EtymologyStat[]) {
+        const data: ExpressionSpecification = [
+            "case",
+            ["!", ["has", "etymologies"]], FALLBACK_COLOR,
+            ["==", ["length", ["get", "etymologies"]], 0], FALLBACK_COLOR,
+            ["==", ["get", "etymologies"], "[]"], FALLBACK_COLOR,
+        ];
+
+        stats.forEach((row: EtymologyStat) => {
+            const color = row.color;
+            if (color && row.subjects?.length) {
+                // In vector tiles etymologies array is JSON-encoded
+                // In GeoJSON the map library leaves the etymologies array as an array of objects
+                // "to-string" converts either way to string in order to check whether it contains the subject
+                row.subjects.forEach(subject => {
+                    data.push(["in", subject, ["to-string", ["get", "etymologies"]]], color);
+                });
+            } else {
+                if (debug) console.debug("setLayerColorForStats: skipping row with no color or subjects", { row });
+            }
+        });
+
+        data.push(FALLBACK_COLOR);
+
+        if (debug) console.debug("setLayerColorForStats", { stats, data });
+        this.setLayerColor(data);
+    }
+
     /**
      * Initializes or updates the chart with the given statistics
+     * 
+     * @see https://www.chartjs.org/docs/latest/general/data-structures.html
      */
     private setChartStats(stats: EtymologyStat[]) {
+        if (this._chartInitInProgress) {
+            if (debug) console.debug("setChartData: chart already loading");
+            return;
+        }
+
         const data: ChartData<"pie"> = {
             labels: [],
             datasets: [{
@@ -382,62 +420,14 @@ class EtymologyColorControl extends DropdownControl {
                 backgroundColor: [],
             }]
         };
-        stats.forEach((row: EtymologyStat) => {
+        stats.slice(0, MAX_CHART_ITEMS).forEach((row: EtymologyStat) => {
             data.labels?.push(row.name);
             (data.datasets[0].backgroundColor as string[]).push(row.color || FALLBACK_COLOR);
             data.datasets[0].data.push(row.count);
         });
-        this.setChartData(data);
-    }
-
-    private setLayerColorForStats(stats: EtymologyStat[]) {
-        const data: ExpressionSpecification = [
-            "case",
-            ["coalesce", ["!", ["has", "etymologies"]], false], FALLBACK_COLOR,
-            ["coalesce", ["==", ["length", ["get", "etymologies"]], 0], false], FALLBACK_COLOR,
-            ["coalesce", ["==", ["get", "etymologies"], "[]"], false], FALLBACK_COLOR,
-        ];
-
-        stats.forEach((row: EtymologyStat) => {
-            const color = row.color;
-            if (color && row.subjects?.length) {
-                // Checks for vector tiles (where the etymologies array is JSON-encoded with spaces)
-                row.subjects.forEach(subject => {
-                    data.push(["coalesce", ["in", ["literal", subject], ["get", "etymologies"]], false], color);
-                });
-            }
-        });
-        stats.forEach((row: EtymologyStat) => {
-            const color = row.color;
-            if (color && row.subjects?.length) {
-                // Checks for cases where the map library leaves the etymologies array as an array of objects
-                data.push(
-                    ["coalesce", ["in", ["get", "wikidata", ["at", 0, ["get", "etymologies"]]], ["literal", row.subjects]], false], color,
-                    ["coalesce", [
-                        "all",
-                        [">", ["length", ["get", "etymologies"]], 1],
-                        ["in", ["get", "wikidata", ["at", 1, ["get", "etymologies"]]], ["literal", row.subjects]]
-                    ], false], color,
-                );
-            }
-        });
-
-        data.push(FALLBACK_COLOR);
-        this.setLayerColor(data);
-    }
-
-    /**
-     * Initializes or updates the chart with the given data
-     * 
-     * @see https://www.chartjs.org/docs/latest/general/data-structures.html
-     */
-    private setChartData(data: ChartData<"pie">) {
-        if (this._chartInitInProgress) {
-            if (debug) console.debug("setChartData: chart already loading");
-            return;
-        }
 
         if (debug) console.debug("setChartData", {
+            stats,
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
             data
