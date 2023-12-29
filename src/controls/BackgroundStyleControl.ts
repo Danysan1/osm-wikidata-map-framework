@@ -1,4 +1,4 @@
-import { BackgroundStyle } from '../model/backgroundStyle';
+import type { BackgroundStyle } from '../model/backgroundStyle';
 import { DropdownControl } from './DropdownControl';
 
 /**

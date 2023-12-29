@@ -1,7 +1,7 @@
 import { getConfig, getBoolConfig, debug, getJsonConfig, getKeyID } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
-import { TFunction } from "i18next";
+import type { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 
 const PMTILES_GROUP_NAME = "Database (PMTiles)",

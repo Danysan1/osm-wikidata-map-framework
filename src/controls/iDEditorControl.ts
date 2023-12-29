@@ -2,7 +2,7 @@ import { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
 
 // import { IControl, Map, MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { debug, getConfig } from '../config';
+import { debug } from '../config';
 import { getCorrectFragmentParams } from '../fragment';
 
 export class iDEditorControl implements IControl {

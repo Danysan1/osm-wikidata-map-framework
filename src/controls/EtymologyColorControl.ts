@@ -7,9 +7,9 @@ import { getCorrectFragmentParams } from '../fragment';
 import { debug, getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { TFunction } from 'i18next';
-import { Etymology } from '../model/Etymology';
-import { EtymologyFeature } from '../model/EtymologyResponse';
+import type { TFunction } from 'i18next';
+import type { Etymology } from '../model/Etymology';
+import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { showLoadingSpinner } from '../snackbar';
 import { WikidataStatsService, statsQueries } from '../services';
 

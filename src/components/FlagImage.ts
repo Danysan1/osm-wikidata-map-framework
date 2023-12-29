@@ -1,6 +1,6 @@
 const defaultIcon = "img/Translation_-_Noun_project_987.svg",
     flags: Record<string, string> = { // https://commons.wikimedia.org/wiki/Category:SVG_sovereign_state_flags
-        "en": "img/Flag_of_the_United_Kingdom_%283-5%29.svg",
+        "en": "img/English_language.svg",
         "fr": "img/Flag_of_France_%282020%E2%80%93present%29.svg",
         "de": "img/Flag_of_Germany.svg",
         "it": "img/Flag_of_Italy.svg",
@@ -28,7 +28,7 @@ export class LanguageFlagElement extends HTMLImageElement {
             this._language = undefined;
             // if (debug) console.info("LanguageFlagElement: unsetting language");
         } else {
-            this._language = decodeURIComponent(language.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
+            this._language = language;
             // if (debug) console.info("LanguageFlagElement: setting language", { language, _language: this._language });
         }
         this.render();
