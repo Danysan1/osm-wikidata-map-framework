@@ -18,31 +18,79 @@ export const enum DatePrecision {
     billion_years = 0,
 }
 
+/**
+ * Extended details for the subject of an etymology.
+ */
 export interface EtymologyDetails extends Etymology {
     birth_date?: string;
     birth_date_precision?: DatePrecision;
     birth_place?: string;
+    /**
+     * Localized name of the country of citizenship
+     */
     citizenship?: string;
+    /**
+     * Name of the Wikimedia Commons category
+     */
     commons?: string;
     death_date?: string;
     death_date_precision?: DatePrecision;
+    /**
+     * Localized name of the place of death
+     */
     death_place?: string;
+    /**
+     * Localized description of the subject
+     */
     description?: string;
     end_date?: string;
     end_date_precision?: DatePrecision;
     event_date?: string;
     event_date_precision?: DatePrecision;
+    /**
+     * Localized name of the location of the event
+     */
     event_place?: string;
+    /**
+     * Q-ID of the Wikidata entity of the gender
+     */
     genderID?: string;
+    /**
+     * Localized name of the gender
+     */
     gender?: string;
+    /**
+     * Q-ID of the Wikidata entity of the instance
+     */
     instanceID?: string;
+    /**
+     * Localized name of the instance
+     */
     instance?: string;
+    /**
+     * Localized name of the subject
+     */
     name?: string;
+    /**
+     * Localized list of occupations (job/vocation/...)
+     */
     occupations?: string;
+    /**
+     * Title of some Wikimedia Commons pictures about the subject
+     */
     pictures?: string[];
+    /**
+     * Localized list of notable prizes received by the subject
+     */
     prizes?: string;
     start_date?: string;
     start_date_precision?: DatePrecision;
+    /**
+     * Title of a Wikipedia page about the subject, prefixed with its language code (<language>:<Page name>)
+     */
     wikipedia?: string;
+    /**
+     * Coordinates of the location of the subject
+     */
     wkt_coords?: string;
 }
