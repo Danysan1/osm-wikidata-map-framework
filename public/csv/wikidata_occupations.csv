@@ -14,6 +14,8 @@ Q178197,mercenary,fighters,#ff3333
 Q10669499,naval officer,fighters,#ff3333
 Q38142,samurai,fighters,#ff3333
 Q82955,politician,politics,#ff9933
+Q83307,minister,politics,#ff9933
+Q11499147,political activist,politics,#ff9933
 Q193391,diplomat,politics,#ff9933
 Q599151,official,politics,#ff9933
 Q15627169,trade unionist,politics,#ff9933
@@ -62,18 +64,25 @@ Q5322166,designer,art,#33ff33
 Q627325,graphic designer,art,#33ff33
 Q33231,photographer,art,#33ff33
 Q33999,actor,art,#33ff33
+Q805221,ballet dancer,art,#33ff33
 Q10800557,film actor,art,#33ff33
 Q2259451,stage actor,art,#33ff33
 Q3455803,director,art,#33ff33
 Q3387717,theatrical director,art,#33ff33
+Q2707485,scenographer,art,#33ff33
 Q2526255,film director,art,#33ff33
 Q3282637,film producer,art,#33ff33
 Q10732476,art collector,art,#33ff33
 Q15977971,woodworker,art,#33ff33
 Q1294787,artisan,art,#33ff33
+Q2447349,ornamentist,art,#33ff33
 Q326358,joiner,art,#33ff33
+Q1708232,medalist,art,#33ff33
 Q22669155,fresco painter,art,#33ff33
 Q17391638,art theorist,art,#33ff33
+Q2519376,jewelry designer,art,#33ff33
+Q11287574,industrial designer,art,#33ff33
+Q11455387,furniture designer,art,#33ff33
 Q639669,musician,music,#33ff99
 Q177220,singer,music,#33ff99
 Q2865819,opera singer,music,#33ff99
@@ -83,6 +92,7 @@ Q14915627,musicologist,music,#33ff99
 Q486748,pianist,music,#33ff99
 Q765778,organist,music,#33ff99
 Q1259917,violinist,music,#33ff99
+Q899758,violist,music,#33ff99
 Q753110,songwriter,music,#33ff99
 Q36834,composer,music,#33ff99
 Q133485,rabbi,religion,#33ffff
@@ -102,6 +112,7 @@ Q432386,preacher,religion,#33ffff
 Q19546,pope,religion,#33ffff
 Q161944,deacon,religion,#33ffff
 Q854997,Buddhist monk,religion,#33ffff
+Q2566598,christian religious,religion,#33ffff
 Q1930187,journalist,reporters,#3399ff
 Q1642960,pundit,reporters,#3399ff
 Q201788,historian,reporters,#3399ff
@@ -116,6 +127,7 @@ Q205375,inventor,businessperson,#3333ff
 Q12362622,philanthropist,businessperson,#3333ff
 Q901,scientist,STEM,#9933ff
 Q169470,physicist,STEM,#9933ff
+Q186360,nurse,STEM,#9933ff
 Q170790,mathematician,STEM,#9933ff
 Q593644,chemist,STEM,#9933ff
 Q864503,biologist,STEM,#9933ff
@@ -129,6 +141,8 @@ Q39631,physician,STEM,#9933ff
 Q774306,surgeon,STEM,#9933ff
 Q42973,architect,STEM,#9933ff
 Q14623005,architectural draftsperson,STEM,#9933ff
+Q2815948,landscape architect,STEM,#9933ff
+Q131062,urban planner,STEM,#9933ff
 Q81096,engineer,STEM,#9933ff
 Q2374149,botanist,STEM,#9933ff
 Q131512,farmer,STEM,#9933ff
