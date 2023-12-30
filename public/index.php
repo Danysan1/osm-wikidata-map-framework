@@ -9,14 +9,14 @@ use \App\PostGIS_PDO;
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
-$lastUpdateString = '';
+$lastUpdateString = '<p class="last_db_update_container hiddenElement"><span class="i18n_last_db_update">Last database update:</span> <span class="last_db_update_placeholder"></span></p>';
 $enableDB = $conf->getBool("db_enable");
 if ($enableDB) {
     try {
         $dbh = new PostGIS_PDO($conf);
         $lastUpdate = (string)$dbh->query("SELECT owmf.last_data_update()")->fetchColumn();
-        $hiddenClass = empty($lastUpdate) ? "hiddenElement" : "";
-        $lastUpdateString = "<p class=\"last_db_update_container $hiddenClass\"><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
+        if (!empty($lastUpdate))
+            $lastUpdateString = "<p class=\"last_db_update_container\"><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
     } catch (Exception $e) {
         error_log("Error fetching last update: " . $e->getMessage());
     }
