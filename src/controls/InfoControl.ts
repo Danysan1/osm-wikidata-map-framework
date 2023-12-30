@@ -3,7 +3,7 @@ import { IControl, Map, Popup } from 'maplibre-gl';
 // import { IControl, Map, Popup } from 'mapbox-gl';
 
 import { loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
-import { getConfig } from '../config';
+import { debug, getConfig } from '../config';
 
 /**
  * Opens the information intro window
@@ -75,25 +75,30 @@ function translateDonateButton(popup: Popup) {
 }
 
 async function getLastDBUpdateDate(popup: Popup) {
-    const container = popup.getElement().querySelector<HTMLElement>(".last_db_update_container:empty");
-    if (!container)
+    const container = popup.getElement().querySelector<HTMLElement>(".last_db_update_container"),
+        placeholder = container?.querySelector<HTMLSpanElement>(".last_db_update_placeholder");
+    if (!container || !placeholder)
         return;
 
     const pmtilesBaseURL = getConfig("pmtiles_base_url");
     if (!pmtilesBaseURL)
         return;
 
-    const dateURL = pmtilesBaseURL + "/date.txt";
+    const dateURL = pmtilesBaseURL + "date.txt";
     try {
         const response = await fetch(dateURL);
-        if (!response.ok)
-            return;
-
-        const date = await response.text();
-        if (date)
-            container.innerText = date;
+        if (response.ok) {
+            const date = (await response.text()).trim();
+            if (debug) console.debug("Last DB update date:", date);
+            if (date) {
+                placeholder.innerText = date;
+                container.classList.remove("hiddenElement");
+            }
+        } else {
+            if (debug) console.warn("Fetching date.txt failed", response);
+        }
     } catch (e) {
-        console.warn("Error while fetching date.txt", e);
+        if (debug) console.warn("Error catched while fetching date.txt", e);
     }
 }
 
