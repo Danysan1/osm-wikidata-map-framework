@@ -3,14 +3,14 @@ Q17,Japan,Japan,#bc002d
 Q188712,Empire of Japan,Japan,#bc002d
 Q205662,Tokugawa shogunate,Japan,#bc002d
 Q20,Norway,Norway,#ef2b2d
-Q21,England,United Kingdom,#006600
-Q22,Scotland,United Kingdom,#006600
-Q25,Wales,United Kingdom,#006600
-Q26,Northern Ireland,United Kingdom,#006600
-Q145,United Kingdom,United Kingdom,#006600
-Q174193,United Kingdom of Great Britain and Ireland,United Kingdom,#006600
-Q161885,Great Britain,United Kingdom,#006600
-Q179876,Kingdom of England,United Kingdom,#006600
+Q21,England,United Kingdom,#012169
+Q22,Scotland,United Kingdom,#012169
+Q25,Wales,United Kingdom,#012169
+Q26,Northern Ireland,United Kingdom,#012169
+Q145,United Kingdom,United Kingdom,#012169
+Q174193,United Kingdom of Great Britain and Ireland,United Kingdom,#012169
+Q161885,Great Britain,United Kingdom,#012169
+Q179876,Kingdom of England,United Kingdom,#012169
 Q27,Republic of Ireland,Ireland,#169b62
 Q28,Hungary,Hungary,#436F4D
 Q171150,Kingdom of Hungary,Hungary,#436F4D
@@ -20,6 +20,7 @@ Q217196,Crown of Castile,Spain,#F1BF00
 Q204920,Crown of Aragon,Spain,#F1BF00
 Q175276,Kingdom of León,Spain,#F1BF00
 Q30,United States of America,USA,#B22234
+Q81931,Confederate States,USA,#B22234
 Q31,Belgium,Belgium,#C8102E
 Q157070,County of Flanders,Belgium,#C8102E
 Q32,Luxembourg,Luxembourg,#00A1DE
@@ -139,4 +140,10 @@ Q419,Peru,Peru,#c8102e
 Q843,Pakistan,Pakistan,#115740
 Q252,Indonesia,Indonesia,#ff0000
 Q1033,Nigeria,Nigeria,#1B7339
+Q5440850,Federation of Nigeria,Nigeria,#1B7339
 Q902,Bangladesh,Bangladesh,#F42A41
+Q1028,Morocco,Morocco,C1272D
+Q717,Venezuela,Venezuela,#EF3340
+Q736,Ecuador,Ecuador,#FFD100
+Q739,Colombia,Colombia,#003087
+Q258,South Africa,South Africa,#007749
