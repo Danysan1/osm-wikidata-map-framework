@@ -76,20 +76,31 @@ export class FeatureElement extends HTMLDivElement {
         const element_name = detail_container.querySelector<HTMLElement>('.element_name'),
             local_name = properties["name:" + document.documentElement.lang],
             default_name = properties["name:en"];
+
+        let main_name: string | undefined;
+        if (local_name && local_name !== 'null') {
+            main_name = local_name;
+        } else if (properties.name && properties.name !== 'null') {
+            main_name = properties.name;
+        } else if (default_name && default_name !== 'null') {
+            main_name = default_name;
+        } else if (properties.official_name && properties.official_name !== 'null') {
+            main_name = properties.official_name;
+        } else if (properties.alt_name && properties.alt_name !== 'null') {
+            main_name = properties.alt_name;
+        }
+
         if (!element_name) {
             if (debug) console.info("Missing .element_name");
-        } else if (local_name && local_name !== 'null') {
-            element_name.innerText = '📍 ' + local_name;
-        } else if (properties.name && properties.name !== 'null') {
-            element_name.innerText = '📍 ' + properties.name;
-        } else if (default_name && default_name !== 'null') {
-            element_name.innerText = '📍 ' + default_name;
+        } else if (main_name) {
+            element_name.innerText = '📍 ' + main_name;
         }
 
         const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
-            alt_names = [properties.official_name, properties.alt_name].flatMap(name => name?.split(";")).filter(
-                name => name && name !== 'null' && name !== properties.name
-            );
+            alt_names = [properties.official_name, properties.alt_name]
+                .flatMap(name => name?.split(";"))
+                .map(name => name?.trim())
+                .filter(name => name && name !== 'null' && (!main_name || name.toLowerCase() !== main_name.toLowerCase()));
         if (!element_alt_names) {
             if (debug) console.info("Missing .element_alt_names");
         } else if (alt_names.length > 0) {
