@@ -53,8 +53,8 @@ GROUP BY el.el_id;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS owmf.vm_elements AS
 SELECT
-    ST_ReducePrecision(ST_Centroid(el_geometry), 0.04::double precision) AS geom,
+    ST_ReducePrecision(ST_Centroid(el_geometry), 0.03::double precision) AS geom,
     COUNT(DISTINCT LOWER(el_tags ->> 'name'::text)) AS el_num
 FROM owmf.element
-GROUP BY (ST_ReducePrecision(ST_Centroid(el_geometry), 0.04::double precision))
+GROUP BY (ST_ReducePrecision(ST_Centroid(el_geometry), 0.03::double precision))
 HAVING COUNT(DISTINCT LOWER(el_tags ->> 'name'::text)) > 2;
