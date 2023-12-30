@@ -737,7 +737,7 @@ export class EtymologyMap extends Map {
         if (getConfig("mapcomplete_theme"))
             this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
 
-        if (debug) {
+        /*if (debug) {
             import("@radarlabs/maplibre-gl-inspect").then(({ default: MaplibreInspect }) => {
                 this.addControl(new MaplibreInspect({
                     popup: new Popup({
@@ -746,7 +746,7 @@ export class EtymologyMap extends Map {
                     })
                 }), 'bottom-right');
             });
-        }
+        }*/
     }
 
     /**
