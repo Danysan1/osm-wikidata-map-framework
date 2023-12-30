@@ -13,7 +13,7 @@ import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { showLoadingSpinner } from '../snackbar';
 import { WikidataStatsService, statsQueries } from '../services';
 
-const MAX_CHART_ITEMS = 30;
+const MAX_CHART_ITEMS = 35;
 
 /** Statistics row with a name and a numeric value */
 export interface EtymologyStat {
@@ -389,7 +389,7 @@ class EtymologyColorControl extends DropdownControl {
                 // In GeoJSON the map library leaves the etymologies array as an array of objects
                 // "to-string" converts either way to string in order to check whether it contains the subject
                 row.subjects.forEach(subject => {
-                    data.push(["in", subject, ["to-string", ["get", "etymologies"]]], color);
+                    data.push(["in", subject + '"', ["to-string", ["get", "etymologies"]]], color);
                 });
             } else {
                 if (debug) console.debug("setLayerColorForStats: skipping row with no color or subjects", { row });
