@@ -10,8 +10,7 @@ $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
 $lastUpdateString = '<p class="last_db_update_container hiddenElement"><span class="i18n_last_db_update">Last database update:</span> <span class="last_db_update_placeholder"></span></p>';
-$enableDB = $conf->getBool("db_enable");
-if ($enableDB) {
+if ($conf->getBool("db_enable") && $conf->getBool("vector_tiles_enable")) {
     try {
         $dbh = new PostGIS_PDO($conf);
         $lastUpdate = (string)$dbh->query("SELECT owmf.last_data_update()")->fetchColumn();
@@ -218,12 +217,10 @@ if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNam
                     <span class="button_img">📖</span> &nbsp;
                     <span class="i18n_contribute">Contribute to the map</span>
                 </a>
-                <?php if ($enableDB) { ?>
-                    <a title="Download as dataset" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
-                        <span class="button_img">💾</span> &nbsp;
-                        <span class="i18n_download_dataset">Download as dataset</span>
-                    </a>
-                <?php } ?>
+                <a title="Download as dataset" role="button" class="hiddenElement k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
+                    <span class="button_img">💾</span> &nbsp;
+                    <span class="i18n_download_dataset">Download as dataset</span>
+                </a>
             </p>
 
             <footer>

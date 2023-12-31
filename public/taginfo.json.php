@@ -86,7 +86,7 @@ if (!empty($filterTags)) {
     }
 }
 
-if ($conf->getBool("db_enable") && $conf->getBool("propagate_data")) {
+if ($conf->getBool("propagate_data") && ($conf->getBool("vector_tiles_enable") || $conf->has("pmtiles_base_url"))) {
     $tags[] = [
         "key" => "highway",
         "object_types" => ["way"],
