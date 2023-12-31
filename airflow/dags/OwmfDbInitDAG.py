@@ -51,12 +51,18 @@ def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, ta
     See https://www.psycopg.org/docs/cursor.html#cursor.copy_to
     See https://github.com/psycopg/psycopg2/issues/1294
     """
+    import csv
     pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
             with open(filepath, "w", encoding="utf-8") as file:
-                cursor.execute(f'SET search_path TO {schema}')
-                cursor.copy_to(file, table, separator)
+                #cursor.execute(f'SET search_path TO {schema}')
+                #cursor.copy_to(file, table, separator)
+                cursor.execute(f"SELECT * FROM {schema}.{table}")
+                writer = csv.writer(file, delimiter=separator)
+                writer.writerow(['wikidata_id', 'element_name', 'count_osm', 'count_osm_wikidata', 'count_wikidata', 'count_propagation'])
+                for row in cursor:
+                    writer.writerow(row)
             print("Dumped row count:", cursor.rowcount)
 
 def check_postgres_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
@@ -749,6 +755,7 @@ class OwmfDbInitDAG(DAG):
             task_group = group_vector_tiles,
             doc_md="Check whether pmtiles should be generated"
         )
+        task_check_dump >> task_check_pmtiles
 
         task_generate_etymology_map_pmtiles = TippecanoeOperator(
             task_id = "generate_etymology_map_pmtiles",
