@@ -27,7 +27,7 @@ def get_absolute_path(filename:str, folder:str = None) -> str:
         file_dir_path = join(file_dir_path, folder)
     return join(file_dir_path, filename)
 
-def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
+def postgres_copy_table(conn_id:str, filepath:str, separator:str, schema:str, table:str, columns:list) -> None:
     """
     Copy data from a CSV/TSV/... file to a PostgreSQL table
 
@@ -35,17 +35,33 @@ def do_postgres_copy(postgres_conn_id:str, filepath:str, separator:str, schema:s
     See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
     See https://github.com/psycopg/psycopg2/issues/1294
     """
-    pg_hook = PostgresHook(postgres_conn_id)
+    pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
             with open(filepath, "r", encoding="utf-8") as file:
                 cursor.execute(f'SET search_path TO {schema}')
                 cursor.copy_from(file, table, separator, columns = columns)
-            print("Inserted rows:", cursor.rowcount)
+            print("Inserted row count:", cursor.rowcount)
 
-def check_postgre_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
+def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, table:str) -> None:
     """
-        # Check DB connecton ID
+    Copy data from a PostgreSQL table to a CSV/TSV/... file
+
+    See https://www.psycopg.org/docs/usage.html#copy
+    See https://www.psycopg.org/docs/cursor.html#cursor.copy_to
+    See https://github.com/psycopg/psycopg2/issues/1294
+    """
+    pg_hook = PostgresHook(conn_id)
+    with pg_hook.get_conn() as pg_conn:
+        with pg_conn.cursor() as cursor:
+            with open(filepath, "w", encoding="utf-8") as file:
+                cursor.execute(f'SET search_path TO {schema}')
+                cursor.copy_to(file, table, separator)
+            print("Dumped row count:", cursor.rowcount)
+
+def check_postgres_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
+    """
+        # Check DB connection ID
 
         Check whether the connection ID to the DB is available: if it is, proceed to restore the data, otherwise stop here.
 
@@ -185,7 +201,7 @@ class OwmfDbInitDAG(DAG):
             * combines OSM and Wikidata data
             * uploads the output to the production DB.
 
-            Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
+            Documentation in the task descriptions and in the [project's CONTRIBUTING.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
         """
 
         if not prefix or prefix=="":
@@ -220,14 +236,14 @@ class OwmfDbInitDAG(DAG):
 
         task_check_pg_local = ShortCircuitOperator(
             task_id = "check_local_conn_id",
-            python_callable=check_postgre_conn_id,
+            python_callable=check_postgres_conn_id,
             op_kwargs = {
                 "conn_id": local_db_conn_id,
                 "require_upload": False,
             },
             dag = self,
             task_group = db_prepare_group,
-            doc_md=check_postgre_conn_id.__doc__
+            doc_md=check_postgres_conn_id.__doc__
         )
 
         task_create_work_dir = BashOperator(
@@ -277,9 +293,9 @@ class OwmfDbInitDAG(DAG):
 
         task_load_ele_pg = PythonOperator(
             task_id = "load_elements_from_pg_file",
-            python_callable = do_postgres_copy,
+            python_callable = postgres_copy_table,
             op_kwargs = {
-                "postgres_conn_id": local_db_conn_id,
+                "conn_id": local_db_conn_id,
                 "filepath": pg_path,
                 "separator": '\t',
                 "schema": 'owmf',
@@ -441,7 +457,7 @@ class OwmfDbInitDAG(DAG):
             doc_md = dedent("""
                 # Load Wikidata direct related entities
 
-                * load into the `osmdata` table of the local PostGIS DB all the Wikidata enitities with a location and the configured direct properties which do not already exist
+                * load into the `osmdata` table of the local PostGIS DB all the Wikidata entities with a location and the configured direct properties which do not already exist
                 * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
                 * load into the `etymology` table of the local PostGIS DB the direct related relationships
                 
@@ -722,11 +738,7 @@ class OwmfDbInitDAG(DAG):
             dest_format = "FlatGeobuf",
             dest_path = join(workdir,'elements.fgb'),
             query = "SELECT * FROM owmf.vm_elements",
-            doc_md=    """
-            # FlatGeobuf elements dump
-
-            Dump all the centroids of the elements from the local DB into a FlatGeobuf file
-            """
+            doc_md = "Dump all the centroids of the elements from the local DB into a FlatGeobuf file"
         )
         task_check_dump >> task_dump_elements
 
@@ -737,7 +749,6 @@ class OwmfDbInitDAG(DAG):
             task_group = group_vector_tiles,
             doc_md="Check whether pmtiles should be generated"
         )
-        [task_dump_etymology_map,task_dump_elements] >> task_check_pmtiles
 
         task_generate_etymology_map_pmtiles = TippecanoeOperator(
             task_id = "generate_etymology_map_pmtiles",
@@ -751,7 +762,7 @@ class OwmfDbInitDAG(DAG):
             extra_params = "-f",
             doc_md = TippecanoeOperator.__doc__
         )
-        task_check_pmtiles >> task_generate_etymology_map_pmtiles
+        [task_check_pmtiles, task_dump_etymology_map] >> task_generate_etymology_map_pmtiles
 
         elements_extra_params = "-f -r1 --cluster-distance=150 --accumulate-attribute=el_num:sum" # Do not automatically drop points; Cluster together features that are closer than about 150 pixels from each other; Sum the el_num attribute in features that are clustered together
         task_generate_elements_pmtiles = TippecanoeOperator(
@@ -766,7 +777,24 @@ class OwmfDbInitDAG(DAG):
             extra_params = elements_extra_params,
             doc_md = TippecanoeOperator.__doc__
         )
-        task_check_pmtiles >> task_generate_elements_pmtiles
+        [task_check_pmtiles, task_dump_elements] >> task_generate_elements_pmtiles
+
+        dataset_path = join(workdir,'dataset.csv')
+        task_dump_dataset = PythonOperator(
+            task_id = "dump_dataset",
+            python_callable=dump_postgres_table,
+            op_kwargs = {
+                "conn_id": local_db_conn_id,
+                "filepath": dataset_path,
+                "separator": ',',
+                "schema": 'owmf',
+                "table": 'vm_dataset',
+            },
+            dag = self,
+            task_group = group_vector_tiles,
+            doc_md = "Dump the content of the dataset view into a CSV file to be uploaded to S3"
+        )
+        task_check_pmtiles >> task_dump_dataset
 
         task_etymology_map_pmtiles_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_etymology_map_pmtiles_to_s3",
@@ -810,6 +838,27 @@ class OwmfDbInitDAG(DAG):
         )
         task_generate_elements_pmtiles >> task_elements_pmtiles_s3
 
+        task_dataset_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_dataset_pmtiles_to_s3",
+            dag = self,
+            filename = dataset_path,
+            dest_key = join('{{ var.value.pmtiles_base_s3_key }}',prefix,'dataset.csv'),
+            replace = True,
+            aws_conn_id = "aws_s3",
+            task_group = group_vector_tiles,
+            doc_md = """
+                # Upload dataset to S3
+
+                Upload the dataset CSV file to AWS S3.
+
+                Links:
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+            """
+        )
+        task_dump_dataset >> task_dataset_s3
+
         task_date_pmtiles_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_date_pmtiles_to_s3",
             dag = self,
@@ -829,20 +878,20 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        [task_etymology_map_pmtiles_s3, task_elements_pmtiles_s3] >> task_date_pmtiles_s3
+        [task_etymology_map_pmtiles_s3, task_elements_pmtiles_s3, task_dataset_s3] >> task_date_pmtiles_s3
         
         group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 
         task_check_pg_restore = ShortCircuitOperator(
             task_id = "check_upload_conn_id",
-            python_callable=check_postgre_conn_id,
+            python_callable=check_postgres_conn_id,
             op_kwargs = {
                 "conn_id": upload_db_conn_id,# "{{ params.upload_db_conn_id }}",
                 "require_upload": True,
             },
             dag = self,
             task_group = group_upload,
-            doc_md=check_postgre_conn_id.__doc__
+            doc_md=check_postgres_conn_id.__doc__
         )
         task_join_post_elaboration >> task_check_pg_restore
         

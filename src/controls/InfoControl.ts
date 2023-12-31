@@ -3,7 +3,7 @@ import { IControl, Map, Popup } from 'maplibre-gl';
 // import { IControl, Map, Popup } from 'mapbox-gl';
 
 import { loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
-import { debug, getConfig } from '../config';
+import { debug, getBoolConfig, getConfig } from '../config';
 
 /**
  * Opens the information intro window
@@ -57,8 +57,25 @@ function openInfoWindow(map: Map, showInstructions: boolean) {
         .setDOMContent(introDomElement)
         .addTo(map);
 
+    setupDatasetButton(popup);
     translateDonateButton(popup);
     getLastDBUpdateDate(popup);
+}
+
+function setupDatasetButton(popup: Popup) {
+    const datasetButton = popup.getElement().querySelector<HTMLAnchorElement>("a.dataset_button"),
+        pmtiles_base_url = getConfig("pmtiles_base_url");
+    if (!datasetButton) {
+        if (debug) console.warn("Missing dataset button");
+    } else if (pmtiles_base_url) {
+        datasetButton.href = pmtiles_base_url + '/dataset.csv';
+        datasetButton.classList.remove("hiddenElement");
+    } else if (getBoolConfig("vector_tiles_enable")) {
+        datasetButton.href = 'dataset.php';
+        datasetButton.classList.remove("hiddenElement");
+    } else {
+        datasetButton.classList.add("hiddenElement");
+    }
 }
 
 function translateDonateButton(popup: Popup) {
