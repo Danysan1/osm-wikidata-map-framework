@@ -95,8 +95,6 @@ export class EtymologyElement extends HTMLDivElement {
             throw new Error("Missing etymology template");
 
         const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement;
-        //etyDomElement.dataset.et_id = this.etymology.et_id?.toString();
-        //etyDomElement.dataset.wd_id = this.etymology.wd_id?.toString();
 
         const lang = document.documentElement.lang.split("-").at(0);
         if (debug) console.info("EtymologyElement", { ety: this.etymology, etyDomElement, lang });
@@ -194,7 +192,7 @@ export class EtymologyElement extends HTMLDivElement {
                 } else {
                     location_button.classList.add("hiddenElement");
                     console.warn("Failed converting wkt_coords:", {
-                        et_id: this.etymology.et_id, ety_lat, ety_lon, wkt_coords: this.etymology.wkt_coords
+                        ety_lat, ety_lon, wkt_coords: this.etymology.wkt_coords
                     });
                 }
             } else {
