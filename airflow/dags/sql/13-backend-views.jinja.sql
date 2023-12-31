@@ -32,7 +32,6 @@ SELECT
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
     JSON_AGG(JSON_BUILD_OBJECT(
-        'et_id', et_id,
         'from_osm', et_from_osm,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
@@ -41,7 +40,6 @@ SELECT
         'from_wikidata_entity', from_wd.wd_wikidata_cod,
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
-        'wd_id', wd.wd_id,
         'wikidata', wd.wd_wikidata_cod
     )) AS etymologies
 FROM owmf.element AS el

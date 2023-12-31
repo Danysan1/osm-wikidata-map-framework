@@ -1,9 +1,5 @@
 export interface Etymology {
     /**
-     * Internal ID for the etymology relationship (unique within the request but may vary after OWMF DB updates)
-     */
-    et_id?: number;
-    /**
      * Whether OpenStreetMap is the original source of this etymology
      */
     from_osm?: boolean;
@@ -39,10 +35,6 @@ export interface Etymology {
      * Whether this etymology has been obtained through propagation
      */
     propagated?: boolean;
-    /**
-     * Internal ID (not Q-ID) for this etymology Wikidata item (unique within the request but may vary after OWMF DB updates)
-     */
-    wd_id?: number;
     /**
      * Q-ID of this etymology Wikidata item
      */
