@@ -1,15 +1,13 @@
 #defaultView:BarChart
 SELECT
-    ?name
+    (?id AS ?name)
     (COUNT(DISTINCT ?wikidata) AS ?count)
     ?id
     (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
-    ?wikidata wdt:P106|wdt:P3989 ?id.
-    ?id rdfs:label ?name FILTER(lang(?name)='${language}').
+    OPTIONAL { ?wikidata wdt:P18|wdt:P94|wdt:P242|wdt:P15|wdt:P41 ?picture. }
+    BIND(IF(BOUND(?picture), 'available', 'unavailable') AS ?id)
 }
-GROUP BY ?name ?id
-ORDER BY DESC(?count)
-LIMIT 100
+GROUP BY ?id

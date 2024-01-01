@@ -302,11 +302,7 @@ if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNam
             <p class="element_alt_names"></p>
             <p class="element_description"></p>
             <div class="feature_buttons_placeholder"></div>
-            <?php if ($conf->getBool("show_feature_picture")) { ?>
-                <div class="feature_pictures column"></div>
-            <?php } else { ?>
-                <!-- show_feature_picture = false -->
-            <?php } ?>
+            <div class="feature_pictures column"></div>
 
             <div class="etymologies_container grid grid-auto">
                 <div class="etymology etymology_loading">

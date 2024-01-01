@@ -134,7 +134,7 @@ export class FeatureElement extends HTMLDivElement {
             feature_pictures.classList.remove("hiddenElement");
         } else if (has_wikidata) {
             if (debug) console.info("Using picture from feature 'wikidata' property", { wikidata });
-            this.showDetails(wikidata, feature_pictures);
+            this.showDetailsFromWikidata(wikidata, feature_pictures);
         } else {
             feature_pictures.classList.add("hiddenElement");
         }
@@ -227,16 +227,18 @@ export class FeatureElement extends HTMLDivElement {
         showLoadingSpinner(false);
     }
 
-    private async showDetails(wikidataID: string, feature_pictures: HTMLElement) {
+    private async showDetailsFromWikidata(wikidataID: string, feature_pictures: HTMLElement) {
         try {
-            const wikidataService = new (await import("../services")).WikidataService(),
+            const { WikidataService } = await import("../services"),
+                wikidataService = new WikidataService(),
                 image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
             if (image) {
+                if (debug) console.debug("Found image from Wikidata", { wikidataID, feature_pictures, image });
                 feature_pictures.appendChild(imageToDomElement(image));
                 feature_pictures.classList.remove("hiddenElement");
             }
         } catch (err) {
-            logErrorMessage("Failed getting image from Wikidata", 'error');
+            logErrorMessage("Failed getting image from Wikidata", 'error', { wikidataID, feature_pictures });
             feature_pictures.classList.add("hiddenElement");
         }
     }
