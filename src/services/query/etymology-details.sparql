@@ -101,7 +101,7 @@ WHERE {
 
     # Pictures of this entity
     OPTIONAL {
-        ?picture ^wdt:P18|^wdt:P94|^wdt:P242|^wdt:P15|^wdt:P41 ?wikidata.
+        ?wikidata wdt:P18|wdt:P94|wdt:P242|wdt:P15|wdt:P41 ?picture.
 # picture - https://www.wikidata.org/wiki/Property:P18
 # coat of arms image - https://www.wikidata.org/wiki/Property:P94
 # locator map image - https://www.wikidata.org/wiki/Property:P242

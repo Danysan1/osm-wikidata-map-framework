@@ -2,14 +2,14 @@
 SELECT
     ?name
     (COUNT(DISTINCT ?wikidata) AS ?count)
-    (STRAFTER(STR(?id),STR(wd:)) AS ?id)
+    ?id
     (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
-    ?wikidata wdt:P31 wd:Q5.
-    ?id ^wdt:P21 ?wikidata;
-        rdfs:label ?name FILTER(lang(?name)='${language}').
+    ?wikidata wdt:P31 wd:Q5;
+              wdt:P21 ?id.
+    ?id rdfs:label ?name FILTER(lang(?name)='${language}').
 }
 GROUP BY ?name ?id
 ORDER BY DESC(?count)

@@ -1,8 +1,11 @@
 Q6581072,female,Female,#ff3333
+Q121307100,intersex woman,Female,#ff3333
 Q1052281,transgender female,Female,#ff3333
 Q43445,female organism,Female,#ff3333
 Q15145779,cisgender female,Female,#ff3333
-Q1097630,intersex,Intersex,#7733ff
+Q1097630,intersex,Intersex,#cc33ff
+Q179294,eunuch,Eunuch,#33ff66
+Q121307094,intersex man,Male,#3399ff
 Q2449503,transgender male,Male,#3399ff
 Q6581097,male,Male,#3399ff
 Q44148,male organism,Male,#3399ff

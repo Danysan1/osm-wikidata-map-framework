@@ -1,4 +1,5 @@
 import { ColorSchemeID } from "../model/colorScheme";
+import pictureStatsQuery from "./query/stats/picture.sparql";
 import typeStatsQuery from "./query/stats/type.sparql";
 import genderStatsQuery from "./query/stats/gender.sparql";
 import countryStatsQuery from "./query/stats/country.sparql";
@@ -19,6 +20,7 @@ const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
 }
 
 export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
+    picture: pictureStatsQuery,
     type: typeStatsQuery,
     gender: genderStatsQuery,
     country: countryStatsQuery,
@@ -60,13 +62,15 @@ export class WikidataStatsService extends WikidataService {
                     if (debug) console.info("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
                 }
+                const entityID = typeof x.id?.value === "string" ? x.id.value.replace(WikidataService.WD_ENTITY_PREFIX, '') : undefined,
+                    classID = typeof x.class?.value === "string" ? x.class.value.replace(WikidataService.WD_ENTITY_PREFIX, '') : undefined;
                 return {
                     name: x.name.value,
                     count: parseInt(x.count.value),
-                    id: x.id?.value,
-                    class: x.class?.value,
+                    id: entityID,
+                    class: classID,
                     subjects: x.subjects?.value?.split(","),
-                    color: x.color?.value || csvData?.find(row => row[0] === x.id?.value || row[0] === x.class?.value)?.at(3),
+                    color: x.color?.value || csvData?.find(row => row[0] === entityID || row[0] === classID)?.at(3),
                 };
             }) as EtymologyStat[];
             this.db.addStats(out, colorSchemeID, wikidataIDs, language);
