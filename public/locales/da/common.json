@@ -79,6 +79,7 @@
         "actions": "Handlinger",
         "linked_entities": "Forbundne objekter"
     },
+    "translate": "Oversætte",
     "change_language": "Skift sprog",
     "choose_basemap": "Vælg baggrundsstil",
     "choose_projection": "Vælg kortprojektion",
