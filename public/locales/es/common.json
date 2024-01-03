@@ -79,6 +79,7 @@
         "actions": "Acciones",
         "linked_entities": "Entidades conectadas"
     },
+    "translate": "Traducir",
     "change_language": "Cambiar idioma",
     "choose_basemap": "Elige el fondo del mapa",
     "choose_projection": "Elija la proyección del mapa",
