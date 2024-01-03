@@ -3,12 +3,15 @@ SELECT
     ?name
     (COUNT(DISTINCT ?wikidata) AS ?count)
     ?id
+    (SAMPLE(?followedBy) AS ?class)
     (GROUP_CONCAT(DISTINCT STRAFTER(STR(?wikidata),STR(wd:));separator=',') AS ?subjects)
 WHERE {
     VALUES ?wikidata { ${wikidataValues} }
 
     ?wikidata wdt:P17|wdt:P27 ?id.
     ?id rdfs:label ?name FILTER(lang(?name)='${language}').
+
+    OPTIONAL { ?id wdt:P1366 ?followedBy. }
 }
 GROUP BY ?name ?id
 ORDER BY DESC(?count)
