@@ -12,11 +12,12 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
  **/
 export class LanguageControl extends DropdownControl {
     constructor() {
-        const lang = document.documentElement.lang.split('-').at(0),
+        const currentLanguage = document.documentElement.lang.split('-').at(0),
             i18n_override = getJsonConfig("i18n_override");
         if (typeof i18n_override !== "object")
             throw new Error("i18n_override is not configured, no languages available");
         const languages = Object.keys(i18n_override),
+            selectedLanguage = currentLanguage && currentLanguage in i18n_override ? currentLanguage : 'en',
             languageNames: Record<string, string> = {
                 da: "Dansk",
                 de: "Deutsch",
@@ -37,7 +38,7 @@ export class LanguageControl extends DropdownControl {
         super(
             '🔣',
             items,
-            lang || "en",
+            selectedLanguage,
             "change_language"
         )
 
