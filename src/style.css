@@ -176,6 +176,7 @@ canvas.chart {
 .dropdown-ctrl-dropdown {
   display: inline-block;
   margin: 5px;
+  min-width: 95%;
 }
 
 div.snackbar,

@@ -98,12 +98,10 @@ export function translateAnchorTitle(parent: HTMLElement, selector: string, key:
     if (!domElement) {
         if (debug) console.info("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
-        loadTranslator()
-            .then(t => {
-                const title = t(key, defaultValue);
-                domElement.title = title;
-                //domElement.ariaLabel = title;
-            })
-            .catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
+        loadTranslator().then(t => {
+            const title = t(key, defaultValue);
+            domElement.title = title;
+            //domElement.ariaLabel = title;
+        }).catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
     }
 }

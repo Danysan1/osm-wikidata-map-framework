@@ -227,7 +227,7 @@ if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNam
                 <?= $lastUpdateString; ?>
                 <p>
                     <span class="i18n_based_on">Based on</span>
-                    <a target="_blank" title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework">OSM-Wikidata Map Framework</a>
+                    <a title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework" target="_blank" rel="noopener noreferrer">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . (string)$conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <div id="last_info_row">
@@ -249,10 +249,10 @@ if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNam
                         </form>
                         |
                     <?php } ?>
-                    <a target="_blank" title="Personal website of the author of OSM-Wikidata Map Framework" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/">About me</a>
+                    <a title="Personal website of the author of OSM-Wikidata Map Framework" class="i18n_about_me title_i18n_about_me" href="https://www.dsantini.it/" target="_blank" rel="noopener noreferrer">About me</a>
                     <?php if ($conf->has("issues_url")) { ?>
                         |
-                        <a target="_blank" title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= (string)$conf->get("issues_url") ?>">Report a problem</a>
+                        <a title="Report a problem or a bug" class="i18n_report_issue title_i18n_report_issue" href="<?= (string)$conf->get("issues_url") ?>" target="_blank" rel="noopener noreferrer">Report a problem</a>
                     <?php } ?>
                 </div>
             </footer>
@@ -334,11 +334,11 @@ if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNam
                     </div>
                     <div class="info column">
                         <div class="button_row">
-                            <a title="Wikipedia" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
+                            <a title="Wikipedia" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikipedia_button hiddenElement">
                                 <img class="button_img" src="img/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
-                            <a title="Wikimedia Commons" rel="noopener noreferrer" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
+                            <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
                                 <img class="button_img" src="img/Commons-logo.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>
                             </a>
