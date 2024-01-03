@@ -177,6 +177,15 @@ export class DropdownControl implements IControl {
         }
     }
 
+    private createMoveEndHandler(minZoomLevel: number) {
+        return (e: MapEvent) => {
+            const zoomLevel = e.target.getZoom(),
+                show = zoomLevel >= minZoomLevel;
+            if (debug) console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show });
+            this.show(show);
+        }
+    }
+
     protected getMap() {
         return this._map;
     }
@@ -190,16 +199,17 @@ export class DropdownControl implements IControl {
     }
 
     /**
-     * Gets the ID of the currently selected dropdown value
+     * ID of the currently selected dropdown value
      */
-    getCurrentID() {
-        return this.getDropdown()?.value;
+    protected get value() {
+        const out = this.getDropdown()?.value;
+        if (!out)
+            throw new Error("DropdownControl: currentID: dropdown not yet initialized");
+
+        return out;
     }
 
-    /**
-     * Selects a new value of the dropdown by its ID
-     */
-    setCurrentID(id: string) {
+    protected set value(id: string) {
         const dropdown = this.getDropdown();
         if (!dropdown?.options) {
             console.warn("setCurrentID: dropdown not yet initialized", { id });
@@ -212,7 +222,7 @@ export class DropdownControl implements IControl {
         }
     }
 
-    show(show = true) {
+    protected show(show = true) {
         if (!this._container)
             console.warn("Missing control container, failed showing/hiding it", { show });
         else if (show)
@@ -221,7 +231,7 @@ export class DropdownControl implements IControl {
             this._container.classList?.add("hiddenElement");
     }
 
-    showDropdown(show = true) {
+    protected showDropdown(show = true) {
         if (!this._ctrlDropDown) {
             console.warn("Missing control dropdown, failed showing/hiding it", { show });
         } else if (show) {
@@ -231,7 +241,7 @@ export class DropdownControl implements IControl {
         }
     }
 
-    toggleDropdown(focusOnShow = false) {
+    protected toggleDropdown(focusOnShow = false) {
         if (!this._ctrlDropDown) {
             console.warn("Missing control dropdown, failed toggling it");
         } else if (this._ctrlDropDown.classList.contains("hiddenElement")) {
@@ -239,15 +249,6 @@ export class DropdownControl implements IControl {
             if (focusOnShow) this._ctrlDropDown?.focus();
         } else {
             this.showDropdown(false);
-        }
-    }
-
-    createMoveEndHandler(minZoomLevel: number) {
-        return (e: MapEvent) => {
-            const zoomLevel = e.target.getZoom(),
-                show = zoomLevel >= minZoomLevel;
-            if (debug) console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show });
-            this.show(show);
         }
     }
 }

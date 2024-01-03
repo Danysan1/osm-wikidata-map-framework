@@ -1,6 +1,6 @@
-import { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, MapGeoJSONFeature } from 'maplibre-gl';
+import { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
 
-// import { MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification, MapGeoJSONFeature } from 'mapbox-gl';
+// import { MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
 
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { getCorrectFragmentParams } from '../fragment';
@@ -9,7 +9,6 @@ import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import type { TFunction } from 'i18next';
 import type { Etymology } from '../model/Etymology';
-import type { EtymologyFeature } from '../model/EtymologyResponse';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
 import { showLoadingSpinner } from '../snackbar';
 import { WikidataStatsService, statsQueries } from '../services';
@@ -101,7 +100,7 @@ class EtymologyColorControl extends DropdownControl {
             "color_scheme.choose_scheme",
             true,
             minZoomLevel,
-            () => this.setCurrentID(getCorrectFragmentParams().colorScheme),
+            () => this.value = getCorrectFragmentParams().colorScheme,
             (e: MapSourceDataEvent) => {
                 if (e.isSourceLoaded && e.dataType === "source" && sourceId === e.sourceId)
                     this.updateChart(e);
@@ -155,6 +154,16 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
+    private areLayersAvailable() {
+        for (const i in this.layerIDs) {
+            if (!this.getMap()?.getLayer(this.layerIDs[i])) {
+                if (debug) console.warn("calculateAndLoadChartData: layer not yet loaded", { layers: this.layerIDs, layer: this.layerIDs[i] });
+                return false;
+            }
+        }
+        return true;
+    }
+
     private calculateAndLoadChartData(
         colorSchemeID: ColorSchemeID,
         calculateChartData: (features: EtymologyFeatureProperties[]) => EtymologyStat[],
@@ -163,15 +172,10 @@ class EtymologyColorControl extends DropdownControl {
         const colorSchemeIDChanged = this._lastColorSchemeID !== colorSchemeID;
         this._lastColorSchemeID = colorSchemeID;
 
-        for (const i in this.layerIDs) {
-            if (!this.getMap()?.getLayer(this.layerIDs[i])) {
-                if (debug) console.warn("calculateAndLoadChartData: layer not yet loaded", { layers: this.layerIDs, layer: this.layerIDs[i] });
-                return;
-            }
-        }
-
-        if (debug) console.debug("calculateAndLoadChartData", { colorSchemeID, colorSchemeIDChanged, layerColor });
-        const features: EtymologyFeatureProperties[] | undefined = this.getMap()?.queryRenderedFeatures({ layers: this.layerIDs })?.map(f => f.properties);
+        const features: EtymologyFeatureProperties[] | undefined = this.getMap()
+            ?.queryRenderedFeatures({ layers: this.layerIDs })
+            ?.map(f => f.properties);
+        if (debug) console.debug("calculateAndLoadChartData", { colorSchemeID, colorSchemeIDChanged, layerColor, features });
         if (colorSchemeIDChanged || features?.length !== this.lastFeatureCount) {
             this.lastFeatureCount = features?.length;
 
@@ -179,11 +183,18 @@ class EtymologyColorControl extends DropdownControl {
             this.setChartStats(stats);
         }
 
-        if (colorSchemeIDChanged)
+        if (colorSchemeIDChanged) {
+            if (debug) console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, layerColor });
             this.setLayerColor(layerColor);
+        } else {
+            if (debug) console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeID, colorSchemeIDChanged, layerColor });
+        }
     }
 
     private loadFeatureSourceChartData() {
+        if (!this.areLayersAvailable())
+            return;
+
         this._lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             ColorSchemeID.feature_source,
@@ -221,6 +232,9 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private loadEtymologySourceChartData() {
+        if (!this.areLayersAvailable())
+            return;
+
         this._lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             ColorSchemeID.etymology_source,
@@ -291,6 +305,9 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private async loadPictureAvailabilityChartData() {
+        if (!this.areLayersAvailable())
+            return;
+
         showLoadingSpinner(true);
         let propertiesList: EtymologyFeatureProperties[] | undefined;
         try {
@@ -367,6 +384,9 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
+        if (!this.areLayersAvailable())
+            return;
+
         showLoadingSpinner(true);
         let wikidataIDs: string[] = [];
         try {

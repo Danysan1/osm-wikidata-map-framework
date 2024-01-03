@@ -41,6 +41,7 @@ export class LinkControl implements IControl {
         this.anchor.ariaLabel = this.title;
         this.anchor.role = "button";
         this.anchor.target = "_blank";
+        this.anchor.rel = "noopener noreferrer";
         this.container.appendChild(this.anchor);
 
         const img = document.createElement("img");

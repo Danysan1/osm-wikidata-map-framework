@@ -79,6 +79,7 @@
         "actions": "Actions",
         "linked_entities": "Linked entities"
     },
+    "translate": "Translate",
     "change_language": "Change language",
     "choose_basemap": "Choose background style",
     "choose_projection": "Choose map projection",

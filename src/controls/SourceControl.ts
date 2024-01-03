@@ -160,7 +160,7 @@ export class SourceControl extends DropdownControl {
             "source.choose_source",
             true,
             undefined,
-            () => this.setCurrentID(getCorrectFragmentParams().source)
+            () => this.value = getCorrectFragmentParams().source
         );
     }
 }
