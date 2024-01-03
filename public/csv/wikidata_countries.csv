@@ -95,6 +95,10 @@ Q43287,German Empire,Germany,#FFCC00
 Q27306,Kingdom of Prussia,Germany,#FFCC00
 Q7318,Nazi Germany,Germany,#FFCC00
 Q151624,German Confederation,Germany,#FFCC00
+Q1206012,German Reich,Germany,#FFCC00
+Q186320,Grand Duchy of Baden,Germany,#FFCC00
+Q159631,Kingdom of Württemberg,Germany,#FFCC00
+Q154195,Kingdom of Bavaria,Germany,#FFCC00
 Q33496,Czechoslovakia,Czechoslovakia,#0000ff
 Q212,Ukraine,Ukraine,#005bbb
 Q243610,Ukrainian People's Republic,Ukraine,#005bbb
@@ -147,3 +151,9 @@ Q717,Venezuela,Venezuela,#EF3340
 Q736,Ecuador,Ecuador,#FFD100
 Q739,Colombia,Colombia,#003087
 Q258,South Africa,South Africa,#007749
+Q114,Kenya,Kenya,#BB0000
+Q881,Vietnam,Vietnam,#C8102E
+Q18097,Korea,Korea,#0F64CD
+Q884,South Korea,Korea,#0F64CD
+Q28179,Joseon,Korea,#0F64CD
+Q28233,Korean Empire,Korea,#0F64CD
