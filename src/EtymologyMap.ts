@@ -357,7 +357,10 @@ export class EtymologyMap extends Map {
             fullSourceID = "details-" + sourceID,
             sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
 
-        if (sourceIDChanged && isPMTilesSource) {
+        if (isPMTilesSource) {
+            if (!sourceIDChanged)
+                return;
+
             if (debug) console.debug("Updating pmtiles vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.preparePMTilesSource(
@@ -371,7 +374,10 @@ export class EtymologyMap extends Map {
                 "etymology_map",
                 sourceID == "pmtiles_all" ? undefined : sourceID.replace("pmtiles_", "")
             );
-        } else if (sourceIDChanged && isVectorSource) {
+        } else if (isVectorSource) {
+            if (!sourceIDChanged)
+                return;
+
             if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
             this.lastSourceID = fullSourceID;
             this.prepareVectorSource(
@@ -380,7 +386,9 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else if (!isPMTilesSource && !isVectorSource && this.services !== undefined) {
+        } else if (debug && this.services === undefined) {
+            console.warn("updateWikidataSource: Services are still initializing, skipping source update");
+        } else if (this.services !== undefined) {
             const bbox: BBox = [
                 Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
                 Math.floor(southWest.lat * 100) / 100,
@@ -393,8 +401,6 @@ export class EtymologyMap extends Map {
                 this.lastBBox = bbox;
                 this.prepareWikidataGeoJSONSource(sourceID, bbox, thresholdZoomLevel);
             }
-        } else if (debug && this.services === undefined) {
-            console.warn("updateWikidataSource: Services are still initializing, skipping source update");
         } else if (debug) {
             console.warn("updateWikidataSource: Unexpected source ID", sourceID);
         }
@@ -613,11 +619,15 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'fill-extrusion',
                 "filter": createFilter("Polygon"),
-                "minzoom": minZoom + 2,
+                "minzoom": minZoom,
                 'paint': { // https://maplibre.org/maplibre-gl-js/docs/examples/3d-buildings/
                     'fill-extrusion-color': colorSchemes.blue.color,
                     'fill-extrusion-opacity': 0.3,
-                    'fill-extrusion-height': ["to-number", ["get", "render_height"]],
+                    'fill-extrusion-height': [
+                        'interpolate', ['linear'], ['zoom'],
+                        15, 0,
+                        16, ['to-number', ['get', 'render_height']]
+                    ],
                 }
             };
             if (source_layer)
