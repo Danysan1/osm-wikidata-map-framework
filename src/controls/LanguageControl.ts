@@ -1,5 +1,5 @@
 import type { Map } from 'maplibre-gl';
-import { debug } from '../config';
+import { debug, getJsonConfig } from '../config';
 import { translateAnchorTitle, translateContent } from '../i18n';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 
@@ -13,19 +13,24 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
 export class LanguageControl extends DropdownControl {
     constructor() {
         const lang = document.documentElement.lang.split('-').at(0),
-            items = [
-                { id: "da", text: "Dansk" },
-                { id: "de", text: "Deutsch" },
-                { id: "en", text: "English" },
-                { id: "es", text: "Español" },
-                { id: "fr", text: "Français" },
-                { id: "it", text: "Italiano" },
-            ].map((x): DropdownItem => ({
-                id: x.id,
-                text: x.text,
+            i18n_override = getJsonConfig("i18n_override");
+        if (typeof i18n_override !== "object")
+            throw new Error("i18n_override is not configured, no languages available");
+        const languages = Object.keys(i18n_override),
+            languageNames: Record<string, string> = {
+                da: "Dansk",
+                de: "Deutsch",
+                en: "English",
+                es: "Español",
+                fr: "Français",
+                it: "Italiano",
+            },
+            items = languages.map((lang): DropdownItem => ({
+                id: lang,
+                text: lang in languageNames ? languageNames[lang] : lang,
                 onSelect: () => {
-                    if (debug) console.debug("LanguageControl: Changing language to " + x.id);
-                    window.location.search = "?lang=" + x.id;
+                    if (debug) console.warn("LanguageControl: Changing language to " + lang);
+                    window.location.search = "?lang=" + lang;
                 }
             }));
 
@@ -35,6 +40,9 @@ export class LanguageControl extends DropdownControl {
             lang || "en",
             "change_language"
         )
+
+        if (languages.length < 2)
+            this.show(false);
     }
 
     onAdd(map: Map) {
