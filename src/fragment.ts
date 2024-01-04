@@ -71,8 +71,8 @@ interface CorrectFragmentParams {
 function getCorrectFragmentParams(): CorrectFragmentParams {
     const raw = getFragmentParams(),
         correct: CorrectFragmentParams = {
-            lon: raw.lon ? raw.lon : default_center_lon,
-            lat: raw.lat && raw.lat >= -90 && raw.lat <= 90 ? raw.lat : default_center_lat,
+            lon: raw.lon !== null ? raw.lon : default_center_lon,
+            lat: raw.lat !== null && raw.lat >= -90 && raw.lat <= 90 ? raw.lat : default_center_lat,
             zoom: raw.zoom ? raw.zoom : default_zoom,
             colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
             source: raw.source?.replace("db_", "vector_") || defaultSource,

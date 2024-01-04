@@ -72,6 +72,9 @@ $preloads = [
 if ((string)$conf->get("default_background_style") == "stadia_alidade") {
     $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/styles/alidade_smooth.json" as="fetch" crossorigin="anonymous" />';
     $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/data/openmaptiles.json" as="fetch" crossorigin="anonymous" />';
+} elseif ((string)$conf->get("default_background_style") == "stamen_toner_lite") {
+    $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/styles/stamen_toner_lite.json" as="fetch" crossorigin="anonymous" />';
+    $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/data/stamen-omt.json" as="fetch" crossorigin="anonymous" />';
 }
 if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNamespace]["title"]))
     $preloads[] = '<link rel="preload" href="locales/' . $language . '/common.json" as="fetch" crossorigin="anonymous" />';
