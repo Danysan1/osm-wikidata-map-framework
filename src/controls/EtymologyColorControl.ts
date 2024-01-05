@@ -425,25 +425,28 @@ class EtymologyColorControl extends DropdownControl {
 
     private async downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID: ColorSchemeID): Promise<EtymologyStat[] | null> {
         if (idSet.size === 0) {
-            if (debug) console.debug("Skipping stats update for 0 IDs");
+            if (debug) console.debug("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
             return null;
         } else if (colorSchemeID === this._lastColorSchemeID && this._lastWikidataIDs?.length === idSet.size && this._lastWikidataIDs?.every(id => id in idSet)) {
-            if (debug) console.debug("Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, idSet, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, idSet, lastWikidataIDs: this._lastWikidataIDs });
             return null;
         } else {
             const uniqueIDs = Array.from(idSet);
-            if (debug) console.debug("Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (debug) console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = uniqueIDs;
             try {
                 const statsService = new WikidataStatsService(),
                     stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
-                if (stats.length > 0) {
-                    return stats;
-                } else {
-                    this._lastWikidataIDs = undefined;
+                if (!stats.length) {
+                    if (debug) console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
                     return null;
+                } else if (colorSchemeID != this._lastColorSchemeID) {
+                    if (debug) console.debug("downloadChartDataForWikidataIDs: color scheme has changed while fetching stats", { colorSchemeID, newColorSchemeID: this._lastColorSchemeID, uniqueIDs });
+                    return null;
+                } else {
+                    return stats;
                 }
             } catch (e) {
                 console.error("Stats fetch error", e);
