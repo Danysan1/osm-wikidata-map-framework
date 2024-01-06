@@ -3,7 +3,7 @@ import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecifica
 // import { MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
 
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
-import { getCorrectFragmentParams } from '../fragment';
+import { getCorrectFragmentParams, getFragmentParams } from '../fragment';
 import { getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
@@ -59,8 +59,9 @@ class EtymologyColorControl extends DropdownControl {
     private _chartInitInProgress = false;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: Chart;
-    private _lastWikidataIDs?: string[];
-    private _lastColorSchemeID?: ColorSchemeID;
+    private lastWikidataIDs?: string[];
+    private lastColorSchemeID?: ColorSchemeID;
+    private lastBackEndID?: string;
     private lastFeatureCount?: number;
     private layerIDs: string[];
     private minZoomLevel: number;
@@ -169,21 +170,23 @@ class EtymologyColorControl extends DropdownControl {
         calculateChartData: (features: EtymologyFeatureProperties[]) => EtymologyStat[],
         layerColor: ExpressionSpecification
     ) {
-        const colorSchemeIDChanged = this._lastColorSchemeID !== colorSchemeID;
-        this._lastColorSchemeID = colorSchemeID;
+        const colorSchemeIDChanged = this.lastColorSchemeID !== colorSchemeID,
+            backEndID = getFragmentParams().backEndID || undefined,
+            backEndChanged = this.lastBackEndID !== backEndID;
 
         const features: EtymologyFeatureProperties[] | undefined = this.getMap()
             ?.queryRenderedFeatures({ layers: this.layerIDs })
             ?.map(f => f.properties);
         if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData", { colorSchemeID, colorSchemeIDChanged, layerColor, features });
-        if (colorSchemeIDChanged || features?.length !== this.lastFeatureCount) {
+        if (colorSchemeIDChanged || backEndChanged || features?.length !== this.lastFeatureCount) {
+            this.lastColorSchemeID = colorSchemeID;
             this.lastFeatureCount = features?.length;
 
             const stats = calculateChartData(features || []);
             this.setChartStats(stats);
         }
 
-        if (colorSchemeIDChanged) {
+        if (colorSchemeIDChanged || backEndChanged) {
             if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, layerColor });
             this.setLayerColor(layerColor);
         } else {
@@ -195,7 +198,7 @@ class EtymologyColorControl extends DropdownControl {
         if (!this.areLayersAvailable())
             return;
 
-        this._lastWikidataIDs = undefined;
+        this.lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             ColorSchemeID.feature_source,
             (features: EtymologyFeatureProperties[]) => {
@@ -235,7 +238,7 @@ class EtymologyColorControl extends DropdownControl {
         if (!this.areLayersAvailable())
             return;
 
-        this._lastWikidataIDs = undefined;
+        this.lastWikidataIDs = undefined;
         this.calculateAndLoadChartData(
             ColorSchemeID.etymology_source,
             (features: EtymologyFeatureProperties[]) => {
@@ -427,32 +430,36 @@ class EtymologyColorControl extends DropdownControl {
         if (idSet.size === 0) {
             if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
             return null;
-        } else if (colorSchemeID === this._lastColorSchemeID && this._lastWikidataIDs?.length === idSet.size && this._lastWikidataIDs?.every(id => id in idSet)) {
-            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, idSet, lastWikidataIDs: this._lastWikidataIDs });
-            return null;
-        } else {
-            const uniqueIDs = Array.from(idSet);
-            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
-            this._lastColorSchemeID = colorSchemeID;
-            this._lastWikidataIDs = uniqueIDs;
-            try {
-                const statsService = new WikidataStatsService(),
-                    stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
+        }
 
-                if (!stats.length) {
-                    if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
-                    return null;
-                } else if (colorSchemeID != this._lastColorSchemeID) {
-                    if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: color scheme has changed while fetching stats", { colorSchemeID, newColorSchemeID: this._lastColorSchemeID, uniqueIDs });
-                    return null;
-                } else {
-                    return stats;
-                }
-            } catch (e) {
-                console.error("Stats fetch error", e);
-                this._lastWikidataIDs = undefined;
+        if (colorSchemeID === this.lastColorSchemeID && this.lastWikidataIDs?.length === idSet.size && this.lastWikidataIDs?.every(id => id in idSet)) {
+            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this.lastColorSchemeID, idSet, lastWikidataIDs: this.lastWikidataIDs });
+            return null;
+        }
+
+        const uniqueIDs = Array.from(idSet),
+            backEndID = getFragmentParams().backEndID || undefined;
+        if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, uniqueIDs, backEndID });
+        this.lastColorSchemeID = colorSchemeID;
+        this.lastWikidataIDs = uniqueIDs;
+        this.lastBackEndID = backEndID;
+        try {
+            const statsService = new WikidataStatsService(),
+                stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
+
+            if (!stats.length) {
+                if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
                 return null;
+            } else if (colorSchemeID != this.lastColorSchemeID) {
+                if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: color scheme has changed while fetching stats", { colorSchemeID, newColorSchemeID: this.lastColorSchemeID, uniqueIDs });
+                return null;
+            } else {
+                return stats;
             }
+        } catch (e) {
+            console.error("Stats fetch error", e);
+            this.lastWikidataIDs = undefined;
+            return null;
         }
     }
 

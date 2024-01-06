@@ -68,7 +68,7 @@ function setupDatasetButton(popup: Popup) {
     if (!datasetButton) {
         if (process.env.NODE_ENV === 'development') console.warn("Missing dataset button");
     } else if (pmtiles_base_url) {
-        datasetButton.href = pmtiles_base_url + '/dataset.csv';
+        datasetButton.href = pmtiles_base_url + 'dataset.csv';
         datasetButton.classList.remove("hiddenElement");
     } else if (getBoolConfig("vector_tiles_enable")) {
         datasetButton.href = 'dataset.php';
