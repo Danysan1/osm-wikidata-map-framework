@@ -81,14 +81,23 @@ export class LinkControl implements IControl {
 
     createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
         return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType !== "source" || e.source.type !== "geojson" || !sourceIds.includes(e.sourceId))
+            if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIds.includes(e.sourceId))
                 return;
 
-            const content = (e.source as any)?.data;
-            if (typeof content !== "object")
+            if (e.source.type !== "geojson") {
+                if (process.env.NODE_ENV === 'development') console.debug("Source is not GeoJSON, hiding", e.source);
+                this.show(false);
                 return;
+            }
 
-            const query = content[mapEventField];
+            const content = e.source?.data;
+            if (!content || typeof content !== "object") {
+                if (process.env.NODE_ENV === 'development') console.debug("Source data is not an object, hiding", e.source);
+                this.show(false);
+                return;
+            }
+
+            const query = (content as any)[mapEventField];
             if (typeof query !== "string" || !query.length) {
                 if (process.env.NODE_ENV === 'development') console.debug("Missing query field, hiding", { content, mapEventField });
                 this.show(false);
