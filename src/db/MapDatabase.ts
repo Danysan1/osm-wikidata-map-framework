@@ -11,7 +11,7 @@ export class MapDatabase extends Dexie {
     public constructor() {
         super("MapDatabase");
         this.version(3).stores({
-            maps: "++id, [sourceID+language]"
+            maps: "++id, [backEndID+language]"
         });
 
         setTimeout(async () => {
@@ -24,12 +24,12 @@ export class MapDatabase extends Dexie {
         }, 10_000);
     }
 
-    public async getMap(sourceID: string, bbox: BBox, language?: string): Promise<MapRow | undefined> {
+    public async getMap(backEndID: string, bbox: BBox, language?: string): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
                 return await this.maps
-                    .where({ sourceID, language })
+                    .where({ backEndID, language })
                     .and(map => {
                         if (!map.bbox)
                             return false;

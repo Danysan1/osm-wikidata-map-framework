@@ -27,41 +27,41 @@ export class OverpassWikidataMapService implements MapService {
         this.wikidataService = wikidataService;
     }
 
-    canHandleSource(sourceID: string): boolean {
-        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
-        return this.overpassService.canHandleSource(overpassSourceID) && this.wikidataService.canHandleSource(wikidataSourceID);
+    canHandleBackEnd(backEndID: string): boolean {
+        const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
+        return this.overpassService.canHandleBackEnd(overpassBackEndID) && this.wikidataService.canHandleBackEnd(wikidataBackEndID);
     }
 
-    async fetchMapClusterElements(sourceID: string, bbox: BBox) {
-        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
-        if (!overpassSourceID || !wikidataSourceID)
-            throw new Error(`Invalid combined cluster sourceID: "${sourceID}"`);
+    async fetchMapClusterElements(backEndID: string, bbox: BBox) {
+        const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
+        if (!overpassBackEndID || !wikidataBackEndID)
+            throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);
 
-        if (overpassSourceID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
-            return this.wikidataService.fetchMapClusterElements(wikidataSourceID, bbox);
+        if (overpassBackEndID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
+            return this.wikidataService.fetchMapClusterElements(wikidataBackEndID, bbox);
 
-        const actualOverpassSourceID = overpassSourceID === "overpass_all_wd" ? "overpass_all" : overpassSourceID;
+        const actualOverpassBackEndID = overpassBackEndID === "overpass_all_wd" ? "overpass_all" : overpassBackEndID;
         return await this.fetchAndMergeMapData(
-            "elements-" + sourceID,
-            () => this.overpassService.fetchMapClusterElements(actualOverpassSourceID, bbox),
-            () => this.wikidataService.fetchMapClusterElements(wikidataSourceID, bbox),
+            "elements-" + backEndID,
+            () => this.overpassService.fetchMapClusterElements(actualOverpassBackEndID, bbox),
+            () => this.wikidataService.fetchMapClusterElements(wikidataBackEndID, bbox),
             bbox
         );
     }
 
-    async fetchMapElementDetails(sourceID: string, bbox: BBox) {
-        const [overpassSourceID, wikidataSourceID] = sourceID.split("+");
-        if (!overpassSourceID || !wikidataSourceID)
-            throw new Error(`Invalid combined details sourceID: "${sourceID}"`);
+    async fetchMapElementDetails(backEndID: string, bbox: BBox) {
+        const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
+        if (!overpassBackEndID || !wikidataBackEndID)
+            throw new Error(`Invalid combined details back-end ID: "${backEndID}"`);
 
         const out: EtymologyResponse = await this.fetchAndMergeMapData(
-            "details-" + sourceID,
-            () => this.overpassService.fetchMapElementDetails(overpassSourceID, bbox),
-            () => this.wikidataService.fetchMapElementDetails(wikidataSourceID, bbox),
+            "details-" + backEndID,
+            () => this.overpassService.fetchMapElementDetails(overpassBackEndID, bbox),
+            () => this.wikidataService.fetchMapElementDetails(wikidataBackEndID, bbox),
             bbox
         );
         out.features = out.features.filter(
-            (feature) => wikidataSourceID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
+            (feature) => wikidataBackEndID === "wd_base" ? feature.properties?.wikidata : (feature.properties?.etymologies?.length || feature.properties?.text_etymology)
         );
         out.etymology_count = out.features.map(feature => feature.properties?.etymologies?.length || 0)
             .reduce((acc: number, num: number) => acc + num, 0);
@@ -70,16 +70,16 @@ export class OverpassWikidataMapService implements MapService {
     }
 
     private async fetchAndMergeMapData(
-        sourceID: string,
+        backEndID: string,
         fetchOverpass: () => Promise<EtymologyResponse>,
         fetchWikidata: () => Promise<EtymologyResponse>,
         bbox: BBox
     ): Promise<EtymologyResponse> {
-        let out = await this.db.getMap(sourceID, bbox, this.language);
+        let out = await this.db.getMap(backEndID, bbox, this.language);
         if (out) {
-            if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { backEndID, bbox, language: this.language, out });
         } else {
-            if (debug) console.debug("Overpass+Wikidata cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.debug("Overpass+Wikidata cache miss, fetching data", { backEndID, bbox, language: this.language });
 
             if (debug) console.time("Overpass+Wikidata fetch");
             const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
@@ -91,7 +91,7 @@ export class OverpassWikidataMapService implements MapService {
 
             if (!out)
                 throw new Error("Merge failed");
-            out.sourceID = sourceID;
+            out.backEndID = backEndID;
             this.db.addMap(out);
         }
         return out;

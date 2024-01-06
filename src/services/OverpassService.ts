@@ -32,67 +32,67 @@ export class OverpassService implements MapService {
         if (debug) console.debug("OverpassService initialized", { wikidata_keys: this.wikidata_keys, wikidata_key_codes: this.wikidata_key_codes });
     }
 
-    canHandleSource(sourceID: string): boolean {
-        if (!/^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(sourceID))
+    canHandleBackEnd(backEndID: string): boolean {
+        if (!/^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID))
             return false;
 
         return true;
     }
 
-    fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
+    fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
         return this.fetchMapData(
-            "out ids center ${maxElements};", "elements-" + sourceID, bbox
+            "out ids center ${maxElements};", "elements-" + backEndID, bbox
         );
     }
 
-    async fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
+    async fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
         const out = await this.fetchMapData(
-            "out body ${maxElements}; >; out skel qt;", "details-" + sourceID, bbox
+            "out body ${maxElements}; >; out skel qt;", "details-" + backEndID, bbox
         );
         out.features = out.features.filter(
-            (feature: EtymologyFeature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && sourceID.endsWith("_wd"))
+            (feature: EtymologyFeature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
         );
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
         if (debug) console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 
-    private async fetchMapData(outClause: string, sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
-        let out: EtymologyResponse | undefined = await this.db.getMap(sourceID, bbox, this.language);
+    private async fetchMapData(outClause: string, backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        let out: EtymologyResponse | undefined = await this.db.getMap(backEndID, bbox, this.language);
         if (out) {
-            if (debug) console.debug("Overpass cache hit, using cached response", { sourceID, bbox, language: this.language, out });
+            if (debug) console.debug("Overpass cache hit, using cached response", { backEndID, bbox, language: this.language, out });
         } else {
-            if (debug) console.debug("Overpass cache miss, fetching data", { sourceID, bbox, language: this.language });
+            if (debug) console.debug("Overpass cache miss, fetching data", { backEndID, bbox, language: this.language });
             const osm_text_key = getConfig("osm_text_key"),
                 osm_description_key = getConfig("osm_description_key");
             let osm_keys: string[],
                 use_wikidata: boolean,
                 search_text_key = osm_text_key;
 
-            if (sourceID.includes("overpass_wd")) {
+            if (backEndID.includes("overpass_wd")) {
                 // Search only elements with wikidata=*
                 osm_keys = [];
                 search_text_key = null;
                 use_wikidata = true;
             } else if (!this.wikidata_keys) {
-                throw new Error(`No Wikidata keys configured, invalid Overpass sourceID: "${this.wikidata_keys}"`)
-            } else if (sourceID.includes("overpass_all_wd")) {
+                throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${this.wikidata_keys}"`)
+            } else if (backEndID.includes("overpass_all_wd")) {
                 // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
                 osm_keys = this.wikidata_keys;
                 use_wikidata = true;
-            } else if (sourceID.includes("overpass_all")) {
+            } else if (backEndID.includes("overpass_all")) {
                 // Search all elements with an etymology
                 osm_keys = this.wikidata_keys;
                 use_wikidata = false;
             } else {
                 // Search a specific etymology key
-                const sourceKeyCode = /^.*overpass_(osm_[_a-z]+)$/.exec(sourceID)?.at(1);
+                const sourceKeyCode = /^.*overpass_(osm_[_a-z]+)$/.exec(backEndID)?.at(1);
 
-                if (debug) console.debug("Overpass fetchMapData", { sourceID, sourceKeyCode, wikidata_key_codes: this.wikidata_key_codes });
+                if (debug) console.debug("Overpass fetchMapData", { backEndID, sourceKeyCode, wikidata_key_codes: this.wikidata_key_codes });
                 if (!sourceKeyCode)
-                    throw new Error(`Failed to extract sourceKeyCode from sourceID: "${sourceID}"`);
+                    throw new Error(`Failed to extract sourceKeyCode from back-end ID: "${backEndID}"`);
                 else if (!this.wikidata_key_codes || !(sourceKeyCode in this.wikidata_key_codes))
-                    throw new Error(`Invalid Overpass sourceID: "${sourceID}"`);
+                    throw new Error(`Invalid Overpass back-end ID: "${backEndID}"`);
                 else
                     osm_keys = [this.wikidata_key_codes[sourceKeyCode]];
 
@@ -117,7 +117,7 @@ export class OverpassService implements MapService {
             out.overpass_query = query;
             out.timestamp = new Date().toISOString();
             out.bbox = bbox;
-            out.sourceID = sourceID;
+            out.backEndID = backEndID;
             out.language = this.language;
             const maxElements = getConfig("max_map_elements");
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);

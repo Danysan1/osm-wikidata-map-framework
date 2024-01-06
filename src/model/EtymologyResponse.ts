@@ -7,9 +7,35 @@ export type EtymologyFeature = Feature<Geometry, EtymologyResponseFeaturePropert
 
 export interface EtymologyResponse extends FeatureCollection<Geometry, EtymologyResponseFeatureProperties> {
     /**
-     * ID of the source of the features
+     * ID of the backEnd used to fetch the features
+     * 
+     * Examples:
+     *  - db_all
+     *  - db_osm_name_etymology
+     *  - db_osm_wikidata_direct
+     *  - db_osm_wikidata_reverse
+     *  - db_propagated
+     *  - overpass_wd
+     *  - overpass_all
+     *  - overpass_osm_name_etymology
+     *  - wd_base
+     *  - wd_direct
+     *  - wd_indirect
+     *  - wd_qualifier
+     *  - wd_reverse
+     *  - overpass_wd+wd_direct
+     *  - qlever_osm_wd
+     *  - qlever_osm_all
+     *  - qlever_osm_name_etymology
+     *  - qlever_wd_direct
+     *  - qlever_wd_indirect 
+     *  - qlever_wd_qualifier
+     *  - qlever_wd_reverse
+     *  - qlever_osm_wd_base
+     *  - qlever_osm_wikidata_direct
+     *  - qlever_osm_wikidata_reverse
      */
-    sourceID?: string;
+    backEndID?: string;
     /**
      * ISO string for the time the query was run
      */

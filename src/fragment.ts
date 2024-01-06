@@ -9,14 +9,14 @@ const default_center_lat_raw = getConfig("default_center_lat"),
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
     defaultColorSchemeRaw = getConfig("default_color_scheme"),
     defaultColorScheme = defaultColorSchemeRaw && defaultColorSchemeRaw in ColorSchemeID ? defaultColorSchemeRaw as ColorSchemeID : ColorSchemeID.blue,
-    defaultSource = getConfig("default_source") || "overpass_all";
+    defaultBackEndID = getConfig("default_source") || "overpass_all";
 
 interface FragmentParams {
     lon: number | null;
     lat: number | null;
     zoom: number | null;
     colorScheme: string | null;
-    source: string | null;
+    backEndID: string | null;
 }
 
 /**
@@ -29,7 +29,7 @@ function getFragmentParams(): FragmentParams {
             lat: (hashParams && hashParams[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : null,
             zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : null,
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
-            source: (hashParams && hashParams[4]) ? hashParams[4] : null,
+            backEndID: (hashParams && hashParams[4]) ? hashParams[4] : null,
         };
     //if(enable_debug_log) console.info("getFragmentParams", { hashParams, out });
     return out;
@@ -40,7 +40,7 @@ function getFragmentParams(): FragmentParams {
  * If a parameter is !== undefined it is updated in the fragment.
  * If it is === undefined it is left untouched.
  */
-function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, source?: string): string {
+function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, backEndID?: string): string {
     const currentParams = getCorrectFragmentParams(),
         pos = { ...currentParams };
 
@@ -48,14 +48,14 @@ function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorSchem
     if (typeof lat === 'number') pos.lat = parseFloat(lat.toFixed(4));
     if (typeof zoom === 'number') pos.zoom = parseFloat(zoom.toFixed(1));
     if (typeof colorScheme === 'string') pos.colorScheme = colorScheme;
-    if (typeof source === 'string') pos.source = source;
+    if (typeof backEndID === 'string') pos.backEndID = backEndID;
 
-    const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.source}`;
+    const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.backEndID}`;
     if (window.location.hash !== fragment) {
-        if (debug) console.info("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
+        if (debug) console.info("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
         window.location.hash = fragment;
     } else {
-        if (debug) console.info("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source });
+        if (debug) console.info("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
     }
     return fragment;
 }
@@ -65,7 +65,7 @@ interface CorrectFragmentParams {
     lat: number;
     zoom: number;
     colorScheme: ColorSchemeID;
-    source: string;
+    backEndID: string;
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {
@@ -75,7 +75,7 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
             lat: raw.lat !== null && raw.lat >= -90 && raw.lat <= 90 ? raw.lat : default_center_lat,
             zoom: raw.zoom ? raw.zoom : default_zoom,
             colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
-            source: raw.source?.replace("db_", "vector_") || defaultSource,
+            backEndID: raw.backEndID?.replace("db_", "vector_") || defaultBackEndID,
         };
     //if (debug) console.info("getCorrectFragmentParams", { raw, correct });
     return correct;

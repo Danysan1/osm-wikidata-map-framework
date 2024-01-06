@@ -42,29 +42,29 @@ export class QLeverMapService implements MapService {
         this.db = db;
     }
 
-    canHandleSource(sourceID: string): boolean {
-        return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(sourceID);
+    canHandleBackEnd(backEndID: string): boolean {
+        return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(sourceID, bbox);
+    public fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox);
     }
 
-    public fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(sourceID, bbox);
+    public fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox);
     }
 
-    private async fetchMapData(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
+    private async fetchMapData(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
         const language = document.documentElement.lang.split('-').at(0) || '';
-        let out = await this.db.getMap(sourceID, bbox, language);
+        let out = await this.db.getMap(backEndID, bbox, language);
         if (out) {
-            if (debug) console.info(`QLever map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
+            if (debug) console.info(`QLever map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
         } else {
-            if (debug) console.info("QLever map cache miss, fetching data", { sourceID, bbox, language: language });
+            if (debug) console.info("QLever map cache miss, fetching data", { backEndID, bbox, language: language });
             const maxElements = getConfig("max_map_elements"),
-                backend = this.getBackend(sourceID),
-                sparqlQueryTemplate = this.getSparqlQueryTemplate(sourceID),
-                sparqlQuery = this.fillPlaceholders(sourceID, sparqlQueryTemplate, bbox)
+                backend = this.getSparqlBackEnd(backEndID),
+                sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
+                sparqlQuery = this.fillPlaceholders(backEndID, sparqlQueryTemplate, bbox)
                     .replaceAll('${language}', language || '')
                     .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : ""),
                 ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
@@ -77,7 +77,7 @@ export class QLeverMapService implements MapService {
                 bbox: bbox,
                 features: ret.results.bindings.reduce(this.featureReducer, []),
                 timestamp: new Date().toISOString(),
-                sourceID: sourceID,
+                backEndID: backEndID,
                 language: language,
                 truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
@@ -93,38 +93,38 @@ export class QLeverMapService implements MapService {
         return out;
     }
 
-    private getBackend(sourceID: string): SparqlBackend {
-        return sourceID.startsWith("qlever_osm_") ? "osm-planet" : "wikidata";
+    private getSparqlBackEnd(backEnd: string): SparqlBackend {
+        return backEnd.startsWith("qlever_osm_") ? "osm-planet" : "wikidata";
     }
 
-    private getSparqlQueryTemplate(sourceID: string): string {
-        if (sourceID === "qlever_osm_wd")
+    private getSparqlQueryTemplate(backEndID: string): string {
+        if (backEndID === "qlever_osm_wd")
             return osm_wd_query;
-        else if (sourceID === "qlever_osm_wd_base")
+        else if (backEndID === "qlever_osm_wd_base")
             return osm_wd_base_query;
-        else if (sourceID === "qlever_osm_wikidata_direct")
+        else if (backEndID === "qlever_osm_wikidata_direct")
             return osm_wd_direct_query;
-        else if (sourceID === "qlever_osm_wikidata_reverse")
+        else if (backEndID === "qlever_osm_wikidata_reverse")
             return osm_wd_reverse_query;
-        else if (/^qlever_osm_[^w]/.test(sourceID))
+        else if (/^qlever_osm_[^w]/.test(backEndID))
             return osm_all_query;
-        else if (sourceID === "qlever_wd_base")
+        else if (backEndID === "qlever_wd_base")
             return wd_base_query;
-        else if (sourceID.startsWith("qlever_wd_direct"))
+        else if (backEndID.startsWith("qlever_wd_direct"))
             return wd_direct_query;
-        else if (sourceID === "qlever_wd_indirect")
+        else if (backEndID === "qlever_wd_indirect")
             return wd_indirect_query;
-        else if (sourceID === "qlever_wd_reverse")
+        else if (backEndID === "qlever_wd_reverse")
             return wd_reverse_query;
-        else if (sourceID === "qlever_wd_qualifier")
+        else if (backEndID === "qlever_wd_qualifier")
             return wd_qualifier_query;
         else
-            throw new Error(`Invalid QLever sourceID: "${sourceID}"`);
+            throw new Error(`Invalid QLever back-end ID: "${backEndID}"`);
     }
 
-    private fillPlaceholders(sourceID: string, sparqlQuery: string, bbox: BBox): string {
-        if (sourceID.includes("osm")) {
-            const selected_key_id = /^qlever_osm_[^w]/.test(sourceID) ? sourceID.replace("qlever_", "") : null,
+    private fillPlaceholders(backEndID: string, sparqlQuery: string, bbox: BBox): string {
+        if (backEndID.includes("osm")) {
+            const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
                 osm_text_key = all_osm_wikidata_keys_selected ? getConfig("osm_text_key") : undefined,
                 osm_description_key = all_osm_wikidata_keys_selected ? getConfig("osm_description_key") : undefined,
@@ -132,7 +132,7 @@ export class QLeverMapService implements MapService {
                 raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
                 selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? osm_wikidata_keys : osm_wikidata_keys?.filter(key => getKeyID(key) === selected_key_id);
             if (osm_wikidata_keys?.length && !selected_osm_wikidata_keys?.length)
-                throw new Error(`Invalid selected_key_id: ${sourceID} => ${selected_key_id} not in ${osm_wikidata_keys}`);
+                throw new Error(`Invalid selected_key_id: ${backEndID} => ${selected_key_id} not in ${osm_wikidata_keys}`);
 
             const filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
                 filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
@@ -179,7 +179,7 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${osmEtymologyExpression}', osmEtymologyExpression);
         }
 
-        if (sourceID.includes("indirect") || sourceID.includes("reverse") || sourceID.includes("qualifier")) {
+        if (backEndID.includes("indirect") || backEndID.includes("reverse") || backEndID.includes("qualifier")) {
             const indirectProperty = getConfig("wikidata_indirect_property");
             if (!indirectProperty)
                 throw new Error("No indirect property defined");
@@ -189,9 +189,9 @@ export class QLeverMapService implements MapService {
             sparqlQuery = sparqlQuery
                 .replaceAll('${indirectProperty}', indirectProperty)
                 .replaceAll('${pictureQuery}', pictureQuery);
-        } else if (sourceID.includes("direct")) {
+        } else if (backEndID.includes("direct")) {
             let properties: string[];
-            const sourceProperty = /_direct_(P\d+)$/.exec(sourceID)?.at(1),
+            const sourceProperty = /_direct_(P\d+)$/.exec(backEndID)?.at(1),
                 directProperties = getJsonConfig("osm_wikidata_properties");
             if (!Array.isArray(directProperties) || !directProperties.length)
                 throw new Error("Empty direct properties");

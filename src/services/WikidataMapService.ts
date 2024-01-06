@@ -21,34 +21,34 @@ export class WikidataMapService extends WikidataService implements MapService {
         this.db = db;
     }
 
-    canHandleSource(sourceID: string): boolean {
-        return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(sourceID);
+    canHandleBackEnd(backEndID: string): boolean {
+        return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public fetchMapClusterElements(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(sourceID, bbox);
+    public fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox);
     }
 
-    public fetchMapElementDetails(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(sourceID, bbox);
+    public fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox);
     }
 
-    private async fetchMapData(sourceID: string, bbox: BBox): Promise<EtymologyResponse> {
+    private async fetchMapData(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
         const language = document.documentElement.lang.split('-').at(0) || '';
-        let out = await this.db.getMap(sourceID, bbox, language);
+        let out = await this.db.getMap(backEndID, bbox, language);
         if (out) {
-            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { sourceID, bbox, language: language, out });
+            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
         } else {
-            if (debug) console.info("Wikidata map cache miss, fetching data", { sourceID, bbox, language: language });
+            if (debug) console.info("Wikidata map cache miss, fetching data", { backEndID, bbox, language: language });
             let sparqlQueryTemplate: string;
-            if (sourceID === "wd_base")
+            if (backEndID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
-            else if (sourceID.startsWith("wd_direct"))
-                sparqlQueryTemplate = this.getDirectSparqlQuery(sourceID);
-            else if (/^wd_(reverse|qualifier|indirect)$/.test(sourceID))
-                sparqlQueryTemplate = this.getIndirectSparqlQuery(sourceID);
+            else if (backEndID.startsWith("wd_direct"))
+                sparqlQueryTemplate = this.getDirectSparqlQuery(backEndID);
+            else if (/^wd_(reverse|qualifier|indirect)$/.test(backEndID))
+                sparqlQueryTemplate = this.getIndirectSparqlQuery(backEndID);
             else
-                throw new Error(`Invalid Wikidata sourceID: "${sourceID}"`);
+                throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
 
             const maxElements = getConfig("max_map_elements"),
                 wikidataCountry = getConfig("wikidata_country"),
@@ -72,7 +72,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 features: ret.results.bindings.reduce(this.featureReducer, []),
                 wdqs_query: sparqlQuery,
                 timestamp: new Date().toISOString(),
-                sourceID: sourceID,
+                backEndID: backEndID,
                 language: language,
                 truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
@@ -83,9 +83,9 @@ export class WikidataMapService extends WikidataService implements MapService {
         return out;
     }
 
-    private getDirectSparqlQuery(sourceID: string): string {
+    private getDirectSparqlQuery(backEndID: string): string {
         let properties: string[];
-        const sourceProperty = /^wd_direct_(P\d+)$/.exec(sourceID)?.at(1),
+        const sourceProperty = /^wd_direct_(P\d+)$/.exec(backEndID)?.at(1),
             directProperties = getJsonConfig("osm_wikidata_properties"),
             sparqlQueryTemplate = directMapQuery as string;
         if (!Array.isArray(directProperties) || !directProperties.length)
@@ -101,20 +101,20 @@ export class WikidataMapService extends WikidataService implements MapService {
         return sparqlQueryTemplate.replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
     }
 
-    private getIndirectSparqlQuery(sourceID: string): string {
+    private getIndirectSparqlQuery(backEndID: string): string {
         const indirectProperty = getConfig("wikidata_indirect_property");
         if (!indirectProperty)
             throw new Error("No indirect property defined");
 
         let sparqlQueryTemplate: string;
-        if (sourceID === "wd_indirect")
+        if (backEndID === "wd_indirect")
             sparqlQueryTemplate = indirectMapQuery;
-        else if (sourceID === "wd_reverse")
+        else if (backEndID === "wd_reverse")
             sparqlQueryTemplate = reverseMapQuery;
-        else if (sourceID === "wd_qualifier")
+        else if (backEndID === "wd_qualifier")
             sparqlQueryTemplate = qualifierMapQuery;
         else
-            throw new Error(`Invalid Wikidata indirect sourceID: "${sourceID}"`);
+            throw new Error(`Invalid Wikidata indirect back-end ID: "${backEndID}"`);
 
         const imageProperty = getConfig("wikidata_image_property"),
             pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';

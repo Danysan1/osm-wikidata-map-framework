@@ -40,7 +40,7 @@ export class EtymologyMap extends Map {
     private anyFeatureClickedBefore = false;
     private wikidataSourceInitialized = false;
     private services?: MapService[];
-    private lastSourceID?: string;
+    private lastBackEndID?: string;
     private lastKeyID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
@@ -119,7 +119,7 @@ export class EtymologyMap extends Map {
     private mapStyleDataHandler(e: MapDataEvent) {
         if (debug) console.debug("mapStyleDataHandler", e);
         this.setCulture();
-        this.lastSourceID = undefined;
+        this.lastBackEndID = undefined;
         this.updateDataSource();
     }
 
@@ -230,9 +230,9 @@ export class EtymologyMap extends Map {
             return;
         }
 
-        const sourceID = getCorrectFragmentParams().source,
+        const backEndID = getCorrectFragmentParams().backEndID,
             pmtilesBaseURL = getConfig("pmtiles_base_url");
-        if (sourceID.startsWith(PMTILES_PREFIX) && !pmtilesBaseURL?.length) {
+        if (backEndID.startsWith(PMTILES_PREFIX) && !pmtilesBaseURL?.length) {
             loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
             return;
@@ -250,11 +250,11 @@ export class EtymologyMap extends Map {
             enableWikidataLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
             enableElementsLayers = !enableWikidataLayers && (
                 (zoomLevel >= minZoomLevel && thresholdZoomLevel > minZoomLevel && area < elementsBBoxMaxArea) ||
-                sourceID.startsWith(PMTILES_PREFIX) ||
-                sourceID.startsWith(VECTOR_PREFIX)
+                backEndID.startsWith(PMTILES_PREFIX) ||
+                backEndID.startsWith(VECTOR_PREFIX)
             );
         if (debug) console.debug("updateDataSource", {
-            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, sourceID
+            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, backEndID
         });
 
         if (enableElementsLayers)
@@ -277,18 +277,18 @@ export class EtymologyMap extends Map {
     }
 
     private updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
-        const sourceID = getCorrectFragmentParams().source,
-            isPMTilesSource = sourceID.startsWith(PMTILES_PREFIX),
-            isVectorSource = sourceID.startsWith(VECTOR_PREFIX),
-            fullSourceID = "elements-" + sourceID,
-            sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
+        const backEndID = getCorrectFragmentParams().backEndID,
+            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
+            isVectorSource = backEndID.startsWith(VECTOR_PREFIX),
+            fullBackEndID = "elements-" + backEndID,
+            backEndChanged = !this.lastBackEndID || this.lastBackEndID !== fullBackEndID;
 
         if (isPMTilesSource) {
-            if (!sourceIDChanged)
+            if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating pmtiles vector elements source:", sourceID);
-            this.lastSourceID = fullSourceID;
+            if (debug) console.debug("Updating pmtiles vector elements source:", backEndID);
+            this.lastBackEndID = fullBackEndID;
             this.preparePMTilesSource(
                 ELEMENTS_SOURCE,
                 "elements.pmtiles",
@@ -297,11 +297,11 @@ export class EtymologyMap extends Map {
             );
             this.prepareElementsLayers(thresholdZoomLevel);
         } else if (isVectorSource) {
-            if (!sourceIDChanged)
+            if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating DB vector element source:", sourceID);
-            this.lastSourceID = fullSourceID;
+            if (debug) console.debug("Updating DB vector element source:", backEndID);
+            this.lastBackEndID = fullBackEndID;
             this.prepareVectorSource(
                 ELEMENTS_SOURCE,
                 `${window.location.protocol}//${window.location.host}/elements/{z}/{x}/{y}`,
@@ -318,26 +318,26 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
                 Math.ceil(northEast.lat * 10) / 10
             ];
-            if (sourceIDChanged || this.isBBoxChanged(bbox)) {
-                if (debug) console.debug("Updating GeoJSON elements source:", sourceID);
-                this.lastSourceID = fullSourceID;
+            if (backEndChanged || this.isBBoxChanged(bbox)) {
+                if (debug) console.debug("Updating GeoJSON elements source:", backEndID);
+                this.lastBackEndID = fullBackEndID;
                 this.lastBBox = bbox;
-                this.updateElementsGeoJSONSource(sourceID, bbox, minZoomLevel, thresholdZoomLevel);
+                this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
             }
         }
     }
 
-    private async updateElementsGeoJSONSource(sourceID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
+    private async updateElementsGeoJSONSource(backEndID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
 
-            const service = this.services?.find(service => service.canHandleSource(sourceID));
+            const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
             if (!service)
-                throw new Error("No service found for source ID " + sourceID);
+                throw new Error("No service found for source ID " + backEndID);
 
-            const data = await service.fetchMapClusterElements(sourceID, bbox);
+            const data = await service.fetchMapClusterElements(backEndID, bbox);
 
             this.prepareGeoJSONSourceAndClusteredLayers(
                 ELEMENTS_SOURCE,
@@ -349,24 +349,24 @@ export class EtymologyMap extends Map {
                 "point_count_abbreviated"
             );
         } catch (e) {
-            logErrorMessage("updateElementsGeoJSONSource: Error fetching map data", "error", { sourceID, bbox, e });
+            logErrorMessage("updateElementsGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
             this.fetchCompleted();
         }
     }
 
     private updateWikidataSource(southWest: LngLat, northEast: LngLat, thresholdZoomLevel: number) {
-        const sourceID = getCorrectFragmentParams().source,
-            isPMTilesSource = sourceID.startsWith(PMTILES_PREFIX),
-            isVectorSource = sourceID.startsWith(VECTOR_PREFIX),
-            fullSourceID = "details-" + sourceID,
-            sourceIDChanged = !this.lastSourceID || this.lastSourceID !== fullSourceID;
+        const backEndID = getCorrectFragmentParams().backEndID,
+            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
+            isVectorSource = backEndID.startsWith(VECTOR_PREFIX),
+            fullBackEndID = "details-" + backEndID,
+            backEndChanged = !this.lastBackEndID || this.lastBackEndID !== fullBackEndID;
 
         if (isPMTilesSource) {
-            if (!sourceIDChanged)
+            if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating pmtiles vector wikidata source:", sourceID);
-            this.lastSourceID = fullSourceID;
+            if (debug) console.debug("Updating pmtiles vector wikidata source:", backEndID);
+            this.lastBackEndID = fullBackEndID;
             this.preparePMTilesSource(
                 DETAILS_SOURCE,
                 "etymology_map.pmtiles",
@@ -376,17 +376,17 @@ export class EtymologyMap extends Map {
             this.prepareWikidataLayers(
                 thresholdZoomLevel,
                 "etymology_map",
-                sourceID == "pmtiles_all" ? undefined : sourceID.replace("pmtiles_", "")
+                backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "")
             );
         } else if (isVectorSource) {
-            if (!sourceIDChanged)
+            if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating DB vector wikidata source:", sourceID);
-            this.lastSourceID = fullSourceID;
+            if (debug) console.debug("Updating DB vector wikidata source:", backEndID);
+            this.lastBackEndID = fullBackEndID;
             this.prepareVectorSource(
                 DETAILS_SOURCE,
-                `${window.location.protocol}//${window.location.host}/etymology_map/{z}/{x}/{y}?source=${sourceID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
+                `${window.location.protocol}//${window.location.host}/etymology_map/{z}/{x}/{y}?source=${backEndID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
                 thresholdZoomLevel
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
@@ -399,26 +399,26 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
                 Math.ceil(northEast.lat * 100) / 100
             ];
-            if (sourceIDChanged || (this.isBBoxChanged(bbox))) {
-                if (debug) console.debug("Updating GeoJSON wikidata source:", sourceID);
-                this.lastSourceID = fullSourceID;
+            if (backEndChanged || (this.isBBoxChanged(bbox))) {
+                if (debug) console.debug("Updating GeoJSON wikidata source:", backEndID);
+                this.lastBackEndID = fullBackEndID;
                 this.lastBBox = bbox;
-                this.prepareWikidataGeoJSONSource(sourceID, bbox, thresholdZoomLevel);
+                this.prepareWikidataGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
             }
         }
     }
 
-    private async prepareWikidataGeoJSONSource(sourceID: string, bbox: BBox, minZoom: number) {
+    private async prepareWikidataGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
 
-            const service = this.services?.find(service => service.canHandleSource(sourceID));
+            const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
             if (!service)
-                throw new Error("No service found for source ID " + sourceID);
+                throw new Error("No service found for source ID " + backEndID);
 
-            const data = await service.fetchMapElementDetails(sourceID, bbox);
+            const data = await service.fetchMapElementDetails(backEndID, bbox);
 
             this.addOrUpdateGeoJSONSource(
                 DETAILS_SOURCE,
@@ -432,7 +432,7 @@ export class EtymologyMap extends Map {
             this.prepareWikidataLayers(minZoom);
         } catch (e) {
             this.fetchCompleted();
-            logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { sourceID, bbox, e });
+            logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
             const t = await loadTranslator();
             showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
         }
@@ -644,7 +644,7 @@ export class EtymologyMap extends Map {
 
         const [
             t,
-            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, SourceControl }
+            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, BackEndControl }
         ] = await Promise.all([
             loadTranslator(),
             import("./controls")
@@ -692,12 +692,12 @@ export class EtymologyMap extends Map {
         this.addControl(colorControl, 'top-left');
         colorControl.updateChart();
 
-        const sourceControl = new SourceControl(
-            getCorrectFragmentParams().source,
+        const backEndControl = new BackEndControl(
+            getCorrectFragmentParams().backEndID,
             this.updateDataSource.bind(this),
             t
         );
-        this.addControl(sourceControl, 'top-left');
+        this.addControl(backEndControl, 'top-left');
 
         /* Set up controls in the top RIGHT corner */
         this.addControl(new LinkControl(

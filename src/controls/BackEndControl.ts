@@ -16,9 +16,9 @@ const PMTILES_GROUP_NAME = "Database (PMTiles)",
  * 
  * @see https://docs.mapbox.com/mapbox-gl-js/example/toggle-layers/
  **/
-export class SourceControl extends DropdownControl {
+export class BackEndControl extends DropdownControl {
     constructor(
-        startSourceID: string, onSourceChange: (sourceID: string) => void, t: TFunction
+        startBackEndID: string, onBackEndChange: (backEndID: string) => void, t: TFunction
     ) {
         const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
             wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
@@ -29,22 +29,22 @@ export class SourceControl extends DropdownControl {
             pmtilesURL = getBoolConfig("pmtiles_base_url"),
             dropdownItems: DropdownItem[] = [],
             osm_text_key = getConfig("osm_text_key"),
-            selectSource = (sourceID: string) => {
-                if (debug) console.debug("Selecting source ", { sourceID });
+            selectBackEnd = (backEndID: string) => {
+                if (debug) console.debug("Selecting source ", { backEndID });
 
                 // If the change came from a manual interaction, update the fragment params
-                setFragmentParams(undefined, undefined, undefined, undefined, sourceID);
+                setFragmentParams(undefined, undefined, undefined, undefined, backEndID);
 
                 // If the change came from a fragment change, update the dropdown
                 // Regardless of the source, update the map
-                onSourceChange(sourceID);
+                onBackEndChange(backEndID);
             },
-            buildDropdownItem = (sourceID: string, text: string, category?: string): DropdownItem => ({
-                id: sourceID,
+            buildDropdownItem = (backEndID: string, text: string, category?: string): DropdownItem => ({
+                id: backEndID,
                 text: text,
                 category: category,
                 onSelect: () => {
-                    selectSource(sourceID);
+                    selectBackEnd(backEndID);
 
                     // Hide the dropdown to leave more space for the map
                     this.showDropdown(false);
@@ -145,22 +145,22 @@ export class SourceControl extends DropdownControl {
         if (propagationEnabled && vectorTilesEnabled)
             dropdownItems.push(buildDropdownItem("vector_propagated", t("source.propagated", "Propagated"), VECTOR_GROUP_NAME));
 
-        if (dropdownItems.find(item => item.id === startSourceID)) {
-            if (debug) console.debug("Starting with valid sourceID", { startSourceID });
+        if (dropdownItems.find(item => item.id === startBackEndID)) {
+            if (debug) console.debug("Starting with back-end ID", startBackEndID );
         } else {
-            logErrorMessage("Invalid startSourceID", "warning", { oldID: startSourceID, dropdownItems, newID: dropdownItems[0].id });
-            startSourceID = dropdownItems[0].id;
-            selectSource(startSourceID);
+            logErrorMessage("Invalid start back-end ID", "warning", { oldID: startBackEndID, dropdownItems, newID: dropdownItems[0].id });
+            startBackEndID = dropdownItems[0].id;
+            selectBackEnd(startBackEndID);
         }
 
         super(
             '⚙️',
             dropdownItems,
-            startSourceID,
+            startBackEndID,
             "source.choose_source",
             true,
             undefined,
-            () => this.value = getCorrectFragmentParams().source
+            () => this.value = getCorrectFragmentParams().backEndID
         );
     }
 }

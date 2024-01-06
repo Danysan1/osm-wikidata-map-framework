@@ -6,4 +6,4 @@ export { LanguageControl } from "./LanguageControl";
 export { LinkControl } from "./LinkControl";
 export { MapCompleteControl } from "./MapCompleteControl";
 export { OsmWikidataMatcherControl } from "./OsmWikidataMatcherControl";
-export { SourceControl } from "./SourceControl";
+export { BackEndControl } from "./BackEndControl";
