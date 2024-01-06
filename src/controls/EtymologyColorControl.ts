@@ -68,6 +68,7 @@ class EtymologyColorControl extends DropdownControl {
     private osmTextOnlyLabel: string;
     private pictureAvailableLabel: string;
     private pictureUnavailableLabel: string;
+    private statsService?: WikidataStatsService;
     private setLayerColor: (color: string | ExpressionSpecification) => void;
 
     constructor(
@@ -180,6 +181,7 @@ class EtymologyColorControl extends DropdownControl {
         if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData", { colorSchemeID, colorSchemeIDChanged, layerColor, features });
         if (colorSchemeIDChanged || backEndChanged || features?.length !== this.lastFeatureCount) {
             this.lastColorSchemeID = colorSchemeID;
+            this.lastBackEndID = backEndID;
             this.lastFeatureCount = features?.length;
 
             const stats = calculateChartData(features || []);
@@ -187,10 +189,10 @@ class EtymologyColorControl extends DropdownControl {
         }
 
         if (colorSchemeIDChanged || backEndChanged) {
-            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, layerColor });
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeIDChanged, backEndChanged, layerColor });
             this.setLayerColor(layerColor);
         } else {
-            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeID, colorSchemeIDChanged, layerColor });
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeIDChanged, backEndChanged });
         }
     }
 
@@ -444,8 +446,9 @@ class EtymologyColorControl extends DropdownControl {
         this.lastWikidataIDs = uniqueIDs;
         this.lastBackEndID = backEndID;
         try {
-            const statsService = new WikidataStatsService(),
-                stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
+            if (!this.statsService)
+                this.statsService = new WikidataStatsService();
+            const stats = await this.statsService.fetchStats(uniqueIDs, colorSchemeID);
 
             if (!stats.length) {
                 if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
@@ -488,7 +491,7 @@ class EtymologyColorControl extends DropdownControl {
             FALLBACK_COLOR
         ];
 
-        if (process.env.NODE_ENV === 'development') console.debug("setLayerColorForStats", { stats, data });
+        if (process.env.NODE_ENV === 'development') console.debug("setLayerColorForStats: setting layer color", { stats, data });
         this.setLayerColor(data);
     }
 
