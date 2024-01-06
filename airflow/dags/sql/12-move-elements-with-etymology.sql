@@ -13,10 +13,10 @@ INSERT INTO owmf.element (
     osm_geometry,
     osm_osm_type,
     osm_osm_id,
-    JSON_BUILD_OBJECT(
+    JSONB_BUILD_OBJECT(
             'name:da', wd_name_da,
             'name:de', wd_name_de,
-            'name', wd_name_en,
+            'name:en', wd_name_en,
             'name:es', wd_name_es,
             'name:fr', wd_name_fr,
             'name:it', wd_name_it,
