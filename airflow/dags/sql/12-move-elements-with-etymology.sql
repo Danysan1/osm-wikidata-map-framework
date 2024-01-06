@@ -13,7 +13,15 @@ INSERT INTO owmf.element (
     osm_geometry,
     osm_osm_type,
     osm_osm_id,
-    osm_tags,
+    JSON_BUILD_OBJECT(
+            'name:da', wd_name_da,
+            'name:de', wd_name_de,
+            'name', wd_name_en,
+            'name:es', wd_name_es,
+            'name:fr', wd_name_fr,
+            'name:it', wd_name_it,
+            'wikimedia_commons', wd_commons
+        ) || osm_tags,
     osm_has_text_etymology,
     wd_wikidata_cod,
     COALESCE(

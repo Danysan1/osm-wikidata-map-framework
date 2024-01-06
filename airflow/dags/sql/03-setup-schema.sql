@@ -31,6 +31,13 @@ CREATE TABLE owmf.wikidata (
     wd_id SERIAL NOT NULL PRIMARY KEY,
     wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
     wd_alias_cod VARCHAR(15) UNIQUE CHECK (wd_alias_cod ~* '^Q\d+$'),
+    wd_name_da VARCHAR,
+    wd_name_de VARCHAR,
+    wd_name_en VARCHAR,
+    wd_name_es VARCHAR,
+    wd_name_fr VARCHAR,
+    wd_name_it VARCHAR,
+    wd_commons VARCHAR,
     wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     wd_notes VARCHAR
 );
