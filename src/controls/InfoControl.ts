@@ -3,7 +3,7 @@ import { IControl, Map, Popup } from 'maplibre-gl';
 // import { IControl, Map, Popup } from 'mapbox-gl';
 
 import { loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
-import { debug, getBoolConfig, getConfig } from '../config';
+import { getBoolConfig, getConfig } from '../config';
 
 /**
  * Opens the information intro window
@@ -66,7 +66,7 @@ function setupDatasetButton(popup: Popup) {
     const datasetButton = popup.getElement().querySelector<HTMLAnchorElement>("a.dataset_button"),
         pmtiles_base_url = getConfig("pmtiles_base_url");
     if (!datasetButton) {
-        if (debug) console.warn("Missing dataset button");
+        if (process.env.NODE_ENV === 'development') console.warn("Missing dataset button");
     } else if (pmtiles_base_url) {
         datasetButton.href = pmtiles_base_url + '/dataset.csv';
         datasetButton.classList.remove("hiddenElement");
@@ -106,16 +106,16 @@ async function getLastDBUpdateDate(popup: Popup) {
         const response = await fetch(dateURL);
         if (response.ok) {
             const date = (await response.text()).trim();
-            if (debug) console.debug("Last DB update date:", date);
+            if (process.env.NODE_ENV === 'development') console.debug("Last DB update date:", date);
             if (date) {
                 placeholder.innerText = date;
                 container.classList.remove("hiddenElement");
             }
         } else {
-            if (debug) console.warn("Fetching date.txt failed", response);
+            if (process.env.NODE_ENV === 'development') console.warn("Fetching date.txt failed", response);
         }
     } catch (e) {
-        if (debug) console.warn("Error catched while fetching date.txt", e);
+        if (process.env.NODE_ENV === 'development') console.warn("Error catched while fetching date.txt", e);
     }
 }
 

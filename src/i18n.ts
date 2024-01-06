@@ -1,5 +1,5 @@
 import { Resource, TFunction } from "i18next";
-import { debug, getBoolConfig, getConfig, getJsonConfig } from "./config";
+import { getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
 export function getLocale(): string | undefined {
@@ -12,7 +12,7 @@ export function setPageLocale() {
     const locale = getLocale(),
         lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en';
 
-    if (debug) console.info("setPageLocale", {
+    if (process.env.NODE_ENV === 'development') console.debug("setPageLocale", {
         locale, lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
@@ -64,12 +64,12 @@ async function loadI18n() {
         backends: object[] = [HttpBackend],
         backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
     if (i18nOverride) {
-        if (debug) console.info("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
+        if (process.env.NODE_ENV === 'development') console.debug("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
     return await i18next.use(ChainedBackend).init({
-        debug: getBoolConfig("enable_debug_log"),
+        debug: process.env.NODE_ENV === 'development',
         fallbackLng: defaultLanguage,
         //lng: locale, // comment to use the language only, UNcomment to use the full locale
         lng: language, // UNcomment to use the language only, comment to use the full locale
@@ -96,7 +96,7 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
 export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string, defaultValue: string) {
     const domElement = parent.querySelector<HTMLAnchorElement>(selector);
     if (!domElement) {
-        if (debug) console.info("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
+        if (process.env.NODE_ENV === 'development') console.debug("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
     } else {
         loadTranslator().then(t => {
             const title = t(key, defaultValue);

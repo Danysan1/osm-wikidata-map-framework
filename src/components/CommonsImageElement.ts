@@ -1,4 +1,3 @@
-import { debug } from "../config";
 import { loadTranslator } from "../i18n";
 import { WikimediaCommonsService } from "../services/WikimediaCommonsService";
 
@@ -26,10 +25,10 @@ export class CommonsImageElement extends HTMLDivElement {
     set name(name: string | undefined) {
         if (!name) {
             this._name = undefined;
-            // if (debug) console.info("CommonsImageElement: unsetting name");
+            // if (process.env.NODE_ENV === 'development') console.debug("CommonsImageElement: unsetting name");
         } else {
             this._name = decodeURIComponent(name.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
-            // if (debug) console.info("CommonsImageElement: setting name", { name, _name: this._name });
+            // if (process.env.NODE_ENV === 'development') console.debug("CommonsImageElement: setting name", { name, _name: this._name });
         }
         this.render();
     }

@@ -26,10 +26,10 @@ export class LanguageFlagElement extends HTMLImageElement {
     set language(language: string | undefined) {
         if (!language) {
             this._language = undefined;
-            // if (debug) console.info("LanguageFlagElement: unsetting language");
+            // if (process.env.NODE_ENV === 'development') console.debug("LanguageFlagElement: unsetting language");
         } else {
             this._language = language;
-            // if (debug) console.info("LanguageFlagElement: setting language", { language, _language: this._language });
+            // if (process.env.NODE_ENV === 'development') console.debug("LanguageFlagElement: setting language", { language, _language: this._language });
         }
         this.render();
     }

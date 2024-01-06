@@ -1,4 +1,3 @@
-import { debug } from "../config";
 import detailsQuery from "./query/etymology-details.sparql";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
 import { logErrorMessage } from "../monitoring";
@@ -17,9 +16,9 @@ export class WikidataDetailsService extends WikidataService {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getDetails(wikidataIDs, language);
         if (out) {
-            if (debug) console.debug("fetchEtymologyDetails: Cache hit, using cached response", { language, wikidataIDs, out });
+            if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache hit, using cached response", { language, wikidataIDs, out });
         } else {
-            if (debug) console.debug("fetchEtymologyDetails: Cache miss, fetching data", { language, wikidataIDs });
+            if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache miss, fetching data", { language, wikidataIDs });
             const res = await this.etymologyIDsQuery(language, [...wikidataIDs], detailsQuery);
 
             if (!res?.results?.bindings?.length) {
@@ -74,7 +73,7 @@ export class WikidataDetailsService extends WikidataService {
                 return acc;
             }, {});
             try {
-                if (debug) console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { language, wikidataIDs, out });
+                if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { language, wikidataIDs, out });
                 this.db.addDetails(out, wikidataIDs, language);
             } catch (e) {
                 logErrorMessage("Failed to store details data in cache", "warning", { language, wikidataIDs, out, e });

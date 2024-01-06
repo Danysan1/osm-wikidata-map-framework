@@ -1,5 +1,5 @@
 import type { Map } from 'maplibre-gl';
-import { debug, getJsonConfig } from '../config';
+import { getJsonConfig } from '../config';
 import { translateAnchorTitle, translateContent } from '../i18n';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 
@@ -30,7 +30,7 @@ export class LanguageControl extends DropdownControl {
                 id: lang,
                 text: lang in languageNames ? languageNames[lang] : lang,
                 onSelect: () => {
-                    if (debug) console.warn("LanguageControl: Changing language to " + lang);
+                    if (process.env.NODE_ENV === 'development') console.warn("LanguageControl: Changing language to " + lang);
                     window.location.search = "?lang=" + lang;
                 }
             }));

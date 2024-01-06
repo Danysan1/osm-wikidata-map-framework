@@ -1,9 +1,8 @@
-import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
+import type { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
 
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 
 import { logErrorMessage } from '../monitoring';
-import { debug } from '../config';
 import { loadTranslator } from '../i18n';
 
 export interface DropdownItem {
@@ -159,7 +158,7 @@ export class DropdownControl implements IControl {
     }
 
     private btnClickHandler(event: MouseEvent) {
-        if (debug) console.debug("DropdownControl button click", event);
+        if (process.env.NODE_ENV === 'development') console.debug("DropdownControl button click", event);
         this.toggleDropdown(true);
     }
 
@@ -170,7 +169,7 @@ export class DropdownControl implements IControl {
         const dropdownItemId = dropDown.value,
             dropdownItemObj = this._dropdownItems.find(item => item.id === dropdownItemId);
         if (dropdownItemObj) {
-            if (debug) console.debug("DropdownControl select", { dropdownItemObj, event });
+            if (process.env.NODE_ENV === 'development') console.debug("DropdownControl select", { dropdownItemObj, event });
             dropdownItemObj.onSelect(event)
         } else {
             logErrorMessage("Invalid selected dropdown item", "error", { dropdownItemId });
@@ -181,7 +180,7 @@ export class DropdownControl implements IControl {
         return (e: MapEvent) => {
             const zoomLevel = e.target.getZoom(),
                 show = zoomLevel >= minZoomLevel;
-            if (debug) console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show });
+            if (process.env.NODE_ENV === 'development') console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show });
             this.show(show);
         }
     }
@@ -214,9 +213,9 @@ export class DropdownControl implements IControl {
         if (!dropdown?.options) {
             console.warn("setCurrentID: dropdown not yet initialized", { id });
         } else if (dropdown.value === id) {
-            if (debug) console.debug("setCurrentID: skipping change to same value", { id });
+            if (process.env.NODE_ENV === 'development') console.debug("setCurrentID: skipping change to same value", { id });
         } else {
-            if (debug) console.debug("setCurrentID: updating", { old: dropdown.value, next: id });
+            if (process.env.NODE_ENV === 'development') console.debug("setCurrentID: updating", { old: dropdown.value, next: id });
             dropdown.value = id;
             dropdown.dispatchEvent(new Event("change"));
         }

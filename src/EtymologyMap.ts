@@ -12,7 +12,7 @@ import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { debug, getBoolConfig, getConfig } from './config';
+import { getBoolConfig, getConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { loadTranslator } from './i18n';
 import './style.css';
@@ -57,7 +57,7 @@ export class EtymologyMap extends Map {
             backgroundStyleObj = backgroundStyles[0];
         }
         const startParams = getCorrectFragmentParams();
-        if (debug) console.debug("Instantiating map", { containerId, backgroundStyleObj, startParams });
+        if (process.env.NODE_ENV === 'development') console.debug("Instantiating map", { containerId, backgroundStyleObj, startParams });
 
         super({
             container: containerId,
@@ -83,7 +83,7 @@ export class EtymologyMap extends Map {
             if (getBoolConfig("qlever_enable"))
                 this.services.push(new QLeverMapService(db));
 
-            if (debug) console.debug("EtymologyMap: map services initialized", this.services);
+            if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
         }).finally(() => this.addSecondaryControls());
 
         try {
@@ -117,7 +117,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
     private mapStyleDataHandler(e: MapDataEvent) {
-        if (debug) console.debug("mapStyleDataHandler", e);
+        if (process.env.NODE_ENV === 'development') console.debug("mapStyleDataHandler", e);
         this.setCulture();
         this.lastBackEndID = undefined;
         this.updateDataSource();
@@ -134,7 +134,7 @@ export class EtymologyMap extends Map {
      * @see https://github.com/mapbox/mapbox-gl-js/issues/7579
      */
     private mapStyleLoadHandler() {
-        // if (enable_debug_log) console.info("mapStyleLoadHandler");
+        // if (process.env.NODE_ENV === 'development') console.debug("mapStyleLoadHandler");
         // this.setCulture();
         // this.updateDataSource();
     }
@@ -147,7 +147,7 @@ export class EtymologyMap extends Map {
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
             currZoom = this.getZoom();
-        if (debug) console.debug("hashChangeHandler", { newParams, currLat, currLon, currZoom });
+        if (process.env.NODE_ENV === 'development') console.debug("hashChangeHandler", { newParams, currLat, currLon, currZoom });
 
         // Check if the position has changed in order to avoid unnecessary map movements
         if (Math.abs(currLat - newParams.lat) > 0.001 ||
@@ -162,7 +162,7 @@ export class EtymologyMap extends Map {
     }
 
     private fetchCompleted() {
-        if (debug) console.debug("fetchCompleted", { shouldFetchAgain: this.shouldFetchAgain });
+        if (process.env.NODE_ENV === 'development') console.debug("fetchCompleted", { shouldFetchAgain: this.shouldFetchAgain });
         this.fetchInProgress = false;
         showLoadingSpinner(false);
         if (this.shouldFetchAgain) {
@@ -185,7 +185,7 @@ export class EtymologyMap extends Map {
             elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
 
         if (wikidataSourceEvent || elementsSourceEvent) {
-            if (debug) console.debug("mapSourceDataHandler: data loaded", {
+            if (process.env.NODE_ENV === 'development') console.debug("mapSourceDataHandler: data loaded", {
                 wikidataSourceEvent, elementsSourceEvent, e, source: e.sourceId
             });
             this.fetchCompleted();
@@ -226,7 +226,7 @@ export class EtymologyMap extends Map {
     private updateDataSource() {
         if (this.fetchInProgress) {
             this.shouldFetchAgain = true;
-            if (debug) console.debug("updateDataSource: Fetch already in progress, skipping source update");
+            if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: Fetch already in progress, skipping source update");
             return;
         }
 
@@ -253,7 +253,7 @@ export class EtymologyMap extends Map {
                 backEndID.startsWith(PMTILES_PREFIX) ||
                 backEndID.startsWith(VECTOR_PREFIX)
             );
-        if (debug) console.debug("updateDataSource", {
+        if (process.env.NODE_ENV === 'development') console.debug("updateDataSource", {
             area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, backEndID
         });
 
@@ -272,7 +272,7 @@ export class EtymologyMap extends Map {
             this.lastBBox[2] < bbox[2] ||
             this.lastBBox[3] < bbox[3]
         );
-        if (debug) console.debug("isBBoxChanged", isBBoxChanged, { lastBBox: this.lastBBox, bbox });
+        if (process.env.NODE_ENV === 'development') console.debug("isBBoxChanged", isBBoxChanged, { lastBBox: this.lastBBox, bbox });
         return isBBoxChanged;
     }
 
@@ -287,7 +287,7 @@ export class EtymologyMap extends Map {
             if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating pmtiles vector elements source:", backEndID);
+            if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles vector elements source:", backEndID);
             this.lastBackEndID = fullBackEndID;
             this.preparePMTilesSource(
                 ELEMENTS_SOURCE,
@@ -300,7 +300,7 @@ export class EtymologyMap extends Map {
             if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating DB vector element source:", backEndID);
+            if (process.env.NODE_ENV === 'development') console.debug("Updating DB vector element source:", backEndID);
             this.lastBackEndID = fullBackEndID;
             this.prepareVectorSource(
                 ELEMENTS_SOURCE,
@@ -310,7 +310,7 @@ export class EtymologyMap extends Map {
             );
             this.prepareElementsLayers(thresholdZoomLevel);
         } else if (this.services === undefined) {
-            if (debug) console.warn("updateElementsSource: Services are still initializing, skipping source update");
+            if (process.env.NODE_ENV === 'development') console.warn("updateElementsSource: Services are still initializing, skipping source update");
         } else {
             const bbox: BBox = [
                 Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
@@ -319,7 +319,7 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lat * 10) / 10
             ];
             if (backEndChanged || this.isBBoxChanged(bbox)) {
-                if (debug) console.debug("Updating GeoJSON elements source:", backEndID);
+                if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON elements source:", backEndID);
                 this.lastBackEndID = fullBackEndID;
                 this.lastBBox = bbox;
                 this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
@@ -365,7 +365,7 @@ export class EtymologyMap extends Map {
             if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating pmtiles vector wikidata source:", backEndID);
+            if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles vector wikidata source:", backEndID);
             this.lastBackEndID = fullBackEndID;
             this.preparePMTilesSource(
                 DETAILS_SOURCE,
@@ -382,7 +382,7 @@ export class EtymologyMap extends Map {
             if (!backEndChanged)
                 return;
 
-            if (debug) console.debug("Updating DB vector wikidata source:", backEndID);
+            if (process.env.NODE_ENV === 'development') console.debug("Updating DB vector wikidata source:", backEndID);
             this.lastBackEndID = fullBackEndID;
             this.prepareVectorSource(
                 DETAILS_SOURCE,
@@ -391,7 +391,7 @@ export class EtymologyMap extends Map {
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
         } else if (this.services === undefined) {
-            if (debug) console.warn("updateWikidataSource: Services are still initializing, skipping source update");
+            if (process.env.NODE_ENV === 'development') console.warn("updateWikidataSource: Services are still initializing, skipping source update");
         } else {
             const bbox: BBox = [
                 Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
@@ -400,7 +400,7 @@ export class EtymologyMap extends Map {
                 Math.ceil(northEast.lat * 100) / 100
             ];
             if (backEndChanged || (this.isBBoxChanged(bbox))) {
-                if (debug) console.debug("Updating GeoJSON wikidata source:", backEndID);
+                if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON wikidata source:", backEndID);
                 this.lastBackEndID = fullBackEndID;
                 this.lastBBox = bbox;
                 this.prepareWikidataGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
@@ -445,7 +445,7 @@ export class EtymologyMap extends Map {
             if (source.url) { // PMTiles source currently active
                 this.removeSourceWithLayers(sourceID);
             } else if (!source.tiles?.length || source.tiles[0] !== tileURL) { // Vector source already active
-                if (debug) console.debug("Updating Vector tiles source URL", { old: source.tiles, new: tileURL });
+                if (process.env.NODE_ENV === 'development') console.debug("Updating Vector tiles source URL", { old: source.tiles, new: tileURL });
                 source.setTiles([tileURL]);
             }
         } else if (oldSource) { // GeoJSON source currently active
@@ -453,7 +453,7 @@ export class EtymologyMap extends Map {
         }
 
         if (!this.getSource(sourceID)) {
-            if (debug) console.debug("Creating Vector tiles source", { tileURL });
+            if (process.env.NODE_ENV === 'development') console.debug("Creating Vector tiles source", { tileURL });
             this.addSource(sourceID, {
                 type: 'vector',
                 tiles: [tileURL],
@@ -481,7 +481,7 @@ export class EtymologyMap extends Map {
             if (!source.url) { // Vector source currently active
                 this.removeSourceWithLayers(vectorSourceID);
             } else if (source.url !== fullPMTilesURL) { // PMTiles source already active
-                if (debug) console.debug("Updating PMTiles source URL", { old: source.url, new: fullPMTilesURL });
+                if (process.env.NODE_ENV === 'development') console.debug("Updating PMTiles source URL", { old: source.url, new: fullPMTilesURL });
                 source.setUrl(fullPMTilesURL);
             }
         } else if (oldSource) { // GeoJSON source currently active
@@ -489,7 +489,7 @@ export class EtymologyMap extends Map {
         }
 
         if (!this.getSource(vectorSourceID)) {
-            if (debug) console.debug("Creating PMTiles source", { fullPMTilesURL });
+            if (process.env.NODE_ENV === 'development') console.debug("Creating PMTiles source", { fullPMTilesURL });
 
             const protocol = new Protocol();
             mapLibrary.addProtocol("pmtiles", protocol.tile);
@@ -532,7 +532,7 @@ export class EtymologyMap extends Map {
         const createFilter = (geometryType: string): FilterSpecification => key_id ? ["all", ["==", ["geometry-type"], geometryType], ["in", key_id, ["get", "from_key_ids"]]] : ["==", ["geometry-type"], geometryType];
 
         if (this.lastKeyID !== key_id) {
-            if (debug) console.debug("prepareWikidataLayers: key ID changed, removing old layers");
+            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: key ID changed, removing old layers");
             this.removeSourceLayers(DETAILS_SOURCE);
         }
         this.lastKeyID = key_id;
@@ -640,7 +640,7 @@ export class EtymologyMap extends Map {
     }
 
     private async addSecondaryControls() {
-        if (debug) console.debug("Initializing translated controls");
+        if (process.env.NODE_ENV === 'development') console.debug("Initializing translated controls");
 
         const [
             t,
@@ -655,10 +655,10 @@ export class EtymologyMap extends Map {
 
         const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
-        if (debug) console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
+        if (process.env.NODE_ENV === 'development') console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
 
         const onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
-            if (debug) console.debug("initWikidataControls set colorScheme", { colorSchemeID });
+            if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set colorScheme", { colorSchemeID });
             const params = getCorrectFragmentParams();
             if (params.colorScheme != colorSchemeID) {
                 setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
@@ -666,7 +666,7 @@ export class EtymologyMap extends Map {
             }
         },
             setLayerColor = (color: string | ExpressionSpecification) => {
-                if (debug) console.debug("initWikidataControls set layer color", { color });
+                if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
                 [
                     [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
                     [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
@@ -749,7 +749,7 @@ export class EtymologyMap extends Map {
         if (getConfig("mapcomplete_theme"))
             this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
 
-        /*if (debug) {
+        /*if (process.env.NODE_ENV === 'development') {
             import("@radarlabs/maplibre-gl-inspect").then(({ default: MaplibreInspect }) => {
                 this.addControl(new MaplibreInspect({
                     popup: new Popup({
@@ -798,7 +798,7 @@ export class EtymologyMap extends Map {
      */
     private onWikidataLayerClick(ev: MapMouseEvent & { features?: GeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
         if (ev.popupAlreadyShown) {
-            if (debug) console.debug("onWikidataLayerClick: etymology popup already shown", ev);
+            if (process.env.NODE_ENV === 'development') console.debug("onWikidataLayerClick: etymology popup already shown", ev);
         } else if (!ev.features) {
             console.warn("onWikidataLayerClick: missing or empty clicked features list", ev);
         } else {
@@ -820,7 +820,7 @@ export class EtymologyMap extends Map {
                     .setHTML('<div class="detail_wrapper"><span class="element_loading"></span></div>')
                     .addTo(this),
                 detail_wrapper = popup.getElement().querySelector<HTMLDivElement>(".detail_wrapper");
-            if (debug) console.debug("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
+            if (process.env.NODE_ENV === 'development') console.debug("onWikidataLayerClick: showing etymology popup", { ev, popup, detail_wrapper });
             if (!detail_wrapper)
                 throw new Error("Failed adding the popup");
 
@@ -859,20 +859,20 @@ export class EtymologyMap extends Map {
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
         if (!!sourceObject && sourceUrlChanged) {
             showLoadingSpinner(true);
-            if (debug) console.debug("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });
+            if (process.env.NODE_ENV === 'development') console.debug("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });
             sourceObject.setData(newSourceDataURL);
         } else if (!sourceObject) {
-            if (debug) console.debug("addGeoJSONSource: adding source", { id, newSourceDataURL });
+            if (process.env.NODE_ENV === 'development') console.debug("addGeoJSONSource: adding source", { id, newSourceDataURL });
             showLoadingSpinner(true);
             this.addSource(id, config);
             sourceObject = this.getSource(id) as GeoJSONSource;
             if (!sourceObject) {
                 console.error("addGeoJSONSource failed", { id, config, sourceObject })
                 throw new Error("Failed adding source");
-            } else if (debug) {
+            } else if (process.env.NODE_ENV === 'development') {
                 console.info("addGeoJSONSource success ", { id, config, sourceObject });
             }
-        } else if (debug) {
+        } else if (process.env.NODE_ENV === 'development') {
             console.info("Skipping source update", { id, newSourceDataURL });
         }
         return sourceObject;
@@ -978,7 +978,7 @@ export class EtymologyMap extends Map {
             this.on('mouseenter', clusterLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', clusterLayerName, () => this.getCanvas().style.cursor = '');
 
-            if (debug) console.debug("prepareClusteredLayers cluster", {
+            if (process.env.NODE_ENV === 'development') console.debug("prepareClusteredLayers cluster", {
                 clusterLayerName, layerDefinition, layer: this.getLayer(clusterLayerName)
             });
         }
@@ -1000,7 +1000,7 @@ export class EtymologyMap extends Map {
             if (sourceLayer)
                 layerDefinition["source-layer"] = sourceLayer;
             this.addLayer(layerDefinition);
-            if (debug) console.debug("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
+            if (process.env.NODE_ENV === 'development') console.debug("prepareClusteredLayers count", { countLayerName, layerDefinition, layer: this.getLayer(countLayerName) });
         }
 
         if (!this.getLayer(pointLayerName)) {
@@ -1028,7 +1028,7 @@ export class EtymologyMap extends Map {
             this.on('mouseenter', pointLayerName, () => this.getCanvas().style.cursor = 'pointer');
             this.on('mouseleave', pointLayerName, () => this.getCanvas().style.cursor = '');
 
-            if (debug) console.debug("prepareClusteredLayers point", {
+            if (process.env.NODE_ENV === 'development') console.debug("prepareClusteredLayers point", {
                 pointLayerName, layerDefinition, layer: this.getLayer(pointLayerName)
             });
         }
@@ -1074,7 +1074,7 @@ export class EtymologyMap extends Map {
         const lat = this.getCenter().lat,
             lon = this.getCenter().lng,
             zoom = this.getZoom();
-        if (debug) console.debug("updateDataForMapPosition", { lat, lon, zoom });
+        if (process.env.NODE_ENV === 'development') console.debug("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
         setFragmentParams(lon, lat, zoom);
     }
@@ -1104,7 +1104,7 @@ export class EtymologyMap extends Map {
                 searchButton.ariaLabel = "Search";
                 searchButton.title = "Search";
             }
-            if (debug) console.debug("setupGeocoder: added MapTiler geocoder control", geocoderControl);
+            if (process.env.NODE_ENV === 'development') console.debug("setupGeocoder: added MapTiler geocoder control", geocoderControl);
 
             document.addEventListener("keydown", (e) => {
                 if ((e.ctrlKey || e.metaKey) &&
@@ -1118,7 +1118,7 @@ export class EtymologyMap extends Map {
         } else if (getBoolConfig("enable_stadia_maps")) {
             const { MapLibreSearchControl } = await import("@stadiamaps/maplibre-search-box"),
                 geocoderControl = new MapLibreSearchControl({});
-            if (debug) console.debug("setupGeocoder: added Stadia geocoder control", geocoderControl);
+            if (process.env.NODE_ENV === 'development') console.debug("setupGeocoder: added Stadia geocoder control", geocoderControl);
             this.addControl(geocoderControl, 'bottom-left');
         }
     }
@@ -1220,7 +1220,7 @@ export class EtymologyMap extends Map {
                 ['get', 'name:' + defaultLanguage] // Default language name in MapTiler vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
             ];
 
-        if (debug) console.debug("setCulture", {
+        if (process.env.NODE_ENV === 'development') console.debug("setCulture", {
             language,
             defaultLanguage,
             newTextField,

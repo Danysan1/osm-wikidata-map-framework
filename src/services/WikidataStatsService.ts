@@ -1,4 +1,4 @@
-import { ColorSchemeID } from "../model/colorScheme";
+import type { ColorSchemeID } from "../model/colorScheme";
 import pictureStatsQuery from "./query/stats/picture.sparql";
 import typeStatsQuery from "./query/stats/type.sparql";
 import genderStatsQuery from "./query/stats/gender.sparql";
@@ -8,8 +8,7 @@ import startCenturyStatsQuery from "./query/stats/start-century.sparql";
 import endCenturyStatsQuery from "./query/stats/end-century.sparql";
 import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
-import { EtymologyStat } from "../controls/EtymologyColorControl";
-import { debug } from "../config";
+import type { EtymologyStat } from "../controls/EtymologyColorControl";
 import { StatsDatabase } from "../db/StatsDatabase";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
@@ -41,9 +40,9 @@ export class WikidataStatsService extends WikidataService {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getStats(colorSchemeID, wikidataIDs, language);
         if (out) {
-            if (debug) console.info("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
+            if (process.env.NODE_ENV === 'development') console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
-            if (debug) console.info("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
+            if (process.env.NODE_ENV === 'development') console.debug("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
             const csvPath = statsCSVPaths[colorSchemeID],
                 sparqlQuery = statsQueries[colorSchemeID];
             if (!sparqlQuery)
@@ -59,7 +58,7 @@ export class WikidataStatsService extends WikidataService {
             }
             out = res?.results?.bindings?.map((x: any): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
-                    if (debug) console.info("Empty count or name", x);
+                    if (process.env.NODE_ENV === 'development') console.debug("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
                 }
                 const entityID = typeof x.id?.value === "string" ? x.id.value.replace(WikidataService.WD_ENTITY_PREFIX, '') : undefined,

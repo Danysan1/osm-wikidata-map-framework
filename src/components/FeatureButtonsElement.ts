@@ -1,5 +1,5 @@
 import type { Position } from "geojson";
-import { debug, getConfig } from "../config";
+import { getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
 import type { EtymologyDetails } from '../model/EtymologyDetails';
 import { setFragmentParams } from '../fragment';
@@ -20,7 +20,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
     set destinationZoomLevel(destinationZoomLevel: number) {
         this._destinationZoom = destinationZoomLevel;
-        // if (debug) console.info("FeatureButtonsElement: setting destinationZoomLevel", { destinationZoomLevel });
+        // if (process.env.NODE_ENV === 'development') console.debug("FeatureButtonsElement: setting destinationZoomLevel", { destinationZoomLevel });
         this.render();
     }
 
@@ -31,10 +31,10 @@ export class FeatureButtonsElement extends HTMLDivElement {
     set feature(feature: EtymologyFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
-            // if (debug) console.info("FeatureButtonsElement: unsetting feature");
+            // if (process.env.NODE_ENV === 'development') console.debug("FeatureButtonsElement: unsetting feature");
         } else {
             this._feature = feature;
-            // if (debug) console.info("FeatureButtonsElement: setting feature", { feature });
+            // if (process.env.NODE_ENV === 'development') console.debug("FeatureButtonsElement: setting feature", { feature });
         }
         this.render();
     }
@@ -55,7 +55,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             detail_container = feature_buttons_template.content.cloneNode(true) as HTMLElement,
             osm_full_id = properties?.osm_type && properties?.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
 
-        if (debug) console.info("FeatureButtonsElement render", {
+        if (process.env.NODE_ENV === 'development') console.debug("FeatureButtonsElement render", {
             el_id: properties?.el_id, feature: this.feature, etymologies, detail_container
         });
 
@@ -67,7 +67,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             commons = properties?.commons,
             element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
         if (!element_wikidata_button) {
-            if (debug) console.info("Missing element_wikidata_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_wikidata_button");
         } else if (has_wikidata) {
             element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
             element_wikidata_button.classList.remove("hiddenElement");
@@ -79,7 +79,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             has_wikipedia = wikipedia && wikipedia !== 'null',
             element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
         if (!element_wikipedia_button) {
-            if (debug) console.info("Missing element_wikipedia_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_wikipedia_button");
         } else if (has_wikipedia) {
             element_wikipedia_button.href = wikipedia.startsWith("http") ? wikipedia : `https://www.wikipedia.org/wiki/${wikipedia}`;
             element_wikipedia_button.classList.remove("hiddenElement");
@@ -90,7 +90,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
         const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button'),
             isURL = commons?.startsWith("http");
         if (!element_commons_button) {
-            if (debug) console.info("Missing element_commons_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_commons_button");
         } else if (isURL && commons?.includes("Category:")) {
             element_commons_button.href = commons;
             element_commons_button.classList.remove("hiddenElement");
@@ -106,7 +106,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
         if (!element_osm_button) {
-            if (debug) console.info("Missing element_osm_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_osm_button");
         } else if (osm_full_id) {
             element_osm_button.href = 'https://www.openstreetmap.org/' + osm_full_id;
             element_osm_button.classList.remove("hiddenElement");
@@ -131,7 +131,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             show_osm_matcher = osm_full_id && !properties?.wikidata && lat !== undefined && lon !== undefined,
             show_wd_matcher = properties?.wikidata && !osm_full_id;
         if (!element_matcher_button) {
-            if (debug) console.info("Missing element_matcher_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_matcher_button");
         } else if (show_osm_matcher) {
             element_matcher_button.href = `https://map.osm.wikidata.link/map/18/${lat}/${lon}`;
             element_matcher_button.classList.remove("hiddenElement");
@@ -146,7 +146,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
             show_mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined;
         if (!element_mapcomplete_button) {
-            if (debug) console.info("Missing element_mapcomplete_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_mapcomplete_button");
         } else if (show_mapcomplete) {
             element_mapcomplete_button.href = `https://mapcomplete.org/${mapcomplete_theme}?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
             element_mapcomplete_button.classList.remove("hiddenElement");
@@ -156,7 +156,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const element_id_button = detail_container.querySelector<HTMLAnchorElement>('.element_id_button');
         if (!element_id_button) {
-            if (debug) console.info("Missing element_id_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_id_button");
         } else if (properties?.osm_type && properties?.osm_id) {
             element_id_button.href = `https://www.openstreetmap.org/edit?editor=id&${properties.osm_type}=${properties.osm_id}`;
             element_id_button.classList.remove("hiddenElement");
@@ -166,7 +166,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
         if (!element_location_button) {
-            if (debug) console.info("Missing element_location_button");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing element_location_button");
         } else {
             element_location_button.addEventListener("click", () => {
                 setFragmentParams(lon, lat, this.destinationZoomLevel);
@@ -176,7 +176,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
         }
 
         this.innerHTML = "";
-        // if (debug) console.info("FeatureButtonsElement: rendering", { detail_container });
+        // if (process.env.NODE_ENV === 'development') console.debug("FeatureButtonsElement: rendering", { detail_container });
         this.appendChild(detail_container);
         this.classList.remove("hiddenElement");
     }

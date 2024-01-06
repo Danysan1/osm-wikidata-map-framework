@@ -1,4 +1,4 @@
-import { debug, getConfig, getJsonConfig, getKeyID } from "../config";
+import { getConfig, getJsonConfig, getKeyID } from "../config";
 import type { BBox } from "geojson";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import { MapDatabase } from "../db/MapDatabase";
@@ -29,7 +29,7 @@ export class OverpassService implements MapService {
             acc[getKeyID(key)] = key;
             return acc;
         }, {});
-        if (debug) console.debug("OverpassService initialized", { wikidata_keys: this.wikidata_keys, wikidata_key_codes: this.wikidata_key_codes });
+        if (process.env.NODE_ENV === 'development') console.debug("OverpassService initialized", { wikidata_keys: this.wikidata_keys, wikidata_key_codes: this.wikidata_key_codes });
     }
 
     canHandleBackEnd(backEndID: string): boolean {
@@ -53,16 +53,16 @@ export class OverpassService implements MapService {
             (feature: EtymologyFeature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
         );
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-        if (debug) console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 
     private async fetchMapData(outClause: string, backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
         let out: EtymologyResponse | undefined = await this.db.getMap(backEndID, bbox, this.language);
         if (out) {
-            if (debug) console.debug("Overpass cache hit, using cached response", { backEndID, bbox, language: this.language, out });
+            if (process.env.NODE_ENV === 'development') console.debug("Overpass cache hit, using cached response", { backEndID, bbox, language: this.language, out });
         } else {
-            if (debug) console.debug("Overpass cache miss, fetching data", { backEndID, bbox, language: this.language });
+            if (process.env.NODE_ENV === 'development') console.debug("Overpass cache miss, fetching data", { backEndID, bbox, language: this.language });
             const osm_text_key = getConfig("osm_text_key"),
                 osm_description_key = getConfig("osm_description_key");
             let osm_keys: string[],
@@ -88,7 +88,7 @@ export class OverpassService implements MapService {
                 // Search a specific etymology key
                 const sourceKeyCode = /^.*overpass_(osm_[_a-z]+)$/.exec(backEndID)?.at(1);
 
-                if (debug) console.debug("Overpass fetchMapData", { backEndID, sourceKeyCode, wikidata_key_codes: this.wikidata_key_codes });
+                if (process.env.NODE_ENV === 'development') console.debug("Overpass fetchMapData", { backEndID, sourceKeyCode, wikidata_key_codes: this.wikidata_key_codes });
                 if (!sourceKeyCode)
                     throw new Error(`Failed to extract sourceKeyCode from back-end ID: "${backEndID}"`);
                 else if (!this.wikidata_key_codes || !(sourceKeyCode in this.wikidata_key_codes))
@@ -100,18 +100,18 @@ export class OverpassService implements MapService {
                 use_wikidata = false;
             }
 
-            if (debug) console.time("overpass_query");
+            if (process.env.NODE_ENV === 'development') console.time("overpass_query");
             const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, outClause),
                 res = await this.api.postOverpassQuery({ data: query });
-            if (debug) console.timeEnd("overpass_query");
-            if (debug) console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
+            if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
+            if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 
             if (!res.elements && res.remark)
                 throw new Error(`Overpass API error: ${res.remark}`);
 
-            if (debug) console.time("overpass_transform");
+            if (process.env.NODE_ENV === 'development') console.time("overpass_transform");
             out = osmtogeojson(res);
-            if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
+            if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
 
             out.features.forEach(f => this.transformFeature(f, osm_keys, osm_text_key, osm_description_key));
             out.overpass_query = query;
@@ -122,9 +122,9 @@ export class OverpassService implements MapService {
             const maxElements = getConfig("max_map_elements");
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
             this.db.addMap(out);
-            if (debug) console.timeEnd("overpass_transform");
+            if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_transform");
         }
-        if (debug) console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
         return out;
     }
 
@@ -192,7 +192,7 @@ export class OverpassService implements MapService {
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        if (debug) console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
+        if (process.env.NODE_ENV === 'development') console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
         let query = `
 [out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
 (

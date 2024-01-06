@@ -1,5 +1,5 @@
 import { ColorSchemeID } from "./model/colorScheme";
-import { debug, getConfig } from "./config";
+import { getConfig } from "./config";
 
 const default_center_lat_raw = getConfig("default_center_lat"),
     default_center_lon_raw = getConfig("default_center_lon"),
@@ -31,7 +31,7 @@ function getFragmentParams(): FragmentParams {
             colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
             backEndID: (hashParams && hashParams[4]) ? hashParams[4] : null,
         };
-    //if(enable_debug_log) console.info("getFragmentParams", { hashParams, out });
+    // if (process.env.NODE_ENV === 'development') console.debug("getFragmentParams", { hashParams, out });
     return out;
 }
 
@@ -52,10 +52,10 @@ function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorSchem
 
     const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.backEndID}`;
     if (window.location.hash !== fragment) {
-        if (debug) console.info("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
         window.location.hash = fragment;
     } else {
-        if (debug) console.info("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
     }
     return fragment;
 }
@@ -77,7 +77,7 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
             colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
             backEndID: raw.backEndID?.replace("db_", "vector_") || defaultBackEndID,
         };
-    //if (debug) console.info("getCorrectFragmentParams", { raw, correct });
+    //if (process.env.NODE_ENV === 'development') console.debug("getCorrectFragmentParams", { raw, correct });
     return correct;
 }
 

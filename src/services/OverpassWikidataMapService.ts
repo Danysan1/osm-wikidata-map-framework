@@ -1,4 +1,4 @@
-import { debug, getConfig } from "../config";
+import { getConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
 import type { EtymologyResponse } from "../model/EtymologyResponse";
 import type { OsmType } from "../model/EtymologyFeatureProperties";
@@ -65,7 +65,7 @@ export class OverpassWikidataMapService implements MapService {
         );
         out.etymology_count = out.features.map(feature => feature.properties?.etymologies?.length || 0)
             .reduce((acc: number, num: number) => acc + num, 0);
-        if (debug) console.debug(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
 
@@ -77,17 +77,17 @@ export class OverpassWikidataMapService implements MapService {
     ): Promise<EtymologyResponse> {
         let out = await this.db.getMap(backEndID, bbox, this.language);
         if (out) {
-            if (debug) console.debug("Overpass+Wikidata cache hit, using cached response", { backEndID, bbox, language: this.language, out });
+            if (process.env.NODE_ENV === 'development') console.debug("Overpass+Wikidata cache hit, using cached response", { backEndID, bbox, language: this.language, out });
         } else {
-            if (debug) console.debug("Overpass+Wikidata cache miss, fetching data", { backEndID, bbox, language: this.language });
+            if (process.env.NODE_ENV === 'development') console.debug("Overpass+Wikidata cache miss, fetching data", { backEndID, bbox, language: this.language });
 
-            if (debug) console.time("Overpass+Wikidata fetch");
+            if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata fetch");
             const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
-            if (debug) console.timeEnd("Overpass+Wikidata fetch");
+            if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata fetch");
 
-            if (debug) console.time("Overpass+Wikidata merge");
+            if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata merge");
             out = this.mergeMapData(overpassData, wikidataData);
-            if (debug) console.timeEnd("Overpass+Wikidata merge");
+            if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata merge");
 
             if (!out)
                 throw new Error("Merge failed");
@@ -170,7 +170,7 @@ export class OverpassWikidataMapService implements MapService {
                 // Merge etymologies
                 wikidataFeature.properties?.etymologies?.forEach((etymology: Etymology) => {
                     if (etymology.wikidata && existingFeature.properties?.etymologies?.some(ety => ety.wikidata === etymology.wikidata)) {
-                        if (debug) console.warn("Overpass+Wikidata: Ignoring duplicate etymology", { wd_id: etymology.wikidata, existing: existingFeature.properties, new: wikidataFeature.properties });
+                        if (process.env.NODE_ENV === 'development') console.warn("Overpass+Wikidata: Ignoring duplicate etymology", { wd_id: etymology.wikidata, existing: existingFeature.properties, new: wikidataFeature.properties });
                     } else {
                         if (!existingFeature.properties)
                             existingFeature.properties = {};
@@ -187,7 +187,7 @@ export class OverpassWikidataMapService implements MapService {
 
         out.wdqs_query = wikidataData.wdqs_query;
         out.truncated = out.truncated || wikidataData.truncated;
-        if (debug) console.debug(`Overpass+Wikidata mergeMapData found ${out.features.length} features`, { features: [...out.features] });
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata mergeMapData found ${out.features.length} features`, { features: [...out.features] });
         return out;
     }
 }

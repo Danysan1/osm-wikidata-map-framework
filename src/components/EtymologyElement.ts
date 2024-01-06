@@ -1,5 +1,4 @@
 import { imageToDomElement } from "./CommonsImageElement";
-import { debug } from "../config";
 import { DatePrecision, EtymologyDetails } from "../model/EtymologyDetails";
 import { setFragmentParams } from "../fragment";
 import { translateContent, translateAnchorTitle } from "../i18n";
@@ -41,7 +40,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
     }
 
     const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
-    //if (debug) console.info("formatDate", { date, precision, dateObject, options, out });
+    //if (process.env.NODE_ENV === 'development') console.debug("formatDate", { date, precision, dateObject, options, out });
     return out;
 }
 
@@ -63,7 +62,7 @@ export class EtymologyElement extends HTMLDivElement {
 
     set currentZoom(currentZoom: number) {
         this._currentZoom = currentZoom;
-        // if (debug) console.info("EtymologyElement: setting currentZoom", { currentZoom });
+        // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: setting currentZoom", { currentZoom });
         this.render();
     }
 
@@ -74,17 +73,17 @@ export class EtymologyElement extends HTMLDivElement {
     set etymology(ety: EtymologyDetails | undefined) {
         if (!ety) {
             this._ety = undefined;
-            // if (debug) console.info("EtymologyElement: unsetting etymology");
+            // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: unsetting etymology");
         } else {
             this._ety = ety;
-            // if (debug) console.info("EtymologyElement: setting etymology", { ety });
+            // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: setting etymology", { ety });
         }
         this.render();
     }
 
     private render() {
         if (!this.etymology) {
-            if (debug) console.info("EtymologyElement: no etymology, hiding");
+            if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: no etymology, hiding");
             this.classList.add("hiddenElement");
             this.innerHTML = "";
             return;
@@ -97,7 +96,7 @@ export class EtymologyElement extends HTMLDivElement {
         const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement;
 
         const lang = document.documentElement.lang.split("-").at(0);
-        if (debug) console.info("EtymologyElement", { ety: this.etymology, etyDomElement, lang });
+        if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement", { ety: this.etymology, etyDomElement, lang });
 
         translateContent(etyDomElement, ".i18n_source", "feature_details.source", "Source:");
         translateContent(etyDomElement, ".i18n_location", "feature_details.location", "Location");
@@ -301,7 +300,7 @@ export class EtymologyElement extends HTMLDivElement {
             console.warn("Missing .etymology_src_osm");
         } else if (showOsmJoinSource) {
             const osmURL = `https://www.openstreetmap.org/${this.etymology.from_osm_type}/${this.etymology.from_osm_id}`;
-            if (debug) console.info("Showing OSM etymology source", { ety: this.etymology, osmURL, src_osm });
+            if (process.env.NODE_ENV === 'development') console.debug("Showing OSM etymology source", { ety: this.etymology, osmURL, src_osm });
             src_osm.innerText = "OpenStreetMap";
             src_osm.href = osmURL;
             src_osm.classList.remove('hiddenElement');
@@ -325,7 +324,7 @@ export class EtymologyElement extends HTMLDivElement {
             console.warn("Missing .etymology_src_wd");
         } else if (this.etymology.from_wikidata_entity) {
             const wdURL = `https://www.wikidata.org/wiki/${this.etymology.from_wikidata_entity}#${this.etymology.from_wikidata_prop}`;
-            if (debug) console.info("Showing WD etymology source", { ety: this.etymology, wdURL, src_wd });
+            if (process.env.NODE_ENV === 'development') console.debug("Showing WD etymology source", { ety: this.etymology, wdURL, src_wd });
             src_wd.href = wdURL;
             src_wd.classList.remove("hiddenElement");
         } else {
@@ -359,7 +358,7 @@ export class EtymologyElement extends HTMLDivElement {
         }
 
         this.innerHTML = "";
-        // if (debug) console.info("EtymologyElement: rendering", { etyDomElement });
+        // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: rendering", { etyDomElement });
         this.appendChild(etyDomElement);
         this.classList.remove("hiddenElement");
     }

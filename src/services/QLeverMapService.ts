@@ -9,9 +9,9 @@ import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
 import wd_direct_query from "./query/qlever/wd_direct.sparql";
 import wd_base_query from "./query/qlever/wd_base.sparql";
-import { debug, getConfig, getJsonConfig, getKeyID } from "../config";
+import { getConfig, getJsonConfig, getKeyID } from "../config";
 import { parse as parseWKT } from "wellknown";
-import { Point, BBox } from "geojson";
+import type { Point, BBox } from "geojson";
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyResponse, EtymologyFeature } from "../model/EtymologyResponse";
 
@@ -58,9 +58,9 @@ export class QLeverMapService implements MapService {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getMap(backEndID, bbox, language);
         if (out) {
-            if (debug) console.info(`QLever map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
+            if (process.env.NODE_ENV === 'development') console.debug(`QLever map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
         } else {
-            if (debug) console.info("QLever map cache miss, fetching data", { backEndID, bbox, language: language });
+            if (process.env.NODE_ENV === 'development') console.debug("QLever map cache miss, fetching data", { backEndID, bbox, language: language });
             const maxElements = getConfig("max_map_elements"),
                 backend = this.getSparqlBackEnd(backEndID),
                 sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
@@ -87,7 +87,7 @@ export class QLeverMapService implements MapService {
             else if (backend === "osm-planet")
                 out.qlever_osm_query = sparqlQuery;
 
-            if (debug) console.info(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+            if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }
         return out;
@@ -143,7 +143,7 @@ export class QLeverMapService implements MapService {
                 filterKeysExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_v; " : "", // "[]" would be more appropriate than "?_v", but it's not working by QLever
                 non_filter_osm_wd_predicate = non_filter_osm_wd_keys?.map(keyPredicate)?.join('|'),
                 osmEtymologyUnionBranches: string[] = [];
-            if (debug) console.debug("fillPlaceholders", {
+            if (process.env.NODE_ENV === 'development') console.debug("fillPlaceholders", {
                 filter_tags, filter_tags_with_value, filter_keys, filter_osm_wd_keys, non_filter_wd_keys: non_filter_osm_wd_keys, filter_non_etymology_keys, filterExpression: filterKeysExpression
             });
 
@@ -236,7 +236,7 @@ export class QLeverMapService implements MapService {
         const wkt_geometry = row.location.value as string,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
-            if (debug) console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
+            if (process.env.NODE_ENV === 'development') console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
 
@@ -257,7 +257,7 @@ export class QLeverMapService implements MapService {
             });
 
             if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-                if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
+                if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
             } else {
                 const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
                     feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
@@ -292,7 +292,7 @@ export class QLeverMapService implements MapService {
 
                     const commons: string | undefined = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
                         picture: string | undefined = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
-                    if (debug) console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
+                    if (process.env.NODE_ENV === 'development') console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
 
                     acc.push({
                         type: "Feature",

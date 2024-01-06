@@ -2,7 +2,6 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } f
 
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent, Popup } from 'mapbox-gl';
 
-import { debug } from '../config';
 import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
@@ -100,7 +99,7 @@ export class DataTableControl implements IControl {
             popup.setLngLat(map.unproject([0, 0]))
                 .setDOMContent(table)
                 .addTo(map);
-            if (debug) console.debug("DataTableControl", { popup })
+            if (process.env.NODE_ENV === 'development') console.debug("DataTableControl", { popup })
             // console.table(data.features?.map(f => f.properties));
         }
     }
@@ -125,7 +124,7 @@ export class DataTableControl implements IControl {
             const row = document.createElement("tr"),
                 id = f.properties?.wikidata?.toString() || f.properties?.name?.replaceAll('"', "");
             if (id) {
-                if (debug) console.debug("createFeatureRow", { id, f });
+                if (process.env.NODE_ENV === 'development') console.debug("createFeatureRow", { id, f });
                 if (tbody.querySelector(`[data-feature-id="${id}"]`) !== null)
                     return;
                 row.dataset.featureId = id;

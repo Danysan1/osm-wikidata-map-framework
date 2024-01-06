@@ -1,10 +1,10 @@
-import { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
+import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
 
 // import { MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
 
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { getCorrectFragmentParams } from '../fragment';
-import { debug, getConfig, getJsonConfig } from '../config';
+import { getConfig, getJsonConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import type { TFunction } from 'i18next';
@@ -117,20 +117,20 @@ class EtymologyColorControl extends DropdownControl {
     public async updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
-            if (debug) console.warn("updateChart: dropdown not yet initialized", { event });
+            if (process.env.NODE_ENV === 'development') console.warn("updateChart: dropdown not yet initialized", { event });
             return;
         }
 
         const zoomLevel = this.getMap()?.getZoom();
         if (zoomLevel === undefined || zoomLevel < this.minZoomLevel) {
-            if (debug) console.debug("updateChart: skipping chart update ", { zoomLevel, minZoomLevel: this.minZoomLevel, event });
+            if (process.env.NODE_ENV === 'development') console.debug("updateChart: skipping chart update ", { zoomLevel, minZoomLevel: this.minZoomLevel, event });
             this.showDropdown(false);
             return;
         }
 
         const colorSchemeID = dropdown.value as ColorSchemeID,
             colorScheme = colorSchemes[colorSchemeID];
-        if (debug) console.debug("updateChart: updating", { event, colorSchemeID, colorScheme });
+        if (process.env.NODE_ENV === 'development') console.debug("updateChart: updating", { event, colorSchemeID, colorScheme });
         if (colorSchemeID === ColorSchemeID.feature_source) {
             this.loadFeatureSourceChartData();
             if (event)
@@ -157,7 +157,7 @@ class EtymologyColorControl extends DropdownControl {
     private areLayersAvailable() {
         for (const i in this.layerIDs) {
             if (!this.getMap()?.getLayer(this.layerIDs[i])) {
-                if (debug) console.warn("calculateAndLoadChartData: layer not yet loaded", { layers: this.layerIDs, layer: this.layerIDs[i] });
+                if (process.env.NODE_ENV === 'development') console.warn("calculateAndLoadChartData: layer not yet loaded", { layers: this.layerIDs, layer: this.layerIDs[i] });
                 return false;
             }
         }
@@ -175,7 +175,7 @@ class EtymologyColorControl extends DropdownControl {
         const features: EtymologyFeatureProperties[] | undefined = this.getMap()
             ?.queryRenderedFeatures({ layers: this.layerIDs })
             ?.map(f => f.properties);
-        if (debug) console.debug("calculateAndLoadChartData", { colorSchemeID, colorSchemeIDChanged, layerColor, features });
+        if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData", { colorSchemeID, colorSchemeIDChanged, layerColor, features });
         if (colorSchemeIDChanged || features?.length !== this.lastFeatureCount) {
             this.lastFeatureCount = features?.length;
 
@@ -184,10 +184,10 @@ class EtymologyColorControl extends DropdownControl {
         }
 
         if (colorSchemeIDChanged) {
-            if (debug) console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, layerColor });
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, layerColor });
             this.setLayerColor(layerColor);
         } else {
-            if (debug) console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeID, colorSchemeIDChanged, layerColor });
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeID, colorSchemeIDChanged, layerColor });
         }
     }
 
@@ -215,7 +215,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (osm_wikidata_IDs.size) stats.push({ name: "OSM + Wikidata", color: OSM_WIKIDATA_COLOR, id: 'osm_wikidata', count: osm_wikidata_IDs.size });
                 if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
                 if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
-                if (debug) console.debug("loadFeatureSourceChartData", { features: features, stats, osm_wikidata_IDs, wikidata_IDs, osm_IDs });
+                if (process.env.NODE_ENV === 'development') console.debug("loadFeatureSourceChartData", { features: features, stats, osm_wikidata_IDs, wikidata_IDs, osm_IDs });
                 return stats;
             },
             [
@@ -251,7 +251,7 @@ class EtymologyColorControl extends DropdownControl {
                     if (etymologies?.some(ety => ety.wikidata)) {
                         etymologies.forEach(etymology => {
                             if (!etymology.wikidata) {
-                                if (debug) console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
+                                if (process.env.NODE_ENV === 'development') console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
                             } else if (etymology.propagated) {
                                 propagation_IDs.add(etymology.wikidata);
                             } else if (feature?.from_osm && etymology.from_wikidata) {
@@ -272,7 +272,7 @@ class EtymologyColorControl extends DropdownControl {
                 if (wikidata_IDs.size) stats.push({ name: "Wikidata", color: WIKIDATA_COLOR, id: 'wikidata', count: wikidata_IDs.size });
                 if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
                 if (osm_text_names.size) stats.push({ name: this.osmTextOnlyLabel, color: FALLBACK_COLOR, id: "osm_text", count: osm_text_names.size });
-                if (debug) console.debug("loadEtymologySourceChartData", { features, stats, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names });
+                if (process.env.NODE_ENV === 'development') console.debug("loadEtymologySourceChartData", { features, stats, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names });
                 return stats;
             },
             [
@@ -315,7 +315,7 @@ class EtymologyColorControl extends DropdownControl {
                 ?.queryRenderedFeatures({ layers: this.layerIDs })
                 ?.map(feature => feature.properties);
         } catch (error) {
-            if (debug) console.error("Error querying rendered features", {
+            if (process.env.NODE_ENV === 'development') console.error("Error querying rendered features", {
                 colorSchemeID: ColorSchemeID.picture, layers: this.layerIDs, error
             });
             return;
@@ -365,7 +365,7 @@ class EtymologyColorControl extends DropdownControl {
                     statsData.push(["==", subject, ["get", "wikidata"]], color);
                 });
             } else {
-                if (debug) console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
+                if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
             }
         });
 
@@ -377,7 +377,7 @@ class EtymologyColorControl extends DropdownControl {
             ...statsData,
             NO_PICTURE_COLOR
         ];
-        if (debug) console.debug("loadPictureAvailabilityChartData: setting layer color", data);
+        if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
         this.setLayerColor(data);
 
         showLoadingSpinner(false);
@@ -405,7 +405,7 @@ class EtymologyColorControl extends DropdownControl {
                 ?.map(etymology => etymology.wikidata)
                 ?.filter(id => typeof id === 'string') as string[] || [];
         } catch (error) {
-            if (debug) console.error("Error querying rendered features", {
+            if (process.env.NODE_ENV === 'development') console.error("Error querying rendered features", {
                 colorSchemeID, layers: this.layerIDs, error
             });
             return;
@@ -425,14 +425,14 @@ class EtymologyColorControl extends DropdownControl {
 
     private async downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID: ColorSchemeID): Promise<EtymologyStat[] | null> {
         if (idSet.size === 0) {
-            if (debug) console.debug("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
+            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
             return null;
         } else if (colorSchemeID === this._lastColorSchemeID && this._lastWikidataIDs?.length === idSet.size && this._lastWikidataIDs?.every(id => id in idSet)) {
-            if (debug) console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, idSet, lastWikidataIDs: this._lastWikidataIDs });
+            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, idSet, lastWikidataIDs: this._lastWikidataIDs });
             return null;
         } else {
             const uniqueIDs = Array.from(idSet);
-            if (debug) console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
+            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, lastColorSchemeID: this._lastColorSchemeID, uniqueIDs, lastWikidataIDs: this._lastWikidataIDs });
             this._lastColorSchemeID = colorSchemeID;
             this._lastWikidataIDs = uniqueIDs;
             try {
@@ -440,10 +440,10 @@ class EtymologyColorControl extends DropdownControl {
                     stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
                 if (!stats.length) {
-                    if (debug) console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
+                    if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
                     return null;
                 } else if (colorSchemeID != this._lastColorSchemeID) {
-                    if (debug) console.debug("downloadChartDataForWikidataIDs: color scheme has changed while fetching stats", { colorSchemeID, newColorSchemeID: this._lastColorSchemeID, uniqueIDs });
+                    if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: color scheme has changed while fetching stats", { colorSchemeID, newColorSchemeID: this._lastColorSchemeID, uniqueIDs });
                     return null;
                 } else {
                     return stats;
@@ -468,7 +468,7 @@ class EtymologyColorControl extends DropdownControl {
                     statsData.push(["in", subject + '"', ["to-string", ["get", "etymologies"]]], color);
                 });
             } else {
-                if (debug) console.debug("setLayerColorForStats: skipping row with no color or subjects", { row });
+                if (process.env.NODE_ENV === 'development') console.debug("setLayerColorForStats: skipping row with no color or subjects", { row });
             }
         });
 
@@ -481,7 +481,7 @@ class EtymologyColorControl extends DropdownControl {
             FALLBACK_COLOR
         ];
 
-        if (debug) console.debug("setLayerColorForStats", { stats, data });
+        if (process.env.NODE_ENV === 'development') console.debug("setLayerColorForStats", { stats, data });
         this.setLayerColor(data);
     }
 
@@ -492,7 +492,7 @@ class EtymologyColorControl extends DropdownControl {
      */
     private setChartStats(stats: EtymologyStat[]) {
         if (this._chartInitInProgress) {
-            if (debug) console.debug("setChartData: chart already loading");
+            if (process.env.NODE_ENV === 'development') console.debug("setChartData: chart already loading");
             return;
         }
 
@@ -509,7 +509,7 @@ class EtymologyColorControl extends DropdownControl {
             data.datasets[0].data.push(row.count);
         });
 
-        if (debug) console.debug("setChartData", {
+        if (process.env.NODE_ENV === 'development') console.debug("setChartData", {
             stats,
             chartDomElement: this._chartDomElement,
             chartJsObject: this._chartJsObject,
@@ -542,7 +542,7 @@ class EtymologyColorControl extends DropdownControl {
         if (!container)
             throw new Error("Missing container");
 
-        if (debug) console.debug("initChartObject: Initializing the chart");
+        if (process.env.NODE_ENV === 'development') console.debug("initChartObject: Initializing the chart");
 
         this._chartInitInProgress = true
 
@@ -609,7 +609,7 @@ class EtymologyColorControl extends DropdownControl {
     private updateChartTable(data: ChartData<"pie">) {
         const chartTableBody = document.querySelector('.chart-table-body');
         if (!chartTableBody) {
-            if (debug) console.warn("setChartData: chart table body not found");
+            if (process.env.NODE_ENV === 'development') console.warn("setChartData: chart table body not found");
             return;
         }
         chartTableBody.innerHTML = '';

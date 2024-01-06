@@ -1,4 +1,4 @@
-import { getConfig, getBoolConfig, debug, getJsonConfig, getKeyID } from '../config';
+import { getConfig, getBoolConfig, getJsonConfig, getKeyID } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import type { TFunction } from "i18next";
@@ -30,7 +30,7 @@ export class BackEndControl extends DropdownControl {
             dropdownItems: DropdownItem[] = [],
             osm_text_key = getConfig("osm_text_key"),
             selectBackEnd = (backEndID: string) => {
-                if (debug) console.debug("Selecting source ", { backEndID });
+                if (process.env.NODE_ENV === 'development') console.debug("Selecting source ", { backEndID });
 
                 // If the change came from a manual interaction, update the fragment params
                 setFragmentParams(undefined, undefined, undefined, undefined, backEndID);
@@ -146,7 +146,7 @@ export class BackEndControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("vector_propagated", t("source.propagated", "Propagated"), VECTOR_GROUP_NAME));
 
         if (dropdownItems.find(item => item.id === startBackEndID)) {
-            if (debug) console.debug("Starting with back-end ID", startBackEndID );
+            if (process.env.NODE_ENV === 'development') console.debug("Starting with back-end ID", startBackEndID );
         } else {
             logErrorMessage("Invalid start back-end ID", "warning", { oldID: startBackEndID, dropdownItems, newID: dropdownItems[0].id });
             startBackEndID = dropdownItems[0].id;

@@ -1,8 +1,8 @@
-import { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
+import type { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
 
 // import { IControl, Map, MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { debug, getConfig } from '../config';
+import { getConfig } from '../config';
 import { getCorrectFragmentParams } from '../fragment';
 
 export class MapCompleteControl implements IControl {
@@ -15,7 +15,7 @@ export class MapCompleteControl implements IControl {
         const mapComplete_theme = getConfig("mapcomplete_theme");
         if (!mapComplete_theme)
             throw new Error("mapcomplete_theme not set in config");
-        if (debug) console.debug("Initializing MapCompleteControl", { mapComplete_theme, minZoomLevel });
+        if (process.env.NODE_ENV === 'development') console.debug("Initializing MapCompleteControl", { mapComplete_theme, minZoomLevel });
         this.minZoomLevel = minZoomLevel;
         this.mapComplete_theme = mapComplete_theme;
         this.moveEndHandler = e => this.show(e.target.getZoom() >= minZoomLevel);

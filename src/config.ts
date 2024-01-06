@@ -16,6 +16,4 @@ export function getJsonConfig(key: string): any | null {
     return configElement?.textContent ? JSON.parse(configElement.textContent) : null;
 }
 
-export const debug = getBoolConfig("enable_debug_log");
-
 export const getKeyID = (key: string) => "osm_" + key.replace(":wikidata", "").replace(":", "_");

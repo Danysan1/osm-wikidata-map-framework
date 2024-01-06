@@ -2,7 +2,6 @@ import type { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
 
 // import { IControl, Map, MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { debug } from '../config';
 import { getCorrectFragmentParams } from '../fragment';
 
 export class OsmWikidataMatcherControl implements IControl {
@@ -11,7 +10,7 @@ export class OsmWikidataMatcherControl implements IControl {
     private moveEndHandler: (e: MapEvent) => void;
 
     constructor(minZoomLevel: number) {
-        if (debug) console.debug("Initializing OsmWikidataMatcherControl", { minZoomLevel });
+        if (process.env.NODE_ENV === 'development') console.debug("Initializing OsmWikidataMatcherControl", { minZoomLevel });
         this.minZoomLevel = minZoomLevel;
         this.moveEndHandler = e => this.show(e.target.getZoom() >= minZoomLevel);
     }

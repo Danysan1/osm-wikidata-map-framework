@@ -6,7 +6,7 @@ import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-trans
 import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './model/backgroundStyle';
-import { debug, getBoolConfig, getConfig } from './config';
+import { getBoolConfig, getConfig } from './config';
 import { setPageLocale } from './i18n';
 import './style.css';
 
@@ -85,7 +85,7 @@ document.addEventListener("DOMContentLoaded", initPage);
  * @see https://docs.mapbox.com/mapbox-gl-js/example/disable-rotation/
  */
 function initMap() {
-    if (debug) console.info("Initializing the map");
+    if (process.env.NODE_ENV === 'development') console.debug("Initializing the map");
     let requestTransformFunc: RequestTransformFunction | undefined;
 
     /********** Start of Mapbox GL JS specific code **********/
@@ -112,7 +112,7 @@ function initMap() {
         err => {
             if (err)
                 console.error("Error loading mapbox-gl-rtl-text", err)
-            else if (debug)
+            else if (process.env.NODE_ENV === 'development')
                 console.info("mapbox-gl-rtl-text loaded")
         },
         true // Lazy load the plugin

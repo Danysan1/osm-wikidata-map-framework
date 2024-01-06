@@ -1,7 +1,7 @@
 import Dexie, { Table } from 'dexie';
-import { debug, getConfig } from '../config';
-import { EtymologyStat } from '../controls/EtymologyColorControl';
-import { ColorSchemeID } from '../model/colorScheme';
+import { getConfig } from '../config';
+import type { EtymologyStat } from '../controls/EtymologyColorControl';
+import type { ColorSchemeID } from '../model/colorScheme';
 
 interface StatsRow {
     id?: number;
@@ -26,7 +26,7 @@ export class StatsDatabase extends Dexie {
                 const maxHours = parseInt(getConfig("cache_timeout_hours") || "24"),
                     threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
                     count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (debug) console.info("Evicted old maps from indexedDB", { count, maxHours, threshold });
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, maxHours, threshold });
             });
         }, 10_000);
     }

@@ -1,9 +1,9 @@
-import { GeoJSONFeature } from 'maplibre-gl';
+import type { GeoJSONFeature } from 'maplibre-gl';
 
 // import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
 
 import { etymologyToDomElement } from "./EtymologyElement";
-import { debug, getBoolConfig } from "../config";
+import { getBoolConfig } from "../config";
 import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n";
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
 import { imageToDomElement } from "./CommonsImageElement";
@@ -28,7 +28,7 @@ export class FeatureElement extends HTMLDivElement {
 
     set currentZoom(currentZoom: number) {
         this._currentZoom = currentZoom;
-        if (debug) console.info("FeatureElement: setting currentZoom", { currentZoom });
+        if (process.env.NODE_ENV === 'development') console.debug("FeatureElement: setting currentZoom", { currentZoom });
         this.render();
     }
 
@@ -39,10 +39,10 @@ export class FeatureElement extends HTMLDivElement {
     set feature(feature: GeoJSONFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
-            if (debug) console.info("FeatureElement: unsetting feature");
+            if (process.env.NODE_ENV === 'development') console.debug("FeatureElement: unsetting feature");
         } else {
             this._feature = feature;
-            if (debug) console.info("FeatureElement: setting feature", { feature });
+            if (process.env.NODE_ENV === 'development') console.debug("FeatureElement: setting feature", { feature });
         }
         this.render();
     }
@@ -64,7 +64,7 @@ export class FeatureElement extends HTMLDivElement {
             osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
         //detail_container.dataset.el_id = properties.el_id?.toString();
 
-        if (debug) console.info("FeatureElement render", {
+        if (process.env.NODE_ENV === 'development') console.debug("FeatureElement render", {
             el_id: properties.el_id, feature: this.feature, etymologies, detail_container
         });
 
@@ -91,7 +91,7 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         if (!element_name) {
-            if (debug) console.info("Missing .element_name");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing .element_name");
         } else if (main_name) {
             element_name.innerText = '📍 ' + main_name;
         }
@@ -102,7 +102,7 @@ export class FeatureElement extends HTMLDivElement {
                 .map(name => name?.trim())
                 .filter(name => name && name !== 'null' && (!main_name || name.toLowerCase() !== main_name.toLowerCase()));
         if (!element_alt_names) {
-            if (debug) console.info("Missing .element_alt_names");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing .element_alt_names");
         } else if (alt_names.length > 0) {
             element_alt_names.innerText =
                 "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
@@ -110,7 +110,7 @@ export class FeatureElement extends HTMLDivElement {
 
         const element_description = detail_container.querySelector<HTMLElement>('.element_description');
         if (!element_description) {
-            if (debug) console.info("Missing .element_description");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing .element_description");
         } else if (properties.description) {
             element_description.innerText = properties.description;
         }
@@ -123,17 +123,17 @@ export class FeatureElement extends HTMLDivElement {
             has_picture = picture && picture !== 'null',
             feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
         if (!feature_pictures) {
-            if (debug) console.info("Missing .feature_pictures");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing .feature_pictures");
         } else if (has_picture) {
-            if (debug) console.info("Using picture from feature 'picture' property", { picture });
+            if (process.env.NODE_ENV === 'development') console.debug("Using picture from feature 'picture' property", { picture });
             feature_pictures.appendChild(imageToDomElement(picture))
             feature_pictures.classList.remove("hiddenElement");
         } else if (commons?.includes("File:")) {
-            if (debug) console.info("Using picture from feature 'commons' property", { commons });
+            if (process.env.NODE_ENV === 'development') console.debug("Using picture from feature 'commons' property", { commons });
             feature_pictures.appendChild(imageToDomElement(commons));
             feature_pictures.classList.remove("hiddenElement");
         } else if (has_wikidata) {
-            if (debug) console.info("Using picture from feature 'wikidata' property", { wikidata });
+            if (process.env.NODE_ENV === 'development') console.debug("Using picture from feature 'wikidata' property", { wikidata });
             this.showDetailsFromWikidata(wikidata, feature_pictures);
         } else {
             feature_pictures.classList.add("hiddenElement");
@@ -144,7 +144,7 @@ export class FeatureElement extends HTMLDivElement {
 
         const etymologies_container = detail_container.querySelector<HTMLElement>('.etymologies_container');
         if (!etymologies_container) {
-            if (debug) console.info("Missing .etymologies_container");
+            if (process.env.NODE_ENV === 'development') console.debug("Missing .etymologies_container");
         } else {
             this.fetchAndShowEtymologies(properties, etymologies_container, etymologies);
         }
@@ -155,7 +155,7 @@ export class FeatureElement extends HTMLDivElement {
             console.warn("Missing .feature_src_osm");
         } else if (show_src_osm) {
             const osmURL = `https://www.openstreetmap.org/${osm_full_id}`;
-            if (debug) console.info("Showing OSM feature source", { properties, osmURL, src_osm });
+            if (process.env.NODE_ENV === 'development') console.debug("Showing OSM feature source", { properties, osmURL, src_osm });
             src_osm.href = osmURL;
             src_osm.classList.remove('hiddenElement');
         } else {
@@ -178,7 +178,7 @@ export class FeatureElement extends HTMLDivElement {
         } else if (show_src_wd) {
             const from_prop = properties.from_wikidata_prop || "P625",
                 wdURL = `https://www.wikidata.org/wiki/${from_entity}#${from_prop}`;
-            if (debug) console.info("Showing WD feature source", { properties, wdURL, src_wd });
+            if (process.env.NODE_ENV === 'development') console.debug("Showing WD feature source", { properties, wdURL, src_wd });
             src_wd.href = wdURL;
             src_wd.classList.remove("hiddenElement");
         } else {
@@ -186,7 +186,7 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         this.innerHTML = "";
-        if (debug) console.info("FeatureElement: rendering", { detail_container });
+        if (process.env.NODE_ENV === 'development') console.debug("FeatureElement: rendering", { detail_container });
         this.appendChild(detail_container);
         this.classList.remove("hiddenElement");
     }
@@ -207,7 +207,7 @@ export class FeatureElement extends HTMLDivElement {
 
         const parts_containers = etymologies_container.querySelectorAll<HTMLElement>(".etymology_parts_container")
         if (getBoolConfig("fetch_parts_of_linked_entities") && parts_containers.length > 0) {
-            if (debug) console.info("fetchAndShowEtymologies: fetching parts of linked entities", { filledEtymologies });
+            if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: fetching parts of linked entities", { filledEtymologies });
             const parts: Etymology[] = filledEtymologies.flatMap(ety => ety.parts?.map(part => ({
                 ...ety,
                 from_parts_of_wikidata_cod: ety.wikidata,
@@ -215,7 +215,7 @@ export class FeatureElement extends HTMLDivElement {
             })) || []),
                 filledParts = await this.downloadEtymologyDetails(parts);
 
-            if (debug) console.info("fetchAndShowEtymologies: showing parts of linked entities", { filledParts, parts_containers });
+            if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: showing parts of linked entities", { filledParts, parts_containers });
             parts_containers.forEach(parts_container => {
                 const wdID = parts_container.dataset.wikidataCod,
                     partsOfThisEntity = filledParts.filter(ety => wdID && ety.from_parts_of_wikidata_cod === wdID);
@@ -233,7 +233,7 @@ export class FeatureElement extends HTMLDivElement {
                 wikidataService = new WikidataService(),
                 image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
             if (image) {
-                if (debug) console.debug("Found image from Wikidata", { wikidataID, feature_pictures, image });
+                if (process.env.NODE_ENV === 'development') console.debug("Found image from Wikidata", { wikidataID, feature_pictures, image });
                 feature_pictures.appendChild(imageToDomElement(image));
                 feature_pictures.classList.remove("hiddenElement");
             }
@@ -252,7 +252,7 @@ export class FeatureElement extends HTMLDivElement {
                 } catch (err) {
                     console.error("Failed adding etymology", { ety, err });
                 }
-            } else if (debug) {
+            } else if (process.env.NODE_ENV === 'development') {
                 console.warn("Found etymology without Wikidata ID", { ety });
             }
         });
@@ -265,7 +265,7 @@ export class FeatureElement extends HTMLDivElement {
             textEtyDescr = properties.text_etymology_descr === "null" ? undefined : properties.text_etymology_descr,
             textEtyDescrExists = typeof textEtyDescr === "string" && !!textEtyDescr,
             textEtyDescrs = textEtyDescrExists ? textEtyDescr.split(";") : [];
-        if (debug) console.info("showEtymologies: text etymology", { textEtyName, textEtyNameExists, textEtyNames, textEtyDescr, textEtyDescrExists, textEtyDescrs });
+        if (process.env.NODE_ENV === 'development') console.debug("showEtymologies: text etymology", { textEtyName, textEtyNameExists, textEtyNames, textEtyDescr, textEtyDescrExists, textEtyDescrs });
 
         for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
             const nthTextEtyNameExists = n < textEtyNames.length,
@@ -279,7 +279,7 @@ export class FeatureElement extends HTMLDivElement {
                 ),
                 nthTextEtyName = nthTextEtyNameExists ? textEtyNames[n] : undefined,
                 nthTextEtyDescr = nthTextEtyDescrExists ? textEtyDescrs[n] : undefined;
-            if (debug) console.info("showEtymologies: showing text etymology? ", {
+            if (process.env.NODE_ENV === 'development') console.debug("showEtymologies: showing text etymology? ", {
                 n, nthTextEtyNameExists, nthTextEtyName, nthTextEtyDescrExists, nthTextEtyDescr, textEtyShouldBeShown, etymologies
             });
             if (textEtyShouldBeShown) {

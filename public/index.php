@@ -152,7 +152,6 @@ if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNam
     <?= $conf->getMetaTag("sentry_js_env", true); ?>
     <?= $conf->getMetaTag("sentry_js_replays_session_sample_rate", true); ?>
     <?= $conf->getMetaTag("sentry_js_replays_on_error_sample_rate", true); ?>
-    <?= $conf->getMetaTag("enable_debug_log", true); ?>
     <?= $conf->getJsonScriptTag("overpass_endpoints", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("mapcomplete_theme", true); ?>

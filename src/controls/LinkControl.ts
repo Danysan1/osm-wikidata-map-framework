@@ -1,8 +1,7 @@
-import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
+import type { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
 
 // import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
 
-import { debug } from '../config';
 import type { EtymologyResponse } from '../model/EtymologyResponse';
 
 export class LinkControl implements IControl {
@@ -68,7 +67,7 @@ export class LinkControl implements IControl {
 
     setURL(url: string) {
         if (this.anchor && this.anchor.href !== url) {
-            if (debug) console.info("LinkControl: Setting link URL", { url });
+            if (process.env.NODE_ENV === 'development') console.debug("LinkControl: Setting link URL", { url });
             this.anchor.href = url;
         }
     }
@@ -91,7 +90,7 @@ export class LinkControl implements IControl {
 
             const query = content[mapEventField];
             if (typeof query !== "string" || !query.length) {
-                if (debug) console.info("Missing query field, hiding", { content, mapEventField });
+                if (process.env.NODE_ENV === 'development') console.debug("Missing query field, hiding", { content, mapEventField });
                 this.show(false);
             } else {
                 const encodedQuery = encodeURIComponent(query),

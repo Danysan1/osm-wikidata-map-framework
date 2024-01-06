@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import { debug, getConfig } from '../config';
+import { getConfig } from '../config';
 import type { EtymologyResponse } from '../model/EtymologyResponse';
 import type { BBox } from 'geojson';
 
@@ -10,7 +10,7 @@ export class MapDatabase extends Dexie {
 
     public constructor() {
         super("MapDatabase");
-        this.version(3).stores({
+        this.version(4).stores({
             maps: "++id, [backEndID+language]"
         });
 
@@ -19,7 +19,7 @@ export class MapDatabase extends Dexie {
                 const maxHours = parseInt(getConfig("cache_timeout_hours") || "24"),
                     threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
                     count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (debug) console.info("Evicted old maps from indexedDB", { count, maxHours, threshold });
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, maxHours, threshold });
             });
         }, 10_000);
     }

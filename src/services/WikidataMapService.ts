@@ -4,7 +4,7 @@ import reverseMapQuery from "./query/map/reverse.sparql";
 import qualifierMapQuery from "./query/map/qualifier.sparql";
 import directMapQuery from "./query/map/direct.sparql";
 import baseMapQuery from "./query/map/base.sparql";
-import { debug, getConfig, getJsonConfig } from "../config";
+import { getConfig, getJsonConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
@@ -37,9 +37,9 @@ export class WikidataMapService extends WikidataService implements MapService {
         const language = document.documentElement.lang.split('-').at(0) || '';
         let out = await this.db.getMap(backEndID, bbox, language);
         if (out) {
-            if (debug) console.info(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
+            if (process.env.NODE_ENV === 'development') console.debug(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
         } else {
-            if (debug) console.info("Wikidata map cache miss, fetching data", { backEndID, bbox, language: language });
+            if (process.env.NODE_ENV === 'development') console.debug("Wikidata map cache miss, fetching data", { backEndID, bbox, language: language });
             let sparqlQueryTemplate: string;
             if (backEndID === "wd_base")
                 sparqlQueryTemplate = baseMapQuery;
@@ -77,7 +77,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
-            if (debug) console.info(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+            if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
             this.db.addMap(out);
         }
         return out;
@@ -132,7 +132,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         const wkt_geometry = row.location.value as string,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
-            if (debug) console.info("Failed to parse WKT coordinates", { wkt_geometry, row });
+            if (process.env.NODE_ENV === 'development') console.debug("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
 
@@ -151,7 +151,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             });
 
         if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            if (debug) console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
+            if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
                 from_osm: false,
