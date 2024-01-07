@@ -50,11 +50,11 @@ export function mapboxStyle(id: string, text: string, mapboxUser: string, mapbox
  * @see https://www.jawg.io/lab/styles
  * @see https://www.jawg.io/docs/integration/maplibre-gl-js/change-style/
  */
-export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: string): BackgroundStyle {
+export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: string, extrude = false): BackgroundStyle {
     return {
         id: id,
         vendorText: "Jawg Maps",
         styleText: text,
-        styleUrl: `https://api.jawg.io/styles/${jawgId}.json?access-token=${jawgToken}`
+        styleUrl: `https://api.jawg.io/styles/${jawgId}.json?extrude=${extrude}&access-token=${jawgToken}`
     };
 }

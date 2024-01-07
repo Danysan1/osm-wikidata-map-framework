@@ -49,6 +49,7 @@ if (enable_stadia_maps) {
 if (jawg_token) {
     backgroundStyles.push(
         jawgStyle('jawg_streets', 'Streets', 'jawg-streets', jawg_token),
+        jawgStyle('jawg_streets', 'Streets 3D', 'jawg-streets', jawg_token, true),
         jawgStyle('jawg_sunny', 'Sunny', 'jawg-sunny', jawg_token),
         jawgStyle('jawg_light', 'Light', 'jawg-light', jawg_token),
         jawgStyle('jawg_terrain', 'Terrain', 'jawg-terrain', jawg_token),
