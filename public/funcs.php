@@ -78,7 +78,7 @@ function prepareHTML(Configuration $conf)
 	$maptilerConnect = '';
 	$maptilerImg = '';
 	if ($conf->has("maptiler_key")) {
-		$maptilerConnect = 'https://api.maptiler.com/tiles/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/';
+		$maptilerConnect = 'https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/';
 		$maptilerImg = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
 	}
 
