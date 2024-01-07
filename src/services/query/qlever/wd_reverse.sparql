@@ -29,10 +29,10 @@ WHERE {
     ?item p:P625 ?locationStatement;
           rdfs:label ?anyLabel.
     ${wikidataCountryQuery}
-    MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
-    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
+    MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore the etymology statement has an end date
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
+    MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
     MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
-    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
     ?locationStatement ps:P625 ?_location.
 
     # # Filter by location (geo:sfWithin)

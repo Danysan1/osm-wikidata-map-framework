@@ -19,6 +19,7 @@ Q82955,politician,politics,#ff9933
 Q83307,minister,politics,#ff9933
 Q11499147,political activist,politics,#ff9933
 Q193391,diplomat,politics,#ff9933
+Q121998,ambassador,politics,#ff9933
 Q599151,official,politics,#ff9933
 Q15627169,trade unionist,politics,#ff9933
 Q3068305,salonnière,politics,#ff9933
@@ -55,6 +56,7 @@ Q14467526,linguist,literature,#99ff33
 Q333634,translator,literature,#99ff33
 Q4964182,philosopher,literature,#99ff33
 Q182436,librarian,literature,#99ff33
+Q18939491,diarist,literature,#99ff33
 Q483501,artist,art,#33ff33
 Q3391743,visual artist,art,#33ff33
 Q1028181,painter,art,#33ff33
@@ -127,6 +129,7 @@ Q806798,banker,businessperson,#3333ff
 Q1979607,financier,businessperson,#3333ff
 Q205375,inventor,businessperson,#3333ff
 Q12362622,philanthropist,businessperson,#3333ff
+Q1483709,land owner,businessperson,#3333ff
 Q901,scientist,STEM,#9933ff
 Q169470,physicist,STEM,#9933ff
 Q186360,nurse,STEM,#9933ff

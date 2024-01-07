@@ -25,8 +25,8 @@ WHERE {
     ?item p:P625 ?locationStatement;
           ?from_prop ?etymology.
     ${wikidataCountryQuery}
-    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
-    MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
+    MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
+    MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
 
     ?locationStatement ps:P625 ?location.
     OPTIONAL { ?item rdfs:label ?label_da FILTER(LANG(?label_da) = "da") }
