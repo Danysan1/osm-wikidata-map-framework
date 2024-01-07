@@ -78,7 +78,7 @@ function prepareHTML(Configuration $conf)
 	$maptilerConnect = '';
 	$maptilerImg = '';
 	if ($conf->has("maptiler_key")) {
-		$maptilerConnect = 'https://api.maptiler.com https://maputnik.github.io/osm-liberty/ https://klokantech.github.io/naturalearthtiles/';
+		$maptilerConnect = 'https://api.maptiler.com/tiles/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/';
 		$maptilerImg = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
 	}
 
@@ -137,10 +137,12 @@ function prepareHTML(Configuration $conf)
 			$pmtilesConnect = "$pmTilesBaseURL";
 	}
 
+	$osmAmericanaConnect = 'https://zelonewolf.github.io/openstreetmap-americana/ https://osm-americana.github.io/fontstack66/ https://tile.ourmap.us/data/ https://*.cloudfront.net/planet/';
+
 	header(
 		"Content-Security-Policy: " .
 			"child-src blob: ; " .
-			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect ; " .
+			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect $osmAmericanaConnect ; " .
 			"default-src 'self' ; " .
 			"font-src 'self' ; " .
 			"form-action 'self' $payPalForm ; " .

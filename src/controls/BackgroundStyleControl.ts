@@ -24,8 +24,10 @@ export class BackgroundStyleControl extends DropdownControl {
             const resp = await fetch(style.styleUrl),
                 rawJSON = await resp.text(),
                 json = rawJSON.replaceAll(style.keyPlaceholder, style.key);
-            this.getMap()?.setStyle(JSON.parse(json))
+            if (process.env.NODE_ENV === 'development') console.debug("setBackgroundStyle: setting json style", { style, json });
+            this.getMap()?.setStyle(JSON.parse(json));
         } else {
+            if (process.env.NODE_ENV === 'development') console.debug("setBackgroundStyle: setting style URL", style);
             this.getMap()?.setStyle(style.styleUrl);
         }
         this.showDropdown(false);

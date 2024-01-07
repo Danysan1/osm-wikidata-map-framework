@@ -85,7 +85,6 @@ export class LinkControl implements IControl {
                 return;
 
             if (e.source.type !== "geojson") {
-                if (process.env.NODE_ENV === 'development') console.debug("Source is not GeoJSON, hiding", e.source);
                 this.show(false);
                 return;
             }

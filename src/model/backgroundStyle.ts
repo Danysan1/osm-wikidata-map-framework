@@ -1,9 +1,15 @@
 export interface BackgroundStyle {
+    /** Univocally identifies the style */
     id: string;
+    /** Name of the vendor to display in the UI */
     vendorText: string,
+    /** Name of the style to display in the UI */
     styleText: string;
+    /** URL of the style JSON */
     styleUrl: string;
+    /** Placeholder text for the API key */
     keyPlaceholder?: string;
+    /** API key to use for this style, necessary only if keyPlaceholder is specified */
     key?: string
 }
 

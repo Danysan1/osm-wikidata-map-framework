@@ -49,7 +49,7 @@ if (enable_stadia_maps) {
 if (jawg_token) {
     backgroundStyles.push(
         jawgStyle('jawg_streets', 'Streets', 'jawg-streets', jawg_token),
-        jawgStyle('jawg_streets', 'Streets 3D', 'jawg-streets', jawg_token, true),
+        jawgStyle('jawg_streets_3d', 'Streets 3D', 'jawg-streets', jawg_token, true),
         jawgStyle('jawg_sunny', 'Sunny', 'jawg-sunny', jawg_token),
         jawgStyle('jawg_light', 'Light', 'jawg-light', jawg_token),
         jawgStyle('jawg_terrain', 'Terrain', 'jawg-terrain', jawg_token),
@@ -57,9 +57,13 @@ if (jawg_token) {
     );
 }
 
+backgroundStyles.push({
+    id: "americana", vendorText: "OpenStreetMap US", styleText: "OSM Americana", styleUrl: "https://zelonewolf.github.io/openstreetmap-americana/style.json"
+});
+
 if (maptiler_key) {
     backgroundStyles.push(
-        { id: "maputnik_osm_liberty", vendorText: "Maputnik", styleText: "OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
+        { id: "liberty", vendorText: "Maputnik", styleText: "OSM Liberty", styleUrl: "https://maputnik.github.io/osm-liberty/style.json", keyPlaceholder: '{key}', key: maptiler_key },
         maptilerStyle('maptiler_backdrop', 'Backdrop', 'backdrop', maptiler_key),
         maptilerStyle('maptiler_basic', 'Basic', 'basic-v2', maptiler_key),
         maptilerStyle('maptiler_bright', 'Bright', 'bright-v2', maptiler_key),
