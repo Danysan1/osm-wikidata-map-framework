@@ -1,7 +1,7 @@
 import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
-import "@stadiamaps/maplibre-search-box/dist/style.css";
+// import "@stadiamaps/maplibre-search-box/dist/style.css";
 // import '@radarlabs/maplibre-gl-inspect/dist/maplibre-gl-inspect.css';
 
 // import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'mapbox-gl';
@@ -10,7 +10,6 @@ import "@stadiamaps/maplibre-search-box/dist/style.css";
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
-import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getBoolConfig, getConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
@@ -90,6 +89,18 @@ export class EtymologyMap extends Map {
 
         this.addBaseControls();
         void this.addSecondaryControls();
+
+        // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
+        mapLibrary.setRTLTextPlugin(
+            'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
+            err => {
+                if (err)
+                    console.error("Error loading mapbox-gl-rtl-text", err)
+                else if (process.env.NODE_ENV === 'development')
+                    console.debug("mapbox-gl-rtl-text loaded")
+            },
+            true // Lazy load the plugin
+        );
     }
 
     private async initServices() {
@@ -839,7 +850,9 @@ export class EtymologyMap extends Map {
 
             if (!feature)
                 throw new Error("No feature available");
-            detail_wrapper.appendChild(featureToDomElement(feature, this.getZoom()));
+            void import("./components/FeatureElement").then(({ featureToDomElement }) => {
+                detail_wrapper.appendChild(featureToDomElement(feature, this.getZoom()));
+            });
 
             element_loading.style.display = 'none';
             ev.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713

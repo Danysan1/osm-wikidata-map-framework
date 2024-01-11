@@ -12,6 +12,7 @@ import type { EtymologyDetails } from '../model/EtymologyDetails';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
 import type { Etymology } from '../model/Etymology';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
+import { WikidataService, WikidataDetailsService } from '../services';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -230,8 +231,7 @@ export class FeatureElement extends HTMLDivElement {
 
     private async showDetailsFromWikidata(wikidataID: string, feature_pictures: HTMLElement) {
         try {
-            const { WikidataService } = await import("../services"),
-                wikidataService = new WikidataService(),
+            const wikidataService = new WikidataService(),
                 image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
             if (image) {
                 if (process.env.NODE_ENV === 'development') console.debug("Found image from Wikidata", { wikidataID, feature_pictures, image });
@@ -319,7 +319,7 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         try {
-            const detailsService = new (await import("../services")).WikidataDetailsService(),
+            const detailsService = new WikidataDetailsService(),
                 downlodedEtymologies = await detailsService.fetchEtymologyDetails(etymologyIDs);
             return sortedIDs.map(
                 (wikidataID): Etymology => ({

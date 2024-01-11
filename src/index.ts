@@ -1,9 +1,8 @@
-import { default as mapLibrary, RequestTransformFunction } from 'maplibre-gl';
+import type { RequestTransformFunction } from 'maplibre-gl';
 import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer';
 
 // import { default as mapLibrary, TransformRequestFunction as RequestTransformFunction } from 'mapbox-gl';
 
-import { EtymologyMap } from './EtymologyMap';
 import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
 import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './model/backgroundStyle';
 import { getBoolConfig, getConfig } from './config';
@@ -111,19 +110,9 @@ function initMap() {
     }
     /********** End of Maplibre GL JS specific code **********/
 
-    // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
-    mapLibrary.setRTLTextPlugin(
-        'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
-        err => {
-            if (err)
-                console.error("Error loading mapbox-gl-rtl-text", err)
-            else if (process.env.NODE_ENV === 'development')
-                console.info("mapbox-gl-rtl-text loaded")
-        },
-        true // Lazy load the plugin
+    void import("./EtymologyMap").then(
+        ({ EtymologyMap }) => new EtymologyMap('map', backgroundStyles, requestTransformFunc)
     );
-
-    new EtymologyMap('map', backgroundStyles, requestTransformFunc);
 }
 
 /**
