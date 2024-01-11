@@ -2,7 +2,7 @@ import { IControl, Map, Popup } from 'maplibre-gl';
 
 // import { IControl, Map, Popup } from 'mapbox-gl';
 
-import { loadTranslator, translateContent, translateAnchorTitle } from '../i18n';
+import { loadTranslator, translateContent, translateAnchorTitle, getLanguage } from '../i18n';
 import { getBoolConfig, getConfig } from '../config';
 
 /**
@@ -59,7 +59,7 @@ function openInfoWindow(map: Map, showInstructions: boolean) {
 
     setupDatasetButton(popup);
     translateDonateButton(popup);
-    getLastDBUpdateDate(popup);
+    void getLastDBUpdateDate(popup);
 }
 
 function setupDatasetButton(popup: Popup) {
@@ -80,7 +80,7 @@ function setupDatasetButton(popup: Popup) {
 
 function translateDonateButton(popup: Popup) {
     const donateImg = popup.getElement().querySelector<HTMLInputElement>("input.paypal_donate_img"),
-        lang = document.documentElement.lang;
+        lang = getLanguage();
     if (donateImg && lang && lang !== "en") {
         const originalUrl = donateImg.src,
             urlWithLang = originalUrl.replace("en_US", lang + "_" + lang.toUpperCase()),
@@ -137,7 +137,7 @@ class InfoControl implements IControl {
         ctrlBtn.onclick = () => openInfoWindow(map, true);
         container.appendChild(ctrlBtn);
 
-        loadTranslator().then(t => {
+        void loadTranslator().then(t => {
             const title = t("info_box.open_popup", "Open the info popup");
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;
@@ -147,7 +147,7 @@ class InfoControl implements IControl {
     }
 
     onRemove(map: Map): void {
-        //
+        void map;
     }
 }
 

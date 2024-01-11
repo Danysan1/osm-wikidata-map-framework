@@ -1,3 +1,9 @@
+export const OsmTypes = ['node', 'way', 'relation'] as const;
+export type OsmType = typeof OsmTypes[number];
+
+export const OsmWdJoinFields = ['OSM', 'P11693', 'P10689', 'P402'] as const;
+export type OsmWdJoinField = typeof OsmWdJoinFields[number];
+
 export interface Etymology {
     /**
      * Whether OpenStreetMap is the original source of this etymology
@@ -6,7 +12,7 @@ export interface Etymology {
     /**
      * Type of the source OpenStreetMap element
      */
-    from_osm_type?: EtymologyFromOsmTypeEnum;
+    from_osm_type?: OsmType;
     /**
      * ID (unique only within its osm_type) of the source OpenStreetMap element
      */
@@ -26,7 +32,7 @@ export interface Etymology {
     /**
      * If this etymology's feature has both an OSM element and Wikidata entity, this field specifies the clause used to join them. In theory the OSM-WD link should be biunivocal and this field should be on the feature (not on the etymology), however in practice this is not always the case (ex. https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/18) so to debug the etymology source it's necessary to specify it for each etymology.
      */
-    osm_wd_join_field?: EtymologyOsmWdJoinFieldEnum;
+    osm_wd_join_field?: OsmWdJoinField;
     /**
      * Q-ID of the etymology Wikidata entity that contained this entity, leading to the inclusion of this entity as well
      */
@@ -42,20 +48,6 @@ export interface Etymology {
     /**
      * List of Wikidata Q-IDs of entities that are part of this etymology
      */
-    parts?: Array<string>;
+    parts?: string[];
 }
 
-export const EtymologyFromOsmTypeEnum = {
-    Node: 'node',
-    Way: 'way',
-    Relation: 'relation'
-} as const;
-export type EtymologyFromOsmTypeEnum = typeof EtymologyFromOsmTypeEnum[keyof typeof EtymologyFromOsmTypeEnum];
-
-export const EtymologyOsmWdJoinFieldEnum = {
-    Osm: 'OSM',
-    P11693: 'P11693',
-    P10689: 'P10689',
-    P402: 'P402'
-} as const;
-export type EtymologyOsmWdJoinFieldEnum = typeof EtymologyOsmWdJoinFieldEnum[keyof typeof EtymologyOsmWdJoinFieldEnum];

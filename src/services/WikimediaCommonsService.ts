@@ -1,8 +1,13 @@
+import { CommonsApi, Configuration } from "../generated/commons";
+
 export class WikimediaCommonsService {
-    private baseURL: string;
+    private api: CommonsApi;
 
     constructor(baseURL?: string) {
-        this.baseURL = baseURL || "https://commons.wikimedia.org/w/api.php";
+        this.api = new CommonsApi(new Configuration({
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            basePath: baseURL || "https://commons.wikimedia.org/w/api.php"
+        }));
     }
 
     /**
@@ -15,7 +20,7 @@ export class WikimediaCommonsService {
      * @see https://www.mediawiki.org/wiki/Manual:CORS#Using_jQuery_methods
      */
     async fetchAttribution(imgName: string): Promise<string> {
-        const attributionApiUrl = this.baseURL + "?" + (new URLSearchParams({
+        const res = await this.api.apiCall({
             action: "query",
             prop: "imageinfo",
             iiprop: "extmetadata",
@@ -23,27 +28,19 @@ export class WikimediaCommonsService {
             format: "json",
             titles: "File:" + imgName,
             origin: '*',
-        })).toString();
-
-        return fetch(attributionApiUrl)
-            .then(response => {
-                if (response.status == 200)
-                    return response.json();
-                else
-                    throw new Error("The request for the Wikimedia Commons attribution failed with code " + response.status);
-            })
-            .then(res => {
-                const pages = res.query.pages,
-                    pageID = Object.keys(pages)[0],
-                    extmetadata = pages[pageID].imageinfo[0].extmetadata,
-                    license = extmetadata?.LicenseShortName?.value,
-                    artist = extmetadata?.Artist?.value;
-                let imgAttribution = "Wikimedia Commons";
-                if (typeof license === "string")
-                    imgAttribution += " - " + license;
-                if (typeof artist === "string")
-                    imgAttribution += " - " + artist.replace(/<span style="display: none;">.*<\/span>/, "");
-                return imgAttribution;
-            });
+        }),
+            pages = res.query?.pages;
+        if (!pages)
+            throw new Error("No pages in response");
+        const pageID = Object.keys(pages)[0],
+            extmetadata = pages[pageID]?.imageinfo?.[0]?.extmetadata,
+            license = extmetadata?.LicenseShortName?.value,
+            artist = extmetadata?.Artist?.value;
+        let imgAttribution = "Wikimedia Commons";
+        if (typeof license === "string")
+            imgAttribution += " - " + license;
+        if (typeof artist === "string")
+            imgAttribution += " - " + artist.replace(/<span style="display: none;">.*<\/span>/, "");
+        return imgAttribution;
     }
 }

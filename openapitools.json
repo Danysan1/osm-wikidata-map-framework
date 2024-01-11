@@ -4,6 +4,14 @@
   "generator-cli": {
     "version": "6.6.0",
     "generators": {
+      "commons": {
+        "inputSpec": "./openapi/commons.yaml",
+        "output": "./src/generated/commons",
+        "generatorName": "typescript-fetch",
+        "additionalProperties": {
+          "modelPropertyNaming": "original"
+        }
+      },
       "overpass": {
         "inputSpec": "./openapi/overpass.yaml",
         "output": "./src/generated/overpass",

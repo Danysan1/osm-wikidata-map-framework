@@ -1,4 +1,4 @@
-import { getConfig, getJsonConfig, getKeyID } from "../config";
+import { getConfig, getKeyID, getStringArrayConfig } from "../config";
 import type { BBox } from "geojson";
 import { Configuration, OverpassApi } from "../generated/overpass";
 import { MapDatabase } from "../db/MapDatabase";
@@ -6,6 +6,8 @@ import osmtogeojson from "osmtogeojson";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
+import { OsmType, OsmTypes } from "../model/Etymology";
+import { getLanguage } from "../i18n";
 
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
@@ -18,13 +20,14 @@ export class OverpassService implements MapService {
     private wikidata_key_codes?: Record<string, string>;
 
     constructor(db: MapDatabase) {
-        const endpoints: string[] = getJsonConfig("overpass_endpoints") || ["https://overpass-api.de/api"],
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+        const endpoints = getStringArrayConfig("overpass_endpoints") || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),
             basePath = endpoints[randomIndex];
         this.api = new OverpassApi(new Configuration({ basePath }));
-        this.language = document.documentElement.lang.split('-').at(0) || getConfig("default_language") || "en";
+        this.language = getLanguage();
         this.db = db;
-        this.wikidata_keys = getJsonConfig("osm_wikidata_keys") || undefined;
+        this.wikidata_keys = getStringArrayConfig("osm_wikidata_keys");
         this.wikidata_key_codes = this.wikidata_keys?.reduce((acc: Record<string, string>, key) => {
             acc[getKeyID(key)] = key;
             return acc;
@@ -50,9 +53,9 @@ export class OverpassService implements MapService {
             "out body ${maxElements}; >; out skel qt;", "details-" + backEndID, bbox
         );
         out.features = out.features.filter(
-            (feature: EtymologyFeature) => feature.properties?.etymologies?.length || feature.properties?.text_etymology || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
+            (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
         );
-        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
+        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         return out;
     }
@@ -121,7 +124,7 @@ export class OverpassService implements MapService {
             out.language = this.language;
             const maxElements = getConfig("max_map_elements");
             out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
-            this.db.addMap(out);
+            void this.db.addMap(out);
             if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_transform");
         }
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
@@ -129,18 +132,17 @@ export class OverpassService implements MapService {
     }
 
     private transformFeature(feature: EtymologyFeature, osm_keys: string[], osm_text_key: string | null, osm_description_key: string | null) {
-        if (!feature.id && feature.properties?.id)
-            feature.id = feature.properties?.id;
         if (!feature.properties)
             feature.properties = {};
 
         feature.properties.from_osm = true;
         feature.properties.from_wikidata = false;
 
-        const osm_type = feature.properties.id?.split("/")?.[0],
-            osm_id = feature.properties.id ? parseInt(feature.properties.id.split("/")[1]) : undefined;
+        const full_osm_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
+            osm_type = full_osm_id?.split("/")?.[0],
+            osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined;
         feature.properties.osm_id = osm_id;
-        feature.properties.osm_type = osm_type;
+        feature.properties.osm_type = osm_type && osm_type in OsmTypes ? osm_type as OsmType : undefined;
 
         if (typeof feature.properties.height === "string")
             feature.properties.render_height = parseInt(feature.properties.height);
@@ -149,10 +151,14 @@ export class OverpassService implements MapService {
         else if (feature.properties.building)
             feature.properties.render_height = 6;
 
-        if (osm_text_key)
-            feature.properties.text_etymology = feature.properties[osm_text_key];
-        if (osm_description_key)
-            feature.properties.text_etymology_descr = feature.properties[osm_description_key];
+        const text_ety = osm_text_key ? feature.properties[osm_text_key] : undefined;
+        if (typeof text_ety === "string")
+            feature.properties.text_etymology = text_ety;
+
+
+        const descr = osm_description_key ? feature.properties[osm_description_key] : undefined;
+        if (typeof descr === "string")
+            feature.properties.text_etymology_descr = descr;
 
         if (typeof feature.properties.wikimedia_commons === "string")
             feature.properties.commons = commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1);
@@ -162,18 +168,20 @@ export class OverpassService implements MapService {
         else if (typeof feature.properties.image === "string")
             feature.properties.picture = commonsFileRegex.exec(feature.properties.image)?.at(1);
 
-        if (feature.properties["name:" + this.language])
-            feature.properties.name = feature.properties["name:" + this.language];
+        const nameKey = "name:" + this.language,
+            name = feature.properties[nameKey];
+        if (typeof name === "string")
+            feature.properties.name = name;
         // Default language is intentionally not used as it could overwrite a more specific language in name=*
 
         feature.properties.etymologies = osm_keys
             .map(key => feature.properties?.[key])
-            .flatMap((value?: string) => value?.split(";"))
+            .flatMap(value => typeof value === "string" ? value.split(";") : undefined)
             .filter(value => value && /^Q[0-9]+/.test(value))
             .map<Etymology>(value => ({
                 from_osm: true,
                 from_osm_id: osm_id,
-                from_osm_type: osm_type,
+                from_osm_type: feature.properties?.osm_type,
                 from_wikidata: false,
                 propagated: false,
                 wikidata: value
@@ -187,8 +195,7 @@ export class OverpassService implements MapService {
         const maxRelationMembers = getConfig("max_relation_members"),
             maxMembersFilter = maxRelationMembers ? `(if:count_members()<${maxRelationMembers})` : "",
             notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
-            raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
-            filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
+            filter_tags = getStringArrayConfig("osm_filter_tags")?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
@@ -198,9 +205,9 @@ export class OverpassService implements MapService {
 (
 // Filter tags: ${filter_tags?.length ? filter_tags.join(", ") : "NONE"}
 // Secondary Wikidata keys: ${wd_keys.length ? wd_keys.join(", ") : "NONE"}
-// Text key: ${osm_text_key || "NONE"}
+// Text key: ${osm_text_key ?? "NONE"}
 // ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
-// Max relation members: ${maxRelationMembers || "UNLIMITED"}
+// Max relation members: ${maxRelationMembers ?? "UNLIMITED"}
 `;
 
         filter_wd_keys.forEach(
@@ -230,8 +237,8 @@ export class OverpassService implements MapService {
 
         const maxElements = getConfig("max_map_elements");
         query += `);
-// Max elements: ${getConfig("max_map_elements") || "NONE"}
-${outClause.replace("${maxElements}", maxElements || "")}
+// Max elements: ${maxElements ?? "NONE"}
+${outClause.replace("${maxElements}", maxElements ?? "")}
 `;
 
         return query;

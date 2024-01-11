@@ -3,6 +3,7 @@ import type { EtymologyDetails } from "../model/EtymologyDetails";
 import { logErrorMessage } from "../monitoring";
 import { DetailsDatabase } from "../db/DetailsDatabase";
 import { WikidataService } from "./WikidataService";
+import { getLanguage } from "../i18n";
 
 export class WikidataDetailsService extends WikidataService {
     private db: DetailsDatabase;
@@ -13,7 +14,7 @@ export class WikidataDetailsService extends WikidataService {
     }
 
     public async fetchEtymologyDetails(wikidataIDs: Set<string>): Promise<Record<string, EtymologyDetails>> {
-        const language = document.documentElement.lang.split('-').at(0) || '';
+        const language = getLanguage();
         let out = await this.db.getDetails(wikidataIDs, language);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache hit, using cached response", { language, wikidataIDs, out });

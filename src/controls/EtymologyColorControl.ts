@@ -4,7 +4,7 @@ import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecifica
 
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { getCorrectFragmentParams, getFragmentParams } from '../fragment';
-import { getConfig, getJsonConfig } from '../config';
+import { getConfig, getStringArrayConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import type { TFunction } from 'i18next';
@@ -80,10 +80,10 @@ class EtymologyColorControl extends DropdownControl {
         layerIDs: string[],
         minZoomLevel: number
     ) {
-        const keys: string[] | null = getJsonConfig("osm_wikidata_keys"),
-            wdDirectProperties: string[] | null = getJsonConfig("osm_wikidata_properties"),
+        const keys = getStringArrayConfig("osm_wikidata_keys"),
+            wdDirectProperties = getStringArrayConfig("osm_wikidata_properties"),
             indirectWdProperty = getConfig("wikidata_indirect_property"),
-            anyEtymology = keys?.length || wdDirectProperties?.length || indirectWdProperty,
+            anyEtymology = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
             entries = Object.entries(colorSchemes),
             usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology),
             dropdownItems: DropdownItem[] = usableColorSchemes.map(([id, item]) => ({
@@ -116,7 +116,7 @@ class EtymologyColorControl extends DropdownControl {
         this.pictureUnavailableLabel = t("color_scheme.unavailable", "Unavailable");
     }
 
-    public async updateChart(event?: MapEvent | Event) {
+    public updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
         if (!dropdown) {
             if (process.env.NODE_ENV === 'development') console.warn("updateChart: dropdown not yet initialized", { event });
@@ -142,11 +142,11 @@ class EtymologyColorControl extends DropdownControl {
             if (event)
                 this.showDropdown();
         } else if (colorSchemeID === ColorSchemeID.picture) {
-            this.loadPictureAvailabilityChartData();
+            void this.loadPictureAvailabilityChartData();
             if (event)
                 this.showDropdown();
         } else if (colorSchemeID in statsQueries) {
-            this.downloadChartDataFromWikidata(colorSchemeID);
+            void this.downloadChartDataFromWikidata(colorSchemeID);
             if (event)
                 this.showDropdown();
         } else if (event?.type === 'change') {
@@ -157,13 +157,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private areLayersAvailable() {
-        for (const i in this.layerIDs) {
-            if (!this.getMap()?.getLayer(this.layerIDs[i])) {
-                if (process.env.NODE_ENV === 'development') console.warn("calculateAndLoadChartData: layer not yet loaded", { layers: this.layerIDs, layer: this.layerIDs[i] });
-                return false;
-            }
-        }
-        return true;
+        return this.layerIDs.every(layerID => this.getMap()?.getLayer(layerID));
     }
 
     private calculateAndLoadChartData(
@@ -172,6 +166,7 @@ class EtymologyColorControl extends DropdownControl {
         layerColor: ExpressionSpecification
     ) {
         const colorSchemeIDChanged = this.lastColorSchemeID !== colorSchemeID,
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             backEndID = getFragmentParams().backEndID || undefined,
             backEndChanged = this.lastBackEndID !== backEndID;
 
@@ -184,7 +179,7 @@ class EtymologyColorControl extends DropdownControl {
             this.lastBackEndID = backEndID;
             this.lastFeatureCount = features?.length;
 
-            const stats = calculateChartData(features || []);
+            const stats = calculateChartData(features ?? []);
             this.setChartStats(stats);
         }
 
@@ -208,6 +203,7 @@ class EtymologyColorControl extends DropdownControl {
                     osm_wikidata_IDs = new Set<string>(),
                     wikidata_IDs = new Set<string>();
                 features.forEach((feature, i) => {
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                     const id = feature?.wikidata || feature?.name?.toLowerCase() || i.toString();
                     if (feature?.from_osm && feature?.from_wikidata)
                         osm_wikidata_IDs.add(id);
@@ -330,15 +326,16 @@ class EtymologyColorControl extends DropdownControl {
             unknown_picture_IDs = new Set<string>(),
             without_picture_IDs = new Set<string | number>();
         propertiesList?.forEach(props => {
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             const id = props.wikidata || props.osm_type + '/' + props.osm_id;
-            if (props.picture || props.commons)
+            if (!!props.picture || !!props.commons)
                 with_picture_IDs.add(id);
             else if (props.wikidata)
                 unknown_picture_IDs.add(props.wikidata);
             else
                 without_picture_IDs.add(id);
         });
-        const stats = await this.downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture) || [],
+        const stats = await this.downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture) ?? [],
             withPictureObject = stats.find(stat => stat.id === 'available'),
             withoutPictureObject = stats.find(stat => stat.id === 'unavailable');
         if (withPictureObject) {
@@ -362,7 +359,7 @@ class EtymologyColorControl extends DropdownControl {
 
         this.setChartStats(stats)
 
-        const statsData: Array<ExpressionSpecification | string> = []
+        const statsData: (ExpressionSpecification | string)[] = []
         stats.forEach((row: EtymologyStat) => {
             const color = row.color;
             if (color && row.subjects?.length) {
@@ -397,7 +394,7 @@ class EtymologyColorControl extends DropdownControl {
         try {
             wikidataIDs = this.getMap()
                 ?.queryRenderedFeatures({ layers: this.layerIDs })
-                ?.map(feature => feature.properties?.etymologies)
+                ?.map(feature => feature.properties?.etymologies as unknown)
                 ?.flatMap(etymologies => {
                     if (Array.isArray(etymologies))
                         return etymologies as Etymology[];
@@ -407,8 +404,8 @@ class EtymologyColorControl extends DropdownControl {
 
                     return [];
                 })
-                ?.map(etymology => etymology.wikidata)
-                ?.filter(id => typeof id === 'string') as string[] || [];
+                ?.filter(etymology => etymology.wikidata)
+                ?.map(etymology => etymology.wikidata!) ?? [];
         } catch (error) {
             if (process.env.NODE_ENV === 'development') console.error("Error querying rendered features", {
                 colorSchemeID, layers: this.layerIDs, error
@@ -440,6 +437,7 @@ class EtymologyColorControl extends DropdownControl {
         }
 
         const uniqueIDs = Array.from(idSet),
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             backEndID = getFragmentParams().backEndID || undefined;
         if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, uniqueIDs, backEndID });
         this.lastColorSchemeID = colorSchemeID;
@@ -467,7 +465,7 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private setLayerColorForStats(stats: EtymologyStat[]) {
-        const statsData: Array<ExpressionSpecification | string> = [];
+        const statsData: (ExpressionSpecification | string)[] = [];
         stats.forEach((row: EtymologyStat) => {
             const color = row.color;
             if (color && row.subjects?.length) {
@@ -506,18 +504,15 @@ class EtymologyColorControl extends DropdownControl {
             return;
         }
 
-        const data: ChartData<"pie"> = {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [],
-            }]
-        };
-        stats.slice(0, MAX_CHART_ITEMS).forEach((row: EtymologyStat) => {
-            data.labels?.push(row.name);
-            (data.datasets[0].backgroundColor as string[]).push(row.color || FALLBACK_COLOR);
-            data.datasets[0].data.push(row.count);
-        });
+        const usedStats = stats.slice(0, MAX_CHART_ITEMS),
+            data: ChartData<"pie"> = {
+                labels: usedStats.map(row => row.name),
+                datasets: [{
+                    data: usedStats.map(row => row.count),
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                    backgroundColor: usedStats.map(row => row.color || FALLBACK_COLOR),
+                }]
+            };
 
         if (process.env.NODE_ENV === 'development') console.debug("setChartData", {
             stats,
@@ -529,7 +524,7 @@ class EtymologyColorControl extends DropdownControl {
         if (this._chartJsObject && this._chartDomElement) {
             this.updateChartObject(data);
         } else {
-            this.initChartObject(data);
+            void this.initChartObject(data);
         }
 
         this.updateChartTable(data);
@@ -542,7 +537,7 @@ class EtymologyColorControl extends DropdownControl {
      * @see https://www.chartjs.org/docs/latest/charts/doughnut.html#pie
      * @see https://www.chartjs.org/docs/latest/general/accessibility.html
      */
-    private async initChartObject(data: ChartData<"pie">) {
+    private initChartObject(data: ChartData<"pie">) {
         if (this._chartJsObject)
             throw new Error("initChartObject: chart already initialized");
         if (this._chartInitInProgress)
@@ -610,9 +605,16 @@ class EtymologyColorControl extends DropdownControl {
         if (!this._chartJsObject)
             throw new Error("updateChartObject: chart not yet initialized");
 
-        this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
-        this._chartJsObject.data.labels = data.labels;
-        this._chartJsObject.data.datasets[0].data = data.datasets[0].data;
+        if (!data.datasets[0])
+            throw new Error("updateChartObject: missing dataset");
+
+        if (this._chartJsObject.data.datasets[0]) {
+            this._chartJsObject.data.labels = data.labels;
+            this._chartJsObject.data.datasets[0].data = data.datasets[0].data;
+            this._chartJsObject.data.datasets[0].backgroundColor = data.datasets[0].backgroundColor;
+        } else {
+            this._chartJsObject.data = data;
+        }
         this._chartJsObject.update();
     }
 
@@ -630,7 +632,7 @@ class EtymologyColorControl extends DropdownControl {
             chartTableBody.appendChild(tr);
             td_name.innerText = label as string;
             tr.appendChild(td_name);
-            td_count.innerText = data.datasets[0].data[i].toString();
+            td_count.innerText = data.datasets[0]?.data[i]?.toString() ?? "";
             tr.appendChild(td_count);
         });
     }
@@ -647,7 +649,7 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
-    showDropdown(show = true) {
+    override showDropdown(show = true) {
         super.showDropdown(show);
 
         if (!show) {

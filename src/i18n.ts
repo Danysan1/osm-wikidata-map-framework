@@ -1,19 +1,24 @@
+/* eslint-disable @typescript-eslint/prefer-nullish-coalescing */
 import { Resource, TFunction } from "i18next";
 import { getConfig, getJsonConfig } from "./config";
 import { logErrorMessage } from "./monitoring";
 
 export function getLocale(): string | undefined {
-    const langParam = new URLSearchParams(document.location.search).get("lang"),
-        locale = langParam || navigator.languages?.at(0) || navigator.language;
-    return locale.match(/^[a-zA-Z_-]+/)?.at(0);
+    return document.documentElement.lang || // lang parameter of the html tag, set during initialization and used as single source of truth thereafter
+        new URLSearchParams(document.location.search).get("lang") || // lang parameter of the URL, set by the user and used during initialization
+        navigator.languages?.at(0) || // browser preferred language, used during initialization
+        navigator.language; // browser preferred language, used during initialization
+}
+
+export function getLanguage(): string {
+    return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en'
 }
 
 export function setPageLocale() {
-    const locale = getLocale(),
-        lang = locale?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en';
+    const lang = getLanguage();
 
     if (process.env.NODE_ENV === 'development') console.debug("setPageLocale", {
-        locale, lang, navLangs: navigator.languages, navLang: navigator.language
+        lang, navLangs: navigator.languages, navLang: navigator.language
     });
 
     // <html lang='en'>
@@ -32,7 +37,7 @@ export function setPageLocale() {
     preloadLang.href = `locales/${lang}/common.json`;
     document.head.appendChild(preloadLang);
 
-    loadTranslator().then(t => {
+    void loadTranslator().then(t => {
         const title = document.head.querySelector<HTMLTitleElement>("title"),
             descr = document.head.querySelector<HTMLMetaElement>('meta[name="description"]'),
             og_title = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]'),
@@ -46,9 +51,9 @@ export function setPageLocale() {
     });
 }
 
-let tPromise: Promise<TFunction>;
+let tPromise: Promise<TFunction> | undefined;
 export function loadTranslator() {
-    if (!tPromise)
+    if (tPromise === undefined)
         tPromise = loadI18n();
 
     return tPromise;
@@ -56,23 +61,21 @@ export function loadTranslator() {
 
 async function loadI18n() {
     const defaultNamespace = "app",
-        defaultLanguage = getConfig("default_language") || 'en',
-        locale = document.documentElement.lang,
-        language = locale.split('-').at(0),
+        language = getLanguage(),
         { ChainedBackend, HttpBackend, i18next, resourcesToBackend } = await import('./i18next'),
-        i18nOverride: Resource | null = getJsonConfig("i18n_override"),
+        rawI18nOverride = getJsonConfig("i18n_override"),
+        i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [HttpBackend],
         backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
     if (i18nOverride) {
-        if (process.env.NODE_ENV === 'development') console.debug("loadTranslator: using i18n_override:", { defaultLanguage, language, i18nOverride });
+        if (process.env.NODE_ENV === 'development') console.debug("loadTranslator: using i18n_override:", { language, i18nOverride });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
     return await i18next.use(ChainedBackend).init({
         debug: process.env.NODE_ENV === 'development',
-        fallbackLng: defaultLanguage,
-        //lng: locale, // comment to use the language only, UNcomment to use the full locale
-        lng: language, // UNcomment to use the language only, comment to use the full locale
+        fallbackLng: 'en',
+        lng: language, // Currently uses only language, not locale
         backend: { backends, backendOptions },
         ns: ["common", defaultNamespace],
         fallbackNS: "common",
@@ -89,7 +92,9 @@ export function translateContent(parent: HTMLElement, selector: string, key: str
             const label = t(key, defaultValue);
             domElement.textContent = label;
             domElement.ariaLabel = label; // https://dequeuniversity.com/rules/axe/4.7/label-content-name-mismatch
-        }).catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
+        }).catch(
+            (e: unknown) => logErrorMessage("Failed initializing or using i18next", "error", { error: e, key })
+        );
     }
 }
 
@@ -102,6 +107,8 @@ export function translateAnchorTitle(parent: HTMLElement, selector: string, key:
             const title = t(key, defaultValue);
             domElement.title = title;
             //domElement.ariaLabel = title;
-        }).catch(e => logErrorMessage("Failed initializing or using i18next", "error", { e, key }));
+        }).catch(
+            (e: unknown) => logErrorMessage("Failed initializing or using i18next", "error", { error: e, key })
+        );
     }
 }

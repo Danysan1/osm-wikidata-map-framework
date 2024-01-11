@@ -37,7 +37,7 @@ export class DataTableControl implements IControl {
 
         this.button = document.createElement("button");
         this.button.addEventListener("click", () => this.openTable(map.getZoom()));
-        loadTranslator().then(t => {
+        void loadTranslator().then(t => {
             if (this.button) {
                 const title = t("data_table.view_data_table", "View the data in a table");
                 this.button.title = title;
@@ -94,7 +94,7 @@ export class DataTableControl implements IControl {
                 });
             table.className = "owmf_data_table";
 
-            this.fillTable(table, features, currentZoomLevel);
+            void this.fillTable(table, features, currentZoomLevel);
 
             popup.setLngLat(map.unproject([0, 0]))
                 .setDOMContent(table)
@@ -122,6 +122,7 @@ export class DataTableControl implements IControl {
         /* Add the table body */
         features?.forEach(f => {
             const row = document.createElement("tr"),
+                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                 id = f.properties?.wikidata?.toString() || f.properties?.name?.replaceAll('"', "");
             if (id) {
                 if (process.env.NODE_ENV === 'development') console.debug("createFeatureRow", { id, f });
@@ -144,7 +145,7 @@ export class DataTableControl implements IControl {
             const names = nameArray.join(" / "),
                 destinationZoomLevel = Math.max(currentZoomLevel, 18),
                 etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
-                featureWikidataIDs = etymologies?.map(e => e.wikidata || "").filter(id => id != ""),
+                featureWikidataIDs = etymologies?.map(e => e.wikidata ?? "").filter(id => id != ""),
                 namesCell = document.createElement("td"),
                 actionsCell = document.createElement("td"),
                 linkedCell = document.createElement("td");
@@ -155,7 +156,7 @@ export class DataTableControl implements IControl {
             actionsCell.appendChild(featureToButtonsDomElement(f, destinationZoomLevel));
             row.appendChild(actionsCell);
 
-            if (featureWikidataIDs?.length || f.properties?.text_etymology) {
+            if (!!featureWikidataIDs?.length || !!f.properties?.text_etymology) {
                 if (featureWikidataIDs?.length === 1)
                     linkedCell.appendChild(this.wikidataLink(featureWikidataIDs[0]));
                 else if (featureWikidataIDs?.length)
@@ -179,7 +180,7 @@ export class DataTableControl implements IControl {
             head_row.appendChild(linkedEntitiesHeadCell);
         }
 
-        this.downloadLinkLabels(wikidataIDs, tbody);
+        void this.downloadLinkLabels(wikidataIDs, tbody);
     }
 
     private etymologyLinks(wikidataIDs: string[]): HTMLElement {

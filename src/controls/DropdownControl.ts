@@ -91,7 +91,7 @@ export class DropdownControl implements IControl {
         dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell content-cell';
 
-        loadTranslator().then(t => {
+        void loadTranslator().then(t => {
             const title = t(this._titleKey);
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;

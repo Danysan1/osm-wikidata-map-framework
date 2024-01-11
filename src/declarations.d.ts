@@ -1,3 +1,11 @@
-declare module '*.sparql';
-declare module '*.sql';
-declare module '@radarlabs/maplibre-gl-inspect';
+declare module '*.sparql' {
+    const content: string;
+    export default content;
+}
+
+declare module '*.sql' {
+    const content: string;
+    export default content;
+}
+
+declare module '@radarlabs/maplibre-gl-inspect'

@@ -97,6 +97,7 @@ components:
         - sparql
         - wikidata
         - osm-planet
+
     SparqlResponse:
       type: object
       properties:
@@ -116,8 +117,23 @@ components:
               type: array
               title: SparqlResponseBindings
               items:
-                type: object
-                title: SparqlResponseBinding
+                $ref: '#/components/schemas/SparqlResponseBinding'
+  
+    SparqlResponseBinding:
+      type: object
+      additionalProperties:
+        type: object
+        title: SparqlResponseValue
+        properties:
+          type:
+            type: string
+          value:
+            type: string
+          datatype:
+            type: string
+          xml:lang:
+            type: string
+
     QLeverResponse:
       type: object
       properties:

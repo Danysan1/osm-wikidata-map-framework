@@ -51,7 +51,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             throw new Error("Missing feature buttons template");
 
         const properties = this.feature.properties,
-            etymologies: EtymologyDetails[] | undefined = typeof properties?.etymologies === 'string' ? JSON.parse(properties.etymologies) : properties?.etymologies,
+            etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties.etymologies) as EtymologyDetails[] : properties?.etymologies,
             detail_container = feature_buttons_template.content.cloneNode(true) as HTMLElement,
             osm_full_id = properties?.osm_type && properties?.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
 

@@ -1,7 +1,7 @@
-import { Etymology } from "./Etymology";
+import type { Etymology, OsmType } from "./Etymology";
 
 export interface EtymologyFeatureProperties {
-    [key: string]: any;
+    [key: string]: unknown;
     /**
      * Alternative names of the feature, separated by a semicolon
      */
@@ -15,9 +15,12 @@ export interface EtymologyFeatureProperties {
      */
     el_id?: number;
     /**
-     * List of linked items that describe some aspect of this feature. Which aspect is represented depends on the configuration of this OWMF instance. Typically etymologies are sent as an array of Etymology objects. Both Mapbox GL and MapLibre GL stringify the array as JSON in some circumstances.
+     * List of linked items that describe some aspect of this feature.
+     * Which aspect is represented depends on the configuration of this OWMF instance.
+     * Typically in GeoJSON backends etymologies are sent as an array of Etymology objects.
+     * Vector sources in both Mapbox GL and MapLibre GL however stringify the array as JSON in some circumstances.
      */
-    etymologies?: Array<Etymology>;
+    etymologies?: Etymology[] | string;
     /**
      * Whether OpenStreetMap is the original source of the geometry and names of this feature.
      */
@@ -84,5 +87,3 @@ export interface EtymologyFeatureProperties {
     wikipedia?: string;
 }
 
-
-export type OsmType = 'node' | 'way' | 'relation';

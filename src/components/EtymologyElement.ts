@@ -1,7 +1,7 @@
 import { imageToDomElement } from "./CommonsImageElement";
 import { DatePrecision, EtymologyDetails } from "../model/EtymologyDetails";
 import { setFragmentParams } from "../fragment";
-import { translateContent, translateAnchorTitle } from "../i18n";
+import { translateContent, translateAnchorTitle, getLanguage } from "../i18n";
 import { WikipediaService } from "../services/WikipediaService";
 
 /**
@@ -39,7 +39,7 @@ function formatDate(date: Date | string | number, precision?: DatePrecision): st
         options.era = "short";
     }
 
-    const out = dateObject.toLocaleDateString(document.documentElement.lang, options);
+    const out = dateObject.toLocaleDateString(getLanguage(), options);
     //if (process.env.NODE_ENV === 'development') console.debug("formatDate", { date, precision, dateObject, options, out });
     return out;
 }
@@ -95,7 +95,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement;
 
-        const lang = document.documentElement.lang.split("-").at(0);
+        const lang = getLanguage();
         if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement", { ety: this.etymology, etyDomElement, lang });
 
         translateContent(etyDomElement, ".i18n_source", "feature_details.source", "Source:");
@@ -218,13 +218,13 @@ export class EtymologyElement extends HTMLDivElement {
         const start_end_date = etyDomElement.querySelector<HTMLElement>('.start_end_date')
         if (!start_end_date) {
             console.warn("Missing .start_end_date");
-        } else if (this.etymology.birth_date || this.etymology.birth_place || this.etymology.death_date || this.etymology.death_place) {
+        } else if (!!this.etymology.birth_date || !!this.etymology.birth_place || !!this.etymology.death_date || this.etymology.death_place) {
             const birth_date = this.etymology.birth_date ? formatDate(this.etymology.birth_date, this.etymology.birth_date_precision) : "?",
                 birth_place = this.etymology.birth_place ? this.etymology.birth_place : "?",
                 death_date = this.etymology.death_date ? formatDate(this.etymology.death_date, this.etymology.death_date_precision) : "?",
                 death_place = this.etymology.death_place ? this.etymology.death_place : "?";
             start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-        } else if (this.etymology.start_date || this.etymology.end_date) {
+        } else if (!!this.etymology.start_date || this.etymology.end_date) {
             const start_date = this.etymology.start_date ? formatDate(this.etymology.start_date, this.etymology.start_date_precision) : "?",
                 end_date = this.etymology.end_date ? formatDate(this.etymology.end_date, this.etymology.end_date_precision) : "?";
             start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
@@ -294,7 +294,7 @@ export class EtymologyElement extends HTMLDivElement {
         const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
             src_osm_plus_wd = etyDomElement.querySelector<HTMLAnchorElement>('.src_osm_plus_wd'),
             src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
-            showOsmJoinSource = (this.etymology.osm_wd_join_field === "OSM" || this.etymology.from_osm || this.etymology.propagated) && this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm,
+            showOsmJoinSource = (this.etymology.osm_wd_join_field === "OSM" || !!this.etymology.from_osm || this.etymology.propagated) && this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm,
             showWdJoinSource = this.etymology.osm_wd_join_field && this.etymology.osm_wd_join_field !== "OSM" && this.etymology.from_wikidata_entity && src_wd;
         if (!src_osm) {
             console.warn("Missing .etymology_src_osm");
@@ -315,7 +315,7 @@ export class EtymologyElement extends HTMLDivElement {
 
         if (!src_osm_plus_wd)
             console.warn("Missing .src_osm_plus_wd");
-        else if ((showOsmJoinSource || showWdJoinSource) && this.etymology.from_wikidata_entity)
+        else if ((!!showOsmJoinSource || showWdJoinSource) && this.etymology.from_wikidata_entity)
             src_osm_plus_wd.classList.remove("hiddenElement");
         else
             src_osm_plus_wd.classList.add("hiddenElement");

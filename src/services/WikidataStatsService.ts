@@ -10,6 +10,7 @@ import { WikidataService } from "./WikidataService";
 import { parse } from "papaparse";
 import type { EtymologyStat } from "../controls/EtymologyColorControl";
 import { StatsDatabase } from "../db/StatsDatabase";
+import { getLanguage } from "../i18n";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
@@ -37,7 +38,7 @@ export class WikidataStatsService extends WikidataService {
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        const language = document.documentElement.lang.split('-').at(0) || '';
+        const language = getLanguage();
         let out = await this.db.getStats(colorSchemeID, wikidataIDs, language);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
@@ -56,7 +57,7 @@ export class WikidataStatsService extends WikidataService {
                 // console.info("Loaded CSV:")
                 // console.table(csvData);
             }
-            out = res?.results?.bindings?.map((x: any): EtymologyStat => {
+            out = res.results?.bindings?.map((x): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
                     if (process.env.NODE_ENV === 'development') console.debug("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
@@ -69,10 +70,11 @@ export class WikidataStatsService extends WikidataService {
                     id: entityID,
                     class: classID,
                     subjects: x.subjects?.value?.split(","),
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                     color: x.color?.value || csvData?.find(row => row[0] === entityID || row[0] === classID)?.at(3),
                 };
-            }) as EtymologyStat[];
-            this.db.addStats(out, colorSchemeID, wikidataIDs, language);
+            }) ?? [];
+            void this.db.addStats(out, colorSchemeID, wikidataIDs, language);
         }
         return out;
     }

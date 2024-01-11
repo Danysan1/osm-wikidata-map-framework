@@ -1,0 +1,145 @@
+openapi: 3.0.3
+info:
+  title: Wikimedia Commons REST API
+  version: 1.0.0
+externalDocs:
+  url: https://commons.wikimedia.org/w/api.php?action=help&modules=main
+
+servers:
+  - url: https://commons.wikimedia.org/w/
+    description: Official Wikimedia Commons endpoint
+
+tags:
+  - name: commons
+    description: Fetch some information from on Wikimedia Commons API
+
+paths:
+  /api.php:
+    get:
+      tags:
+        - commons
+      summary: Execute a call to the API
+      operationId: api_call
+      parameters:
+        - name: action
+          in: query
+          required: true
+          example: query
+          schema:
+            type: string
+        - name: format
+          in: query
+          example: json
+          schema:
+            type: string
+        - name: iiextmetadatafilter
+          in: query
+          example: "Artist|LicenseShortName"
+          schema:
+            type: string
+        - name: iiprop
+          in: query
+          example: extmetadata
+          schema:
+            type: string
+        - name: origin
+          in: query
+          example: "*"
+          schema:
+            type: string
+        - name: prop
+          in: query
+          example: imageinfo
+          schema:
+            type: string
+        - name: titles
+          in: query
+          example: File:Example.jpg
+          schema:
+            type: string
+        - name: uselang
+          in: query
+          example: en
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The API call has been processed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiResponse"
+        "400":
+          description: Bad request
+        "500":
+          description: Fatal error
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        query:
+          type: object
+          properties:
+            pages:
+              type: object
+              additionalProperties:
+                $ref: "#/components/schemas/Page"
+    Page:
+      type: object
+      properties:
+        pageid:
+          type: integer
+        ns:
+          type: integer
+        title:
+          type: string
+        imagerepository:
+          type: string
+        imageinfo:
+          type: array
+          items:
+            $ref: "#/components/schemas/ImageInfoItem"
+
+    ImageInfoItem:
+      type: object
+      properties:
+        timestamp:
+          type: string
+        user:
+          type: string
+        userid:
+          type: integer
+        size:
+          type: integer
+        width:
+          type: integer
+        height:
+          type: integer
+        url:
+          type: string
+        descriptionurl:
+          type: string
+        descriptionshorturl:
+          type: string
+        mime:
+          type: string
+        mediatype:
+          type: string
+        mediaid:
+          type: string
+        extmetadata:
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/ExtMetadataItem"
+
+    ExtMetadataItem:
+      type: object
+      properties:
+        source:
+          type: string
+        value:
+          type: string
+        hidden:
+          type: boolean

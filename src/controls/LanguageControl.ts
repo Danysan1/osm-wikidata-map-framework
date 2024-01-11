@@ -1,6 +1,6 @@
 import type { Map } from 'maplibre-gl';
 import { getJsonConfig } from '../config';
-import { translateAnchorTitle, translateContent } from '../i18n';
+import { getLanguage, translateAnchorTitle, translateContent } from '../i18n';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 
 /**
@@ -12,12 +12,13 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
  **/
 export class LanguageControl extends DropdownControl {
     constructor() {
-        const currentLanguage = document.documentElement.lang.split('-').at(0),
-            i18n_override = getJsonConfig("i18n_override");
-        if (typeof i18n_override !== "object")
+        const currentLanguage = getLanguage(),
+            i18n_override: unknown = getJsonConfig("i18n_override");
+        if (!i18n_override || typeof i18n_override !== "object")
             throw new Error("i18n_override is not configured, no languages available");
+
         const languages = Object.keys(i18n_override),
-            selectedLanguage = currentLanguage && currentLanguage in i18n_override ? currentLanguage : 'en',
+            selectedLanguage = currentLanguage && currentLanguage in languages ? currentLanguage : 'en',
             languageNames: Record<string, string> = {
                 da: "Dansk",
                 de: "Deutsch",
@@ -46,7 +47,7 @@ export class LanguageControl extends DropdownControl {
             this.show(false);
     }
 
-    onAdd(map: Map) {
+    override onAdd(map: Map) {
         const out = super.onAdd(map);
 
         const table = this.getContainer()?.querySelector<HTMLTableElement>("table");
@@ -80,7 +81,7 @@ export class LanguageControl extends DropdownControl {
         return out;
     }
 
-    protected showDropdown(show?: boolean): void {
+    override showDropdown(show?: boolean): void {
         super.showDropdown(show);
 
         const translateLink = this.getContainer()?.querySelector(".translate_button");

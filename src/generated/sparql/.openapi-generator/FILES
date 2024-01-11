@@ -4,6 +4,7 @@ index.ts
 models/QLeverResponse.ts
 models/SparqlBackend.ts
 models/SparqlResponse.ts
+models/SparqlResponseBindingValue.ts
 models/SparqlResponseHead.ts
 models/SparqlResponseResults.ts
 models/index.ts

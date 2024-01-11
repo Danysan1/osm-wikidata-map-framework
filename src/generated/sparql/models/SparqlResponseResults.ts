@@ -13,6 +13,13 @@
  */
 
 import { exists, mapValues } from '../runtime';
+import type { SparqlResponseBindingValue } from './SparqlResponseBindingValue';
+import {
+    SparqlResponseBindingValueFromJSON,
+    SparqlResponseBindingValueFromJSONTyped,
+    SparqlResponseBindingValueToJSON,
+} from './SparqlResponseBindingValue';
+
 /**
  * 
  * @export
@@ -21,10 +28,10 @@ import { exists, mapValues } from '../runtime';
 export interface SparqlResponseResults {
     /**
      * 
-     * @type {Array<object>}
+     * @type {Array<{ [key: string]: SparqlResponseBindingValue; }>}
      * @memberof SparqlResponseResults
      */
-    bindings?: Array<object>;
+    bindings?: Array<{ [key: string]: SparqlResponseBindingValue; }>;
 }
 
 /**

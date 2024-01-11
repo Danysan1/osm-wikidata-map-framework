@@ -1,3 +1,4 @@
+import type { StyleSpecification } from 'maplibre-gl';
 import type { BackgroundStyle } from '../model/backgroundStyle';
 import { DropdownControl } from './DropdownControl';
 
@@ -25,7 +26,7 @@ export class BackgroundStyleControl extends DropdownControl {
                 rawJSON = await resp.text(),
                 json = rawJSON.replaceAll(style.keyPlaceholder, style.key);
             if (process.env.NODE_ENV === 'development') console.debug("setBackgroundStyle: setting json style", { style, json });
-            this.getMap()?.setStyle(JSON.parse(json));
+            this.getMap()?.setStyle(JSON.parse(json) as StyleSpecification);
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("setBackgroundStyle: setting style URL", style);
             this.getMap()?.setStyle(style.styleUrl);

@@ -4,7 +4,7 @@ import type { GeoJSONFeature } from 'maplibre-gl';
 
 import { etymologyToDomElement } from "./EtymologyElement";
 import { getBoolConfig } from "../config";
-import { translateContent, translateAnchorTitle, loadTranslator } from "../i18n";
+import { translateContent, translateAnchorTitle, loadTranslator, getLanguage } from "../i18n";
 import { showLoadingSpinner, showSnackbar } from "../snackbar";
 import { imageToDomElement } from "./CommonsImageElement";
 import { logErrorMessage } from "../monitoring";
@@ -74,15 +74,15 @@ export class FeatureElement extends HTMLDivElement {
         translateContent(detail_container, ".i18n_source", "feature_details.source", "Source:");
 
         const element_name = detail_container.querySelector<HTMLElement>('.element_name'),
-            local_name = properties["name:" + document.documentElement.lang],
+            local_name = properties["name:" + getLanguage()],
             default_name = properties["name:en"];
 
         let main_name: string | undefined;
-        if (local_name && local_name !== 'null') {
+        if (typeof local_name === "string" && local_name !== 'null') {
             main_name = local_name;
         } else if (properties.name && properties.name !== 'null') {
             main_name = properties.name;
-        } else if (default_name && default_name !== 'null') {
+        } else if (typeof default_name === "string" && default_name !== 'null') {
             main_name = default_name;
         } else if (properties.official_name && properties.official_name !== 'null') {
             main_name = properties.official_name;
@@ -118,7 +118,6 @@ export class FeatureElement extends HTMLDivElement {
         const wikidata = properties.wikidata,
             has_wikidata = wikidata && wikidata !== 'null',
             commons = properties.commons,
-            has_commons = commons && commons !== 'null',
             picture = properties.picture,
             has_picture = picture && picture !== 'null',
             feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
@@ -134,7 +133,7 @@ export class FeatureElement extends HTMLDivElement {
             feature_pictures.classList.remove("hiddenElement");
         } else if (has_wikidata) {
             if (process.env.NODE_ENV === 'development') console.debug("Using picture from feature 'wikidata' property", { wikidata });
-            this.showDetailsFromWikidata(wikidata, feature_pictures);
+            void this.showDetailsFromWikidata(wikidata, feature_pictures);
         } else {
             feature_pictures.classList.add("hiddenElement");
         }
@@ -146,7 +145,7 @@ export class FeatureElement extends HTMLDivElement {
         if (!etymologies_container) {
             if (process.env.NODE_ENV === 'development') console.debug("Missing .etymologies_container");
         } else {
-            this.fetchAndShowEtymologies(properties, etymologies_container, etymologies);
+            void this.fetchAndShowEtymologies(properties, etymologies_container, etymologies);
         }
 
         const src_osm = detail_container.querySelector<HTMLAnchorElement>('.feature_src_osm'),
@@ -164,6 +163,7 @@ export class FeatureElement extends HTMLDivElement {
 
         const src_osm_and_wd = detail_container.querySelector<HTMLAnchorElement>('.src_osm_and_wd'),
             src_wd = detail_container.querySelector<HTMLAnchorElement>('.feature_src_wd'),
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             from_entity = properties.from_wikidata_entity || properties.wikidata,
             show_src_wd = properties.from_wikidata && from_entity;
         if (!src_osm_and_wd)
@@ -176,6 +176,7 @@ export class FeatureElement extends HTMLDivElement {
         if (!src_wd) {
             console.warn("Missing .feature_src_wd");
         } else if (show_src_wd) {
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             const from_prop = properties.from_wikidata_prop || "P625",
                 wdURL = `https://www.wikidata.org/wiki/${from_entity}#${from_prop}`;
             if (process.env.NODE_ENV === 'development') console.debug("Showing WD feature source", { properties, wdURL, src_wd });
@@ -212,7 +213,7 @@ export class FeatureElement extends HTMLDivElement {
                 ...ety,
                 from_parts_of_wikidata_cod: ety.wikidata,
                 wikidata: part
-            })) || []),
+            })) ?? []),
                 filledParts = await this.downloadEtymologyDetails(parts);
 
             if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: showing parts of linked entities", { filledParts, parts_containers });
@@ -245,7 +246,7 @@ export class FeatureElement extends HTMLDivElement {
 
     private showEtymologies(etymologies: EtymologyDetails[], etymologies_container: HTMLElement, currentZoom: number) {
         // Sort entities by Wikidata Q-ID length (shortest ID usually means most famous)
-        etymologies.sort((a, b) => (a.wikidata?.length || 0) - (b.wikidata?.length || 0)).forEach((ety) => {
+        etymologies.sort((a, b) => (a.wikidata?.length ?? 0) - (b.wikidata?.length ?? 0)).forEach((ety) => {
             if (ety?.wikidata) {
                 try {
                     etymologies_container.appendChild(etymologyToDomElement(ety, currentZoom))
@@ -300,7 +301,7 @@ export class FeatureElement extends HTMLDivElement {
 
         // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
         let etymologyIDs = new Set(
-            etymologies.map(e => e.wikidata || "").filter(x => x !== "")
+            etymologies.map(e => e.wikidata ?? "").filter(x => x !== "")
         );
         if (etymologyIDs.size == 0)
             return etymologies;
@@ -310,7 +311,7 @@ export class FeatureElement extends HTMLDivElement {
             // Too many items, limiting to the first N most famous ones
             sortedIDs = sortedIDs.slice(0, maxItems);
             etymologyIDs = new Set(sortedIDs);
-            loadTranslator().then(t => showSnackbar(
+            void loadTranslator().then(t => showSnackbar(
                 t("feature_details.loading_first_n_items", `Loading only first ${maxItems} items`, { partial: maxItems, total: etymologies.length }),
                 "lightsalmon",
                 10_000

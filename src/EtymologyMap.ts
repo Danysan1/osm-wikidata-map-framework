@@ -1,4 +1,4 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, MapDataEvent, RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 import "@stadiamaps/maplibre-search-box/dist/style.css";
@@ -14,13 +14,14 @@ import { featureToDomElement } from "./components/FeatureElement";
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getBoolConfig, getConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
-import { loadTranslator } from './i18n';
+import { getLanguage, loadTranslator } from './i18n';
 import './style.css';
 import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
 
+// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     PMTILES_PREFIX = "pmtiles",
     VECTOR_PREFIX = "vector",
@@ -69,22 +70,7 @@ export class EtymologyMap extends Map {
         });
         this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
-        import("./services").then(({
-            MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService
-        }) => {
-            const db = new MapDatabase(),
-                overpassService = new OverpassService(db),
-                wikidataService = new WikidataMapService(db);
-            this.services = [
-                wikidataService,
-                overpassService,
-                new OverpassWikidataMapService(overpassService, wikidataService, db)
-            ];
-            if (getBoolConfig("qlever_enable"))
-                this.services.push(new QLeverMapService(db));
-
-            if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
-        }).finally(() => this.addSecondaryControls());
+        void this.initServices();
 
         try {
             openInfoWindow(this, false);
@@ -92,19 +78,39 @@ export class EtymologyMap extends Map {
             console.error("Info window error:", e);
         }
 
-        this.on('load', this.mapLoadedHandler);
-        this.on('styledata', this.mapStyleDataHandler);
-        this.on('sourcedata', this.mapSourceDataHandler);
-        this.on('error', this.mapErrorHandler);
+        this.on('load', () => this.mapLoadedHandler());
+        this.on('styledata', e => this.mapStyleDataHandler(e));
+        this.on('sourcedata', e => this.mapSourceDataHandler(e));
+        this.on('error', e => void this.mapErrorHandler(e));
 
         //this.dragRotate.disable(); // disable map rotation using right click + drag
         //this.touchZoomRotate.disableRotation(); // disable map rotation using touch rotation gesture
 
-        //eslint-disable-next-line
-        const thisMap = this; // Needed to prevent overwriting of "this" in the window event handler ( https://stackoverflow.com/a/21299126/2347196 )
-        window.addEventListener('hashchange', function () { thisMap.hashChangeHandler() }, false);
+        window.addEventListener('hashchange', () => this.hashChangeHandler(), false);
 
         this.addBaseControls();
+        void this.addSecondaryControls();
+    }
+
+    private async initServices() {
+        const qlever_enable = getBoolConfig("qlever_enable");
+        try {
+            const { MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService } = await import("./services"),
+                db = new MapDatabase(),
+                overpassService = new OverpassService(db),
+                wikidataService = new WikidataMapService(db);
+            this.services = [
+                wikidataService,
+                overpassService,
+                new OverpassWikidataMapService(overpassService, wikidataService, db)
+            ];
+            if (qlever_enable)
+                this.services.push(new QLeverMapService(db));
+
+            if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
+        } catch (e) {
+            logErrorMessage("Failed initializing map services", "error", { qlever_enable, error: e });
+        }
     }
 
     /**
@@ -116,7 +122,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:styledata
      * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
      */
-    private mapStyleDataHandler(e: MapDataEvent) {
+    private mapStyleDataHandler(e: MapStyleDataEvent) {
         if (process.env.NODE_ENV === 'development') console.debug("mapStyleDataHandler", e);
         this.setCulture();
         this.lastBackEndID = undefined;
@@ -181,16 +187,16 @@ export class EtymologyMap extends Map {
         if (!e.isSourceLoaded || e.dataType !== "source")
             return;
 
-        const wikidataSourceEvent = e.sourceId === DETAILS_SOURCE,
+        const detailsSourceEvent = e.sourceId === DETAILS_SOURCE,
             elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
 
-        if (wikidataSourceEvent || elementsSourceEvent) {
+        if (detailsSourceEvent || elementsSourceEvent) {
             if (process.env.NODE_ENV === 'development') console.debug("mapSourceDataHandler: data loaded", {
-                wikidataSourceEvent, elementsSourceEvent, e, source: e.sourceId
+                wikidataSourceEvent: detailsSourceEvent, elementsSourceEvent, e, source: e.sourceId
             });
             this.fetchCompleted();
 
-            const noFeatures = wikidataSourceEvent &&
+            const noFeatures = detailsSourceEvent &&
                 e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
                 this.querySourceFeatures(DETAILS_SOURCE).length === 0;
             loadTranslator().then(t => {
@@ -198,11 +204,13 @@ export class EtymologyMap extends Map {
                     this.wikidataSourceInitialized = true;
                 else if (noFeatures)
                     showSnackbar(t("snackbar.no_data_in_this_area", "No data in this area"), "wheat", 3000);
-                else if (wikidataSourceEvent && !this.anyFeatureClickedBefore)
+                else if (detailsSourceEvent && !this.anyFeatureClickedBefore)
                     showSnackbar(t("snackbar.data_loaded_instructions", "Data loaded, click on any highlighted element to show its details"), "lightgreen", 10000);
                 else
                     showSnackbar(t("snackbar.data_loaded", "Data loaded"), "lightgreen", 3000);
-            });
+            }).catch(
+                () => showSnackbar("Data loaded", "lightgreen", 3000)
+            );
         }
     }
 
@@ -210,17 +218,18 @@ export class EtymologyMap extends Map {
      * 
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
      */
-    private mapErrorHandler(err: any) {
+    private async mapErrorHandler(err: ErrorEvent & { sourceId?: string }) {
         let errorMessage;
-        if ([ELEMENTS_SOURCE, DETAILS_SOURCE].includes(err.sourceId)) {
+        const t = await loadTranslator();
+        if (err.sourceId && [ELEMENTS_SOURCE, DETAILS_SOURCE].includes(err.sourceId)) {
             this.fetchCompleted();
-            loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data")));
+            showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
             errorMessage = "An error occurred while fetching " + err.sourceId;
         } else {
-            loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
-            errorMessage = "Map error: " + err.sourceId + " - " + err.error.message
+            showSnackbar(t("snackbar.map_error"));
+            errorMessage = "Map error: " + err.sourceId
         }
-        logErrorMessage(errorMessage, "error", err);
+        logErrorMessage(errorMessage, "error", { error: err });
     }
 
     private updateDataSource() {
@@ -233,7 +242,7 @@ export class EtymologyMap extends Map {
         const backEndID = getCorrectFragmentParams().backEndID,
             pmtilesBaseURL = getConfig("pmtiles_base_url");
         if (backEndID.startsWith(PMTILES_PREFIX) && !pmtilesBaseURL?.length) {
-            loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
+            void loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
             return;
         }
@@ -262,7 +271,7 @@ export class EtymologyMap extends Map {
         else if (enableWikidataLayers)
             this.updateWikidataSource(southWest, northEast, thresholdZoomLevel);
         else
-            loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
+            void loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
     }
 
     private isBBoxChanged(bbox: BBox): boolean {
@@ -322,7 +331,7 @@ export class EtymologyMap extends Map {
                 if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON elements source:", backEndID);
                 this.lastBackEndID = fullBackEndID;
                 this.lastBBox = bbox;
-                this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
+                void this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
             }
         }
     }
@@ -386,7 +395,7 @@ export class EtymologyMap extends Map {
             this.lastBackEndID = fullBackEndID;
             this.prepareVectorSource(
                 DETAILS_SOURCE,
-                `${window.location.protocol}//${window.location.host}/etymology_map/{z}/{x}/{y}?source=${backEndID.replace("vector_", "")}&lang=${document.documentElement.lang}`,
+                `${window.location.protocol}//${window.location.host}/etymology_map/{z}/{x}/{y}?source=${backEndID.replace("vector_", "")}&lang=${getLanguage()}`,
                 thresholdZoomLevel
             );
             this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
@@ -403,7 +412,7 @@ export class EtymologyMap extends Map {
                 if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON wikidata source:", backEndID);
                 this.lastBackEndID = fullBackEndID;
                 this.lastBBox = bbox;
-                this.prepareWikidataGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
+                void this.prepareWikidataGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
             }
         }
     }
@@ -457,8 +466,8 @@ export class EtymologyMap extends Map {
             this.addSource(sourceID, {
                 type: 'vector',
                 tiles: [tileURL],
-                maxzoom: maxZoom || 15,
-                minzoom: minZoom || 0,
+                maxzoom: maxZoom ?? 15,
+                minzoom: minZoom ?? 0,
             });
         }
     }
@@ -469,7 +478,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.protomaps.com/
      * @see https://docs.protomaps.com/pmtiles/maplibre
      */
-    private async preparePMTilesSource(vectorSourceID: string, fileName: string, minZoom?: number, maxZoom?: number) {
+    private preparePMTilesSource(vectorSourceID: string, fileName: string, minZoom?: number, maxZoom?: number) {
         const pmtilesBaseURL = getConfig("pmtiles_base_url");
         if (!pmtilesBaseURL)
             throw new Error("Missing pmtiles URL");
@@ -497,8 +506,8 @@ export class EtymologyMap extends Map {
             this.addSource(vectorSourceID, {
                 type: 'vector',
                 url: fullPMTilesURL,
-                maxzoom: maxZoom || 15,
-                minzoom: minZoom || 0,
+                maxzoom: maxZoom ?? 15,
+                minzoom: minZoom ?? 0,
             });
         }
     }
@@ -776,7 +785,7 @@ export class EtymologyMap extends Map {
         // open a popup at the location of the click, with description
         // HTML from the click event's properties.
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
-        this.on('click', layerID, this.onWikidataLayerClick);
+        this.on('click', layerID, (e) => this.onWikidataLayerClick(e));
 
         // Change the cursor to a pointer when
         // the mouse is over the states layer.
@@ -850,14 +859,22 @@ export class EtymologyMap extends Map {
     }
 
     private addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
-        if (this.getSource(DETAILS_SOURCE)?.type === "vector")
-            this.removeSourceWithLayers(DETAILS_SOURCE);
+        const rawSource = this.getSource(id);
+        let sourceObject: GeoJSONSource | undefined;
+        if (rawSource instanceof GeoJSONSource)
+            sourceObject = rawSource;
+        else
+            this.removeSourceWithLayers(id);
 
-        let sourceObject = this.getSource(id) as GeoJSONSource | undefined;
-        const newSourceDataURL = ["string", "object"].includes(typeof config.data) ? config.data as string | GeoJSON : null,
-            oldSourceDataURL = (sourceObject as any)?._data,
+        let newSourceDataURL: string | GeoJSON | undefined;
+        if (typeof config.data === "string")
+            newSourceDataURL = config.data;
+        else if (config.data && typeof config.data === "object")
+            newSourceDataURL = config.data as GeoJSON;
+
+        const oldSourceDataURL = sourceObject?._data,
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
-        if (!!sourceObject && sourceUrlChanged) {
+        if (sourceObject && newSourceDataURL && sourceUrlChanged) {
             showLoadingSpinner(true);
             if (process.env.NODE_ENV === 'development') console.debug("addGeoJSONSource: updating source", { id, sourceObject, newSourceDataURL, oldSourceDataURL });
             sourceObject.setData(newSourceDataURL);
@@ -903,7 +920,7 @@ export class EtymologyMap extends Map {
         countFieldName: string,
         countShowFieldName: string
     ) {
-        const sourceObject = this.addOrUpdateGeoJSONSource(
+        this.addOrUpdateGeoJSONSource(
             sourceName,
             {
                 type: 'geojson',
@@ -945,8 +962,8 @@ export class EtymologyMap extends Map {
                     id: clusterLayerName,
                     source: sourceName,
                     type: 'circle',
-                    maxzoom: maxZoom || 15,
-                    minzoom: minZoom || 0,
+                    maxzoom: maxZoom ?? 15,
+                    minzoom: minZoom ?? 0,
                     filter: ['has', countFieldName],
                     paint: {
                         // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -988,8 +1005,8 @@ export class EtymologyMap extends Map {
                 id: countLayerName,
                 type: 'symbol',
                 source: sourceName,
-                maxzoom: maxZoom || 15,
-                minzoom: minZoom || 0,
+                maxzoom: maxZoom ?? 15,
+                minzoom: minZoom ?? 0,
                 filter: ['has', countShowFieldName],
                 layout: {
                     'text-font': ["Open Sans Regular"],
@@ -1008,8 +1025,8 @@ export class EtymologyMap extends Map {
                 id: pointLayerName,
                 type: 'circle',
                 source: sourceName,
-                maxzoom: maxZoom || 15,
-                minzoom: minZoom || 0,
+                maxzoom: maxZoom ?? 15,
+                minzoom: minZoom ?? 0,
                 filter: ['!', ['has', countFieldName]],
                 paint: {
                     'circle-color': '#51bbd6',
@@ -1127,7 +1144,7 @@ export class EtymologyMap extends Map {
      * Handles the completion of map loading
      */
     private mapLoadedHandler() {
-        this.on("style.load", this.mapStyleLoadHandler);
+        this.on("style.load", () => this.mapStyleLoadHandler());
 
         try {
             this.updateDataForMapPosition();
@@ -1138,14 +1155,14 @@ export class EtymologyMap extends Map {
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:idle
         //map.on('idle', updateDataSource); //! Called continuously, avoid
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:moveend
-        this.on('moveend', this.mapMoveEndHandler);
+        this.on('moveend', () => this.mapMoveEndHandler());
         // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:zoomend
         //map.on('zoomend', updateDataSource); // moveend is sufficient
 
         // this.addBaseControls(); // It should be done earlier
         // this.addSecondaryControls(); // It can be done earlier; done here would improve speed on devices with slow networks but would not be executed if initial source loading fails
 
-        this.setupGeocoder();
+        void this.setupGeocoder();
     }
 
     addBaseControls() {
@@ -1184,11 +1201,11 @@ export class EtymologyMap extends Map {
         /**
          * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
          */
-        const someArrayItemStartWithName = (array: any): boolean => Array.isArray(array) && array.some(
+        const someArrayItemStartWithName = (array: unknown): boolean => Array.isArray(array) && array.some(
             x => (typeof x === 'string' && x.startsWith('name')) || someArrayItemStartWithName(x)
         );
 
-        const field = this.getLayoutProperty(layerId, 'text-field'),
+        const field: unknown = this.getLayoutProperty(layerId, 'text-field'),
             isSimpleName = field === '{name}' || (typeof field === "string" && field.startsWith('{name:latin}'));
         return isSimpleName || someArrayItemStartWithName(field);
     }
@@ -1207,7 +1224,7 @@ export class EtymologyMap extends Map {
      */
     private setCulture() {
         const defaultLanguage = getConfig("default_language"),
-            language = document.documentElement.lang.split('-').at(0),
+            language = getLanguage(),
             nameLayerIds = this.getStyle().layers
                 .filter(layer => layer.type === 'symbol' && this.isNameSymbolLayer(layer.id))
                 .map(layer => layer.id),
@@ -1225,7 +1242,7 @@ export class EtymologyMap extends Map {
             defaultLanguage,
             newTextField,
             nameLayerIds,
-            oldTextFields: nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field'))
+            oldTextFields: nameLayerIds.map(id => this.getLayoutProperty(id, 'text-field') as unknown)
         });
         nameLayerIds.forEach(id => this.setLayoutProperty(id, 'text-field', newTextField));
     }

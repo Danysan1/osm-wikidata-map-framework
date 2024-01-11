@@ -1,19 +1,21 @@
 {
-    "root": true,
-    "parser": "@typescript-eslint/parser",
-    "parserOptions": {
-        "sourceType": "module",
-        "ecmaVersion": "latest"
-    },
-    "plugins": [
-        "@typescript-eslint"
-    ],
     "env": {
         "browser": true,
         "node": false
     },
     "extends": [
         "eslint:recommended",
-        "plugin:@typescript-eslint/recommended"
-    ]
+        "plugin:@typescript-eslint/recommended-type-checked",
+        "plugin:@typescript-eslint/stylistic-type-checked"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "project": "tsconfig.json",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "root": true
 }

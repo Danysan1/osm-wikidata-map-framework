@@ -4,7 +4,7 @@ import reverseMapQuery from "./query/map/reverse.sparql";
 import qualifierMapQuery from "./query/map/qualifier.sparql";
 import directMapQuery from "./query/map/direct.sparql";
 import baseMapQuery from "./query/map/base.sparql";
-import { getConfig, getJsonConfig } from "../config";
+import { getConfig, getStringArrayConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
@@ -12,6 +12,9 @@ import { logErrorMessage } from "../monitoring";
 import { MapDatabase } from "../db/MapDatabase";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
+import { getLanguage } from "../i18n";
+import type { SparqlResponseBindingValue } from "../generated/sparql";
+import { getEtymologies } from "./etymologyUtils";
 
 export class WikidataMapService extends WikidataService implements MapService {
     protected db: MapDatabase;
@@ -34,7 +37,7 @@ export class WikidataMapService extends WikidataService implements MapService {
     }
 
     private async fetchMapData(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        const language = document.documentElement.lang.split('-').at(0) || '';
+        const language = getLanguage();
         let out = await this.db.getMap(backEndID, bbox, language);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
@@ -69,16 +72,16 @@ export class WikidataMapService extends WikidataService implements MapService {
             out = {
                 type: "FeatureCollection",
                 bbox: bbox,
-                features: ret.results.bindings.reduce(this.featureReducer, []),
+                features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
                 wdqs_query: sparqlQuery,
                 timestamp: new Date().toISOString(),
                 backEndID: backEndID,
                 language: language,
                 truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
-            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
+            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
             if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
-            this.db.addMap(out);
+            void this.db.addMap(out);
         }
         return out;
     }
@@ -86,9 +89,9 @@ export class WikidataMapService extends WikidataService implements MapService {
     private getDirectSparqlQuery(backEndID: string): string {
         let properties: string[];
         const sourceProperty = /^wd_direct_(P\d+)$/.exec(backEndID)?.at(1),
-            directProperties = getJsonConfig("osm_wikidata_properties"),
-            sparqlQueryTemplate = directMapQuery as string;
-        if (!Array.isArray(directProperties) || !directProperties.length)
+            directProperties = getStringArrayConfig("osm_wikidata_properties"),
+            sparqlQueryTemplate = directMapQuery;
+        if (!directProperties?.length)
             throw new Error("Empty direct properties");
 
         if (!sourceProperty)
@@ -123,13 +126,13 @@ export class WikidataMapService extends WikidataService implements MapService {
             .replaceAll('${pictureQuery}', pictureQuery);
     }
 
-    private featureReducer(acc: EtymologyFeature[], row: any): EtymologyFeature[] {
+    private featureReducer(acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
         if (!row.location?.value) {
             logErrorMessage("Invalid response from Wikidata (no location)", "warning", row);
             return acc;
         }
 
-        const wkt_geometry = row.location.value as string,
+        const wkt_geometry = row.location.value,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
             if (process.env.NODE_ENV === 'development') console.debug("Failed to parse WKT coordinates", { wkt_geometry, row });
@@ -150,7 +153,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-        if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+        if (etymology_wd_id && existingFeature && getEtymologies(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
@@ -176,6 +179,16 @@ export class WikidataMapService extends WikidataService implements MapService {
                     osm_id = parseInt(row.osm_node.value);
                 }
 
+                let render_height;
+                if (row.height?.value)
+                    render_height = parseInt(row.height?.value);
+                else if (row.levels?.value)
+                    render_height = parseInt(row.levels?.value) * 4;
+                else if (row.building?.value)
+                    render_height = 6;
+                else
+                    render_height = 0;
+
                 acc.push({
                     type: "Feature",
                     id: feature_wd_id,
@@ -192,14 +205,14 @@ export class WikidataMapService extends WikidataService implements MapService {
                         osm_id,
                         osm_type,
                         picture: row.picture?.value,
-                        render_height: parseInt(row.height?.value) || (parseInt(row.levels?.value) * 4) || undefined,
+                        render_height: render_height,
                         wikidata: feature_wd_id,
                         wikidata_alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikipedia: row.wikipedia?.value,
                     }
                 });
             } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                existingFeature.properties?.etymologies?.push(etymology);
+                getEtymologies(existingFeature)?.push(etymology);
             }
         }
         return acc;

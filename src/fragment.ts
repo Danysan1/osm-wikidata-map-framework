@@ -9,6 +9,7 @@ const default_center_lat_raw = getConfig("default_center_lat"),
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
     defaultColorSchemeRaw = getConfig("default_color_scheme"),
     defaultColorScheme = defaultColorSchemeRaw && defaultColorSchemeRaw in ColorSchemeID ? defaultColorSchemeRaw as ColorSchemeID : ColorSchemeID.blue,
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     defaultBackEndID = getConfig("default_source") || "overpass_all";
 
 interface FragmentParams {
@@ -25,11 +26,11 @@ interface FragmentParams {
 function getFragmentParams(): FragmentParams {
     const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
         out: FragmentParams = {
-            lon: (hashParams && hashParams[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : null,
-            lat: (hashParams && hashParams[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : null,
-            zoom: (hashParams && hashParams[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : null,
-            colorScheme: (hashParams && hashParams[3]) ? hashParams[3] : null,
-            backEndID: (hashParams && hashParams[4]) ? hashParams[4] : null,
+            lon: (hashParams?.[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : null,
+            lat: (hashParams?.[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : null,
+            zoom: (hashParams?.[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : null,
+            colorScheme: (hashParams?.[3]) ? hashParams[3] : null,
+            backEndID: (hashParams?.[4]) ? hashParams[4] : null,
         };
     // if (process.env.NODE_ENV === 'development') console.debug("getFragmentParams", { hashParams, out });
     return out;
@@ -71,10 +72,11 @@ interface CorrectFragmentParams {
 function getCorrectFragmentParams(): CorrectFragmentParams {
     const raw = getFragmentParams(),
         correct: CorrectFragmentParams = {
-            lon: raw.lon !== null ? raw.lon : default_center_lon,
+            lon: raw.lon ?? default_center_lon,
             lat: raw.lat !== null && raw.lat >= -90 && raw.lat <= 90 ? raw.lat : default_center_lat,
             zoom: raw.zoom ? raw.zoom : default_zoom,
             colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             backEndID: raw.backEndID?.replace("db_", "vector_") || defaultBackEndID,
         };
     //if (process.env.NODE_ENV === 'development') console.debug("getCorrectFragmentParams", { raw, correct });

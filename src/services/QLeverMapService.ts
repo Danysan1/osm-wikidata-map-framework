@@ -9,16 +9,17 @@ import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
 import wd_direct_query from "./query/qlever/wd_direct.sparql";
 import wd_base_query from "./query/qlever/wd_base.sparql";
-import { getConfig, getJsonConfig, getKeyID } from "../config";
+import { getConfig, getKeyID, getStringArrayConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyResponse, EtymologyFeature } from "../model/EtymologyResponse";
-
 import { logErrorMessage } from "../monitoring";
-import { MapDatabase } from "../db/MapDatabase";
-import { MapService } from "./MapService";
-import { Configuration, SparqlApi, SparqlBackend } from "../generated/sparql";
+import type { MapDatabase } from "../db/MapDatabase";
+import type { MapService } from "./MapService";
+import { Configuration, SparqlApi, SparqlBackend, SparqlResponseBindingValue } from "../generated/sparql";
+import { getLanguage } from "../i18n";
+import { getEtymologies } from "./etymologyUtils";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -55,7 +56,7 @@ export class QLeverMapService implements MapService {
     }
 
     private async fetchMapData(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        const language = document.documentElement.lang.split('-').at(0) || '';
+        const language = getLanguage();
         let out = await this.db.getMap(backEndID, bbox, language);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug(`QLever map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
@@ -75,20 +76,20 @@ export class QLeverMapService implements MapService {
             out = {
                 type: "FeatureCollection",
                 bbox: bbox,
-                features: ret.results.bindings.reduce(this.featureReducer, []),
+                features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
                 timestamp: new Date().toISOString(),
                 backEndID: backEndID,
                 language: language,
                 truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
             };
-            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length || 0), 0);
+            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
             if (backend === "wikidata")
                 out.qlever_wd_query = sparqlQuery;
             else if (backend === "osm-planet")
                 out.qlever_osm_query = sparqlQuery;
 
             if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
-            this.db.addMap(out);
+            void this.db.addMap(out);
         }
         return out;
     }
@@ -128,11 +129,11 @@ export class QLeverMapService implements MapService {
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
                 osm_text_key = all_osm_wikidata_keys_selected ? getConfig("osm_text_key") : undefined,
                 osm_description_key = all_osm_wikidata_keys_selected ? getConfig("osm_description_key") : undefined,
-                osm_wikidata_keys = getJsonConfig("osm_wikidata_keys") as string[] | undefined,
-                raw_filter_tags: string[] | null = getJsonConfig("osm_filter_tags"),
+                osm_wikidata_keys = getStringArrayConfig("osm_wikidata_keys"),
+                raw_filter_tags = getStringArrayConfig("osm_filter_tags"),
                 selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? osm_wikidata_keys : osm_wikidata_keys?.filter(key => getKeyID(key) === selected_key_id);
             if (osm_wikidata_keys?.length && !selected_osm_wikidata_keys?.length)
-                throw new Error(`Invalid selected_key_id: ${backEndID} => ${selected_key_id} not in ${osm_wikidata_keys}`);
+                throw new Error(`Invalid selected_key_id: ${backEndID} => ${selected_key_id} not in the osm_wikidata_keys config`);
 
             const filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
                 filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
@@ -192,8 +193,8 @@ export class QLeverMapService implements MapService {
         } else if (backEndID.includes("direct")) {
             let properties: string[];
             const sourceProperty = /_direct_(P\d+)$/.exec(backEndID)?.at(1),
-                directProperties = getJsonConfig("osm_wikidata_properties");
-            if (!Array.isArray(directProperties) || !directProperties.length)
+                directProperties = getStringArrayConfig("osm_wikidata_properties");
+            if (!directProperties?.length)
                 throw new Error("Empty direct properties");
 
             if (!sourceProperty)
@@ -227,13 +228,13 @@ export class QLeverMapService implements MapService {
             ).toFixed(4));
     }
 
-    private featureReducer(acc: EtymologyFeature[], row: any): EtymologyFeature[] {
+    private featureReducer(acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
         if (!row.location?.value) {
             logErrorMessage("Invalid response from Wikidata (no location)", "warning", row);
             return acc;
         }
 
-        const wkt_geometry = row.location.value as string,
+        const wkt_geometry = row.location.value,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
             if (process.env.NODE_ENV === 'development') console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
@@ -243,6 +244,7 @@ export class QLeverMapService implements MapService {
         const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             etymology_wd_ids: string[] | undefined = typeof row.etymology?.value === "string" ? row.etymology.value.split(";").map((id: string) => id.replace(WikidataService.WD_ENTITY_PREFIX, "")) : undefined;
 
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         (etymology_wd_ids || [undefined]).forEach(etymology_wd_id => { // [undefined] is used when there are no linked entities (like in https://osmwd.dsantini.it )
             const existingFeature = acc.find(feature => {
                 if (feature.id !== feature_wd_id)
@@ -256,8 +258,8 @@ export class QLeverMapService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-            if (etymology_wd_id && existingFeature?.properties?.etymologies?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-                if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
+            if (etymology_wd_id && existingFeature && getEtymologies(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+                if (process.env.NODE_ENV === 'development') console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
                 const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
                     feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
@@ -290,9 +292,21 @@ export class QLeverMapService implements MapService {
                         }
                     }
 
-                    const commons: string | undefined = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
-                        picture: string | undefined = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
+                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                    const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
+                        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                        picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
                     if (process.env.NODE_ENV === 'development') console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
+
+                    let render_height;
+                    if (row.height?.value)
+                        render_height = parseInt(row.height?.value);
+                    else if (row.levels?.value)
+                        render_height = parseInt(row.levels?.value) * 4;
+                    else if (row.building?.value)
+                        render_height = 6;
+                    else
+                        render_height = 0;
 
                     acc.push({
                         type: "Feature",
@@ -308,7 +322,7 @@ export class QLeverMapService implements MapService {
                             from_wikidata: feature_from_wikidata,
                             from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
                             from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
-                            render_height: parseInt(row.height?.value) || (parseInt(row.levels?.value) * 4) || row.building?.value ? 6 : 0,
+                            render_height: render_height,
                             name: row.itemLabel?.value,
                             osm_id,
                             osm_type,
@@ -318,7 +332,7 @@ export class QLeverMapService implements MapService {
                         }
                     });
                 } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                    existingFeature.properties?.etymologies?.push(etymology);
+                    getEtymologies(existingFeature)?.push(etymology);
                 }
             }
         });

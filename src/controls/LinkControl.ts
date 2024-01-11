@@ -23,7 +23,7 @@ export class LinkControl implements IControl {
         this.iconUrl = iconUrl;
         this.title = title;
 
-        this.sourceDataHandler = this.createSourceDataHandler(sourceIds, mapEventField, baseUrl).bind(this);
+        this.sourceDataHandler = (e) => this.baseSourceDataHandler(e, sourceIds, mapEventField, baseUrl);
 
         this.moveEndHandler = e => {
             if (e.target.getZoom() < minZoomLevel)
@@ -79,33 +79,31 @@ export class LinkControl implements IControl {
             this.container?.classList?.add("hiddenElement");
     }
 
-    createSourceDataHandler(sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
-        return async (e: MapSourceDataEvent) => {
-            if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIds.includes(e.sourceId))
-                return;
+    private baseSourceDataHandler(e: MapSourceDataEvent, sourceIds: string[], mapEventField: keyof EtymologyResponse, baseUrl: string) {
+        if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIds.includes(e.sourceId))
+            return;
 
-            if (e.source.type !== "geojson") {
-                this.show(false);
-                return;
-            }
+        if (e.source.type !== "geojson") {
+            this.show(false);
+            return;
+        }
 
-            const content = e.source?.data;
-            if (!content || typeof content !== "object") {
-                if (process.env.NODE_ENV === 'development') console.debug("Source data is not an object, hiding", e.source);
-                this.show(false);
-                return;
-            }
+        const content = typeof e.source?.data === "object" ? e.source.data as EtymologyResponse : undefined;
+        if (!content) {
+            if (process.env.NODE_ENV === 'development') console.debug("Source data is not an object, hiding", e.source);
+            this.show(false);
+            return;
+        }
 
-            const query = (content as any)[mapEventField];
-            if (typeof query !== "string" || !query.length) {
-                if (process.env.NODE_ENV === 'development') console.debug("Missing query field, hiding", { content, mapEventField });
-                this.show(false);
-            } else {
-                const encodedQuery = encodeURIComponent(query),
-                    linkUrl = baseUrl + encodedQuery;
-                this.setURL(linkUrl);
-                this.show();
-            }
+        const query = content[mapEventField];
+        if (typeof query !== "string" || !query.length) {
+            if (process.env.NODE_ENV === 'development') console.debug("Missing query field, hiding", { content, mapEventField });
+            this.show(false);
+        } else {
+            const encodedQuery = encodeURIComponent(query),
+                linkUrl = baseUrl + encodedQuery;
+            this.setURL(linkUrl);
+            this.show();
         }
     }
 }
