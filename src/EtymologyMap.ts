@@ -648,7 +648,7 @@ export class EtymologyMap extends Map {
                     'fill-extrusion-height': [
                         'interpolate', ['linear'], ['zoom'],
                         15, 0,
-                        16, ['to-number', ['get', 'render_height']]
+                        16, ['to-number', ['coalesce', ['get', 'render_height'], 0]]
                     ],
                 }
             };

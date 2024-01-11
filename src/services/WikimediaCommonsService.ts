@@ -6,7 +6,7 @@ export class WikimediaCommonsService {
     constructor(baseURL?: string) {
         this.api = new CommonsApi(new Configuration({
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            basePath: baseURL || "https://commons.wikimedia.org/w/api.php"
+            basePath: baseURL || "https://commons.wikimedia.org/w"
         }));
     }
 

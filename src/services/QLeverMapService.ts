@@ -305,8 +305,6 @@ export class QLeverMapService implements MapService {
                         render_height = parseInt(row.levels?.value) * 4;
                     else if (row.building?.value)
                         render_height = 6;
-                    else
-                        render_height = 0;
 
                     acc.push({
                         type: "Feature",
