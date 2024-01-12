@@ -78,6 +78,8 @@ if ((string)$conf->get("default_background_style") == "stadia_alidade") {
 }
 if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNamespace]["title"]))
     $preloads[] = '<link rel="preload" href="locales/' . $language . '/common.json" as="fetch" crossorigin="anonymous" />';
+if($conf->has("pmtiles_base_url"))
+    $preloads[] = '<link rel="preload" href="' . (string)$conf->get("pmtiles_base_url") . 'date.txt" as="fetch" crossorigin="anonymous" />';
 
 ?>
 <!DOCTYPE html>

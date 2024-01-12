@@ -105,17 +105,18 @@ async function getLastDBUpdateDate(popup: Popup) {
     try {
         const response = await fetch(dateURL);
         if (response.ok) {
-            const date = (await response.text()).trim();
-            if (process.env.NODE_ENV === 'development') console.debug("Last DB update date:", date);
+            const text = await response.text(),
+                date = text.trim();
+            if (process.env.NODE_ENV === 'development') console.debug("Last DB update date fetched from date.txt:", { dateURL, date });
             if (date) {
                 placeholder.innerText = date;
                 container.classList.remove("hiddenElement");
             }
         } else {
-            if (process.env.NODE_ENV === 'development') console.warn("Fetching date.txt failed", response);
+            if (process.env.NODE_ENV === 'development') console.warn("Fetching date.txt failed", { dateURL, response });
         }
     } catch (e) {
-        if (process.env.NODE_ENV === 'development') console.warn("Error catched while fetching date.txt", e);
+        if (process.env.NODE_ENV === 'development') console.warn("Error while fetching date.txt", { dateURL, e });
     }
 }
 
