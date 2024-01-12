@@ -11,12 +11,13 @@ class TippecanoeOperator(OsmDockerOperator):
     * [DockerOperator documentation](https://airflow.apache.org/docs/apache-airflow-providers-docker/3.8.0/_api/airflow/providers/docker/operators/docker/index.html#airflow.providers.docker.operators.docker.DockerOperator)
     """
 
-    def __init__(self, input_file: str, min_zoom: int, max_zoom: int, extra_params: str, layer_name: str = None, output_file: str = None, output_dir: str = None, **kwargs) -> None:
-        output = f"--output='{output_file}'" if output_file else f"--output-to-directory='{output_dir}'"
-        layer = f"--layer={layer_name}" if layer_name else ""
+    def __init__(self, input_file: str, min_zoom: int, max_zoom: int = None, extra_params: str = None, layer_name: str = None, output_file: str = None, output_dir: str = None, **kwargs) -> None:
+        output = f"--output-to-directory='{output_dir}'" if output_file is None else f"--output='{output_file}'"
+        layer = "" if layer_name is None else f"--layer={layer_name}"
+        max_zoom_arg = "-zg" if max_zoom is None else f"-z {max_zoom}"
         super().__init__(
             container_name = f"osm-wikidata_map_framework-tippecanoe-{layer_name}",
             image = "registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/tippecanoe:2.35.0",
-            command = f"tippecanoe '{input_file}' {output} {layer} -Z {min_zoom} -z {max_zoom} {extra_params}",
+            command = f"tippecanoe '{input_file}' {output} {layer} -Z {min_zoom} {max_zoom_arg} {extra_params}",
             **kwargs
         )

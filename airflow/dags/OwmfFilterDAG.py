@@ -161,10 +161,8 @@ class OwmfFilterDAG(DAG):
             tags=[
                 'man_made=flagpole', # Flag poles
                 'place=region','place=state','place=country','place=continent', # Label nodes and big areas
-                'admin_level=5','admin_level=4','admin_level=3', 'admin_level=2', # Country/region/province borders
                 'boundary=continent', 'boundary=timezone', 'boundary=maritime', 'boundary=region', 'boundary=military_district', 'boundary=economic', # Big boundaries
                 'boundary=national_park', 'leisure=nature_reserve', # Big national areas
-                'r/sqkm=*', # Typically very big areas
                 'end_date=*', 'route=historic', # Items that don't exist anymore
                 'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],

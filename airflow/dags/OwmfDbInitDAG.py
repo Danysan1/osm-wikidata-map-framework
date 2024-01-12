@@ -736,18 +736,6 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_dump >> task_dump_etymology_map
 
-        task_dump_elements = Ogr2ogrDumpOperator(
-            task_id = "dump_elements",
-            dag = self,
-            task_group=group_vector_tiles,
-            postgres_conn_id = local_db_conn_id,
-            dest_format = "FlatGeobuf",
-            dest_path = join(workdir,'elements.fgb'),
-            query = "SELECT * FROM owmf.vm_elements",
-            doc_md = "Dump all the centroids of the elements from the local DB into a FlatGeobuf file"
-        )
-        task_check_dump >> task_dump_elements
-
         task_check_pmtiles = ShortCircuitOperator(
             task_id = "check_pmtiles",
             python_callable=lambda **context: "generate_pmtiles" in context["params"] and context["params"]["generate_pmtiles"],
@@ -757,6 +745,8 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_dump >> task_check_pmtiles
 
+        # https://github.com/felt/tippecanoe?tab=readme-ov-file#discontinuous-polygon-features-buildings-of-rhode-island-visible-at-all-zoom-levels
+        # https://github.com/felt/tippecanoe?tab=readme-ov-file#dropping-a-fixed-fraction-of-features-by-zoom-level
         task_generate_etymology_map_pmtiles = TippecanoeOperator(
             task_id = "generate_etymology_map_pmtiles",
             dag = self,
@@ -764,27 +754,12 @@ class OwmfDbInitDAG(DAG):
             input_file = join(workdir,'etymology_map.fgb'),
             output_file = join(workdir,'etymology_map.pmtiles'),
             layer_name = "etymology_map",
-            min_zoom = 13,
-            max_zoom = 13,
-            extra_params = "-f",
+            min_zoom = 1,
+            max_zoom = 11,
+            extra_params = "--force -rf100 --drop-densest-as-needed",
             doc_md = TippecanoeOperator.__doc__
         )
         [task_check_pmtiles, task_dump_etymology_map] >> task_generate_etymology_map_pmtiles
-
-        elements_extra_params = "-f -r1 --cluster-distance=150 --accumulate-attribute=el_num:sum" # Do not automatically drop points; Cluster together features that are closer than about 150 pixels from each other; Sum the el_num attribute in features that are clustered together
-        task_generate_elements_pmtiles = TippecanoeOperator(
-            task_id = "generate_elements_pmtiles",
-            dag = self,
-            task_group = group_vector_tiles,
-            input_file = join(workdir,'elements.fgb'),
-            output_file = join(workdir,'elements.pmtiles'),
-            layer_name = "elements",
-            min_zoom = 1,
-            max_zoom = 12,
-            extra_params = elements_extra_params,
-            doc_md = TippecanoeOperator.__doc__
-        )
-        [task_check_pmtiles, task_dump_elements] >> task_generate_elements_pmtiles
 
         dataset_path = join(workdir,'dataset.csv')
         task_dump_dataset = PythonOperator(
@@ -824,29 +799,8 @@ class OwmfDbInitDAG(DAG):
         )
         task_generate_etymology_map_pmtiles >> task_etymology_map_pmtiles_s3
 
-        task_elements_pmtiles_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_elements_pmtiles_to_s3",
-            dag = self,
-            filename = join(workdir,'elements.pmtiles'),
-            dest_key = join("{{ var.value.pmtiles_base_s3_key }}",prefix,"elements.pmtiles"),
-            replace = True,
-            aws_conn_id = "aws_s3",
-            task_group = group_vector_tiles,
-            doc_md = """
-                # Upload elements.pmtiles to S3
-
-                Upload the PMTiles elements file to AWS S3.
-
-                Links:
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-            """
-        )
-        task_generate_elements_pmtiles >> task_elements_pmtiles_s3
-
         task_dataset_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_dataset_pmtiles_to_s3",
+            task_id = "upload_dataset_to_s3",
             dag = self,
             filename = dataset_path,
             dest_key = join('{{ var.value.pmtiles_base_s3_key }}',prefix,'dataset.csv'),
@@ -885,7 +839,7 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        [task_etymology_map_pmtiles_s3, task_elements_pmtiles_s3, task_dataset_s3] >> task_date_pmtiles_s3
+        task_etymology_map_pmtiles_s3 >> task_date_pmtiles_s3
         
         group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 
