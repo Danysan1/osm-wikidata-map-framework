@@ -27,7 +27,7 @@ export class WikidataDetailsService extends WikidataService {
                 return {};
             }
 
-            out = res.results.bindings.reduce((acc: Record<string, EtymologyDetails>, row: any): Record<string, EtymologyDetails> => {
+            out = res.results.bindings.reduce((acc: Record<string, EtymologyDetails>, row): Record<string, EtymologyDetails> => {
                 const wdURI = row?.wikidata?.value;
                 if (typeof wdURI !== "string")
                     throw new Error("Bad row (no Wikidata URI): ", row);
@@ -36,7 +36,7 @@ export class WikidataDetailsService extends WikidataService {
                 if (!wdQID.length)
                     throw new Error("Bad row (empty Wikidata QID): ", row);
 
-                const parts = (row.parts?.value as string | undefined)
+                const parts = row.parts?.value
                     ?.split(";")
                     ?.map(id => id.replace(WikidataService.WD_ENTITY_PREFIX, ""))
                     ?.filter(id => id.length);
@@ -65,7 +65,7 @@ export class WikidataDetailsService extends WikidataService {
                     pictures: row.pictures?.value?.split("||"),
                     prizes: row.prizes?.value,
                     start_date: row.start_date?.value,
-                    start_date_precision: parseInt(row.start_date_precision?.value),
+                    start_date_precision: row.start_date_precision?.value ? parseInt(row.start_date_precision?.value) : undefined,
                     wikipedia: row.wikipedia?.value,
                     wkt_coords: row.wkt_coords?.value,
                     wikidata: wdQID,
@@ -75,7 +75,7 @@ export class WikidataDetailsService extends WikidataService {
             }, {});
             try {
                 if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { language, wikidataIDs, out });
-                this.db.addDetails(out, wikidataIDs, language);
+                void this.db.addDetails(out, wikidataIDs, language);
             } catch (e) {
                 logErrorMessage("Failed to store details data in cache", "warning", { language, wikidataIDs, out, e });
             }

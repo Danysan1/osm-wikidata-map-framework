@@ -26,6 +26,7 @@ const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("
     VECTOR_PREFIX = "vector",
     DETAILS_SOURCE = "detail_source",
     POINT_LAYER = '_layer_point',
+    POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
     LINE_LAYER = '_layer_lineString_line',
     LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
     POLYGON_BORDER_LAYER = '_layer_polygon_border',
@@ -557,37 +558,80 @@ export class EtymologyMap extends Map {
         }
         this.lastKeyID = key_id;
 
+        const lowZoomPointWidth = 2,
+            midZoomPointWidth = 8,
+            highZoomPointWidth = 16,
+            pointFilter = createFilter("Point");
+        if (!this.getLayer(DETAILS_SOURCE + POINT_TAP_AREA_LAYER)) {
+            const spec: CircleLayerSpecification = {
+                'id': DETAILS_SOURCE + POINT_TAP_AREA_LAYER,
+                'source': DETAILS_SOURCE,
+                'type': 'circle',
+                "filter": pointFilter,
+                "minzoom": minZoom,
+                'paint': {
+                    'circle-color': '#ffffff',
+                    'circle-opacity': 0,
+                    'circle-radius': [
+                        "interpolate", ["linear"], ["zoom"],
+                        11, lowZoomPointWidth + 6,
+                        16, midZoomPointWidth + 4,
+                        21, highZoomPointWidth + 2
+                    ],
+                }
+            };
+            if (source_layer)
+                spec["source-layer"] = source_layer;
+            this.addLayer(spec); // Points are shown on top of lines and polygons
+            this.initWikidataLayer(DETAILS_SOURCE + POINT_TAP_AREA_LAYER);
+        }
+
         if (!this.getLayer(DETAILS_SOURCE + POINT_LAYER)) {
             const spec: CircleLayerSpecification = {
                 'id': DETAILS_SOURCE + POINT_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'circle',
-                "filter": createFilter("Point"),
+                "filter": pointFilter,
                 "minzoom": minZoom,
                 'paint': {
                     'circle-color': colorSchemes.blue.color,
-                    'circle-radius': 12,
-                    'circle-stroke-width': 2,
+                    'circle-opacity': 0.8,
+                    'circle-radius': [
+                        "interpolate", ["linear"], ["zoom"],
+                        11, lowZoomPointWidth,
+                        16, midZoomPointWidth,
+                        21, highZoomPointWidth
+                    ],
+                    'circle-stroke-width': 1,
                     'circle-stroke-color': 'white'
                 }
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
             this.addLayer(spec); // Points are shown on top of lines and polygons
-            this.initWikidataLayer(DETAILS_SOURCE + POINT_LAYER);
+            //this.initWikidataLayer(DETAILS_SOURCE + POINT_LAYER); // The tap area layer handles all clicks and hovers
         }
 
+        const lowZoomLineWidth = 2,
+            midZoomLineWidth = 12,
+            highZoomLineWidth = 32,
+            lineStringFilter = createFilter("LineString");
         if (!this.getLayer(DETAILS_SOURCE + LINE_TAP_AREA_LAYER)) {
             const spec: LineLayerSpecification = {
                 'id': DETAILS_SOURCE + LINE_TAP_AREA_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'line',
-                "filter": createFilter("LineString"),
+                "filter": lineStringFilter,
                 "minzoom": minZoom,
                 'paint': {
                     'line-color': '#ffffff',
                     'line-opacity': 0,
-                    'line-width': 24,
+                    'line-width': [
+                        "interpolate", ["linear"], ["zoom"],
+                        11, lowZoomLineWidth + 6,
+                        16, midZoomLineWidth + 4,
+                        21, highZoomLineWidth + 2
+                    ],
                 }
             };
             if (source_layer)
@@ -601,12 +645,17 @@ export class EtymologyMap extends Map {
                 'id': DETAILS_SOURCE + LINE_LAYER,
                 'source': DETAILS_SOURCE,
                 'type': 'line',
-                "filter": createFilter("LineString"),
+                "filter": lineStringFilter,
                 "minzoom": minZoom,
                 'paint': {
                     'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
-                    'line-width': 12,
+                    'line-width': [
+                        "interpolate", ["linear"], ["zoom"],
+                        11, lowZoomLineWidth,
+                        16, midZoomLineWidth,
+                        21, highZoomLineWidth
+                    ],
                 }
             };
             if (source_layer)
@@ -625,8 +674,8 @@ export class EtymologyMap extends Map {
                 'paint': {
                     'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
-                    'line-width': 8,
-                    'line-offset': 4, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+                    'line-width': 4,
+                    'line-offset': 2, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
                 }
             };
             if (source_layer)

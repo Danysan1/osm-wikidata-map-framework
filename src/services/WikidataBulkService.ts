@@ -89,24 +89,24 @@ export class WikidataBulkService {
             console.time("wikidataLoad");
             const wikidataResult = await wikidataStatement.execute({ params: [json] });
             console.timeEnd("wikidataLoad");
-            console.debug(`Loaded ${wikidataResult.rowsAffected || 0} wikidata entities, updating elements...`);
+            console.debug(`Loaded ${wikidataResult.rowsAffected ?? 0} wikidata entities, updating elements...`);
 
             console.time("elementUpdate");
             const elementUpdateResult = await elementUpdateStatement.execute();
             console.timeEnd("elementUpdate");
-            console.debug(`Updated ${elementUpdateResult.rowsAffected || 0} elements, inserting elements...`);
+            console.debug(`Updated ${elementUpdateResult.rowsAffected ?? 0} elements, inserting elements...`);
 
             console.time("elementInsert");
             const elementInsertResult = await elementInsertStatement.execute({ params: [json] });
             console.timeEnd("elementInsert");
-            console.debug(`Inserted ${elementInsertResult.rowsAffected || 0} elements, loading etymologies...`);
+            console.debug(`Inserted ${elementInsertResult.rowsAffected ?? 0} elements, loading etymologies...`);
 
             console.time("etymologyLoad");
             const etymologyResult = await etymologyStatement.execute({ params: [json] });
             console.timeEnd("etymologyLoad");
-            console.debug(`Loaded ${etymologyResult.rowsAffected || 0} etymologies`);
+            console.debug(`Loaded ${etymologyResult.rowsAffected ?? 0} etymologies`);
 
-            return (wikidataResult.rowsAffected || 0) + (elementUpdateResult.rowsAffected || 0) + (elementInsertResult.rowsAffected || 0) + (etymologyResult.rowsAffected || 0);
+            return (wikidataResult.rowsAffected ?? 0) + (elementUpdateResult.rowsAffected ?? 0) + (elementInsertResult.rowsAffected ?? 0) + (etymologyResult.rowsAffected ?? 0);
         } catch (e) {
             console.debug("Error while handling JSON: ", json);
             //const fs = await import("fs");
