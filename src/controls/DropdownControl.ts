@@ -43,6 +43,7 @@ export class DropdownControl implements IControl {
         onHashChange?: (e: HashChangeEvent) => void,
         onSourceData?: (e: MapSourceDataEvent) => void
     ) {
+        if (process.env.NODE_ENV === 'development') console.debug("Initializing DropdownControl", { buttonContent, dropdownItems, startDropdownItemsId, titleKey, leftButton, minZoomLevel });
         this._titleKey = titleKey;
         this._buttonContent = buttonContent;
         this._startDropdownItemId = startDropdownItemsId;

@@ -18,7 +18,7 @@ export class LanguageControl extends DropdownControl {
             throw new Error("i18n_override is not configured, no languages available");
 
         const languages = Object.keys(i18n_override),
-            selectedLanguage = currentLanguage && currentLanguage in languages ? currentLanguage : 'en',
+            selectedLanguage = languages.includes(currentLanguage) ? currentLanguage : 'en',
             languageNames: Record<string, string> = {
                 da: "Dansk",
                 de: "Deutsch",
