@@ -26,7 +26,8 @@ export class DropdownControl implements IControl {
     private _titleKey: string;
     private _map?: Map;
     private _container?: HTMLDivElement;
-    private _ctrlDropDown?: HTMLSelectElement;
+    private _dropdown?: HTMLSelectElement;
+    private _title?: HTMLSpanElement;
     private _leftButton: boolean;
     private hashChangeHandler?: (e: HashChangeEvent) => void;
     private sourceDataHandler?: (e: MapSourceDataEvent) => void;
@@ -67,14 +68,24 @@ export class DropdownControl implements IControl {
         table.ariaHidden = "true";
         this._container.appendChild(table);
 
-        const tr = document.createElement('tr');
-        tr.ariaHidden = "true";
-        table.appendChild(tr);
+        const firstRow = document.createElement('tr'),
+            secondRow = document.createElement('tr');
+        table.appendChild(firstRow);
+        table.appendChild(secondRow);
 
         const btnCell = document.createElement('td'),
+            titleCell = document.createElement('td'),
             dropdownCell = document.createElement('td');
-        tr.appendChild(this._leftButton ? btnCell : dropdownCell);
-        tr.appendChild(this._leftButton ? dropdownCell : btnCell);
+        firstRow.appendChild(this._leftButton ? btnCell : titleCell);
+        firstRow.appendChild(this._leftButton ? titleCell : btnCell);
+
+        dropdownCell.colSpan = 2;
+        secondRow.appendChild(dropdownCell);
+
+        const titleElement = document.createElement('span');
+        titleElement.className = 'dropdown-ctrl-title hiddenElement';
+        this._title = titleElement;
+        titleCell.appendChild(titleElement);
 
         const ctrlBtn = document.createElement('button');
         ctrlBtn.className = 'dropdown-ctrl-button';
@@ -90,9 +101,11 @@ export class DropdownControl implements IControl {
         ctrlDropDown.name = this._titleKey;
         dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell content-cell';
+        this._dropdown = ctrlDropDown;
 
         void loadTranslator().then(t => {
             const title = t(this._titleKey);
+            titleElement.innerText = title;
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;
             ctrlDropDown.title = title;
@@ -132,10 +145,9 @@ export class DropdownControl implements IControl {
             }
             group.appendChild(option);
         });
-        this._ctrlDropDown = ctrlDropDown;
 
         if (this._dropdownItems.length < 2)
-            this._container.classList.add("hiddenElement");
+            this.showDropdown(false);
 
         this.moveEndHandler({ target: map, type: "moveend", originalEvent: undefined });
         map.on("moveend", this.moveEndHandler);
@@ -194,7 +206,7 @@ export class DropdownControl implements IControl {
     }
 
     protected getDropdown() {
-        return this._ctrlDropDown;
+        return this._dropdown;
     }
 
     /**
@@ -231,21 +243,23 @@ export class DropdownControl implements IControl {
     }
 
     protected showDropdown(show = true) {
-        if (!this._ctrlDropDown) {
+        if (!this._dropdown) {
             console.warn("Missing control dropdown, failed showing/hiding it", { show });
         } else if (show) {
-            this._ctrlDropDown.classList.remove("hiddenElement");
+            this._dropdown.classList.remove("hiddenElement");
+            this._title?.classList?.remove("hiddenElement");
         } else {
-            this._ctrlDropDown.classList.add("hiddenElement");
+            this._dropdown.classList.add("hiddenElement");
+            this._title?.classList?.add("hiddenElement");
         }
     }
 
     protected toggleDropdown(focusOnShow = false) {
-        if (!this._ctrlDropDown) {
+        if (!this._dropdown) {
             console.warn("Missing control dropdown, failed toggling it");
-        } else if (this._ctrlDropDown.classList.contains("hiddenElement")) {
+        } else if (this._dropdown.classList.contains("hiddenElement")) {
             this.showDropdown(true);
-            if (focusOnShow) this._ctrlDropDown?.focus();
+            if (focusOnShow) this._dropdown?.focus();
         } else {
             this.showDropdown(false);
         }

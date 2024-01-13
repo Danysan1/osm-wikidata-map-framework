@@ -542,3 +542,8 @@ table.custom-ctrl-table.hiddenElement,
 canvas.chart.hiddenElement {
   display: none;
 }
+
+.dropdown-ctrl-title {
+  font-weight: bold;
+  margin: 0 0.5em;
+}
