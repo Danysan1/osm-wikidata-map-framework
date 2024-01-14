@@ -1,6 +1,7 @@
 import type { ColorSchemeID } from "../model/colorScheme";
 import pictureStatsQuery from "./query/stats/picture.sparql";
 import typeStatsQuery from "./query/stats/type.sparql";
+import wikilinkStatsQuery from "./query/stats/wikilink.sparql";
 import genderStatsQuery from "./query/stats/gender.sparql";
 import countryStatsQuery from "./query/stats/country.sparql";
 import occupationStatsQuery from "./query/stats/occupation.sparql";
@@ -21,6 +22,7 @@ const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
 
 export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
     picture: pictureStatsQuery,
+    link_count: wikilinkStatsQuery,
     type: typeStatsQuery,
     gender: genderStatsQuery,
     country: countryStatsQuery,

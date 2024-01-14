@@ -8,6 +8,7 @@ export enum ColorSchemeID {
     endCentury = "endCentury",
     feature_source = "feature_source",
     etymology_source = "etymology_source",
+    link_count = "link_count",
     picture = "picture",
     black = "black",
     red = "red",
@@ -56,6 +57,9 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
     },
     endCentury: {
         textKey: 'color_scheme.end_century', defaultText: "By end/death century", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
+    },
+    link_count: {
+        textKey: "color_scheme.link_count", defaultText: "By Wikilink count", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
     blue: {
         textKey: 'color_scheme.blue', defaultText: "Blue", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", color: '#3bb2d0', showWithoutEtymology: true,
