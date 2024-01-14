@@ -27,7 +27,7 @@ export class DropdownControl implements IControl {
     private _map?: Map;
     private _container?: HTMLDivElement;
     private _dropdown?: HTMLSelectElement;
-    private _title?: HTMLSpanElement;
+    private _title?: HTMLLabelElement;
     private _leftButton: boolean;
     private hashChangeHandler?: (e: HashChangeEvent) => void;
     private sourceDataHandler?: (e: MapSourceDataEvent) => void;
@@ -83,8 +83,10 @@ export class DropdownControl implements IControl {
         dropdownCell.colSpan = 2;
         secondRow.appendChild(dropdownCell);
 
-        const titleElement = document.createElement('span');
+        const titleElement = document.createElement('label'),
+            dropdownId = `dropdown_${this._titleKey}`;
         titleElement.className = 'dropdown-ctrl-title hiddenElement';
+        titleElement.htmlFor = dropdownId;
         this._title = titleElement;
         titleCell.appendChild(titleElement);
 
@@ -100,6 +102,7 @@ export class DropdownControl implements IControl {
         ctrlDropDown.className = 'dropdown-ctrl-dropdown hiddenElement';
         ctrlDropDown.onchange = this.dropDownChangeHandler.bind(this);
         ctrlDropDown.name = this._titleKey;
+        ctrlDropDown.id = dropdownId;
         dropdownCell.appendChild(ctrlDropDown);
         dropdownCell.className = 'dropdown-cell content-cell';
         this._dropdown = ctrlDropDown;
