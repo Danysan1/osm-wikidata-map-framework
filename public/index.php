@@ -276,11 +276,15 @@ if($conf->has("pmtiles_base_url"))
                 <img class="button_img" src="img/Wikidata.svg" alt="Wikidata logo">
                 <span class="button_text"> Wikidata</span>
             </a>
-            <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
+            <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button hiddenElement">
                 <img class="button_img" src="img/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
                 <span class="button_text"> OpenStreetMap</span>
             </a>
-            <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button">
+            <a title="Official website" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_website_button hiddenElement">
+                <span class="button_img">🌐</span>
+                <span class="button_text"> Website</span>
+            </a>
+            <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button hiddenElement">
                 <img class="button_img" src="img/osm-wd-matcher.png" alt="OSM ↔ Wikidata matcher logo">
                 <span class="button_text"> OSM ↔ Wikidata matcher</span>
             </a>

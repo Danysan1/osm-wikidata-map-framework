@@ -67,7 +67,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             commons = properties?.commons,
             element_wikidata_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikidata_button');
         if (!element_wikidata_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_wikidata_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_wikidata_button");
         } else if (has_wikidata) {
             element_wikidata_button.href = `https://www.wikidata.org/wiki/${wikidata}`;
             element_wikidata_button.classList.remove("hiddenElement");
@@ -79,7 +79,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             has_wikipedia = wikipedia && wikipedia !== 'null',
             element_wikipedia_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikipedia_button');
         if (!element_wikipedia_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_wikipedia_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_wikipedia_button");
         } else if (has_wikipedia) {
             element_wikipedia_button.href = wikipedia.startsWith("http") ? wikipedia : `https://www.wikipedia.org/wiki/${wikipedia}`;
             element_wikipedia_button.classList.remove("hiddenElement");
@@ -90,7 +90,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
         const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button'),
             isURL = commons?.startsWith("http");
         if (!element_commons_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_commons_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_commons_button");
         } else if (isURL && commons?.includes("Category:")) {
             element_commons_button.href = commons;
             element_commons_button.classList.remove("hiddenElement");
@@ -106,12 +106,22 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const element_osm_button = detail_container.querySelector<HTMLAnchorElement>('.element_osm_button');
         if (!element_osm_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_osm_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_osm_button");
         } else if (osm_full_id) {
             element_osm_button.href = 'https://www.openstreetmap.org/' + osm_full_id;
             element_osm_button.classList.remove("hiddenElement");
         } else {
             element_osm_button.classList.add("hiddenElement");
+        }
+
+        const website_button = detail_container.querySelector<HTMLAnchorElement>('.element_website_button');
+        if (!website_button) {
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_website_button");
+        } else if (properties?.website_url) {
+            website_button.href = properties.website_url;
+            website_button.classList.remove("hiddenElement");
+        } else {
+            website_button.classList.add("hiddenElement");
         }
 
         let pos: Position | undefined;
@@ -131,7 +141,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             show_osm_matcher = osm_full_id && !properties?.wikidata && lat !== undefined && lon !== undefined,
             show_wd_matcher = properties?.wikidata && !osm_full_id;
         if (!element_matcher_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_matcher_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_matcher_button");
         } else if (show_osm_matcher) {
             element_matcher_button.href = `https://map.osm.wikidata.link/map/18/${lat}/${lon}`;
             element_matcher_button.classList.remove("hiddenElement");
@@ -146,7 +156,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
             show_mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined;
         if (!element_mapcomplete_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_mapcomplete_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_mapcomplete_button");
         } else if (show_mapcomplete) {
             element_mapcomplete_button.href = `https://mapcomplete.org/${mapcomplete_theme}?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`;
             element_mapcomplete_button.classList.remove("hiddenElement");
@@ -156,7 +166,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const element_id_button = detail_container.querySelector<HTMLAnchorElement>('.element_id_button');
         if (!element_id_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_id_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_id_button");
         } else if (properties?.osm_type && properties?.osm_id) {
             element_id_button.href = `https://www.openstreetmap.org/edit?editor=id&${properties.osm_type}=${properties.osm_id}`;
             element_id_button.classList.remove("hiddenElement");
@@ -166,7 +176,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const element_location_button = detail_container.querySelector<HTMLAnchorElement>('.element_location_button');
         if (!element_location_button) {
-            if (process.env.NODE_ENV === 'development') console.debug("Missing element_location_button");
+            if (process.env.NODE_ENV === 'development') console.warn("Missing element_location_button");
         } else {
             element_location_button.addEventListener("click", () => {
                 setFragmentParams(lon, lat, this.destinationZoomLevel);

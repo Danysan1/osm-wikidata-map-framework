@@ -6,7 +6,7 @@ import osmtogeojson from "osmtogeojson";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
-import { OsmType, OsmTypes } from "../model/Etymology";
+import type { OsmType } from "../model/Etymology";
 import { getLanguage } from "../i18n";
 
 const commonsCategoryRegex = /(Category:[^;]+)/;
@@ -142,7 +142,7 @@ export class OverpassService implements MapService {
             osm_type = full_osm_id?.split("/")?.[0],
             osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined;
         feature.properties.osm_id = osm_id;
-        feature.properties.osm_type = osm_type && osm_type in OsmTypes ? osm_type as OsmType : undefined;
+        feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
 
         if (typeof feature.properties.height === "string")
             feature.properties.render_height = parseInt(feature.properties.height);
@@ -155,6 +155,8 @@ export class OverpassService implements MapService {
         if (typeof text_ety === "string")
             feature.properties.text_etymology = text_ety;
 
+        if (typeof feature.properties.website === "string")
+            feature.properties.website_url = feature.properties.website;
 
         const descr = osm_description_key ? feature.properties[osm_description_key] : undefined;
         if (typeof descr === "string")

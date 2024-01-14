@@ -73,6 +73,7 @@ export interface EtymologyFeatureProperties {
      * Textual description of the etymology
      */
     text_etymology_descr?: string;
+    website_url?: string;
     /**
      * Q-ID of the Wikidata entity for this feature
      */
