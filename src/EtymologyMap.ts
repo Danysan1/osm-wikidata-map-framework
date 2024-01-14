@@ -2,7 +2,7 @@ import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl,
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 // import "@stadiamaps/maplibre-search-box/dist/style.css";
-// import '@radarlabs/maplibre-gl-inspect/dist/maplibre-gl-inspect.css';
+// import "maplibre-gl-inspect/dist/maplibre-gl-inspect.css";
 
 // import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'mapbox-gl';
 // import 'mapbox-gl/dist/mapbox-gl.css';
@@ -759,7 +759,6 @@ export class EtymologyMap extends Map {
                 thresholdZoomLevel
             );
         this.addControl(colorControl, 'top-left');
-        colorControl.updateChart();
 
         const backEndControl = new BackEndControl(
             getCorrectFragmentParams().backEndID,
@@ -819,7 +818,7 @@ export class EtymologyMap extends Map {
             this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
 
         /*if (process.env.NODE_ENV === 'development') {
-            import("@radarlabs/maplibre-gl-inspect").then(({ default: MaplibreInspect }) => {
+            void import("maplibre-gl-inspect").then(MaplibreInspect => {
                 this.addControl(new MaplibreInspect({
                     popup: new Popup({
                         closeButton: false,

@@ -193,7 +193,7 @@ export class DropdownControl implements IControl {
         return (e: MapEvent) => {
             const zoomLevel = e.target.getZoom(),
                 show = zoomLevel >= minZoomLevel;
-            if (process.env.NODE_ENV === 'development') console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show });
+            if (process.env.NODE_ENV === 'development') console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show, button: this._buttonContent });
             this.show(show);
         }
     }
