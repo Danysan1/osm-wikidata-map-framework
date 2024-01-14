@@ -116,8 +116,6 @@ div.detail_container div.grid {
   /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
   display: grid;
   grid-template-rows: auto;
-  margin-left: auto;
-  margin-right: auto;
   align-items: start;
   justify-content: center;
   justify-items: center;
@@ -220,6 +218,8 @@ div.detail_container div.info,
 div.detail_container div.grid,
 div.detail_container div.column {
   max-width: 40em;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 div.info>hr,
@@ -399,7 +399,7 @@ button.mapboxgl-popup-close-button:hover {
 .mapboxgl-popup-content h1,
 .mapboxgl-popup-content h2,
 .mapboxgl-popup-content h3 {
-  margin: revert;
+  margin: 1em 0.5em;
 }
 
 .button-6 {

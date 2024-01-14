@@ -109,9 +109,9 @@ export class EtymologyElement extends HTMLDivElement {
             console.warn("Missing .etymology_name");
         } else if (this.etymology.name) {
             etymology_name.innerText = this.etymology.name;
-            etymology_name.style.display = 'block';
+            etymology_name.classList.remove("hiddenElement");
         } else {
-            etymology_name.style.display = 'none';
+            etymology_name.classList.add("hiddenElement");
         }
 
         const etymology_description = etyDomElement.querySelector<HTMLElement>('.etymology_description');
@@ -119,9 +119,9 @@ export class EtymologyElement extends HTMLDivElement {
             console.warn("Missing .etymology_description");
         } else if (this.etymology.description) {
             etymology_description.innerText = this.etymology.description;
-            etymology_description.style.display = 'block';
+            etymology_description.classList.remove("hiddenElement");
         } else {
-            etymology_description.style.display = 'none';
+            etymology_description.classList.add("hiddenElement");
         }
 
         const wikidata_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikidata_button');
