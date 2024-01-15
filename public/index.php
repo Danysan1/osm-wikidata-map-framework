@@ -75,10 +75,13 @@ if ((string)$conf->get("default_background_style") == "stadia_alidade") {
 } elseif ((string)$conf->get("default_background_style") == "stamen_toner_lite") {
     $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/styles/stamen_toner_lite.json" as="fetch" crossorigin="anonymous" />';
     $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/data/stamen-omt.json" as="fetch" crossorigin="anonymous" />';
+} elseif ((string)$conf->get("default_background_style") == "stamen_toner") {
+    $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/styles/stamen_toner.json" as="fetch" crossorigin="anonymous" />';
+    $preloads[] = '<link rel="preload" href="https://tiles.stadiamaps.com/data/stamen-omt.json" as="fetch" crossorigin="anonymous" />';
 }
 if ($language != $defaultLanguage && !empty($i18nOverride[$language][$defaultNamespace]["title"]))
     $preloads[] = '<link rel="preload" href="locales/' . $language . '/common.json" as="fetch" crossorigin="anonymous" />';
-if($conf->has("pmtiles_base_url"))
+if ($conf->has("pmtiles_base_url"))
     $preloads[] = '<link rel="preload" href="' . (string)$conf->get("pmtiles_base_url") . 'date.txt" as="fetch" crossorigin="anonymous" />';
 
 ?>

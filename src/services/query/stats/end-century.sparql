@@ -13,11 +13,11 @@ WHERE {
     BIND(CEIL(YEAR(?date)/100.0) AS ?century)
 
     BIND(ROUND((?century-13)*255/4) AS ?rawRed)
-    BIND(STR(IF(?rawRed > 0, ?rawRed, 0)) AS ?red)
+    BIND(STR(IF(?rawRed < 0, 0, IF(?rawRed > 255, 255, ?rawRed))) AS ?red)
     BIND(ROUND(512-(ABS(?century-13)*255/4)) AS ?rawGreen)
-    BIND(STR(IF(?rawGreen > 0, ?rawGreen, 0)) AS ?green)
+    BIND(STR(IF(?rawGreen < 0, 0, IF(?rawGreen > 255, 255, ?rawGreen))) AS ?green)
     BIND(ROUND((13-?century)*255/4) AS ?rawBlue)
-    BIND(STR(IF(?rawBlue > 0, ?rawBlue, 0)) AS ?blue)
+    BIND(STR(IF(?rawBlue < 0, 0, IF(?rawBlue > 255, 255, ?rawBlue))) AS ?blue)
 }
 GROUP BY ?century ?red ?green ?blue
 ORDER BY DESC(?count)
