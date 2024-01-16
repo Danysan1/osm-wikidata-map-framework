@@ -473,13 +473,13 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    private prepareDetailsLayers(minZoom: number, source_layer?: string, key_id?: string, minStreetZoom?: number, maxBorderZoom?: number) {
+    private prepareDetailsLayers(minZoom: number, source_layer?: string, key_id?: string, minStreetZoom?: number, maxBoundaryZoom?: number) {
         if (process.env.NODE_ENV === "development" && minStreetZoom !== undefined && minStreetZoom < minZoom)
-            console.warn("prepareWikidataLayers: minStreetZoom < minZoom, this doesn't make sense", { minZoom, maxBorderZoom, minStreetZoom });
-        if (process.env.NODE_ENV === "development" && maxBorderZoom !== undefined && maxBorderZoom < minZoom)
-            console.warn("prepareWikidataLayers: maxBorderZoom < minZoom, this doesn't make sense", { minZoom, maxBorderZoom, minStreetZoom });
-        if (process.env.NODE_ENV === "development" && maxBorderZoom !== undefined && minStreetZoom !== undefined && maxBorderZoom < minStreetZoom)
-            console.warn("prepareWikidataLayers: maxBorderZoom < minStreetZoom, this doesn't make sense", { minZoom, maxBorderZoom, minStreetZoom });
+            console.warn("prepareWikidataLayers: minStreetZoom < minZoom, this doesn't make sense", { minZoom, maxBoundaryZoom, minStreetZoom });
+        if (process.env.NODE_ENV === "development" && maxBoundaryZoom !== undefined && maxBoundaryZoom < minZoom)
+            console.warn("prepareWikidataLayers: maxBoundaryZoom < minZoom, this doesn't make sense", { minZoom, maxBoundaryZoom, minStreetZoom });
+        if (process.env.NODE_ENV === "development" && maxBoundaryZoom !== undefined && minStreetZoom !== undefined && maxBoundaryZoom < minStreetZoom)
+            console.warn("prepareWikidataLayers: maxBoundaryZoom < minStreetZoom, this doesn't make sense", { minZoom, maxBoundaryZoom, minStreetZoom });
 
         const createFilter = (geometryType: Feature["type"]) => {
             const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
@@ -605,8 +605,8 @@ export class EtymologyMap extends Map {
         }
 
         const polygonFilter = createFilter("Polygon");
-        if (maxBorderZoom !== undefined && minStreetZoom !== undefined) // Show borders only below maxBorderZoom; show other features only above minStreetZoom
-            polygonFilter.push(["case", ["to-boolean", ["get", "boundary"]], ["<", ["zoom"], maxBorderZoom], [">=", ["zoom"], minStreetZoom]]);
+        if (maxBoundaryZoom !== undefined && minStreetZoom !== undefined) // Show boundaries only below maxBoundaryZoom; show other features only above minStreetZoom
+            polygonFilter.push(["case", ["to-boolean", ["get", "boundary"]], ["<", ["zoom"], maxBoundaryZoom], [">=", ["zoom"], minStreetZoom]]);
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
                 'id': DETAILS_SOURCE + POLYGON_BORDER_LAYER,

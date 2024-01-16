@@ -5,7 +5,7 @@ import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } f
 import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
-import { loadTranslator } from '../i18n';
+import { getLanguage, loadTranslator } from '../i18n';
 
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
@@ -112,7 +112,8 @@ export class DataTableControl implements IControl {
             linkedEntitiesHeadCell = document.createElement("th"),
             tbody = document.createElement("tbody"),
             t = await loadTranslator(),
-            wikidataIDs = new Set<string>();
+            wikidataIDs = new Set<string>(),
+            localNameKey = "name:" + getLanguage();
         let anyLinkedEntity = false;
 
         table.appendChild(thead);
@@ -132,14 +133,18 @@ export class DataTableControl implements IControl {
             }
             tbody.appendChild(row);
 
-            const nameArray: string[] = [];
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            const mainName = f.properties?.name || f.properties?.[localNameKey] || f.properties?.["name:en"],
+                nameArray: string[] = [];
             if (f.properties?.alt_name)
                 nameArray.push(...f.properties.alt_name.split(";"));
-            if (f.properties?.name) {
-                const name = f.properties.name.toLowerCase().replaceAll('“', '"').replaceAll('”', '"'),
-                    includedInAnyAltName = nameArray.some(alt_name => alt_name.toLowerCase().includes(name));
+            if (typeof mainName === "string") {
+                const lowerName = mainName.toLowerCase().replaceAll('“', '"').replaceAll('”', '"'),
+                    includedInAnyAltName = nameArray.some(alt_name =>
+                        alt_name.toLowerCase().replaceAll('“', '"').replaceAll('”', '"').includes(lowerName)
+                    );
                 if (!includedInAnyAltName)
-                    nameArray.push(f.properties.name);
+                    nameArray.push(mainName);
             }
 
             const names = nameArray.join(" / "),

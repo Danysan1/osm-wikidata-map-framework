@@ -11,7 +11,7 @@
     "include_tags": [
         "admin_level",
         "alt_name",
-        "border",
+        "boundary",
         "building",
         "building:levels",
         "height",
@@ -20,6 +20,7 @@
         "name",
         "name:*",
         "official_name",
+        "type",
         "wikidata",
         "*:wikidata",
         "wikimedia_commons",

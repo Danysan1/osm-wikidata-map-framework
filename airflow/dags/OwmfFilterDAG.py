@@ -160,9 +160,6 @@ class OwmfFilterDAG(DAG):
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
             tags=[
                 'man_made=flagpole', # Flag poles
-                'place=region','place=state','place=country','place=continent', # Label nodes and big areas
-                'boundary=continent', 'boundary=timezone', 'boundary=maritime', 'boundary=region', 'boundary=military_district', 'boundary=economic', # Big boundaries
-                'boundary=national_park', 'leisure=nature_reserve', # Big national areas
                 'end_date=*', 'route=historic', # Items that don't exist anymore
                 'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],
