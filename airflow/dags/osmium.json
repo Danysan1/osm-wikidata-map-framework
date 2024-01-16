@@ -9,18 +9,20 @@
     ],
     "area_tags": null,
     "include_tags": [
+        "admin_level",
+        "alt_name",
+        "border",
         "building",
         "building:levels",
         "height",
         "highway",
-        "name",
-        "alt_name",
-        "official_name",
-        "name:*",
-        "wikipedia",
-        "wikimedia_commons",
         "image",
+        "name",
+        "name:*",
+        "official_name",
         "wikidata",
-        "*:wikidata"
+        "*:wikidata",
+        "wikimedia_commons",
+        "wikipedia"
     ]
 }

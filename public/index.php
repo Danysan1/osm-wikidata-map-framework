@@ -10,16 +10,6 @@ $conf = new IniEnvConfiguration();
 prepareHTML($conf);
 
 $lastUpdateString = '<p class="last_db_update_container hiddenElement"><span class="i18n_last_db_update">Last database update:</span> <span class="last_db_update_placeholder"></span></p>';
-if ($conf->getBool("db_enable") && $conf->getBool("vector_tiles_enable")) {
-    try {
-        $dbh = new PostGIS_PDO($conf);
-        $lastUpdate = (string)$dbh->query("SELECT owmf.last_data_update()")->fetchColumn();
-        if (!empty($lastUpdate))
-            $lastUpdateString = "<p class=\"last_db_update_container\"><span class=\"i18n_last_db_update\">Last database update:</span> $lastUpdate</p>";
-    } catch (Exception $e) {
-        error_log("Error fetching last update: " . $e->getMessage());
-    }
-}
 
 if (!$conf->has("i18n_override"))
     throw new Exception("Missing i18n_override configuration");
@@ -126,7 +116,6 @@ if ($conf->has("pmtiles_base_url"))
     } ?>
 
     <?= $conf->getMetaTag("qlever_enable", true); ?>
-    <?= $conf->getMetaTag("vector_tiles_enable", true); ?>
     <?= $conf->getMetaTag("pmtiles_base_url", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
     <?= $conf->getMetaTag("osm_text_key", true); ?>
@@ -223,7 +212,7 @@ if ($conf->has("pmtiles_base_url"))
                     <span class="button_img">📖</span> &nbsp;
                     <span class="i18n_contribute">Contribute to the map</span>
                 </a>
-                <a title="Download as dataset" role="button" class="hiddenElement k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.php">
+                <a title="Download as dataset" role="button" class="hiddenElement k-button w3-button w3-white w3-border w3-round-large button-6 dataset_button title_i18n_download_dataset" href="dataset.csv">
                     <span class="button_img">💾</span> &nbsp;
                     <span class="i18n_download_dataset">Download as dataset</span>
                 </a>

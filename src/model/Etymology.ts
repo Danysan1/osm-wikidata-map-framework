@@ -1,8 +1,6 @@
-export const OsmTypes = ['node', 'way', 'relation'] as const;
-export type OsmType = typeof OsmTypes[number];
+export type OsmType = 'node' | 'way' | 'relation';
 
-export const OsmWdJoinFields = ['OSM', 'P11693', 'P10689', 'P402'] as const;
-export type OsmWdJoinField = typeof OsmWdJoinFields[number];
+export type OsmWdJoinField = 'OSM' | 'P11693' | 'P10689' | 'P402';
 
 export interface Etymology {
     /**

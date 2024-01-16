@@ -1,4 +1,4 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent, Feature } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent, Feature } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 // import "@stadiamaps/maplibre-search-box/dist/style.css";
@@ -23,7 +23,6 @@ import type { BackgroundStyle } from './model/backgroundStyle';
 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
     PMTILES_PREFIX = "pmtiles",
-    VECTOR_PREFIX = "vector",
     DETAILS_SOURCE = "detail_source",
     POINT_LAYER = '_layer_point',
     POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
@@ -39,7 +38,7 @@ export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private startBackgroundStyle: BackgroundStyle;
     private anyFeatureClickedBefore = false;
-    private wikidataSourceInitialized = false;
+    private detailsSourceInitialized = false;
     private services?: MapService[];
     private lastBackEndID?: string;
     private lastKeyID?: string;
@@ -204,7 +203,7 @@ export class EtymologyMap extends Map {
 
         if (detailsSourceEvent || elementsSourceEvent) {
             if (process.env.NODE_ENV === 'development') console.debug("mapSourceDataHandler: data loaded", {
-                wikidataSourceEvent: detailsSourceEvent, elementsSourceEvent, e, source: e.sourceId
+                detailsSourceEvent, elementsSourceEvent, e, source: e.sourceId
             });
             this.fetchCompleted();
 
@@ -212,8 +211,8 @@ export class EtymologyMap extends Map {
                 e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
                 this.querySourceFeatures(DETAILS_SOURCE).length === 0;
             loadTranslator().then(t => {
-                if (!this.wikidataSourceInitialized)
-                    this.wikidataSourceInitialized = true;
+                if (!this.detailsSourceInitialized)
+                    this.detailsSourceInitialized = true;
                 else if (noFeatures)
                     showSnackbar(t("snackbar.no_data_in_this_area", "No data in this area"), "wheat", 3000);
                 else if (detailsSourceEvent && !this.anyFeatureClickedBefore)
@@ -252,36 +251,73 @@ export class EtymologyMap extends Map {
         }
 
         const backEndID = getCorrectFragmentParams().backEndID,
+            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
+            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             pmtilesBaseURL = getConfig("pmtiles_base_url");
-        if (backEndID.startsWith(PMTILES_PREFIX) && !pmtilesBaseURL?.length) {
+
+        if (isPMTilesSource && backEndID === this.lastBackEndID) {
+            if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: PMTiles source unchanged, skipping source update");
+        } else if (isPMTilesSource && !pmtilesBaseURL?.length) {
             void loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
-            return;
+        } else if (isPMTilesSource) {
+            this.lastBackEndID = backEndID;
+            this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
+        } else if (!this.services?.length) {
+            if (process.env.NODE_ENV === 'development') console.warn("updateDataSource: Services are still initializing, skipping source update");
+        } else {
+            this.updateGeoJSONSource(backEndID, thresholdZoomLevel);
         }
+    }
 
+    private updateGeoJSONSource(backEndID: string, thresholdZoomLevel: number) {
         const bounds = this.getBounds(),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
-            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
             elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
-            enableWikidataLayers = (zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea) || backEndID.startsWith(PMTILES_PREFIX),
-            enableElementsLayers = !enableWikidataLayers && (
-                (zoomLevel >= minZoomLevel && thresholdZoomLevel > minZoomLevel && area < elementsBBoxMaxArea) || backEndID.startsWith(VECTOR_PREFIX)
-            );
+            enableDetailsLayers = (zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea),
+            enableElementsLayers = !enableDetailsLayers && zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea;
         if (process.env.NODE_ENV === 'development') console.debug("updateDataSource", {
-            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableWikidataLayers, backEndID
+            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableDetailsLayers, backEndID
         });
 
-        if (enableElementsLayers)
-            this.updateElementsSource(southWest, northEast, minZoomLevel, thresholdZoomLevel);
-        else if (enableWikidataLayers)
-            this.updateWikidataSource(southWest, northEast, minZoomLevel, thresholdZoomLevel);
-        else
+        if (enableElementsLayers) {
+            const fullBackEndID = "elements-" + backEndID,
+                backEndChanged = this.lastBackEndID !== fullBackEndID,
+                bbox: BBox = [
+                    Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
+                    Math.floor(southWest.lat * 10) / 10,
+                    Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
+                    Math.ceil(northEast.lat * 10) / 10
+                ];
+            if (backEndChanged || this.isBBoxChanged(bbox)) {
+                if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON elements source:", backEndID);
+                this.lastBackEndID = fullBackEndID;
+                this.lastBBox = bbox;
+                void this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
+            }
+        } else if (enableDetailsLayers) {
+            const fullBackEndID = "details-" + backEndID,
+                backEndChanged = this.lastBackEndID !== fullBackEndID,
+                bbox: BBox = [
+                    Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
+                    Math.floor(southWest.lat * 100) / 100,
+                    Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
+                    Math.ceil(northEast.lat * 100) / 100
+                ];
+            if (backEndChanged || this.isBBoxChanged(bbox)) {
+                if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON details source:", backEndID);
+                this.lastBackEndID = fullBackEndID;
+                this.lastBBox = bbox;
+                void this.prepareDetailsGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
+            }
+        } else {
             void loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
+        }
     }
 
     private isBBoxChanged(bbox: BBox): boolean {
@@ -293,57 +329,6 @@ export class EtymologyMap extends Map {
         );
         if (process.env.NODE_ENV === 'development') console.debug("isBBoxChanged", isBBoxChanged, { lastBBox: this.lastBBox, bbox });
         return isBBoxChanged;
-    }
-
-    private updateElementsSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
-        const backEndID = getCorrectFragmentParams().backEndID,
-            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
-            isVectorSource = backEndID.startsWith(VECTOR_PREFIX),
-            fullBackEndID = "elements-" + backEndID,
-            backEndChanged = !this.lastBackEndID || this.lastBackEndID !== fullBackEndID;
-
-        if (isPMTilesSource) {
-            if (!backEndChanged)
-                return;
-
-            if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles vector elements source:", backEndID);
-            this.lastBackEndID = fullBackEndID;
-            this.preparePMTilesSource(
-                ELEMENTS_SOURCE,
-                "elements.pmtiles",
-                undefined,
-                thresholdZoomLevel
-            );
-            this.prepareElementsLayers(thresholdZoomLevel);
-        } else if (isVectorSource) {
-            if (!backEndChanged)
-                return;
-
-            if (process.env.NODE_ENV === 'development') console.debug("Updating DB vector element source:", backEndID);
-            this.lastBackEndID = fullBackEndID;
-            this.prepareVectorSource(
-                ELEMENTS_SOURCE,
-                `${window.location.protocol}//${window.location.host}/elements/{z}/{x}/{y}`,
-                undefined,
-                thresholdZoomLevel
-            );
-            this.prepareElementsLayers(thresholdZoomLevel);
-        } else if (this.services === undefined) {
-            if (process.env.NODE_ENV === 'development') console.warn("updateElementsSource: Services are still initializing, skipping source update");
-        } else {
-            const bbox: BBox = [
-                Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
-                Math.floor(southWest.lat * 10) / 10,
-                Math.ceil(northEast.lng * 10) / 10, // 0.123 => 0.2
-                Math.ceil(northEast.lat * 10) / 10
-            ];
-            if (backEndChanged || this.isBBoxChanged(bbox)) {
-                if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON elements source:", backEndID);
-                this.lastBackEndID = fullBackEndID;
-                this.lastBBox = bbox;
-                void this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
-            }
-        }
     }
 
     private async updateElementsGeoJSONSource(backEndID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
@@ -373,63 +358,24 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private updateWikidataSource(southWest: LngLat, northEast: LngLat, minZoomLevel: number, thresholdZoomLevel: number) {
-        const backEndID = getCorrectFragmentParams().backEndID,
-            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
-            isVectorSource = backEndID.startsWith(VECTOR_PREFIX),
-            fullBackEndID = "details-" + backEndID,
-            backEndChanged = !this.lastBackEndID || this.lastBackEndID !== fullBackEndID;
-
-        if (isPMTilesSource) {
-            if (!backEndChanged)
-                return;
-
-            if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles vector wikidata source:", backEndID);
-            this.lastBackEndID = fullBackEndID;
-            this.preparePMTilesSource(
-                DETAILS_SOURCE,
-                "etymology_map.pmtiles",
-                0,
-                11 // https://gis.stackexchange.com/a/330575/196469
-            );
-            this.prepareWikidataLayers(
-                0,
-                "etymology_map",
-                backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
-                thresholdZoomLevel + 2,
-                thresholdZoomLevel
-            );
-        } else if (isVectorSource) {
-            if (!backEndChanged)
-                return;
-
-            if (process.env.NODE_ENV === 'development') console.debug("Updating DB vector wikidata source:", backEndID);
-            this.lastBackEndID = fullBackEndID;
-            this.prepareVectorSource(
-                DETAILS_SOURCE,
-                `${window.location.protocol}//${window.location.host}/etymology_map/{z}/{x}/{y}?source=${backEndID.replace("vector_", "")}&lang=${getLanguage()}`,
-                thresholdZoomLevel
-            );
-            this.prepareWikidataLayers(thresholdZoomLevel, "etymology_map");
-        } else if (this.services === undefined) {
-            if (process.env.NODE_ENV === 'development') console.warn("updateWikidataSource: Services are still initializing, skipping source update");
-        } else {
-            const bbox: BBox = [
-                Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
-                Math.floor(southWest.lat * 100) / 100,
-                Math.ceil(northEast.lng * 100) / 100, // 0.123 => 0.13
-                Math.ceil(northEast.lat * 100) / 100
-            ];
-            if (backEndChanged || (this.isBBoxChanged(bbox))) {
-                if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON wikidata source:", backEndID);
-                this.lastBackEndID = fullBackEndID;
-                this.lastBBox = bbox;
-                void this.prepareWikidataGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
-            }
-        }
+    private updateDetailsPMTilesSource(backEndID: string, thresholdZoomLevel: number) {
+        if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles details source:", { backEndID, thresholdZoomLevel });
+        this.preparePMTilesSource(
+            DETAILS_SOURCE,
+            "etymology_map.pmtiles",
+            0,
+            11 // https://gis.stackexchange.com/a/330575/196469
+        );
+        this.prepareDetailsLayers(
+            0,
+            "etymology_map",
+            backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
+            thresholdZoomLevel - 2,
+            thresholdZoomLevel + 2
+        );
     }
 
-    private async prepareWikidataGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {
+    private async prepareDetailsGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {
         this.fetchInProgress = true;
 
         try {
@@ -450,37 +396,12 @@ export class EtymologyMap extends Map {
                     // attribution: 'Etymology: <a href="https://www.wikidata.org/wiki/Wikidata:Introduction">Wikidata</a>',
                 }
             );
-            this.prepareWikidataLayers(minZoom);
+            this.prepareDetailsLayers(minZoom);
         } catch (e) {
             this.fetchCompleted();
             logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
             const t = await loadTranslator();
             showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
-        }
-    }
-
-    private prepareVectorSource(sourceID: string, tileURL: string, minZoom?: number, maxZoom?: number) {
-        const oldSource = this.getSource(sourceID);
-        if (oldSource?.type === "vector") {
-            const source = oldSource as VectorTileSource;
-            if (source.url) { // PMTiles source currently active
-                this.removeSourceWithLayers(sourceID);
-            } else if (!source.tiles?.length || source.tiles[0] !== tileURL) { // Vector source already active
-                if (process.env.NODE_ENV === 'development') console.debug("Updating Vector tiles source URL", { old: source.tiles, new: tileURL });
-                source.setTiles([tileURL]);
-            }
-        } else if (oldSource) { // GeoJSON source currently active
-            this.removeSourceWithLayers(sourceID);
-        }
-
-        if (!this.getSource(sourceID)) {
-            if (process.env.NODE_ENV === 'development') console.debug("Creating Vector tiles source", { tileURL });
-            this.addSource(sourceID, {
-                type: 'vector',
-                tiles: [tileURL],
-                maxzoom: maxZoom ?? 15,
-                minzoom: minZoom ?? 0,
-            });
         }
     }
 
@@ -499,18 +420,20 @@ export class EtymologyMap extends Map {
             fullPMTilesURL = `pmtiles://${pmtilesBaseURL}${fileName}`;
         if (oldSource?.type === "vector") {
             const source = oldSource as VectorTileSource;
-            if (!source.url) { // Vector source currently active
+            if (!source.url) {
+                if (process.env.NODE_ENV === 'development') console.debug("preparePMTilesSource: removing other vector tile source");
                 this.removeSourceWithLayers(vectorSourceID);
             } else if (source.url !== fullPMTilesURL) { // PMTiles source already active
-                if (process.env.NODE_ENV === 'development') console.debug("Updating PMTiles source URL", { old: source.url, new: fullPMTilesURL });
+                if (process.env.NODE_ENV === 'development') console.debug("preparePMTilesSource: Updating source URL", { old: source.url, new: fullPMTilesURL });
                 source.setUrl(fullPMTilesURL);
             }
         } else if (oldSource) { // GeoJSON source currently active
+            if (process.env.NODE_ENV === 'development') console.debug("preparePMTilesSource: removing other GeoJSON source");
             this.removeSourceWithLayers(vectorSourceID);
         }
 
         if (!this.getSource(vectorSourceID)) {
-            if (process.env.NODE_ENV === 'development') console.debug("Creating PMTiles source", { fullPMTilesURL });
+            if (process.env.NODE_ENV === 'development') console.debug("preparePMTilesSource: Creating PMTiles source", { vectorSourceID, fullPMTilesURL, minZoom, maxZoom });
 
             const protocol = new Protocol();
             mapLibrary.addProtocol("pmtiles", protocol.tile);
@@ -550,8 +473,14 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    private prepareWikidataLayers(minZoom: number, source_layer?: string, key_id?: string, minStreetZoom?: number, maxBorderZoom?: number) {
-        if (minStreetZoom !== undefined && minStreetZoom < minZoom && process.env.NODE_ENV === "development") console.warn("prepareWikidataLayers: minStreetZoom < minZoom, this doesn't make sense", { minStreetZoom, minZoom });
+    private prepareDetailsLayers(minZoom: number, source_layer?: string, key_id?: string, minStreetZoom?: number, maxBorderZoom?: number) {
+        if (process.env.NODE_ENV === "development" && minStreetZoom !== undefined && minStreetZoom < minZoom)
+            console.warn("prepareWikidataLayers: minStreetZoom < minZoom, this doesn't make sense", { minZoom, maxBorderZoom, minStreetZoom });
+        if (process.env.NODE_ENV === "development" && maxBorderZoom !== undefined && maxBorderZoom < minZoom)
+            console.warn("prepareWikidataLayers: maxBorderZoom < minZoom, this doesn't make sense", { minZoom, maxBorderZoom, minStreetZoom });
+        if (process.env.NODE_ENV === "development" && maxBorderZoom !== undefined && minStreetZoom !== undefined && maxBorderZoom < minStreetZoom)
+            console.warn("prepareWikidataLayers: maxBorderZoom < minStreetZoom, this doesn't make sense", { minZoom, maxBorderZoom, minStreetZoom });
+
         const createFilter = (geometryType: Feature["type"]) => {
             const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
             if (key_id)
@@ -676,8 +605,8 @@ export class EtymologyMap extends Map {
         }
 
         const polygonFilter = createFilter("Polygon");
-        if (maxBorderZoom !== undefined && minStreetZoom !== undefined)
-            polygonFilter.push(["case", ["any", ["has", "boundary"], ["==", ["get", "type"], "boundary"]], ["<", ["zoom"], maxBorderZoom], [">=", ["zoom"], minStreetZoom]]);
+        if (maxBorderZoom !== undefined && minStreetZoom !== undefined) // Show borders only below maxBorderZoom; show other features only above minStreetZoom
+            polygonFilter.push(["case", ["to-boolean", ["get", "boundary"]], ["<", ["zoom"], maxBorderZoom], [">=", ["zoom"], minStreetZoom]]);
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
                 'id': DETAILS_SOURCE + POLYGON_BORDER_LAYER,
@@ -850,7 +779,7 @@ export class EtymologyMap extends Map {
      * - Handles clicks/taps on layer features
      * - Shows a hand pointing cursor when hovering over a layer feature
      * 
-     * @see prepareWikidataLayers
+     * @see prepareDetailsLayers
      * @see https://docs.mapbox.com/mapbox-gl-js/example/polygon-popup-on-click/
      * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
      * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#popup
@@ -896,8 +825,7 @@ export class EtymologyMap extends Map {
                     closeOnMove: true,
                     maxWidth: "none",
                     className: "owmf_etymology_popup"
-                })
-                    .setLngLat(popupPosition)
+                }).setLngLat(popupPosition)
                     //.setMaxWidth('95vw')
                     //.setOffset([10, 0])
                     //.setHTML(featureToHTML(e.features[0]));
@@ -1131,7 +1059,7 @@ export class EtymologyMap extends Map {
     /**
      * Handles the click on a cluster.
      * For GeoJSON cluster layers, the optimal zoom destination could be obtained with getClusterExpansionZoom().
-     * However, this method is not available for vector sources.
+     * However, this method is not available for vector tile sources.
      * So for uniformity, the zoom is always calculated as the current zoom + 3.
      * 
      * @see GeoJSONSource.getClusterExpansionZoom
@@ -1291,8 +1219,8 @@ export class EtymologyMap extends Map {
      * Set the application culture for i18n
      * 
      * Mainly, sets the map's query to get labels.
+     * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
      * Mapbox vector tiles use the fields name_*.
-     * MapTiler vector tiles use use the fields name:*.
      * 
      * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
      * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
@@ -1307,11 +1235,11 @@ export class EtymologyMap extends Map {
                 .map(layer => layer.id),
             newTextField = [
                 'coalesce',
+                ['get', 'name:' + language], // Main language name in OpenMapTiles vector tiles
                 ['get', 'name_' + language], // Main language name in Mapbox vector tiles
-                ['get', 'name:' + language], // Main language name in MapTiler vector tiles
                 ['get', 'name'],
-                ['get', 'name_' + defaultLanguage], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
-                ['get', 'name:' + defaultLanguage] // Default language name in MapTiler vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+                ['get', 'name:' + defaultLanguage], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+                ['get', 'name_' + defaultLanguage] // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
             ];
 
         if (process.env.NODE_ENV === 'development') console.debug("setCulture", {

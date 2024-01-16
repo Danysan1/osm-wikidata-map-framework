@@ -5,7 +5,6 @@ import type { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 
 const PMTILES_GROUP_NAME = "Database (PMTiles)",
-    VECTOR_GROUP_NAME = "Database (Martin tile server)",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
     WDQS_GROUP_NAME = "Wikidata Query Service",
     OVERPASS_WDQS_GROUP_NAME = "OSM (Overpass API) + Wikidata Query Service",
@@ -25,7 +24,6 @@ export class BackEndControl extends DropdownControl {
             indirectWdProperty = getConfig("wikidata_indirect_property"),
             propagationEnabled = getBoolConfig("propagate_data"),
             qleverEnabled = getBoolConfig("qlever_enable"),
-            vectorTilesEnabled = getBoolConfig("vector_tiles_enable"),
             pmtilesURL = getBoolConfig("pmtiles_base_url"),
             dropdownItems: DropdownItem[] = [],
             osm_text_key = getConfig("osm_text_key"),
@@ -53,20 +51,6 @@ export class BackEndControl extends DropdownControl {
 
         if (pmtilesURL)
             dropdownItems.push(buildDropdownItem("pmtiles_all", t("source.db_all", "All sources from DB"), PMTILES_GROUP_NAME));
-        if (vectorTilesEnabled)
-            dropdownItems.push(buildDropdownItem("vector_all", t("source.db_all", "All sources from DB"), VECTOR_GROUP_NAME));
-
-        keys?.forEach(key => {
-            const keyID = getKeyID(key),
-                keyText = "OSM " + key;
-            dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
-            if (pmtilesURL)
-                dropdownItems.push(buildDropdownItem("pmtiles_" + keyID, keyText, PMTILES_GROUP_NAME));
-            if (vectorTilesEnabled)
-                dropdownItems.push(buildDropdownItem("vector_" + keyID, keyText, VECTOR_GROUP_NAME));
-            if (qleverEnabled)
-                dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
-        });
 
         const allKeysText = t("source.all_osm_keys", "All OSM keys");
         if (keys && keys.length > 1) {
@@ -75,16 +59,22 @@ export class BackEndControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
         }
 
+        keys?.forEach(key => {
+            const keyID = getKeyID(key),
+                keyText = "OSM " + key;
+            dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
+            if (pmtilesURL)
+                dropdownItems.push(buildDropdownItem("pmtiles_" + keyID, keyText, PMTILES_GROUP_NAME));
+            if (qleverEnabled)
+                dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
+        });
+
         if (wdDirectProperties?.length) {
             const wikidataDirectText = "Wikidata " + wdDirectProperties.join("/"), // Ex: "Wikidata P138/P825/P547"
                 osmWikidataDirectText = `OSM wikidata=* + ${wikidataDirectText}`; // Ex: "OSM wikidata=* + Wikidata P138/P825/P547"
             if (pmtilesURL) {
                 dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
-            }
-            if (vectorTilesEnabled) {
-                dropdownItems.push(buildDropdownItem("vector_osm_wikidata_direct", osmWikidataDirectText, VECTOR_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("vector_wd_direct", wikidataDirectText, VECTOR_GROUP_NAME));
             }
             if (qleverEnabled) {
                 dropdownItems.push(buildDropdownItem("qlever_wd_direct", `${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
@@ -102,8 +92,6 @@ export class BackEndControl extends DropdownControl {
                 qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty }),
                 reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty });
 
-            if (vectorTilesEnabled)
-                dropdownItems.push(buildDropdownItem("vector_osm_wikidata_reverse", t("source.db_osm_wikidata_reverse", `Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}`, { indirectWdProperty }), VECTOR_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_qualifier", qualifierText, WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
@@ -142,8 +130,6 @@ export class BackEndControl extends DropdownControl {
 
         if (propagationEnabled && pmtilesURL)
             dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
-        if (propagationEnabled && vectorTilesEnabled)
-            dropdownItems.push(buildDropdownItem("vector_propagated", t("source.propagated", "Propagated"), VECTOR_GROUP_NAME));
 
         if (dropdownItems.find(item => item.id === startBackEndID)) {
             if (process.env.NODE_ENV === 'development') console.debug("Starting with back-end ID", startBackEndID);

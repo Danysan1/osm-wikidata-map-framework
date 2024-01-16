@@ -3,7 +3,7 @@ import { IControl, Map, Popup } from 'maplibre-gl';
 // import { IControl, Map, Popup } from 'mapbox-gl';
 
 import { loadTranslator, translateContent, translateAnchorTitle, getLanguage } from '../i18n';
-import { getBoolConfig, getConfig } from '../config';
+import { getConfig } from '../config';
 
 /**
  * Opens the information intro window
@@ -69,9 +69,6 @@ function setupDatasetButton(popup: Popup) {
         if (process.env.NODE_ENV === 'development') console.warn("Missing dataset button");
     } else if (pmtiles_base_url) {
         datasetButton.href = pmtiles_base_url + 'dataset.csv';
-        datasetButton.classList.remove("hiddenElement");
-    } else if (getBoolConfig("vector_tiles_enable")) {
-        datasetButton.href = 'dataset.php';
         datasetButton.classList.remove("hiddenElement");
     } else {
         datasetButton.classList.add("hiddenElement");

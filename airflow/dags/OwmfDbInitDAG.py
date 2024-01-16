@@ -638,24 +638,6 @@ class OwmfDbInitDAG(DAG):
         )
         task_setup_ety_fk >> task_backend_views
 
-        task_etymology_map = SQLExecuteQueryOperator(
-            task_id = "setup_etymology_map",
-            conn_id = local_db_conn_id,
-            sql = "sql/13-setup-rpc.jinja.sql",
-            dag = self,
-            task_group=post_elaborate_group,
-            doc_md="""
-                # Setup the vector tiles RPC functions
-
-                Create in the local PostGIS DB the functions used by Maplibre Martin for generating the vector tiles.
-
-                Links:
-                * [Maplibre Martin documentation](https://maplibre.org/martin/)
-                * [Martin PostgreSQL function sources](https://maplibre.org/martin/33-sources-pg-functions.html)
-            """
-        )
-        task_backend_views >> task_etymology_map
-
         task_dataset_view = SQLExecuteQueryOperator(
             task_id = "setup_dataset_view",
             conn_id = local_db_conn_id,
@@ -707,7 +689,7 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group
         )
-        [task_create_source_index, task_drop_temp_tables, task_etymology_map, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
+        [task_create_source_index, task_drop_temp_tables, task_backend_views, task_dataset_view, task_save_last_update, task_create_work_dir] >> task_join_post_elaboration
 
         group_vector_tiles = TaskGroup("vector_tiles", tooltip="Generate the vector tiles and/or PMTiles", dag=self)
 
