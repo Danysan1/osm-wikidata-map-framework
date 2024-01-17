@@ -21,8 +21,7 @@ import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
 
 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || 'stadia_alidade',
-    PMTILES_PREFIX = "pmtiles",
+const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
     POINT_LAYER = '_layer_point',
     POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
@@ -36,7 +35,6 @@ const defaultBackgroundStyle = new URLSearchParams(window.location.search).get("
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
-    private startBackgroundStyle: BackgroundStyle;
     private anyFeatureClickedBefore = false;
     private detailsSourceInitialized = false;
     private services?: MapService[];
@@ -44,19 +42,20 @@ export class EtymologyMap extends Map {
     private lastKeyID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
-    private shouldFetchAgain = false
+    private shouldFetchAgain = false;
 
     constructor(
         containerId: string,
         backgroundStyles: BackgroundStyle[],
         requestTransformFunc?: RequestTransformFunction
     ) {
-        let backgroundStyleObj = backgroundStyles.find(style => style.id == defaultBackgroundStyle);
-        if (!backgroundStyleObj) {
-            logErrorMessage("Invalid default background style", "error", { defaultBackgroundStyle });
-            backgroundStyleObj = backgroundStyles[0];
-        }
         const startParams = getCorrectFragmentParams();
+        let backgroundStyleObj = backgroundStyles.find(style => style.id === startParams.backgroundStyleID);
+        if (!backgroundStyleObj) {
+            logErrorMessage("Invalid default background style", "error", { startParams, backgroundStyleObj });
+            backgroundStyleObj = backgroundStyles[0];
+            setFragmentParams(undefined, undefined, undefined, undefined, undefined, backgroundStyleObj.id);
+        }
         if (process.env.NODE_ENV === 'development') console.debug("Instantiating map", { containerId, backgroundStyleObj, startParams });
 
         super({
@@ -67,7 +66,6 @@ export class EtymologyMap extends Map {
             //projection: { name: 'mercator' },
             transformRequest: requestTransformFunc
         });
-        this.startBackgroundStyle = backgroundStyleObj;
         this.backgroundStyles = backgroundStyles;
         void this.initServices();
 
@@ -683,7 +681,7 @@ export class EtymologyMap extends Map {
         ]);
 
         this.addControl(new LanguageControl(), 'top-right');
-        this.addControl(new BackgroundStyleControl(this.backgroundStyles, this.startBackgroundStyle.id), 'top-right');
+        this.addControl(new BackgroundStyleControl(this.backgroundStyles), 'top-right');
 
         const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");

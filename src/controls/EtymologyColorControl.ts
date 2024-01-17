@@ -62,6 +62,7 @@ class EtymologyColorControl extends DropdownControl {
     private lastWikidataIDs?: string[];
     private lastColorSchemeID?: ColorSchemeID;
     private lastBackEndID?: string;
+    private lastBackground?: string;
     private lastFeatureCount?: number;
     private layerIDs: string[];
     private minZoomLevel: number;
@@ -166,28 +167,29 @@ class EtymologyColorControl extends DropdownControl {
         layerColor: ExpressionSpecification
     ) {
         const colorSchemeIDChanged = this.lastColorSchemeID !== colorSchemeID,
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            backEndID = getFragmentParams().backEndID || undefined,
-            backEndChanged = this.lastBackEndID !== backEndID;
+            params = getFragmentParams(),
+            backEndChanged = this.lastBackEndID !== params.backEndID,
+            backgroundChanged = this.lastBackground !== params.backgroundStyleID;
 
-        if (colorSchemeIDChanged || backEndChanged) {
-            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, backEndID, backEndChanged, layerColor });
+        if (colorSchemeIDChanged || backEndChanged || backgroundChanged) {
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating layer color", { colorSchemeID, colorSchemeIDChanged, params, backEndChanged, layerColor });
             this.setLayerColor(layerColor);
         } else {
-            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeID, colorSchemeIDChanged, backEndID, backEndChanged });
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: skipping layer color update", { colorSchemeID, colorSchemeIDChanged, params, backEndChanged });
         }
 
         const features: EtymologyFeatureProperties[] | undefined = this.getMap()
             ?.queryRenderedFeatures({ layers: this.layerIDs })
             ?.map(f => f.properties);
-        if (colorSchemeIDChanged || backEndChanged || features?.length !== this.lastFeatureCount) {
+        if (colorSchemeIDChanged || backEndChanged || backgroundChanged || features?.length !== this.lastFeatureCount) {
             this.lastColorSchemeID = colorSchemeID;
-            this.lastBackEndID = backEndID;
+            this.lastBackEndID = params.backEndID ?? undefined;
+            this.lastBackground = params.backgroundStyleID ?? undefined;
             this.lastFeatureCount = features?.length;
             this.lastWikidataIDs = undefined;
 
             const stats = calculateChartData(features ?? []);
-            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating chart", { colorSchemeID, colorSchemeIDChanged, backEndID, backEndChanged, features, stats });
+            if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating chart", { colorSchemeID, colorSchemeIDChanged, params, backEndChanged, features, stats });
             this.setChartStats(stats);
         }
     }
@@ -440,19 +442,21 @@ class EtymologyColorControl extends DropdownControl {
 
         const colorSchemeChanged = colorSchemeID !== this.lastColorSchemeID,
             IDsChanged = this.lastWikidataIDs?.length !== idSet.size || this.lastWikidataIDs?.some(id => !idSet.has(id)),
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            backEndID = getFragmentParams().backEndID || undefined,
-            backEndChanged = this.lastBackEndID !== backEndID;
-        if (!colorSchemeChanged && !IDsChanged && !backEndChanged) {
-            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, colorSchemeChanged, idSet, IDsChanged, backEndID, backEndChanged });
+            params = getFragmentParams(),
+            backEndChanged = this.lastBackEndID !== params.backEndID,
+            backgroundChanged = this.lastBackground !== params.backgroundStyleID;
+        if (!colorSchemeChanged && !IDsChanged && !backEndChanged && !backgroundChanged) {
+            if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for already downloaded IDs", { colorSchemeID, colorSchemeChanged, idSet, IDsChanged, params, backEndChanged });
             return null;
         }
 
         const uniqueIDs = Array.from(idSet);
-        if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, colorSchemeChanged, idSet, IDsChanged, backEndID, backEndChanged });
+        if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, colorSchemeChanged, idSet, IDsChanged, params, backEndChanged });
         this.lastColorSchemeID = colorSchemeID;
         this.lastWikidataIDs = uniqueIDs;
-        this.lastBackEndID = backEndID;
+        this.lastBackEndID = params.backEndID ?? undefined;
+        this.lastBackground = params.backgroundStyleID ?? undefined;
+
         try {
             if (!this.statsService)
                 this.statsService = new WikidataStatsService();

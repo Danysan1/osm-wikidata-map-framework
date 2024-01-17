@@ -10,6 +10,8 @@ const default_center_lat_raw = getConfig("default_center_lat"),
     defaultColorSchemeRaw = getConfig("default_color_scheme"),
     defaultColorScheme = defaultColorSchemeRaw && defaultColorSchemeRaw in ColorSchemeID ? defaultColorSchemeRaw as ColorSchemeID : ColorSchemeID.blue,
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+    defaultBackgroundStyleID = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || "stadia_alidade",
+    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     defaultBackEndID = getConfig("default_source") || "overpass_all";
 
 interface FragmentParams {
@@ -18,6 +20,7 @@ interface FragmentParams {
     zoom: number | null;
     colorScheme: string | null;
     backEndID: string | null;
+    backgroundStyleID: string | null;
 }
 
 /**
@@ -29,8 +32,9 @@ function getFragmentParams(): FragmentParams {
             lon: (hashParams?.[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : null,
             lat: (hashParams?.[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : null,
             zoom: (hashParams?.[2] && !isNaN(parseFloat(hashParams[2]))) ? parseFloat(hashParams[2]) : null,
-            colorScheme: (hashParams?.[3]) ? hashParams[3] : null,
-            backEndID: (hashParams?.[4]) ? hashParams[4] : null,
+            colorScheme: hashParams?.[3] ?? null,
+            backEndID: hashParams?.[4] ?? null,
+            backgroundStyleID: hashParams?.[5] ?? null,
         };
     // if (process.env.NODE_ENV === 'development') console.debug("getFragmentParams", { hashParams, out });
     return out;
@@ -41,22 +45,23 @@ function getFragmentParams(): FragmentParams {
  * If a parameter is !== undefined it is updated in the fragment.
  * If it is === undefined it is left untouched.
  */
-function setFragmentParams(lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, backEndID?: string): string {
-    const currentParams = getCorrectFragmentParams(),
-        pos = { ...currentParams };
+function setFragmentParams(
+    lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, backEndID?: string, backgroundStyleID?: string
+): string {
+    const current = getCorrectFragmentParams(),
+        strLon = lon !== undefined ? lon.toFixed(4) : current.lon,
+        strLat = lat !== undefined ? lat.toFixed(4) : current.lat,
+        strZoom = zoom !== undefined ? zoom.toFixed(1) : current.zoom,
+        strColorScheme = colorScheme ?? current.colorScheme,
+        strBackEnd = backEndID ?? current.backEndID,
+        strBackground = backgroundStyleID ?? current.backgroundStyleID;
 
-    if (typeof lon === 'number') pos.lon = parseFloat(lon.toFixed(4));
-    if (typeof lat === 'number') pos.lat = parseFloat(lat.toFixed(4));
-    if (typeof zoom === 'number') pos.zoom = parseFloat(zoom.toFixed(1));
-    if (typeof colorScheme === 'string') pos.colorScheme = colorScheme;
-    if (typeof backEndID === 'string') pos.backEndID = backEndID;
-
-    const fragment = `#${pos.lon},${pos.lat},${pos.zoom},${pos.colorScheme},${pos.backEndID}`;
+    const fragment = `#${strLon},${strLat},${strZoom},${strColorScheme},${strBackEnd},${strBackground}`;
     if (window.location.hash !== fragment) {
-        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { current, fragment, lon, lat, zoom, colorScheme, backEndID });
         window.location.hash = fragment;
     } else {
-        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { currentParams, pos, fragment, lon, lat, zoom, colorScheme, source: backEndID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID });
     }
     return fragment;
 }
@@ -67,6 +72,7 @@ interface CorrectFragmentParams {
     zoom: number;
     colorScheme: ColorSchemeID;
     backEndID: string;
+    backgroundStyleID: string;
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {
@@ -77,7 +83,9 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
             zoom: raw.zoom ? raw.zoom : default_zoom,
             colorScheme: raw.colorScheme && raw.colorScheme in ColorSchemeID ? raw.colorScheme as ColorSchemeID : defaultColorScheme,
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            backEndID: raw.backEndID?.replace("db_", "vector_") || defaultBackEndID,
+            backEndID: raw.backEndID?.replace("db_", "pmtiles_") || defaultBackEndID,
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            backgroundStyleID: raw.backgroundStyleID || defaultBackgroundStyleID,
         };
     //if (process.env.NODE_ENV === 'development') console.debug("getCorrectFragmentParams", { raw, correct });
     return correct;
