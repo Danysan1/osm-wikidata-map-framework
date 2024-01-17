@@ -663,6 +663,7 @@ class OwmfDbInitDAG(DAG):
         task_save_last_update = SQLExecuteQueryOperator(
             task_id = "save_last_data_update",
             conn_id = local_db_conn_id,
+            task_group = group_db_load,
             sql = """
                 CREATE OR REPLACE FUNCTION owmf.last_data_update()
                     RETURNS character varying

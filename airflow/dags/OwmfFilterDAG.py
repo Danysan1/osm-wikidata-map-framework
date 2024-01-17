@@ -166,13 +166,12 @@ class OwmfFilterDAG(DAG):
             invert_match= True,
             dag = self,
             doc_md = dedent("""
-                # Remove non iteresting elements
+                # Remove non interesting elements
 
                 Filter the OpenStreetMap PBF data to remove elements which are not interesting:
                 * flagpoles (https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues/5)
-                * nodes that represent the label for a continent (`place=continent`), a country (`place=country`), a state (`place=state`) or a region (`place=region`), which out of their context would not make sense on the map
-                * element representing an area too big for visualization (`admin_level=2`, `admin_level=3` or `admin_level=4`)
-
+                * items with known wrong tags
+                
                 Uses `osmium tags-filter` through `OsmiumTagsFilterOperator`:
             """) + dedent(OsmiumTagsFilterOperator.__doc__)
         )

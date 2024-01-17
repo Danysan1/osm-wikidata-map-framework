@@ -279,7 +279,7 @@ export class EtymologyMap extends Map {
             wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
             elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
-            enableDetailsLayers = (zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea),
+            enableDetailsLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
             enableElementsLayers = !enableDetailsLayers && zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea;
         if (process.env.NODE_ENV === 'development') console.debug("updateDataSource", {
             area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableDetailsLayers, backEndID
@@ -317,6 +317,8 @@ export class EtymologyMap extends Map {
             }
         } else {
             void loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
+            if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: zoom level too low, skipping source update and removing layers");
+            this.removeSourceWithLayers(DETAILS_SOURCE);
         }
     }
 
@@ -342,7 +344,9 @@ export class EtymologyMap extends Map {
                 throw new Error("No service found for source ID " + backEndID);
 
             const data = await service.fetchMapClusterElements(backEndID, bbox);
+            if (process.env.NODE_ENV === 'development') console.debug("updateElementsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoomLevel, thresholdZoomLevel });
 
+            this.removeSourceWithLayers(DETAILS_SOURCE);
             this.prepareGeoJSONSourceAndClusteredLayers(
                 ELEMENTS_SOURCE,
                 data,
@@ -354,24 +358,24 @@ export class EtymologyMap extends Map {
             );
         } catch (e) {
             logErrorMessage("updateElementsGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
+        } finally {
             this.fetchCompleted();
         }
     }
 
     private updateDetailsPMTilesSource(backEndID: string, minZoomLevel: number, thresholdZoomLevel: number) {
         if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles details source:", { backEndID, minZoomLevel, thresholdZoomLevel });
+
+        this.removeSourceWithLayers(ELEMENTS_SOURCE);
+
         // The source max zoom must match the max zoom of the pmtiles file
         // See https://gis.stackexchange.com/a/330575/196469
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/OwmfDbInitDAG.py?ref_type=heads#L740
         this.preparePMTilesSource(DETAILS_SOURCE, "etymology_map.pmtiles", 0, 12);
+
+        const key_id = backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "");
         this.prepareDetailsLayers(
-            0,
-            "etymology_map",
-            backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
-            minZoomLevel - 1,
-            minZoomLevel,
-            thresholdZoomLevel,
-            thresholdZoomLevel + 1
+            0, "etymology_map", key_id, minZoomLevel, minZoomLevel, thresholdZoomLevel, thresholdZoomLevel
         );
     }
 
@@ -386,7 +390,9 @@ export class EtymologyMap extends Map {
                 throw new Error("No service found for source ID " + backEndID);
 
             const data = await service.fetchMapElementDetails(backEndID, bbox);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoom });
 
+            this.removeSourceWithLayers(ELEMENTS_SOURCE);
             this.addOrUpdateGeoJSONSource(
                 DETAILS_SOURCE,
                 {
@@ -398,10 +404,11 @@ export class EtymologyMap extends Map {
             );
             this.prepareDetailsLayers(minZoom);
         } catch (e) {
-            this.fetchCompleted();
             logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
             const t = await loadTranslator();
             showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
+        } finally {
+            this.fetchCompleted();
         }
     }
 
@@ -481,7 +488,7 @@ export class EtymologyMap extends Map {
             (maxCountryZoom !== undefined && maxCountryZoom < minZoom) ||
             (minStreetZoom !== undefined && minStreetZoom < minZoom) ||
             (maxBoundaryZoom !== undefined && maxBoundaryZoom < minZoom) ||
-            (minBoundaryZoom !== undefined && maxBoundaryZoom !== undefined && minBoundaryZoom < maxBoundaryZoom)
+            (minBoundaryZoom !== undefined && maxBoundaryZoom !== undefined && maxBoundaryZoom < minBoundaryZoom)
         )) {
             console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, minBoundaryZoom, maxCountryZoom, minStreetZoom, maxBoundaryZoom });
         }
@@ -712,7 +719,7 @@ export class EtymologyMap extends Map {
                 t,
                 DETAILS_SOURCE,
                 [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER],
-                thresholdZoomLevel
+                0
             );
         this.addControl(colorControl, 'top-left');
 
@@ -861,17 +868,6 @@ export class EtymologyMap extends Map {
             ev.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713
             this.anyFeatureClickedBefore = true;
         }
-    }
-
-    private prepareElementsLayers(maxZoom: number) {
-        this.prepareClusteredLayers(
-            ELEMENTS_SOURCE,
-            "el_num",
-            "el_num",
-            undefined,
-            maxZoom,
-            "elements"
-        );
     }
 
     private addOrUpdateGeoJSONSource(id: string, config: GeoJSONSourceSpecification): GeoJSONSource {
