@@ -252,6 +252,7 @@ export class EtymologyMap extends Map {
 
         const backEndID = getCorrectFragmentParams().backEndID,
             isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
+            minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             pmtilesBaseURL = getConfig("pmtiles_base_url");
 
@@ -262,20 +263,19 @@ export class EtymologyMap extends Map {
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
             this.lastBackEndID = backEndID;
-            this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
+            this.updateDetailsPMTilesSource(backEndID, minZoomLevel, thresholdZoomLevel);
         } else if (!this.services?.length) {
             if (process.env.NODE_ENV === 'development') console.warn("updateDataSource: Services are still initializing, skipping source update");
         } else {
-            this.updateGeoJSONSource(backEndID, thresholdZoomLevel);
+            this.updateGeoJSONSource(backEndID, minZoomLevel, thresholdZoomLevel);
         }
     }
 
-    private updateGeoJSONSource(backEndID: string, thresholdZoomLevel: number) {
+    private updateGeoJSONSource(backEndID: string, minZoomLevel: number, thresholdZoomLevel: number) {
         const bounds = this.getBounds(),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
-            minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
             elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
@@ -358,20 +358,20 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private updateDetailsPMTilesSource(backEndID: string, thresholdZoomLevel: number) {
-        if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles details source:", { backEndID, thresholdZoomLevel });
-        this.preparePMTilesSource(
-            DETAILS_SOURCE,
-            "etymology_map.pmtiles",
-            0,
-            11 // https://gis.stackexchange.com/a/330575/196469
-        );
+    private updateDetailsPMTilesSource(backEndID: string, minZoomLevel: number, thresholdZoomLevel: number) {
+        if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles details source:", { backEndID, minZoomLevel, thresholdZoomLevel });
+        // The source max zoom must match the max zoom of the pmtiles file
+        // See https://gis.stackexchange.com/a/330575/196469
+        // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/airflow/dags/OwmfDbInitDAG.py?ref_type=heads#L740
+        this.preparePMTilesSource(DETAILS_SOURCE, "etymology_map.pmtiles", 0, 12);
         this.prepareDetailsLayers(
             0,
             "etymology_map",
             backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
-            thresholdZoomLevel - 2,
-            thresholdZoomLevel + 2
+            minZoomLevel - 1,
+            minZoomLevel,
+            thresholdZoomLevel,
+            thresholdZoomLevel + 1
         );
     }
 
@@ -473,13 +473,18 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#addlayer
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
-    private prepareDetailsLayers(minZoom: number, source_layer?: string, key_id?: string, minStreetZoom?: number, maxBoundaryZoom?: number) {
-        if (process.env.NODE_ENV === "development" && minStreetZoom !== undefined && minStreetZoom < minZoom)
-            console.warn("prepareWikidataLayers: minStreetZoom < minZoom, this doesn't make sense", { minZoom, maxBoundaryZoom, minStreetZoom });
-        if (process.env.NODE_ENV === "development" && maxBoundaryZoom !== undefined && maxBoundaryZoom < minZoom)
-            console.warn("prepareWikidataLayers: maxBoundaryZoom < minZoom, this doesn't make sense", { minZoom, maxBoundaryZoom, minStreetZoom });
-        if (process.env.NODE_ENV === "development" && maxBoundaryZoom !== undefined && minStreetZoom !== undefined && maxBoundaryZoom < minStreetZoom)
-            console.warn("prepareWikidataLayers: maxBoundaryZoom < minStreetZoom, this doesn't make sense", { minZoom, maxBoundaryZoom, minStreetZoom });
+    private prepareDetailsLayers(
+        minZoom: number, source_layer?: string, key_id?: string, minBoundaryZoom?: number, maxCountryZoom?: number, minStreetZoom?: number, maxBoundaryZoom?: number
+    ) {
+        if (process.env.NODE_ENV === "development" && (
+            (minBoundaryZoom !== undefined && minBoundaryZoom < minZoom) ||
+            (maxCountryZoom !== undefined && maxCountryZoom < minZoom) ||
+            (minStreetZoom !== undefined && minStreetZoom < minZoom) ||
+            (maxBoundaryZoom !== undefined && maxBoundaryZoom < minZoom) ||
+            (minBoundaryZoom !== undefined && maxBoundaryZoom !== undefined && minBoundaryZoom < maxBoundaryZoom)
+        )) {
+            console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, minBoundaryZoom, maxCountryZoom, minStreetZoom, maxBoundaryZoom });
+        }
 
         const createFilter = (geometryType: Feature["type"]) => {
             const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
@@ -489,7 +494,7 @@ export class EtymologyMap extends Map {
         }
 
         if (this.lastKeyID !== key_id) {
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: key ID changed, removing old layers");
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: key ID changed, removing old layers");
             this.removeSourceLayers(DETAILS_SOURCE);
         }
         this.lastKeyID = key_id;
@@ -518,7 +523,7 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: Adding point tap area layer", spec);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: Adding point tap area layer", spec);
             this.addLayer(spec); // Points are shown on top of lines and polygons
             this.initWikidataLayer(DETAILS_SOURCE + POINT_TAP_AREA_LAYER);
         }
@@ -545,7 +550,7 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: Adding point layer", spec);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: Adding point layer", spec);
             this.addLayer(spec); // Points are shown on top of lines and polygons
             //this.initWikidataLayer(DETAILS_SOURCE + POINT_LAYER); // The tap area layer handles all clicks and hovers
         }
@@ -574,7 +579,7 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: Adding line tap area layer", spec);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: Adding line tap area layer", spec);
             this.addLayer(spec, DETAILS_SOURCE + POINT_LAYER); // Lines are shown below points but on top of polygons
             this.initWikidataLayer(DETAILS_SOURCE + LINE_TAP_AREA_LAYER);
         }
@@ -599,14 +604,20 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: Adding line layer", spec);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: Adding line layer", spec);
             this.addLayer(spec, DETAILS_SOURCE + POINT_LAYER); // Lines are shown below points but on top of polygons
             // this.initWikidataLayer(DETAILS_SOURCE + LINE_LAYER); // The tap area layer handles all clicks and hovers
         }
 
         const polygonFilter = createFilter("Polygon");
-        if (maxBoundaryZoom !== undefined && minStreetZoom !== undefined) // Show boundaries only below maxBoundaryZoom; show other features only above minStreetZoom
-            polygonFilter.push(["case", ["to-boolean", ["get", "boundary"]], ["<", ["zoom"], maxBoundaryZoom], [">=", ["zoom"], minStreetZoom]]);
+        if (maxCountryZoom !== undefined && minBoundaryZoom !== undefined && maxBoundaryZoom !== undefined && minStreetZoom !== undefined) {
+            polygonFilter.push(["case",
+                ["all", ["has", "admin_level"], ["<", ["to-number", ["get", "admin_level"]], 4]], ["<", ["zoom"], maxCountryZoom], // Show country boundaries only below maxCountryZoom
+                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], minBoundaryZoom], ["<", ["zoom"], maxBoundaryZoom]], // Show non-country boundaries only between minBoundaryZoom and maxBoundaryZoom
+                [">=", ["zoom"], minStreetZoom], // Show non-boundaries only above minStreetZoom
+            ]);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, minBoundaryZoom, maxCountryZoom, minStreetZoom, maxBoundaryZoom });
+        }
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
                 'id': DETAILS_SOURCE + POLYGON_BORDER_LAYER,
@@ -623,7 +634,7 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: Adding polygon border layer", spec);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: Adding polygon border layer", spec);
             this.addLayer(spec, DETAILS_SOURCE + LINE_LAYER); // Polygon borders are shown below lines and points but on top of polygon fill
             this.initWikidataLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER);
         }
@@ -647,7 +658,7 @@ export class EtymologyMap extends Map {
             };
             if (source_layer)
                 spec["source-layer"] = source_layer;
-            if (process.env.NODE_ENV === 'development') console.debug("prepareWikidataLayers: Adding polygon fill layer", spec);
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: Adding polygon fill layer", spec);
             this.addLayer(spec, DETAILS_SOURCE + POLYGON_BORDER_LAYER); // Polygon fill is shown below everything else
             this.initWikidataLayer(DETAILS_SOURCE + POLYGON_FILL_LAYER);
         }

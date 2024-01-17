@@ -737,7 +737,10 @@ class OwmfDbInitDAG(DAG):
             output_file = join(workdir,'etymology_map.pmtiles'),
             layer_name = "etymology_map",
             min_zoom = 1,
-            max_zoom = 11,
+            # When changing the max zoom, change also the vector tile source max zoom in the frontend
+            # See https://gis.stackexchange.com/a/330575/196469
+            # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
+            max_zoom = 12,
             extra_params = "--force -rf100 --drop-densest-as-needed",
             doc_md = TippecanoeOperator.__doc__
         )

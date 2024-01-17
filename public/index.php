@@ -222,7 +222,7 @@ if ($conf->has("pmtiles_base_url"))
                 <?= $lastUpdateString; ?>
                 <p>
                     <span class="i18n_based_on">Based on</span>
-                    <a title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework" target="_blank" rel="noopener noreferrer">OSM-Wikidata Map Framework</a>
+                    <a title="OSM-Wikidata Map Framework" aria-label="OSM-Wikidata Map Framework" href="https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework" target="_blank" rel="noopener noreferrer">OSM-Wikidata Map Framework</a>
                     <?= $conf->has("framework_image_tag") && $conf->get("framework_image_tag") != "latest" ? " " . (string)$conf->get("framework_image_tag") : ""; ?>
                 </p>
                 <div id="last_info_row">

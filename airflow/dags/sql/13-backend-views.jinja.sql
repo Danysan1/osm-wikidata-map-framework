@@ -8,6 +8,7 @@ SELECT
     CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
     STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     CASE WHEN el.el_tags ? 'boundary' OR el.el_tags->>'type' = 'boundary' THEN 1 ELSE NULL END AS boundary,
+    el.el_tags->>'admin_level' AS admin_level,
     el.el_tags->>'name' AS name,
     el.el_tags->>'name:ar' AS "name:ar",
     el.el_tags->>'name:da' AS "name:da",
