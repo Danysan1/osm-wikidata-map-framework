@@ -274,13 +274,13 @@ export class EtymologyMap extends Map {
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
-            wikidataBBoxMaxArea = parseFloat(getConfig("wikidata_bbox_max_area") ?? "1"),
-            elementsBBoxMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
+            detailsMaxArea = parseFloat(getConfig("details_bbox_max_area") ?? "1"),
+            elementsMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
-            enableDetailsLayers = zoomLevel >= thresholdZoomLevel && area < wikidataBBoxMaxArea,
-            enableElementsLayers = !enableDetailsLayers && zoomLevel >= minZoomLevel && area < elementsBBoxMaxArea;
+            enableDetailsLayers = zoomLevel >= thresholdZoomLevel && area < detailsMaxArea,
+            enableElementsLayers = !enableDetailsLayers && zoomLevel >= minZoomLevel && area < elementsMaxArea;
         if (process.env.NODE_ENV === 'development') console.debug("updateDataSource", {
-            area, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableDetailsLayers, backEndID
+            area, detailsMaxArea, elementsMaxArea, zoomLevel, minZoomLevel, thresholdZoomLevel, enableElementsLayers, enableDetailsLayers, backEndID
         });
 
         if (enableElementsLayers) {

@@ -154,7 +154,7 @@ if ($conf->has("pmtiles_base_url"))
     <?= $conf->getMetaTag("max_map_elements", true); ?>
     <?= $conf->getMetaTag("cache_timeout_hours", true); ?>
     <?= $conf->getMetaTag("elements_bbox_max_area", true); ?>
-    <?= $conf->getMetaTag("wikidata_bbox_max_area", true); ?>
+    <?= $conf->getMetaTag("details_bbox_max_area", true); ?>
     <?= $conf->getMetaTag("max_relation_members", true); ?>
     <?= $conf->getMetaTag("fetch_parts_of_linked_entities", true); ?>
 </head>
