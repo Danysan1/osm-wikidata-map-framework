@@ -13,8 +13,10 @@
     "mapboxgl",
     "Maplibre",
     "maplibregl",
+    "openstreetmap",
     "osmdata",
     "owmf",
+    "qlever",
     "rdfs",
     "RETURNTRANSFER",
     "SAST",
@@ -22,6 +24,7 @@
     "sparql",
     "VERIFYHOST",
     "VERIFYPEER",
+    "WDQS",
     "wikibase",
     "workdir"
   ],

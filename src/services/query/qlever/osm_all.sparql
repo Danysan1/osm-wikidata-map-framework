@@ -24,7 +24,7 @@ SELECT
 WHERE {
     ${osmEtymologyExpression}
     ${osmCountryQuery}
-    ?osm geo:hasGeometry ?location.
+    ?osm geo:hasGeometry/geo:asWKT ?location.
 
     # # Filter by location (geo:sfWithin)
     # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)

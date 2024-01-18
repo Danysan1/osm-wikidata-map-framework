@@ -20,7 +20,7 @@ SELECT
     (false AS ?from_wikidata)
 WHERE {
     ?osm osm:wikidata ?item;
-         geo:hasGeometry ?location.
+         geo:hasGeometry/geo:asWKT ?location.
     ${osmCountryQuery}
 
     # # Filter by location (geo:sfWithin)
