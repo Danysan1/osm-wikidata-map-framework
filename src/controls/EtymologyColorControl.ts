@@ -131,6 +131,13 @@ class EtymologyColorControl extends DropdownControl {
             return;
         }
 
+        const anyLayerIsUnavailable = this.layerIDs.some(layerID => !this.getMap()?.getLayer(layerID));
+        if (anyLayerIsUnavailable) {
+            if (process.env.NODE_ENV === 'development') console.debug("updateChart: layers not yet available, removing chart");
+            this.removeChart();
+            return;
+        }
+
         const colorSchemeID = dropdown.value as ColorSchemeID,
             colorScheme = colorSchemes[colorSchemeID];
         if (process.env.NODE_ENV === 'development') console.debug("updateChart: updating", { event, colorSchemeID, colorScheme });
@@ -155,10 +162,6 @@ class EtymologyColorControl extends DropdownControl {
             if (colorScheme?.color)
                 this.setLayerColor(colorScheme.color);
         }
-    }
-
-    private areLayersAvailable() {
-        return this.layerIDs.every(layerID => this.getMap()?.getLayer(layerID));
     }
 
     private calculateAndLoadChartData(
@@ -195,9 +198,6 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private loadFeatureSourceChartData() {
-        if (!this.areLayersAvailable())
-            return;
-
         this.calculateAndLoadChartData(
             ColorSchemeID.feature_source,
             this.calculateFeatureSourceStats,
@@ -239,9 +239,6 @@ class EtymologyColorControl extends DropdownControl {
     ];
 
     private loadEtymologySourceChartData() {
-        if (!this.areLayersAvailable())
-            return;
-
         this.calculateAndLoadChartData(
             ColorSchemeID.etymology_source,
             features => this.calculateEtymologySourceStats(features),
@@ -315,9 +312,6 @@ class EtymologyColorControl extends DropdownControl {
     ];
 
     private async loadPictureAvailabilityChartData() {
-        if (!this.areLayersAvailable())
-            return;
-
         showLoadingSpinner(true);
         let propertiesList: EtymologyFeatureProperties[] | undefined;
         try {
@@ -395,9 +389,6 @@ class EtymologyColorControl extends DropdownControl {
     }
 
     private async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
-        if (!this.areLayersAvailable())
-            return;
-
         showLoadingSpinner(true);
         let wikidataIDs: string[] = [];
         try {
