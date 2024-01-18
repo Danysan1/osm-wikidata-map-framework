@@ -53,11 +53,61 @@ export class BackEndControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("pmtiles_all", t("source.db_all", "All sources from DB"), PMTILES_GROUP_NAME));
 
         const allKeysText = t("source.all_osm_keys", "All OSM keys");
-        if (keys && keys.length > 1) {
+        if (keys?.length)
             dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
-            if (qleverEnabled)
-                dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
+
+        if (wdDirectProperties?.length) {
+            const wikidataDirectText = "Wikidata " + wdDirectProperties.join("/"), // Ex: "Wikidata P138/P825/P547"
+                osmWikidataDirectText = `OSM wikidata=* + ${wikidataDirectText}`; // Ex: "OSM wikidata=* + Wikidata P138/P825/P547"
+            if (pmtilesURL) {
+                dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
+            }
+            if (keys?.length)
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", `${allKeysText} + ${wikidataDirectText}`, OVERPASS_WDQS_GROUP_NAME));
+
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", osmWikidataDirectText, OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_direct", wikidataDirectText, WDQS_GROUP_NAME));
+            if (qleverEnabled) {
+                dropdownItems.push(buildDropdownItem("qlever_wd_direct", `${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", `${osmWikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
+                //dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", `${allKeysText} + ${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+            }
         }
+
+        if (indirectWdProperty) {
+            const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty }),
+                qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty }),
+                reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty });
+
+            if (keys?.length) {
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
+            }
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", `OSM wikidata=* + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", `OSM wikidata=* + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
+
+            dropdownItems.push(buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_qualifier", qualifierText, WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
+
+            if (qleverEnabled) {
+                if (keys?.length) {
+                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", `${allKeysText} + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", `${allKeysText} + ${qualifierText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", `${allKeysText} + ${reverseText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                }
+                // dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", `OSM wikidata=* + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
+                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", `OSM wikidata=* + ${reverseText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_indirect", `${indirectText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_qualifier", `${qualifierText} (beta)`, QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_reverse", `${reverseText} (beta)`, QLEVER_GROUP_NAME));
+            }
+        }
+
+        if (keys?.length && qleverEnabled)
+            dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
 
         keys?.forEach(key => {
             const keyID = getKeyID(key),
@@ -69,62 +119,14 @@ export class BackEndControl extends DropdownControl {
                 dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
         });
 
-        if (wdDirectProperties?.length) {
-            const wikidataDirectText = "Wikidata " + wdDirectProperties.join("/"), // Ex: "Wikidata P138/P825/P547"
-                osmWikidataDirectText = `OSM wikidata=* + ${wikidataDirectText}`; // Ex: "OSM wikidata=* + Wikidata P138/P825/P547"
-            if (pmtilesURL) {
-                dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
-            }
-            if (qleverEnabled) {
-                dropdownItems.push(buildDropdownItem("qlever_wd_direct", `${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", `${osmWikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
-                //dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", `${allKeysText} + ${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
-            }
-            dropdownItems.push(buildDropdownItem("wd_direct", wikidataDirectText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", osmWikidataDirectText, OVERPASS_WDQS_GROUP_NAME));
-            if (keys?.length)
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", `${allKeysText} + ${wikidataDirectText}`, OVERPASS_WDQS_GROUP_NAME));
-        }
-
-        if (indirectWdProperty) {
-            const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty }),
-                qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty }),
-                reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty });
-
-            dropdownItems.push(buildDropdownItem("wd_indirect", indirectText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_qualifier", qualifierText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", `OSM wikidata=* + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", `OSM wikidata=* + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
-            if (qleverEnabled) {
-                dropdownItems.push(buildDropdownItem("qlever_wd_indirect", `${indirectText} (beta)`, QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_wd_qualifier", `${qualifierText} (beta)`, QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_wd_reverse", `${reverseText} (beta)`, QLEVER_GROUP_NAME));
-                // dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_indirect", `OSM wikidata=* + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
-                dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_reverse", `OSM wikidata=* + ${reverseText} (beta)`, QLEVER_GROUP_NAME));
-            }
-
-            if (keys?.length) {
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
-                if (qleverEnabled) {
-                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", `${allKeysText} + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
-                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", `${allKeysText} + ${qualifierText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
-                    // dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", `${allKeysText} + ${reverseText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
-                }
-            }
-        }
-
         if (!keys?.length && !wdDirectProperties?.length && !indirectWdProperty && !osm_text_key) {
+            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata=* + Wikidata P625", OVERPASS_WDQS_GROUP_NAME));
             dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata=* + Wikidata", OVERPASS_WDQS_GROUP_NAME));
-            dropdownItems.push(buildDropdownItem("wd_base", "Wikidata", WDQS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("wd_base", "Wikidata P625", WDQS_GROUP_NAME));
             if (qleverEnabled) {
+                dropdownItems.push(buildDropdownItem("qlever_osm_wd_base", "OSM wikidata=* + Wikidata P625 (beta)", QLEVER_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("qlever_osm_wd", "OSM wikidata=* (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_osm_wd_base", "OSM wikidata=* + Wikidata (beta)", QLEVER_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("qlever_wd_base", "Wikidata (beta)", QLEVER_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("qlever_wd_base", "Wikidata P625 (beta)", QLEVER_GROUP_NAME));
             }
         }
 
