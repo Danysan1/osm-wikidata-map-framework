@@ -1211,13 +1211,13 @@ export class EtymologyMap extends Map {
         /**
          * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
          */
-        const someArrayItemStartWithName = (array: unknown): boolean => Array.isArray(array) && array.some(
+        const someArrayItemStartWithName = (expression: unknown): boolean => Array.isArray(expression) && expression.some(
             x => (typeof x === 'string' && x.startsWith('name')) || someArrayItemStartWithName(x)
         );
 
-        const field: unknown = this.getLayoutProperty(layerId, 'text-field'),
-            isSimpleName = field === '{name}' || (typeof field === "string" && field.startsWith('{name:latin}'));
-        return isSimpleName || someArrayItemStartWithName(field);
+        const labelExpression: unknown = this.getLayoutProperty(layerId, 'text-field'),
+            isSimpleName = typeof labelExpression === "string" && labelExpression.startsWith('{name'); // "{name}" / "{name:en}" / "{name:latin}\n{name:nonlatin}" / ...
+        return isSimpleName || someArrayItemStartWithName(labelExpression);
     }
 
     /**
