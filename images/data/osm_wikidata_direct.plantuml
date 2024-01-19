@@ -1,4 +1,4 @@
-@startuml osm_wikidata_combined
+@startuml osm_wikidata_direct
 
 map "**Wikidata Q7186**" as wikia #a2d2ff {
   label => Marie Curie

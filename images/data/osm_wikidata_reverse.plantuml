@@ -1,0 +1,25 @@
+@startuml osm_wikidata_reverse
+
+map "**Wikidata item Q44301**" as wikia #a2d2ff {
+  label => Jim Morrison
+  P1442 (image of grave) => File:...
+  P119 (place of burial) => Q24265482
+}
+
+map "Wikidata item Q24265482" as wikid #a2d2ff {
+  label => grave of Jim Morrison
+}
+
+map "**OSM Node 1915793663**" as osmd #95d5b2 {
+  name => Jim Morrison
+  wikidata => Q24265482
+}
+
+wikid -[bold]-> wikia : burial place of
+note on link: inferred
+wikid <-- wikia : P119 (place of burial)
+osmd ..> wikid : wikidata
+osmd -[bold]-> wikia : burial place of
+note on link: inferred
+
+@enduml
