@@ -19,6 +19,7 @@ from airflow.exceptions import AirflowNotFoundException
 from Osm2pgsqlOperator import Osm2pgsqlOperator
 from LoadRelatedDockerOperator import LoadRelatedDockerOperator
 from TippecanoeOperator import TippecanoeOperator
+from TileJoinOperator import TileJoinOperator
 from Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 
 def get_absolute_path(filename:str, folder:str = None) -> str:
@@ -703,21 +704,39 @@ class OwmfDbInitDAG(DAG):
         )
         task_join_post_elaboration >> task_check_dump
 
-        task_dump_etymology_map = Ogr2ogrDumpOperator(
-            task_id = "dump_etymology_map",
+        details_dump = join(workdir,'etymology_map_details.fgb')
+        task_dump_etymology_map_details = Ogr2ogrDumpOperator(
+            task_id = "dump_etymology_map_details",
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
             dest_format = "FlatGeobuf",
-            dest_path = join(workdir,'etymology_map.fgb'),
-            query = "SELECT * FROM owmf.etymology_map_dump",
+            dest_path = details_dump,
+            query = "SELECT * FROM owmf.etymology_map_details_dump",
             doc_md=    """
             # FlatGeobuf dump
 
             Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
             """
         )
-        task_check_dump >> task_dump_etymology_map
+        task_check_dump >> task_dump_etymology_map_details
+
+        boundaries_dump = join(workdir,'etymology_map_boundaries.fgb')
+        task_dump_etymology_map_boundaries = Ogr2ogrDumpOperator(
+            task_id = "dump_etymology_map_boundaries",
+            dag = self,
+            task_group=group_vector_tiles,
+            postgres_conn_id = local_db_conn_id,
+            dest_format = "FlatGeobuf",
+            dest_path = boundaries_dump,
+            query = "SELECT * FROM owmf.etymology_map_boundaries_dump",
+            doc_md=    """
+            # FlatGeobuf dump
+
+            Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
+            """
+        )
+        task_check_dump >> task_dump_etymology_map_boundaries
 
         task_check_pmtiles = ShortCircuitOperator(
             task_id = "check_pmtiles",
@@ -728,24 +747,56 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_dump >> task_check_pmtiles
 
+        # https://github.com/felt/tippecanoe?tab=readme-ov-file#show-countries-at-low-zoom-levels-but-states-at-higher-zoom-levels
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#discontinuous-polygon-features-buildings-of-rhode-island-visible-at-all-zoom-levels
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#dropping-a-fixed-fraction-of-features-by-zoom-level
-        task_generate_etymology_map_pmtiles = TippecanoeOperator(
-            task_id = "generate_etymology_map_pmtiles",
+        details_pmtiles = join(workdir,'etymology_map_details.pmtiles')
+        task_generate_etymology_map_details_pmtiles = TippecanoeOperator(
+            task_id = "generate_etymology_map_details_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
-            input_file = join(workdir,'etymology_map.fgb'),
-            output_file = join(workdir,'etymology_map.pmtiles'),
+            input_file = details_dump,
+            output_file = details_pmtiles,
+            layer_name = "etymology_map",
+            min_zoom = 11,
+            # When changing the max zoom, change also the vector tile source max zoom in the frontend
+            # See https://gis.stackexchange.com/a/330575/196469
+            # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
+            max_zoom = 12,
+            extra_params = "--force --drop-densest-as-needed",
+            doc_md = TippecanoeOperator.__doc__
+        )
+        [task_check_pmtiles, task_dump_etymology_map_details] >> task_generate_etymology_map_details_pmtiles
+
+        boundaries_pmtiles = join(workdir,'etymology_map_boundaries.pmtiles')
+        task_generate_etymology_map_boundaries_pmtiles = TippecanoeOperator(
+            task_id = "generate_etymology_map_boundaries_pmtiles",
+            dag = self,
+            task_group = group_vector_tiles,
+            input_file = boundaries_dump,
+            output_file = boundaries_pmtiles,
             layer_name = "etymology_map",
             min_zoom = 1,
             # When changing the max zoom, change also the vector tile source max zoom in the frontend
             # See https://gis.stackexchange.com/a/330575/196469
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
-            max_zoom = 12,
-            extra_params = "--force -rf100 --drop-densest-as-needed",
+            max_zoom = 11,
+            extra_params = "--force --drop-densest-as-needed",
             doc_md = TippecanoeOperator.__doc__
         )
-        [task_check_pmtiles, task_dump_etymology_map] >> task_generate_etymology_map_pmtiles
+        [task_check_pmtiles, task_dump_etymology_map_boundaries] >> task_generate_etymology_map_boundaries_pmtiles
+
+        task_join_pmtiles = TileJoinOperator(
+            task_id = "join_pmtiles",
+            dag = self,
+            task_group = group_vector_tiles,
+            input_files = [details_pmtiles, boundaries_pmtiles],
+            output_file = join(workdir,'etymology_map.pmtiles'),
+            layer_name = "etymology_map",
+            extra_params = "--force",
+            doc_md = TippecanoeOperator.__doc__
+        )
+        [task_generate_etymology_map_boundaries_pmtiles, task_generate_etymology_map_details_pmtiles] >> task_join_pmtiles
 
         dataset_path = join(workdir,'dataset.csv')
         task_dump_dataset = PythonOperator(
@@ -783,7 +834,7 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        task_generate_etymology_map_pmtiles >> task_etymology_map_pmtiles_s3
+        task_join_pmtiles >> task_etymology_map_pmtiles_s3
 
         task_dataset_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_dataset_to_s3",
@@ -804,7 +855,7 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        task_dump_dataset >> task_dataset_s3
+        [task_etymology_map_pmtiles_s3, task_dump_dataset] >> task_dataset_s3
 
         task_date_pmtiles_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_date_pmtiles_to_s3",
