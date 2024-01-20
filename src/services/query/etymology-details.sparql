@@ -235,7 +235,10 @@ WHERE {
         VALUES ?groupType { wd:Q16334295 wd:Q10648343 wd:Q219160 } # Group of humans / Duo / Couple
         ?wikidata wdt:P31/wdt:P279? ?groupType;
                   wdt:P527 ?part.
-        MINUS { ?wikidata wdt:P31 wd:Q2472587. } # NOT a generic group of people
+        MINUS {
+          VALUES ?notGroupType { wd:Q41710 wd:Q2472587 wd:Q33829 } # ethnic group / people / human population
+          ?wikidata wdt:P31 ?notGroupType.
+        }
     }
 }
 GROUP BY ?wikidata

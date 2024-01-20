@@ -20,7 +20,6 @@ import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
 
-// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
     POINT_LAYER = '_layer_point',
@@ -31,7 +30,9 @@ const PMTILES_PREFIX = "pmtiles",
     POLYGON_FILL_LAYER = '_layer_polygon_fill',
     ELEMENTS_SOURCE = "elements_source",
     CLUSTER_LAYER = '_layer_cluster',
-    COUNT_LAYER = '_layer_count';
+    COUNT_LAYER = '_layer_count',
+    COUNTRY_ADMIN_LEVEL = 2,
+    PROVINCE_ADMIN_LEVEL = 6;
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
@@ -374,7 +375,7 @@ export class EtymologyMap extends Map {
 
         const key_id = backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "");
         this.prepareDetailsLayers(
-            0, "etymology_map", key_id, minZoomLevel, minZoomLevel, thresholdZoomLevel, thresholdZoomLevel
+            0, "etymology_map", key_id, minZoomLevel - 3, minZoomLevel, thresholdZoomLevel
         );
     }
 
@@ -479,18 +480,8 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     private prepareDetailsLayers(
-        minZoom: number, source_layer?: string, key_id?: string, minBoundaryZoom?: number, maxCountryZoom?: number, minStreetZoom?: number, maxBoundaryZoom?: number
+        minZoom: number, source_layer?: string, key_id?: string, maxCountryZoom?: number, maxRegionZoom?: number, maxBoundaryZoom?: number
     ) {
-        if (process.env.NODE_ENV === "development" && (
-            (minBoundaryZoom !== undefined && minBoundaryZoom < minZoom) ||
-            (maxCountryZoom !== undefined && maxCountryZoom < minZoom) ||
-            (minStreetZoom !== undefined && minStreetZoom < minZoom) ||
-            (maxBoundaryZoom !== undefined && maxBoundaryZoom < minZoom) ||
-            (minBoundaryZoom !== undefined && maxBoundaryZoom !== undefined && maxBoundaryZoom < minBoundaryZoom)
-        )) {
-            console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, minBoundaryZoom, maxCountryZoom, minStreetZoom, maxBoundaryZoom });
-        }
-
         const createFilter = (geometryType: Feature["type"]) => {
             const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
             if (key_id)
@@ -514,7 +505,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'circle',
                 "filter": pointFilter,
-                "minzoom": minStreetZoom ?? minZoom,
+                "minzoom": maxBoundaryZoom ?? minZoom,
                 'paint': {
                     'circle-color': '#ffffff',
                     'circle-opacity': 0,
@@ -539,7 +530,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'circle',
                 "filter": pointFilter,
-                "minzoom": minStreetZoom ?? minZoom,
+                "minzoom": maxBoundaryZoom ?? minZoom,
                 'paint': {
                     'circle-color': colorSchemes.blue.color,
                     'circle-opacity': 0.8,
@@ -570,7 +561,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'line',
                 "filter": lineStringFilter,
-                "minzoom": minStreetZoom ?? minZoom,
+                "minzoom": maxBoundaryZoom ?? minZoom,
                 'paint': {
                     'line-color': '#ffffff',
                     'line-opacity': 0,
@@ -595,7 +586,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'line',
                 "filter": lineStringFilter,
-                "minzoom": minStreetZoom ?? minZoom,
+                "minzoom": maxBoundaryZoom ?? minZoom,
                 'paint': {
                     'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
@@ -615,13 +606,24 @@ export class EtymologyMap extends Map {
         }
 
         const polygonFilter = createFilter("Polygon");
-        if (maxCountryZoom !== undefined && minBoundaryZoom !== undefined && maxBoundaryZoom !== undefined && minStreetZoom !== undefined) {
+        if (maxCountryZoom !== undefined && maxRegionZoom !== undefined && maxBoundaryZoom !== undefined) {
+            if (process.env.NODE_ENV === "development" && (
+                maxCountryZoom < minZoom ||
+                maxRegionZoom < minZoom ||
+                maxBoundaryZoom < minZoom ||
+                maxRegionZoom < maxCountryZoom ||
+                maxBoundaryZoom < maxRegionZoom
+            )) {
+                console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, maxCountryZoom, maxRegionZoom, maxBoundaryZoom });
+            }
+
             polygonFilter.push(["case",
-                ["all", ["has", "admin_level"], ["<", ["to-number", ["get", "admin_level"]], 4]], ["<", ["zoom"], maxCountryZoom], // Show country boundaries only below maxCountryZoom
-                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], minBoundaryZoom], ["<", ["zoom"], maxBoundaryZoom]], // Show non-country boundaries only between minBoundaryZoom and maxBoundaryZoom
-                [">=", ["zoom"], minStreetZoom], // Show non-boundaries only above minStreetZoom
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], maxCountryZoom], // Show country boundaries only below maxCountryZoom
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], maxCountryZoom], ["<", ["zoom"], maxRegionZoom]], // Show region boundaries only between maxCountryZoom and maxRegionZoom
+                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], maxRegionZoom], ["<", ["zoom"], maxBoundaryZoom]], // Show city boundaries only between maxRegionZoom and maxBoundaryZoom
+                [">=", ["zoom"], maxBoundaryZoom], // Show non-boundaries only above maxBoundaryZoom
             ]);
-            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, minBoundaryZoom, maxCountryZoom, minStreetZoom, maxBoundaryZoom });
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, maxCountryZoom, maxRegionZoom, maxBoundaryZoom });
         }
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
@@ -1175,7 +1177,7 @@ export class EtymologyMap extends Map {
         void this.setupGeocoder();
     }
 
-    addBaseControls() {
+    private addBaseControls() {
         // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
         this.addControl(new NavigationControl({
             visualizePitch: true
