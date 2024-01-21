@@ -159,6 +159,8 @@ Q838625,terrace,Nature,#77ff33
 Q523,star,Nature,#77ff33
 Q8928,constellation,Nature,#77ff33
 Q11344,chemical element,Nature,#77ff33
+Q9019918,endorheic lake,Nature,#77ff33
+Q1061151,massif,Nature,#77ff33
 Q1414991,area,Locations,#33ffbb
 Q1620908,historical region,Locations,#33ffbb
 Q35657,U.S. state,Locations,#33ffbb
@@ -188,6 +190,7 @@ Q1088391,rump state,Locations,#33ffbb
 Q51576574,Mediterranean country,Locations,#33ffbb
 Q7270,republic,Locations,#33ffbb
 Q3455524,administrative region,Locations,#33ffbb
+Q56061,administrative division,Locations,#33ffbb
 Q16110,region of Italy,Locations,#33ffbb
 Q253019,Ortsteil,Locations,#33ffbb
 Q387917,administrative territorial entity of Germany,Locations,#33ffbb
@@ -256,6 +259,8 @@ Q14756018,twins,People,#3399ff
 Q28914,patron saint,People,#3399ff
 Q43115,saint,People,#3399ff
 Q3117863,isolated human group,People,#3399ff
+Q2472587,people,People,#3399ff
+Q22947,inhabitant,People,#3399ff
 Q515,city,Human settlements,#7733ff
 Q1549591,big city,Human settlements,#7733ff
 Q1187811,college town,Human settlements,#7733ff

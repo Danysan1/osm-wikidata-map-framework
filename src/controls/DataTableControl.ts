@@ -134,7 +134,7 @@ export class DataTableControl implements IControl {
             tbody.appendChild(row);
 
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            const mainName = f.properties?.name || f.properties?.[localNameKey] || f.properties?.["name:en"],
+            const mainName = f.properties?.[localNameKey] || f.properties?.name || f.properties?.["name:en"],
                 nameArray: string[] = [];
             if (f.properties?.alt_name)
                 nameArray.push(...f.properties.alt_name.split(";"));

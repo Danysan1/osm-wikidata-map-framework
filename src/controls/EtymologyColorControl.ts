@@ -126,15 +126,15 @@ class EtymologyColorControl extends DropdownControl {
 
         const zoomLevel = this.getMap()?.getZoom();
         if (zoomLevel === undefined || zoomLevel < this.minZoomLevel) {
-            if (process.env.NODE_ENV === 'development') console.debug("updateChart: skipping chart update ", { zoomLevel, minZoomLevel: this.minZoomLevel, event });
+            if (process.env.NODE_ENV === 'development') console.debug("updateChart: too low zoom level, hiding dropdown and chart", { zoomLevel, minZoomLevel: this.minZoomLevel, event });
             this.showDropdown(false);
             return;
         }
 
         const anyLayerIsUnavailable = this.layerIDs.some(layerID => !this.getMap()?.getLayer(layerID));
         if (anyLayerIsUnavailable) {
-            if (process.env.NODE_ENV === 'development') console.debug("updateChart: layers not yet available, removing chart");
-            this.removeChart();
+            if (process.env.NODE_ENV === 'development') console.debug("updateChart: layers not yet available, hiding dropdown and chart");
+            this.showDropdown(false);
             return;
         }
 
@@ -164,6 +164,9 @@ class EtymologyColorControl extends DropdownControl {
         }
     }
 
+    /**
+     * Calculates the statistics using only local data (no Wikidata query) and loads it into the chart
+     */
     private calculateAndLoadChartData(
         colorSchemeID: ColorSchemeID,
         calculateChartData: (features: EtymologyFeatureProperties[]) => EtymologyStat[],
@@ -388,6 +391,9 @@ class EtymologyColorControl extends DropdownControl {
         showLoadingSpinner(false);
     }
 
+    /**
+     * Downloads the statistics from Wikidata and loads it into the chart
+     */
     private async downloadChartDataFromWikidata(colorSchemeID: ColorSchemeID) {
         showLoadingSpinner(true);
         let wikidataIDs: string[] = [];
@@ -425,6 +431,9 @@ class EtymologyColorControl extends DropdownControl {
         showLoadingSpinner(false);
     }
 
+    /**
+     * Common gateway for all statistics based on a query to Wikidata
+     */
     private async downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID: ColorSchemeID): Promise<EtymologyStat[] | null> {
         if (idSet.size === 0) {
             if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
@@ -648,6 +657,7 @@ class EtymologyColorControl extends DropdownControl {
                 this.getContainer()?.removeChild(this._chartDomElement);
                 this._chartDomElement = undefined;
                 this._chartJsObject = undefined;
+                this.lastColorSchemeID = undefined; // Force re-initialization of the chart when it is shown again
             } catch (error) {
                 console.warn("Error removing old chart", { error, chart: this._chartDomElement });
             }
@@ -657,9 +667,9 @@ class EtymologyColorControl extends DropdownControl {
     override showDropdown(show = true) {
         super.showDropdown(show);
 
-        if (!show) {
+        if (!show) { // If the dropdown must be hidden, also remove the chart
             this.removeChart();
-        } else if (!this._chartDomElement) {
+        } else if (!this._chartDomElement) { // If the dropdown must be shown but the chart is not yet initialized, initialize it
             this.updateChart();
         }
     }
