@@ -758,7 +758,7 @@ class OwmfDbInitDAG(DAG):
             input_file = details_dump,
             output_file = details_pmtiles,
             layer_name = "etymology_map",
-            min_zoom = 11,
+            min_zoom = 12,
             # When changing the max zoom, change also the vector tile source max zoom in the frontend
             # See https://gis.stackexchange.com/a/330575/196469
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts

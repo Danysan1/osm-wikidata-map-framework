@@ -31,7 +31,11 @@ const PMTILES_PREFIX = "pmtiles",
     ELEMENTS_SOURCE = "elements_source",
     CLUSTER_LAYER = '_layer_cluster',
     COUNT_LAYER = '_layer_count',
+    COUNTRY_MAX_ZOOM = 5,
     COUNTRY_ADMIN_LEVEL = 2,
+    STATE_MAX_ZOOM = 7,
+    STATE_ADMIN_LEVEL = 4,
+    PROVINCE_MAX_ZOOM = 9,
     PROVINCE_ADMIN_LEVEL = 6;
 
 export class EtymologyMap extends Map {
@@ -375,7 +379,7 @@ export class EtymologyMap extends Map {
 
         const key_id = backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "");
         this.prepareDetailsLayers(
-            0, "etymology_map", key_id, minZoomLevel - 3, minZoomLevel, thresholdZoomLevel
+            0, "etymology_map", key_id, COUNTRY_MAX_ZOOM, STATE_MAX_ZOOM, PROVINCE_MAX_ZOOM, thresholdZoomLevel
         );
     }
 
@@ -480,7 +484,13 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     private prepareDetailsLayers(
-        minZoom: number, source_layer?: string, key_id?: string, maxCountryZoom?: number, maxRegionZoom?: number, maxBoundaryZoom?: number
+        minZoom: number,
+        source_layer?: string,
+        key_id?: string,
+        maxCountryZoom?: number,
+        maxStateZoom?: number,
+        maxProvinceZoom?: number,
+        maxBoundaryZoom?: number
     ) {
         const createFilter = (geometryType: Feature["type"]) => {
             const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
@@ -606,24 +616,27 @@ export class EtymologyMap extends Map {
         }
 
         const polygonFilter = createFilter("Polygon");
-        if (maxCountryZoom !== undefined && maxRegionZoom !== undefined && maxBoundaryZoom !== undefined) {
+        if (maxCountryZoom !== undefined && maxStateZoom !== undefined && maxProvinceZoom !== undefined && maxBoundaryZoom !== undefined) {
             if (process.env.NODE_ENV === "development" && (
                 maxCountryZoom < minZoom ||
-                maxRegionZoom < minZoom ||
+                maxStateZoom < minZoom ||
+                maxProvinceZoom < minZoom ||
                 maxBoundaryZoom < minZoom ||
-                maxRegionZoom < maxCountryZoom ||
-                maxBoundaryZoom < maxRegionZoom
+                maxStateZoom < maxCountryZoom ||
+                maxProvinceZoom < maxStateZoom ||
+                maxBoundaryZoom < maxProvinceZoom
             )) {
-                console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, maxCountryZoom, maxRegionZoom, maxBoundaryZoom });
+                console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, maxCountryZoom, maxStateZoom, maxProvinceZoom, maxBoundaryZoom });
             }
 
             polygonFilter.push(["case",
                 ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], maxCountryZoom], // Show country boundaries only below maxCountryZoom
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], maxCountryZoom], ["<", ["zoom"], maxRegionZoom]], // Show region boundaries only between maxCountryZoom and maxRegionZoom
-                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], maxRegionZoom], ["<", ["zoom"], maxBoundaryZoom]], // Show city boundaries only between maxRegionZoom and maxBoundaryZoom
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], maxCountryZoom], ["<", ["zoom"], maxStateZoom]], // Show state boundaries only between maxCountryZoom and maxStateZoom
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], maxStateZoom], ["<", ["zoom"], maxProvinceZoom]], // Show province boundaries only between maxStateZoom and maxProvinceZoom
+                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], maxProvinceZoom], ["<", ["zoom"], maxBoundaryZoom]], // Show city boundaries only between maxProvinceZoom and maxBoundaryZoom
                 [">=", ["zoom"], maxBoundaryZoom], // Show non-boundaries only above maxBoundaryZoom
             ]);
-            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, maxCountryZoom, maxRegionZoom, maxBoundaryZoom });
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, maxCountryZoom, maxProvinceZoom, maxBoundaryZoom });
         }
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
