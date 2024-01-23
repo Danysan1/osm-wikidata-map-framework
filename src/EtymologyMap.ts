@@ -1,4 +1,4 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent, Feature } from 'maplibre-gl';
+import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent, Feature, DataDrivenPropertyValueSpecification } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 // import "@stadiamaps/maplibre-search-box/dist/style.css";
@@ -31,6 +31,8 @@ const PMTILES_PREFIX = "pmtiles",
     ELEMENTS_SOURCE = "elements_source",
     CLUSTER_LAYER = '_layer_cluster',
     COUNT_LAYER = '_layer_count',
+    POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
+    POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
     COUNTRY_MAX_ZOOM = 5,
     COUNTRY_ADMIN_LEVEL = 2,
     STATE_MAX_ZOOM = 7,
@@ -266,7 +268,7 @@ export class EtymologyMap extends Map {
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
             this.lastBackEndID = backEndID;
-            this.updateDetailsPMTilesSource(backEndID, minZoomLevel, thresholdZoomLevel);
+            this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
         } else if (!this.services?.length) {
             if (process.env.NODE_ENV === 'development') console.warn("updateDataSource: Services are still initializing, skipping source update");
         } else {
@@ -367,8 +369,8 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private updateDetailsPMTilesSource(backEndID: string, minZoomLevel: number, thresholdZoomLevel: number) {
-        if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles details source:", { backEndID, minZoomLevel, thresholdZoomLevel });
+    private updateDetailsPMTilesSource(backEndID: string, thresholdZoomLevel: number) {
+        if (process.env.NODE_ENV === 'development') console.debug("Updating pmtiles details source:", { backEndID, thresholdZoomLevel });
 
         this.removeSourceWithLayers(ELEMENTS_SOURCE);
 
@@ -379,7 +381,7 @@ export class EtymologyMap extends Map {
 
         const key_id = backEndID == "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "");
         this.prepareDetailsLayers(
-            0, "etymology_map", key_id, COUNTRY_MAX_ZOOM, STATE_MAX_ZOOM, PROVINCE_MAX_ZOOM, thresholdZoomLevel
+            0, "etymology_map", key_id, thresholdZoomLevel
         );
     }
 
@@ -484,13 +486,7 @@ export class EtymologyMap extends Map {
      * @see https://docs.mapbox.com/mapbox-gl-js/example/geojson-layer-in-stack/
      */
     private prepareDetailsLayers(
-        minZoom: number,
-        source_layer?: string,
-        key_id?: string,
-        maxCountryZoom?: number,
-        maxStateZoom?: number,
-        maxProvinceZoom?: number,
-        maxBoundaryZoom?: number
+        minZoom: number, source_layer?: string, key_id?: string, thresholdZoomLevel?: number
     ) {
         const createFilter = (geometryType: Feature["type"]) => {
             const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
@@ -515,7 +511,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'circle',
                 "filter": pointFilter,
-                "minzoom": maxBoundaryZoom ?? minZoom,
+                "minzoom": thresholdZoomLevel ?? minZoom,
                 'paint': {
                     'circle-color': '#ffffff',
                     'circle-opacity': 0,
@@ -540,7 +536,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'circle',
                 "filter": pointFilter,
-                "minzoom": maxBoundaryZoom ?? minZoom,
+                "minzoom": thresholdZoomLevel ?? minZoom,
                 'paint': {
                     'circle-color': colorSchemes.blue.color,
                     'circle-opacity': 0.8,
@@ -571,7 +567,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'line',
                 "filter": lineStringFilter,
-                "minzoom": maxBoundaryZoom ?? minZoom,
+                "minzoom": thresholdZoomLevel ?? minZoom,
                 'paint': {
                     'line-color': '#ffffff',
                     'line-opacity': 0,
@@ -596,7 +592,7 @@ export class EtymologyMap extends Map {
                 'source': DETAILS_SOURCE,
                 'type': 'line',
                 "filter": lineStringFilter,
-                "minzoom": maxBoundaryZoom ?? minZoom,
+                "minzoom": thresholdZoomLevel ?? minZoom,
                 'paint': {
                     'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
@@ -616,27 +612,29 @@ export class EtymologyMap extends Map {
         }
 
         const polygonFilter = createFilter("Polygon");
-        if (maxCountryZoom !== undefined && maxStateZoom !== undefined && maxProvinceZoom !== undefined && maxBoundaryZoom !== undefined) {
+        let lineWidth: DataDrivenPropertyValueSpecification<number>,
+            lineOffest: DataDrivenPropertyValueSpecification<number>;
+        if (thresholdZoomLevel !== undefined) {
             if (process.env.NODE_ENV === "development" && (
-                maxCountryZoom < minZoom ||
-                maxStateZoom < minZoom ||
-                maxProvinceZoom < minZoom ||
-                maxBoundaryZoom < minZoom ||
-                maxStateZoom < maxCountryZoom ||
-                maxProvinceZoom < maxStateZoom ||
-                maxBoundaryZoom < maxProvinceZoom
+                COUNTRY_MAX_ZOOM < minZoom || STATE_MAX_ZOOM < minZoom || PROVINCE_MAX_ZOOM < minZoom || thresholdZoomLevel < PROVINCE_MAX_ZOOM
             )) {
-                console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, maxCountryZoom, maxStateZoom, maxProvinceZoom, maxBoundaryZoom });
+                console.warn("prepareDetailsLayers: the zoom level setup doesn't make sense", { minZoom, COUNTRY_MAX_ZOOM, STATE_MAX_ZOOM, PROVINCE_MAX_ZOOM, thresholdZoomLevel });
             }
 
             polygonFilter.push(["case",
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], maxCountryZoom], // Show country boundaries only below maxCountryZoom
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], maxCountryZoom], ["<", ["zoom"], maxStateZoom]], // Show state boundaries only between maxCountryZoom and maxStateZoom
-                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], maxStateZoom], ["<", ["zoom"], maxProvinceZoom]], // Show province boundaries only between maxStateZoom and maxProvinceZoom
-                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], maxProvinceZoom], ["<", ["zoom"], maxBoundaryZoom]], // Show city boundaries only between maxProvinceZoom and maxBoundaryZoom
-                [">=", ["zoom"], maxBoundaryZoom], // Show non-boundaries only above maxBoundaryZoom
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], COUNTRY_ADMIN_LEVEL]], ["<", ["zoom"], COUNTRY_MAX_ZOOM], // Show country boundaries only below COUNTRY_MAX_ZOOM
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], STATE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], COUNTRY_MAX_ZOOM], ["<", ["zoom"], STATE_MAX_ZOOM]], // Show state boundaries only between COUNTRY_MAX_ZOOM and STATE_MAX_ZOOM
+                ["all", ["has", "admin_level"], ["<=", ["to-number", ["get", "admin_level"]], PROVINCE_ADMIN_LEVEL]], ["all", [">=", ["zoom"], STATE_MAX_ZOOM], ["<", ["zoom"], PROVINCE_MAX_ZOOM]], // Show province boundaries only between STATE_MAX_ZOOM and PROVINCE_MAX_ZOOM
+                ["to-boolean", ["get", "boundary"]], ["all", [">=", ["zoom"], PROVINCE_MAX_ZOOM], ["<", ["zoom"], thresholdZoomLevel]], // Show city boundaries only between PROVINCE_MAX_ZOOM and thresholdZoomLevel
+                [">=", ["zoom"], thresholdZoomLevel], // Show non-boundaries only above thresholdZoomLevel
             ]);
-            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, maxCountryZoom, maxProvinceZoom, maxBoundaryZoom });
+            if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsLayers: added boundary filter", { minZoom, COUNTRY_MAX_ZOOM, PROVINCE_MAX_ZOOM, thresholdZoomLevel });
+
+            lineWidth = ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH, thresholdZoomLevel, POLYGON_BORDER_HIGH_ZOOM_WIDTH];
+            lineOffest = ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH / 2, thresholdZoomLevel, POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2];
+        } else {
+            lineWidth = POLYGON_BORDER_HIGH_ZOOM_WIDTH;
+            lineOffest = POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2;
         }
         if (!this.getLayer(DETAILS_SOURCE + POLYGON_BORDER_LAYER)) {
             const spec: LineLayerSpecification = {
@@ -648,8 +646,8 @@ export class EtymologyMap extends Map {
                 'paint': {
                     'line-color': colorSchemes.blue.color,
                     'line-opacity': 0.6,
-                    'line-width': 4,
-                    'line-offset': 2, // https://docs.mapbox.com/mapbox-gl-js/style-spec/layers/#paint-line-line-offset
+                    'line-width': lineWidth,
+                    'line-offset': lineOffest, // https://maplibre.org/maplibre-style-spec/layers/#paint-line-line-offset
                 }
             };
             if (source_layer)

@@ -154,7 +154,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
 
         const mapcomplete_theme = getConfig("mapcomplete_theme"),
             element_mapcomplete_button = detail_container.querySelector<HTMLAnchorElement>('.element_mapcomplete_button'),
-            show_mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined;
+            show_mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined && !this.feature.properties?.boundary;
         if (!element_mapcomplete_button) {
             if (process.env.NODE_ENV === 'development') console.warn("Missing element_mapcomplete_button");
         } else if (show_mapcomplete) {
@@ -164,10 +164,11 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_mapcomplete_button.classList.add("hiddenElement");
         }
 
-        const element_id_button = detail_container.querySelector<HTMLAnchorElement>('.element_id_button');
+        const element_id_button = detail_container.querySelector<HTMLAnchorElement>('.element_id_button'),
+            show_id_editor = properties?.osm_type && properties?.osm_id && !properties?.boundary;
         if (!element_id_button) {
             if (process.env.NODE_ENV === 'development') console.warn("Missing element_id_button");
-        } else if (properties?.osm_type && properties?.osm_id) {
+        } else if (show_id_editor) {
             element_id_button.href = `https://www.openstreetmap.org/edit?editor=id&${properties.osm_type}=${properties.osm_id}`;
             element_id_button.classList.remove("hiddenElement");
         } else {

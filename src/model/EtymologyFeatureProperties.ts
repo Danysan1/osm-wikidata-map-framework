@@ -7,6 +7,12 @@ export interface EtymologyFeatureProperties {
      */
     alt_name?: string;
     /**
+     * Whether the feature is a boundary.
+     * For OSM features this means type=boundary or boundary=*.
+     * Currently not supported for Wikidata features.
+     */
+    boundary?: boolean;
+    /**
      * Name of the Wikimedia Commons category for this feature
      */
     commons?: string;
