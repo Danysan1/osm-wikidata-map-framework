@@ -22,13 +22,14 @@ const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
 
 export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
     picture: pictureStatsQuery,
-    link_count: wikilinkStatsQuery,
+    feature_link_count: wikilinkStatsQuery,
     type: typeStatsQuery,
     gender: genderStatsQuery,
     country: countryStatsQuery,
     occupation: occupationStatsQuery,
     startCentury: startCenturyStatsQuery,
     endCentury: endCenturyStatsQuery,
+    etymology_link_count: wikilinkStatsQuery,
 }
 
 export class WikidataStatsService extends WikidataService {

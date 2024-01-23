@@ -49,6 +49,7 @@
         "occupation": "Nach Tätigkeit",
         "start_century": "Nach Gründungs-/Geburtsjahrhundert",
         "end_century": "Nach Jahrhundert des Endes/Todes",
+        "link_count": "Nach Anzahl der Wikilinks",
         "feature_picture": "Nach Bildverfügbarkeit",
         "available": "Verfügbar",
         "unavailable": "Nicht verfügbar",

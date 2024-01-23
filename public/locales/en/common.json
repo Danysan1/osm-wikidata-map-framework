@@ -49,6 +49,7 @@
         "occupation": "By occupation",
         "start_century": "By start/birth century",
         "end_century": "By end/death century",
+        "link_count": "By Wikilink count",
         "feature_picture": "By picture availability",
         "available": "Available",
         "unavailable": "Unavailable",

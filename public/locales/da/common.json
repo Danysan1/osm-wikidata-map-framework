@@ -49,6 +49,7 @@
         "occupation": "Efter beskæftigelse",
         "start_century": "Efter start/fødselsårhundrede",
         "end_century": "Efter slut/dødsårhundrede",
+        "link_count": "Efter antal Wikilinks",
         "feature_picture": "Efter billedtilgængelighed",
         "available": "Tilgængelig",
         "unavailable": "Ikke tilgængelig",

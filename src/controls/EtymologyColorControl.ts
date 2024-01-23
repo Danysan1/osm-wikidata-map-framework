@@ -59,12 +59,15 @@ class EtymologyColorControl extends DropdownControl {
     private _chartInitInProgress = false;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: Chart;
+
     private lastWikidataIDs?: string[];
     private lastColorSchemeID?: ColorSchemeID;
     private lastBackEndID?: string;
     private lastBackground?: string;
     private lastFeatureCount?: number;
     private layerIDs: string[];
+
+    private customHandlers: Partial<Record<ColorSchemeID, () => void>>;
     private minZoomLevel: number;
     private osmTextOnlyLabel: string;
     private pictureAvailableLabel: string;
@@ -115,6 +118,13 @@ class EtymologyColorControl extends DropdownControl {
         this.osmTextOnlyLabel = t("color_scheme.osm_text_only", "OSM (Text only)");
         this.pictureAvailableLabel = t("color_scheme.available", "Available");
         this.pictureUnavailableLabel = t("color_scheme.unavailable", "Unavailable");
+
+        this.customHandlers = {
+            feature_source: () => this.loadFeatureSourceChartData(),
+            picture: () => void this.loadPictureAvailabilityChartData(),
+            feature_link_count: () => void this.loadWikilinkChartData(),
+            etymology_source: () => this.loadEtymologySourceChartData(),
+        };
     }
 
     private updateChart(event?: MapEvent | Event) {
@@ -139,18 +149,11 @@ class EtymologyColorControl extends DropdownControl {
         }
 
         const colorSchemeID = dropdown.value as ColorSchemeID,
-            colorScheme = colorSchemes[colorSchemeID];
+            colorScheme = colorSchemes[colorSchemeID],
+            customHandler = this.customHandlers[colorSchemeID];
         if (process.env.NODE_ENV === 'development') console.debug("updateChart: updating", { event, colorSchemeID, colorScheme });
-        if (colorSchemeID === ColorSchemeID.feature_source) {
-            this.loadFeatureSourceChartData();
-            if (event)
-                this.showDropdown();
-        } else if (colorSchemeID === ColorSchemeID.etymology_source) {
-            this.loadEtymologySourceChartData();
-            if (event)
-                this.showDropdown();
-        } else if (colorSchemeID === ColorSchemeID.picture) {
-            void this.loadPictureAvailabilityChartData();
+        if (customHandler) {
+            customHandler();
             if (event)
                 this.showDropdown();
         } else if (colorSchemeID in statsQueries) {
@@ -366,7 +369,7 @@ class EtymologyColorControl extends DropdownControl {
         this.setChartStats(stats)
 
         const statsData: (ExpressionSpecification | string)[] = []
-        stats.forEach((row: EtymologyStat) => {
+        stats.forEach(row => {
             const color = row.color;
             if (color && row.subjects?.length) {
                 row.subjects.forEach(subject => {
@@ -384,6 +387,52 @@ class EtymologyColorControl extends DropdownControl {
             ["!", ["has", "wikidata"]], NO_PICTURE_COLOR,
             ...statsData,
             NO_PICTURE_COLOR
+        ];
+        if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
+        this.setLayerColor(data);
+
+        showLoadingSpinner(false);
+    }
+
+    private async loadWikilinkChartData() {
+        showLoadingSpinner(true);
+        let propertiesList: EtymologyFeatureProperties[] | undefined;
+        try {
+            propertiesList = this.getMap()
+                ?.queryRenderedFeatures({ layers: this.layerIDs })
+                ?.map(feature => feature.properties);
+        } catch (error) {
+            if (process.env.NODE_ENV === 'development') console.error("Error querying rendered features", {
+                colorSchemeID: ColorSchemeID.picture, layers: this.layerIDs, error
+            });
+            return;
+        }
+
+        const wikidataIDs = new Set<string>();
+        propertiesList?.forEach(props => {
+            if (props.wikidata)
+                wikidataIDs.add(props.wikidata);
+        });
+        const stats = await this.downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count) ?? [];
+        this.setChartStats(stats)
+
+        const statsData: (ExpressionSpecification | string)[] = []
+        stats.forEach(row => {
+            const color = row.color;
+            if (color && row.subjects?.length) {
+                row.subjects.forEach(subject => {
+                    statsData.push(["==", subject, ["get", "wikidata"]], color);
+                });
+            } else {
+                if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
+            }
+        });
+
+        const data: ExpressionSpecification = [
+            "case",
+            ["!", ["has", "wikidata"]], FALLBACK_COLOR,
+            ...statsData,
+            FALLBACK_COLOR
         ];
         if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
         this.setLayerColor(data);

@@ -49,6 +49,7 @@
         "country": "Dropdown item for linked entity country statistics",
         "start_century": "Dropdown item for linked entity start/birth century statistics",
         "end_century": "Dropdown item for linked entity end/death century statistics",
+        "link_count": "Dropdown item for linked entity Wikilink count statistics",
         "feature_picture": "Dropdown item for feature picture availability statistics",
         "available": "Available",
         "unavailable": "Unavailable",
