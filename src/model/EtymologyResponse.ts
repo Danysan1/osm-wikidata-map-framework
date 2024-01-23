@@ -10,11 +10,11 @@ export interface EtymologyResponse extends FeatureCollection<Geometry, Etymology
      * ID of the backEnd used to fetch the features
      * 
      * Examples:
-     *  - db_all
-     *  - db_osm_name_etymology
-     *  - db_osm_wikidata_direct
-     *  - db_osm_wikidata_reverse
-     *  - db_propagated
+     *  - pmtiles_all
+     *  - pmtiles_osm_name_etymology
+     *  - pmtiles_osm_wikidata_direct
+     *  - pmtiles_osm_wikidata_reverse
+     *  - pmtiles_propagated
      *  - overpass_wd
      *  - overpass_all
      *  - overpass_osm_name_etymology

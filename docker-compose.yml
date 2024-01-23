@@ -433,10 +433,7 @@ services:
       retries: 5
     restart: unless-stopped
     profiles:
-      - dev
-      - lambda-dev
       - airflow
-      - db
 
   pgadmin:
     image: dpage/pgadmin4:7.8
@@ -460,7 +457,6 @@ services:
     restart: unless-stopped
     profiles:
       - dev
-      - lambda-dev
   
   swagger-ui:
     image: swaggerapi/swagger-ui:v5.1.0
@@ -576,41 +572,6 @@ services:
     command: -config.file=/etc/promtail/config.yaml
     profiles:
       - promtail
-
-  owmf-lambda-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: lambda-dev
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda-dev:${owmf_framework_image_tag:-latest}
-    env_file:
-      - .env
-    ports:
-      - "9000:8080"
-    networks:
-      - owmf-internal
-    restart: unless-stopped
-    volumes:
-      - ./public:/var/task/html
-      - ./app:/var/task/app
-    profiles:
-      - lambda-dev
-
-  owmf-lambda-prod:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: lambda-dev
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/lambda:${owmf_framework_image_tag:-latest}
-    env_file:
-      - .env
-    ports:
-      - "9000:8080"
-    networks:
-      - owmf-internal
-    restart: unless-stopped
-    profiles:
-      - lambda-prod
 
   owmf-load-related:
     build:

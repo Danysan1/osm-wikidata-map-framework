@@ -4,7 +4,6 @@ declare(strict_types=1);
 require_once(__DIR__ . "/funcs.php");
 
 use \App\Config\IniEnvConfiguration;
-use \App\PostGIS_PDO;
 
 $conf = new IniEnvConfiguration();
 prepareHTML($conf);

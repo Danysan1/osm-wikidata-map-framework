@@ -77,21 +77,3 @@ USER www-data
 
 COPY --chown=www-data:www-data ./public /var/www/html
 COPY --chown=www-data:www-data --from=npm-install /npm_app/public/dist /var/www/html/dist
-
-
-
-
-
-# https://aws.amazon.com/it/blogs/compute/building-php-lambda-functions-with-docker-container-images/
-# https://bref.sh/docs/web-apps/docker
-# https://docs.aws.amazon.com/lambda/latest/dg/images-create.html#images-types
-# https://gallery.ecr.aws/lambda/provided
-FROM bref/php-83-fpm-dev:2 as lambda-dev
-COPY --from=bref/extra-pgsql-php-83 /opt /opt
-COPY --from=dev /var/www /var/task
-ENV HANDLER=html/lambda.php
-
-FROM bref/php-83-fpm:2 as lambda-prod
-COPY --from=bref/extra-pgsql-php-83 /opt /opt
-COPY --from=prod /var/www /var/task
-CMD ["html/lambda.php"]
