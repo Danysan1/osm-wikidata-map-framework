@@ -344,8 +344,11 @@ class EtymologyColorControl extends DropdownControl {
             else
                 without_picture_IDs.add(id);
         });
-        const stats = await this.downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture) ?? [],
-            withPictureObject = stats.find(stat => stat.id === 'available'),
+        const stats = await this.downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture);
+        if (!stats)
+            return;
+
+        const withPictureObject = stats.find(stat => stat.id === 'available'),
             withoutPictureObject = stats.find(stat => stat.id === 'unavailable');
         if (withPictureObject) {
             withPictureObject.name = this.pictureAvailableLabel;
@@ -413,7 +416,10 @@ class EtymologyColorControl extends DropdownControl {
             if (props.wikidata)
                 wikidataIDs.add(props.wikidata);
         });
-        const stats = await this.downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count) ?? [];
+        const stats = await this.downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count);
+        if (!stats)
+            return;
+        
         this.setChartStats(stats)
 
         const statsData: (ExpressionSpecification | string)[] = []
