@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { getConfig } from "./config";
 import type { SeverityLevel } from "@sentry/browser";
-import type { Extras, Integration } from '@sentry/types';
+import type { Extras } from '@sentry/types';
 
 /**
  * @see https://docs.sentry.io/platforms/javascript/
@@ -14,21 +14,9 @@ function initSentry() {
     const dsn = getConfig("sentry_js_dsn"),
         environment = getConfig("sentry_js_env");
     if (dsn && environment) {
-        import("./Sentry").then(({ init, Replay }) => {
-            const rawReplaysSessionSampleRate = getConfig("sentry_js_replays_session_sample_rate"),
-                rawReplaysOnErrorSampleRate = getConfig("sentry_js_replays_on_error_sample_rate"),
-                replaysSessionSampleRate = rawReplaysSessionSampleRate ? parseFloat(rawReplaysSessionSampleRate) : 0,
-                replaysOnErrorSampleRate = rawReplaysOnErrorSampleRate ? parseFloat(rawReplaysOnErrorSampleRate) : 0,
-                enableReplay = replaysSessionSampleRate > 0 || replaysOnErrorSampleRate > 0,
-                integrations: Integration[] = [];
-
-            if (enableReplay)
-                integrations.push(new Replay({ maskAllText: true, blockAllMedia: true }));
-
-            if (process.env.NODE_ENV === 'development') console.debug("Initializing Sentry", {
-                dsn, environment, rawReplaysOnErrorSampleRate, replaysOnErrorSampleRate, enableReplay
-            });
-            init({ dsn, environment, replaysSessionSampleRate, replaysOnErrorSampleRate, integrations });
+        import("./Sentry").then(({ init }) => {
+            if (process.env.NODE_ENV === 'development') console.debug("Initializing Sentry", { dsn, environment });
+            init({ dsn, environment });
         }).catch((err) => console.error("Failed loading Sentry due to an error", err));
     }
 }

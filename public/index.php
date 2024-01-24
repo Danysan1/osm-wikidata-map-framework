@@ -143,8 +143,6 @@ if ($conf->has("pmtiles_base_url"))
     <?= $conf->getMetaTag("matomo_id", true); ?>
     <?= $conf->getMetaTag("sentry_js_dsn", true); ?>
     <?= $conf->getMetaTag("sentry_js_env", true); ?>
-    <?= $conf->getMetaTag("sentry_js_replays_session_sample_rate", true); ?>
-    <?= $conf->getMetaTag("sentry_js_replays_on_error_sample_rate", true); ?>
     <?= $conf->getJsonScriptTag("overpass_endpoints", true); ?>
     <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
     <?= $conf->getMetaTag("mapcomplete_theme", true); ?>
