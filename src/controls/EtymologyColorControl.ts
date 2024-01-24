@@ -345,55 +345,53 @@ class EtymologyColorControl extends DropdownControl {
                 without_picture_IDs.add(id);
         });
         const stats = await this.downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture);
-        if (!stats)
-            return;
-
-        const withPictureObject = stats.find(stat => stat.id === 'available'),
-            withoutPictureObject = stats.find(stat => stat.id === 'unavailable');
-        if (withPictureObject) {
-            withPictureObject.name = this.pictureAvailableLabel;
-            withPictureObject.color = HAS_PICTURE_COLOR;
-            withPictureObject.count += with_picture_IDs.size;
-        } else {
-            stats.push({
-                name: this.pictureAvailableLabel, color: HAS_PICTURE_COLOR, count: with_picture_IDs.size, id: 'available'
-            });
-        }
-        if (withoutPictureObject) {
-            withoutPictureObject.name = this.pictureUnavailableLabel;
-            withoutPictureObject.color = NO_PICTURE_COLOR;
-            withoutPictureObject.count += without_picture_IDs.size;
-        } else {
-            stats.push({
-                name: this.pictureUnavailableLabel, color: NO_PICTURE_COLOR, count: without_picture_IDs.size, id: 'unavailable'
-            });
-        }
-
-        this.setChartStats(stats)
-
-        const statsData: (ExpressionSpecification | string)[] = []
-        stats.forEach(row => {
-            const color = row.color;
-            if (color && row.subjects?.length) {
-                row.subjects.forEach(subject => {
-                    statsData.push(["==", subject, ["get", "wikidata"]], color);
-                });
+        if (stats) {
+            const withPictureObject = stats.find(stat => stat.id === 'available'),
+                withoutPictureObject = stats.find(stat => stat.id === 'unavailable');
+            if (withPictureObject) {
+                withPictureObject.name = this.pictureAvailableLabel;
+                withPictureObject.color = HAS_PICTURE_COLOR;
+                withPictureObject.count += with_picture_IDs.size;
             } else {
-                if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
+                stats.push({
+                    name: this.pictureAvailableLabel, color: HAS_PICTURE_COLOR, count: with_picture_IDs.size, id: 'available'
+                });
             }
-        });
+            if (withoutPictureObject) {
+                withoutPictureObject.name = this.pictureUnavailableLabel;
+                withoutPictureObject.color = NO_PICTURE_COLOR;
+                withoutPictureObject.count += without_picture_IDs.size;
+            } else {
+                stats.push({
+                    name: this.pictureUnavailableLabel, color: NO_PICTURE_COLOR, count: without_picture_IDs.size, id: 'unavailable'
+                });
+            }
 
-        const data: ExpressionSpecification = [
-            "case",
-            ["has", "picture"], HAS_PICTURE_COLOR,
-            ["has", "commons"], HAS_PICTURE_COLOR,
-            ["!", ["has", "wikidata"]], NO_PICTURE_COLOR,
-            ...statsData,
-            NO_PICTURE_COLOR
-        ];
-        if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
-        this.setLayerColor(data);
+            this.setChartStats(stats)
 
+            const statsData: (ExpressionSpecification | string)[] = []
+            stats.forEach(row => {
+                const color = row.color;
+                if (color && row.subjects?.length) {
+                    row.subjects.forEach(subject => {
+                        statsData.push(["==", subject, ["get", "wikidata"]], color);
+                    });
+                } else {
+                    if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
+                }
+            });
+
+            const data: ExpressionSpecification = [
+                "case",
+                ["has", "picture"], HAS_PICTURE_COLOR,
+                ["has", "commons"], HAS_PICTURE_COLOR,
+                ["!", ["has", "wikidata"]], NO_PICTURE_COLOR,
+                ...statsData,
+                NO_PICTURE_COLOR
+            ];
+            if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
+            this.setLayerColor(data);
+        }
         showLoadingSpinner(false);
     }
 
@@ -417,32 +415,31 @@ class EtymologyColorControl extends DropdownControl {
                 wikidataIDs.add(props.wikidata);
         });
         const stats = await this.downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count);
-        if (!stats)
-            return;
-        
-        this.setChartStats(stats)
+        if (stats) {
 
-        const statsData: (ExpressionSpecification | string)[] = []
-        stats.forEach(row => {
-            const color = row.color;
-            if (color && row.subjects?.length) {
-                row.subjects.forEach(subject => {
-                    statsData.push(["==", subject, ["get", "wikidata"]], color);
-                });
-            } else {
-                if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
-            }
-        });
+            this.setChartStats(stats)
 
-        const data: ExpressionSpecification = [
-            "case",
-            ["!", ["has", "wikidata"]], FALLBACK_COLOR,
-            ...statsData,
-            FALLBACK_COLOR
-        ];
-        if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
-        this.setLayerColor(data);
+            const statsData: (ExpressionSpecification | string)[] = []
+            stats.forEach(row => {
+                const color = row.color;
+                if (color && row.subjects?.length) {
+                    row.subjects.forEach(subject => {
+                        statsData.push(["==", subject, ["get", "wikidata"]], color);
+                    });
+                } else {
+                    if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
+                }
+            });
 
+            const data: ExpressionSpecification = [
+                "case",
+                ["!", ["has", "wikidata"]], FALLBACK_COLOR,
+                ...statsData,
+                FALLBACK_COLOR
+            ];
+            if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: setting layer color", data);
+            this.setLayerColor(data);
+        }
         showLoadingSpinner(false);
     }
 
