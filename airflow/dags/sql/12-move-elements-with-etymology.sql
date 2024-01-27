@@ -13,15 +13,7 @@ INSERT INTO owmf.element (
     osm_geometry,
     osm_osm_type,
     osm_osm_id,
-    JSONB_BUILD_OBJECT(
-            'name:da', wd_name_da,
-            'name:de', wd_name_de,
-            'name:en', wd_name_en,
-            'name:es', wd_name_es,
-            'name:fr', wd_name_fr,
-            'name:it', wd_name_it,
-            'wikimedia_commons', wd_commons
-        ) || osm_tags,
+    COALESCE(wd_pseudo_tags||osm_tags, osm_tags, wd_pseudo_tags), -- https://stackoverflow.com/a/44038002/2347196
     osm_has_text_etymology,
     wd_wikidata_cod,
     COALESCE(
