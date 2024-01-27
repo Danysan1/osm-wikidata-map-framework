@@ -763,7 +763,7 @@ class OwmfDbInitDAG(DAG):
             # See https://gis.stackexchange.com/a/330575/196469
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
             max_zoom = 12,
-            extra_params = "--force --drop-densest-as-needed",
+            extra_params = "--force",
             doc_md = TippecanoeOperator.__doc__
         )
         [task_check_pmtiles, task_dump_etymology_map_details] >> task_generate_etymology_map_details_pmtiles
