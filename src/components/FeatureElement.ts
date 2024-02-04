@@ -293,7 +293,7 @@ export class FeatureElement extends HTMLDivElement {
         }
     }
 
-    private async downloadEtymologyDetails(etymologies?: Etymology[], maxItems = 100): Promise<Etymology[]> {
+    private async downloadEtymologyDetails(etymologies?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> {
         if (!etymologies?.length)
             return [];
 
@@ -318,13 +318,12 @@ export class FeatureElement extends HTMLDivElement {
 
         try {
             const detailsService = new WikidataDetailsService(),
-                downlodedEtymologies = await detailsService.fetchEtymologyDetails(etymologyIDs);
-            return sortedIDs.map(
-                (wikidataID): Etymology => ({
-                    ...etymologies.find(oldEty => oldEty.wikidata === wikidataID),
-                    ...(downlodedEtymologies[wikidataID] || {})
-                })
-            );
+                downloadedEtymologies = await detailsService.fetchEtymologyDetails(etymologyIDs);
+            return sortedIDs.map((wikidataID): EtymologyDetails => {
+                const baseEntity = etymologies.find(oldEty => oldEty.wikidata === wikidataID),
+                    downloadedDetails = downloadedEtymologies[wikidataID];
+                return { ...baseEntity, ...downloadedDetails };
+            });
         } catch (err) {
             console.error("Failed downloading etymology details", etymologyIDs, err);
             return etymologies;

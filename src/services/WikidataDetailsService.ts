@@ -41,7 +41,8 @@ export class WikidataDetailsService extends WikidataService {
                     ?.map(id => id.replace(WikidataService.WD_ENTITY_PREFIX, ""))
                     ?.filter(id => id.length);
 
-                acc[wdQID] = {
+                const details = {
+                    alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                     birth_date: row.birth_date?.value,
                     birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,
                     birth_place: row.birth_place?.value,
@@ -71,6 +72,11 @@ export class WikidataDetailsService extends WikidataService {
                     wikidata: wdQID,
                     parts,
                 };
+
+                acc[wdQID] = details;
+                if (details.alias?.length)
+                    acc[details.alias] = details;
+
                 return acc;
             }, {});
             try {

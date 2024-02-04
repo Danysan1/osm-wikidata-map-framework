@@ -22,6 +22,10 @@ export const enum DatePrecision {
  * Extended details for the subject of an etymology.
  */
 export interface EtymologyDetails extends Etymology {
+    /**
+     * Q-ID of an alias Wikidata entity (which redirects to the main entity through owl:sameAs)
+     */
+    alias?: string;
     birth_date?: string;
     birth_date_precision?: DatePrecision;
     birth_place?: string;
