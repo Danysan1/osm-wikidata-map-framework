@@ -43,7 +43,6 @@ function showSnackbar(message: string, color = "lightcoral", timeout = 3000) {
 /**
  * Enable or disable the loading spinner
  * 
- * @see https://github.com/mapbox/mapbox-gl-js/issues/6178#issuecomment-366394651
  * @see https://projects.lukehaas.me/css-loaders/
  */
 function showLoadingSpinner(on = true) {

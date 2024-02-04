@@ -1,7 +1,4 @@
 import type { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
-
-// import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent } from 'mapbox-gl';
-
 import { logErrorMessage } from '../monitoring';
 import { loadTranslator } from '../i18n';
 
@@ -17,7 +14,6 @@ export interface DropdownItem {
  * 
  * Control implemented as ES6 class
  * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/maplibregl.IControl/
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
 export class DropdownControl implements IControl {
     private _buttonContent: string;

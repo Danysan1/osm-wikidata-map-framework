@@ -1,6 +1,4 @@
-import type { GeoJSONFeature } from 'maplibre-gl';
-
-// import { MapboxGeoJSONFeature as GeoJSONFeature } from 'mapbox-gl';
+import type { MapGeoJSONFeature } from 'maplibre-gl';
 
 import { etymologyToDomElement } from "./EtymologyElement";
 import { getBoolConfig } from "../config";
@@ -16,7 +14,7 @@ import { WikidataService, WikidataDetailsService } from '../services';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
-    private _feature?: GeoJSONFeature;
+    private _feature?: MapGeoJSONFeature;
 
     constructor() {
         super();
@@ -33,11 +31,11 @@ export class FeatureElement extends HTMLDivElement {
         this.render();
     }
 
-    get feature(): GeoJSONFeature | undefined {
+    get feature(): MapGeoJSONFeature | undefined {
         return this._feature;
     }
 
-    set feature(feature: GeoJSONFeature | undefined) {
+    set feature(feature: MapGeoJSONFeature | undefined) {
         if (!feature) {
             this._feature = undefined;
             if (process.env.NODE_ENV === 'development') console.debug("FeatureElement: unsetting feature");
@@ -336,7 +334,7 @@ export class FeatureElement extends HTMLDivElement {
 
 customElements.define('owmf-feature-element', FeatureElement, { extends: 'div' });
 
-export function featureToDomElement(feature: GeoJSONFeature, currentZoom = 12.5): FeatureElement {
+export function featureToDomElement(feature: MapGeoJSONFeature, currentZoom = 12.5): FeatureElement {
     const element = document.createElement("div", { is: 'owmf-feature-element' }) as FeatureElement;
     element.currentZoom = currentZoom;
     element.feature = feature;

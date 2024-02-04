@@ -1,7 +1,4 @@
 import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
-
-// import { MapboxEvent as MapEvent, MapSourceDataEvent, Expression as ExpressionSpecification } from 'mapbox-gl';
-
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { getCorrectFragmentParams, getFragmentParams } from '../fragment';
 import { getConfig, getStringArrayConfig } from '../config';

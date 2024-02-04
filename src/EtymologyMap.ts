@@ -1,11 +1,7 @@
-import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, GeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent, Feature, DataDrivenPropertyValueSpecification } from 'maplibre-gl';
+import { Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceSpecification, LngLatLike, CircleLayerSpecification, SymbolLayerSpecification, MapMouseEvent, MapGeoJSONFeature, MapSourceDataEvent, RequestTransformFunction, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification, MapStyleDataEvent, Feature, DataDrivenPropertyValueSpecification, setRTLTextPlugin, addProtocol } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
-// import "@stadiamaps/maplibre-search-box/dist/style.css";
 // import "maplibre-gl-inspect/dist/maplibre-gl-inspect.css";
-
-// import { default as mapLibrary, Map, Popup, NavigationControl, GeolocateControl, ScaleControl, FullscreenControl, GeoJSONSource, GeoJSONSourceRaw as GeoJSONSourceSpecification, LngLatLike, CircleLayer as CircleLayerSpecification, SymbolLayer as SymbolLayerSpecification, MapMouseEvent, MapboxGeoJSONFeature as GeoJSONFeature, MapSourceDataEvent, MapDataEvent, TransformRequestFunction as RequestTransformFunction, LngLat, VectorTileSource, LineLayerSpecification, FillExtrusionLayerSpecification, ExpressionSpecification, FilterSpecification } from 'mapbox-gl';
-// import 'mapbox-gl/dist/mapbox-gl.css';
 
 import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
@@ -96,15 +92,13 @@ export class EtymologyMap extends Map {
         void this.addSecondaryControls();
 
         // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
-        mapLibrary.setRTLTextPlugin(
+        setRTLTextPlugin(
             'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
-            err => {
-                if (err)
-                    console.error("Error loading mapbox-gl-rtl-text", err)
-                else if (process.env.NODE_ENV === 'development')
-                    console.debug("mapbox-gl-rtl-text loaded")
-            },
             true // Lazy load the plugin
+        ).then(() => {
+            if (process.env.NODE_ENV === 'development') console.debug("mapbox-gl-rtl-text loaded");
+        }).catch(
+            err => console.error("Error loading mapbox-gl-rtl-text", err)
         );
     }
 
@@ -447,8 +441,8 @@ export class EtymologyMap extends Map {
         if (!this.getSource(vectorSourceID)) {
             if (process.env.NODE_ENV === 'development') console.debug("preparePMTilesSource: Creating PMTiles source", { vectorSourceID, fullPMTilesURL, minZoom, maxZoom });
 
-            const protocol = new Protocol();
-            mapLibrary.addProtocol("pmtiles", protocol.tile);
+            const pmtilesProtocol = new Protocol();
+            addProtocol("pmtiles", pmtilesProtocol.tile);
 
             this.addSource(vectorSourceID, {
                 type: 'vector',
@@ -838,7 +832,7 @@ export class EtymologyMap extends Map {
      * @see https://maplibre.org/maplibre-gl-js-docs/example/popup-on-click/
      * @see https://docs.mapbox.com/mapbox-gl-js/example/popup-on-click/
      */
-    private onWikidataLayerClick(ev: MapMouseEvent & { features?: GeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
+    private onWikidataLayerClick(ev: MapMouseEvent & { features?: MapGeoJSONFeature[] | undefined; popupAlreadyShown?: boolean | undefined }) {
         if (ev.popupAlreadyShown) {
             if (process.env.NODE_ENV === 'development') console.debug("onWikidataLayerClick: etymology popup already shown", ev);
         } else if (!ev.features) {
@@ -893,7 +887,7 @@ export class EtymologyMap extends Map {
         if (typeof config.data === "string")
             newSourceDataURL = config.data;
         else if (config.data && typeof config.data === "object")
-            newSourceDataURL = config.data as GeoJSON;
+            newSourceDataURL = config.data;
 
         const oldSourceDataURL = sourceObject?._data,
             sourceUrlChanged = !!newSourceDataURL && !!oldSourceDataURL && oldSourceDataURL !== newSourceDataURL;
@@ -1095,7 +1089,7 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private getClickedClusterFeature(layerId: string, event: MapMouseEvent): GeoJSONFeature {
+    private getClickedClusterFeature(layerId: string, event: MapMouseEvent): MapGeoJSONFeature {
         const features = this.queryRenderedFeatures(event.point, { layers: [layerId] }),
             feature = features[0];
         if (!feature)

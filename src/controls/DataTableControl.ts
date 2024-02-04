@@ -1,7 +1,4 @@
 import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } from 'maplibre-gl';
-
-// import { IControl, Map, MapSourceDataEvent, MapboxEvent as MapEvent, Popup } from 'mapbox-gl';
-
 import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
