@@ -119,19 +119,19 @@ function initMap() {
  * @see https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
  */
 function isWebglSupported() {
-    if (window.WebGLRenderingContext) {
-        const canvas = document.createElement('canvas');
-        try {
-            const context = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
-            if (context && typeof context.getParameter == 'function') {
-                return true;
-            }
-        } catch (e) {
-            // WebGL is supported, but disabled
-        }
+    if (!window.WebGLRenderingContext) // WebGL not supported
         return false;
+
+    const canvas = document.createElement('canvas');
+    try {
+        const context = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+        if (context && typeof context.getParameter == 'function') {
+            return true;
+        }
+    } catch (e) {
+        // WebGL is supported, but disabled
     }
-    // WebGL not supported
+
     return false;
 }
 

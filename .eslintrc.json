@@ -18,5 +18,8 @@
     "plugins": [
         "@typescript-eslint"
     ],
-    "root": true
+    "root": true,
+    "rules": {
+        "no-constant-binary-expression": "error"
+    }
 }
