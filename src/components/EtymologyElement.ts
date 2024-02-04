@@ -184,7 +184,8 @@ export class EtymologyElement extends HTMLDivElement {
 
                 if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
                     location_button.addEventListener("click", () => {
-                        setFragmentParams(ety_lon, ety_lat, this.currentZoom);
+                        const destinationZoomLevel = Math.max(this.currentZoom, Math.min(this.currentZoom + 2, 18));
+                        setFragmentParams(ety_lon, ety_lat, destinationZoomLevel);
                         return false;
                     });
                     location_button.classList.remove("hiddenElement");

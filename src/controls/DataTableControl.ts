@@ -145,7 +145,7 @@ export class DataTableControl implements IControl {
             }
 
             const names = nameArray.join(" / "),
-                destinationZoomLevel = Math.max(currentZoomLevel, 18),
+                destinationZoomLevel = Math.max(currentZoomLevel, Math.min(currentZoomLevel + 2, 18)),
                 etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
                 featureWikidataIDs = etymologies?.map(e => e.wikidata ?? "").filter(id => id != ""),
                 namesCell = document.createElement("td"),
