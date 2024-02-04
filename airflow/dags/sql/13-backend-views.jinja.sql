@@ -54,8 +54,9 @@ LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd
 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
 WHERE el.el_tags IS NOT NULL AND (
     el.el_tags ? 'boundary' OR
-    (el.el_tags ? 'type' AND el.el_tags->>'type' = 'boundary') OR
-    (el.el_tags ? 'place' AND el.el_tags->>'place' = 'island')
+    NOT el.el_tags ? 'type' OR
+    el.el_tags->>'type' = 'boundary' OR
+    (el.el_tags ? 'place' AND el.el_tags->>'type' = 'multipolygon' AND (el.el_tags->>'place' = 'region' OR el.el_tags->>'place' = 'island'))
 )
 GROUP BY el.el_id;
 
@@ -113,8 +114,9 @@ LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd
 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
 WHERE el.el_tags IS NULL OR NOT (
     el.el_tags ? 'boundary' OR
-    (el.el_tags ? 'type' AND el.el_tags->>'type' = 'boundary') OR
-    (el.el_tags ? 'place' AND el.el_tags->>'place' = 'island')
+    NOT el.el_tags ? 'type' OR
+    el.el_tags->>'type' = 'boundary' OR
+    (el.el_tags ? 'place' AND el.el_tags->>'type' = 'multipolygon' AND (el.el_tags->>'place' = 'region' OR el.el_tags->>'place' = 'island'))
 )
 GROUP BY el.el_id;
 
