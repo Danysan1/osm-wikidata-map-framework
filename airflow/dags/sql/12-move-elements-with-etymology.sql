@@ -4,7 +4,7 @@ INSERT INTO owmf.element (
     el_osm_type,
     el_osm_id,
     el_tags,
-    el_has_text_etymology,
+    el_is_boundary,
     el_wikidata_cod,
     el_commons,
     el_wikipedia
@@ -14,7 +14,11 @@ INSERT INTO owmf.element (
     osm_osm_type,
     osm_osm_id,
     COALESCE(wd_pseudo_tags||osm_tags, osm_tags, wd_pseudo_tags), -- https://stackoverflow.com/a/44038002/2347196
-    osm_has_text_etymology,
+    osm_tags IS NOT NULL AND (
+        osm_tags ? 'boundary' OR
+        (osm_tags ? 'type' AND osm_tags->>'type' = 'boundary') OR
+        (osm_tags ? 'type' AND osm_tags ? 'place' AND osm_tags->>'type' = 'multipolygon' AND (osm_tags->>'place' = 'region' OR osm_tags->>'place' = 'sea' OR osm_tags->>'place' = 'island'))
+    ),
     wd_wikidata_cod,
     COALESCE(
         SUBSTRING(osm_tags->>'wikimedia_commons' FROM '^([^;]+)'),

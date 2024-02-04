@@ -52,12 +52,7 @@ LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
 LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd_id
 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
-WHERE el.el_tags IS NOT NULL AND (
-    el.el_tags ? 'boundary' OR
-    NOT el.el_tags ? 'type' OR
-    el.el_tags->>'type' = 'boundary' OR
-    (el.el_tags ? 'place' AND el.el_tags->>'type' = 'multipolygon' AND (el.el_tags->>'place' = 'region' OR el.el_tags->>'place' = 'island'))
-)
+WHERE el.el_is_boundary
 GROUP BY el.el_id;
 
 CREATE OR REPLACE VIEW owmf.etymology_map_details_dump AS
@@ -112,12 +107,7 @@ LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
 LEFT JOIN owmf.wikidata AS from_wd ON from_wd.wd_id = et.et_from_osm_wikidata_wd_id
 LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
-WHERE el.el_tags IS NULL OR NOT (
-    el.el_tags ? 'boundary' OR
-    NOT el.el_tags ? 'type' OR
-    el.el_tags->>'type' = 'boundary' OR
-    (el.el_tags ? 'place' AND el.el_tags->>'type' = 'multipolygon' AND (el.el_tags->>'place' = 'region' OR el.el_tags->>'place' = 'island'))
-)
+WHERE NOT el.el_is_boundary
 GROUP BY el.el_id;
 
 CREATE MATERIALIZED VIEW IF NOT EXISTS owmf.vm_elements AS

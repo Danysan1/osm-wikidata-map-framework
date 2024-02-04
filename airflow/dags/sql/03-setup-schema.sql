@@ -66,7 +66,7 @@ CREATE TABLE owmf.element (
     el_osm_type VARCHAR(8) CHECK (el_osm_type IN ('node','way','relation')),
     el_osm_id BIGINT,
     el_tags JSONB,
-    el_has_text_etymology BOOLEAN DEFAULT FALSE,
+    el_is_boundary BOOLEAN DEFAULT FALSE,
     el_wikidata_cod VARCHAR CHECK (el_wikidata_cod ~* '^Q\d+$'),
     el_commons VARCHAR,
     el_wikipedia VARCHAR,
