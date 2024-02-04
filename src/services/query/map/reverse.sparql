@@ -13,6 +13,7 @@ SELECT
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
     (SAMPLE(?_alias) AS ?alias)
+    (SAMPLE(?_statementEntity) AS ?statementEntity)
     ?etymology
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
@@ -46,6 +47,7 @@ WHERE {
     OPTIONAL { ?item wdt:P10689 ?_osm_way. }
     OPTIONAL { ?item wdt:P402 ?_osm_rel. }
     OPTIONAL { ?_alias owl:sameAs ?item. }
+    OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
 }
 GROUP BY ?item ?etymology
 ${limit}

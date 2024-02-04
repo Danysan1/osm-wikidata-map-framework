@@ -101,7 +101,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         else
             properties = [sourceProperty];
 
-        return sparqlQueryTemplate.replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
+        return sparqlQueryTemplate.replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "));
     }
 
     private getIndirectSparqlQuery(backEndID: string): string {
@@ -160,8 +160,9 @@ export class WikidataMapService extends WikidataService implements MapService {
                 from_osm: false,
                 from_wikidata: true,
                 from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
+                from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                 propagated: false,
+                statementEntity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                 wikidata: etymology_wd_id,
             } : null;
 

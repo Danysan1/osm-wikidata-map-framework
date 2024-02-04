@@ -13,16 +13,16 @@ SELECT
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
     (SAMPLE(?_alias) AS ?alias)
+    (SAMPLE(?_statementEntity) AS ?statementEntity)
     ?etymology
     (?item AS ?from_entity)
-    (SAMPLE(?_from_prop) AS ?from_prop)
+    (SAMPLE(?_from_p) AS ?from_prop)
 WHERE {
-    VALUES ?_from_prop { ${directProperties} }
+    VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }
     ?item p:P625 ?locationStatement;
-          ?_from_prop ?etymology;
+          ?_from_p ?stmt;
           rdfs:label ?anyLabel.
     ${wikidataCountryQuery}
-    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date
 
@@ -32,6 +32,9 @@ WHERE {
         bd:serviceParam wikibase:cornerWest 'POINT(${westLon} ${southLat})'^^geo:wktLiteral;
                         wikibase:cornerEast 'POINT(${eastLon} ${northLat})'^^geo:wktLiteral.
     } # https://www.mediawiki.org/wiki/Wikidata_Query_Service/User_Manual#Search_within_box
+
+    ?stmt ?_from_ps ?etymology.
+    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
     
     OPTIONAL { ?item rdfs:label ?lang_label FILTER(LANG(?lang_label) = '${language}'). }
     OPTIONAL { ?item rdfs:label ?default_label FILTER(LANG(?default_label) = 'en'). }
@@ -45,6 +48,7 @@ WHERE {
     OPTIONAL { ?item wdt:P10689 ?_osm_way. }
     OPTIONAL { ?item wdt:P402 ?_osm_rel. }
     OPTIONAL { ?_alias owl:sameAs ?item. }
+    OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
 }
 GROUP BY ?item ?etymology
 ${limit}

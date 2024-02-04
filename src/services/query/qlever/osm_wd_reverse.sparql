@@ -31,6 +31,7 @@ SELECT
     (SAMPLE(?_building) AS ?building)
     (true AS ?from_osm) # TODO check if bound - https://github.com/ad-freiburg/qlever/wiki/Current-deviations-from-the-SPARQL-1.1-standard#sparql-11-features-that-are-not-yet-implemented-but-have-an-easy-workaround 
     (true AS ?from_wikidata)
+    #(SAMPLE(?_statementEntity) AS ?statementEntity)
 WHERE {
     SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
         ?etymology p:${indirectProperty} ?stmt.
@@ -68,6 +69,7 @@ WHERE {
         # OPTIONAL { ?item wdt:P910?/wdt:P373 ?_commons. }
         # OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
         # OPTIONAL { ?item wdt:P18 ?_picture. }
+        # OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
     }
 
     ?osm osm:wikidata ?item; geo:hasGeometry/geo:asWKT ?osm_location.

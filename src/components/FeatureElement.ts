@@ -208,19 +208,33 @@ export class FeatureElement extends HTMLDivElement {
         const parts_containers = etymologies_container.querySelectorAll<HTMLElement>(".etymology_parts_container")
         if (getBoolConfig("fetch_parts_of_linked_entities") && parts_containers.length > 0) {
             if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: fetching parts of linked entities", { filledEtymologies });
-            const parts: Etymology[] = filledEtymologies.flatMap(ety => ety.parts?.map(part => ({
-                ...ety,
-                from_parts_of_wikidata_cod: ety.wikidata,
-                wikidata: part
-            })) ?? []),
+            const parts = filledEtymologies.reduce((acc: Etymology[], ety: Etymology): Etymology[] => {
+                if (ety.statementEntity) {
+                    acc.push({
+                        ...ety,
+                        from_statement_of_wikidata_prop: ety.from_wikidata_prop,
+                        wikidata: ety.statementEntity,
+                    });
+                }
+                if (ety.parts) {
+                    acc.push(...ety.parts.map(part => ({
+                        ...ety,
+                        from_parts_of_wikidata_cod: ety.wikidata,
+                        wikidata: part
+                    })));
+                }
+                return acc;
+            }, []),
                 filledParts = await this.downloadEtymologyDetails(parts);
 
             if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: showing parts of linked entities", { filledParts, parts_containers });
             parts_containers.forEach(parts_container => {
-                const wdID = parts_container.dataset.wikidataCod,
-                    partsOfThisEntity = filledParts.filter(ety => wdID && ety.from_parts_of_wikidata_cod === wdID);
-                this.showEtymologies(partsOfThisEntity, parts_container, this.currentZoom);
-                parts_container.classList.remove("hiddenElement");
+                const wdID = parts_container.dataset.wikidataCod;
+                if (wdID) {
+                    const partsOfThisEntity = filledParts.filter(ety => ety.from_parts_of_wikidata_cod === wdID || ety.from_statement_of_wikidata_prop === wdID);
+                    this.showEtymologies(partsOfThisEntity, parts_container, this.currentZoom);
+                    parts_container.classList.remove("hiddenElement");
+                }
             });
         }
 

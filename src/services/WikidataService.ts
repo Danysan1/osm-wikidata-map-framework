@@ -2,7 +2,8 @@ import { Configuration, SparqlApi, SparqlResponse } from "../generated/sparql";
 
 export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
-    public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
+    public static readonly WD_PROPERTY_WDT_PREFIX = "http://www.wikidata.org/prop/direct/";
+    public static readonly WD_PROPERTY_P_PREFIX = "http://www.wikidata.org/prop/";
     protected api: SparqlApi;
 
     public constructor(basePath = 'https://query.wikidata.org') {
@@ -12,7 +13,7 @@ export class WikidataService {
     async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
         const url = `https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/${wikidataID}/statements?property=P18`,
             response = await fetch(url),
-            res = await response.json();
+            res: unknown = await response.json();
         if (res?.P18?.at(0)?.value?.content) {
             return res.P18.at(0).value.content as string;
         } else {

@@ -36,9 +36,17 @@ export interface Etymology {
      */
     from_parts_of_wikidata_cod?: string;
     /**
+     * If this relationship is derived from a Wikidata statement that is the subject of an entity, this field contains the P-ID of the predicate of that statement
+     */
+    from_statement_of_wikidata_prop?: string;
+    /**
      * Whether this etymology has been obtained through propagation
      */
     propagated?: boolean;
+    /**
+     * Q-ID of the Wikidata entity that this statement is subject of (for example, the article describing the etymology represented by this statement)
+     */
+    statementEntity?: string;
     /**
      * Q-ID of this etymology Wikidata item
      */

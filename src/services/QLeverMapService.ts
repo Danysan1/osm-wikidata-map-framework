@@ -205,7 +205,7 @@ export class QLeverMapService implements MapService {
                 properties = [sourceProperty];
 
             sparqlQuery = sparqlQuery
-                .replaceAll('${directProperties}', properties.map(id => "wdt:" + id).join(" "));
+                .replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "))
         }
 
         const wikidataCountry = getConfig("wikidata_country"),
@@ -267,8 +267,9 @@ export class QLeverMapService implements MapService {
                         from_osm: feature_from_osm,
                         from_wikidata: feature_from_wikidata,
                         from_wikidata_entity: row.from_entity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                        from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_PREFIX, ""),
+                        from_wikidata_prop: row.from_prop?.value?.replace(WikidataService.WD_PROPERTY_WDT_PREFIX, "")?.replace(WikidataService.WD_PROPERTY_P_PREFIX, ""),
                         propagated: false,
+                        statementEntity: row.statementEntity?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikidata: etymology_wd_id,
                     } : null;
 

@@ -19,14 +19,15 @@ SELECT
     (SAMPLE(?_osm_node) AS ?osm_node)
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
+    (SAMPLE(?_statementEntity) AS ?statementEntity)
     (?item AS ?from_entity)
-    (SAMPLE(?_from_prop) AS ?from_prop)
+    (SAMPLE(?_from_p) AS ?from_prop)
     (false AS ?from_osm)
     (true AS ?from_wikidata)
 WHERE {
-    VALUES ?_from_prop { ${directProperties} }
+    VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }
     ?item p:P625 ?locationStatement;
-          ?_from_prop ?etymology.
+          ?_from_p ?stmt.
     ${wikidataCountryQuery}
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
     MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
@@ -45,6 +46,8 @@ WHERE {
     # BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
     # FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
 
+    ?stmt ?_from_ps ?etymology.
+
     # # Extra details
     OPTIONAL { ?item @${language}@rdfs:label ?lang_label. }
     OPTIONAL { ?item @en@rdfs:label ?default_label. }
@@ -55,6 +58,7 @@ WHERE {
     OPTIONAL { ?item wdt:P11693 ?_osm_node. }
     OPTIONAL { ?item wdt:P10689 ?_osm_way. }
     OPTIONAL { ?item wdt:P402 ?_osm_rel. }
+    OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
 }
 GROUP BY ?item ?etymology
 ${limit}

@@ -13,11 +13,12 @@ SELECT
     (SAMPLE(?_osm_way) AS ?osm_way)
     (SAMPLE(?_osm_rel) AS ?osm_rel)
     (SAMPLE(?_alias) AS ?alias)
+    (SAMPLE(?_statementEntity) AS ?statementEntity)
     ?etymology
     (?etymology AS ?from_entity)
     (wdt:${indirectProperty} AS ?from_prop)
 WITH { 
-    SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel
+    SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_statementEntity
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         MINUS { ?stmt pq:P582 []. } # Ignore if the etymology statement has an end date
@@ -35,6 +36,7 @@ WITH {
         OPTIONAL { ?stmt pq:P11693 ?_osm_node. }
         OPTIONAL { ?stmt pq:P10689 ?_osm_way. }
         OPTIONAL { ?stmt pq:P402 ?_osm_rel. }
+        OPTIONAL { ?stmt pq:P805 ?_statementEntity. }
     }
 } AS %qualifier
 WITH {
