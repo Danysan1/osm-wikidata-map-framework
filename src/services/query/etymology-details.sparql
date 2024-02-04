@@ -29,7 +29,8 @@ SELECT ?wikidata
     (SAMPLE(?wkt_coords) AS ?wkt_coords)
     (GROUP_CONCAT(DISTINCT ?part; SEPARATOR=';') AS ?parts)
 WHERE {
-    VALUES ?wikidata { ${wikidataValues} }
+    VALUES ?raw { ${wikidataValues} }
+    ?raw owl:sameAs? ?wikidata.
 
     # ID and name of the class of the entity
     OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
