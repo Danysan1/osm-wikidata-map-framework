@@ -1,6 +1,7 @@
 import { getConfig, getKeyID, getStringArrayConfig } from "../config";
 import type { BBox } from "geojson";
-import { Configuration, OverpassApi } from "../generated/overpass";
+import { Configuration } from "../generated/overpass/runtime";
+import { OverpassApi } from "../generated/overpass/apis/OverpassApi";
 import { MapDatabase } from "../db/MapDatabase";
 import osmtogeojson from "osmtogeojson";
 import type { MapService } from "./MapService";

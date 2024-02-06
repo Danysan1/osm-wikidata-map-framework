@@ -68,7 +68,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiResponse"
+                $ref: "#/components/schemas/CommonsApiResponse"
         "400":
           description: Bad request
         "500":
@@ -76,7 +76,7 @@ paths:
 
 components:
   schemas:
-    ApiResponse:
+    CommonsApiResponse:
       type: object
       properties:
         query:

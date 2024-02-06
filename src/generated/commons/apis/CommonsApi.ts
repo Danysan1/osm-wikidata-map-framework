@@ -15,11 +15,11 @@
 
 import * as runtime from '../runtime';
 import type {
-  ModelApiResponse,
+  CommonsApiResponse,
 } from '../models';
 import {
-    ModelApiResponseFromJSON,
-    ModelApiResponseToJSON,
+    CommonsApiResponseFromJSON,
+    CommonsApiResponseToJSON,
 } from '../models';
 
 export interface ApiCallRequest {
@@ -41,7 +41,7 @@ export class CommonsApi extends runtime.BaseAPI {
     /**
      * Execute a call to the API
      */
-    async apiCallRaw(requestParameters: ApiCallRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<ModelApiResponse>> {
+    async apiCallRaw(requestParameters: ApiCallRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommonsApiResponse>> {
         if (requestParameters.action === null || requestParameters.action === undefined) {
             throw new runtime.RequiredError('action','Required parameter requestParameters.action was null or undefined when calling apiCall.');
         }
@@ -89,13 +89,13 @@ export class CommonsApi extends runtime.BaseAPI {
             query: queryParameters,
         }, initOverrides);
 
-        return new runtime.JSONApiResponse(response, (jsonValue) => ModelApiResponseFromJSON(jsonValue));
+        return new runtime.JSONApiResponse(response, (jsonValue) => CommonsApiResponseFromJSON(jsonValue));
     }
 
     /**
      * Execute a call to the API
      */
-    async apiCall(requestParameters: ApiCallRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<ModelApiResponse> {
+    async apiCall(requestParameters: ApiCallRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<CommonsApiResponse> {
         const response = await this.apiCallRaw(requestParameters, initOverrides);
         return await response.value();
     }

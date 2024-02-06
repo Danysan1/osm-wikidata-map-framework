@@ -23,31 +23,31 @@ import {
 /**
  * 
  * @export
- * @interface ApiResponseQuery
+ * @interface CommonsApiResponseQuery
  */
-export interface ApiResponseQuery {
+export interface CommonsApiResponseQuery {
     /**
      * 
      * @type {{ [key: string]: Page; }}
-     * @memberof ApiResponseQuery
+     * @memberof CommonsApiResponseQuery
      */
     pages?: { [key: string]: Page; };
 }
 
 /**
- * Check if a given object implements the ApiResponseQuery interface.
+ * Check if a given object implements the CommonsApiResponseQuery interface.
  */
-export function instanceOfApiResponseQuery(value: object): boolean {
+export function instanceOfCommonsApiResponseQuery(value: object): boolean {
     let isInstance = true;
 
     return isInstance;
 }
 
-export function ApiResponseQueryFromJSON(json: any): ApiResponseQuery {
-    return ApiResponseQueryFromJSONTyped(json, false);
+export function CommonsApiResponseQueryFromJSON(json: any): CommonsApiResponseQuery {
+    return CommonsApiResponseQueryFromJSONTyped(json, false);
 }
 
-export function ApiResponseQueryFromJSONTyped(json: any, ignoreDiscriminator: boolean): ApiResponseQuery {
+export function CommonsApiResponseQueryFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommonsApiResponseQuery {
     if ((json === undefined) || (json === null)) {
         return json;
     }
@@ -57,7 +57,7 @@ export function ApiResponseQueryFromJSONTyped(json: any, ignoreDiscriminator: bo
     };
 }
 
-export function ApiResponseQueryToJSON(value?: ApiResponseQuery | null): any {
+export function CommonsApiResponseQueryToJSON(value?: CommonsApiResponseQuery | null): any {
     if (value === undefined) {
         return undefined;
     }

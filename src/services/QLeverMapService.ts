@@ -17,7 +17,10 @@ import type { EtymologyResponse, EtymologyFeature } from "../model/EtymologyResp
 import { logErrorMessage } from "../monitoring";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { MapService } from "./MapService";
-import { Configuration, SparqlApi, SparqlBackend, SparqlResponseBindingValue } from "../generated/sparql";
+import { Configuration } from "../generated/sparql/runtime";
+import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
+import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
+import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getLanguage } from "../i18n";
 import { getEtymologies } from "./etymologyUtils";
 

@@ -10,7 +10,8 @@ import type { EtymologyDetails } from '../model/EtymologyDetails';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
 import type { Etymology } from '../model/Etymology';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
-import { WikidataService, WikidataDetailsService } from '../services';
+import { WikidataRestService } from '../services/WikidataRestService';
+import { WikidataDetailsService } from '../services';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -245,7 +246,7 @@ export class FeatureElement extends HTMLDivElement {
 
     private async showDetailsFromWikidata(wikidataID: string, feature_pictures: HTMLElement) {
         try {
-            const wikidataService = new WikidataService(),
+            const wikidataService = new WikidataRestService(),
                 image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
             if (image) {
                 if (process.env.NODE_ENV === 'development') console.debug("Found image from Wikidata", { wikidataID, feature_pictures, image });

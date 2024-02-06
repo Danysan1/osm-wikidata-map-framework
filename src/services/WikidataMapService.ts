@@ -13,7 +13,7 @@ import { MapDatabase } from "../db/MapDatabase";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
 import { getLanguage } from "../i18n";
-import type { SparqlResponseBindingValue } from "../generated/sparql";
+import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getEtymologies } from "./etymologyUtils";
 
 export class WikidataMapService extends WikidataService implements MapService {
