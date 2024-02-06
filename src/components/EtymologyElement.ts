@@ -353,7 +353,7 @@ export class EtymologyElement extends HTMLDivElement {
         const etymology_parts_container = etyDomElement.querySelector<HTMLDivElement>('.etymology_parts_container');
         if (!etymology_parts_container) {
             console.warn("Missing .etymology_parts_container");
-        } else if (this.etymology.parts) {
+        } else {
             etymology_parts_container.dataset.wikidataCod = this.etymology.wikidata;
             etymology_parts_container.classList.add("hiddenElement");
         }
