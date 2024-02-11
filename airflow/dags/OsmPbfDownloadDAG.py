@@ -112,7 +112,7 @@ class OsmPbfDownloadDAG(DAG):
             html_url:str=None,
             prefix:str=None,
             skip_if_already_downloaded:bool=True,
-            days_before_cleanup:int=1,
+            days_before_cleanup:int=15,
             verify_md5:bool=True,
             **kwargs
         ):
@@ -245,7 +245,7 @@ class OsmPbfDownloadDAG(DAG):
 
         task_wait_for_torrent_download = TransmissionWaitTorrentSensor(
             task_id = "wait_torrent_download",
-            retries = 5,
+            retries = 20, # A lot of checks are needed because after download while moving the file Transmission does not respond to API calls
             torrent_hash = "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}",
             torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
