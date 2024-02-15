@@ -13,12 +13,12 @@
  */
 
 import { exists, mapValues } from '../runtime';
-import type { GetItem200ResponseAllOf1StatementsValueInner } from './GetItem200ResponseAllOf1StatementsValueInner';
+import type { Statement } from './Statement';
 import {
-    GetItem200ResponseAllOf1StatementsValueInnerFromJSON,
-    GetItem200ResponseAllOf1StatementsValueInnerFromJSONTyped,
-    GetItem200ResponseAllOf1StatementsValueInnerToJSON,
-} from './GetItem200ResponseAllOf1StatementsValueInner';
+    StatementFromJSON,
+    StatementFromJSONTyped,
+    StatementToJSON,
+} from './Statement';
 
 /**
  * 
@@ -34,10 +34,10 @@ export interface GetItem200ResponseAllOf1 {
     sitelinks: { [key: string]: any; };
     /**
      * 
-     * @type {{ [key: string]: Array<GetItem200ResponseAllOf1StatementsValueInner>; }}
+     * @type {{ [key: string]: Array<Statement>; }}
      * @memberof GetItem200ResponseAllOf1
      */
-    statements: { [key: string]: Array<GetItem200ResponseAllOf1StatementsValueInner>; };
+    statements: { [key: string]: Array<Statement>; };
 }
 
 /**

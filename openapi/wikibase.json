@@ -327,94 +327,11 @@
                           }
                         },
                         "statements": {
+                          "type": "object",
                           "additionalProperties": {
+                            "type": "array",
                             "items": {
-                              "allOf": [
-                                {
-                                  "required": [
-                                    "property",
-                                    "value"
-                                  ],
-                                  "properties": {
-                                    "property": {
-                                      "required": [
-                                        "id",
-                                        "data-type"
-                                      ]
-                                    },
-                                    "value": {
-                                      "type": "object",
-                                      "required": [
-                                        "type"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "required": [
-                                    "id",
-                                    "rank",
-                                    "qualifiers",
-                                    "references"
-                                  ],
-                                  "properties": {
-                                    "qualifiers": {
-                                      "items": {
-                                        "required": [
-                                          "property",
-                                          "value"
-                                        ],
-                                        "properties": {
-                                          "property": {
-                                            "required": [
-                                              "id",
-                                              "data-type"
-                                            ]
-                                          },
-                                          "value": {
-                                            "type": "object",
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "references": {
-                                      "items": {
-                                        "required": [
-                                          "hash",
-                                          "parts"
-                                        ],
-                                        "properties": {
-                                          "parts": {
-                                            "items": {
-                                              "required": [
-                                                "property",
-                                                "value"
-                                              ],
-                                              "properties": {
-                                                "property": {
-                                                  "required": [
-                                                    "id",
-                                                    "data-type"
-                                                  ]
-                                                },
-                                                "value": {
-                                                  "type": "object",
-                                                  "required": [
-                                                    "type"
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              ]
+                              "$ref": "#/components/schemas/Statement"
                             }
                           }
                         }
@@ -1474,94 +1391,11 @@
                       ],
                       "properties": {
                         "statements": {
+                          "type": "object",
                           "additionalProperties": {
+                            "type": "array",
                             "items": {
-                              "allOf": [
-                                {
-                                  "required": [
-                                    "property",
-                                    "value"
-                                  ],
-                                  "properties": {
-                                    "property": {
-                                      "required": [
-                                        "id",
-                                        "data-type"
-                                      ]
-                                    },
-                                    "value": {
-                                      "type": "object",
-                                      "required": [
-                                        "type"
-                                      ]
-                                    }
-                                  }
-                                },
-                                {
-                                  "required": [
-                                    "id",
-                                    "rank",
-                                    "qualifiers",
-                                    "references"
-                                  ],
-                                  "properties": {
-                                    "qualifiers": {
-                                      "items": {
-                                        "required": [
-                                          "property",
-                                          "value"
-                                        ],
-                                        "properties": {
-                                          "property": {
-                                            "required": [
-                                              "id",
-                                              "data-type"
-                                            ]
-                                          },
-                                          "value": {
-                                            "type": "object",
-                                            "required": [
-                                              "type"
-                                            ]
-                                          }
-                                        }
-                                      }
-                                    },
-                                    "references": {
-                                      "items": {
-                                        "required": [
-                                          "hash",
-                                          "parts"
-                                        ],
-                                        "properties": {
-                                          "parts": {
-                                            "items": {
-                                              "required": [
-                                                "property",
-                                                "value"
-                                              ],
-                                              "properties": {
-                                                "property": {
-                                                  "required": [
-                                                    "id",
-                                                    "data-type"
-                                                  ]
-                                                },
-                                                "value": {
-                                                  "type": "object",
-                                                  "required": [
-                                                    "type"
-                                                  ]
-                                                }
-                                              }
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              ]
+                              "$ref": "#/components/schemas/Statement"
                             }
                           }
                         }
@@ -12514,94 +12348,11 @@
                       }
                     },
                     "statements": {
+                      "type": "object",
                       "additionalProperties": {
+                        "type": "array",
                         "items": {
-                          "allOf": [
-                            {
-                              "required": [
-                                "property",
-                                "value"
-                              ],
-                              "properties": {
-                                "property": {
-                                  "required": [
-                                    "id",
-                                    "data-type"
-                                  ]
-                                },
-                                "value": {
-                                  "type": "object",
-                                  "required": [
-                                    "type"
-                                  ]
-                                }
-                              }
-                            },
-                            {
-                              "required": [
-                                "id",
-                                "rank",
-                                "qualifiers",
-                                "references"
-                              ],
-                              "properties": {
-                                "qualifiers": {
-                                  "items": {
-                                    "required": [
-                                      "property",
-                                      "value"
-                                    ],
-                                    "properties": {
-                                      "property": {
-                                        "required": [
-                                          "id",
-                                          "data-type"
-                                        ]
-                                      },
-                                      "value": {
-                                        "type": "object",
-                                        "required": [
-                                          "type"
-                                        ]
-                                      }
-                                    }
-                                  }
-                                },
-                                "references": {
-                                  "items": {
-                                    "required": [
-                                      "hash",
-                                      "parts"
-                                    ],
-                                    "properties": {
-                                      "parts": {
-                                        "items": {
-                                          "required": [
-                                            "property",
-                                            "value"
-                                          ],
-                                          "properties": {
-                                            "property": {
-                                              "required": [
-                                                "id",
-                                                "data-type"
-                                              ]
-                                            },
-                                            "value": {
-                                              "type": "object",
-                                              "required": [
-                                                "type"
-                                              ]
-                                            }
-                                          }
-                                        }
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          ]
+                          "$ref": "#/components/schemas/Statement"
                         }
                       }
                     }

@@ -11,10 +11,6 @@ index.ts
 models/GetItem200Response.ts
 models/GetItem200ResponseAllOf.ts
 models/GetItem200ResponseAllOf1.ts
-models/GetItem200ResponseAllOf1StatementsValueInner.ts
-models/GetItem200ResponseAllOf1StatementsValueInnerAllOf.ts
-models/GetItem200ResponseAllOf1StatementsValueInnerAllOf1.ts
-models/GetItem200ResponseAllOf1StatementsValueInnerAllOf1ReferencesInner.ts
 models/GetItem200ResponseAllOfSitelinksValue.ts
 models/GetItem400Response.ts
 models/GetProperty200Response.ts
