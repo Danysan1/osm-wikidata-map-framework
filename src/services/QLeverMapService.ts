@@ -15,13 +15,11 @@ import type { Point, BBox } from "geojson";
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyResponse, EtymologyFeature } from "../model/EtymologyResponse";
 import { logErrorMessage } from "../monitoring";
-import type { MapDatabase } from "../db/MapDatabase";
 import type { MapService } from "./MapService";
 import { Configuration } from "../generated/sparql/runtime";
 import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
-import { getLanguage } from "../i18n";
 import { getEtymologies } from "./etymologyUtils";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
@@ -39,61 +37,51 @@ export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
     private api: SparqlApi;
-    private db: MapDatabase;
 
-    constructor(db: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
+    public constructor(basePath = 'https://qlever.cs.uni-freiburg.de/api') {
         this.api = new SparqlApi(new Configuration({ basePath }));
-        this.db = db;
     }
 
-    canHandleBackEnd(backEndID: string): boolean {
+    public canHandleBackEnd(backEndID: string): boolean {
         return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(backEndID, bbox);
+    public fetchMapClusterElements(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox, language);
     }
 
-    public fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(backEndID, bbox);
+    public fetchMapElementDetails(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox, language);
     }
 
-    private async fetchMapData(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        const language = getLanguage();
-        let out = await this.db.getMap(backEndID, bbox, language);
-        if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug(`QLever map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
-        } else {
-            if (process.env.NODE_ENV === 'development') console.debug("QLever map cache miss, fetching data", { backEndID, bbox, language: language });
-            const maxElements = getConfig("max_map_elements"),
-                backend = this.getSparqlBackEnd(backEndID),
-                sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
-                sparqlQuery = this.fillPlaceholders(backEndID, sparqlQueryTemplate, bbox)
-                    .replaceAll('${language}', language || '')
-                    .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : ""),
-                ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
+    private async fetchMapData(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        const maxElements = getConfig("max_map_elements"),
+            backend = this.getSparqlBackEnd(backEndID),
+            sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
+            sparqlQuery = this.fillPlaceholders(backEndID, sparqlQueryTemplate, bbox)
+                .replaceAll('${language}', language)
+                .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : ""),
+            ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
-            if (!ret.results?.bindings)
-                throw new Error("Invalid response from Wikidata (no bindings)");
+        if (!ret.results?.bindings)
+            throw new Error("Invalid response from Wikidata (no bindings)");
 
-            out = {
-                type: "FeatureCollection",
-                bbox: bbox,
-                features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
-                timestamp: new Date().toISOString(),
-                backEndID: backEndID,
-                language: language,
-                truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
-            };
-            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
-            if (backend === "wikidata")
-                out.qlever_wd_query = sparqlQuery;
-            else if (backend === "osm-planet")
-                out.qlever_osm_query = sparqlQuery;
+        const out: EtymologyResponse = {
+            type: "FeatureCollection",
+            bbox: bbox,
+            features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
+            timestamp: new Date().toISOString(),
+            backEndID: backEndID,
+            language: language,
+            truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
+        };
+        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+        if (backend === "wikidata")
+            out.qlever_wd_query = sparqlQuery;
+        else if (backend === "osm-planet")
+            out.qlever_osm_query = sparqlQuery;
 
-            if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
-            void this.db.addMap(out);
-        }
+        if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
         return out;
     }
 

@@ -1,11 +1,7 @@
-import { MapDatabase } from "../db/MapDatabase";
 import type { EtymologyResponse } from "../model/EtymologyResponse";
 import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
 import type { MapService } from "./MapService";
-import { OverpassService } from "./OverpassService";
-import { WikidataMapService } from "./WikidataMapService";
 import type { BBox } from "geojson";
-import { getLanguage } from "../i18n";
 import { getEtymologies } from "./etymologyUtils";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
@@ -15,12 +11,10 @@ const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
 };
 
 export class OverpassWikidataMapService implements MapService {
-    private db: MapDatabase;
-    private overpassService: OverpassService;
-    private wikidataService: WikidataMapService;
+    private overpassService: MapService;
+    private wikidataService: MapService;
 
-    constructor(overpassService: OverpassService, wikidataService: WikidataMapService, db: MapDatabase) {
-        this.db = db;
+    constructor(overpassService: MapService, wikidataService: MapService) {
         this.overpassService = overpassService;
         this.wikidataService = wikidataService;
     }
@@ -30,33 +24,31 @@ export class OverpassWikidataMapService implements MapService {
         return this.overpassService.canHandleBackEnd(overpassBackEndID) && this.wikidataService.canHandleBackEnd(wikidataBackEndID);
     }
 
-    async fetchMapClusterElements(backEndID: string, bbox: BBox) {
+    async fetchMapClusterElements(backEndID: string, bbox: BBox, language: string) {
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         if (!overpassBackEndID || !wikidataBackEndID)
             throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);
 
         if (overpassBackEndID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
-            return this.wikidataService.fetchMapClusterElements(wikidataBackEndID, bbox);
+            return this.wikidataService.fetchMapClusterElements(wikidataBackEndID, bbox, language);
 
         const actualOverpassBackEndID = overpassBackEndID === "overpass_all_wd" ? "overpass_all" : overpassBackEndID;
         return await this.fetchAndMergeMapData(
             "elements-" + backEndID,
-            () => this.overpassService.fetchMapClusterElements(actualOverpassBackEndID, bbox),
-            () => this.wikidataService.fetchMapClusterElements(wikidataBackEndID, bbox),
-            bbox
+            () => this.overpassService.fetchMapClusterElements(actualOverpassBackEndID, bbox, language),
+            () => this.wikidataService.fetchMapClusterElements(wikidataBackEndID, bbox, language)
         );
     }
 
-    async fetchMapElementDetails(backEndID: string, bbox: BBox) {
+    async fetchMapElementDetails(backEndID: string, bbox: BBox, language: string) {
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         if (!overpassBackEndID || !wikidataBackEndID)
             throw new Error(`Invalid combined details back-end ID: "${backEndID}"`);
 
         const out: EtymologyResponse = await this.fetchAndMergeMapData(
             "details-" + backEndID,
-            () => this.overpassService.fetchMapElementDetails(overpassBackEndID, bbox),
-            () => this.wikidataService.fetchMapElementDetails(wikidataBackEndID, bbox),
-            bbox
+            () => this.overpassService.fetchMapElementDetails(overpassBackEndID, bbox, language),
+            () => this.wikidataService.fetchMapElementDetails(wikidataBackEndID, bbox, language)
         );
         out.features = out.features.filter(
             (feature) => (wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length) || !!feature.properties?.etymologies?.length || feature.properties?.text_etymology?.length
@@ -70,29 +62,20 @@ export class OverpassWikidataMapService implements MapService {
     private async fetchAndMergeMapData(
         backEndID: string,
         fetchOverpass: () => Promise<EtymologyResponse>,
-        fetchWikidata: () => Promise<EtymologyResponse>,
-        bbox: BBox
+        fetchWikidata: () => Promise<EtymologyResponse>
     ): Promise<EtymologyResponse> {
-        const language = getLanguage();
-        let out = await this.db.getMap(backEndID, bbox, language);
-        if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug("Overpass+Wikidata cache hit, using cached response", { backEndID, bbox, language, out });
-        } else {
-            if (process.env.NODE_ENV === 'development') console.debug("Overpass+Wikidata cache miss, fetching data", { backEndID, bbox, language });
+        if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata fetch");
+        const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
+        if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata fetch");
 
-            if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata fetch");
-            const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
-            if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata fetch");
+        if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata merge");
+        const out: EtymologyResponse = this.mergeMapData(overpassData, wikidataData);
+        if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata merge");
 
-            if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata merge");
-            out = this.mergeMapData(overpassData, wikidataData);
-            if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata merge");
+        if (!out)
+            throw new Error("Merge failed");
+        out.backEndID = backEndID;
 
-            if (!out)
-                throw new Error("Merge failed");
-            out.backEndID = backEndID;
-            void this.db.addMap(out);
-        }
         return out;
     }
 

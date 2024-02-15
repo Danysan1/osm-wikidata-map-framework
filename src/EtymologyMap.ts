@@ -15,6 +15,7 @@ import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
+import type { EtymologyResponse } from './model/EtymologyResponse';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -105,18 +106,16 @@ export class EtymologyMap extends Map {
     private async initServices() {
         const qlever_enable = getBoolConfig("qlever_enable");
         try {
-            const { MapDatabase, WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService } = await import("./services"),
-                db = new MapDatabase(),
-                overpassService = new OverpassService(db),
-                wikidataService = new WikidataMapService(db);
+            const { WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService } = await import("./services"),
+                overpassService = new OverpassService(),
+                wikidataService = new WikidataMapService();
             this.services = [
                 wikidataService,
                 overpassService,
-                new OverpassWikidataMapService(overpassService, wikidataService, db)
+                new OverpassWikidataMapService(overpassService, wikidataService)
             ];
             if (qlever_enable)
-                this.services.push(new QLeverMapService(db));
-
+                this.services.push(new QLeverMapService());
             if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { qlever_enable, error: e });
@@ -332,17 +331,33 @@ export class EtymologyMap extends Map {
         return isBBoxChanged;
     }
 
+    private async fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
+        if (!service)
+            throw new Error("No service found for source ID " + backEndID);
+
+        const { MapDatabase } = await import("./db/MapDatabase"),
+            db = new MapDatabase(),
+            cacheBackEndID = "elements-" + backEndID,
+            lang = getLanguage();
+        let out: EtymologyResponse | undefined = await db.getMap(cacheBackEndID, bbox, lang);
+        if (out) {
+            if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { cacheBackEndID, bbox, lang, out });
+        } else {
+            if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { cacheBackEndID, bbox, lang });
+            out = await service.fetchMapClusterElements(cacheBackEndID, bbox, lang);
+            void db.addMap(out);
+        }
+        return out;
+    }
+
     private async updateElementsGeoJSONSource(backEndID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
 
-            const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
-            if (!service)
-                throw new Error("No service found for source ID " + backEndID);
-
-            const data = await service.fetchMapClusterElements(backEndID, bbox);
+            const data = await this.fetchMapClusterElements(backEndID, bbox);
             if (process.env.NODE_ENV === 'development') console.debug("updateElementsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoomLevel, thresholdZoomLevel });
 
             this.removeSourceWithLayers(DETAILS_SOURCE);
@@ -379,17 +394,33 @@ export class EtymologyMap extends Map {
         );
     }
 
+    private async fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+        const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
+        if (!service)
+            throw new Error("No service found for source ID " + backEndID);
+
+        const { MapDatabase } = await import("./db/MapDatabase"),
+            db = new MapDatabase(),
+            cacheBackEndID = "details-" + backEndID,
+            lang = getLanguage();
+        let out: EtymologyResponse | undefined = await db.getMap(cacheBackEndID, bbox, lang);
+        if (out) {
+            if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { cacheBackEndID, bbox, lang, out });
+        } else {
+            if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { cacheBackEndID, bbox, lang });
+            out = await service.fetchMapElementDetails(cacheBackEndID, bbox, lang);
+            void db.addMap(out);
+        }
+        return out;
+    }
+
     private async prepareDetailsGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
 
-            const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
-            if (!service)
-                throw new Error("No service found for source ID " + backEndID);
-
-            const data = await service.fetchMapElementDetails(backEndID, bbox);
+            const data = await this.fetchMapElementDetails(backEndID, bbox);
             if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoom });
 
             this.removeSourceWithLayers(ELEMENTS_SOURCE);

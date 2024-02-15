@@ -9,80 +9,63 @@ import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
 import { logErrorMessage } from "../monitoring";
-import { MapDatabase } from "../db/MapDatabase";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
-import { getLanguage } from "../i18n";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getEtymologies } from "./etymologyUtils";
 
 export class WikidataMapService extends WikidataService implements MapService {
-    protected db: MapDatabase;
-
-    constructor(db: MapDatabase) {
-        super();
-        this.db = db;
-    }
-
-    canHandleBackEnd(backEndID: string): boolean {
+    public canHandleBackEnd(backEndID: string): boolean {
         return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(backEndID, bbox);
+    public fetchMapClusterElements(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox, language);
     }
 
-    public fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        return this.fetchMapData(backEndID, bbox);
+    public fetchMapElementDetails(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        return this.fetchMapData(backEndID, bbox, language);
     }
 
-    private async fetchMapData(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        const language = getLanguage();
-        let out = await this.db.getMap(backEndID, bbox, language);
-        if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug(`Wikidata map cache hit, using cached response with ${out.features.length} features`, { backEndID, bbox, language: language, out });
-        } else {
-            if (process.env.NODE_ENV === 'development') console.debug("Wikidata map cache miss, fetching data", { backEndID, bbox, language: language });
-            let sparqlQueryTemplate: string;
-            if (backEndID === "wd_base")
-                sparqlQueryTemplate = baseMapQuery;
-            else if (backEndID.startsWith("wd_direct"))
-                sparqlQueryTemplate = this.getDirectSparqlQuery(backEndID);
-            else if (/^wd_(reverse|qualifier|indirect)$/.test(backEndID))
-                sparqlQueryTemplate = this.getIndirectSparqlQuery(backEndID);
-            else
-                throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
+    private async fetchMapData(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        let sparqlQueryTemplate: string;
+        if (backEndID === "wd_base")
+            sparqlQueryTemplate = baseMapQuery;
+        else if (backEndID.startsWith("wd_direct"))
+            sparqlQueryTemplate = this.getDirectSparqlQuery(backEndID);
+        else if (/^wd_(reverse|qualifier|indirect)$/.test(backEndID))
+            sparqlQueryTemplate = this.getIndirectSparqlQuery(backEndID);
+        else
+            throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
 
-            const maxElements = getConfig("max_map_elements"),
-                wikidataCountry = getConfig("wikidata_country"),
-                wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-                sparqlQuery = sparqlQueryTemplate
-                    .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
-                    .replaceAll('${language}', language || '')
-                    .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
-                    .replaceAll('${westLon}', bbox[0].toString())
-                    .replaceAll('${southLat}', bbox[1].toString())
-                    .replaceAll('${eastLon}', bbox[2].toString())
-                    .replaceAll('${northLat}', bbox[3].toString()),
-                ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
+        const maxElements = getConfig("max_map_elements"),
+            wikidataCountry = getConfig("wikidata_country"),
+            wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
+            sparqlQuery = sparqlQueryTemplate
+                .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
+                .replaceAll('${language}', language)
+                .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : "")
+                .replaceAll('${westLon}', bbox[0].toString())
+                .replaceAll('${southLat}', bbox[1].toString())
+                .replaceAll('${eastLon}', bbox[2].toString())
+                .replaceAll('${northLat}', bbox[3].toString()),
+            ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
 
-            if (!ret.results?.bindings)
-                throw new Error("Invalid response from Wikidata (no bindings)");
+        if (!ret.results?.bindings)
+            throw new Error("Invalid response from Wikidata (no bindings)");
 
-            out = {
-                type: "FeatureCollection",
-                bbox: bbox,
-                features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
-                wdqs_query: sparqlQuery,
-                timestamp: new Date().toISOString(),
-                backEndID: backEndID,
-                language: language,
-                truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
-            };
-            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
-            if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
-            void this.db.addMap(out);
-        }
+        const out: EtymologyResponse = {
+            type: "FeatureCollection",
+            bbox: bbox,
+            features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
+            wdqs_query: sparqlQuery,
+            timestamp: new Date().toISOString(),
+            backEndID: backEndID,
+            language: language,
+            truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
+        };
+        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
         return out;
     }
 

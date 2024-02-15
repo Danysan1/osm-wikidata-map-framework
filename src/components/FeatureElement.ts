@@ -269,7 +269,7 @@ export class FeatureElement extends HTMLDivElement {
                 description = await descriptionService.getDescriptionFromWikidataID(wikidataID, getLanguage());
             if (description) {
                 if (process.env.NODE_ENV === 'development') console.debug("Found description from Wikidata", { wikidataID, element_name, description });
-                element_name.innerText = '📍 ' + description;
+                element_name.innerText = description;
             }
         } catch (err) {
             logErrorMessage("Failed getting description from Wikidata", 'error', { wikidataID, element_name });

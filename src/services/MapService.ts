@@ -10,10 +10,10 @@ export interface MapService {
     /**
      * Fetch elements for clustering for low-zoom map view in the given bounding box.
      */
-    fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse>;
+    fetchMapClusterElements(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse>;
 
     /**
      * Fetch elements with details for high-zoom map view in the given bounding box.
      */
-    fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse>;
+    fetchMapElementDetails(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse>;
 }
