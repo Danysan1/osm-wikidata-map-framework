@@ -1,14 +1,14 @@
 import { Configuration } from "../generated/wikibase/runtime";
 import { StatementsApi } from "../generated/wikibase/apis/StatementsApi";
 
-export class WikidataRestService {
+export class WikidataStatementService {
     protected api: StatementsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
         this.api = new StatementsApi(new Configuration({ basePath }));
     }
 
-    async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
+    public async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {
         const res = await this.api.getItemStatements({
             itemId: wikidataID,
             property: "P18",

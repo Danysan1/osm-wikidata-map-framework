@@ -10,7 +10,9 @@ import type { EtymologyDetails } from '../model/EtymologyDetails';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
 import type { Etymology } from '../model/Etymology';
 import { featureToButtonsDomElement } from './FeatureButtonsElement';
-import { WikidataRestService } from '../services/WikidataRestService';
+import { WikidataStatementService } from '../services/WikidataStatementService';
+import { WikidataLabelService } from '../services/WikidataLabelService';
+import { WikidataDescriptionService } from '../services/WikidataDescriptionService';
 import { WikidataDetailsService } from '../services';
 
 export class FeatureElement extends HTMLDivElement {
@@ -73,7 +75,9 @@ export class FeatureElement extends HTMLDivElement {
         translateAnchorTitle(detail_container, ".title_i18n_report_problem", "feature_details.report_problem", "Report a problem in this element");
         translateContent(detail_container, ".i18n_source", "feature_details.source", "Source:");
 
-        const element_name = detail_container.querySelector<HTMLElement>('.element_name'),
+        const wikidata = properties.wikidata,
+            has_wikidata = wikidata && wikidata !== 'null',
+            element_name = detail_container.querySelector<HTMLElement>('.element_name'),
             local_name = properties["name:" + getLanguage()],
             default_name = properties["name:en"];
 
@@ -94,6 +98,8 @@ export class FeatureElement extends HTMLDivElement {
             if (process.env.NODE_ENV === 'development') console.debug("Missing .element_name");
         } else if (main_name) {
             element_name.innerText = '📍 ' + main_name;
+        } else if (has_wikidata) {
+            void this.showLabelFromWikidata(wikidata, element_name);
         }
 
         const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
@@ -113,11 +119,11 @@ export class FeatureElement extends HTMLDivElement {
             if (process.env.NODE_ENV === 'development') console.debug("Missing .element_description");
         } else if (properties.description) {
             element_description.innerText = properties.description;
+        } else if (has_wikidata) {
+            void this.showDescriptionFromWikidata(wikidata, element_description);
         }
 
-        const wikidata = properties.wikidata,
-            has_wikidata = wikidata && wikidata !== 'null',
-            commons = properties.commons,
+        const commons = properties.commons,
             picture = properties.picture,
             has_picture = picture && picture !== 'null',
             feature_pictures = detail_container.querySelector<HTMLDivElement>('.feature_pictures');
@@ -244,10 +250,36 @@ export class FeatureElement extends HTMLDivElement {
         showLoadingSpinner(false);
     }
 
+    private async showLabelFromWikidata(wikidataID: string, element_name: HTMLElement) {
+        try {
+            const labelService = new WikidataLabelService(),
+                label = await labelService.getSomeLabelFromWikidataID(wikidataID, getLanguage());
+            if (label) {
+                if (process.env.NODE_ENV === 'development') console.debug("Found label from Wikidata", { wikidataID, element_name, label });
+                element_name.innerText = '📍 ' + label;
+            }
+        } catch (err) {
+            logErrorMessage("Failed getting label from Wikidata", 'error', { wikidataID, element_name });
+        }
+    }
+
+    private async showDescriptionFromWikidata(wikidataID: string, element_name: HTMLElement) {
+        try {
+            const descriptionService = new WikidataDescriptionService(),
+                description = await descriptionService.getDescriptionFromWikidataID(wikidataID, getLanguage());
+            if (description) {
+                if (process.env.NODE_ENV === 'development') console.debug("Found description from Wikidata", { wikidataID, element_name, description });
+                element_name.innerText = '📍 ' + description;
+            }
+        } catch (err) {
+            logErrorMessage("Failed getting description from Wikidata", 'error', { wikidataID, element_name });
+        }
+    }
+
     private async showDetailsFromWikidata(wikidataID: string, feature_pictures: HTMLElement) {
         try {
-            const wikidataService = new WikidataRestService(),
-                image = await wikidataService.getCommonsImageFromWikidataID(wikidataID);
+            const statementService = new WikidataStatementService(),
+                image = await statementService.getCommonsImageFromWikidataID(wikidataID);
             if (image) {
                 if (process.env.NODE_ENV === 'development') console.debug("Found image from Wikidata", { wikidataID, feature_pictures, image });
                 feature_pictures.appendChild(imageToDomElement(image));
