@@ -16,6 +16,7 @@ import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
 import type { EtymologyResponse } from './model/EtymologyResponse';
+import type { MapDatabase } from './db/MapDatabase';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -47,6 +48,7 @@ export class EtymologyMap extends Map {
     private lastBBox?: BBox;
     private fetchInProgress = false;
     private shouldFetchAgain = false;
+    private db?: MapDatabase;
 
     constructor(
         containerId: string,
@@ -117,6 +119,9 @@ export class EtymologyMap extends Map {
             if (qlever_enable)
                 this.services.push(new QLeverMapService());
             if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
+
+            const { MapDatabase } = await import("./db/MapDatabase");
+            this.db = new MapDatabase();
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { qlever_enable, error: e });
         }
@@ -336,17 +341,15 @@ export class EtymologyMap extends Map {
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        const { MapDatabase } = await import("./db/MapDatabase"),
-            db = new MapDatabase(),
-            cacheBackEndID = "elements-" + backEndID,
+        const cacheBackEndID = "elements-" + backEndID,
             lang = getLanguage();
-        let out: EtymologyResponse | undefined = await db.getMap(cacheBackEndID, bbox, lang);
+        let out: EtymologyResponse | undefined = await this.db?.getMap(cacheBackEndID, bbox, lang);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { cacheBackEndID, bbox, lang, out });
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { cacheBackEndID, bbox, lang });
             out = await service.fetchMapClusterElements(cacheBackEndID, bbox, lang);
-            void db.addMap(out);
+            void this.db?.addMap(out);
         }
         return out;
     }
@@ -399,17 +402,15 @@ export class EtymologyMap extends Map {
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        const { MapDatabase } = await import("./db/MapDatabase"),
-            db = new MapDatabase(),
-            cacheBackEndID = "details-" + backEndID,
+        const cacheBackEndID = "details-" + backEndID,
             lang = getLanguage();
-        let out: EtymologyResponse | undefined = await db.getMap(cacheBackEndID, bbox, lang);
+        let out: EtymologyResponse | undefined = await this.db?.getMap(cacheBackEndID, bbox, lang);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { cacheBackEndID, bbox, lang, out });
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { cacheBackEndID, bbox, lang });
             out = await service.fetchMapElementDetails(cacheBackEndID, bbox, lang);
-            void db.addMap(out);
+            void this.db?.addMap(out);
         }
         return out;
     }
