@@ -37,25 +37,19 @@ export class OverpassService implements MapService {
         return true;
     }
 
-    public fetchMapClusterElements(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        return this.fetchMapData(
-            "out ids center ${maxElements};", "elements-" + backEndID, bbox, language
-        );
-    }
-
-    public async fetchMapElementDetails(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        const out = await this.fetchMapData(
-            "out body ${maxElements}; >; out skel qt;", "details-" + backEndID, bbox, language
-        );
-        out.features = out.features.filter(
-            (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
-        );
-        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        const out = await this.fetchMapData(backEndID, onlyCentroids, bbox, language);
+        if (!onlyCentroids) {
+            out.features = out.features.filter(
+                (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
+            );
+            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+            if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        }
         return out;
     }
 
-    private async fetchMapData(outClause: string, backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
         const osm_text_key = getConfig("osm_text_key"),
             osm_description_key = getConfig("osm_description_key");
         let osm_keys: string[],
@@ -94,7 +88,7 @@ export class OverpassService implements MapService {
         }
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_query");
-        const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, outClause),
+        const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
             res = await this.api.postOverpassQuery({ data: query });
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
@@ -111,6 +105,7 @@ export class OverpassService implements MapService {
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;
         out.backEndID = backEndID;
+        out.onlyCentroids = onlyCentroids;
         out.language = language;
         const maxElements = getConfig("max_map_elements");
         out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
@@ -180,7 +175,7 @@ export class OverpassService implements MapService {
     }
 
     private buildOverpassQuery(
-        wd_keys: string[], bbox: BBox, osm_text_key: string | null, use_wikidata: boolean, outClause: string
+        wd_keys: string[], bbox: BBox, osm_text_key: string | null, use_wikidata: boolean, onlyCentroids: boolean
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxRelationMembers = getConfig("max_relation_members"),
@@ -226,10 +221,11 @@ export class OverpassService implements MapService {
             }
         });
 
-        const maxElements = getConfig("max_map_elements");
+        const maxElements = getConfig("max_map_elements"),
+            outClause = onlyCentroids ? `out ids center ${maxElements};` : `out body ${maxElements}; >; out skel qt;`;
         query += `);
 // Max elements: ${maxElements ?? "NONE"}
-${outClause.replace("${maxElements}", maxElements ?? "")}
+${outClause}
 `;
 
         return query;

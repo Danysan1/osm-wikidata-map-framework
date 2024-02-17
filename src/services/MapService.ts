@@ -8,12 +8,11 @@ export interface MapService {
     canHandleBackEnd(backEndID: string): boolean;
 
     /**
-     * Fetch elements for clustering for low-zoom map view in the given bounding box.
+     * 
+     * @param backEndID 
+     * @param onlyCentroids Whether to fetch only centroids or full elements with details
+     * @param bbox 
+     * @param language 
      */
-    fetchMapClusterElements(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse>;
-
-    /**
-     * Fetch elements with details for high-zoom map view in the given bounding box.
-     */
-    fetchMapElementDetails(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse>;
+    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string): Promise<EtymologyResponse>;
 }

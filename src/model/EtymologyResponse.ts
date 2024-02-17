@@ -36,6 +36,7 @@ export interface EtymologyResponse extends FeatureCollection<Geometry, Etymology
      *  - qlever_osm_wikidata_reverse
      */
     backEndID?: string;
+    onlyCentroids?: boolean;
     /**
      * ISO string for the time the query was run
      */

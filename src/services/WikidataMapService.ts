@@ -19,15 +19,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public fetchMapClusterElements(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        return this.fetchMapData(backEndID, bbox, language);
-    }
-
-    public fetchMapElementDetails(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        return this.fetchMapData(backEndID, bbox, language);
-    }
-
-    private async fetchMapData(backEndID: string, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
         let sparqlQueryTemplate: string;
         if (backEndID === "wd_base")
             sparqlQueryTemplate = baseMapQuery;
@@ -61,6 +53,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             wdqs_query: sparqlQuery,
             timestamp: new Date().toISOString(),
             backEndID: backEndID,
+            onlyCentroids: onlyCentroids,
             language: language,
             truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
         };

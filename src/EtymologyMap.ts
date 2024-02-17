@@ -44,6 +44,7 @@ export class EtymologyMap extends Map {
     private detailsSourceInitialized = false;
     private services?: MapService[];
     private lastBackEndID?: string;
+    private lastOnlyCentroids?: boolean;
     private lastKeyID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
@@ -266,6 +267,7 @@ export class EtymologyMap extends Map {
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
             this.lastBackEndID = backEndID;
+            this.lastOnlyCentroids = undefined; // Reset (applies only to GeoJSON sources)
             this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
         } else if (!this.services?.length) {
             if (process.env.NODE_ENV === 'development') console.warn("updateDataSource: Services are still initializing, skipping source update");
@@ -289,8 +291,7 @@ export class EtymologyMap extends Map {
         });
 
         if (enableElementsLayers) {
-            const fullBackEndID = "elements-" + backEndID,
-                backEndChanged = this.lastBackEndID !== fullBackEndID,
+            const backEndChanged = this.lastBackEndID !== backEndID || this.lastOnlyCentroids !== true,
                 bbox: BBox = [
                     Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
                     Math.floor(southWest.lat * 10) / 10,
@@ -299,13 +300,13 @@ export class EtymologyMap extends Map {
                 ];
             if (backEndChanged || this.isBBoxChanged(bbox)) {
                 if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON elements source:", backEndID);
-                this.lastBackEndID = fullBackEndID;
+                this.lastBackEndID = backEndID;
+                this.lastOnlyCentroids = true;
                 this.lastBBox = bbox;
                 void this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
             }
         } else if (enableDetailsLayers) {
-            const fullBackEndID = "details-" + backEndID,
-                backEndChanged = this.lastBackEndID !== fullBackEndID,
+            const backEndChanged = this.lastBackEndID !== backEndID || this.lastOnlyCentroids !== false,
                 bbox: BBox = [
                     Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
                     Math.floor(southWest.lat * 100) / 100,
@@ -314,7 +315,8 @@ export class EtymologyMap extends Map {
                 ];
             if (backEndChanged || this.isBBoxChanged(bbox)) {
                 if (process.env.NODE_ENV === 'development') console.debug("Updating GeoJSON details source:", backEndID);
-                this.lastBackEndID = fullBackEndID;
+                this.lastBackEndID = backEndID;
+                this.lastOnlyCentroids = false;
                 this.lastBBox = bbox;
                 void this.prepareDetailsGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
             }
@@ -336,31 +338,13 @@ export class EtymologyMap extends Map {
         return isBBoxChanged;
     }
 
-    private async fetchMapClusterElements(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
-        const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
-        if (!service)
-            throw new Error("No service found for source ID " + backEndID);
-
-        const cacheBackEndID = "elements-" + backEndID,
-            lang = getLanguage();
-        let out: EtymologyResponse | undefined = await this.db?.getMap(cacheBackEndID, bbox, lang);
-        if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { cacheBackEndID, bbox, lang, out });
-        } else {
-            if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { cacheBackEndID, bbox, lang });
-            out = await service.fetchMapClusterElements(cacheBackEndID, bbox, lang);
-            void this.db?.addMap(out);
-        }
-        return out;
-    }
-
     private async updateElementsGeoJSONSource(backEndID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         this.fetchInProgress = true;
 
         try {
             showLoadingSpinner(true);
 
-            const data = await this.fetchMapClusterElements(backEndID, bbox);
+            const data = await this.fetchMapElements(backEndID, true, bbox);
             if (process.env.NODE_ENV === 'development') console.debug("updateElementsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoomLevel, thresholdZoomLevel });
 
             this.removeSourceWithLayers(DETAILS_SOURCE);
@@ -397,19 +381,18 @@ export class EtymologyMap extends Map {
         );
     }
 
-    private async fetchMapElementDetails(backEndID: string, bbox: BBox): Promise<EtymologyResponse> {
+    private async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox): Promise<EtymologyResponse> {
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        const cacheBackEndID = "details-" + backEndID,
-            lang = getLanguage();
-        let out: EtymologyResponse | undefined = await this.db?.getMap(cacheBackEndID, bbox, lang);
+        const lang = getLanguage();
+        let out: EtymologyResponse | undefined = await this.db?.getMap(backEndID, onlyCentroids, bbox, lang);
         if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { cacheBackEndID, bbox, lang, out });
+            if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { backEndID, onlyCentroids, bbox, lang, out });
         } else {
-            if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { cacheBackEndID, bbox, lang });
-            out = await service.fetchMapElementDetails(cacheBackEndID, bbox, lang);
+            if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { backEndID, onlyCentroids, bbox, lang });
+            out = await service.fetchMapElements(backEndID, onlyCentroids, bbox, lang);
             void this.db?.addMap(out);
         }
         return out;
@@ -421,7 +404,7 @@ export class EtymologyMap extends Map {
         try {
             showLoadingSpinner(true);
 
-            const data = await this.fetchMapElementDetails(backEndID, bbox);
+            const data = await this.fetchMapElements(backEndID, false, bbox);
             if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoom });
 
             this.removeSourceWithLayers(ELEMENTS_SOURCE);

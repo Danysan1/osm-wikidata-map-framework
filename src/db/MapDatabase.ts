@@ -10,8 +10,8 @@ export class MapDatabase extends Dexie {
 
     public constructor() {
         super("MapDatabase");
-        this.version(4).stores({
-            maps: "++id, [backEndID+language]"
+        this.version(5).stores({
+            maps: "++id, [backEndID+onlyCentroids+language]"
         });
 
         setTimeout(() => {
@@ -24,13 +24,13 @@ export class MapDatabase extends Dexie {
         }, 10_000);
     }
 
-    public async getMap(backEndID: string, bbox: BBox, language?: string): Promise<MapRow | undefined> {
+    public async getMap(backEndID: string, onlyCentroids: boolean, bbox: BBox, language?: string): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {
                 return await this.maps
-                    .where({ backEndID, language })
-                    .and(map => {
+                    .where({ backEndID, onlyCentroids, language })
+                    .and(map => { // Find elements whose bbox includes the given bbox and that are not truncated
                         if (!map.bbox)
                             return false;
                         const [mapMinLon, mapMinLat, mapMaxLon, mapMaxLat] = map.bbox,
