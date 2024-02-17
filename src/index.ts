@@ -150,14 +150,4 @@ function initPage() {
 
         logErrorMessage("Device/Browser does not support the map library.");
     }
-
-    Array.from(document.getElementsByClassName("dataset_button")).forEach(
-        (element) => element.addEventListener("click", () => setTimeout(() => alert(
-            'Your download will start soon. ' +
-            'This dataset is derived from OpenStreetMap and Wikidata and distributed under the Open Data Commons Open Database License (ODbL). ' +
-            'You are free to copy, distribute, transmit and adapt our data, as long as you credit OpenStreetMap and its contributors. ' +
-            'If you alter or build upon our data, you may distribute the result only under the same licence. ' +
-            'Find out more at https://www.openstreetmap.org/copyright . '
-        ), 1))
-    );
 }
