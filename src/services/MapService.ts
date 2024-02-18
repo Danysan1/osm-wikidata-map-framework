@@ -1,6 +1,10 @@
 import type { EtymologyResponse } from "../model/EtymologyResponse";
 import type { BBox } from "geojson";
 
+/**
+ * Service to fetch map elements from a back-end.
+ * Implements the strategy pattern to allow different back-ends to be used interchangeably.
+ */
 export interface MapService {
     /**
      * Check whether this service can handle the given source ID.

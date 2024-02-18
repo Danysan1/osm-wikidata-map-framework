@@ -29,6 +29,8 @@ export class WikidataMapService extends WikidataService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        if(process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
+
         const cachedResponse = await this.db?.getMap(backEndID, true, bbox, language);
         if (cachedResponse)
             return cachedResponse;

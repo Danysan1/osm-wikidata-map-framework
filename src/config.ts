@@ -25,5 +25,3 @@ export function getStringArrayConfig(key: string): string[] | undefined {
             throw new Error("Non-string item in " + key);
     }) : undefined;
 }
-
-export const getKeyID = (key: string) => "osm_" + key.replace(":wikidata", "").replace(":", "_");

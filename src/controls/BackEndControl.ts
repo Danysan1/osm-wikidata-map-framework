@@ -1,8 +1,9 @@
-import { getConfig, getBoolConfig, getKeyID, getStringArrayConfig } from '../config';
+import { getConfig, getBoolConfig, getStringArrayConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import type { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
+import { osmKeyToKeyID } from '../model/EtymologyResponse';
 
 const PMTILES_GROUP_NAME = "Database (PMTiles)",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
@@ -116,7 +117,7 @@ export class BackEndControl extends DropdownControl {
             dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
 
         keys?.forEach(key => {
-            const keyID = getKeyID(key),
+            const keyID = osmKeyToKeyID(key),
                 keyText = "OSM " + key;
             dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
             if (pmtilesURL)

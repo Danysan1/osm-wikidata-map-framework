@@ -7,7 +7,9 @@ export type EtymologyFeature = Feature<Geometry, EtymologyResponseFeaturePropert
 
 export interface EtymologyResponse extends FeatureCollection<Geometry, EtymologyResponseFeatureProperties> {
     /**
-     * ID of the backEnd used to fetch the features
+     * ID of the backEnd used to fetch the features.
+     * 
+     * Can be a single source ({source_id}_{key_id}) or a combination of sources ({source_id1}_{key_id1}+{source_id2}_{key_id2}).
      * 
      * Examples:
      *  - pmtiles_all
@@ -69,4 +71,8 @@ export interface EtymologyResponse extends FeatureCollection<Geometry, Etymology
      * Language fetched
      */
     language?: string;
+}
+
+export function osmKeyToKeyID(key: string) {
+    return "osm_" + key.replace(":wikidata", "").replace(":", "_");
 }

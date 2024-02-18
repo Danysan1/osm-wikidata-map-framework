@@ -9,11 +9,11 @@ import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
 import wd_direct_query from "./query/qlever/wd_direct.sparql";
 import wd_base_query from "./query/qlever/wd_base.sparql";
-import { getConfig, getKeyID, getStringArrayConfig } from "../config";
+import { getConfig, getStringArrayConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { Etymology } from "../model/Etymology";
-import type { EtymologyResponse, EtymologyFeature } from "../model/EtymologyResponse";
+import { type EtymologyResponse, type EtymologyFeature, osmKeyToKeyID } from "../model/EtymologyResponse";
 import { logErrorMessage } from "../monitoring";
 import type { MapService } from "./MapService";
 import { Configuration } from "../generated/sparql/runtime";
@@ -37,12 +37,24 @@ const commonsFileRegex = /(File:[^;]+)/;
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
+    private osmTextKey?: string;
+    private osmDescriptionKey?: string;
+    private maxElements?: number;
+    private osmWikidataKeys?: string[];
+    private osmFilterTags?: string[];
     private db?: MapDatabase;
     private api: SparqlApi;
 
-    public constructor(db?: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
+    public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?: string[], db?: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
+        this.osmTextKey = osmTextKey;
+        this.osmDescriptionKey = osmDescriptionKey;
+        this.maxElements = maxElements;
+        this.osmWikidataKeys = osmWikidataKeys;
+        this.osmFilterTags = osmFilterTags;
         this.db = db;
         this.api = new SparqlApi(new Configuration({ basePath }));
+
+        if (process.env.NODE_ENV === 'development') console.debug("QLeverMapService currently ignores maxRelationMembers", { osmTextKey, osmDescriptionKey, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, basePath });
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -54,12 +66,11 @@ export class QLeverMapService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        const maxElements = getConfig("max_map_elements"),
-            backend = this.getSparqlBackEnd(backEndID),
+        const backend = this.getSparqlBackEnd(backEndID),
             sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
             sparqlQuery = this.fillPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox)
                 .replaceAll('${language}', language)
-                .replaceAll('${limit}', maxElements ? "LIMIT " + maxElements : ""),
+                .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
             ret = await this.api.postSparqlQuery({ backend, format: "json", query: sparqlQuery });
 
         if (!ret.results?.bindings)
@@ -73,7 +84,7 @@ export class QLeverMapService implements MapService {
             backEndID: backEndID,
             onlyCentroids: onlyCentroids,
             language: language,
-            truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
+            truncated: ret.results.bindings.length === this.maxElements,
         };
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
         if (backend === "wikidata")
@@ -120,20 +131,18 @@ export class QLeverMapService implements MapService {
         if (backEndID.includes("osm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
                 all_osm_wikidata_keys_selected = !selected_key_id || selected_key_id.startsWith("osm_all"),
-                osm_text_key = all_osm_wikidata_keys_selected ? getConfig("osm_text_key") : undefined,
-                osm_description_key = all_osm_wikidata_keys_selected ? getConfig("osm_description_key") : undefined,
-                osm_wikidata_keys = getStringArrayConfig("osm_wikidata_keys"),
-                raw_filter_tags = getStringArrayConfig("osm_filter_tags"),
-                selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? osm_wikidata_keys : osm_wikidata_keys?.filter(key => getKeyID(key) === selected_key_id);
-            if (osm_wikidata_keys?.length && !selected_osm_wikidata_keys?.length)
-                throw new Error(`Invalid selected_key_id: ${backEndID} => ${selected_key_id} not in the osm_wikidata_keys config`);
+                osm_text_key = all_osm_wikidata_keys_selected ? this.osmTextKey : undefined,
+                osm_description_key = all_osm_wikidata_keys_selected ? this.osmDescriptionKey : undefined,
+                selected_osm_wikidata_keys = all_osm_wikidata_keys_selected ? this.osmWikidataKeys : this.osmWikidataKeys?.filter(key => osmKeyToKeyID(key) === selected_key_id);
+            if (this.osmWikidataKeys?.length && !selected_osm_wikidata_keys?.length)
+                throw new Error(`Invalid selected_key_id: ${backEndID} => ${selected_key_id} not in osmWikidataKeys`);
 
-            const filter_tags = raw_filter_tags?.map(tag => tag.replace("=*", "")),
+            const filter_tags = this.osmFilterTags?.map(tag => tag.replace("=*", "")),
                 filter_tags_with_value = filter_tags?.filter(tag => tag.includes("=")),
                 filter_keys = filter_tags?.filter(tag => !tag.includes("=")),
                 filter_osm_wd_keys = filter_tags?.length ? selected_osm_wikidata_keys?.filter(key => filter_tags.includes(key)) : selected_osm_wikidata_keys,
                 non_filter_osm_wd_keys = selected_osm_wikidata_keys?.filter(key => !filter_keys?.includes(key)),
-                filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !osm_wikidata_keys?.includes(key)),
+                filter_non_etymology_keys = filter_keys?.filter(key => key !== osm_text_key && key !== osm_description_key && !this.osmWikidataKeys?.includes(key)),
                 filterKeysExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_value; " : "", // TODO Use blank nodes
                 non_filter_osm_wd_predicate = non_filter_osm_wd_keys?.map(keyPredicate)?.join('|'),
                 osmEtymologyUnionBranches: string[] = [];

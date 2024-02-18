@@ -7,7 +7,7 @@ import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { getBoolConfig, getConfig } from './config';
+import { getBoolConfig, getConfig, getStringArrayConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { getLanguage, loadTranslator } from './i18n';
 import './style.css';
@@ -113,7 +113,16 @@ export class EtymologyMap extends Map {
                 import("./db/MapDatabase"), import("./services")
             ]),
                 db = new MapDatabase(),
-                overpassService = new OverpassService(db),
+                osm_text_key = getConfig("osm_text_key") ?? undefined,
+                osm_description_key = getConfig("osm_description_key") ?? undefined,
+                rawMaxElements = getConfig("max_map_elements"),
+                maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
+                rawMaxRelationMembers = getConfig("max_relation_members"),
+                maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
+                osmWikidataKeys = getStringArrayConfig("osm_wikidata_keys") ?? undefined,
+                osmFilterTags = getStringArrayConfig("osm_filter_tags") ?? undefined,
+                overpassEndpoints = getStringArrayConfig("overpass_endpoints") ?? undefined,
+                overpassService = new OverpassService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, overpassEndpoints),
                 wikidataService = new WikidataMapService(db);
             this.services = [
                 wikidataService,
@@ -121,7 +130,7 @@ export class EtymologyMap extends Map {
                 new OverpassWikidataMapService(overpassService, wikidataService, db)
             ];
             if (qlever_enable)
-                this.services.push(new QLeverMapService(db));
+                this.services.push(new QLeverMapService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db));
             if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { qlever_enable, error: e });

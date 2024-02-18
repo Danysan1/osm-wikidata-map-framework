@@ -1,11 +1,10 @@
-import { getConfig, getKeyID, getStringArrayConfig } from "../config";
 import type { BBox } from "geojson";
 import { Configuration } from "../generated/overpass/runtime";
 import { OverpassApi } from "../generated/overpass/apis/OverpassApi";
 import osmtogeojson from "osmtogeojson";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
-import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
+import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
 import type { OsmType } from "../model/Etymology";
 import type { MapDatabase } from "../db/MapDatabase";
 
@@ -13,24 +12,34 @@ const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
 
 export class OverpassService implements MapService {
+    private osmTextKey?: string;
+    private osmDescriptionKey?: string;
+    private maxElements?: number;
+    private maxRelationMembers?: number;
+    private osmWikidataKeys?: string[];
+    private osmFilterTags?: string[];
+    private wikidata_key_codes?: Record<string, string>;
     private db?: MapDatabase;
     private api: OverpassApi;
-    private wikidata_keys?: string[];
-    private wikidata_key_codes?: Record<string, string>;
 
-    public constructor(db?: MapDatabase) {
+    public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?:string[], db?: MapDatabase, overpassEndpoints?: string[]) {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const endpoints = getStringArrayConfig("overpass_endpoints") || ["https://overpass-api.de/api"],
+        const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),
             basePath = endpoints[randomIndex];
+        this.osmTextKey = osmTextKey;
+        this.osmDescriptionKey = osmDescriptionKey;
+        this.maxElements = maxElements;
+        this.maxRelationMembers = maxRelationMembers;
         this.db = db;
         this.api = new OverpassApi(new Configuration({ basePath }));
-        this.wikidata_keys = getStringArrayConfig("osm_wikidata_keys");
-        this.wikidata_key_codes = this.wikidata_keys?.reduce((acc: Record<string, string>, key) => {
-            acc[getKeyID(key)] = key;
+        this.osmWikidataKeys = osmWikidataKeys;
+        this.osmFilterTags = osmFilterTags;
+        this.wikidata_key_codes = this.osmWikidataKeys?.reduce((acc: Record<string, string>, key) => {
+            acc[osmKeyToKeyID(key)] = key;
             return acc;
         }, {});
-        if (process.env.NODE_ENV === 'development') console.debug("OverpassService initialized", { wikidata_keys: this.wikidata_keys, wikidata_key_codes: this.wikidata_key_codes });
+        if (process.env.NODE_ENV === 'development') console.debug("OverpassService initialized", { wikidata_keys: this.osmWikidataKeys, wikidata_key_codes: this.wikidata_key_codes });
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -59,26 +68,24 @@ export class OverpassService implements MapService {
     }
 
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        const osm_text_key = getConfig("osm_text_key"),
-            osm_description_key = getConfig("osm_description_key");
         let osm_keys: string[],
             use_wikidata: boolean,
-            search_text_key = osm_text_key;
+            search_text_key: string | undefined = this.osmTextKey;
 
         if (backEndID.includes("overpass_wd")) {
             // Search only elements with wikidata=*
             osm_keys = [];
-            search_text_key = null;
+            search_text_key = undefined;
             use_wikidata = true;
-        } else if (!this.wikidata_keys) {
-            throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${this.wikidata_keys}"`)
+        } else if (!this.osmWikidataKeys) {
+            throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${this.osmWikidataKeys}"`)
         } else if (backEndID.includes("overpass_all_wd")) {
             // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
-            osm_keys = this.wikidata_keys;
+            osm_keys = this.osmWikidataKeys;
             use_wikidata = true;
         } else if (backEndID.includes("overpass_all")) {
             // Search all elements with an etymology
-            osm_keys = this.wikidata_keys;
+            osm_keys = this.osmWikidataKeys;
             use_wikidata = false;
         } else {
             // Search a specific etymology key
@@ -92,7 +99,7 @@ export class OverpassService implements MapService {
             else
                 osm_keys = [this.wikidata_key_codes[sourceKeyCode]];
 
-            search_text_key = null;
+            search_text_key = undefined;
             use_wikidata = false;
         }
 
@@ -109,22 +116,21 @@ export class OverpassService implements MapService {
         const out: EtymologyResponse = osmtogeojson(res);
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
 
-        out.features.forEach(f => this.transformFeature(f, osm_keys, osm_text_key, osm_description_key, language));
+        out.features.forEach(f => this.transformFeature(f, osm_keys, language));
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;
         out.backEndID = backEndID;
         out.onlyCentroids = onlyCentroids;
         out.language = language;
-        const maxElements = getConfig("max_map_elements");
-        out.truncated = !!maxElements && res.elements?.length === parseInt(maxElements);
+        out.truncated = res.elements?.length === this.maxElements;
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_transform");
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
 
         return out;
     }
 
-    private transformFeature(feature: EtymologyFeature, osm_keys: string[], osm_text_key: string | null, osm_description_key: string | null, language: string) {
+    private transformFeature(feature: EtymologyFeature, osm_keys: string[], language: string) {
         if (!feature.properties)
             feature.properties = {};
 
@@ -144,16 +150,16 @@ export class OverpassService implements MapService {
         else if (feature.properties.building)
             feature.properties.render_height = 6;
 
-        const text_ety = osm_text_key ? feature.properties[osm_text_key] : undefined;
-        if (typeof text_ety === "string")
-            feature.properties.text_etymology = text_ety;
+        const etymologyText = this.osmTextKey ? feature.properties[this.osmTextKey] : undefined;
+        if (typeof etymologyText === "string")
+            feature.properties.text_etymology = etymologyText;
 
         if (typeof feature.properties.website === "string")
             feature.properties.website_url = feature.properties.website;
 
-        const descr = osm_description_key ? feature.properties[osm_description_key] : undefined;
-        if (typeof descr === "string")
-            feature.properties.text_etymology_descr = descr;
+        const etymologyDescription = this.osmDescriptionKey ? feature.properties[this.osmDescriptionKey] : undefined;
+        if (typeof etymologyDescription === "string")
+            feature.properties.text_etymology_descr = etymologyDescription;
 
         if (typeof feature.properties.wikimedia_commons === "string")
             feature.properties.commons = commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1);
@@ -184,13 +190,12 @@ export class OverpassService implements MapService {
     }
 
     private buildOverpassQuery(
-        wd_keys: string[], bbox: BBox, osm_text_key: string | null, use_wikidata: boolean, onlyCentroids: boolean
+        wd_keys: string[], bbox: BBox, osm_text_key: string | undefined, use_wikidata: boolean, onlyCentroids: boolean
     ): string {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
-        const maxRelationMembers = getConfig("max_relation_members"),
-            maxMembersFilter = maxRelationMembers ? `(if:count_members()<${maxRelationMembers})` : "",
+        const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
             notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
-            filter_tags = getStringArrayConfig("osm_filter_tags")?.map(tag => tag.replace("=*", "")),
+            filter_tags = this.osmFilterTags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
@@ -202,7 +207,7 @@ export class OverpassService implements MapService {
 // Secondary Wikidata keys: ${wd_keys.length ? wd_keys.join(", ") : "NONE"}
 // Text key: ${osm_text_key ?? "NONE"}
 // ${use_wikidata ? "F" : "NOT f"}etching also elements with wikidata=*
-// Max relation members: ${maxRelationMembers ?? "UNLIMITED"}
+// Max relation members: ${this.maxRelationMembers ?? "UNLIMITED"}
 `;
 
         filter_wd_keys.forEach(
@@ -230,10 +235,9 @@ export class OverpassService implements MapService {
             }
         });
 
-        const maxElements = getConfig("max_map_elements"),
-            outClause = onlyCentroids ? `out ids center ${maxElements};` : `out body ${maxElements}; >; out skel qt;`;
+        const outClause = onlyCentroids ? `out ids center ${this.maxElements};` : `out body ${this.maxElements}; >; out skel qt;`;
         query += `);
-// Max elements: ${maxElements ?? "NONE"}
+// Max elements: ${this.maxElements ?? "NONE"}
 ${outClause}
 `;
 
