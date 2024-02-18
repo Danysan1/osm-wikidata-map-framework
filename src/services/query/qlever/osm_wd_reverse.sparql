@@ -12,6 +12,8 @@ PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX schema: <http://schema.org/>
 PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 PREFIX wd: <http://www.wikidata.org/entity/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+
 SELECT
     ?item
     ?osm
@@ -40,6 +42,7 @@ WHERE {
             rdfs:label ?anyLabel.
         ${wikidataCountryQuery}
         MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore the etymology statement has an end date # TODO Use blank nodes
+        MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
         MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
         MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property

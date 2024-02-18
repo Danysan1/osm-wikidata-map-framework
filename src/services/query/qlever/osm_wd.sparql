@@ -5,6 +5,7 @@ PREFIX osm: <https://www.openstreetmap.org/>
 PREFIX ogc: <http://www.opengis.net/rdf#>
 PREFIX geo: <http://www.opengis.net/ont/geosparql#>
 PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
+
 SELECT
     ?item
     ?osm

@@ -6,6 +6,8 @@ PREFIX wdt: <http://www.wikidata.org/prop/direct/>
 PREFIX p: <http://www.wikidata.org/prop/>
 PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+
 SELECT DISTINCT
     ?etymology
     ?location
@@ -20,8 +22,9 @@ SELECT DISTINCT
     (true AS ?from_wikidata)
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
-    MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore if the etymology statement has an end date # TODO Use blank nodes
     ?stmt pq:P625 ?location.
+    MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore if the etymology statement has an end date # TODO Use blank nodes
+    MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
 
     # # Filter by location (geo:sfWithin)
     # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)

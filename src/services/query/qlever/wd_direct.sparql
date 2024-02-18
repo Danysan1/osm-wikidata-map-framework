@@ -7,6 +7,8 @@ PREFIX wd: <http://www.wikidata.org/entity/>
 PREFIX p: <http://www.wikidata.org/prop/>
 PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+
 SELECT
     ?item
     ?etymology
@@ -31,6 +33,7 @@ WHERE {
     ${wikidataCountryQuery}
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
     MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
+    MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
     ?locationStatement ps:P625 ?_location.
     
     # # Filter by location (geo:sfWithin)

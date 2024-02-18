@@ -23,6 +23,7 @@ WHERE {
     ?item p:P625 ?locationStatement.
     ${wikidataCountryQuery}
     MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
+    MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) []. } # Ignore if the feature has an end date or isn't on Earth
     MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
     MINUS { ?locationStatement pq:P582 []. } # Ignore if the location statement has an end date

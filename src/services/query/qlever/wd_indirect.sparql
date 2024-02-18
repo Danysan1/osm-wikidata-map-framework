@@ -7,6 +7,8 @@ PREFIX wd: <http://www.wikidata.org/entity/>
 PREFIX p: <http://www.wikidata.org/prop/>
 PREFIX ps: <http://www.wikidata.org/prop/statement/>
 PREFIX pq: <http://www.wikidata.org/prop/qualifier/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+
 SELECT
     ?item
     (SAMPLE(COALESCE(?lang_label,?default_label,?anyLabel)) AS ?itemLabel)
@@ -28,9 +30,10 @@ WITH {
     SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_statementEntity
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
-        MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore if the etymology statement has an end date
-        MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt} # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
         ?stmt pq:P625 ?_location.
+        MINUS { ?stmt pq:P582 ?_stmtEndDate. } # Ignore if the etymology statement has an end date
+        MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
+        MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt} # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
 
         # # Filter by location (geo:sfWithin)
         # BIND ("POLYGON((${westLon} ${southLat}, ${westLon} ${northLat}, ${eastLon} ${northLat}, ${eastLon} ${southLat}, ${westLon} ${southLat}))"^^geo:wktLiteral AS ?bbox)
@@ -63,6 +66,7 @@ WITH {
             rdfs:label ?anyLabel.
         ${wikidataCountryQuery}
         MINUS { ?stmt (pq:P625|pq:P582) ?_stmtEndDate. } # Ignore if the etymology statement has a location qualifier (it will fetched be in the other subquery) or an end date
+        MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
         MINUS { ?etymology (wdt:${indirectProperty}/wdt:P373/^pq:P373) ?stmt. } # Prevent duplicated etymologies when the etymology has another link that points to the exact entity for the item (see https://commons.wikimedia.org/wiki/Commons_talk:WikiProject_P%C3%A8re-Lachaise_Cemetery )
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
         MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
