@@ -11,7 +11,8 @@ export class MapDatabase extends Dexie {
     public constructor() {
         super("MapDatabase");
         this.version(5).stores({
-            maps: "++id, [backEndID+onlyCentroids+language]"
+            //maps: "++id, [backEndID+onlyCentroids+language]" // Does not work: https://stackoverflow.com/a/56661425
+            maps: "++id, [backEndID+language]"
         });
 
         setTimeout(() => {
@@ -29,14 +30,15 @@ export class MapDatabase extends Dexie {
         try {
             return await this.transaction('r', this.maps, async () => {
                 return await this.maps
-                    .where({ backEndID, onlyCentroids, language })
+                    .where({ backEndID, language })
                     .and(map => { // Find elements whose bbox includes the given bbox and that are not truncated
-                        if (!map.bbox)
+                        if (!map.bbox || map.onlyCentroids !== onlyCentroids)
                             return false;
+
                         const [mapMinLon, mapMinLat, mapMaxLon, mapMaxLat] = map.bbox,
                             mapIncludesBBox = !map.truncated && mapMinLon <= minLon && mapMinLat <= minLat && mapMaxLon >= maxLon && mapMaxLat >= maxLat,
-                            mapIncludedinBBoxIsTruncated = !!map.truncated && minLon <= mapMinLon && minLat <= mapMinLat && maxLon >= mapMaxLon && maxLat >= mapMaxLat;
-                        return mapIncludesBBox || mapIncludedinBBoxIsTruncated;
+                            mapIncludedInBBoxIsTruncated = !!map.truncated && minLon <= mapMinLon && minLat <= mapMinLat && maxLon >= mapMaxLon && maxLat >= mapMaxLat;
+                        return mapIncludesBBox || mapIncludedInBBoxIsTruncated;
                     })
                     .first();
             });

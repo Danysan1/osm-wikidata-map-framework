@@ -16,7 +16,6 @@ import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
 import type { EtymologyResponse } from './model/EtymologyResponse';
-import type { MapDatabase } from './db/MapDatabase';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -49,7 +48,6 @@ export class EtymologyMap extends Map {
     private lastBBox?: BBox;
     private fetchInProgress = false;
     private shouldFetchAgain = false;
-    private db?: MapDatabase;
 
     constructor(
         containerId: string,
@@ -109,20 +107,22 @@ export class EtymologyMap extends Map {
     private async initServices() {
         const qlever_enable = getBoolConfig("qlever_enable");
         try {
-            const { WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService } = await import("./services"),
-                overpassService = new OverpassService(),
-                wikidataService = new WikidataMapService();
+            const [
+                { MapDatabase }, { WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService }
+            ] = await Promise.all([
+                import("./db/MapDatabase"), import("./services")
+            ]),
+                db = new MapDatabase(),
+                overpassService = new OverpassService(db),
+                wikidataService = new WikidataMapService(db);
             this.services = [
                 wikidataService,
                 overpassService,
-                new OverpassWikidataMapService(overpassService, wikidataService)
+                new OverpassWikidataMapService(overpassService, wikidataService, db)
             ];
             if (qlever_enable)
-                this.services.push(new QLeverMapService());
+                this.services.push(new QLeverMapService(db));
             if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
-
-            const { MapDatabase } = await import("./db/MapDatabase");
-            this.db = new MapDatabase();
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { qlever_enable, error: e });
         }
@@ -381,21 +381,12 @@ export class EtymologyMap extends Map {
         );
     }
 
-    private async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox): Promise<EtymologyResponse> {
+    private fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox): Promise<EtymologyResponse> {
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);
 
-        const lang = getLanguage();
-        let out: EtymologyResponse | undefined = await this.db?.getMap(backEndID, onlyCentroids, bbox, lang);
-        if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug("Cache hit, using cached response", { backEndID, onlyCentroids, bbox, lang, out });
-        } else {
-            if (process.env.NODE_ENV === 'development') console.debug("Cache miss, fetching data", { backEndID, onlyCentroids, bbox, lang });
-            out = await service.fetchMapElements(backEndID, onlyCentroids, bbox, lang);
-            void this.db?.addMap(out);
-        }
-        return out;
+        return service.fetchMapElements(backEndID, onlyCentroids, bbox, getLanguage());
     }
 
     private async prepareDetailsGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {

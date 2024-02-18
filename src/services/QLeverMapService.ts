@@ -21,6 +21,7 @@ import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getEtymologies } from "./etymologyUtils";
+import type { MapDatabase } from "../db/MapDatabase";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -36,9 +37,11 @@ const commonsFileRegex = /(File:[^;]+)/;
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
+    private db?: MapDatabase;
     private api: SparqlApi;
 
-    public constructor(basePath = 'https://qlever.cs.uni-freiburg.de/api') {
+    public constructor(db?: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
+        this.db = db;
         this.api = new SparqlApi(new Configuration({ basePath }));
     }
 
@@ -46,7 +49,11 @@ export class QLeverMapService implements MapService {
         return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
+        if (cachedResponse)
+            return cachedResponse;
+
         const maxElements = getConfig("max_map_elements"),
             backend = this.getSparqlBackEnd(backEndID),
             sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
@@ -74,7 +81,8 @@ export class QLeverMapService implements MapService {
         else if (backend === "osm-planet")
             out.qlever_osm_query = sparqlQuery;
 
-        if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+        void this.db?.addMap(out);
         return out;
     }
 
@@ -107,7 +115,7 @@ export class QLeverMapService implements MapService {
             throw new Error(`Invalid QLever back-end ID: "${backEndID}"`);
     }
 
-    private fillPlaceholders(backEndID: string, onlyCentroids:boolean, sparqlQuery: string, bbox: BBox): string {
+    private fillPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {
         // TODO Use onlyCentroids
         if (backEndID.includes("osm")) {
             const selected_key_id = /^qlever_osm_[^w]/.test(backEndID) ? backEndID.replace("qlever_", "") : null,
@@ -213,7 +221,7 @@ export class QLeverMapService implements MapService {
             ).toFixed(4));
     }
 
-    private featureReducer(this:void, acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
+    private featureReducer(this: void, acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
         if (!row.location?.value) {
             logErrorMessage("Invalid response from Wikidata (no location)", "warning", row);
             return acc;

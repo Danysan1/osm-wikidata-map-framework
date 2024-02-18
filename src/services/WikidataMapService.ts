@@ -13,13 +13,26 @@ import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getEtymologies } from "./etymologyUtils";
+import type { MapDatabase } from "../db/MapDatabase";
 
 export class WikidataMapService extends WikidataService implements MapService {
+    private db?: MapDatabase;
+
+    public constructor(db?: MapDatabase) {
+        super();
+        if (db)
+            this.db = db;
+    }
+
     public canHandleBackEnd(backEndID: string): boolean {
         return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        const cachedResponse = await this.db?.getMap(backEndID, true, bbox, language);
+        if (cachedResponse)
+            return cachedResponse;
+
         let sparqlQueryTemplate: string;
         if (backEndID === "wd_base")
             sparqlQueryTemplate = baseMapQuery;
@@ -53,12 +66,14 @@ export class WikidataMapService extends WikidataService implements MapService {
             wdqs_query: sparqlQuery,
             timestamp: new Date().toISOString(),
             backEndID: backEndID,
-            onlyCentroids: onlyCentroids,
+            onlyCentroids: true,
             language: language,
             truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
         };
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
-        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapData found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+
+        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+        void this.db?.addMap(out);
         return out;
     }
 

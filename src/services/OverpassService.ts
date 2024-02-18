@@ -7,20 +7,23 @@ import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
 import type { OsmType } from "../model/Etymology";
+import type { MapDatabase } from "../db/MapDatabase";
 
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
 
 export class OverpassService implements MapService {
+    private db?: MapDatabase;
     private api: OverpassApi;
     private wikidata_keys?: string[];
     private wikidata_key_codes?: Record<string, string>;
 
-    public constructor() {
+    public constructor(db?: MapDatabase) {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const endpoints = getStringArrayConfig("overpass_endpoints") || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),
             basePath = endpoints[randomIndex];
+        this.db = db;
         this.api = new OverpassApi(new Configuration({ basePath }));
         this.wikidata_keys = getStringArrayConfig("osm_wikidata_keys");
         this.wikidata_key_codes = this.wikidata_keys?.reduce((acc: Record<string, string>, key) => {
@@ -38,14 +41,20 @@ export class OverpassService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
+        if (cachedResponse)
+            return cachedResponse;
+
         const out = await this.fetchMapData(backEndID, onlyCentroids, bbox, language);
         if (!onlyCentroids) {
             out.features = out.features.filter(
                 (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
             );
             out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
-            if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         }
+
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        void this.db?.addMap(out);
         return out;
     }
 

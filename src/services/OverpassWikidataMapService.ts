@@ -3,6 +3,7 @@ import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
 import type { MapService } from "./MapService";
 import type { BBox } from "geojson";
 import { getEtymologies } from "./etymologyUtils";
+import { MapDatabase } from "../db/MapDatabase";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
     node: "P11693",
@@ -11,20 +12,26 @@ const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
 };
 
 export class OverpassWikidataMapService implements MapService {
+    private db?: MapDatabase;
     private overpassService: MapService;
     private wikidataService: MapService;
 
-    constructor(overpassService: MapService, wikidataService: MapService) {
+    constructor(overpassService: MapService, wikidataService: MapService, db?: MapDatabase) {
+        this.db = db;
         this.overpassService = overpassService;
         this.wikidataService = wikidataService;
     }
 
-    canHandleBackEnd(backEndID: string): boolean {
+    public canHandleBackEnd(backEndID: string): boolean {
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         return this.overpassService.canHandleBackEnd(overpassBackEndID) && this.wikidataService.canHandleBackEnd(wikidataBackEndID);
     }
 
-    async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string) {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string) {
+        const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
+        if (cachedResponse)
+            return cachedResponse;
+
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         if (!overpassBackEndID || !wikidataBackEndID)
             throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);
@@ -38,8 +45,8 @@ export class OverpassWikidataMapService implements MapService {
         const out = await this.fetchAndMergeMapData(
             backEndID,
             false,
-            () => this.overpassService.fetchMapElements(actualOverpassBackEndID, false, bbox, language),
-            () => this.wikidataService.fetchMapElements(wikidataBackEndID, false, bbox, language)
+            () => this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
+            () => this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
         );
 
         if (!onlyCentroids) {
@@ -48,8 +55,10 @@ export class OverpassWikidataMapService implements MapService {
             );
             out.etymology_count = out.features.map(feature => feature.properties?.etymologies?.length ?? 0)
                 .reduce((acc: number, num: number) => acc + num, 0);
-            if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElementDetails found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         }
+
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        void this.db?.addMap(out);
         return out;
     }
 
