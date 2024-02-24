@@ -1,15 +1,17 @@
 import Dexie, { Table } from 'dexie';
-import { getConfig } from '../config';
 import type { EtymologyResponse } from '../model/EtymologyResponse';
 import type { BBox } from 'geojson';
 
 type MapRow = EtymologyResponse & { id?: number };
 
 export class MapDatabase extends Dexie {
+    private maxHours: number;
     public maps!: Table<MapRow, number>;
 
-    public constructor() {
+    public constructor(maxHours: number) {
         super("MapDatabase");
+        this.maxHours = maxHours;
+
         this.version(5).stores({
             //maps: "++id, [backEndID+onlyCentroids+language]" // Does not work: https://stackoverflow.com/a/56661425
             maps: "++id, [backEndID+language]"
@@ -17,10 +19,9 @@ export class MapDatabase extends Dexie {
 
         setTimeout(() => {
             void this.transaction('rw', this.maps, async () => {
-                const maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
-                    threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                const threshold = new Date(Date.now() - 1000 * 60 * 60 * this.maxHours),
                     count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, maxHours, threshold });
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, threshold });
             });
         }, 10_000);
     }

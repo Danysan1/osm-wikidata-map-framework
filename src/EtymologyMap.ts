@@ -112,7 +112,8 @@ export class EtymologyMap extends Map {
             ] = await Promise.all([
                 import("./db/MapDatabase"), import("./services")
             ]),
-                db = new MapDatabase(),
+                maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
+                db = new MapDatabase(maxHours),
                 osm_text_key = getConfig("osm_text_key") ?? undefined,
                 osm_description_key = getConfig("osm_description_key") ?? undefined,
                 rawMaxElements = getConfig("max_map_elements"),

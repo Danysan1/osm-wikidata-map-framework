@@ -1,6 +1,5 @@
 import Dexie, { Table } from "dexie";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
-import { getConfig } from "../config";
 
 interface DetailsRow {
     id?: number;
@@ -11,20 +10,21 @@ interface DetailsRow {
 }
 
 export class DetailsDatabase extends Dexie {
+    private maxHours: number;
     public details!: Table<DetailsRow, number>;
 
-    public constructor() {
+    public constructor(maxHours: number) {
         super("DetailsDatabase");
+        this.maxHours = maxHours;
         this.version(1).stores({
             details: "++id, language"
         });
 
         setTimeout(() => {
             void this.transaction('rw', this.details, async () => {
-                const maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
-                    threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                const threshold = new Date(Date.now() - 1000 * 60 * 60 * this.maxHours),
                     count = await this.details.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, maxHours, threshold });
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, threshold });
             });
         }, 10_000);
     }

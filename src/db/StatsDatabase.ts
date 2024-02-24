@@ -1,5 +1,4 @@
 import Dexie, { Table } from 'dexie';
-import { getConfig } from '../config';
 import type { EtymologyStat } from '../controls/EtymologyColorControl';
 import type { ColorSchemeID } from '../model/colorScheme';
 
@@ -13,20 +12,21 @@ interface StatsRow {
 }
 
 export class StatsDatabase extends Dexie {
+    private maxHours: number;
     public stats!: Table<StatsRow, number>;
 
-    public constructor() {
+    public constructor(maxHours: number) {
         super("StatsDatabase");
+        this.maxHours = maxHours;
         this.version(1).stores({
             stats: "++id, [colorSchemeID+language+wikidataIDs]"
         });
 
         setTimeout(() => {
             void this.transaction('rw', this.stats, async () => {
-                const maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
-                    threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                const threshold = new Date(Date.now() - 1000 * 60 * 60 * this.maxHours),
                     count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, maxHours, threshold });
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, threshold });
             });
         }, 10_000);
     }

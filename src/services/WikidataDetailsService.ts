@@ -4,13 +4,15 @@ import { logErrorMessage } from "../monitoring";
 import { DetailsDatabase } from "../db/DetailsDatabase";
 import { WikidataService } from "./WikidataService";
 import { getLanguage } from "../i18n";
+import { getConfig } from "../config";
 
 export class WikidataDetailsService extends WikidataService {
     private db: DetailsDatabase;
 
     public constructor() {
         super();
-        this.db = new DetailsDatabase();
+        const maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24");
+        this.db = new DetailsDatabase(maxHours);
     }
 
     public async fetchEtymologyDetails(wikidataIDs: Set<string>): Promise<Record<string, EtymologyDetails>> {

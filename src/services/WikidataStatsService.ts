@@ -12,6 +12,7 @@ import { parse } from "papaparse";
 import type { EtymologyStat } from "../controls/EtymologyColorControl";
 import { StatsDatabase } from "../db/StatsDatabase";
 import { getLanguage } from "../i18n";
+import { getConfig } from "../config";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",
@@ -37,7 +38,8 @@ export class WikidataStatsService extends WikidataService {
 
     public constructor() {
         super();
-        this.db = new StatsDatabase();
+        const maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24");
+        this.db = new StatsDatabase(maxHours);
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
