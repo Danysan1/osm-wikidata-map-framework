@@ -3,7 +3,7 @@ import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
 import type { MapService } from "./MapService";
 import type { BBox } from "geojson";
 import { getEtymologies } from "./etymologyUtils";
-import { MapDatabase } from "../db/MapDatabase";
+import type { MapDatabase } from "../db/MapDatabase";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
     node: "P11693",
@@ -12,9 +12,9 @@ const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
 };
 
 export class OverpassWikidataMapService implements MapService {
-    private db?: MapDatabase;
-    private overpassService: MapService;
-    private wikidataService: MapService;
+    private readonly db?: MapDatabase;
+    private readonly overpassService: MapService;
+    private readonly wikidataService: MapService;
 
     constructor(overpassService: MapService, wikidataService: MapService, db?: MapDatabase) {
         this.db = db;

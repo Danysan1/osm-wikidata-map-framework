@@ -6,7 +6,7 @@ export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_WDT_PREFIX = "http://www.wikidata.org/prop/direct/";
     public static readonly WD_PROPERTY_P_PREFIX = "http://www.wikidata.org/prop/";
-    protected api: SparqlApi;
+    protected readonly api: SparqlApi;
 
     public constructor(basePath = 'https://query.wikidata.org') {
         this.api = new SparqlApi(new Configuration({ basePath }));

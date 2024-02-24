@@ -34,7 +34,7 @@ export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
 }
 
 export class WikidataStatsService extends WikidataService {
-    private db: StatsDatabase;
+    private readonly db: StatsDatabase;
 
     public constructor() {
         super();

@@ -2,7 +2,7 @@ import { Configuration } from "../generated/wikibase/runtime";
 import { StatementsApi } from "../generated/wikibase/apis/StatementsApi";
 
 export class WikidataStatementService {
-    protected api: StatementsApi;
+    protected readonly api: StatementsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
         this.api = new StatementsApi(new Configuration({ basePath }));

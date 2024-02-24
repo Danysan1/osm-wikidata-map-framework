@@ -12,17 +12,17 @@ const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
 
 export class OverpassService implements MapService {
-    private osmTextKey?: string;
-    private osmDescriptionKey?: string;
-    private maxElements?: number;
-    private maxRelationMembers?: number;
-    private osmWikidataKeys?: string[];
-    private osmFilterTags?: string[];
-    private wikidata_key_codes?: Record<string, string>;
-    private db?: MapDatabase;
-    private api: OverpassApi;
+    private readonly osmTextKey?: string;
+    private readonly osmDescriptionKey?: string;
+    private readonly maxElements?: number;
+    private readonly maxRelationMembers?: number;
+    private readonly osmWikidataKeys?: string[];
+    private readonly osmFilterTags?: string[];
+    private readonly wikidata_key_codes?: Record<string, string>;
+    private readonly db?: MapDatabase;
+    private readonly api: OverpassApi;
 
-    public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?:string[], db?: MapDatabase, overpassEndpoints?: string[]) {
+    public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?: string[], db?: MapDatabase, overpassEndpoints?: string[]) {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),

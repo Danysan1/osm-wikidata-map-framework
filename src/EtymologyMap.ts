@@ -7,7 +7,7 @@ import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { getBoolConfig, getConfig, getStringArrayConfig } from './config';
+import { getBoolConfig, getConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { getLanguage, loadTranslator } from './i18n';
 import './style.css';
@@ -15,7 +15,6 @@ import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
-import type { EtymologyResponse } from './model/EtymologyResponse';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -41,7 +40,7 @@ export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
     private anyFeatureClickedBefore = false;
     private detailsSourceInitialized = false;
-    private services?: MapService[];
+    private service?: MapService;
     private lastBackEndID?: string;
     private lastOnlyCentroids?: boolean;
     private lastKeyID?: string;
@@ -105,36 +104,11 @@ export class EtymologyMap extends Map {
     }
 
     private async initServices() {
-        const qlever_enable = getBoolConfig("qlever_enable");
         try {
-            const [
-                { MapDatabase }, { WikidataMapService, OverpassService, OverpassWikidataMapService, QLeverMapService }
-            ] = await Promise.all([
-                import("./db/MapDatabase"), import("./services")
-            ]),
-                maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
-                db = new MapDatabase(maxHours),
-                osm_text_key = getConfig("osm_text_key") ?? undefined,
-                osm_description_key = getConfig("osm_description_key") ?? undefined,
-                rawMaxElements = getConfig("max_map_elements"),
-                maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
-                rawMaxRelationMembers = getConfig("max_relation_members"),
-                maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
-                osmWikidataKeys = getStringArrayConfig("osm_wikidata_keys") ?? undefined,
-                osmFilterTags = getStringArrayConfig("osm_filter_tags") ?? undefined,
-                overpassEndpoints = getStringArrayConfig("overpass_endpoints") ?? undefined,
-                overpassService = new OverpassService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, overpassEndpoints),
-                wikidataService = new WikidataMapService(db);
-            this.services = [
-                wikidataService,
-                overpassService,
-                new OverpassWikidataMapService(overpassService, wikidataService, db)
-            ];
-            if (qlever_enable)
-                this.services.push(new QLeverMapService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db));
-            if (process.env.NODE_ENV === 'development') console.debug("EtymologyMap: map services initialized", this.services);
+            const { CombinedCachedMapService } = await import("./services/CombinedCachedMapService");
+            this.service = new CombinedCachedMapService();
         } catch (e) {
-            logErrorMessage("Failed initializing map services", "error", { qlever_enable, error: e });
+            logErrorMessage("Failed initializing map services", "error", { error: e });
         }
     }
 
@@ -279,8 +253,6 @@ export class EtymologyMap extends Map {
             this.lastBackEndID = backEndID;
             this.lastOnlyCentroids = undefined; // Reset (applies only to GeoJSON sources)
             this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
-        } else if (!this.services?.length) {
-            if (process.env.NODE_ENV === 'development') console.warn("updateDataSource: Services are still initializing, skipping source update");
         } else {
             this.updateGeoJSONSource(backEndID, minZoomLevel, thresholdZoomLevel);
         }
@@ -349,12 +321,16 @@ export class EtymologyMap extends Map {
     }
 
     private async updateElementsGeoJSONSource(backEndID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
-        this.fetchInProgress = true;
+        if (!this.service) {
+            if (process.env.NODE_ENV === 'development') console.warn("updateElementsGeoJSONSource: Services are still initializing, skipping source update");
+            return;
+        }
 
+        this.fetchInProgress = true;
         try {
             showLoadingSpinner(true);
 
-            const data = await this.fetchMapElements(backEndID, true, bbox);
+            const data = await this.service.fetchMapElements(backEndID, true, bbox, getLanguage());
             if (process.env.NODE_ENV === 'development') console.debug("updateElementsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoomLevel, thresholdZoomLevel });
 
             this.removeSourceWithLayers(DETAILS_SOURCE);
@@ -391,21 +367,17 @@ export class EtymologyMap extends Map {
         );
     }
 
-    private fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox): Promise<EtymologyResponse> {
-        const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
-        if (!service)
-            throw new Error("No service found for source ID " + backEndID);
-
-        return service.fetchMapElements(backEndID, onlyCentroids, bbox, getLanguage());
-    }
-
     private async prepareDetailsGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {
-        this.fetchInProgress = true;
+        if (!this.service) {
+            if (process.env.NODE_ENV === 'development') console.warn("updateElementsGeoJSONSource: Services are still initializing, skipping source update");
+            return;
+        }
 
+        this.fetchInProgress = true;
         try {
             showLoadingSpinner(true);
 
-            const data = await this.fetchMapElements(backEndID, false, bbox);
+            const data = await this.service.fetchMapElements(backEndID, false, bbox, getLanguage());
             if (process.env.NODE_ENV === 'development') console.debug("prepareDetailsGeoJSONSource: data fetched, preparing layers", { backEndID, bbox, data, minZoom });
 
             this.removeSourceWithLayers(ELEMENTS_SOURCE);

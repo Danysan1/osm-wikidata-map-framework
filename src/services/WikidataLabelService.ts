@@ -2,7 +2,7 @@ import { Configuration } from "../generated/wikibase/runtime";
 import { LabelsApi } from "../generated/wikibase/apis/LabelsApi";
 
 export class WikidataLabelService {
-    protected api: LabelsApi;
+    protected readonly api: LabelsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
         this.api = new LabelsApi(new Configuration({ basePath }));

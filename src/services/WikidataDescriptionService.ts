@@ -2,7 +2,7 @@ import { Configuration } from "../generated/wikibase/runtime";
 import { DescriptionsApi } from "../generated/wikibase/apis/DescriptionsApi";
 
 export class WikidataDescriptionService {
-    protected api: DescriptionsApi;
+    protected readonly api: DescriptionsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
         this.api = new DescriptionsApi(new Configuration({ basePath }));

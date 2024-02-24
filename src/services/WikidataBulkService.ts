@@ -9,8 +9,8 @@ import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
 const SLEEP_TIME_MS = 5_000;
 
 export class WikidataBulkService {
-    private api: SparqlApi;
-    private backend: SparqlBackend;
+    private readonly api: SparqlApi;
+    private readonly backend: SparqlBackend;
 
     constructor(useQLever = true) {
         this.backend = useQLever ? "wikidata" : "sparql";

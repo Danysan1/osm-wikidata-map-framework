@@ -2,7 +2,7 @@ import { CommonsApi } from "../generated/commons/apis/CommonsApi";
 import { Configuration } from "../generated/commons/runtime";
 
 export class WikimediaCommonsService {
-    private api: CommonsApi;
+    private readonly api: CommonsApi;
 
     constructor(baseURL?: string) {
         this.api = new CommonsApi(new Configuration({

@@ -37,13 +37,13 @@ const commonsFileRegex = /(File:[^;]+)/;
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
-    private osmTextKey?: string;
-    private osmDescriptionKey?: string;
-    private maxElements?: number;
-    private osmWikidataKeys?: string[];
-    private osmFilterTags?: string[];
-    private db?: MapDatabase;
-    private api: SparqlApi;
+    private readonly osmTextKey?: string;
+    private readonly osmDescriptionKey?: string;
+    private readonly maxElements?: number;
+    private readonly osmWikidataKeys?: string[];
+    private readonly osmFilterTags?: string[];
+    private readonly db?: MapDatabase;
+    private readonly api: SparqlApi;
 
     public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?: string[], db?: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
         this.osmTextKey = osmTextKey;

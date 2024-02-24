@@ -16,7 +16,7 @@ import { getEtymologies } from "./etymologyUtils";
 import type { MapDatabase } from "../db/MapDatabase";
 
 export class WikidataMapService extends WikidataService implements MapService {
-    private db?: MapDatabase;
+    private readonly db?: MapDatabase;
 
     public constructor(db?: MapDatabase) {
         super();
@@ -29,7 +29,7 @@ export class WikidataMapService extends WikidataService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        if(process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
+        if (process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
 
         const cachedResponse = await this.db?.getMap(backEndID, true, bbox, language);
         if (cachedResponse)

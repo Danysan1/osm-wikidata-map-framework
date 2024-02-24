@@ -7,7 +7,7 @@ import { getLanguage } from "../i18n";
 import { getConfig } from "../config";
 
 export class WikidataDetailsService extends WikidataService {
-    private db: DetailsDatabase;
+    private readonly db: DetailsDatabase;
 
     public constructor() {
         super();
