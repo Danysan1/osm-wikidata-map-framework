@@ -259,7 +259,7 @@ export class FeatureElement extends HTMLDivElement {
                 element_name.innerText = '📍 ' + label;
             }
         } catch (err) {
-            logErrorMessage("Failed getting label from Wikidata", 'error', { wikidataID, element_name });
+            if (process.env.NODE_ENV === 'development') console.warn("Failed getting label from Wikidata", { wikidataID, element_name });
         }
     }
 
@@ -272,7 +272,7 @@ export class FeatureElement extends HTMLDivElement {
                 element_name.innerText = description;
             }
         } catch (err) {
-            logErrorMessage("Failed getting description from Wikidata", 'error', { wikidataID, element_name });
+            if (process.env.NODE_ENV === 'development') console.warn("Failed getting description from Wikidata", { wikidataID, element_name });
         }
     }
 
