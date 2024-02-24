@@ -13,7 +13,7 @@ import { featureToButtonsDomElement } from './FeatureButtonsElement';
 import { WikidataStatementService } from '../services/WikidataStatementService';
 import { WikidataLabelService } from '../services/WikidataLabelService';
 import { WikidataDescriptionService } from '../services/WikidataDescriptionService';
-import { WikidataDetailsService } from '../services';
+import { WikidataDetailsService } from '../services/WikidataDetailsService';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;

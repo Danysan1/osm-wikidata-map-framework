@@ -206,7 +206,8 @@ export class DataTableControl implements IControl {
 
     private async downloadLinkLabels(wikidataIDs: Set<string>, container: HTMLElement) {
         if (wikidataIDs.size > 0) {
-            const detailsService = new (await import("../services")).WikidataDetailsService(),
+            const { WikidataDetailsService } = await import("../services/WikidataDetailsService"),
+                detailsService = new WikidataDetailsService(),
                 details = await detailsService.fetchEtymologyDetails(wikidataIDs);
 
             wikidataIDs.forEach(wikidataID => {

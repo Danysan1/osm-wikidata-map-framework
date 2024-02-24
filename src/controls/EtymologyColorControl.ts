@@ -8,7 +8,7 @@ import type { TFunction } from 'i18next';
 import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
 import { showLoadingSpinner } from '../snackbar';
-import { WikidataStatsService, statsQueries } from '../services';
+import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 
 const MAX_CHART_ITEMS = 35;
 
