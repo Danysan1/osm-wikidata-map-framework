@@ -46,6 +46,8 @@ if (jawg_token) {
     backgroundStyles.push(
         jawgStyle('jawg_streets', 'Streets', 'jawg-streets', jawg_token),
         jawgStyle('jawg_streets_3d', 'Streets 3D', 'jawg-streets', jawg_token, true),
+        jawgStyle('jawg_lagoon', 'Lagoon', 'jawg-lagoon', jawg_token),
+        jawgStyle('jawg_lagoon_3d', 'Lagoon 3D', 'jawg-lagoon', jawg_token, true),
         jawgStyle('jawg_sunny', 'Sunny', 'jawg-sunny', jawg_token),
         jawgStyle('jawg_light', 'Light', 'jawg-light', jawg_token),
         jawgStyle('jawg_terrain', 'Terrain', 'jawg-terrain', jawg_token),

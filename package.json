@@ -37,7 +37,7 @@
         "generate": "npx @openapitools/openapi-generator-cli generate"
     },
     "devDependencies": {
-        "@maptiler/geocoding-control": "^1.2.1",
+        "@maptiler/geocoding-control": "^1.2.2",
         "@openapitools/openapi-generator-cli": "^2.7.0",
         "@sentry/browser": "^7.34.0",
         "@stadiamaps/maplibre-search-box": "^1.0.1",
