@@ -9,6 +9,7 @@ import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
 import { showLoadingSpinner } from '../snackbar';
 import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
+import { getEtymologies } from '../services/etymologyUtils';
 
 const MAX_CHART_ITEMS = 35;
 
@@ -449,16 +450,7 @@ class EtymologyColorControl extends DropdownControl {
         try {
             wikidataIDs = this.getMap()
                 ?.queryRenderedFeatures({ layers: this.layerIDs })
-                ?.map(feature => feature.properties?.etymologies as unknown)
-                ?.flatMap(etymologies => {
-                    if (Array.isArray(etymologies))
-                        return etymologies as Etymology[];
-
-                    if (typeof etymologies === 'string')
-                        return JSON.parse(etymologies) as Etymology[];
-
-                    return [];
-                })
+                ?.flatMap(f => getEtymologies(f) ?? [])
                 ?.filter(etymology => etymology.wikidata)
                 ?.map(etymology => etymology.wikidata!) ?? [];
         } catch (error) {

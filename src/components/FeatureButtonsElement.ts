@@ -1,9 +1,9 @@
 import type { Position } from "geojson";
 import { getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
-import type { EtymologyDetails } from '../model/EtymologyDetails';
 import { setFragmentParams } from '../fragment';
 import type { EtymologyFeature } from "../model/EtymologyResponse";
+import { getEtymologies } from "../services/etymologyUtils";
 
 export class FeatureButtonsElement extends HTMLDivElement {
     private _destinationZoom = 12;
@@ -51,7 +51,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             throw new Error("Missing feature buttons template");
 
         const properties = this.feature.properties,
-            etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties.etymologies) as EtymologyDetails[] : properties?.etymologies,
+            etymologies = getEtymologies(this.feature),
             detail_container = feature_buttons_template.content.cloneNode(true) as HTMLElement,
             osm_full_id = properties?.osm_type && properties?.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
 

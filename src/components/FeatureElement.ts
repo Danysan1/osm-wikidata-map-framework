@@ -14,6 +14,7 @@ import { WikidataStatementService } from '../services/WikidataStatementService';
 import { WikidataLabelService } from '../services/WikidataLabelService';
 import { WikidataDescriptionService } from '../services/WikidataDescriptionService';
 import { WikidataDetailsService } from '../services/WikidataDetailsService';
+import { getEtymologies } from '../services/etymologyUtils';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -61,7 +62,7 @@ export class FeatureElement extends HTMLDivElement {
             throw new Error("Missing etymology template");
 
         const properties: EtymologyFeatureProperties = this.feature.properties,
-            etymologies = typeof properties?.etymologies === 'string' ? JSON.parse(properties?.etymologies) as EtymologyDetails[] : properties?.etymologies,
+            etymologies = getEtymologies(this.feature),
             detail_container = detail_template.content.cloneNode(true) as HTMLElement,
             osm_full_id = properties.osm_type && properties.osm_id ? properties.osm_type + '/' + properties.osm_id : null;
         //detail_container.dataset.el_id = properties.el_id?.toString();

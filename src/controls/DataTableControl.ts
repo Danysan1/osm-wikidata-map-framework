@@ -1,8 +1,8 @@
 import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } from 'maplibre-gl';
-import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeature } from '../model/EtymologyResponse';
 import { featureToButtonsDomElement } from '../components/FeatureButtonsElement';
 import { getLanguage, loadTranslator } from '../i18n';
+import { getEtymologies } from '../services/etymologyUtils';
 
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
@@ -146,7 +146,7 @@ export class DataTableControl implements IControl {
 
             const names = nameArray.join(" / "),
                 destinationZoomLevel = Math.max(currentZoomLevel, Math.min(currentZoomLevel + 2, 18)),
-                etymologies = typeof f.properties?.etymologies === "string" ? JSON.parse(f.properties?.etymologies) as Etymology[] : f.properties?.etymologies,
+                etymologies = getEtymologies(f),
                 featureWikidataIDs = etymologies?.map(e => e.wikidata ?? "").filter(id => id != ""),
                 namesCell = document.createElement("td"),
                 actionsCell = document.createElement("td"),
