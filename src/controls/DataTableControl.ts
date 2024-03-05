@@ -21,8 +21,7 @@ export class DataTableControl implements IControl {
         };
 
         this.moveEndHandler = e => {
-            if (e.target.getZoom() < minZoomLevel)
-                this.show(false);
+            this.show(e.target.getZoom() >= minZoomLevel);
         }
     }
 

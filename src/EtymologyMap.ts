@@ -762,10 +762,11 @@ export class EtymologyMap extends Map {
             ), 'top-right');
         }
 
+        const enablePMTiles = !!getConfig("pmtiles_base_url");
         this.addControl(new DataTableControl(
             DETAILS_SOURCE,
             [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
-            thresholdZoomLevel
+            enablePMTiles ? 0 : thresholdZoomLevel
         ), 'top-right');
         this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
         this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
