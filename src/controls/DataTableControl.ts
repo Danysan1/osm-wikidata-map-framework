@@ -7,13 +7,13 @@ import { getEtymologies } from '../services/etymologyUtils';
 export class DataTableControl implements IControl {
     private container?: HTMLDivElement;
     private button?: HTMLButtonElement;
-    private layers: string[];
     private map?: Map;
-    private sourceDataHandler: (e: MapSourceDataEvent) => void;
-    private moveEndHandler: (e: MapEvent) => void;
+    private readonly layerIDs: string[];
+    private readonly sourceDataHandler: (e: MapSourceDataEvent) => void;
+    private readonly moveEndHandler: (e: MapEvent) => void;
 
     constructor(sourceId: string, layerIDs: string[], minZoomLevel = 0) {
-        this.layers = layerIDs;
+        this.layerIDs = layerIDs;
 
         this.sourceDataHandler = e => {
             if (e.isSourceLoaded && e.dataType === "source" && sourceId === e.sourceId)
@@ -80,7 +80,7 @@ export class DataTableControl implements IControl {
     private openTable(currentZoomLevel: number) {
         const map = this.map;
         if (map !== undefined) {
-            const features: EtymologyFeature[] = map.queryRenderedFeatures({ layers: this.layers }),
+            const features: EtymologyFeature[] = map.queryRenderedFeatures({ layers: this.layerIDs }),
                 table = document.createElement("table"),
                 popup = new Popup({
                     closeButton: true,

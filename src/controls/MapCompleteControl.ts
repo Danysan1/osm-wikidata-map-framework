@@ -4,9 +4,9 @@ import { getCorrectFragmentParams } from '../fragment';
 
 export class MapCompleteControl implements IControl {
     private container?: HTMLDivElement;
-    private minZoomLevel: number;
-    private mapComplete_theme: string;
-    private moveEndHandler: (e: MapEvent) => void;
+    private readonly minZoomLevel: number;
+    private readonly mapComplete_theme: string;
+    private readonly moveEndHandler: (e: MapEvent) => void;
 
     constructor(minZoomLevel: number) {
         const mapComplete_theme = getConfig("mapcomplete_theme");

@@ -4,10 +4,10 @@ import type { EtymologyResponse } from '../model/EtymologyResponse';
 export class LinkControl implements IControl {
     private container?: HTMLDivElement;
     private anchor?: HTMLAnchorElement;
-    private iconUrl: string;
-    private title: string;
-    private sourceDataHandler: (e: MapSourceDataEvent) => void;
-    private moveEndHandler: (e: MapEvent) => void;
+    private readonly iconUrl: string;
+    private readonly title: string;
+    private readonly sourceDataHandler: (e: MapSourceDataEvent) => void;
+    private readonly moveEndHandler: (e: MapEvent) => void;
 
     constructor(
         iconUrl: string,

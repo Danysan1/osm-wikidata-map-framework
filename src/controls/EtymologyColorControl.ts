@@ -57,6 +57,7 @@ class EtymologyColorControl extends DropdownControl {
     private _chartInitInProgress = false;
     private _chartDomElement?: HTMLCanvasElement;
     private _chartJsObject?: Chart;
+    private statsService?: WikidataStatsService;
 
     private lastWikidataIDs?: string[];
     private lastColorSchemeID?: ColorSchemeID;
@@ -65,13 +66,12 @@ class EtymologyColorControl extends DropdownControl {
     private lastFeatureCount?: number;
     private layerIDs: string[];
 
-    private customHandlers: Partial<Record<ColorSchemeID, () => void>>;
-    private minZoomLevel: number;
-    private osmTextOnlyLabel: string;
-    private pictureAvailableLabel: string;
-    private pictureUnavailableLabel: string;
-    private statsService?: WikidataStatsService;
-    private setLayerColor: (color: string | ExpressionSpecification) => void;
+    private readonly customHandlers: Partial<Record<ColorSchemeID, () => void>>;
+    private readonly minZoomLevel: number;
+    private readonly osmTextOnlyLabel: string;
+    private readonly pictureAvailableLabel: string;
+    private readonly pictureUnavailableLabel: string;
+    private readonly setLayerColor: (color: string | ExpressionSpecification) => void;
 
     constructor(
         startColorScheme: ColorSchemeID,

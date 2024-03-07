@@ -3,8 +3,8 @@ import { getCorrectFragmentParams } from '../fragment';
 
 export class OsmWikidataMatcherControl implements IControl {
     private container?: HTMLDivElement;
-    private minZoomLevel: number;
-    private moveEndHandler: (e: MapEvent) => void;
+    private readonly minZoomLevel: number;
+    private readonly moveEndHandler: (e: MapEvent) => void;
 
     constructor(minZoomLevel: number) {
         if (process.env.NODE_ENV === 'development') console.debug("Initializing OsmWikidataMatcherControl", { minZoomLevel });

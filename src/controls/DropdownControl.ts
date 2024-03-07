@@ -16,18 +16,18 @@ export interface DropdownItem {
  * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/maplibregl.IControl/
  **/
 export class DropdownControl implements IControl {
-    private _buttonContent: string;
-    private _dropdownItems: DropdownItem[];
-    private _startDropdownItemId: string;
-    private _titleKey: string;
+    private readonly _buttonContent: string;
+    private readonly _dropdownItems: DropdownItem[];
+    private readonly _startDropdownItemId: string;
+    private readonly _titleKey: string;
     private _map?: Map;
     private _container?: HTMLDivElement;
     private _dropdown?: HTMLSelectElement;
     private _title?: HTMLLabelElement;
-    private _leftButton: boolean;
-    private hashChangeHandler?: (e: HashChangeEvent) => void;
-    private sourceDataHandler?: (e: MapSourceDataEvent) => void;
-    private moveEndHandler: (e: MapEvent) => void;
+    private readonly _leftButton: boolean;
+    private readonly hashChangeHandler?: (e: HashChangeEvent) => void;
+    private readonly sourceDataHandler?: (e: MapSourceDataEvent) => void;
+    private readonly moveEndHandler: (e: MapEvent) => void;
 
     constructor(
         buttonContent: string,
