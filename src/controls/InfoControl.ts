@@ -139,11 +139,11 @@ class InfoControl implements IControl {
         ctrlBtn.onclick = () => openInfoWindow(map, true);
         container.appendChild(ctrlBtn);
 
-        void loadTranslator().then(t => {
+        loadTranslator().then(t => {
             const title = t("info_box.open_popup", "Open the info popup");
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;
-        });
+        }).catch(console.error);
 
         return container;
     }

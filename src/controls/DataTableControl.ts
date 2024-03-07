@@ -33,13 +33,13 @@ export class DataTableControl implements IControl {
 
         this.button = document.createElement("button");
         this.button.addEventListener("click", () => this.openTable(map.getZoom()));
-        void loadTranslator().then(t => {
+        loadTranslator().then(t => {
             if (this.button) {
                 const title = t("data_table.view_data_table", "View the data in a table");
                 this.button.title = title;
                 this.button.ariaLabel = title;
             }
-        });
+        }).catch(console.error);
 
         const icon = document.createElement("img");
         icon.className = "button_img";

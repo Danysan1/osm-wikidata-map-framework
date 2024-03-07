@@ -103,13 +103,13 @@ export class DropdownControl implements IControl {
         dropdownCell.className = 'dropdown-cell content-cell';
         this._dropdown = ctrlDropDown;
 
-        void loadTranslator().then(t => {
+        loadTranslator().then(t => {
             const title = t(this._titleKey);
             titleElement.innerText = title;
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;
             ctrlDropDown.title = title;
-        });
+        }).catch(console.error);
 
         const okStartID = !!this._startDropdownItemId && this._dropdownItems.map(i => i.id).includes(this._startDropdownItemId),
             actualStartID = okStartID ? this._startDropdownItemId : this._dropdownItems[0].id;

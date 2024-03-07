@@ -37,7 +37,7 @@ export function setPageLocale() {
     preloadLang.href = `locales/${lang}/common.json`;
     document.head.appendChild(preloadLang);
 
-    void loadTranslator().then(t => {
+    loadTranslator().then(t => {
         const title = document.head.querySelector<HTMLTitleElement>("title"),
             descr = document.head.querySelector<HTMLMetaElement>('meta[name="description"]'),
             og_title = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]'),
@@ -48,7 +48,7 @@ export function setPageLocale() {
         if (og_title) og_title.content = t("title");
         if (og_name) og_name.content = t("title");
         if (og_description) og_description.content = t("description");
-    });
+    }).catch(console.error);
 }
 
 let tPromise: Promise<TFunction> | undefined;

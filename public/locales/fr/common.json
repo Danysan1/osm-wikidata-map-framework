@@ -49,6 +49,7 @@
         "occupation": "Par occupation",
         "start_century": "Par siècle de début/naissance",
         "end_century": "Par siècle de fin/décès",
+        "link_count": "Par numéro de Wikilink",
         "feature_picture": "Par disponibilité des images",
         "available": "Disponible",
         "unavailable": "Indisponible",
@@ -85,5 +86,6 @@
     "choose_projection": "Choisissez la projection cartographique",
     "overpass_turbo_query": "Requête OverpassQL source sur Overpass Turbo",
     "wdqs_query": "Requête SPARQL source sur Wikidata Query Service",
-    "qlever_query": "Requête SPARQL source sur QLever UI"
+    "qlever_query": "Requête SPARQL source sur QLever UI",
+    "clear_cache": "Vider le cache"
 }

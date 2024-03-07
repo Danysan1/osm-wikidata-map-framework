@@ -247,7 +247,7 @@ export class EtymologyMap extends Map {
         if (isPMTilesSource && backEndID === this.lastBackEndID) {
             if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: PMTiles source unchanged, skipping source update");
         } else if (isPMTilesSource && !pmtilesBaseURL?.length) {
-            void loadTranslator().then(t => showSnackbar(t("snackbar.map_error")));
+            loadTranslator().then(t => showSnackbar(t("snackbar.map_error"))).catch(console.error);
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
             this.lastBackEndID = backEndID;
@@ -303,7 +303,9 @@ export class EtymologyMap extends Map {
                 void this.prepareDetailsGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
             }
         } else {
-            void loadTranslator().then(t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000));
+            loadTranslator().then(
+                t => showSnackbar(t("snackbar.zoom_in", "Please zoom in to view data"), "wheat", 15_000)
+            ).catch(console.error);
             if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: zoom level too low, skipping source update and removing layers");
             this.removeSourceWithLayers(DETAILS_SOURCE);
         }
@@ -345,7 +347,9 @@ export class EtymologyMap extends Map {
             );
         } catch (e) {
             logErrorMessage("updateElementsGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
-            void loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data")));
+            loadTranslator().then(
+                t => showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"))
+            ).catch(console.error);
         } finally {
             this.fetchCompleted();
         }
@@ -393,7 +397,9 @@ export class EtymologyMap extends Map {
             this.prepareDetailsLayers(minZoom);
         } catch (e) {
             logErrorMessage("prepareWikidataGeoJSONSource: Error fetching map data", "error", { backEndID, bbox, e });
-            void loadTranslator().then(t => showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data")));
+            loadTranslator().then(
+                t => showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"))
+            ).catch(console.error);
         } finally {
             this.fetchCompleted();
         }

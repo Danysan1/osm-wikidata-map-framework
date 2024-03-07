@@ -58,6 +58,7 @@ export class LanguageControl extends DropdownControl {
         table.appendChild(tr);
 
         const td = document.createElement("td");
+        td.colSpan = 2;
         tr.appendChild(td);
 
         const translateLink = document.createElement("a");

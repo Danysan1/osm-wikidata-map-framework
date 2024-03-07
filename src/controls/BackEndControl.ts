@@ -4,6 +4,12 @@ import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
 import type { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 import { osmKeyToKeyID } from '../model/EtymologyResponse';
+import { MapDatabase } from '../db/MapDatabase';
+import { DetailsDatabase } from '../db/DetailsDatabase';
+import { StatsDatabase } from '../db/StatsDatabase';
+import { showSnackbar } from '../snackbar';
+import type { Map } from 'maplibre-gl';
+import { translateAnchorTitle, translateContent } from '../i18n';
 
 const PMTILES_GROUP_NAME = "Database (PMTiles)",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
@@ -157,5 +163,65 @@ export class BackEndControl extends DropdownControl {
             undefined,
             () => this.value = getCorrectFragmentParams().backEndID
         );
+    }
+
+    override onAdd(map: Map) {
+        const out = super.onAdd(map);
+
+        const table = this.getContainer()?.querySelector<HTMLTableElement>("table");
+        if (!table)
+            throw new Error("Missing container");
+
+        const tr = document.createElement("tr");
+        table.appendChild(tr);
+
+        const td = document.createElement("td");
+        td.colSpan = 2;
+        tr.appendChild(td);
+
+        const clearCacheButton = document.createElement("a");
+        clearCacheButton.role = "button";
+        clearCacheButton.onclick = this.clearCache;
+        clearCacheButton.className = "hiddenElement k-button w3-button w3-white w3-border w3-round-large button-6 clear_cache_button";
+        td.appendChild(clearCacheButton);
+        translateAnchorTitle(td, ".clear_cache_button", "clear_cache", "Clear cache");
+
+        const img = document.createElement("span"),
+            text = document.createElement("span");
+        img.className = "button_img";
+        img.innerHTML = "🗑️ &nbsp;";
+        clearCacheButton.appendChild(img);
+        text.className = "i18n_clear_cache";
+        clearCacheButton.appendChild(text);
+        translateContent(td, ".i18n_clear_cache", "clear_cache", "Clear cache");
+
+        return out;
+    }
+
+    private clearCache(this: void) {
+        if (process.env.NODE_ENV === 'development') console.debug("ClearCacheControl full button click");
+        const mapDB = new MapDatabase(),
+            detailsDB = new DetailsDatabase(),
+            statsDB = new StatsDatabase();
+        Promise.all([
+            mapDB.transaction("rw", mapDB.tables[0], async () => mapDB.tables[0].clear()),
+            detailsDB.transaction("rw", detailsDB.tables[0], async () => detailsDB.tables[0].clear()),
+            statsDB.transaction("rw", statsDB.tables[0], async () => statsDB.tables[0].clear())
+        ]).then(
+            () => showSnackbar("Cache cleared", "lightgreen")
+        ).catch(console.error);
+    }
+
+    override showDropdown(show?: boolean): void {
+        super.showDropdown(show);
+
+        const translateLink = this.getContainer()?.querySelector(".clear_cache_button");
+        if (!translateLink)
+            throw new Error("Missing clear cache button");
+
+        if (show)
+            translateLink.classList.remove("hiddenElement");
+        else
+            translateLink.classList.add("hiddenElement");
     }
 }

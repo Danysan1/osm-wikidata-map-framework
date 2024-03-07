@@ -86,5 +86,6 @@
     "choose_projection": "Vælg kortprojektion",
     "overpass_turbo_query": "Kilde OverpassQL-forespørgslel på Overpass Turbo",
     "wdqs_query": "Kilden SPARQL-forespørgsel på Wikidata Query Service",
-    "qlever_query": "Kilden SPARQL-forespørgsel på QLever UI"
+    "qlever_query": "Kilden SPARQL-forespørgsel på QLever UI",
+    "clear_cache": "Ryd cache"
 }

@@ -359,11 +359,11 @@ export class FeatureElement extends HTMLDivElement {
             // Too many items, limiting to the first N most famous ones
             sortedIDs = sortedIDs.slice(0, maxItems);
             etymologyIDs = new Set(sortedIDs);
-            void loadTranslator().then(t => showSnackbar(
+            loadTranslator().then(t => showSnackbar(
                 t("feature_details.loading_first_n_items", `Loading only first ${maxItems} items`, { partial: maxItems, total: etymologies.length }),
                 "lightsalmon",
                 10_000
-            ));
+            )).catch(console.error);
         }
 
         try {

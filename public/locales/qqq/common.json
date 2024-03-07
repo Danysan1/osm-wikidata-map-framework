@@ -9,6 +9,7 @@
         "to_choose_source": "Instructions to use the button to choose which data source to use",
         "to_overpass_query": "Instructions to use the button to view the source OverpassQL query",
         "to_wikidata_query": "Instructions to use the button to view the source SPARQL query",
+        "to_view_data_table": "Instructions to use the button to open a table with the map features",
         "to_change_background": "Instructions to use the button to change the background map style",
         "to_open_again": "Instructions to use the button to open again the info popup",
         "contribute": "Text of the button that links to the documentation to contribute to the map",
@@ -18,8 +19,7 @@
         "report_issue": "Text of the link to the issue tracker",
         "report_issue_title": "Alt text of the link to the issue tracker",
         "about_me": "Text of the About me button",
-        "about_me_title": "Alt text of the About me button",
-        "to_view_data_table": "Instructions to use the button to open a table with the map features"
+        "about_me_title": "Alt text of the About me button"
     },
     "snackbar": {
         "zoom_in": "Instructions to zoom in to view data",
@@ -43,23 +43,24 @@
         "choose_scheme": "Alt text for the '📊' button to show/hide the color scheme / stats dropdown",
         "blue": "Dropdown item for uniform blue color",
         "feature_source": "Dropdown item for map feature source statistics",
-        "etymology_source": "Dropdown item for linked entity source statistics",
         "gender": "Dropdown item for linked entity gender statistics",
         "type": "Dropdown item for linked entity type statistics",
         "country": "Dropdown item for linked entity country statistics",
+        "occupation": "Dropdown item for linked entity occupation statistics",
         "start_century": "Dropdown item for linked entity start/birth century statistics",
         "end_century": "Dropdown item for linked entity end/death century statistics",
         "link_count": "Dropdown item for linked entity Wikilink count statistics",
         "feature_picture": "Dropdown item for feature picture availability statistics",
         "available": "Available",
         "unavailable": "Unavailable",
-        "black": "Dropdown item for uniform black color",
-        "red": "Dropdown item for uniform red color",
-        "orange": "Dropdown item for uniform orange color",
+        "osm_text_only": "Features with only text etymology (no linked entities)",
         "uniform": "Dropdown category for uniform colors",
         "feature_statistics": "Dropdown category for featutre statistics",
         "etymology_statistics": "Dropdown category for linked entity statistics",
-        "osm_text_only": "Features with only text etymology (no linked entities)"
+        "black": "Dropdown item for uniform black color",
+        "red": "Dropdown item for uniform red color",
+        "orange": "Dropdown item for uniform orange color",
+        "etymology_source": "Dropdown item for linked entity source statistics"
     },
     "feature_details": {
         "source": "Source:",
@@ -73,9 +74,18 @@
         "propagation": "propagation",
         "propagation_title": "Alt text of the link to the description of the propagation mechanism"
     },
+    "data_table": {
+        "view_data_table": "View the data in a table",
+        "names": "Names",
+        "actions": "Actions",
+        "linked_entities": "Linked entities"
+    },
+    "translate": "Translate",
+    "change_language": "Alt text for the language selection control",
     "choose_basemap": "Alt text for the '🌍' button to show/hide the style dropdown",
     "choose_projection": "Alt text for the '🌐' button to show/hide the projection dropdown",
-    "overpass_turbo_query": "Alt text for the button that links to query on Overpass Turbo",
-    "wdqs_query": "Alt text for the button that links to query on Wikidata Query Service",
-    "change_language": "Alt text for the language selection control"
+    "overpass_turbo_query": "Alt text for the button that links to the source OverpassQL query on Overpass Turbo",
+    "wdqs_query": "Alt text for the button that links to the source SPARQL query on Wikidata Query Service",
+    "qlever_query": "Alt text for the button that links to the source SPARQL query on QLever",
+    "clear_cache": "Alt text for the '🗑️' button to clear the IndexedDB map/details/stats cache"
 }

@@ -76,12 +76,12 @@ export class CommonsImageElement extends HTMLDivElement {
         this.appendChild(link);
         this.classList.remove("hiddenElement");
 
-        void loadTranslator().then(t => {
+        loadTranslator().then(t => {
             const title = t("feature_details.picture_via_commons", "Picture from Wikimedia Commons");
             picture.alt = title;
             link.title = title;
             link.ariaLabel = title;
-        });
+        }).catch(console.error);
 
         new WikimediaCommonsService()
             .fetchAttribution(this.name)
