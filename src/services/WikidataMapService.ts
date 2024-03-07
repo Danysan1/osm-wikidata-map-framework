@@ -55,12 +55,16 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${westLon}', bbox[0].toString())
                 .replaceAll('${southLat}', bbox[1].toString())
                 .replaceAll('${eastLon}', bbox[2].toString())
-                .replaceAll('${northLat}', bbox[3].toString()),
-            ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
+                .replaceAll('${northLat}', bbox[3].toString());
+
+        if (process.env.NODE_ENV === 'development') console.time("wikidata_fetch");
+        const ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
+        if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_fetch");
 
         if (!ret.results?.bindings)
             throw new Error("Invalid response from Wikidata (no bindings)");
 
+        if (process.env.NODE_ENV === 'development') console.time("wikidata_transform");
         const out: EtymologyResponse = {
             type: "FeatureCollection",
             bbox: bbox,
@@ -74,6 +78,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         };
         out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
 
+        if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_transform");
         if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
         void this.db?.addMap(out);
         return out;

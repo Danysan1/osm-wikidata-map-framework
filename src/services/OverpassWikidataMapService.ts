@@ -40,14 +40,24 @@ export class OverpassWikidataMapService implements MapService {
             return this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language);
 
 
-        const actualOverpassBackEndID = onlyCentroids && overpassBackEndID === "overpass_all_wd" ? "overpass_all" : overpassBackEndID;
+        const actualOverpassBackEndID = (onlyCentroids && overpassBackEndID === "overpass_all_wd") ? "overpass_all" : overpassBackEndID;
 
-        const out = await this.fetchAndMergeMapData(
-            backEndID,
-            false,
-            () => this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
-            () => this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
-        );
+        if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_fetch");
+        const [overpassData, wikidataData] = await Promise.all([
+            this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
+            this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
+        ]);
+        if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_fetch");
+
+        if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_merge");
+        const out: EtymologyResponse = this.mergeMapData(overpassData, wikidataData);
+        if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_merge");
+
+        if (!out)
+            throw new Error("Merge failed");
+
+        out.onlyCentroids = onlyCentroids;
+        out.backEndID = backEndID;
 
         if (!onlyCentroids) {
             out.features = out.features.filter(
@@ -59,28 +69,6 @@ export class OverpassWikidataMapService implements MapService {
 
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
         void this.db?.addMap(out);
-        return out;
-    }
-
-    private async fetchAndMergeMapData(
-        backEndID: string,
-        onlyCentroids: boolean,
-        fetchOverpass: () => Promise<EtymologyResponse>,
-        fetchWikidata: () => Promise<EtymologyResponse>
-    ): Promise<EtymologyResponse> {
-        if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata fetch");
-        const [overpassData, wikidataData] = await Promise.all([fetchOverpass(), fetchWikidata()]);
-        if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata fetch");
-
-        if (process.env.NODE_ENV === 'development') console.time("Overpass+Wikidata merge");
-        const out: EtymologyResponse = this.mergeMapData(overpassData, wikidataData);
-        if (process.env.NODE_ENV === 'development') console.timeEnd("Overpass+Wikidata merge");
-
-        if (!out)
-            throw new Error("Merge failed");
-        out.backEndID = backEndID;
-        out.onlyCentroids = onlyCentroids;
-
         return out;
     }
 
