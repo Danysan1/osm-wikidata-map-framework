@@ -27,7 +27,7 @@ export interface ColorScheme {
     defaultCategoryText: string;
     /** Fixed color to be shown */
     color?: string;
-    /** Whether this color scheme should be available when no etymology is available */
+    /** Whether this color scheme should be available also when no etymology is available (es. https://osmwd.dsantini.it ) */
     showWithoutEtymology?: boolean;
 }
 
@@ -39,7 +39,7 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
         textKey: "color_scheme.feature_picture", defaultText: "By picture availability", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
     },
     feature_link_count: {
-        textKey: "color_scheme.link_count", defaultText: "By Wikilink count", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics",
+        textKey: "color_scheme.link_count", defaultText: "By Wikilink count", categoryKey: "color_scheme.feature_statistics", defaultCategoryText: "Feature statistics", showWithoutEtymology: true,
     },
     etymology_source: {
         textKey: "color_scheme.etymology_source", defaultText: "By source", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",

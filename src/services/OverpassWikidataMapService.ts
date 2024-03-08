@@ -60,9 +60,11 @@ export class OverpassWikidataMapService implements MapService {
         out.backEndID = backEndID;
 
         if (!onlyCentroids) {
-            out.features = out.features.filter(
-                (feature) => (wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length) || !!feature.properties?.etymologies?.length || feature.properties?.text_etymology?.length
-            );
+            out.features = out.features.filter((feature) => {
+                const noEtymologyRequired = wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length,
+                    hasEtymology = !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length;
+                return noEtymologyRequired || hasEtymology;
+            });
             out.etymology_count = out.features.map(feature => feature.properties?.etymologies?.length ?? 0)
                 .reduce((acc: number, num: number) => acc + num, 0);
         }

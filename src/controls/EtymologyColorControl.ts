@@ -1,4 +1,4 @@
-import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification } from 'maplibre-gl';
+import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, Map } from 'maplibre-gl';
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { getCorrectFragmentParams, getFragmentParams } from '../fragment';
 import { getConfig, getStringArrayConfig } from '../config';
@@ -67,7 +67,6 @@ class EtymologyColorControl extends DropdownControl {
     private layerIDs: string[];
 
     private readonly customHandlers: Partial<Record<ColorSchemeID, () => void>>;
-    private readonly minZoomLevel: number;
     private readonly osmTextOnlyLabel: string;
     private readonly pictureAvailableLabel: string;
     private readonly pictureUnavailableLabel: string;
@@ -79,8 +78,7 @@ class EtymologyColorControl extends DropdownControl {
         setLayerColor: (color: string | ExpressionSpecification) => void,
         t: TFunction,
         sourceId: string,
-        layerIDs: string[],
-        minZoomLevel: number
+        layerIDs: string[]
     ) {
         const keys = getStringArrayConfig("osm_wikidata_keys"),
             wdDirectProperties = getStringArrayConfig("osm_wikidata_properties"),
@@ -103,7 +101,7 @@ class EtymologyColorControl extends DropdownControl {
             startColorScheme,
             "color_scheme.choose_scheme",
             true,
-            minZoomLevel,
+            undefined,
             () => this.value = getCorrectFragmentParams().colorScheme,
             (e: MapSourceDataEvent) => {
                 if (e.isSourceLoaded && e.dataType === "source" && sourceId === e.sourceId)
@@ -112,7 +110,6 @@ class EtymologyColorControl extends DropdownControl {
         );
         this.setLayerColor = setLayerColor;
         this.layerIDs = layerIDs;
-        this.minZoomLevel = minZoomLevel;
         this.osmTextOnlyLabel = t("color_scheme.osm_text_only", "OSM (Text only)");
         this.pictureAvailableLabel = t("color_scheme.available", "Available");
         this.pictureUnavailableLabel = t("color_scheme.unavailable", "Unavailable");
@@ -124,6 +121,11 @@ class EtymologyColorControl extends DropdownControl {
             etymology_source: () => this.loadEtymologySourceChartData(),
         };
     }
+    public override onAdd(map: Map) {
+        const out = super.onAdd(map);
+        this.updateChart();
+        return out;
+    }
 
     private updateChart(event?: MapEvent | Event) {
         const dropdown = this.getDropdown();
@@ -132,17 +134,13 @@ class EtymologyColorControl extends DropdownControl {
             return;
         }
 
-        const zoomLevel = this.getMap()?.getZoom();
-        if (zoomLevel === undefined || zoomLevel < this.minZoomLevel) {
-            if (process.env.NODE_ENV === 'development') console.debug("updateChart: too low zoom level, hiding dropdown and chart", { zoomLevel, minZoomLevel: this.minZoomLevel, event });
-            this.showDropdown(false);
-            return;
-        }
-
-        const anyLayerIsUnavailable = this.layerIDs.some(layerID => !this.getMap()?.getLayer(layerID));
-        if (anyLayerIsUnavailable) {
-            if (process.env.NODE_ENV === 'development') console.debug("updateChart: layers not yet available, hiding dropdown and chart");
-            this.showDropdown(false);
+        const allLayersAreAvailable = this.layerIDs.every(layerID => this.getMap()?.getLayer(layerID));
+        if (allLayersAreAvailable) {
+            if (process.env.NODE_ENV === 'development') console.debug("updateChart: layers are available, showing");
+            this.show(true);
+        } else {
+            if (process.env.NODE_ENV === 'development') console.debug("updateChart: layers not yet available, hiding");
+            this.show(false);
             return;
         }
 

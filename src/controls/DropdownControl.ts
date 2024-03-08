@@ -27,7 +27,7 @@ export class DropdownControl implements IControl {
     private readonly _leftButton: boolean;
     private readonly hashChangeHandler?: (e: HashChangeEvent) => void;
     private readonly sourceDataHandler?: (e: MapSourceDataEvent) => void;
-    private readonly moveEndHandler: (e: MapEvent) => void;
+    private readonly moveEndHandler?: (e: MapEvent) => void;
 
     constructor(
         buttonContent: string,
@@ -35,7 +35,7 @@ export class DropdownControl implements IControl {
         startDropdownItemsId: string,
         titleKey: string,
         leftButton = false,
-        minZoomLevel = 0,
+        minZoomLevel?: number,
         onHashChange?: (e: HashChangeEvent) => void,
         onSourceData?: (e: MapSourceDataEvent) => void
     ) {
@@ -48,7 +48,8 @@ export class DropdownControl implements IControl {
         if (dropdownItems.length == 0)
             throw new Error("Tried to instantiate DropdownControl with no items");
         this._dropdownItems = dropdownItems;
-        this.moveEndHandler = this.createMoveEndHandler(minZoomLevel).bind(this);
+        if (minZoomLevel !== undefined)
+            this.moveEndHandler = this.createMoveEndHandler(minZoomLevel).bind(this);
         this.hashChangeHandler = onHashChange;
         this.sourceDataHandler = onSourceData;
     }
@@ -149,8 +150,10 @@ export class DropdownControl implements IControl {
         if (this._dropdownItems.length < 2)
             this.showDropdown(false);
 
-        this.moveEndHandler({ target: map, type: "moveend", originalEvent: undefined });
-        map.on("moveend", this.moveEndHandler);
+        if (this.moveEndHandler) {
+            this.moveEndHandler({ target: map, type: "moveend", originalEvent: undefined });
+            map.on("moveend", this.moveEndHandler);
+        }
         if (this.sourceDataHandler)
             map.on("sourcedata", this.sourceDataHandler);
         if (this.hashChangeHandler)
@@ -160,7 +163,8 @@ export class DropdownControl implements IControl {
     }
 
     onRemove(map: Map) {
-        map.off("moveend", this.moveEndHandler);
+        if (this.moveEndHandler)
+            map.off("moveend", this.moveEndHandler);
         if (this.sourceDataHandler)
             map.off("sourcedata", this.sourceDataHandler);
         if (this.hashChangeHandler)
