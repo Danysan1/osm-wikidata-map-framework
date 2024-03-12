@@ -104,7 +104,7 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
-            alt_names = [properties.official_name, properties.alt_name]
+            alt_names = [properties.name, properties.official_name, properties.alt_name]
                 .flatMap(name => name?.split(";"))
                 .map(name => name?.trim())
                 .filter(name => name && name !== 'null' && (!main_name || name.toLowerCase() !== main_name.toLowerCase()));
