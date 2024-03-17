@@ -104,15 +104,18 @@ export class FeatureElement extends HTMLDivElement {
         }
 
         const element_alt_names = detail_container.querySelector<HTMLElement>('.element_alt_names'),
-            alt_names = [properties.name, properties.official_name, properties.alt_name]
-                .flatMap(name => name?.split(";"))
-                .map(name => name?.trim())
-                .filter(name => name && name !== 'null' && (!main_name || name.toLowerCase() !== main_name.toLowerCase()));
+            alt_names = new Set<string>();
+        [properties.name, properties.official_name, properties.alt_name]
+            .flatMap(name => name?.split(";"))
+            .map(name => name?.trim())
+            .filter(name => name && name !== 'null' && (!main_name || name.toLowerCase() !== main_name.toLowerCase()))
+            .forEach(name => alt_names.add(name!)); // deduplicates alt names
         if (!element_alt_names) {
             if (process.env.NODE_ENV === 'development') console.debug("Missing .element_alt_names");
-        } else if (alt_names.length > 0) {
-            element_alt_names.innerText =
-                "(" + alt_names.map(name => `"${name}"`).join(" / ") + ")";
+        } else if (alt_names.size > 0) {
+            element_alt_names.innerText = "(";
+            alt_names.forEach(name => element_alt_names.innerText += `"${name}"`);
+            element_alt_names.innerText += ")";
         }
 
         const element_description = detail_container.querySelector<HTMLElement>('.element_description');
