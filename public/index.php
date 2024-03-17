@@ -377,6 +377,8 @@ if ($conf->has("pmtiles_base_url"))
                     &gt;
                     <a class="etymology_src_part_of_wd">Wikidata</a>
                 </span>
+                &gt;
+                <a class="etymology_src_entity" href="https://www.wikidata.org">Wikidata</a>
             </span>
             <div class="etymology_parts_container hiddenElement"></div>
         </div>

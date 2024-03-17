@@ -350,6 +350,18 @@ export class EtymologyElement extends HTMLDivElement {
             propagated.classList.add("hiddenElement");
         }
 
+        const src_entity = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_entity');
+        if (!src_entity) {
+            console.warn("Missing .etymology_src_entity");
+        } else if (this.etymology.wikidata) {
+            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.wikidata}`;
+            if (process.env.NODE_ENV === 'development') console.debug("Showing WD etymology entity source", { ety: this.etymology, wdURL, src_entity });
+            src_entity.href = wdURL;
+            src_entity.classList.remove("hiddenElement");
+        } else {
+            src_entity.classList.add("hiddenElement");
+        }
+
         const etymology_parts_container = etyDomElement.querySelector<HTMLDivElement>('.etymology_parts_container');
         if (!etymology_parts_container) {
             console.warn("Missing .etymology_parts_container");
