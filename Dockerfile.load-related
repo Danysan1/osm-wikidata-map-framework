@@ -1,5 +1,5 @@
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:20.5.0-alpine
+FROM node:21.7.2-alpine
 WORKDIR /npm_app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.load-related.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"

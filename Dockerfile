@@ -2,7 +2,7 @@
 # https://docs.docker.com/develop/develop-images/dockerfile_best-practices/
 
 # https://hub.docker.com/_/php
-FROM php:8.3.0-apache-bookworm AS base
+FROM php:8.3.4-apache-bookworm AS base
 WORKDIR /var/www
 
 RUN a2enmod headers ssl rewrite deflate expires proxy proxy_http
@@ -39,7 +39,7 @@ RUN npm install -g npm && \
 
 
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:21.5.0-alpine AS npm-install
+FROM node:21.7.2-alpine AS npm-install
 WORKDIR /npm_app
 COPY ["./package.json", "./package-lock.json", "./tsconfig.json", "./webpack.common.js", "./webpack.prod.js", "/npm_app/"]
 COPY "./src" "/npm_app/src"
