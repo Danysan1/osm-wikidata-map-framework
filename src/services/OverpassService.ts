@@ -20,9 +20,20 @@ export class OverpassService implements MapService {
     private readonly osmFilterTags?: string[];
     private readonly wikidata_key_codes?: Record<string, string>;
     private readonly db?: MapDatabase;
+    private readonly baseBBox?: BBox;
     private readonly api: OverpassApi;
 
-    public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?: string[], db?: MapDatabase, overpassEndpoints?: string[]) {
+    public constructor(
+        osmTextKey?: string,
+        osmDescriptionKey?: string,
+        maxElements?: number,
+        maxRelationMembers?: number,
+        osmWikidataKeys?: string[],
+        osmFilterTags?: string[],
+        db?: MapDatabase,
+        bbox?: BBox,
+        overpassEndpoints?: string[]
+    ) {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length),
@@ -32,6 +43,7 @@ export class OverpassService implements MapService {
         this.maxElements = maxElements;
         this.maxRelationMembers = maxRelationMembers;
         this.db = db;
+        this.baseBBox = bbox;
         this.api = new OverpassApi(new Configuration({ basePath }));
         this.osmWikidataKeys = osmWikidataKeys;
         this.osmFilterTags = osmFilterTags;
@@ -50,6 +62,11 @@ export class OverpassService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
+            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
+            return { type: "FeatureCollection", features: [] };
+        }
+
         const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
         if (cachedResponse)
             return cachedResponse;

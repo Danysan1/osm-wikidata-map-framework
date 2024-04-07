@@ -126,6 +126,10 @@ if ($conf->has("pmtiles_base_url"))
     <?= $conf->getMetaTag("wikidata_image_property", true); ?>
     <?= $conf->getMetaTag("wikidata_country", true); ?>
     <?= $conf->getMetaTag("osm_country", true); ?>
+    <?= $conf->getMetaTag("min_lon", true); ?>
+    <?= $conf->getMetaTag("max_lon", true); ?>
+    <?= $conf->getMetaTag("min_lat", true); ?>
+    <?= $conf->getMetaTag("max_lat", true); ?>
     <?= $conf->getMetaTag("mapbox_token", true); ?>
     <?= $conf->getMetaTag("maptiler_key", true); ?>
     <?= $conf->getMetaTag("enable_stadia_maps", true); ?>

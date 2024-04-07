@@ -43,15 +43,27 @@ export class QLeverMapService implements MapService {
     private readonly osmWikidataKeys?: string[];
     private readonly osmFilterTags?: string[];
     private readonly db?: MapDatabase;
+    private readonly baseBBox?: BBox;
     private readonly api: SparqlApi;
 
-    public constructor(osmTextKey?: string, osmDescriptionKey?: string, maxElements?: number, maxRelationMembers?: number, osmWikidataKeys?: string[], osmFilterTags?: string[], db?: MapDatabase, basePath = 'https://qlever.cs.uni-freiburg.de/api') {
+    public constructor(
+        osmTextKey?: string,
+        osmDescriptionKey?: string,
+        maxElements?: number,
+        maxRelationMembers?: number,
+        osmWikidataKeys?: string[],
+        osmFilterTags?: string[],
+        db?: MapDatabase,
+        bbox?: BBox,
+        basePath = 'https://qlever.cs.uni-freiburg.de/api'
+    ) {
         this.osmTextKey = osmTextKey;
         this.osmDescriptionKey = osmDescriptionKey;
         this.maxElements = maxElements;
         this.osmWikidataKeys = osmWikidataKeys;
         this.osmFilterTags = osmFilterTags;
         this.db = db;
+        this.baseBBox = bbox;
         this.api = new SparqlApi(new Configuration({ basePath }));
 
         if (process.env.NODE_ENV === 'development') console.debug("QLeverMapService currently ignores maxRelationMembers", { osmTextKey, osmDescriptionKey, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, basePath });
@@ -62,6 +74,11 @@ export class QLeverMapService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
+            if (process.env.NODE_ENV === 'development') console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
+            return { type: "FeatureCollection", features: [] };
+        }
+
         const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
         if (cachedResponse)
             return cachedResponse;

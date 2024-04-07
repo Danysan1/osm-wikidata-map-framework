@@ -7,7 +7,7 @@ import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { getBoolConfig, getConfig } from './config';
+import { getBoolConfig, getConfig, getFloatConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { getLanguage, loadTranslator } from './i18n';
 import './style.css';
@@ -53,20 +53,25 @@ export class EtymologyMap extends Map {
         backgroundStyles: BackgroundStyle[],
         requestTransformFunc?: RequestTransformFunction
     ) {
-        const startParams = getCorrectFragmentParams();
+        const startParams = getCorrectFragmentParams(),
+            westLon = getFloatConfig("min_lon"),
+            southLat = getFloatConfig("min_lat"),
+            eastLon = getFloatConfig("max_lon"),
+            northLat = getFloatConfig("max_lat");
         let backgroundStyleObj = backgroundStyles.find(style => style.id === startParams.backgroundStyleID);
         if (!backgroundStyleObj) {
             logErrorMessage("Invalid default background style", "error", { startParams, backgroundStyleObj });
             backgroundStyleObj = backgroundStyles[0];
             setFragmentParams(undefined, undefined, undefined, undefined, undefined, backgroundStyleObj.id);
         }
-        if (process.env.NODE_ENV === 'development') console.debug("Instantiating map", { containerId, backgroundStyleObj, startParams });
+        if (process.env.NODE_ENV === 'development') console.debug("Instantiating map", { containerId, backgroundStyleObj, startParams, westLon, southLat, eastLon, northLat });
 
         super({
             container: containerId,
             style: backgroundStyleObj.styleUrl,
             center: [startParams.lon, startParams.lat], // starting position [lon, lat]
             zoom: startParams.zoom, // starting zoom
+            maxBounds: westLon && southLat && eastLon && northLat ? [westLon, southLat, eastLon, northLat] : undefined,
             //projection: { name: 'mercator' },
             transformRequest: requestTransformFunc
         });
@@ -263,8 +268,8 @@ export class EtymologyMap extends Map {
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
-            detailsMaxArea = parseFloat(getConfig("details_bbox_max_area") ?? "1"),
-            elementsMaxArea = parseFloat(getConfig("elements_bbox_max_area") ?? "10"),
+            detailsMaxArea = getFloatConfig("details_bbox_max_area") ?? 1,
+            elementsMaxArea = getFloatConfig("elements_bbox_max_area") ?? 10,
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
             enableDetailsLayers = zoomLevel >= thresholdZoomLevel && area < detailsMaxArea,
             enableElementsLayers = !enableDetailsLayers && zoomLevel >= minZoomLevel && area < elementsMaxArea;

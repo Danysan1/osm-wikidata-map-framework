@@ -1,11 +1,9 @@
 import { ColorSchemeID } from "./model/colorScheme";
-import { getConfig } from "./config";
+import { getConfig, getFloatConfig } from "./config";
 
-const default_center_lat_raw = getConfig("default_center_lat"),
-    default_center_lon_raw = getConfig("default_center_lon"),
+const default_center_lat = getFloatConfig("default_center_lat") ?? 0,
+    default_center_lon = getFloatConfig("default_center_lon") ?? 0,
     default_zoom_raw = getConfig("default_zoom"),
-    default_center_lat = default_center_lat_raw ? parseFloat(default_center_lat_raw) : 0,
-    default_center_lon = default_center_lon_raw ? parseFloat(default_center_lon_raw) : 0,
     default_zoom = default_zoom_raw ? parseInt(default_zoom_raw) : 1,
     defaultColorSchemeRaw = getConfig("default_color_scheme"),
     defaultColorScheme = defaultColorSchemeRaw && defaultColorSchemeRaw in ColorSchemeID ? defaultColorSchemeRaw as ColorSchemeID : ColorSchemeID.blue,

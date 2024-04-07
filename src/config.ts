@@ -11,6 +11,11 @@ export function getBoolConfig(key: string): boolean {
     return !!rawValue && rawValue != "0" && rawValue != "false";
 }
 
+export function getFloatConfig(key: string): number | undefined {
+    const rawValue = getConfig(key);
+    return rawValue ? parseFloat(rawValue) : undefined;
+}
+
 export function getJsonConfig(key: string): unknown {
     const configElement = document.head.querySelector<HTMLScriptElement>(`script#config_${key}`);
     return configElement?.textContent ? JSON.parse(configElement.textContent) : null;

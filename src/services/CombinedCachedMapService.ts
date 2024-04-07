@@ -1,5 +1,5 @@
 import { BBox } from "geojson";
-import { getBoolConfig, getConfig, getStringArrayConfig } from "../config";
+import { getBoolConfig, getConfig, getFloatConfig, getStringArrayConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
 import { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
@@ -20,14 +20,19 @@ export class CombinedCachedMapService implements MapService {
             maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
             rawMaxRelationMembers = getConfig("max_relation_members"),
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
-            osmWikidataKeys = getStringArrayConfig("osm_wikidata_keys") ?? undefined,
-            osmFilterTags = getStringArrayConfig("osm_filter_tags") ?? undefined,
-            overpassEndpoints = getStringArrayConfig("overpass_endpoints") ?? undefined;
+            osmWikidataKeys = getStringArrayConfig("osm_wikidata_keys"),
+            osmFilterTags = getStringArrayConfig("osm_filter_tags"),
+            overpassEndpoints = getStringArrayConfig("overpass_endpoints"),
+            westLon = getFloatConfig("min_lon"),
+            southLat = getFloatConfig("min_lat"),
+            eastLon = getFloatConfig("max_lon"),
+            northLat = getFloatConfig("max_lat"),
+            bbox: BBox | undefined = westLon && southLat && eastLon && northLat ? [westLon, southLat, eastLon, northLat] : undefined;
         if (process.env.NODE_ENV === 'development') console.debug("CombinedCachedMapService: initializing map services", {
             qlever_enable, maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, overpassEndpoints
         });
         const db = new MapDatabase(maxHours),
-            overpassService = new OverpassService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, overpassEndpoints),
+            overpassService = new OverpassService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox, overpassEndpoints),
             wikidataService = new WikidataMapService(db);
         this.services = [
             wikidataService,
@@ -35,7 +40,7 @@ export class CombinedCachedMapService implements MapService {
             new OverpassWikidataMapService(overpassService, wikidataService, db)
         ];
         if (qlever_enable)
-            this.services.push(new QLeverMapService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db));
+            this.services.push(new QLeverMapService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox));
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
