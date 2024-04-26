@@ -63,6 +63,7 @@ export class WikidataBulkService {
         } catch (e) {
             await dbConnection.rollback();
             await dbConnection.close();
+            //console.error(e?.response ?? e);
             throw e;
         }
     }

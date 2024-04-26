@@ -31,7 +31,7 @@ WHERE {
     MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
 
     ?stmt ?_from_ps ?etymology.
-    FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology))
+    FILTER (isIRI(?etymology))# && !wikibase:isSomeValue(?etymology))
     
     ?locationStatement ps:P625 ?location.
     OPTIONAL { ?item rdfs:label ?label_da FILTER(LANG(?label_da) = "da") }
