@@ -10,7 +10,9 @@ const default_center_lat = getFloatConfig("default_center_lat") ?? 0,
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     defaultBackgroundStyleID = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || "stadia_alidade",
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    defaultBackEndID = getConfig("default_source") || "overpass_all";
+    defaultBackEndID = getConfig("default_source") || "overpass_all",
+    templateIDs = getConfig("templates"),
+    defaultTemplateID = templateIDs?.length ? templateIDs[0] : "default";
 
 interface FragmentParams {
     lon: number | null;
@@ -19,6 +21,7 @@ interface FragmentParams {
     colorScheme: string | null;
     backEndID: string | null;
     backgroundStyleID: string | null;
+    templateID: string | null;
 }
 
 /**
@@ -33,6 +36,7 @@ function getFragmentParams(): FragmentParams {
             colorScheme: hashParams?.[3] ?? null,
             backEndID: hashParams?.[4] ?? null,
             backgroundStyleID: hashParams?.[5] ?? null,
+            templateID: hashParams?.[6] ?? null,
         };
     // if (process.env.NODE_ENV === 'development') console.debug("getFragmentParams", { hashParams, out });
     return out;
@@ -44,7 +48,13 @@ function getFragmentParams(): FragmentParams {
  * If it is === undefined it is left untouched.
  */
 function setFragmentParams(
-    lon?: number, lat?: number, zoom?: number, colorScheme?: ColorSchemeID, backEndID?: string, backgroundStyleID?: string
+    lon?: number,
+    lat?: number,
+    zoom?: number,
+    colorScheme?: ColorSchemeID,
+    backEndID?: string,
+    backgroundStyleID?: string,
+    templateID?: string
 ): string {
     const current = getCorrectFragmentParams(),
         strLon = lon !== undefined ? lon.toFixed(4) : current.lon,
@@ -52,14 +62,15 @@ function setFragmentParams(
         strZoom = zoom !== undefined ? zoom.toFixed(1) : current.zoom,
         strColorScheme = colorScheme ?? current.colorScheme,
         strBackEnd = backEndID ?? current.backEndID,
-        strBackground = backgroundStyleID ?? current.backgroundStyleID;
+        strBackground = backgroundStyleID ?? current.backgroundStyleID,
+        strTemplate = templateID ?? current.templateID;
 
-    const fragment = `#${strLon},${strLat},${strZoom},${strColorScheme},${strBackEnd},${strBackground}`;
+    const fragment = `#${strLon},${strLat},${strZoom},${strColorScheme},${strBackEnd},${strBackground},${strTemplate}`;
     if (window.location.hash !== fragment) {
-        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { current, fragment, lon, lat, zoom, colorScheme, backEndID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID });
         window.location.hash = fragment;
     } else {
-        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID });
     }
     return fragment;
 }
@@ -71,6 +82,7 @@ interface CorrectFragmentParams {
     colorScheme: ColorSchemeID;
     backEndID: string;
     backgroundStyleID: string;
+    templateID: string;
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {
@@ -84,6 +96,8 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
             backEndID: raw.backEndID?.replace("db_", "pmtiles_") || defaultBackEndID,
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             backgroundStyleID: raw.backgroundStyleID || defaultBackgroundStyleID,
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            templateID: raw.templateID || defaultTemplateID,
         };
     //if (process.env.NODE_ENV === 'development') console.debug("getCorrectFragmentParams", { raw, correct });
     return correct;

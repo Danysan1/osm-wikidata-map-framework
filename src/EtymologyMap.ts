@@ -42,6 +42,7 @@ export class EtymologyMap extends Map {
     private detailsSourceInitialized = false;
     private service?: MapService;
     private lastBackEndID?: string;
+    private lastTemplateID?: string;
     private lastOnlyCentroids?: boolean;
     private lastKeyID?: string;
     private lastBBox?: BBox;
@@ -111,7 +112,7 @@ export class EtymologyMap extends Map {
     private async initServices() {
         try {
             const { CombinedCachedMapService } = await import("./services/CombinedCachedMapService");
-            this.service = new CombinedCachedMapService();
+            this.service = new CombinedCachedMapService(getCorrectFragmentParams().templateID);
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { error: e });
         }
@@ -243,23 +244,28 @@ export class EtymologyMap extends Map {
             return;
         }
 
-        const backEndID = getCorrectFragmentParams().backEndID,
-            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
+        const params = getCorrectFragmentParams(),
+            isPMTilesSource = params.backEndID.startsWith(PMTILES_PREFIX),
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             pmtilesBaseURL = getConfig("pmtiles_base_url");
 
-        if (isPMTilesSource && backEndID === this.lastBackEndID) {
+        if (params.templateID !== this.lastTemplateID) {
+            void this.initServices();
+            this.lastTemplateID = params.templateID;
+        }
+
+        if (isPMTilesSource && params.backEndID === this.lastBackEndID) {
             if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: PMTiles source unchanged, skipping source update");
         } else if (isPMTilesSource && !pmtilesBaseURL?.length) {
             loadTranslator().then(t => showSnackbar(t("snackbar.map_error"))).catch(console.error);
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
-            this.lastBackEndID = backEndID;
+            this.lastBackEndID = params.backEndID;
             this.lastOnlyCentroids = undefined; // Reset (applies only to GeoJSON sources)
-            this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
+            this.updateDetailsPMTilesSource(params.backEndID, thresholdZoomLevel);
         } else {
-            this.updateGeoJSONSource(backEndID, minZoomLevel, thresholdZoomLevel);
+            this.updateGeoJSONSource(params.backEndID, minZoomLevel, thresholdZoomLevel);
         }
     }
 
@@ -680,7 +686,7 @@ export class EtymologyMap extends Map {
 
         const [
             t,
-            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, BackEndControl }
+            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, BackEndControl, TemplateControl }
         ] = await Promise.all([
             loadTranslator(),
             import("./controls")
@@ -726,12 +732,19 @@ export class EtymologyMap extends Map {
             );
         this.addControl(colorControl, 'top-left');
 
-        const backEndControl = new BackEndControl(
-            getCorrectFragmentParams().backEndID,
-            this.updateDataSource.bind(this),
-            t
-        );
-        this.addControl(backEndControl, 'top-left');
+        try {
+            const templateControl = new TemplateControl(
+                getCorrectFragmentParams().templateID, this.updateDataSource.bind(this), t
+            );
+            this.addControl(templateControl, 'top-left');
+        } catch (e) { console.error(e); }
+
+        try {
+            const backEndControl = new BackEndControl(
+                getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
+            );
+            this.addControl(backEndControl, 'top-left');
+        } catch (e) { console.error(e); }
 
         /* Set up controls in the top RIGHT corner */
         this.addControl(new LinkControl(
