@@ -29,6 +29,12 @@
         "no_data_in_this_area": "Nessun dato in questa area",
         "data_loaded_instructions": "Dati caricati, cliccare su un elemento evidenziato per visualizzarne i dettagli"
     },
+    "preset": {
+        "choose_preset": "Scegli preset",
+        "base": "OSM + Wikidata",
+        "etymology": "Origine dei nomi",
+        "burial": "Luoghi di sepoltura"
+    },
     "source": {
         "choose_source": "Scegli fonte dati",
         "db_all": "Tutte le fonti dal DB",

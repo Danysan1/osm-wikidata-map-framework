@@ -125,7 +125,7 @@ export class EtymologyMap extends Map {
                 newBackEndControl = new BackEndControl(
                     sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
                 );
-            if(this.backEndControl)
+            if (this.backEndControl)
                 this.removeControl(this.backEndControl);
             this.backEndControl = newBackEndControl;
             this.addControl(newBackEndControl, 'top-left');
@@ -823,10 +823,11 @@ export class EtymologyMap extends Map {
     }
 
     private async fetchSourcePreset(sourcePresetID: string) {
-        let template: SourcePreset;
+        let preset: SourcePreset;
         if (sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
-            template = {
-                osm_filter_tags: getStringArrayConfig("osm_filter_tags") ?? [],
+            preset = {
+                id: DEFAULT_SOURCE_PRESET_ID,
+                osm_filter_tags: getStringArrayConfig("osm_filter_tags") ?? undefined,
                 osm_text_key: getConfig("osm_text_key") ?? undefined,
                 osm_description_key: getConfig("osm_description_key") ?? undefined,
                 osm_wikidata_keys: getStringArrayConfig("osm_wikidata_keys") ?? undefined,
@@ -839,18 +840,18 @@ export class EtymologyMap extends Map {
                 mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
             }
         } else {
-            const templateResponse = await fetch(`templates/${sourcePresetID}.json`);
-            if (!templateResponse.ok)
-                throw new Error(`Failed fetching template "${sourcePresetID}.json"`);
+            const presetResponse = await fetch(`presets/${sourcePresetID}.json`);
+            if (!presetResponse.ok)
+                throw new Error(`Failed fetching preset "${sourcePresetID}.json"`);
 
-            const templateObj: unknown = await templateResponse.json();
-            if (typeof templateObj !== "object" || !Object.hasOwnProperty.call(templateObj, "osm_filter_tags"))
-                throw new Error(`Invalid template object found in "${sourcePresetID}.json"`);
+            const presetObj: unknown = await presetResponse.json();
+            if (presetObj === null || typeof presetObj !== "object" || !Object.hasOwnProperty.call(presetObj, "id"))
+                throw new Error(`Invalid preset object found in "${sourcePresetID}.json"`);
 
-            template = templateObj as SourcePreset;
+            preset = presetObj as SourcePreset;
         }
-        console.debug("fetchSourcePreset", { sourcePresetID, template });
-        return template;
+        if (process.env.NODE_ENV === 'development') console.debug("fetchSourcePreset", { sourcePresetID, preset });
+        return preset;
     }
 
     /**

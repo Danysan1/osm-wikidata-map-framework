@@ -55,7 +55,7 @@ export class OverpassService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        if (!/^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID))
+        if (!/^overpass_(wd|all_[_a-z]+|osm_[_a-z]+)$/.test(backEndID))
             return false;
 
         return true;

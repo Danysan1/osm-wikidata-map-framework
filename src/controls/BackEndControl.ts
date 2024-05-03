@@ -58,7 +58,7 @@ export class BackEndControl extends DropdownControl {
 
         const allKeysText = t("source.all_osm_keys", "All OSM keys");
         if (source.osm_wikidata_keys?.length)
-            dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_all_"+source.id, allKeysText, OVERPASS_GROUP_NAME));
 
         if (source.osm_wikidata_properties?.length) {
             /**
@@ -86,9 +86,9 @@ export class BackEndControl extends DropdownControl {
         }
 
         if (source.wikidata_indirect_property) {
-            const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty:source.wikidata_indirect_property }),
-                qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty:source.wikidata_indirect_property }),
-                reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty:source.wikidata_indirect_property });
+            const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty: source.wikidata_indirect_property }),
+                qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty: source.wikidata_indirect_property }),
+                reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty: source.wikidata_indirect_property });
 
             if (source.osm_wikidata_keys?.length) {
                 dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));

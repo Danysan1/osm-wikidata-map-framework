@@ -1,6 +1,7 @@
 export const DEFAULT_SOURCE_PRESET_ID = "custom";
 export interface SourcePreset {
-    osm_filter_tags: string[];
+    id: string;
+    osm_filter_tags?: string[];
     osm_text_key?: string;
     osm_description_key?: string;
     osm_wikidata_keys?: string[];

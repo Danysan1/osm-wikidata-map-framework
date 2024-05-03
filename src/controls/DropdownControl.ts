@@ -159,6 +159,9 @@ export class DropdownControl implements IControl {
         if (this.hashChangeHandler)
             window.addEventListener("hashchange", this.hashChangeHandler);
 
+        if (this?._dropdownItems?.length === 1)
+            this.show(false);
+
         return this._container;
     }
 

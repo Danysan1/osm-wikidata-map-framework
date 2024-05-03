@@ -1,4 +1,5 @@
 {
+    "id": "etymology",
     "osm_filter_tags": [
         "name:etymology:wikidata",
         "name:etymology",
@@ -6,7 +7,7 @@
     ],
     "osm_text_key": "name:etymology",
     "osm_description_key": "name:etymology:description",
-    "osm_wikidata_key": [
+    "osm_wikidata_keys": [
         "name:etymology:wikidata",
         "subject:wikidata"
     ],

@@ -25,12 +25,12 @@ export class SourcePresetControl extends DropdownControl {
                 // Regardless of the source, update the map
                 onTemplateChange(sourcePresetID);
             };
-        console.debug("SourcePresetControl: initialized with templates", { sourcePresetIDs, startSourcePresetID });
+        if (process.env.NODE_ENV === 'development') console.debug("SourcePresetControl: initialized with source presets", { sourcePresetIDs, startSourcePresetID });
 
         const dropdownItems = sourcePresetIDs.map(
             sourcePresetID => ({
                 id: sourcePresetID,
-                text: t(sourcePresetID),
+                text: t("preset." + sourcePresetID),
                 onSelect: () => {
                     selectBackEnd(sourcePresetID);
                     this.value = sourcePresetID;
@@ -42,10 +42,10 @@ export class SourcePresetControl extends DropdownControl {
         );
 
         super(
-            '⚙️',
+            '🗃️',
             dropdownItems,
             startSourcePresetID,
-            "source.choose_template",
+            "preset.choose_preset",
             true,
             undefined,
             () => this.value = getCorrectFragmentParams().sourcePresetID
