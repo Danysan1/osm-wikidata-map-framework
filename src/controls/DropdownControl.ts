@@ -147,8 +147,10 @@ export class DropdownControl implements IControl {
             group.appendChild(option);
         });
 
-        if (this._dropdownItems.length < 2)
-            this.showDropdown(false);
+        if (this._dropdownItems.length < 2) {
+            if (process.env.NODE_ENV === 'development') console.debug("Only one dropdown item, hiding dropdown", { items: this._dropdownItems });
+            this.show(false);
+        }
 
         if (this.moveEndHandler) {
             this.moveEndHandler({ target: map, type: "moveend", originalEvent: undefined });
@@ -158,9 +160,6 @@ export class DropdownControl implements IControl {
             map.on("sourcedata", this.sourceDataHandler);
         if (this.hashChangeHandler)
             window.addEventListener("hashchange", this.hashChangeHandler);
-
-        if (this?._dropdownItems?.length === 1)
-            this.show(false);
 
         return this._container;
     }
