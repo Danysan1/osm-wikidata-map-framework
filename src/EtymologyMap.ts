@@ -7,7 +7,7 @@ import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { getBoolConfig, getConfig, getFloatConfig } from './config';
+import { getBoolConfig, getConfig, getFloatConfig, getStringArrayConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { getLanguage, loadTranslator } from './i18n';
 import './style.css';
@@ -15,6 +15,8 @@ import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
+import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from './model/SourcePreset';
+import type { BackEndControl as BackEndControlType } from './controls';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -42,12 +44,13 @@ export class EtymologyMap extends Map {
     private detailsSourceInitialized = false;
     private service?: MapService;
     private lastBackEndID?: string;
-    private lastTemplateID?: string;
+    private lastSourcePresetID?: string;
     private lastOnlyCentroids?: boolean;
     private lastKeyID?: string;
     private lastBBox?: BBox;
     private fetchInProgress = false;
     private shouldFetchAgain = false;
+    private backEndControl?: BackEndControlType;
 
     constructor(
         containerId: string,
@@ -77,7 +80,7 @@ export class EtymologyMap extends Map {
             transformRequest: requestTransformFunc
         });
         this.backgroundStyles = backgroundStyles;
-        void this.initServices();
+        this.updateSourcePreset().catch(console.error);
 
         try {
             openInfoWindow(this, false);
@@ -109,10 +112,30 @@ export class EtymologyMap extends Map {
         );
     }
 
-    private async initServices() {
+    private async updateSourcePreset() {
+        const sourcePresetID = getCorrectFragmentParams().sourcePresetID;
+        if (sourcePresetID !== this.lastSourcePresetID) {
+            const sourcePreset = await this.fetchSourcePreset(sourcePresetID);
+            await this.initServices(sourcePreset);
+            this.lastSourcePresetID = sourcePresetID;
+
+
+            const { BackEndControl } = await import("./controls"),
+                t = await loadTranslator(),
+                newBackEndControl = new BackEndControl(
+                    sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
+                );
+            if(this.backEndControl)
+                this.removeControl(this.backEndControl);
+            this.backEndControl = newBackEndControl;
+            this.addControl(newBackEndControl, 'top-left');
+        }
+    }
+
+    private async initServices(sourcePreset: SourcePreset) {
         try {
             const { CombinedCachedMapService } = await import("./services/CombinedCachedMapService");
-            this.service = new CombinedCachedMapService(getCorrectFragmentParams().templateID);
+            this.service = new CombinedCachedMapService(sourcePreset);
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { error: e });
         }
@@ -250,10 +273,7 @@ export class EtymologyMap extends Map {
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             pmtilesBaseURL = getConfig("pmtiles_base_url");
 
-        if (params.templateID !== this.lastTemplateID) {
-            void this.initServices();
-            this.lastTemplateID = params.templateID;
-        }
+        this.updateSourcePreset().catch(console.error);
 
         if (isPMTilesSource && params.backEndID === this.lastBackEndID) {
             if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: PMTiles source unchanged, skipping source update");
@@ -686,7 +706,7 @@ export class EtymologyMap extends Map {
 
         const [
             t,
-            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, BackEndControl, TemplateControl }
+            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, SourcePresetControl: SourcePresetControl }
         ] = await Promise.all([
             loadTranslator(),
             import("./controls")
@@ -733,17 +753,10 @@ export class EtymologyMap extends Map {
         this.addControl(colorControl, 'top-left');
 
         try {
-            const templateControl = new TemplateControl(
-                getCorrectFragmentParams().templateID, this.updateDataSource.bind(this), t
+            const templateControl = new SourcePresetControl(
+                getCorrectFragmentParams().sourcePresetID, this.updateDataSource.bind(this), t
             );
             this.addControl(templateControl, 'top-left');
-        } catch (e) { console.error(e); }
-
-        try {
-            const backEndControl = new BackEndControl(
-                getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
-            );
-            this.addControl(backEndControl, 'top-left');
         } catch (e) { console.error(e); }
 
         /* Set up controls in the top RIGHT corner */
@@ -807,6 +820,37 @@ export class EtymologyMap extends Map {
                 }), 'bottom-right');
             });
         }*/
+    }
+
+    private async fetchSourcePreset(sourcePresetID: string) {
+        let template: SourcePreset;
+        if (sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
+            template = {
+                osm_filter_tags: getStringArrayConfig("osm_filter_tags") ?? [],
+                osm_text_key: getConfig("osm_text_key") ?? undefined,
+                osm_description_key: getConfig("osm_description_key") ?? undefined,
+                osm_wikidata_keys: getStringArrayConfig("osm_wikidata_keys") ?? undefined,
+                osm_wikidata_properties: getStringArrayConfig("osm_wikidata_properties") ?? undefined,
+                fetch_parts_of_linked_entities: getBoolConfig("fetch_parts_of_linked_entities") ?? false,
+                wikidata_indirect_property: getConfig("wikidata_indirect_property") ?? undefined,
+                wikidata_image_property: getConfig("wikidata_image_property") ?? undefined,
+                wikidata_country: getConfig("wikidata_country") ?? undefined,
+                osm_country: getConfig("osm_country") ?? undefined,
+                mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
+            }
+        } else {
+            const templateResponse = await fetch(`templates/${sourcePresetID}.json`);
+            if (!templateResponse.ok)
+                throw new Error(`Failed fetching template "${sourcePresetID}.json"`);
+
+            const templateObj: unknown = await templateResponse.json();
+            if (typeof templateObj !== "object" || !Object.hasOwnProperty.call(templateObj, "osm_filter_tags"))
+                throw new Error(`Invalid template object found in "${sourcePresetID}.json"`);
+
+            template = templateObj as SourcePreset;
+        }
+        console.debug("fetchSourcePreset", { sourcePresetID, template });
+        return template;
     }
 
     /**

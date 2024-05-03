@@ -114,7 +114,7 @@ if ($conf->has("pmtiles_base_url"))
         echo $preload;
     } ?>
 
-    <?= $conf->getMetaTag("templates", true); ?>
+    <?= $conf->getJsonScriptTag("source_presets", true); ?>
     <?= $conf->getMetaTag("qlever_enable", true); ?>
     <?= $conf->getMetaTag("pmtiles_base_url", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>

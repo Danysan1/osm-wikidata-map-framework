@@ -7,54 +7,23 @@ import { OverpassWikidataMapService } from "./OverpassWikidataMapService";
 import { QLeverMapService } from "./QLeverMapService";
 import { WikidataMapService } from "./WikidataMapService";
 import { EtymologyResponse } from "../model/EtymologyResponse";
-import { DEFAULT_TEMPLATE, Template } from "../model/Template";
+import { SourcePreset } from "../model/SourcePreset";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];
 
-    constructor(templateID?: string) {
+    constructor(sourcePreset: SourcePreset) {
         this.services = [];
-        void this.fetchTemplateAndCreateServices(templateID ?? "default");
-    }
-
-    private async fetchTemplateAndCreateServices(templateID: string) {
-        let template: Template;
-        if (templateID === DEFAULT_TEMPLATE) {
-            template = {
-                osm_filter_tags: getStringArrayConfig("osm_filter_tags") ?? [],
-                osm_text_key: getConfig("osm_text_key") ?? undefined,
-                osm_description_key: getConfig("osm_description_key") ?? undefined,
-                osm_wikidata_keys: getStringArrayConfig("osm_wikidata_keys") ?? undefined,
-                osm_wikidata_properties: getStringArrayConfig("osm_wikidata_properties") ?? undefined,
-                fetch_parts_of_linked_entities: getBoolConfig("fetch_parts_of_linked_entities") ?? false,
-                wikidata_indirect_property: getConfig("wikidata_indirect_property") ?? undefined,
-                wikidata_image_property: getConfig("wikidata_image_property") ?? undefined,
-                wikidata_country: getConfig("wikidata_country") ?? undefined,
-                osm_country: getConfig("osm_country") ?? undefined,
-                mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
-            }
-        } else {
-            const templateResponse = await fetch(`templates/${templateID}.json`);
-            if (!templateResponse.ok)
-                throw new Error(`Failed fetching template "${templateID}.json"`);
-
-            const templateObj: unknown = await templateResponse.json();
-            if (typeof templateObj !== "object" || !Object.hasOwnProperty.call(templateObj, "osm_filter_tags"))
-                throw new Error(`Invalid template object found in "${templateID}.json"`);
-
-            template = templateObj as Template;
-        }
-
         const qlever_enable = getBoolConfig("qlever_enable"),
             maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
-            osm_text_key = template?.osm_text_key,
-            osm_description_key = template?.osm_description_key,
+            osm_text_key = sourcePreset?.osm_text_key,
+            osm_description_key = sourcePreset?.osm_description_key,
             rawMaxElements = getConfig("max_map_elements"),
             maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
             rawMaxRelationMembers = getConfig("max_relation_members"),
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
-            osmWikidataKeys = template?.osm_wikidata_keys,
-            osmFilterTags = template?.osm_filter_tags,
+            osmWikidataKeys = sourcePreset?.osm_wikidata_keys,
+            osmFilterTags = sourcePreset?.osm_filter_tags,
             overpassEndpoints = getStringArrayConfig("overpass_endpoints"),
             westLon = getFloatConfig("min_lon"),
             southLat = getFloatConfig("min_lat"),

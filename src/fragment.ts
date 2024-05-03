@@ -1,5 +1,6 @@
 import { ColorSchemeID } from "./model/colorScheme";
-import { getConfig, getFloatConfig } from "./config";
+import { getConfig, getFloatConfig, getStringArrayConfig } from "./config";
+import { DEFAULT_SOURCE_PRESET_ID } from "./model/SourcePreset";
 
 const default_center_lat = getFloatConfig("default_center_lat") ?? 0,
     default_center_lon = getFloatConfig("default_center_lon") ?? 0,
@@ -11,8 +12,8 @@ const default_center_lat = getFloatConfig("default_center_lat") ?? 0,
     defaultBackgroundStyleID = new URLSearchParams(window.location.search).get("style") || getConfig("default_background_style") || "stadia_alidade",
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     defaultBackEndID = getConfig("default_source") || "overpass_all",
-    templateIDs = getConfig("templates"),
-    defaultTemplateID = templateIDs?.length ? templateIDs[0] : "default";
+    sourcePresetIDs = getStringArrayConfig("source_presets"),
+    defaultSourcePresetID = sourcePresetIDs?.length ? sourcePresetIDs[0] : DEFAULT_SOURCE_PRESET_ID;
 
 interface FragmentParams {
     lon: number | null;
@@ -21,7 +22,7 @@ interface FragmentParams {
     colorScheme: string | null;
     backEndID: string | null;
     backgroundStyleID: string | null;
-    templateID: string | null;
+    sourcePresetID: string | null;
 }
 
 /**
@@ -36,7 +37,7 @@ function getFragmentParams(): FragmentParams {
             colorScheme: hashParams?.[3] ?? null,
             backEndID: hashParams?.[4] ?? null,
             backgroundStyleID: hashParams?.[5] ?? null,
-            templateID: hashParams?.[6] ?? null,
+            sourcePresetID: hashParams?.[6] ?? null,
         };
     // if (process.env.NODE_ENV === 'development') console.debug("getFragmentParams", { hashParams, out });
     return out;
@@ -54,7 +55,7 @@ function setFragmentParams(
     colorScheme?: ColorSchemeID,
     backEndID?: string,
     backgroundStyleID?: string,
-    templateID?: string
+    sourcePresetID?: string
 ): string {
     const current = getCorrectFragmentParams(),
         strLon = lon !== undefined ? lon.toFixed(4) : current.lon,
@@ -63,14 +64,14 @@ function setFragmentParams(
         strColorScheme = colorScheme ?? current.colorScheme,
         strBackEnd = backEndID ?? current.backEndID,
         strBackground = backgroundStyleID ?? current.backgroundStyleID,
-        strTemplate = templateID ?? current.templateID;
+        strTemplate = sourcePresetID ?? current.sourcePresetID;
 
     const fragment = `#${strLon},${strLat},${strZoom},${strColorScheme},${strBackEnd},${strBackground},${strTemplate}`;
     if (window.location.hash !== fragment) {
-        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
         window.location.hash = fragment;
     } else {
-        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID });
+        if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
     }
     return fragment;
 }
@@ -82,7 +83,7 @@ interface CorrectFragmentParams {
     colorScheme: ColorSchemeID;
     backEndID: string;
     backgroundStyleID: string;
-    templateID: string;
+    sourcePresetID: string;
 }
 
 function getCorrectFragmentParams(): CorrectFragmentParams {
@@ -97,7 +98,7 @@ function getCorrectFragmentParams(): CorrectFragmentParams {
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
             backgroundStyleID: raw.backgroundStyleID || defaultBackgroundStyleID,
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            templateID: raw.templateID || defaultTemplateID,
+            sourcePresetID: raw.sourcePresetID || defaultSourcePresetID,
         };
     //if (process.env.NODE_ENV === 'development') console.debug("getCorrectFragmentParams", { raw, correct });
     return correct;

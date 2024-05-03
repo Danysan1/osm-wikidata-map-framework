@@ -7,4 +7,4 @@ export { LinkControl } from "./LinkControl";
 export { MapCompleteControl } from "./MapCompleteControl";
 export { OsmWikidataMatcherControl } from "./OsmWikidataMatcherControl";
 export { BackEndControl } from "./BackEndControl";
-export { TemplateControl } from "./TemplateControl";
+export { SourcePresetControl } from "./SourcePresetControl";

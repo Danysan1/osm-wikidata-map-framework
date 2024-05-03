@@ -22,11 +22,13 @@ export function getJsonConfig(key: string): unknown {
 }
 
 export function getStringArrayConfig(key: string): string[] | undefined {
-    const rawValues = getJsonConfig(key);
-    return Array.isArray(rawValues) ? rawValues.map(value => {
-        if (typeof value === 'string')
-            return value;
-        else
-            throw new Error("Non-string item in " + key);
-    }) : undefined;
+    const rawValues = getJsonConfig(key),
+        out = Array.isArray(rawValues) ? rawValues.map(value => {
+            if (typeof value === 'string')
+                return value;
+            else
+                throw new Error("Non-string item in " + key);
+        }) : undefined;
+    // console.debug("getStringArrayConfig", { key, rawValues, out });
+    return out;
 }

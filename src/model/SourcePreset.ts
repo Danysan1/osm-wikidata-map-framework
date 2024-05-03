@@ -1,5 +1,5 @@
-export const DEFAULT_TEMPLATE = "custom";
-export interface Template {
+export const DEFAULT_SOURCE_PRESET_ID = "custom";
+export interface SourcePreset {
     osm_filter_tags: string[];
     osm_text_key?: string;
     osm_description_key?: string;
