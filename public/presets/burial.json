@@ -1,5 +1,4 @@
 {
-    "id": "burial",
     "osm_filter_tags": [
         "buried:wikidata",
         "buried",

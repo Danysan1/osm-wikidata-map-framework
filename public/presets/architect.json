@@ -1,0 +1,20 @@
+{
+    "osm_filter_tags": [
+        "architect:wikidata",
+        "architect",
+        "building",
+        "tourism",
+        "historic",
+        "bridge",
+        "place=square"
+    ],
+    "osm_text_key": "architect",
+    "osm_wikidata_keys": [
+        "architect:wikidata"
+    ],
+    "osm_wikidata_properties": [
+        "P84",
+        "P287"
+    ],
+    "fetch_parts_of_linked_entities": true
+}

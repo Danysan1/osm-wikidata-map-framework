@@ -7,7 +7,7 @@ import { logErrorMessage } from './monitoring';
 import { getCorrectFragmentParams, setFragmentParams } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
-import { getBoolConfig, getConfig, getFloatConfig, getStringArrayConfig } from './config';
+import { getBoolConfig, getConfig, getFloatConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { getLanguage, loadTranslator } from './i18n';
 import './style.css';
@@ -15,8 +15,9 @@ import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
-import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from './model/SourcePreset';
+import type { SourcePreset } from './model/SourcePreset';
 import type { BackEndControl as BackEndControlType } from './controls';
+import { fetchSourcePreset } from './services/PresetService';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -115,20 +116,24 @@ export class EtymologyMap extends Map {
     private async updateSourcePreset() {
         const sourcePresetID = getCorrectFragmentParams().sourcePresetID;
         if (sourcePresetID !== this.lastSourcePresetID) {
-            const sourcePreset = await this.fetchSourcePreset(sourcePresetID);
-            await this.initServices(sourcePreset);
-            this.lastSourcePresetID = sourcePresetID;
+            const t = await loadTranslator();
+            try {
+                const sourcePreset = await fetchSourcePreset(sourcePresetID);
+                await this.initServices(sourcePreset);
+                this.lastSourcePresetID = sourcePresetID;
 
-
-            const { BackEndControl } = await import("./controls"),
-                t = await loadTranslator(),
-                newBackEndControl = new BackEndControl(
-                    sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
-                );
-            if (this.backEndControl)
-                this.removeControl(this.backEndControl);
-            this.backEndControl = newBackEndControl;
-            this.addControl(newBackEndControl, 'top-left');
+                const { BackEndControl } = await import("./controls"),
+                    newBackEndControl = new BackEndControl(
+                        sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
+                    );
+                if (this.backEndControl)
+                    this.removeControl(this.backEndControl);
+                this.backEndControl = newBackEndControl;
+                this.addControl(newBackEndControl, 'top-left');
+            } catch (e) {
+                console.error("Failed updating source preset", e);
+                showSnackbar(t("snackbar.map_error"));
+            }
         }
     }
 
@@ -136,6 +141,7 @@ export class EtymologyMap extends Map {
         try {
             const { CombinedCachedMapService } = await import("./services/CombinedCachedMapService");
             this.service = new CombinedCachedMapService(sourcePreset);
+            this.updateDataSource();
         } catch (e) {
             logErrorMessage("Failed initializing map services", "error", { error: e });
         }
@@ -820,38 +826,6 @@ export class EtymologyMap extends Map {
                 }), 'bottom-right');
             });
         }*/
-    }
-
-    private async fetchSourcePreset(sourcePresetID: string) {
-        let preset: SourcePreset;
-        if (sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
-            preset = {
-                id: DEFAULT_SOURCE_PRESET_ID,
-                osm_filter_tags: getStringArrayConfig("osm_filter_tags") ?? undefined,
-                osm_text_key: getConfig("osm_text_key") ?? undefined,
-                osm_description_key: getConfig("osm_description_key") ?? undefined,
-                osm_wikidata_keys: getStringArrayConfig("osm_wikidata_keys") ?? undefined,
-                osm_wikidata_properties: getStringArrayConfig("osm_wikidata_properties") ?? undefined,
-                fetch_parts_of_linked_entities: getBoolConfig("fetch_parts_of_linked_entities") ?? false,
-                wikidata_indirect_property: getConfig("wikidata_indirect_property") ?? undefined,
-                wikidata_image_property: getConfig("wikidata_image_property") ?? undefined,
-                wikidata_country: getConfig("wikidata_country") ?? undefined,
-                osm_country: getConfig("osm_country") ?? undefined,
-                mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
-            }
-        } else {
-            const presetResponse = await fetch(`presets/${sourcePresetID}.json`);
-            if (!presetResponse.ok)
-                throw new Error(`Failed fetching preset "${sourcePresetID}.json"`);
-
-            const presetObj: unknown = await presetResponse.json();
-            if (presetObj === null || typeof presetObj !== "object" || !Object.hasOwnProperty.call(presetObj, "id"))
-                throw new Error(`Invalid preset object found in "${sourcePresetID}.json"`);
-
-            preset = presetObj as SourcePreset;
-        }
-        if (process.env.NODE_ENV === 'development') console.debug("fetchSourcePreset", { sourcePresetID, preset });
-        return preset;
     }
 
     /**
