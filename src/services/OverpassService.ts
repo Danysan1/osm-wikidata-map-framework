@@ -36,7 +36,7 @@ export class OverpassService implements MapService {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length);
-        this.overpassEndpoint = endpoints[randomIndex];
+        this.overpassEndpoint = endpoints[randomIndex] + "interpreter";
         this.osmTextKey = osmTextKey;
         this.osmDescriptionKey = osmDescriptionKey;
         this.maxElements = maxElements;
@@ -120,16 +120,20 @@ export class OverpassService implements MapService {
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_query");
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
-            res = await overpass(query, { endpoint: this.overpassEndpoint, verbose: true }) as unknown as OverpassJson;
+            response = await overpass(query, { endpoint: this.overpassEndpoint }),
+            res = await response.json() as OverpassJson;
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res);
+        if (!res.elements)
+            throw new Error("Bad response from Overpass");
+
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 
         if (!res.elements && res.remark)
             throw new Error(`Overpass API error: ${res.remark}`);
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_transform");
-        const out: EtymologyResponse = osmtogeojson(res, { verbose: true });
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
+        const out: EtymologyResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
         out.features.forEach(f => this.transformFeature(f, osm_keys, language));
         out.overpass_query = query;
@@ -140,7 +144,6 @@ export class OverpassService implements MapService {
         out.language = language;
         out.truncated = res.elements?.length === this.maxElements;
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_transform");
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES AFTER filtering:`, out.features);
 
         return out;
     }
