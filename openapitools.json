@@ -12,14 +12,6 @@
           "modelPropertyNaming": "original"
         }
       },
-      "overpass": {
-        "inputSpec": "./openapi/overpass.yaml",
-        "output": "./src/generated/overpass",
-        "generatorName": "typescript-fetch",
-        "additionalProperties": {
-          "modelPropertyNaming": "original"
-        }
-      },
       "sparql": {
         "glob": "./openapi/sparql.yaml",
         "output": "./src/generated/sparql",

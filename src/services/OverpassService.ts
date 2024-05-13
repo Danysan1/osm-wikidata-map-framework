@@ -1,12 +1,11 @@
 import type { BBox } from "geojson";
-import { Configuration } from "../generated/overpass/runtime";
-import { OverpassApi } from "../generated/overpass/apis/OverpassApi";
 import osmtogeojson from "osmtogeojson";
 import type { MapService } from "./MapService";
 import type { Etymology } from "../model/Etymology";
 import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
 import type { OsmType } from "../model/Etymology";
 import type { MapDatabase } from "../db/MapDatabase";
+import { overpass, type OverpassJson } from "overpass-ts";
 
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
@@ -21,7 +20,7 @@ export class OverpassService implements MapService {
     private readonly wikidata_key_codes?: Record<string, string>;
     private readonly db?: MapDatabase;
     private readonly baseBBox?: BBox;
-    private readonly api: OverpassApi;
+    private readonly overpassEndpoint: string;
 
     public constructor(
         osmTextKey?: string,
@@ -36,15 +35,14 @@ export class OverpassService implements MapService {
     ) {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
-            randomIndex = Math.floor(Math.random() * endpoints.length),
-            basePath = endpoints[randomIndex];
+            randomIndex = Math.floor(Math.random() * endpoints.length);
+        this.overpassEndpoint = endpoints[randomIndex];
         this.osmTextKey = osmTextKey;
         this.osmDescriptionKey = osmDescriptionKey;
         this.maxElements = maxElements;
         this.maxRelationMembers = maxRelationMembers;
         this.db = db;
         this.baseBBox = bbox;
-        this.api = new OverpassApi(new Configuration({ basePath }));
         this.osmWikidataKeys = osmWikidataKeys;
         this.osmFilterTags = osmFilterTags;
         this.wikidata_key_codes = this.osmWikidataKeys?.reduce((acc: Record<string, string>, key) => {
@@ -122,15 +120,15 @@ export class OverpassService implements MapService {
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_query");
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
-            res = await this.api.postOverpassQuery({ data: query });
+            res = await overpass(query, { endpoint: this.overpassEndpoint, verbose: true }) as unknown as OverpassJson;
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res);
 
         if (!res.elements && res.remark)
             throw new Error(`Overpass API error: ${res.remark}`);
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_transform");
-        const out: EtymologyResponse = osmtogeojson(res);
+        const out: EtymologyResponse = osmtogeojson(res, { verbose: true });
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES BEFORE filtering:`, out.features);
 
         out.features.forEach(f => this.transformFeature(f, osm_keys, language));

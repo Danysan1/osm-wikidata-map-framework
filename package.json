@@ -61,6 +61,7 @@
         "maplibregl-mapbox-request-transformer": "^0.0.2",
         "mini-css-extract-plugin": "^2.6.1",
         "osmtogeojson": "^3.0.0-beta.5",
+        "overpass-ts": "^4.3.8",
         "papaparse": "^5.4.1",
         "pmtiles": "^3.0.0",
         "postgresql-client": "^2.10.1",
