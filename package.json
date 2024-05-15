@@ -44,6 +44,7 @@
         "@transifex/i18next": "^5.4.0",
         "@types/chart.js": "^2.9.37",
         "@types/gtag.js": "^0.0.11",
+        "@types/osmtogeojson": "^2.2.34",
         "@types/papaparse": "^5.3.7",
         "@types/wellknown": "^0.5.5",
         "@typescript-eslint/eslint-plugin": "^6.18.1",

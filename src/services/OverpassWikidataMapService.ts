@@ -4,6 +4,7 @@ import type { MapService } from "./MapService";
 import type { BBox, Geometry, Feature } from "geojson";
 import { getEtymologies } from "./etymologyUtils";
 import type { MapDatabase } from "../db/MapDatabase";
+import { EtymologyFeatureProperties } from "../model/EtymologyFeatureProperties";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
     node: "P11693",
@@ -138,7 +139,10 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.alt_name = [osmFeature.properties.alt_name, wikidataFeature.properties?.name].join(";");
 
             // For other key, give priority to Overpass
-            ["name", "description", "picture", "commons", "wikidata"].forEach(key => {
+            const KEYS_TO_MERGE: (keyof EtymologyFeatureProperties)[] = [
+                "name", "description", "picture", "commons", "wikidata"
+            ];
+            KEYS_TO_MERGE.forEach(key => {
                 if (osmFeature.properties && !osmFeature.properties[key]) {
                     const fallbackValue = wikidataFeature.properties?.[key];
                     if (typeof fallbackValue === "string")

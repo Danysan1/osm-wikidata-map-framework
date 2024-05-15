@@ -1,7 +1,30 @@
 import type { Etymology, OsmType } from "./Etymology";
 
+interface OsmToGeoJsonRelation {
+    rel: number;
+    reltags: Record<string, string>;
+    role?: string;
+}
+
 export interface EtymologyFeatureProperties {
+    /**
+     * Vector tiles support only flat properties so OSM tags will be dumped here
+     */
     [key: string]: unknown;
+    /**
+     * osmtogeojson dumps OSM tags here
+     */
+    tags?: Record<string, string>;
+    /**
+     * osmtogeojson dumps here information about relations this element is part of
+     */
+    relations?: OsmToGeoJsonRelation[];
+    /**
+     * Unique ID of the feature
+     * For OSM elements this is the OSM ID ({osm_type}/{osm_id})
+     * For Wikidata entities this is the Q-ID
+     */
+    id?: string;
     /**
      * Alternative names of the feature, separated by a semicolon
      */

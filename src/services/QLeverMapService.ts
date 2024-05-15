@@ -335,7 +335,7 @@ export class QLeverMapService implements MapService {
                             description: row.itemDescription?.value,
                             etymologies: etymology ? [etymology] : undefined,
                             text_etymology: row.etymology_text?.value,
-                            description_etymology: row.etymology_description?.value,
+                            text_etymology_descr: row.etymology_description?.value,
                             from_osm: feature_from_osm,
                             from_wikidata: feature_from_wikidata,
                             from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,

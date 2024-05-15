@@ -161,40 +161,62 @@ export class OverpassService implements MapService {
         feature.properties.osm_id = osm_id;
         feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
 
-        if (typeof feature.properties.height === "string")
-            feature.properties.render_height = parseInt(feature.properties.height);
-        else if (typeof feature.properties["building:levels"] === "string")
-            feature.properties.render_height = parseInt(feature.properties["building:levels"]) * 4;
-        else if (feature.properties.building)
+        if (!feature.properties.tags)
+            return;
+
+        if (feature.properties.tags.height)
+            feature.properties.render_height = parseInt(feature.properties.tags.height);
+        else if (feature.properties.tags["building:levels"])
+            feature.properties.render_height = parseInt(feature.properties.tags["building:levels"]) * 4;
+        else if (feature.properties.tags.building)
             feature.properties.render_height = 6;
 
-        const etymologyText = this.osmTextKey ? feature.properties[this.osmTextKey] : undefined;
-        if (typeof etymologyText === "string")
-            feature.properties.text_etymology = etymologyText;
+        if (feature.properties.tags.alt_name)
+            feature.properties.alt_name = feature.properties.tags.alt_name;
 
-        if (typeof feature.properties.website === "string")
-            feature.properties.website_url = feature.properties.website;
+        if (feature.properties.tags.official_name)
+            feature.properties.official_name = feature.properties.tags.official_name;
 
-        const etymologyDescription = this.osmDescriptionKey ? feature.properties[this.osmDescriptionKey] : undefined;
-        if (typeof etymologyDescription === "string")
-            feature.properties.text_etymology_descr = etymologyDescription;
+        if (feature.properties.tags.description)
+            feature.properties.description = feature.properties.tags.description;
 
-        if (typeof feature.properties.wikimedia_commons === "string")
-            feature.properties.commons = commonsCategoryRegex.exec(feature.properties.wikimedia_commons)?.at(1);
+        if (feature.properties.tags.wikipedia)
+            feature.properties.wikipedia = feature.properties.tags.wikipedia;
 
-        if (typeof feature.properties.wikimedia_commons === "string")
-            feature.properties.picture = commonsFileRegex.exec(feature.properties.wikimedia_commons)?.at(1);
-        else if (typeof feature.properties.image === "string")
-            feature.properties.picture = commonsFileRegex.exec(feature.properties.image)?.at(1);
+        if (this.osmTextKey && feature.properties.tags[this.osmTextKey])
+            feature.properties.text_etymology = feature.properties.tags[this.osmTextKey];
+        else if (feature.properties.relations?.length) {
+            const text_etymologies = feature.properties.relations.map(rel => rel.reltags?.[this.osmTextKey!]).filter(x => x);
+            if (text_etymologies.length > 1)
+                console.warn("Multiple text etymologies found for feature", feature.properties);
+            if (text_etymologies.length)
+                feature.properties.text_etymology = text_etymologies[0];
+        }
 
-        const nameKey = "name:" + language,
-            name = feature.properties[nameKey];
-        if (typeof name === "string")
-            feature.properties.name = name;
+        if (feature.properties.tags.website)
+            feature.properties.website_url = feature.properties.tags.website;
+
+        if (this.osmDescriptionKey && feature.properties.tags[this.osmDescriptionKey])
+            feature.properties.text_etymology_descr = feature.properties.tags[this.osmDescriptionKey];
+
+        if (feature.properties.tags.wikimedia_commons)
+            feature.properties.commons = commonsCategoryRegex.exec(feature.properties.tags.wikimedia_commons)?.at(1);
+
+        if (feature.properties.tags.wikimedia_commons)
+            feature.properties.picture = commonsFileRegex.exec(feature.properties.tags.wikimedia_commons)?.at(1);
+        else if (feature.properties.tags.image)
+            feature.properties.picture = commonsFileRegex.exec(feature.properties.tags.image)?.at(1);
+
+        const localNameKey = "name:" + language,
+            localName = feature.properties.tags[localNameKey];
+        if (typeof localName === "string")
+            feature.properties.name = localName;
+        else if (feature.properties.tags.name)
+            feature.properties.name = feature.properties.tags.name;
         // Default language is intentionally not used as it could overwrite a more specific language in name=*
 
         feature.properties.etymologies = osm_keys
-            .map(key => feature.properties?.[key])
+            .map(key => feature.properties?.tags?.[key])
             .flatMap(value => typeof value === "string" ? value.split(";") : undefined)
             .filter(value => value && /^Q[0-9]+/.test(value))
             .map<Etymology>(value => ({
@@ -205,6 +227,20 @@ export class OverpassService implements MapService {
                 propagated: false,
                 wikidata: value
             }));
+        if (!feature.properties.etymologies.length) {
+            feature.properties.etymologies = osm_keys
+                .flatMap(key => feature.properties?.relations?.map(rel => rel.reltags[key]))
+                .flatMap(value => typeof value === "string" ? value.split(";") : undefined)
+                .filter(value => value && /^Q[0-9]+/.test(value))
+                .map<Etymology>(value => ({
+                    from_osm: true,
+                    from_osm_id: osm_id, // TODO track the source relation
+                    from_osm_type: feature.properties?.osm_type,
+                    from_wikidata: false,
+                    propagated: false,
+                    wikidata: value
+                }));
+        }
     }
 
     private buildOverpassQuery(
