@@ -155,7 +155,9 @@ export class OverpassService implements MapService {
         feature.properties.from_osm = true;
         feature.properties.from_wikidata = false;
 
-        const full_osm_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
+        const full_osm_props_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
+            full_osm_base_id = typeof feature.id === "string" && feature.id.includes("/") ? feature.id : undefined,
+            full_osm_id = full_osm_base_id ?? full_osm_props_id,
             osm_type = full_osm_id?.split("/")?.[0],
             osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined;
         feature.properties.osm_id = osm_id;
@@ -217,8 +219,8 @@ export class OverpassService implements MapService {
 
         const etymologies: Etymology[] = [];
         osm_keys.forEach(key => {
-            etymologies.concat(
-                feature.properties?.tags?.[key]
+            etymologies.push(
+                ...feature.properties?.tags?.[key]
                     ?.split(";")
                     ?.filter(value => /^Q[0-9]+/.test(value))
                     ?.map<Etymology>(value => ({
@@ -233,8 +235,8 @@ export class OverpassService implements MapService {
             feature.properties?.relations
                 ?.filter(rel => rel.reltags[key] && /^Q[0-9]+/.test(rel.reltags[key]))
                 ?.forEach(rel => {
-                    etymologies.concat(
-                        rel.reltags[key]
+                    etymologies.push(
+                        ...rel.reltags[key]
                             .split(";")
                             .filter(value => /^Q[0-9]+/.test(value))
                             .map<Etymology>(value => ({
