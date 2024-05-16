@@ -11,5 +11,6 @@ export interface SourcePreset {
     wikidata_image_property?: string;
     wikidata_country?: string;
     osm_country?: string;
+    relation_role_whitelist?: string[];
     mapcomplete_theme?: string;
 }

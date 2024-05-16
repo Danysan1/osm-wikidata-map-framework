@@ -16,5 +16,6 @@
         "P547"
     ],
     "fetch_parts_of_linked_entities": true,
+    "relation_role_whitelist": ["street"],
     "mapcomplete_theme": "etymology"
 }

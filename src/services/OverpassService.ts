@@ -6,29 +6,24 @@ import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "..
 import type { OsmType } from "../model/Etymology";
 import type { MapDatabase } from "../db/MapDatabase";
 import { overpass, type OverpassJson } from "overpass-ts";
+import { SourcePreset } from "../model/SourcePreset";
 
 const commonsCategoryRegex = /(Category:[^;]+)/;
 const commonsFileRegex = /(File:[^;]+)/;
 
 export class OverpassService implements MapService {
-    private readonly osmTextKey?: string;
-    private readonly osmDescriptionKey?: string;
+    private readonly preset?: SourcePreset;
     private readonly maxElements?: number;
     private readonly maxRelationMembers?: number;
-    private readonly osmWikidataKeys?: string[];
-    private readonly osmFilterTags?: string[];
     private readonly wikidata_key_codes?: Record<string, string>;
     private readonly db?: MapDatabase;
     private readonly baseBBox?: BBox;
     private readonly overpassEndpoint: string;
 
     public constructor(
-        osmTextKey?: string,
-        osmDescriptionKey?: string,
+        preset: SourcePreset,
         maxElements?: number,
         maxRelationMembers?: number,
-        osmWikidataKeys?: string[],
-        osmFilterTags?: string[],
         db?: MapDatabase,
         bbox?: BBox,
         overpassEndpoints?: string[]
@@ -37,19 +32,16 @@ export class OverpassService implements MapService {
         const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length);
         this.overpassEndpoint = endpoints[randomIndex] + "interpreter";
-        this.osmTextKey = osmTextKey;
-        this.osmDescriptionKey = osmDescriptionKey;
+        this.preset = preset;
         this.maxElements = maxElements;
         this.maxRelationMembers = maxRelationMembers;
         this.db = db;
         this.baseBBox = bbox;
-        this.osmWikidataKeys = osmWikidataKeys;
-        this.osmFilterTags = osmFilterTags;
-        this.wikidata_key_codes = this.osmWikidataKeys?.reduce((acc: Record<string, string>, key) => {
+        this.wikidata_key_codes = this.preset.osm_wikidata_keys?.reduce((acc: Record<string, string>, key) => {
             acc[osmKeyToKeyID(key)] = key;
             return acc;
         }, {});
-        if (process.env.NODE_ENV === 'development') console.debug("OverpassService initialized", { wikidata_keys: this.osmWikidataKeys, wikidata_key_codes: this.wikidata_key_codes });
+        if (process.env.NODE_ENV === 'development') console.debug("OverpassService initialized", { preset: this.preset, wikidata_key_codes: this.wikidata_key_codes });
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -85,22 +77,22 @@ export class OverpassService implements MapService {
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
         let osm_keys: string[],
             use_wikidata: boolean,
-            search_text_key: string | undefined = this.osmTextKey;
+            search_text_key: string | undefined = this.preset?.osm_text_key;
 
         if (backEndID.includes("overpass_wd")) {
             // Search only elements with wikidata=*
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
-        } else if (!this.osmWikidataKeys) {
-            throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${this.osmWikidataKeys}"`)
+        } else if (!this.preset?.osm_wikidata_keys) {
+            throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${this.preset?.osm_wikidata_keys?.join(',')}"`)
         } else if (backEndID.includes("overpass_all_wd")) {
             // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
-            osm_keys = this.osmWikidataKeys;
+            osm_keys = this.preset.osm_wikidata_keys;
             use_wikidata = true;
         } else if (backEndID.includes("overpass_all")) {
             // Search all elements with an etymology
-            osm_keys = this.osmWikidataKeys;
+            osm_keys = this.preset.osm_wikidata_keys;
             use_wikidata = false;
         } else {
             // Search a specific etymology key
@@ -182,24 +174,31 @@ export class OverpassService implements MapService {
         if (feature.properties.tags.description)
             feature.properties.description = feature.properties.tags.description;
 
+        if (feature.properties.tags.wikidata && /^Q[0-9]+/.test(feature.properties.tags.wikidata))
+            feature.properties.wikidata = feature.properties.tags.wikidata
+
         if (feature.properties.tags.wikipedia)
             feature.properties.wikipedia = feature.properties.tags.wikipedia;
 
-        if (this.osmTextKey && feature.properties.tags[this.osmTextKey])
-            feature.properties.text_etymology = feature.properties.tags[this.osmTextKey];
-        else if (feature.properties.relations?.length) {
-            const text_etymologies = feature.properties.relations.map(rel => rel.reltags?.[this.osmTextKey!]).filter(x => x);
-            if (text_etymologies.length > 1)
-                console.warn("Multiple text etymologies found for feature", feature.properties);
-            if (text_etymologies.length)
-                feature.properties.text_etymology = text_etymologies[0];
+        if (this.preset?.osm_text_key) {
+            if (feature.properties.tags[this.preset.osm_text_key])
+                feature.properties.text_etymology = feature.properties.tags[this.preset.osm_text_key];
+            else if (feature.properties.relations?.length) {
+                const text_etymologies = feature.properties.relations
+                    .map(rel => rel.reltags?.[this.preset!.osm_text_key!])
+                    .filter(x => x);
+                if (text_etymologies.length > 1)
+                    console.warn("Multiple text etymologies found for feature", feature.properties);
+                if (text_etymologies.length)
+                    feature.properties.text_etymology = text_etymologies[0];
+            }
         }
 
         if (feature.properties.tags.website)
             feature.properties.website_url = feature.properties.tags.website;
 
-        if (this.osmDescriptionKey && feature.properties.tags[this.osmDescriptionKey])
-            feature.properties.text_etymology_descr = feature.properties.tags[this.osmDescriptionKey];
+        if (this.preset?.osm_description_key && feature.properties.tags[this.preset.osm_description_key])
+            feature.properties.text_etymology_descr = feature.properties.tags[this.preset.osm_description_key];
 
         if (feature.properties.tags.wikimedia_commons)
             feature.properties.commons = commonsCategoryRegex.exec(feature.properties.tags.wikimedia_commons)?.at(1);
@@ -232,24 +231,26 @@ export class OverpassService implements MapService {
                         wikidata: value
                     })) ?? []);
 
-            feature.properties?.relations
-                ?.filter(rel => rel.reltags[key] && /^Q[0-9]+/.test(rel.reltags[key]))
-                ?.forEach(rel => {
-                    etymologies.push(
-                        ...rel.reltags[key]
-                            .split(";")
-                            .filter(value => /^Q[0-9]+/.test(value))
-                            .map<Etymology>(value => ({
-                                from_osm: true,
-                                from_osm_id: rel.rel,
-                                from_osm_type: "relation",
-                                from_wikidata: false,
-                                propagated: false,
-                                wikidata: value
-                            }))
-                    );
-                    feature.properties!.name ??= rel.reltags[localNameKey] ?? rel.reltags.name;
-                });
+            if (this.preset?.relation_role_whitelist) {
+                feature.properties?.relations
+                    ?.filter(rel => rel.role && this.preset!.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && /^Q[0-9]+/.test(rel.reltags[key]))
+                    ?.forEach(rel => {
+                        etymologies.push(
+                            ...rel.reltags[key]
+                                .split(";")
+                                .filter(value => /^Q[0-9]+/.test(value))
+                                .map<Etymology>(value => ({
+                                    from_osm: true,
+                                    from_osm_id: rel.rel,
+                                    from_osm_type: "relation",
+                                    from_wikidata: false,
+                                    propagated: false,
+                                    wikidata: value
+                                }))
+                        );
+                        feature.properties!.name ??= rel.reltags[localNameKey] ?? rel.reltags.name;
+                    });
+            }
         });
         feature.properties.etymologies = etymologies;
     }
@@ -260,7 +261,7 @@ export class OverpassService implements MapService {
         // See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
         const maxMembersFilter = this.maxRelationMembers ? `(if:count_members()<${this.maxRelationMembers})` : "",
             notTooBig = `[!"end_date"][!"sqkm"][!"boundary"]["type"!="boundary"]["route"!="historic"]${maxMembersFilter}`,
-            filter_tags = this.osmFilterTags?.map(tag => tag.replace("=*", "")),
+            filter_tags = this.preset?.osm_filter_tags?.map(tag => tag.replace("=*", "")),
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));

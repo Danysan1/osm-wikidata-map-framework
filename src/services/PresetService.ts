@@ -17,6 +17,7 @@ export async function fetchSourcePreset(sourcePresetID: string) {
             wikidata_image_property: getConfig("wikidata_image_property") ?? undefined,
             wikidata_country: getConfig("wikidata_country") ?? undefined,
             osm_country: getConfig("osm_country") ?? undefined,
+            relation_role_whitelist: getStringArrayConfig("relation_role_whitelist") ?? undefined,
             mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
         }
     } else if (sourcePresetID === "base") {
