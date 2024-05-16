@@ -34,9 +34,7 @@ export class CombinedCachedMapService implements MapService {
             qlever_enable, maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, overpassEndpoints
         });
         const db = new MapDatabase(maxHours),
-            overpassService = new OverpassService(
-                osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox, overpassEndpoints
-            ),
+            overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox, overpassEndpoints),
             wikidataService = new WikidataMapService(db);
         this.services.push(
             wikidataService,
