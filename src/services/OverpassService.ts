@@ -215,32 +215,41 @@ export class OverpassService implements MapService {
             feature.properties.name = feature.properties.tags.name;
         // Default language is intentionally not used as it could overwrite a more specific language in name=*
 
-        feature.properties.etymologies = osm_keys
-            .map(key => feature.properties?.tags?.[key])
-            .flatMap(value => typeof value === "string" ? value.split(";") : undefined)
-            .filter(value => value && /^Q[0-9]+/.test(value))
-            .map<Etymology>(value => ({
-                from_osm: true,
-                from_osm_id: osm_id,
-                from_osm_type: feature.properties?.osm_type,
-                from_wikidata: false,
-                propagated: false,
-                wikidata: value
-            }));
-        if (!feature.properties.etymologies.length) {
-            feature.properties.etymologies = osm_keys
-                .flatMap(key => feature.properties?.relations?.map(rel => rel.reltags[key]))
-                .flatMap(value => typeof value === "string" ? value.split(";") : undefined)
-                .filter(value => value && /^Q[0-9]+/.test(value))
-                .map<Etymology>(value => ({
-                    from_osm: true,
-                    from_osm_id: osm_id, // TODO track the source relation
-                    from_osm_type: feature.properties?.osm_type,
-                    from_wikidata: false,
-                    propagated: false,
-                    wikidata: value
-                }));
-        }
+        const etymologies: Etymology[] = [];
+        osm_keys.forEach(key => {
+            etymologies.concat(
+                feature.properties?.tags?.[key]
+                    ?.split(";")
+                    ?.filter(value => /^Q[0-9]+/.test(value))
+                    ?.map<Etymology>(value => ({
+                        from_osm: true,
+                        from_osm_id: osm_id,
+                        from_osm_type: feature.properties?.osm_type,
+                        from_wikidata: false,
+                        propagated: false,
+                        wikidata: value
+                    })) ?? []);
+
+            feature.properties?.relations
+                ?.filter(rel => rel.reltags[key] && /^Q[0-9]+/.test(rel.reltags[key]))
+                ?.forEach(rel => {
+                    etymologies.concat(
+                        rel.reltags[key]
+                            .split(";")
+                            .filter(value => /^Q[0-9]+/.test(value))
+                            .map<Etymology>(value => ({
+                                from_osm: true,
+                                from_osm_id: rel.rel,
+                                from_osm_type: "relation",
+                                from_wikidata: false,
+                                propagated: false,
+                                wikidata: value
+                            }))
+                    );
+                    feature.properties!.name ??= rel.reltags[localNameKey] ?? rel.reltags.name;
+                });
+        });
+        feature.properties.etymologies = etymologies;
     }
 
     private buildOverpassQuery(
