@@ -15,8 +15,6 @@ export async function fetchSourcePreset(sourcePresetID: string) {
             fetch_parts_of_linked_entities: getBoolConfig("fetch_parts_of_linked_entities") ?? false,
             wikidata_indirect_property: getConfig("wikidata_indirect_property") ?? undefined,
             wikidata_image_property: getConfig("wikidata_image_property") ?? undefined,
-            wikidata_country: getConfig("wikidata_country") ?? undefined,
-            osm_country: getConfig("osm_country") ?? undefined,
             relation_role_whitelist: getStringArrayConfig("relation_role_whitelist") ?? undefined,
             mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
         }
