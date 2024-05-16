@@ -251,6 +251,8 @@ export class OverpassService implements MapService {
                                 }))
                         );
                         feature.properties!.name ??= rel.reltags[localNameKey] ?? rel.reltags.name;
+                        feature.properties!.description ??= rel.reltags.description;
+                        feature.properties!.wikidata ??= rel.reltags.wikidata;
                     });
             }
         });
