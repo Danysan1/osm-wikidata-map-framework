@@ -29,6 +29,13 @@
         "no_data_in_this_area": "Keine Daten in diesem Gebiet",
         "data_loaded_instructions": "Daten geladen, klicken Sie auf ein hervorgehobenes Element, um dessen Details anzuzeigen"
     },
+    "preset": {
+        "choose_preset": "Wählen Sie Voreinstellung",
+        "base": "OSM + Wikidata",
+        "etymology": "Etymologien (Herkunft der Namen)",
+        "burial": "Grabstätten",
+        "artist": "Autoren von Kunstwerken"
+    },
     "source": {
         "choose_source": "Datenquelle wählen",
         "db_all": "Alle Quellen der DB",
@@ -49,7 +56,7 @@
         "occupation": "Nach Tätigkeit",
         "start_century": "Nach Gründungs-/Geburtsjahrhundert",
         "end_century": "Nach Jahrhundert des Endes/Todes",
-        "link_count": "Nach Anzahl der Wikilinks",
+        "link_count": "Nach Wikilink-Zählung",
         "feature_picture": "Nach Bildverfügbarkeit",
         "available": "Verfügbar",
         "unavailable": "Nicht verfügbar",
