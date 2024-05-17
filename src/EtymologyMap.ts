@@ -15,7 +15,6 @@ import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
-import type { SourcePreset } from './model/SourcePreset';
 import type { BackEndControl as BackEndControlType } from './controls';
 import { fetchSourcePreset } from './services/PresetService';
 
@@ -116,15 +115,21 @@ export class EtymologyMap extends Map {
     private async updateSourcePreset() {
         const sourcePresetID = getCorrectFragmentParams().sourcePresetID;
         if (sourcePresetID !== this.lastSourcePresetID) {
-            const t = await loadTranslator();
+            if (process.env.NODE_ENV === 'development') console.debug("updateSourcePreset", { last: this.lastSourcePresetID, sourcePresetID });
+            this.lastSourcePresetID = sourcePresetID;
+            const t = loadTranslator();
             try {
-                const sourcePreset = await fetchSourcePreset(sourcePresetID);
-                await this.initServices(sourcePreset);
-                this.lastSourcePresetID = sourcePresetID;
+                // Update the map services to use the new preset
+                const [sourcePreset, { CombinedCachedMapService }] = await Promise.all([fetchSourcePreset(sourcePresetID), import("./services/CombinedCachedMapService")]);
+                this.service = new CombinedCachedMapService(sourcePreset);
 
+                // Update data for the new preset through the newly created map services
+                this.updateDataSource();
+
+                // Update the back-end control to reflect the available back-ends for the new preset
                 const { BackEndControl } = await import("./controls"),
                     newBackEndControl = new BackEndControl(
-                        sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), t
+                        sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), await t
                     );
                 if (this.backEndControl)
                     this.removeControl(this.backEndControl);
@@ -132,18 +137,8 @@ export class EtymologyMap extends Map {
                 this.addControl(newBackEndControl, 'top-left');
             } catch (e) {
                 console.error("Failed updating source preset", e);
-                showSnackbar(t("snackbar.map_error"));
+                showSnackbar((await t)("snackbar.map_error"));
             }
-        }
-    }
-
-    private async initServices(sourcePreset: SourcePreset) {
-        try {
-            const { CombinedCachedMapService } = await import("./services/CombinedCachedMapService");
-            this.service = new CombinedCachedMapService(sourcePreset);
-            this.updateDataSource();
-        } catch (e) {
-            logErrorMessage("Failed initializing map services", "error", { error: e });
         }
     }
 
