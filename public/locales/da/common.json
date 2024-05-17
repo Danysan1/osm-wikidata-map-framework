@@ -29,6 +29,13 @@
         "no_data_in_this_area": "Ingen data i dette område",
         "data_loaded_instructions": "Data indlæst, klik på et fremhævet element for at se dets detaljer"
     },
+    "preset": {
+        "choose_preset": "Vælg forudindstilling",
+        "base": "OSM + Wikidata",
+        "etymology": "Etymologier (navnenes oprindelse)",
+        "burial": "Gravsteder",
+        "artist": "Kunstværksforfattere"
+    },
     "source": {
         "choose_source": "Vælg datakilde",
         "db_all": "Alle kilder fra DB",
