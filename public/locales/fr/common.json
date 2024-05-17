@@ -29,6 +29,13 @@
         "no_data_in_this_area": "Aucune donnée dans cette zone",
         "data_loaded_instructions": "Données chargées, cliquez sur n'importe quel élément en surbrillance pour afficher ses détails"
     },
+    "preset": {
+        "choose_preset": "Choisir un préréglage",
+        "base": "OSM + Wikidata",
+        "etymology": "Étymologies (origine des noms)",
+        "burial": "Lieux de sépulture",
+        "artist": "Auteurs d'œuvres d'art"
+    },
     "source": {
         "choose_source": "Choisissez la source de données",
         "db_all": "Toutes les sources de la base de données",
@@ -49,7 +56,7 @@
         "occupation": "Par occupation",
         "start_century": "Par siècle de début/naissance",
         "end_century": "Par siècle de fin/décès",
-        "link_count": "Par numéro de Wikilink",
+        "link_count": "By Wikilink count",
         "feature_picture": "Par disponibilité des images",
         "available": "Disponible",
         "unavailable": "Indisponible",
@@ -87,5 +94,5 @@
     "overpass_turbo_query": "Requête OverpassQL source sur Overpass Turbo",
     "wdqs_query": "Requête SPARQL source sur Wikidata Query Service",
     "qlever_query": "Requête SPARQL source sur QLever UI",
-    "clear_cache": "Vider le cache"
+    "clear_cache": "Clear cache"
 }
