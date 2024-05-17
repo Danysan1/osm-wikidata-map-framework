@@ -94,5 +94,5 @@
     "overpass_turbo_query": "Consulta fuente OverpassQL en Overpass Turbo",
     "wdqs_query": "Consulta SPARQL de origen en Wikidata Query Service",
     "qlever_query": "Consulta SPARQL de origen en QLever UI",
-    "clear_cache": "Borrar caché"
+    "clear_cache": "Limpia la caché"
 }
