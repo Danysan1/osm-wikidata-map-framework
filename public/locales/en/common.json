@@ -33,7 +33,8 @@
         "choose_preset": "Choose preset",
         "base": "OSM + Wikidata",
         "etymology": "Etymologies",
-        "burial": "Burial places"
+        "burial": "Burial places",
+        "artist": "Artwork authors"
     },
     "source": {
         "choose_source": "Choose data source",
