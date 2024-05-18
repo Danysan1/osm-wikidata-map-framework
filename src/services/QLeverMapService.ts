@@ -64,7 +64,10 @@ export class QLeverMapService implements MapService {
         this.osmFilterTags = osmFilterTags;
         this.db = db;
         this.baseBBox = bbox;
-        this.api = new SparqlApi(new Configuration({ basePath }));
+        this.api = new SparqlApi(new Configuration({
+            basePath,
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+        }));
 
         if (process.env.NODE_ENV === 'development') console.debug("QLeverMapService currently ignores maxRelationMembers", { osmTextKey, osmDescriptionKey, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, basePath });
     }

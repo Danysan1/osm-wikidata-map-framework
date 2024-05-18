@@ -5,7 +5,10 @@ export class WikidataDescriptionService {
     protected readonly api: DescriptionsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
-        this.api = new DescriptionsApi(new Configuration({ basePath }));
+        this.api = new DescriptionsApi(new Configuration({
+            basePath,
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+        }));
     }
 
     public getDescriptionFromWikidataID(wikidataID: string, languageCode: string): Promise<string> {

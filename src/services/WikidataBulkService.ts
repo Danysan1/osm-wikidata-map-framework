@@ -15,7 +15,8 @@ export class WikidataBulkService {
     constructor(useQLever = true) {
         this.backend = useQLever ? "wikidata" : "sparql";
         this.api = new SparqlApi(new Configuration({
-            basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query.wikidata.org"
+            basePath: useQLever ? "https://qlever.cs.uni-freiburg.de/api" : "https://query.wikidata.org",
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
         }));
     }
 
@@ -40,15 +41,21 @@ export class WikidataBulkService {
 
 
             const wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-                sparqlQuery = sparqlQueryTemplate.replaceAll("${wikidataCountryQuery}", wikidataCountryQuery);
-            console.debug("Using SPARQL query:\n", sparqlQuery);
-            console.debug(`Fetching elements and linked entities...`);
-            try {
-                await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
-            } catch (e) {
-                console.log(`First attempt failed, sleeping and trying again...`, e);
-                await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
-                await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
+                baseSparqlQuery = sparqlQueryTemplate.replaceAll("${wikidataCountryQuery}", wikidataCountryQuery);
+            console.debug("Using SPARQL query:\n", baseSparqlQuery);
+            for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
+                const sparqlQuery = baseSparqlQuery.replace('${limitClause}', `LIMIT 50000 OFFSET ${50000 * pageNumber}`);
+                console.debug(`Fetching elements and linked entities for page ${pageNumber}...`);
+                try {
+                    await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
+                } catch (e) {
+                    console.log(`First attempt for page ${pageNumber} failed, sleeping and trying again...`, e);
+                    await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
+                    await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
+                }
+                console.debug(`Fetched and loaded elements and linked entities for page ${pageNumber}...`);
+
+                //await new Promise(resolve => setTimeout(resolve, SLEEP_TIME_MS));
             }
             console.debug(`Fetched and loaded elements and linked entities...`);
 

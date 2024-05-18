@@ -5,7 +5,10 @@ export class WikidataStatementService {
     protected readonly api: StatementsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
-        this.api = new StatementsApi(new Configuration({ basePath }));
+        this.api = new StatementsApi(new Configuration({
+            basePath,
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+        }));
     }
 
     public async getCommonsImageFromWikidataID(wikidataID: string): Promise<string | null> {

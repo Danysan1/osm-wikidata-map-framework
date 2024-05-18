@@ -7,7 +7,8 @@ export class WikimediaCommonsService {
     constructor(baseURL?: string) {
         this.api = new CommonsApi(new Configuration({
             // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            basePath: baseURL || "https://commons.wikimedia.org/w"
+            basePath: baseURL || "https://commons.wikimedia.org/w",
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
         }));
     }
 

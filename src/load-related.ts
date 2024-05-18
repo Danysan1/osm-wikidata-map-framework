@@ -14,7 +14,7 @@ if (!(type in sparqlQueryMap && type in etymologyQueryMap))
 
 const rawJsonProps = process.argv[3] || process.env.owmf_osm_wikidata_properties,
     jsonProps: unknown = typeof rawJsonProps === "string" ? JSON.parse(rawJsonProps) : undefined;
-if (!Array.isArray(jsonProps))
+if (!Array.isArray(jsonProps) || !jsonProps.length)
     throw new Error("Invalid JSON passed in second argument (properties list): " + rawJsonProps);
 
 const jsonPropList = jsonProps.map(prop => {
@@ -23,7 +23,7 @@ const jsonPropList = jsonProps.map(prop => {
     else
         throw new Error("Non-string property in properties list: " + rawJsonProps);
 }),
-    sparqlQuery = sparqlQueryMap[type].replace("${properties}", jsonPropList?.map(prop => `wdt:${prop}`).join(" ")),
+    sparqlQuery = sparqlQueryMap[type].replaceAll('${directPropertyValues}', jsonPropList.map(pID => `(p:${pID} ps:${pID})`).join(" ")),
     etymologyQuery = etymologyQueryMap[type],
     db_connection_uri = process.argv[4] || process.env.owmf_db_uri;
 if (!db_connection_uri)
@@ -33,7 +33,7 @@ if (!db_connection_uri)
 const wikidata_country = process.env.owmf_wikidata_country || undefined;
 
 console.debug("Setting up services");
-const wikidata_api = new WikidataBulkService();
+const wikidata_api = new WikidataBulkService(false);
 void wikidata_api.loadRelatedEntities(
     sparqlQuery, etymologyQuery, db_connection_uri, wikidata_country
 );

@@ -9,7 +9,10 @@ export class WikidataService {
     protected readonly api: SparqlApi;
 
     public constructor(basePath = 'https://query.wikidata.org') {
-        this.api = new SparqlApi(new Configuration({ basePath }));
+        this.api = new SparqlApi(new Configuration({
+            basePath,
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+        }));
     }
 
     protected async etymologyIDsQuery(language: string, etymologyIDs: string[], sparqlQueryTemplate: string): Promise<SparqlResponse> {

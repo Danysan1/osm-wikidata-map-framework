@@ -5,7 +5,10 @@ export class WikidataLabelService {
     protected readonly api: LabelsApi;
 
     public constructor(basePath = 'https://www.wikidata.org/w/rest.php/wikibase/v0') {
-        this.api = new LabelsApi(new Configuration({ basePath }));
+        this.api = new LabelsApi(new Configuration({
+            basePath,
+            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+        }));
     }
 
     public getLabelFromWikidataID(wikidataID: string, languageCode: string): Promise<string> {
