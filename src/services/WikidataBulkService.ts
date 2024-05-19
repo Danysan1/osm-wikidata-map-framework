@@ -44,7 +44,7 @@ export class WikidataBulkService {
                 baseSparqlQuery = sparqlQueryTemplate.replaceAll("${wikidataCountryQuery}", wikidataCountryQuery);
             console.debug("Using SPARQL query:\n", baseSparqlQuery);
             for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
-                const sparqlQuery = baseSparqlQuery.replace('${limitClause}', `LIMIT 50000 OFFSET ${50000 * pageNumber}`);
+                const sparqlQuery = baseSparqlQuery.replace('${lastDigit}', `${pageNumber}`);
                 console.debug(`Fetching elements and linked entities for page ${pageNumber}...`);
                 try {
                     await this.loadRelatedEntitiesPage(sparqlQuery, wikidataStatement, elementUpdateStatement, elementInsertStatement, etymologyStatement);
