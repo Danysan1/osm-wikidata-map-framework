@@ -14,12 +14,15 @@ import type { Etymology } from "../model/Etymology";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getEtymologies } from "./etymologyUtils";
 import type { MapDatabase } from "../db/MapDatabase";
+import { SourcePreset } from "../model/SourcePreset";
 
 export class WikidataMapService extends WikidataService implements MapService {
+    private readonly preset: SourcePreset;
     private readonly db?: MapDatabase;
 
-    public constructor(db?: MapDatabase) {
+    public constructor(preset: SourcePreset, db?: MapDatabase) {
         super();
+        this.preset = preset;
         if (db)
             this.db = db;
     }
@@ -31,7 +34,7 @@ export class WikidataMapService extends WikidataService implements MapService {
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
         if (process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
 
-        const cachedResponse = await this.db?.getMap(backEndID, true, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language);
         if (cachedResponse)
             return cachedResponse;
 
@@ -71,6 +74,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
             wdqs_query: sparqlQuery,
             timestamp: new Date().toISOString(),
+            sourcePresetID: this.preset.id,
             backEndID: backEndID,
             onlyCentroids: true,
             language: language,

@@ -22,6 +22,7 @@ import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
 import { getEtymologies } from "./etymologyUtils";
 import type { MapDatabase } from "../db/MapDatabase";
+import { SourcePreset } from "../model/SourcePreset";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -37,6 +38,7 @@ const commonsFileRegex = /(File:[^;]+)/;
 export class QLeverMapService implements MapService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
     public static readonly WD_PROPERTY_PREFIX = "http://www.wikidata.org/prop/direct/";
+    private readonly preset: SourcePreset;
     private readonly osmTextKey?: string;
     private readonly osmDescriptionKey?: string;
     private readonly maxElements?: number;
@@ -47,6 +49,7 @@ export class QLeverMapService implements MapService {
     private readonly api: SparqlApi;
 
     public constructor(
+        preset: SourcePreset,
         osmTextKey?: string,
         osmDescriptionKey?: string,
         maxElements?: number,
@@ -57,6 +60,7 @@ export class QLeverMapService implements MapService {
         bbox?: BBox,
         basePath = 'https://qlever.cs.uni-freiburg.de/api'
     ) {
+        this.preset = preset;
         this.osmTextKey = osmTextKey;
         this.osmDescriptionKey = osmDescriptionKey;
         this.maxElements = maxElements;
@@ -82,7 +86,7 @@ export class QLeverMapService implements MapService {
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language);
         if (cachedResponse)
             return cachedResponse;
 
@@ -101,6 +105,7 @@ export class QLeverMapService implements MapService {
             bbox: bbox,
             features: ret.results.bindings.reduce(this.featureReducer, []),
             timestamp: new Date().toISOString(),
+            sourcePresetID: this.preset.id,
             backEndID: backEndID,
             onlyCentroids: onlyCentroids,
             language: language,

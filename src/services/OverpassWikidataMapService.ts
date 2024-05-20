@@ -5,6 +5,7 @@ import type { BBox, Geometry, Feature } from "geojson";
 import { getEtymologies } from "./etymologyUtils";
 import type { MapDatabase } from "../db/MapDatabase";
 import { EtymologyFeatureProperties } from "../model/EtymologyFeatureProperties";
+import { SourcePreset } from "../model/SourcePreset";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
     node: "P11693",
@@ -13,11 +14,13 @@ const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
 };
 
 export class OverpassWikidataMapService implements MapService {
+    private readonly preset: SourcePreset;
     private readonly db?: MapDatabase;
     private readonly overpassService: MapService;
     private readonly wikidataService: MapService;
 
-    constructor(overpassService: MapService, wikidataService: MapService, db?: MapDatabase) {
+    constructor(preset: SourcePreset, overpassService: MapService, wikidataService: MapService, db?: MapDatabase) {
+        this.preset = preset;
         this.db = db;
         this.overpassService = overpassService;
         this.wikidataService = wikidataService;
@@ -29,7 +32,7 @@ export class OverpassWikidataMapService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string) {
-        const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, onlyCentroids, bbox, language);
         if (cachedResponse)
             return cachedResponse;
 
@@ -58,6 +61,7 @@ export class OverpassWikidataMapService implements MapService {
             throw new Error("Merge failed");
 
         out.onlyCentroids = onlyCentroids;
+        out.sourcePresetID = this.preset.id;
         out.backEndID = backEndID;
 
         if (!onlyCentroids) {

@@ -13,7 +13,7 @@ const COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/,
     WIKIDATA_QID_REGEX = /^Q[0-9]+/;
 
 export class OverpassService implements MapService {
-    private readonly preset?: SourcePreset;
+    private readonly preset: SourcePreset;
     private readonly maxElements?: number;
     private readonly maxRelationMembers?: number;
     private readonly wikidata_key_codes?: Record<string, string>;
@@ -58,7 +58,7 @@ export class OverpassService implements MapService {
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(backEndID, onlyCentroids, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, bbox, language);
         if (cachedResponse)
             return cachedResponse;
 
@@ -132,6 +132,7 @@ export class OverpassService implements MapService {
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;
+        out.sourcePresetID = this.preset.id;
         out.backEndID = backEndID;
         out.onlyCentroids = onlyCentroids;
         out.language = language;
@@ -186,8 +187,8 @@ export class OverpassService implements MapService {
                 feature.properties.text_etymology = feature.properties.tags[this.preset.osm_text_key];
             else if (feature.properties.relations?.length && this.preset?.relation_role_whitelist?.length) {
                 const text_etymologies = feature.properties.relations
-                    .filter(rel => rel.reltags?.[this.preset!.osm_text_key!] && rel.role && this.preset!.relation_role_whitelist?.includes(rel.role))
-                    .map(rel => rel.reltags[this.preset!.osm_text_key!]);
+                    .filter(rel => rel.reltags?.[this.preset.osm_text_key!] && rel.role && this.preset.relation_role_whitelist?.includes(rel.role))
+                    .map(rel => rel.reltags[this.preset.osm_text_key!]);
                 if (text_etymologies.length > 1)
                     console.warn("Multiple text etymologies found for feature", feature.properties);
                 if (text_etymologies.length)
@@ -234,7 +235,7 @@ export class OverpassService implements MapService {
 
             if (this.preset?.relation_role_whitelist?.length) {
                 feature.properties?.relations
-                    ?.filter(rel => rel.role && this.preset!.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
+                    ?.filter(rel => rel.role && this.preset.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
                         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
                         etymologies.push(

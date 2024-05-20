@@ -35,14 +35,14 @@ export class CombinedCachedMapService implements MapService {
         });
         const db = new MapDatabase(maxHours),
             overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox, overpassEndpoints),
-            wikidataService = new WikidataMapService(db);
+            wikidataService = new WikidataMapService(sourcePreset, db);
         this.services.push(
             wikidataService,
             overpassService,
-            new OverpassWikidataMapService(overpassService, wikidataService, db)
+            new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db)
         )
         if (qlever_enable)
-            this.services.push(new QLeverMapService(osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox));
+            this.services.push(new QLeverMapService(sourcePreset, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox));
     }
 
     public canHandleBackEnd(backEndID: string): boolean {

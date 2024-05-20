@@ -6,6 +6,7 @@ export type EtymologyResponseFeatureProperties = EtymologyFeatureProperties | nu
 export type EtymologyFeature = Feature<Geometry, EtymologyResponseFeatureProperties>;
 
 export interface EtymologyResponse extends FeatureCollection<Geometry, EtymologyResponseFeatureProperties> {
+    sourcePresetID?: string;
     /**
      * ID of the backEnd used to fetch the features.
      * 

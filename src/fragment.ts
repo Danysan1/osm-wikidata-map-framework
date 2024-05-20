@@ -79,7 +79,7 @@ export class UrlFragment {
 
         const fragment = `#${strLon},${strLat},${strZoom},${strColorScheme},${strBackEnd},${strBackground},${strTemplate}`;
         if (window.location.hash !== fragment) {
-            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
+            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: CHANGE DETECTED", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
             window.location.hash = fragment;
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });

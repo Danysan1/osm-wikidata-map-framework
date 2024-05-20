@@ -290,15 +290,16 @@ export class EtymologyMap extends Map {
             this.lastOnlyCentroids = undefined; // Reset (applies only to GeoJSON sources)
             this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
         } else {
-            this.updateGeoJSONSource(backEndID, minZoomLevel, thresholdZoomLevel);
+            this.updateGeoJSONSource(minZoomLevel, thresholdZoomLevel);
         }
     }
 
-    private updateGeoJSONSource(backEndID: string, minZoomLevel: number, thresholdZoomLevel: number) {
+    private updateGeoJSONSource(minZoomLevel: number, thresholdZoomLevel: number) {
         const bounds = this.getBounds(),
             southWest = bounds.getSouthWest(),
             northEast = bounds.getNorthEast(),
             zoomLevel = this.getZoom(),
+            backEndID = fragment.backEnd,
             detailsMaxArea = getFloatConfig("details_bbox_max_area") ?? 1,
             elementsMaxArea = getFloatConfig("elements_bbox_max_area") ?? 10,
             area = (northEast.lat - southWest.lat) * (northEast.lng - southWest.lng),
@@ -309,7 +310,7 @@ export class EtymologyMap extends Map {
         });
 
         if (enableElementsLayers) {
-            const backEndChanged = this.lastBackEndID !== backEndID || this.lastOnlyCentroids !== true,
+            const backEndChanged = this.lastSourcePresetID !== fragment.sourcePreset || this.lastBackEndID !== backEndID || this.lastOnlyCentroids !== true,
                 bbox: BBox = [
                     Math.floor(southWest.lng * 10) / 10, // 0.123 => 0.1
                     Math.floor(southWest.lat * 10) / 10,
@@ -321,10 +322,10 @@ export class EtymologyMap extends Map {
                 this.lastBackEndID = backEndID;
                 this.lastOnlyCentroids = true;
                 this.lastBBox = bbox;
-                void this.updateElementsGeoJSONSource(backEndID, bbox, minZoomLevel, thresholdZoomLevel);
+                void this.updateElementsGeoJSONSource(bbox, minZoomLevel, thresholdZoomLevel);
             }
         } else if (enableDetailsLayers) {
-            const backEndChanged = this.lastBackEndID !== backEndID || this.lastOnlyCentroids !== false,
+            const backEndChanged = this.lastSourcePresetID !== fragment.sourcePreset || this.lastBackEndID !== backEndID || this.lastOnlyCentroids !== false,
                 bbox: BBox = [
                     Math.floor(southWest.lng * 100) / 100, // 0.123 => 0.12
                     Math.floor(southWest.lat * 100) / 100,
@@ -336,7 +337,7 @@ export class EtymologyMap extends Map {
                 this.lastBackEndID = backEndID;
                 this.lastOnlyCentroids = false;
                 this.lastBBox = bbox;
-                void this.prepareDetailsGeoJSONSource(backEndID, bbox, thresholdZoomLevel);
+                void this.prepareDetailsGeoJSONSource(bbox, thresholdZoomLevel);
             }
         } else {
             loadTranslator().then(
@@ -358,13 +359,14 @@ export class EtymologyMap extends Map {
         return isBBoxChanged;
     }
 
-    private async updateElementsGeoJSONSource(backEndID: string, bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
+    private async updateElementsGeoJSONSource(bbox: BBox, minZoomLevel: number, thresholdZoomLevel: number) {
         if (!this.service) {
             if (process.env.NODE_ENV === 'development') console.warn("updateElementsGeoJSONSource: Services are still initializing, skipping source update");
             return;
         }
 
         this.fetchInProgress = true;
+        const backEndID = fragment.backEnd;
         try {
             showLoadingSpinner(true);
 
@@ -407,13 +409,14 @@ export class EtymologyMap extends Map {
         );
     }
 
-    private async prepareDetailsGeoJSONSource(backEndID: string, bbox: BBox, minZoom: number) {
+    private async prepareDetailsGeoJSONSource(bbox: BBox, minZoom: number) {
         if (!this.service) {
             if (process.env.NODE_ENV === 'development') console.warn("updateElementsGeoJSONSource: Services are still initializing, skipping source update");
             return;
         }
 
         this.fetchInProgress = true;
+        const backEndID = fragment.backEnd;
         try {
             showLoadingSpinner(true);
 

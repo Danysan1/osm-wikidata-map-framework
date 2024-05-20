@@ -59,7 +59,7 @@ export class BackEndControl extends DropdownControl {
 
         const allKeysText = t("source.all_osm_keys", "All OSM keys");
         if (source.osm_wikidata_keys?.length)
-            dropdownItems.push(buildDropdownItem("overpass_all_" + source.id, allKeysText, OVERPASS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
 
         if (source.osm_wikidata_properties?.length) {
             /**
