@@ -1,6 +1,6 @@
 import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, Map } from 'maplibre-gl';
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
-import { getCorrectFragmentParams, getFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
 import { getConfig, getStringArrayConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
@@ -11,7 +11,8 @@ import { showLoadingSpinner } from '../snackbar';
 import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 import { getEtymologies } from '../services/etymologyUtils';
 
-const MAX_CHART_ITEMS = 35;
+const MAX_CHART_ITEMS = 35,
+    fragment = new UrlFragment();
 
 /** Statistics row with a name and a numeric value */
 export interface EtymologyStat {
@@ -102,7 +103,7 @@ class EtymologyColorControl extends DropdownControl {
             "color_scheme.choose_scheme",
             true,
             undefined,
-            () => this.value = getCorrectFragmentParams().colorScheme,
+            () => this.value = fragment.colorScheme,
             (e: MapSourceDataEvent) => {
                 if (e.isSourceLoaded && e.dataType === "source" && sourceId === e.sourceId)
                     this.updateChart(e);
@@ -172,7 +173,7 @@ class EtymologyColorControl extends DropdownControl {
         layerColor: ExpressionSpecification
     ) {
         const colorSchemeIDChanged = this.lastColorSchemeID !== colorSchemeID,
-            params = getFragmentParams(),
+            params = fragment.getFragmentParams(),
             backEndChanged = this.lastBackEndID !== params.backEndID,
             backgroundChanged = this.lastBackground !== params.backgroundStyleID;
 
@@ -481,7 +482,7 @@ class EtymologyColorControl extends DropdownControl {
 
         const colorSchemeChanged = colorSchemeID !== this.lastColorSchemeID,
             IDsChanged = this.lastWikidataIDs?.length !== idSet.size || this.lastWikidataIDs?.some(id => !idSet.has(id)),
-            params = getFragmentParams(),
+            params = fragment.getFragmentParams(),
             backEndChanged = this.lastBackEndID !== params.backEndID,
             backgroundChanged = this.lastBackground !== params.backgroundStyleID;
         if (!colorSchemeChanged && !IDsChanged && !backEndChanged && !backgroundChanged) {
@@ -715,7 +716,7 @@ class EtymologyColorControl extends DropdownControl {
 }
 
 function getCurrentColorScheme(): ColorScheme {
-    const colorSchemeId = getCorrectFragmentParams().colorScheme;
+    const colorSchemeId = fragment.colorScheme;
     let colorScheme = colorSchemes[colorSchemeId];
     if (!colorScheme) {
         colorScheme = colorSchemes.blue;

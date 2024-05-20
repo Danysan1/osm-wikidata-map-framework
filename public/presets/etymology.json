@@ -1,4 +1,7 @@
 {
+    "default_backend": "overpass_all_wd+wd_direct",
+    "fetch_parts_of_linked_entities": true,
+    "mapcomplete_theme": "etymology",
     "osm_filter_tags": [
         "name:etymology:wikidata",
         "name:etymology",
@@ -15,7 +18,5 @@
         "P825",
         "P547"
     ],
-    "fetch_parts_of_linked_entities": true,
-    "relation_role_whitelist": ["street"],
-    "mapcomplete_theme": "etymology"
+    "relation_role_whitelist": ["street"]
 }

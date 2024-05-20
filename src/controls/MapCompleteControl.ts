@@ -1,6 +1,8 @@
 import type { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
 import { getConfig } from '../config';
-import { getCorrectFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
+
+const fragment = new UrlFragment();
 
 export class MapCompleteControl implements IControl {
     private container?: HTMLDivElement;
@@ -58,7 +60,7 @@ export class MapCompleteControl implements IControl {
     }
 
     private openMapComplete() {
-        const { lon, lat, zoom } = getCorrectFragmentParams();
+        const { lon, lat, zoom } = fragment.getCorrectFragmentParams();
         window.open(`https://mapcomplete.org/${this.mapComplete_theme}?z=${zoom}&lat=${lat}&lon=${lon}`);
     }
 }

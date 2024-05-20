@@ -1,9 +1,11 @@
 import type { Position } from "geojson";
 import { getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
-import { setFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
 import type { EtymologyFeature } from "../model/EtymologyResponse";
 import { getEtymologies } from "../services/etymologyUtils";
+
+const fragment = new UrlFragment();
 
 export class FeatureButtonsElement extends HTMLDivElement {
     private _destinationZoom = 12;
@@ -180,7 +182,7 @@ export class FeatureButtonsElement extends HTMLDivElement {
             if (process.env.NODE_ENV === 'development') console.warn("Missing element_location_button");
         } else {
             element_location_button.addEventListener("click", () => {
-                setFragmentParams(lon, lat, this.destinationZoomLevel);
+                fragment.setFragmentParams(lon, lat, this.destinationZoomLevel);
                 return false;
             });
             element_location_button.classList.remove("hiddenElement");

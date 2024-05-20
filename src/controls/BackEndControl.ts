@@ -1,6 +1,6 @@
 import { getConfig, getBoolConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
 import type { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 import { osmKeyToKeyID } from '../model/EtymologyResponse';
@@ -16,7 +16,8 @@ const PMTILES_GROUP_NAME = "Database (PMTiles)",
     OVERPASS_GROUP_NAME = "OpenStreetMap (Overpass API)",
     WDQS_GROUP_NAME = "Wikidata Query Service",
     OVERPASS_WDQS_GROUP_NAME = "OSM (Overpass API) + Wikidata Query Service",
-    QLEVER_GROUP_NAME = "QLever (beta)";
+    QLEVER_GROUP_NAME = "QLever (beta)",
+    fragment = new UrlFragment();
 
 /**
  * Let the user choose the map style.
@@ -35,7 +36,7 @@ export class BackEndControl extends DropdownControl {
                 if (process.env.NODE_ENV === 'development') console.debug("Selecting source ", { backEndID });
 
                 // If the change came from a manual interaction, update the fragment params
-                setFragmentParams(undefined, undefined, undefined, undefined, backEndID);
+                fragment.backEnd = backEndID;
 
                 // If the change came from a fragment change, update the dropdown
                 // Regardless of the source, update the map
@@ -58,7 +59,7 @@ export class BackEndControl extends DropdownControl {
 
         const allKeysText = t("source.all_osm_keys", "All OSM keys");
         if (source.osm_wikidata_keys?.length)
-            dropdownItems.push(buildDropdownItem("overpass_all_"+source.id, allKeysText, OVERPASS_GROUP_NAME));
+            dropdownItems.push(buildDropdownItem("overpass_all_" + source.id, allKeysText, OVERPASS_GROUP_NAME));
 
         if (source.osm_wikidata_properties?.length) {
             /**
@@ -158,7 +159,7 @@ export class BackEndControl extends DropdownControl {
             "source.choose_source",
             true,
             undefined,
-            () => this.value = getCorrectFragmentParams().backEndID
+            () => this.value = fragment.backEnd
         );
     }
 

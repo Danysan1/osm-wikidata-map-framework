@@ -1,4 +1,6 @@
 {
+    "default_backend": "overpass_all_wd+wd_direct",
+    "fetch_parts_of_linked_entities": true,
     "osm_filter_tags": [
         "architect:wikidata",
         "architect",
@@ -15,6 +17,5 @@
     "osm_wikidata_properties": [
         "P84",
         "P287"
-    ],
-    "fetch_parts_of_linked_entities": true
+    ]
 }

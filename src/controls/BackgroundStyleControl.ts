@@ -1,7 +1,9 @@
 import type { StyleSpecification } from 'maplibre-gl';
 import type { BackgroundStyle } from '../model/backgroundStyle';
 import { DropdownControl } from './DropdownControl';
-import { getCorrectFragmentParams, getFragmentParams, setFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
+
+const fragment = new UrlFragment();
 
 /**
  * Let the user choose the map style.
@@ -16,12 +18,12 @@ export class BackgroundStyleControl extends DropdownControl {
                 text: style.styleText,
                 onSelect: () => this.setBackgroundStyle(style)
             })),
-            getCorrectFragmentParams().backgroundStyleID,
+            fragment.backgroundStyle,
             'choose_basemap'
         );
 
         window.addEventListener('hashchange', () => {
-            const backgroundStyleID = getFragmentParams().backgroundStyleID;
+            const backgroundStyleID = fragment.backgroundStyle;
             if (backgroundStyleID)
                 this.value = backgroundStyleID;
         });
@@ -38,7 +40,7 @@ export class BackgroundStyleControl extends DropdownControl {
             if (process.env.NODE_ENV === 'development') console.debug("setBackgroundStyle: setting style URL", style);
             this.getMap()?.setStyle(style.styleUrl);
         }
-        setFragmentParams(undefined, undefined, undefined, undefined, undefined, style.id);
+        fragment.backgroundStyle = style.id;
         this.showDropdown(false);
     }
 }

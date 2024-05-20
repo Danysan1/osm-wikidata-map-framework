@@ -11,7 +11,7 @@ export class WikidataService {
     public constructor(basePath = 'https://query.wikidata.org') {
         this.api = new SparqlApi(new Configuration({
             basePath,
-            headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
+            // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy
         }));
     }
 

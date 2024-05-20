@@ -1,4 +1,6 @@
 {
+    "default_backend": "overpass_all_wd+wd_indirect",
+    "fetch_parts_of_linked_entities": true,
     "osm_filter_tags": [
         "buried:wikidata",
         "buried",
@@ -14,7 +16,6 @@
         "buried:wikidata",
         "subject:wikidata"
     ],
-    "fetch_parts_of_linked_entities": true,
     "wikidata_indirect_property": "P119",
     "wikidata_image_property": "P1442"
 }

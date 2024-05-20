@@ -1,5 +1,7 @@
 import type { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
-import { getCorrectFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
+
+const fragment = new UrlFragment();
 
 export class OsmWikidataMatcherControl implements IControl {
     private container?: HTMLDivElement;
@@ -52,7 +54,7 @@ export class OsmWikidataMatcherControl implements IControl {
     }
 
     private openMatcher() {
-        const { lon, lat, zoom } = getCorrectFragmentParams();
+        const { lon, lat, zoom } = fragment.getCorrectFragmentParams();
         window.open(`https://map.osm.wikidata.link/map/${zoom.toFixed()}/${lat}/${lon}`);
     }
 }

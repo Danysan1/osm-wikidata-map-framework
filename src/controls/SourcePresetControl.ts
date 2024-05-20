@@ -1,8 +1,10 @@
 import { getStringArrayConfig } from '../config';
 import { DropdownControl } from './DropdownControl';
-import { getCorrectFragmentParams, setFragmentParams } from '../fragment';
+import { UrlFragment } from '../fragment';
 import type { TFunction } from "i18next";
 import { DEFAULT_SOURCE_PRESET_ID } from '../model/SourcePreset';
+
+const fragment = new UrlFragment();
 
 /**
  * Let the user choose the tags template.
@@ -19,7 +21,7 @@ export class SourcePresetControl extends DropdownControl {
                 if (process.env.NODE_ENV === 'development') console.debug("Selecting source preset ", { sourcePresetID });
 
                 // If the change came from a manual interaction, update the fragment params
-                setFragmentParams(undefined, undefined, undefined, undefined, undefined, undefined, sourcePresetID);
+                fragment.sourcePreset = sourcePresetID;
 
                 // If the change came from a fragment change, update the dropdown
                 // Regardless of the source, update the map
@@ -48,7 +50,7 @@ export class SourcePresetControl extends DropdownControl {
             "preset.choose_preset",
             true,
             undefined,
-            () => this.value = getCorrectFragmentParams().sourcePresetID
+            () => this.value = fragment.sourcePreset
         );
     }
 }

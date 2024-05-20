@@ -4,7 +4,7 @@ import "@maptiler/geocoding-control/style.css";
 // import "maplibre-gl-inspect/dist/maplibre-gl-inspect.css";
 
 import { logErrorMessage } from './monitoring';
-import { getCorrectFragmentParams, setFragmentParams } from './fragment';
+import { UrlFragment } from './fragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getBoolConfig, getConfig, getFloatConfig } from './config';
@@ -36,7 +36,8 @@ const PMTILES_PREFIX = "pmtiles",
     STATE_MAX_ZOOM = 7,
     STATE_ADMIN_LEVEL = 4,
     PROVINCE_MAX_ZOOM = 9,
-    PROVINCE_ADMIN_LEVEL = 6;
+    PROVINCE_ADMIN_LEVEL = 6,
+    fragment = new UrlFragment();
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
@@ -52,12 +53,13 @@ export class EtymologyMap extends Map {
     private shouldFetchAgain = false;
     private backEndControl?: BackEndControlType;
 
+
     constructor(
         containerId: string,
         backgroundStyles: BackgroundStyle[],
         requestTransformFunc?: RequestTransformFunction
     ) {
-        const startParams = getCorrectFragmentParams(),
+        const startParams = fragment.getCorrectFragmentParams(),
             westLon = getFloatConfig("min_lon"),
             southLat = getFloatConfig("min_lat"),
             eastLon = getFloatConfig("max_lon"),
@@ -66,7 +68,7 @@ export class EtymologyMap extends Map {
         if (!backgroundStyleObj) {
             logErrorMessage("Invalid default background style", "error", { startParams, backgroundStyleObj });
             backgroundStyleObj = backgroundStyles[0];
-            setFragmentParams(undefined, undefined, undefined, undefined, undefined, backgroundStyleObj.id);
+            fragment.backgroundStyle = backgroundStyleObj.id;
         }
         if (process.env.NODE_ENV === 'development') console.debug("Instantiating map", { containerId, backgroundStyleObj, startParams, westLon, southLat, eastLon, northLat });
 
@@ -113,7 +115,7 @@ export class EtymologyMap extends Map {
     }
 
     private async updateSourcePreset() {
-        const sourcePresetID = getCorrectFragmentParams().sourcePresetID;
+        const sourcePresetID = fragment.sourcePreset;
         if (sourcePresetID !== this.lastSourcePresetID) {
             if (process.env.NODE_ENV === 'development') console.debug("updateSourcePreset", { last: this.lastSourcePresetID, sourcePresetID });
             this.lastSourcePresetID = sourcePresetID;
@@ -122,6 +124,8 @@ export class EtymologyMap extends Map {
                 // Update the map services to use the new preset
                 const [sourcePreset, { CombinedCachedMapService }] = await Promise.all([fetchSourcePreset(sourcePresetID), import("./services/CombinedCachedMapService")]);
                 this.service = new CombinedCachedMapService(sourcePreset);
+                if (sourcePreset.default_backend)
+                    fragment.backEnd = sourcePreset.default_backend;
 
                 // Update data for the new preset through the newly created map services
                 this.updateDataSource();
@@ -129,7 +133,7 @@ export class EtymologyMap extends Map {
                 // Update the back-end control to reflect the available back-ends for the new preset
                 const { BackEndControl } = await import("./controls"),
                     newBackEndControl = new BackEndControl(
-                        sourcePreset, getCorrectFragmentParams().backEndID, this.updateDataSource.bind(this), await t
+                        sourcePreset, fragment.backEnd, this.updateDataSource.bind(this), await t
                     );
                 if (this.backEndControl)
                     this.removeControl(this.backEndControl);
@@ -178,7 +182,7 @@ export class EtymologyMap extends Map {
      * Handles the change of the URL fragment
      */
     private hashChangeHandler(/*e: HashChangeEvent*/) {
-        const newParams = getCorrectFragmentParams(),
+        const newParams = fragment.getCorrectFragmentParams(),
             currLat = this.getCenter().lat,
             currLon = this.getCenter().lng,
             currZoom = this.getZoom();
@@ -268,25 +272,25 @@ export class EtymologyMap extends Map {
             return;
         }
 
-        const params = getCorrectFragmentParams(),
-            isPMTilesSource = params.backEndID.startsWith(PMTILES_PREFIX),
+        const backEndID = fragment.backEnd,
+            isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
             pmtilesBaseURL = getConfig("pmtiles_base_url");
 
         this.updateSourcePreset().catch(console.error);
 
-        if (isPMTilesSource && params.backEndID === this.lastBackEndID) {
+        if (isPMTilesSource && backEndID === this.lastBackEndID) {
             if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: PMTiles source unchanged, skipping source update");
         } else if (isPMTilesSource && !pmtilesBaseURL?.length) {
             loadTranslator().then(t => showSnackbar(t("snackbar.map_error"))).catch(console.error);
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
-            this.lastBackEndID = params.backEndID;
+            this.lastBackEndID = backEndID;
             this.lastOnlyCentroids = undefined; // Reset (applies only to GeoJSON sources)
-            this.updateDetailsPMTilesSource(params.backEndID, thresholdZoomLevel);
+            this.updateDetailsPMTilesSource(backEndID, thresholdZoomLevel);
         } else {
-            this.updateGeoJSONSource(params.backEndID, minZoomLevel, thresholdZoomLevel);
+            this.updateGeoJSONSource(backEndID, minZoomLevel, thresholdZoomLevel);
         }
     }
 
@@ -722,9 +726,8 @@ export class EtymologyMap extends Map {
 
         const onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
             if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set colorScheme", { colorSchemeID });
-            const params = getCorrectFragmentParams();
-            if (params.colorScheme != colorSchemeID) {
-                setFragmentParams(undefined, undefined, undefined, colorSchemeID, undefined);
+            if (fragment.colorScheme !== colorSchemeID) {
+                fragment.colorScheme = colorSchemeID;
                 this.updateDataSource();
             }
         },
@@ -744,7 +747,7 @@ export class EtymologyMap extends Map {
                 });
             },
             colorControl = new EtymologyColorControl(
-                getCorrectFragmentParams().colorScheme,
+                fragment.colorScheme,
                 onColorSchemeChange,
                 setLayerColor,
                 t,
@@ -754,9 +757,7 @@ export class EtymologyMap extends Map {
         this.addControl(colorControl, 'top-left');
 
         try {
-            const templateControl = new SourcePresetControl(
-                getCorrectFragmentParams().sourcePresetID, this.updateDataSource.bind(this), t
-            );
+            const templateControl = new SourcePresetControl(fragment.sourcePreset, this.updateDataSource.bind(this), t);
             this.addControl(templateControl, 'top-left');
         } catch (e) { console.error(e); }
 
@@ -1136,7 +1137,7 @@ export class EtymologyMap extends Map {
             zoom = this.getZoom();
         if (process.env.NODE_ENV === 'development') console.debug("updateDataForMapPosition", { lat, lon, zoom });
         this.updateDataSource();
-        setFragmentParams(lon, lat, zoom);
+        fragment.setFragmentParams(lon, lat, zoom);
     }
 
     /**

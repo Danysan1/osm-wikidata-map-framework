@@ -1,4 +1,7 @@
 {
+    "default_backend": "overpass_all_wd+wd_direct",
+    "fetch_parts_of_linked_entities": true,
+    "mapcomplete_theme": "artwork",
     "osm_filter_tags": [
         "artist:wikidata",
         "artist_name",
@@ -13,7 +16,5 @@
     "osm_wikidata_properties": [
         "P170",
         "P50"
-    ],
-    "fetch_parts_of_linked_entities": true,
-    "mapcomplete_theme": "artwork"
+    ]
 }

@@ -1,8 +1,10 @@
 import { imageToDomElement } from "./CommonsImageElement";
 import { DatePrecision, EtymologyDetails } from "../model/EtymologyDetails";
-import { setFragmentParams } from "../fragment";
+import { UrlFragment } from "../fragment";
 import { translateContent, translateAnchorTitle, getLanguage } from "../i18n";
 import { WikipediaService } from "../services/WikipediaService";
+
+const fragment = new UrlFragment();
 
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
@@ -185,7 +187,7 @@ export class EtymologyElement extends HTMLDivElement {
                 if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
                     location_button.addEventListener("click", () => {
                         const destinationZoomLevel = Math.max(this.currentZoom, Math.min(this.currentZoom + 2, 18));
-                        setFragmentParams(ety_lon, ety_lat, destinationZoomLevel);
+                        fragment.setFragmentParams(ety_lon, ety_lat, destinationZoomLevel);
                         return false;
                     });
                     location_button.classList.remove("hiddenElement");

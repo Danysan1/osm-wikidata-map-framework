@@ -142,7 +142,7 @@ if ($conf->has("pmtiles_base_url"))
     <?= $conf->getMetaTag("min_zoom_level"); ?>
     <?= $conf->getMetaTag("default_background_style"); ?>
     <?= $conf->getMetaTag("default_color_scheme"); ?>
-    <?= $conf->getMetaTag("default_source"); ?>
+    <?= $conf->getMetaTag("default_backend", true); ?>
     <?= $conf->getMetaTag("google_analytics_id", true); ?>
     <?= $conf->getMetaTag("matomo_domain", true); ?>
     <?= $conf->getMetaTag("matomo_id", true); ?>
