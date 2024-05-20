@@ -1,6 +1,6 @@
 import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, Map } from 'maplibre-gl';
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
-import { UrlFragment } from '../fragment';
+import { UrlFragment } from '../UrlFragment';
 import { getConfig, getStringArrayConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';

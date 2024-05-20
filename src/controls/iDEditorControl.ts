@@ -1,5 +1,5 @@
 import type { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
-import { UrlFragment } from '../fragment';
+import { UrlFragment } from '../UrlFragment';
 
 const fragment = new UrlFragment();
 

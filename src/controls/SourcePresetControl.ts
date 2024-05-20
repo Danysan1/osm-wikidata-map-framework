@@ -1,6 +1,6 @@
 import { getStringArrayConfig } from '../config';
 import { DropdownControl } from './DropdownControl';
-import { UrlFragment } from '../fragment';
+import { UrlFragment } from '../UrlFragment';
 import type { TFunction } from "i18next";
 import { DEFAULT_SOURCE_PRESET_ID } from '../model/SourcePreset';
 

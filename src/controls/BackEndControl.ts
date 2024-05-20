@@ -1,6 +1,6 @@
 import { getConfig, getBoolConfig } from '../config';
 import { DropdownControl, DropdownItem } from './DropdownControl';
-import { UrlFragment } from '../fragment';
+import { UrlFragment } from '../UrlFragment';
 import type { TFunction } from "i18next";
 import { logErrorMessage } from '../monitoring';
 import { osmKeyToKeyID } from '../model/EtymologyResponse';

@@ -1,7 +1,7 @@
 import type { Position } from "geojson";
 import { getConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
-import { UrlFragment } from '../fragment';
+import { UrlFragment } from '../UrlFragment';
 import type { EtymologyFeature } from "../model/EtymologyResponse";
 import { getEtymologies } from "../services/etymologyUtils";
 

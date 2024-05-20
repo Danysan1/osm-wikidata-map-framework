@@ -1,7 +1,7 @@
 import type { StyleSpecification } from 'maplibre-gl';
 import type { BackgroundStyle } from '../model/backgroundStyle';
 import { DropdownControl } from './DropdownControl';
-import { UrlFragment } from '../fragment';
+import { UrlFragment } from '../UrlFragment';
 
 const fragment = new UrlFragment();
 

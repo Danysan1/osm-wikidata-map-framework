@@ -4,7 +4,7 @@ import "@maptiler/geocoding-control/style.css";
 // import "maplibre-gl-inspect/dist/maplibre-gl-inspect.css";
 
 import { logErrorMessage } from './monitoring';
-import { UrlFragment } from './fragment';
+import { UrlFragment } from './UrlFragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
 import { showLoadingSpinner, showSnackbar } from './snackbar';
 import { getBoolConfig, getConfig, getFloatConfig } from './config';
