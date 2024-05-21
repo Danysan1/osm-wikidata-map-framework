@@ -326,7 +326,7 @@ export class EtymologyElement extends HTMLDivElement {
         if (!src_wd) {
             console.warn("Missing .etymology_src_wd");
         } else if (this.etymology.from_wikidata_entity) {
-            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.from_wikidata_entity}#${this.etymology.from_wikidata_prop}`;
+            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.from_wikidata_entity}#${this.etymology.from_wikidata_prop ?? ""}`;
             if (process.env.NODE_ENV === 'development') console.debug("Showing WD etymology source", { ety: this.etymology, wdURL, src_wd });
             src_wd.href = wdURL;
             src_wd.classList.remove("hiddenElement");

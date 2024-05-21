@@ -186,9 +186,7 @@ export class FeatureElement extends HTMLDivElement {
         if (!src_wd) {
             console.warn("Missing .feature_src_wd");
         } else if (show_src_wd) {
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            const from_prop = properties.from_wikidata_prop || "P625",
-                wdURL = `https://www.wikidata.org/wiki/${from_entity}#${from_prop}`;
+            const wdURL = `https://www.wikidata.org/wiki/${from_entity}#${properties.from_wikidata_prop ?? "P625"}`;
             if (process.env.NODE_ENV === 'development') console.debug("Showing WD feature source", { properties, wdURL, src_wd });
             src_wd.href = wdURL;
             src_wd.classList.remove("hiddenElement");
