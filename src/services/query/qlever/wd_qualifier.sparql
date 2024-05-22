@@ -10,7 +10,6 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 
 SELECT DISTINCT
     ?etymology
-    ?location
     ?commons
     ?picture
     ?osm_node
@@ -20,6 +19,7 @@ SELECT DISTINCT
     (wdt:${indirectProperty} AS ?from_prop)
     (false AS ?from_osm)
     (true AS ?from_wikidata)
+    ?location
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     ?stmt pq:P625 ?location.

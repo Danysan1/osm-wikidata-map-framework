@@ -9,7 +9,6 @@ PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 SELECT
     ?item
     ?osm
-    ?location
     (COALESCE(?osm_lang_name,?osm_default_name) AS ?itemLabel)
     (?osm_descr AS ?itemDescription)
     ?wikimedia_commons
@@ -19,6 +18,7 @@ SELECT
     ?building
     (true AS ?from_osm)
     (false AS ?from_wikidata)
+    ?location
 WHERE {
     ?osm osm:wikidata ?item;
          geo:hasGeometry/geo:asWKT ?location.

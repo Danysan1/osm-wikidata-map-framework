@@ -9,7 +9,6 @@ PREFIX geof: <http://www.opengis.net/def/function/geosparql/>
 SELECT
     ?item
     ?osm
-    ?location
     ?etymology
     ${osmTextSelect}
     ${osmDescriptionSelect}
@@ -22,6 +21,7 @@ SELECT
     ?building
     (true AS ?from_osm)
     (false AS ?from_wikidata)
+    ?location
 WHERE {
     ${osmEtymologyExpression}
     ${osmCountryQuery}

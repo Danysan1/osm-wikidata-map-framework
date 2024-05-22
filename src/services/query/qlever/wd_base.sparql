@@ -12,7 +12,6 @@ SELECT
     ?item
     (SAMPLE(COALESCE(?lang_label,?default_label)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
-    (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_picture) AS ?picture)
@@ -21,6 +20,7 @@ SELECT
     (SAMPLE(?_osm_rel) AS ?osm_rel)
     (false AS ?from_osm)
     (true AS ?from_wikidata)
+    (SAMPLE(?_location) AS ?location)
 WHERE {
     ?item p:P625 ?locationStatement.
     ${wikidataCountryQuery}

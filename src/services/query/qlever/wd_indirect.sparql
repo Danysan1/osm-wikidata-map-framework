@@ -13,7 +13,6 @@ SELECT
     ?item
     (SAMPLE(COALESCE(?lang_label,?default_label,?anyLabel)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
-    (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_picture) AS ?picture)
@@ -26,6 +25,7 @@ SELECT
     (wdt:${indirectProperty} AS ?from_prop)
     (false AS ?from_osm)
     (true AS ?from_wikidata)
+    (SAMPLE(?_location) AS ?location)
 WITH { 
     SELECT ?etymology ?_location ?_commons ?_picture ?_osm_node ?_osm_way ?_osm_rel ?_statementEntity
     WHERE {

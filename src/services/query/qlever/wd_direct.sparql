@@ -14,7 +14,6 @@ SELECT
     ?etymology
     (SAMPLE(COALESCE(?lang_label,?default_label)) AS ?itemLabel)
     (SAMPLE(?_itemDescription) AS ?itemDescription)
-    (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_picture) AS ?picture)
@@ -26,6 +25,7 @@ SELECT
     (SAMPLE(?_from_p) AS ?from_prop)
     (false AS ?from_osm)
     (true AS ?from_wikidata)
+    (SAMPLE(?_location) AS ?location)
 WHERE {
     VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }
     ?item p:P625 ?locationStatement;

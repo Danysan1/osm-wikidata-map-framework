@@ -18,7 +18,6 @@ SELECT
     ?item
     ?osm
     ?etymology
-    (SAMPLE(?osm_location) AS ?location)
     # (SAMPLE(COALESCE(?osm_lang_name,?wd_lang_label,?osm_default_name,?wd_default_label)) AS ?itemLabel)
     (SAMPLE(COALESCE(?osm_lang_name,?osm_default_name)) AS ?itemLabel)
     # (SAMPLE(COALESCE(?osm_descr,?wd_descr)) AS ?itemDescription)
@@ -34,6 +33,7 @@ SELECT
     (true AS ?from_osm) # TODO check if bound - https://github.com/ad-freiburg/qlever/wiki/Current-deviations-from-the-SPARQL-1.1-standard#sparql-11-features-that-are-not-yet-implemented-but-have-an-easy-workaround 
     (true AS ?from_wikidata)
     #(SAMPLE(?_statementEntity) AS ?statementEntity)
+    (SAMPLE(?osm_location) AS ?location)
 WHERE {
     SERVICE <https://qlever.cs.uni-freiburg.de/api/wikidata> {
         VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }
