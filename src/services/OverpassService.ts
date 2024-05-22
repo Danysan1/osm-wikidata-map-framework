@@ -46,10 +46,7 @@ export class OverpassService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        if (!/^overpass_(wd|all_[_a-z]+|osm_[_a-z]+)$/.test(backEndID))
-            return false;
-
-        return true;
+        return /^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
