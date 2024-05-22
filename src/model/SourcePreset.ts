@@ -50,6 +50,11 @@ export interface SourcePreset {
     relation_role_whitelist?: string[];
 
     /**
+     * Whitelist of Q-IDs of Wikidata classes to consider when filtering linked entities
+     */
+    wikidata_filter_classes?: string[];
+
+    /**
      * P-ID of the Wikidata property which connects the linked entity (popup element) to a relation whose P625 qualifier identifies the coordinates of the subject (map element)
      */
     wikidata_indirect_property?: string;

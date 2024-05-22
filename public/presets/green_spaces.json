@@ -3,5 +3,8 @@
     "osm_filter_tags": [
         "leisure=park",
         "leisure=garden"
+    ],
+    "wikidata_filter_classes": [
+        "Q1107656", "Q22698"
     ]
 }

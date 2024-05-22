@@ -20,6 +20,7 @@ SELECT
 WHERE {
     ?etymology p:${indirectProperty} ?stmt.
     ?stmt ps:${indirectProperty} ?item.
+    ${classFilterQuery}
     ?item p:P625 ?locationStatement.
     ${wikidataCountryQuery}
     MINUS { ?stmt pq:P582 []. } # Ignore the etymology statement has an end date
