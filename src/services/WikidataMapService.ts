@@ -51,7 +51,8 @@ export class WikidataMapService extends WikidataService implements MapService {
         const maxElements = getConfig("max_map_elements"),
             wikidataCountry = getConfig("wikidata_country"),
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-            classFilterQuery = this.preset.wikidata_filter_classes?.length ? `VALUES ?class { ${this.preset.wikidata_filter_classes.map(c => `wd:${c}`).join(",")} }\n    ?item wdt:P31/wdt:P279? ?class` : '',
+            filterClasses = this.preset.wikidata_filter_classes?.map(c => `wd:${c}`).join(" "),
+            classFilterQuery = filterClasses ? `VALUES ?class { ${filterClasses} } ?item wdt:P31/wdt:P279? ?class.` : '',
             sparqlQuery = sparqlQueryTemplate
                 .replaceAll('${classFilterQuery}', classFilterQuery)
                 .replaceAll('${wikidataCountryQuery}', wikidataCountryQuery)
@@ -61,7 +62,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${southLat}', bbox[1].toString())
                 .replaceAll('${eastLon}', bbox[2].toString())
                 .replaceAll('${northLat}', bbox[3].toString());
-
+console.debug("fetchMapElements", {preset:this.preset, filterClasses, classFilterQuery});
         if (process.env.NODE_ENV === 'development') console.time("wikidata_fetch");
         const ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
         if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_fetch");
