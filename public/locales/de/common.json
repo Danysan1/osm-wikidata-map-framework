@@ -31,10 +31,12 @@
     },
     "preset": {
         "choose_preset": "Wählen Sie Voreinstellung",
+        "architect": "Bauarchitekten",
+        "artist": "Autoren von Kunstwerken",
         "base": "OSM + Wikidata",
-        "etymology": "Etymologien (Herkunft der Namen)",
         "burial": "Grabstätten",
-        "artist": "Autoren von Kunstwerken"
+        "etymology": "Etymologien (Herkunft der Namen)",
+        "green_spaces": "Grünflächen"
     },
     "source": {
         "choose_source": "Datenquelle wählen",

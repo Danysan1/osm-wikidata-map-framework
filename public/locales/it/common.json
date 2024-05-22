@@ -31,10 +31,12 @@
     },
     "preset": {
         "choose_preset": "Scegli preset",
+        "architect": "Architetti degli edifici",
+        "artist": "Autori delle opere d'arte",
         "base": "OSM + Wikidata",
-        "etymology": "Etimologie (origine dei nomi)",
         "burial": "Luoghi di sepoltura",
-        "artist": "Autori delle opere d'arte"
+        "etymology": "Etimologie (origine dei nomi)",
+        "green_spaces": "Spazi verdi"
     },
     "source": {
         "choose_source": "Scegli fonte dati",
