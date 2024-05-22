@@ -339,6 +339,10 @@ if ($conf->has("pmtiles_base_url"))
                                 <img class="button_img" src="img/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
                                 <span class="button_text"> Wikipedia</span>
                             </a>
+                            <a title="Wikispore" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 wikispore_button hiddenElement">
+                                <img class="button_img" src="img/Wikispore_logo_without_text.svg" alt="Wikispore logo">
+                                <span class="button_text"> Wikispore</span>
+                            </a>
                             <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 commons_button hiddenElement">
                                 <img class="button_img" src="img/Commons-logo.svg" alt="Wikimedia Commons logo">
                                 <span class="button_text"> Commons</span>

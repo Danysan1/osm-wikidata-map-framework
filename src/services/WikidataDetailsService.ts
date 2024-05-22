@@ -43,7 +43,7 @@ export class WikidataDetailsService extends WikidataService {
                     ?.map(id => id.replace(WikidataService.WD_ENTITY_PREFIX, ""))
                     ?.filter(id => id.length);
 
-                const details = {
+                const details: EtymologyDetails = {
                     alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                     birth_date: row.birth_date?.value,
                     birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,
@@ -70,6 +70,7 @@ export class WikidataDetailsService extends WikidataService {
                     start_date: row.start_date?.value,
                     start_date_precision: row.start_date_precision?.value ? parseInt(row.start_date_precision?.value) : undefined,
                     wikipedia: row.wikipedia?.value,
+                    wikispore: row.wikispore?.value,
                     wkt_coords: row.wkt_coords?.value,
                     wikidata: wdQID,
                     parts,

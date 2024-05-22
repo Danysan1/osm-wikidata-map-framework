@@ -156,6 +156,16 @@ export class EtymologyElement extends HTMLDivElement {
             wikipedia_button.classList.add("hiddenElement");
         }
 
+        const wikispore_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikispore_button');
+        if (!wikispore_button) {
+            console.warn("Missing .wikispore_button");
+        } else if (this.etymology.wikispore) {
+            wikispore_button.href = this.etymology.wikispore.startsWith("http") ? this.etymology.wikispore : `https://wikispore.wmflabs.org/wiki/${this.etymology.wikispore}`;
+            wikispore_button.classList.remove("hiddenElement");
+        } else {
+            wikispore_button.classList.add("hiddenElement");
+        }
+
         const commons_button = etyDomElement.querySelector<HTMLAnchorElement>('.commons_button');
         if (!commons_button) {
             console.warn("Missing .commons_button");

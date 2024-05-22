@@ -7,6 +7,7 @@ SELECT ?wikidata
     (SAMPLE(?genderID) AS ?genderID)
     (SAMPLE(?gender_name) AS ?gender)
     (SAMPLE(?wikipedia) AS ?wikipedia)
+    (SAMPLE(?wikispore) AS ?wikispore)
     (SAMPLE(?commons) AS ?commons)
     (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
     (SAMPLE(?countryID) AS ?countryID)
@@ -207,6 +208,10 @@ WHERE {
 
     OPTIONAL {
         ?wikidata wdt:P910?/wdt:P373 ?commons.
+    }
+
+    OPTIONAL {
+        ?wikidata wdt:P7721 ?wikispore.
     }
 
     OPTIONAL {

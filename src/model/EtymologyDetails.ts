@@ -94,6 +94,10 @@ export interface EtymologyDetails extends Etymology {
      */
     wikipedia?: string;
     /**
+     * Title of a Wikispore page about the subject
+     */
+    wikispore?: string;
+    /**
      * Coordinates of the location of the subject
      */
     wkt_coords?: string;
