@@ -116,33 +116,39 @@ export class EtymologyMap extends Map {
 
     private async updateSourcePreset() {
         const sourcePresetID = fragment.sourcePreset;
-        if (sourcePresetID !== this.lastSourcePresetID) {
-            if (process.env.NODE_ENV === 'development') console.debug("updateSourcePreset", { last: this.lastSourcePresetID, sourcePresetID });
-            this.lastSourcePresetID = sourcePresetID;
-            const t = loadTranslator();
-            try {
-                // Update the map services to use the new preset
-                const [sourcePreset, { CombinedCachedMapService }] = await Promise.all([fetchSourcePreset(sourcePresetID), import("./services/CombinedCachedMapService")]);
-                this.service = new CombinedCachedMapService(sourcePreset);
-                if (sourcePreset.default_backend)
-                    fragment.backEnd = sourcePreset.default_backend;
+        if (sourcePresetID === this.lastSourcePresetID)
+            return;
 
-                // Update data for the new preset through the newly created map services
-                this.updateDataSource();
+        if (process.env.NODE_ENV === 'development') console.debug("updateSourcePreset", { last: this.lastSourcePresetID, sourcePresetID });
+        this.lastSourcePresetID = sourcePresetID;
+        const t = loadTranslator();
+        try {
+            // Update the map services to use the new preset
+            const [
+                sourcePreset, { CombinedCachedMapService }
+            ] = await Promise.all([
+                fetchSourcePreset(sourcePresetID), import("./services/CombinedCachedMapService")
+            ]);
+            this.service = new CombinedCachedMapService(sourcePreset);
+            if (sourcePreset.default_backend)
+                fragment.backEnd = sourcePreset.default_backend;
 
-                // Update the back-end control to reflect the available back-ends for the new preset
-                const { BackEndControl } = await import("./controls"),
-                    newBackEndControl = new BackEndControl(
-                        sourcePreset, fragment.backEnd, this.updateDataSource.bind(this), await t
-                    );
-                if (this.backEndControl)
-                    this.removeControl(this.backEndControl);
-                this.backEndControl = newBackEndControl;
-                this.addControl(newBackEndControl, 'top-left');
-            } catch (e) {
-                console.error("Failed updating source preset", e);
-                showSnackbar((await t)("snackbar.map_error"));
-            }
+            // Update the back-end control to reflect the available back-ends for the new preset
+            const { BackEndControl } = await import("./controls"),
+                newBackEndControl = new BackEndControl(
+                    sourcePreset, fragment.backEnd, this.updateDataSource.bind(this), await t
+                );
+            if (this.backEndControl)
+                this.removeControl(this.backEndControl);
+            this.backEndControl = newBackEndControl;
+            this.addControl(newBackEndControl, 'top-left');
+
+            // Update data for the new preset through the newly created map services
+            this.updateDataSource();
+        } catch (e) {
+            this.lastSourcePresetID = undefined;
+            console.error("Failed updating source preset", e);
+            showSnackbar((await t)("snackbar.map_error"));
         }
     }
 
@@ -157,9 +163,13 @@ export class EtymologyMap extends Map {
      */
     private mapStyleDataHandler(e: MapStyleDataEvent) {
         if (process.env.NODE_ENV === 'development') console.debug("mapStyleDataHandler", e);
+
+        // Set the map labels language (when a new background style is loaded label changes are lost)
         this.setCulture();
+
+        // Make sure a preset is set and show the map data (when a new background style is loaded the previous data is lost)
         this.lastBackEndID = undefined;
-        this.updateDataSource();
+        this.updateSourcePreset().then(this.updateDataSource.bind(this)).catch(console.error);
     }
 
     /**
