@@ -130,8 +130,6 @@ export class EtymologyMap extends Map {
                 fetchSourcePreset(sourcePresetID), import("./services/CombinedCachedMapService")
             ]);
             this.service = new CombinedCachedMapService(sourcePreset);
-            if (sourcePreset.default_backend)
-                fragment.backEnd = sourcePreset.default_backend;
 
             // Update the back-end control to reflect the available back-ends for the new preset
             const { BackEndControl } = await import("./controls"),

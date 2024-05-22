@@ -13,11 +13,11 @@ const fragment = new UrlFragment();
  **/
 export class SourcePresetControl extends DropdownControl {
     constructor(
-        startSourcePresetID: string, onTemplateChange: (templateID: string) => void, t: TFunction
+        startSourcePresetID: string, onPresetChange: (templateID: string) => void, t: TFunction
     ) {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         const sourcePresetIDs = getStringArrayConfig("source_presets") || [DEFAULT_SOURCE_PRESET_ID],
-            selectBackEnd = (sourcePresetID: string) => {
+            selectPreset = (sourcePresetID: string) => {
                 if (process.env.NODE_ENV === 'development') console.debug("Selecting source preset ", { sourcePresetID });
 
                 // If the change came from a manual interaction, update the fragment params
@@ -25,7 +25,7 @@ export class SourcePresetControl extends DropdownControl {
 
                 // If the change came from a fragment change, update the dropdown
                 // Regardless of the source, update the map
-                onTemplateChange(sourcePresetID);
+                onPresetChange(sourcePresetID);
             };
         if (process.env.NODE_ENV === 'development') console.debug("SourcePresetControl: initialized with source presets", { sourcePresetIDs, startSourcePresetID });
 
@@ -34,7 +34,7 @@ export class SourcePresetControl extends DropdownControl {
                 id: sourcePresetID,
                 text: t("preset." + sourcePresetID),
                 onSelect: () => {
-                    selectBackEnd(sourcePresetID);
+                    selectPreset(sourcePresetID);
                     this.value = sourcePresetID;
 
                     // Hide the dropdown to leave more space for the map

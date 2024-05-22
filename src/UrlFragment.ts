@@ -40,7 +40,7 @@ export class UrlFragment {
      * Gets the parameters passed through the fragment
      */
     public getFragmentParams(): FragmentParams {
-        const hashParams = window.location.hash ? window.location.hash.substring(1).split(",") : null,
+        const hashParams = window.location.hash?.substring(1)?.split(","),
             out: FragmentParams = {
                 lon: (hashParams?.[0] && !isNaN(parseFloat(hashParams[0]))) ? parseFloat(hashParams[0]) : null,
                 lat: (hashParams?.[1] && !isNaN(parseFloat(hashParams[1]))) ? parseFloat(hashParams[1]) : null,
@@ -79,7 +79,7 @@ export class UrlFragment {
 
         const fragment = `#${strLon},${strLat},${strZoom},${strColorScheme},${strBackEnd},${strBackground},${strTemplate}`;
         if (window.location.hash !== fragment) {
-            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: CHANGE DETECTED", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
+            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: CHANGE DETECTED", { old: window.location.hash, new: fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
             window.location.hash = fragment;
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { current, fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
