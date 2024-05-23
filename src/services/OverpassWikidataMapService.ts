@@ -117,6 +117,7 @@ export class OverpassWikidataMapService implements MapService {
             osmFeature.properties.from_wikidata = true;
             osmFeature.properties.from_wikidata_entity = wikidataFeature.properties?.from_wikidata_entity;
             osmFeature.properties.from_wikidata_prop = wikidataFeature.properties?.from_wikidata_prop;
+            osmFeature.properties.wikispore ??= wikidataFeature.properties?.wikispore;
 
             // Unlike Overpass, Wikidata returns localized Wikipedia links so it has more priority
             if (wikidataFeature.properties?.wikipedia)
@@ -182,7 +183,7 @@ export class OverpassWikidataMapService implements MapService {
         overpassData.truncated = !!overpassData.truncated || !!wikidataData.truncated;
         if (process.env.NODE_ENV === 'development') {
             console.debug(`Overpass+Wikidata mergeMapData found ${overpassData.features.length} features`);
-            console.table(overpassData.features);
+            // console.table(overpassData.features);
         }
         return overpassData;
     }

@@ -115,5 +115,9 @@ export interface EtymologyFeatureProperties {
      * Title of a Wikipedia page for this feature prefixed with its language code (<language>:<Page name>)
      */
     wikipedia?: string;
+    /**
+     * Title of a Wikispore page for this feature
+     */
+    wikispore?: string;
 }
 

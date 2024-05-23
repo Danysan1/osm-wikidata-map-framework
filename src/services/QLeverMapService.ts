@@ -9,7 +9,7 @@ import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
 import wd_direct_query from "./query/qlever/wd_direct.sparql";
 import wd_base_query from "./query/qlever/wd_base.sparql";
-import { getConfig, getStringArrayConfig } from "../config";
+import { getConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { Etymology } from "../model/Etymology";
@@ -208,10 +208,10 @@ export class QLeverMapService implements MapService {
         }
 
         if (backEndID.includes("indirect") || backEndID.includes("reverse") || backEndID.includes("qualifier")) {
-            const indirectProperty = getConfig("wikidata_indirect_property");
+            const indirectProperty = this.preset.wikidata_indirect_property;
             if (!indirectProperty)
                 throw new Error("No indirect property defined");
-            const imageProperty = getConfig("wikidata_image_property"),
+            const imageProperty = this.preset.wikidata_image_property,
                 pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
 
             sparqlQuery = sparqlQuery
@@ -220,7 +220,7 @@ export class QLeverMapService implements MapService {
         } else if (backEndID.includes("direct")) {
             let properties: string[];
             const sourceProperty = /_direct_(P\d+)$/.exec(backEndID)?.at(1),
-                directProperties = getStringArrayConfig("osm_wikidata_properties");
+                directProperties = this.preset.osm_wikidata_properties;
             if (!directProperties?.length)
                 throw new Error("Empty direct properties");
 

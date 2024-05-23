@@ -6,6 +6,7 @@ SELECT
     (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
+    (SAMPLE(?_wikispore) AS ?wikispore)
     (SAMPLE(?_picture) AS ?picture)
     (SAMPLE(?_height) AS ?height)
     (SAMPLE(?_levels) AS ?levels)
@@ -43,6 +44,7 @@ WHERE {
     OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
     OPTIONAL { ?item wdt:P910?/wdt:P373 ?_commons. }
     OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
+    OPTIONAL { ?item wdt:P7721 ?_wikispore. }
     OPTIONAL { ?item wdt:P18 ?_picture. }
     OPTIONAL { ?item p:P2048/psn:P2048/wikibase:quantityAmount ?_height. } # https://stackoverflow.com/a/57560572/2347196
     OPTIONAL { ?item wdt:P1101 ?_levels. }

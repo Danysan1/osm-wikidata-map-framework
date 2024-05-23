@@ -926,9 +926,9 @@ export class EtymologyMap extends Map {
 
             if (!feature)
                 throw new Error("No feature available");
-            void import("./components/FeatureElement").then(({ featureToDomElement }) => {
+            import("./components/FeatureElement").then(({ featureToDomElement }) => {
                 detail_wrapper.appendChild(featureToDomElement(feature, this.getZoom()));
-            });
+            }).catch(e => logErrorMessage("Failed fetching FeatureElement", "error", { err: e }));
 
             element_loading.style.display = 'none';
             ev.popupAlreadyShown = true; // https://github.com/mapbox/mapbox-gl-js/issues/5783#issuecomment-511555713

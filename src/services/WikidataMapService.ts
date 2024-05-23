@@ -4,7 +4,7 @@ import reverseMapQuery from "./query/map/reverse.sparql";
 import qualifierMapQuery from "./query/map/qualifier.sparql";
 import directMapQuery from "./query/map/direct.sparql";
 import baseMapQuery from "./query/map/base.sparql";
-import { getConfig, getStringArrayConfig } from "../config";
+import { getConfig } from "../config";
 import { parse as parseWKT } from "wellknown";
 import type { Point, BBox } from "geojson";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
@@ -62,7 +62,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${southLat}', bbox[1].toString())
                 .replaceAll('${eastLon}', bbox[2].toString())
                 .replaceAll('${northLat}', bbox[3].toString());
-console.debug("fetchMapElements", {preset:this.preset, filterClasses, classFilterQuery});
+
         if (process.env.NODE_ENV === 'development') console.time("wikidata_fetch");
         const ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
         if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_fetch");
@@ -94,7 +94,7 @@ console.debug("fetchMapElements", {preset:this.preset, filterClasses, classFilte
     private getDirectSparqlQuery(backEndID: string): string {
         let properties: string[];
         const sourceProperty = /^wd_direct_(P\d+)$/.exec(backEndID)?.at(1),
-            directProperties = getStringArrayConfig("osm_wikidata_properties"),
+            directProperties = this.preset.osm_wikidata_properties,
             sparqlQueryTemplate = directMapQuery;
         if (!directProperties?.length)
             throw new Error("Empty direct properties");
@@ -110,7 +110,7 @@ console.debug("fetchMapElements", {preset:this.preset, filterClasses, classFilte
     }
 
     private getIndirectSparqlQuery(backEndID: string): string {
-        const indirectProperty = getConfig("wikidata_indirect_property");
+        const indirectProperty = this.preset.wikidata_indirect_property;
         if (!indirectProperty)
             throw new Error("No indirect property defined");
 
@@ -124,7 +124,7 @@ console.debug("fetchMapElements", {preset:this.preset, filterClasses, classFilte
         else
             throw new Error(`Invalid Wikidata indirect back-end ID: "${backEndID}"`);
 
-        const imageProperty = getConfig("wikidata_image_property"),
+        const imageProperty = this.preset.wikidata_image_property,
             pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
         return sparqlQueryTemplate
             .replaceAll('${indirectProperty}', indirectProperty)
@@ -213,6 +213,7 @@ console.debug("fetchMapElements", {preset:this.preset, filterClasses, classFilte
                         wikidata: feature_wd_id,
                         wikidata_alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                         wikipedia: row.wikipedia?.value,
+                        wikispore: row.wikispore?.value,
                     }
                 });
             } else if (etymology) { // Add the new etymology to the existing feature for this feature
