@@ -1,7 +1,6 @@
 import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, Map } from 'maplibre-gl';
 import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
 import { UrlFragment } from '../UrlFragment';
-import { getConfig, getStringArrayConfig } from '../config';
 import { ColorScheme, ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 import type { TFunction } from 'i18next';
@@ -10,6 +9,7 @@ import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProper
 import { showLoadingSpinner } from '../snackbar';
 import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 import { getEtymologies } from '../services/etymologyUtils';
+import { SourcePreset } from '../model/SourcePreset';
 
 const MAX_CHART_ITEMS = 35,
     fragment = new UrlFragment();
@@ -74,6 +74,7 @@ class EtymologyColorControl extends DropdownControl {
     private readonly setLayerColor: (color: string | ExpressionSpecification) => void;
 
     constructor(
+        preset: SourcePreset,
         startColorScheme: ColorSchemeID,
         onSchemeChange: (colorScheme: ColorSchemeID) => void,
         setLayerColor: (color: string | ExpressionSpecification) => void,
@@ -81,9 +82,9 @@ class EtymologyColorControl extends DropdownControl {
         sourceId: string,
         layerIDs: string[]
     ) {
-        const keys = getStringArrayConfig("osm_wikidata_keys"),
-            wdDirectProperties = getStringArrayConfig("osm_wikidata_properties"),
-            indirectWdProperty = getConfig("wikidata_indirect_property"),
+        const keys = preset.osm_wikidata_keys,
+            wdDirectProperties = preset.osm_wikidata_properties,
+            indirectWdProperty = preset.wikidata_indirect_property,
             anyEtymology = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
             entries = Object.entries(colorSchemes),
             usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology),

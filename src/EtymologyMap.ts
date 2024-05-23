@@ -15,8 +15,9 @@ import { Protocol } from 'pmtiles';
 import type { MapService } from './services/MapService';
 import { ColorSchemeID, colorSchemes } from './model/colorScheme';
 import type { BackgroundStyle } from './model/backgroundStyle';
-import type { BackEndControl as BackEndControlType } from './controls';
+import type { BackEndControl as BackEndControlType, EtymologyColorControl as EtymologyColorControlType, MapCompleteControl as MapCompleteControlType } from './controls';
 import { fetchSourcePreset } from './services/PresetService';
+import { SourcePreset } from './model/SourcePreset';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -52,7 +53,8 @@ export class EtymologyMap extends Map {
     private fetchInProgress = false;
     private shouldFetchAgain = false;
     private backEndControl?: BackEndControlType;
-
+    private colorControl?: EtymologyColorControlType;
+    private mapCompleteControl?: MapCompleteControlType;
 
     constructor(
         containerId: string,
@@ -101,7 +103,7 @@ export class EtymologyMap extends Map {
         window.addEventListener('hashchange', () => this.hashChangeHandler(), false);
 
         this.addBaseControls();
-        void this.addSecondaryControls();
+        this.addSecondaryControls().catch(console.error);
 
         // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
         setRTLTextPlugin(
@@ -121,7 +123,6 @@ export class EtymologyMap extends Map {
 
         if (process.env.NODE_ENV === 'development') console.debug("updateSourcePreset", { last: this.lastSourcePresetID, sourcePresetID });
         this.lastSourcePresetID = sourcePresetID;
-        const t = loadTranslator();
         try {
             // Update the map services to use the new preset
             const [
@@ -131,23 +132,80 @@ export class EtymologyMap extends Map {
             ]);
             this.service = new CombinedCachedMapService(sourcePreset);
 
-            // Update the back-end control to reflect the available back-ends for the new preset
-            const { BackEndControl } = await import("./controls"),
-                newBackEndControl = new BackEndControl(
-                    sourcePreset, fragment.backEnd, this.updateDataSource.bind(this), await t
-                );
-            if (this.backEndControl)
-                this.removeControl(this.backEndControl);
-            this.backEndControl = newBackEndControl;
-            this.addControl(newBackEndControl, 'top-left');
-
-            // Update data for the new preset through the newly created map services
-            this.updateDataSource();
+            this.updatePresetDependentControls(sourcePreset).catch(console.error);
         } catch (e) {
             this.lastSourcePresetID = undefined;
             console.error("Failed updating source preset", e);
-            showSnackbar((await t)("snackbar.map_error"));
+            const t = await loadTranslator();
+            showSnackbar(t("snackbar.map_error"));
         }
+    }
+
+    private async updatePresetDependentControls(preset: SourcePreset) {
+        const [
+            t,
+            { BackEndControl, EtymologyColorControl, MapCompleteControl }
+        ] = await Promise.all([
+            loadTranslator(),
+            import("./controls")
+        ]);
+
+        // Update the back-end control to reflect the available back-ends for the new preset
+        const newBackEndControl = new BackEndControl(
+            preset, fragment.backEnd, this.updateDataSource.bind(this), t
+        );
+        if (this.backEndControl)
+            this.removeControl(this.backEndControl);
+        this.backEndControl = newBackEndControl;
+        this.addControl(newBackEndControl, 'top-left');
+
+        const thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
+            onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
+                if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set colorScheme", { colorSchemeID });
+                if (fragment.colorScheme !== colorSchemeID) {
+                    fragment.colorScheme = colorSchemeID;
+                    this.updateDataSource();
+                }
+            },
+            setLayerColor = (color: string | ExpressionSpecification) => {
+                if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
+                [
+                    [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
+                    [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
+                    [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-extrusion-color'],
+                    [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
+                ].forEach(([layerID, property]) => {
+                    if (this?.getLayer(layerID)) {
+                        this.setPaintProperty(layerID, property, color);
+                    } else {
+                        console.warn("Layer does not exist, can't set property", { layerID, property, color });
+                    }
+                });
+            },
+            newColorControl = new EtymologyColorControl(
+                preset,
+                fragment.colorScheme,
+                onColorSchemeChange,
+                setLayerColor,
+                t,
+                DETAILS_SOURCE,
+                [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER]
+            );
+        if (this.colorControl)
+            this.removeControl(this.colorControl);
+        this.colorControl = newColorControl;
+        this.addControl(newColorControl, 'top-left');
+
+        if (preset.mapcomplete_theme) {
+            const newMapCompleteControl = new MapCompleteControl(preset.mapcomplete_theme, thresholdZoomLevel);
+            if (this.mapCompleteControl)
+                this.removeControl(this.mapCompleteControl);
+            this.mapCompleteControl = newMapCompleteControl;
+            this.addControl(newMapCompleteControl, 'top-right');
+        }
+
+        // Update data for the new preset through the newly created map services
+        this.updateDataSource();
     }
 
     /**
@@ -722,7 +780,7 @@ export class EtymologyMap extends Map {
 
         const [
             t,
-            { BackgroundStyleControl, DataTableControl, EtymologyColorControl, iDEditorControl, LanguageControl, LinkControl, MapCompleteControl, OsmWikidataMatcherControl, SourcePresetControl: SourcePresetControl }
+            { BackgroundStyleControl, DataTableControl, iDEditorControl, LanguageControl, LinkControl, OsmWikidataMatcherControl, SourcePresetControl }
         ] = await Promise.all([
             loadTranslator(),
             import("./controls")
@@ -734,38 +792,6 @@ export class EtymologyMap extends Map {
         const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
         if (process.env.NODE_ENV === 'development') console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
-
-        const onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
-            if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set colorScheme", { colorSchemeID });
-            if (fragment.colorScheme !== colorSchemeID) {
-                fragment.colorScheme = colorSchemeID;
-                this.updateDataSource();
-            }
-        },
-            setLayerColor = (color: string | ExpressionSpecification) => {
-                if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
-                [
-                    [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
-                    [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
-                    [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-extrusion-color'],
-                    [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
-                ].forEach(([layerID, property]) => {
-                    if (this?.getLayer(layerID)) {
-                        this.setPaintProperty(layerID, property, color);
-                    } else {
-                        console.warn("Layer does not exist, can't set property", { layerID, property, color });
-                    }
-                });
-            },
-            colorControl = new EtymologyColorControl(
-                fragment.colorScheme,
-                onColorSchemeChange,
-                setLayerColor,
-                t,
-                DETAILS_SOURCE,
-                [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER]
-            );
-        this.addControl(colorControl, 'top-left');
 
         try {
             const templateControl = new SourcePresetControl(fragment.sourcePreset, this.updateDataSource.bind(this), t);
@@ -819,9 +845,6 @@ export class EtymologyMap extends Map {
         ), 'top-right');
         this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
         this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
-
-        if (getConfig("mapcomplete_theme"))
-            this.addControl(new MapCompleteControl(thresholdZoomLevel), 'top-right');
 
         /*if (process.env.NODE_ENV === 'development') {
             void import("maplibre-gl-inspect").then(MaplibreInspect => {
