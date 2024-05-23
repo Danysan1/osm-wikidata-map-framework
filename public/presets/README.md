@@ -1,32 +1,30 @@
 # Source presets
 
-## Structure
-
 Each file contains a preset in the form of a JSON object whose keys are documented in [SourcePreset.ts](../../src/model/SourcePreset.ts).
 
 ## Existing presets
 
-### architect
+### [architect](./architect.json)
 
 See https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework#Open_Architect_Map
 
-### artist
+### [artist](./artist.json)
 
 See https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework#Open_Artist_Map
 
-### base
+### [base](./base.json)
 
 All geographic features from OpenStreetMap and Wikidata, without linked entities
 
-### burial
+### [burial](./burial.json)
 
 See https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework#Open_Burial_Map
 
-### etymology
+### [etymology](./etymology.json)
 
 See https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework#Open_Etymology_Map
 
-### green_spaces
+### [green_spaces](./green_spaces.json)
 
 All green spaces from OpenStreetMap and Wikidata, without linked entities.
 
