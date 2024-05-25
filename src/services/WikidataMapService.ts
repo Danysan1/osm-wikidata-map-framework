@@ -125,7 +125,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             throw new Error(`Invalid Wikidata indirect back-end ID: "${backEndID}"`);
 
         const imageProperty = this.preset.wikidata_image_property,
-            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?picture. }` : '';
+            pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
         return sparqlQueryTemplate
             .replaceAll('${indirectProperty}', indirectProperty)
             .replaceAll('${pictureQuery}', pictureQuery);

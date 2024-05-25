@@ -3,7 +3,7 @@ SELECT DISTINCT
     ?etymology
     ?location
     ?commons
-    ?picture
+    (?_picture AS ?picture)
     ?osm_node
     ?osm_way
     ?osm_rel
