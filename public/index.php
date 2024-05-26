@@ -183,8 +183,12 @@ if ($conf->has("pmtiles_base_url"))
                         <td class="i18n_to_see_statistics">to see statistics about elements (only at high zoom)</td>
                     </tr>
                     <tr>
+                        <td>🗃️</td>
+                        <td class="i18n_to_choose_preset">to choose which source preset to use</td>
+                    </tr>
+                    <tr>
                         <td>⚙️</td>
-                        <td class="i18n_to_choose_source">to choose which data source to use</td>
+                        <td class="i18n_to_choose_backend">to choose which back-end to use</td>
                     </tr>
                     <tr>
                         <td><img src="img/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" loading="lazy" /></td>

@@ -21,7 +21,8 @@ function openInfoWindow(map: Map, showInstructions: boolean) {
         translateContent(introDomElement, ".i18n_click_anywhere", "info_box.click_anywhere", "Click anywhere on the map to explore");
         translateContent(introDomElement, ".i18n_use_controls", "info_box.use_controls", "Use the controls on the sides to see other data:");
         translateContent(introDomElement, ".i18n_to_see_statistics", "info_box.to_see_statistics", "to see statistics about elements (only at high zoom)");
-        translateContent(introDomElement, ".i18n_to_choose_source", "info_box.to_choose_source", "to choose which data source to use");
+        translateContent(introDomElement, ".i18n_to_choose_preset", "info_box.to_choose_preset", "to choose which source preset to use");
+        translateContent(introDomElement, ".i18n_to_choose_backend", "info_box.to_choose_backend", "to choose which back-end to use");
         translateContent(introDomElement, ".i18n_to_view_data_table", "info_box.to_view_data_table", "to view data in a table (only at high zoom)");
         translateContent(introDomElement, ".i18n_to_change_background", "info_box.to_change_background", "to change the background map style");
         translateContent(introDomElement, ".i18n_to_open_again", "info_box.to_open_again", "to open again this popup");
