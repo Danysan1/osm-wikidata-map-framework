@@ -17,7 +17,29 @@ prepareJSON($conf);
 
 $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
-$filterTags = $conf->has("osm_filter_tags") ? $conf->getArray("osm_filter_tags") : null;
+if ($conf->has("source_presets") && count($conf->getArray("source_presets")) == 1) {
+    $presetID = $conf->getArray("source_presets")[0];
+    $presetPath = __DIR__ . "./presets/$presetID.json";
+    if (!file_exists($presetPath))
+        throw new Exception("Preset file not found: $presetPath");
+
+    $preset = json_decode(file_get_contents($presetPath), true);
+    $filterTags = $preset["osm_filter_tags"];
+    $textKey = $preset["osm_text_key"];
+    $descriptionKey = $preset["osm_description_key"];
+    $wikidataKeys = empty($preset["osm_wikidata_keys"]) ? [] : $conf->transformWikidataKeys($preset["osm_wikidata_keys"]);
+    $wikidataProps = $preset["osm_wikidata_properties"];
+    $wikidataIndirectProp = $preset["wikidata_indirect_property"];
+    $noLinkedEntities = $presetID == "base";
+} else {
+    $filterTags = $conf->has("osm_filter_tags") ? $conf->getArray("osm_filter_tags") : null;
+    $textKey = $conf->has("osm_text_key") ? (string)$conf->get("osm_text_key") : null;
+    $descriptionKey = $conf->has("osm_description_key") ? (string)$conf->get("osm_description_key") : null;
+    $wikidataKeys = $conf->has('osm_wikidata_keys') ? $conf->getWikidataKeys() : [];
+    $wikidataProps = $conf->has("osm_wikidata_properties") ? $conf->getArray("osm_wikidata_properties") : [];
+    $wikidataIndirectProp = $conf->has("wikidata_indirect_property") ? (string)$conf->get("wikidata_indirect_property") : null;
+    $noLinkedEntities = !$conf->has("osm_wikidata_properties") && !$conf->has("wikidata_indirect_property") && !$conf->has("osm_wikidata_keys") && !$conf->has("osm_text_key");
+}
 
 $tags = [[
     "key" => "alt_name",
@@ -46,8 +68,7 @@ $tags = [[
     "description" => "The value of 'wikipedia' is used to show the link to the object's Wikipedia page alongside its details",
 ]];
 
-if ($conf->has('osm_text_key')) {
-    $textKey = (string)$conf->get('osm_text_key');
+if (!empty($textKey)) {
     $tags[] = [
         "key" => $textKey,
         "object_types" => ["node", "way", "relation", "area"],
@@ -56,8 +77,7 @@ if ($conf->has('osm_text_key')) {
     ];
 }
 
-if ($conf->has('osm_description_key')) {
-    $descriptionKey = (string)$conf->get('osm_description_key');
+if (!empty($descriptionKey)) {
     $tags[] = [
         "key" => $descriptionKey,
         "object_types" => ["node", "way", "relation", "area"],
@@ -95,32 +115,26 @@ if ($conf->getBool("propagate_data") && $conf->has("pmtiles_base_url")) {
     ];
 }
 
-if ($conf->has('osm_wikidata_keys')) {
-    foreach ($conf->getWikidataKeys() as $key) {
-        $tags[] = [
-            "key" => $key,
-            "object_types" => ["node", "way", "relation", "area"],
-            "doc_url" => $contributingURL,
-            "description" => "The Wikidata entities linked by '$key' are used to show details about the item",
-        ];
-    }
+foreach ($wikidataKeys as $key) {
+    $tags[] = [
+        "key" => $key,
+        "object_types" => ["node", "way", "relation", "area"],
+        "doc_url" => $contributingURL,
+        "description" => "The Wikidata entities linked by '$key' are used to show details about the item",
+    ];
 }
 
-if ($conf->has("osm_wikidata_properties")) {
-    $wikidataProps = $conf->getArray("osm_wikidata_properties");
-    if (!empty($wikidataProps)) {
-        $propsString = implode(", ", $wikidataProps);
-        $tags[] = [
-            "key" => "wikidata",
-            "object_types" => ["node", "way", "relation", "area"],
-            "doc_url" => $contributingURL,
-            "description" => "The value of 'wikidata' is used to gather details from relevant properties ($propsString) of the linked Wikidata entity",
-        ];
-    }
+if (!empty($wikidataProps)) {
+    $propsString = implode(", ", $wikidataProps);
+    $tags[] = [
+        "key" => "wikidata",
+        "object_types" => ["node", "way", "relation", "area"],
+        "doc_url" => $contributingURL,
+        "description" => "The value of 'wikidata' is used to gather details from relevant properties ($propsString) of the linked Wikidata entity",
+    ];
 }
 
-if ($conf->has("wikidata_indirect_property")) {
-    $wikidataProp = (string)$conf->get("wikidata_indirect_property");
+if (!empty($wikidataIndirectProp)) {
     $tags[] = [
         "key" => "wikidata",
         "object_types" => ["node", "way", "relation", "area"],
@@ -129,7 +143,7 @@ if ($conf->has("wikidata_indirect_property")) {
     ];
 }
 
-if (!$conf->has("osm_wikidata_properties") && !$conf->has("wikidata_indirect_property") && !$conf->has("osm_wikidata_keys") && !$conf->has("osm_text_key")) {
+if ($noLinkedEntities) {
     $tags[] = [
         "key" => "wikidata",
         "object_types" => ["node", "way", "relation", "area"],

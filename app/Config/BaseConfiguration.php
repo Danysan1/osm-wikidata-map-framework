@@ -83,13 +83,18 @@ abstract class BaseConfiguration implements Configuration
     /**
      * @return array<string> Configured OSM wikidata keys
      */
-    public function getWikidataKeys(?string $keyID = "all"): array
+    public function getWikidataKeys(string $keyID = "all"): array
     {
         $wikidataKeys = $this->getArray('osm_wikidata_keys');
 
         if (empty($wikidataKeys))
             throw new Exception("Empty osm_wikidata_keys");
 
+        return $this->transformWikidataKeys($wikidataKeys, $keyID);
+    }
+
+    public function transformWikidataKeys(array $keys, string $keyID = "all"): array
+    {
         $wikidataKeys = array_map(function (mixed $item): string {
             //! Do not remove these validity checks
             $ret = (string)$item;
@@ -98,7 +103,7 @@ abstract class BaseConfiguration implements Configuration
             if (!preg_match('/^[a-z_:]+$/', $ret))
                 throw new Exception("Bad OSM key found in osm_wikidata_keys: '$ret'");
             return $ret;
-        }, $wikidataKeys);
+        }, $keys);
 
         if ($keyID != "all") {
             $wikidataKeys = array_filter($wikidataKeys, function ($key) use ($keyID) {
