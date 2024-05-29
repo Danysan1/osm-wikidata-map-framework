@@ -63,99 +63,101 @@ function prepareHTML(Configuration $conf)
 	preparePage($conf);
 	header("Content-Type: text/html; charset=utf-8");
 
-	$reportUri = "";
-	if ($conf->has('sentry_js_uri')) {
-		$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
+	if ($conf->getBool("csp_enable")) {
+		$reportUri = "";
+		if ($conf->has('sentry_js_uri')) {
+			$reportUri = "report-uri " . (string)$conf->get("sentry_js_uri") . "; ";
+		}
+
+		$mapboxScript = 'https://unpkg.com/@mapbox/';
+		$mapboxConnect = 'https://unpkg.com/@mapbox/';
+		if ($conf->has("mapbox_token")) {
+			$mapboxScript .= ' https://api.mapbox.com';
+			$mapboxConnect .= ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
+		}
+
+		$maptilerConnect = '';
+		$maptilerImg = '';
+		if ($conf->has("maptiler_key")) {
+			$maptilerConnect = 'https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/';
+			$maptilerImg = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
+		}
+
+		$stadiaConnect = '';
+		if ($conf->getBool("enable_stadia_maps")) {
+			$stadiaConnect = 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/';
+		}
+
+		$jawgConnect = '';
+		if ($conf->has("jawg_token")) {
+			$jawgConnect = 'https://api.jawg.io/ https://tile.jawg.io/';
+		}
+
+		$googleAnalyticsImg = '';
+		$googleAnalyticsScript = '';
+		if ($conf->has('google_analytics_id')) {
+			$googleAnalyticsImg = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
+			$googleAnalyticsScript = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
+		}
+
+		$sentryConnect = '';
+		$sentryScript = '';
+		if ($conf->has('sentry_js_dsn')) {
+			$sentryConnect = 'https://*.ingest.sentry.io';
+			$sentryScript = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
+		}
+
+		$matomoConnect = '';
+		$matomoScript = '';
+		if ($conf->has('matomo_domain')) {
+			$matomoConnect = 'https://' . (string)$conf->get('matomo_domain');
+			$matomoScript = 'https://cdn.matomo.cloud/';
+		}
+
+		$wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
+		$wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
+
+		$overpassConnect = implode(" ", $conf->getArray('overpass_endpoints'));
+
+		$payPalForm = '';
+		$payPalImg = '';
+		if ($conf->has("paypal_id")) {
+			$payPalForm = "https://www.paypal.com/donate";
+			$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
+		}
+
+		$qleverConnect = '';
+		if ($conf->getBool('qlever_enable')) {
+			$qleverConnect = 'https://qlever.cs.uni-freiburg.de/api/';
+		}
+
+		$pmtilesConnect = '';
+		if ($conf->has('pmtiles_base_url')) {
+			$pmTilesBaseURL = (string)$conf->get('pmtiles_base_url');
+			if (!str_starts_with($pmTilesBaseURL, 'http://localhost'))
+				$pmtilesConnect = "$pmTilesBaseURL";
+		}
+
+		$osmAmericanaConnect = 'https://zelonewolf.github.io/openstreetmap-americana/ https://osm-americana.github.io/fontstack66/ https://tile.ourmap.us/data/ https://*.cloudfront.net/planet/';
+
+		header(
+			"Content-Security-Policy: " .
+				"child-src blob: ; " .
+				"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect $osmAmericanaConnect ; " .
+				"default-src 'self' ; " .
+				"font-src 'self' ; " .
+				"form-action 'self' $payPalForm ; " .
+				"frame-ancestors 'none' ; " .
+				"img-src 'self' data: blob: $wikimediaImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
+				"object-src 'none'; " .
+				"script-src 'self' $sentryScript $matomoScript $mapboxScript $googleAnalyticsScript ; " .
+				"style-src 'self' https://fonts.googleapis.com ; " .
+				"worker-src blob: ; " .
+				$reportUri .
+				//"require-trusted-types-for 'script'; ".
+				"upgrade-insecure-requests;"
+		);
 	}
-
-	$mapboxScript = 'https://unpkg.com/@mapbox/';
-	$mapboxConnect = 'https://unpkg.com/@mapbox/';
-	if ($conf->has("mapbox_token")) {
-		$mapboxScript .= ' https://api.mapbox.com';
-		$mapboxConnect .= ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com';
-	}
-
-	$maptilerConnect = '';
-	$maptilerImg = '';
-	if ($conf->has("maptiler_key")) {
-		$maptilerConnect = 'https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/';
-		$maptilerImg = 'https://cdn.maptiler.com/maptiler-geocoding-control/';
-	}
-
-	$stadiaConnect = '';
-	if ($conf->getBool("enable_stadia_maps")) {
-		$stadiaConnect = 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/';
-	}
-
-	$jawgConnect = '';
-	if ($conf->has("jawg_token")) {
-		$jawgConnect = 'https://api.jawg.io/ https://tile.jawg.io/';
-	}
-
-	$googleAnalyticsImg = '';
-	$googleAnalyticsScript = '';
-	if ($conf->has('google_analytics_id')) {
-		$googleAnalyticsImg = 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences https://www.google.it/ads/ga-audiences https://www.google.ru/ads/ga-audiences https://www.google.co.in/ads/ga-audiences https://www.google.no/ads/ga-audiences https://www.google.co.jp/ads/ga-audiences https://www.google.dk/ads/ga-audiences https://www.google.de/ads/ga-audiences https://www.google.be/ads/ga-audiences https://www.google.nl/ads/ga-audiences https://www.google.fr/ads/ga-audiences https://www.google.co.hk/ads/ga-audiences https://www.google.ch/ads/ga-audiences';
-		$googleAnalyticsScript = 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com';
-	}
-
-	$sentryConnect = '';
-	$sentryScript = '';
-	if ($conf->has('sentry_js_dsn')) {
-		$sentryConnect = 'https://*.ingest.sentry.io';
-		$sentryScript = 'https://js.sentry-cdn.com https://browser.sentry-cdn.com';
-	}
-
-	$matomoConnect = '';
-	$matomoScript = '';
-	if ($conf->has('matomo_domain')) {
-		$matomoConnect = 'https://' . (string)$conf->get('matomo_domain');
-		$matomoScript = 'https://cdn.matomo.cloud/';
-	}
-
-	$wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org";
-	$wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/";
-
-	$overpassConnect = implode(" ", $conf->getArray('overpass_endpoints'));
-
-	$payPalForm = '';
-	$payPalImg = '';
-	if ($conf->has("paypal_id")) {
-		$payPalForm = "https://www.paypal.com/donate";
-		$payPalImg = "https://www.paypal.com https://www.paypalobjects.com";
-	}
-
-	$qleverConnect = '';
-	if ($conf->getBool('qlever_enable')) {
-		$qleverConnect = 'https://qlever.cs.uni-freiburg.de/api/';
-	}
-
-	$pmtilesConnect = '';
-	if ($conf->has('pmtiles_base_url')) {
-		$pmTilesBaseURL = (string)$conf->get('pmtiles_base_url');
-		if (!str_starts_with($pmTilesBaseURL, 'http://localhost'))
-			$pmtilesConnect = "$pmTilesBaseURL";
-	}
-
-	$osmAmericanaConnect = 'https://zelonewolf.github.io/openstreetmap-americana/ https://osm-americana.github.io/fontstack66/ https://tile.ourmap.us/data/ https://*.cloudfront.net/planet/';
-
-	header(
-		"Content-Security-Policy: " .
-			"child-src blob: ; " .
-			"connect-src 'self' $wikimediaConnect $overpassConnect $sentryConnect $matomoConnect $mapboxConnect $maptilerConnect $stadiaConnect $jawgConnect $googleAnalyticsImg $qleverConnect $pmtilesConnect $osmAmericanaConnect ; " .
-			"default-src 'self' ; " .
-			"font-src 'self' ; " .
-			"form-action 'self' $payPalForm ; " .
-			"frame-ancestors 'none' ; " .
-			"img-src 'self' data: blob: $wikimediaImg $payPalImg $googleAnalyticsImg $maptilerImg ; " .
-			"object-src 'none'; " .
-			"script-src 'self' $sentryScript $matomoScript $mapboxScript $googleAnalyticsScript ; " .
-			"style-src 'self' https://fonts.googleapis.com ; " .
-			"worker-src blob: ; " .
-			$reportUri .
-			//"require-trusted-types-for 'script'; ".
-			"upgrade-insecure-requests;"
-	);
 }
 
 function prepareText(Configuration $conf): void

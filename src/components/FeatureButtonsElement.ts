@@ -1,5 +1,5 @@
 import type { Position } from "geojson";
-import { getConfig } from "../config";
+import { getConfig, getBoolConfig } from "../config";
 import { translateContent, translateAnchorTitle } from "../i18n";
 import { UrlFragment } from '../UrlFragment';
 import type { EtymologyFeature } from "../model/EtymologyResponse";
@@ -89,15 +89,17 @@ export class FeatureButtonsElement extends HTMLDivElement {
             element_wikipedia_button.classList.add("hiddenElement");
         }
 
-        const wikispore = properties?.wikispore,
-            element_wikispore_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikispore_button');
-        if (!element_wikispore_button) {
-            if (process.env.NODE_ENV === 'development') console.warn("Missing element_wikispore_button");
-        } else if (wikispore && wikispore !== 'null') {
-            element_wikispore_button.href = wikispore.startsWith("http") ? wikispore : `https://wikispore.wmflabs.org/wiki/${wikispore}`;
-            element_wikispore_button.classList.remove("hiddenElement");
-        } else {
-            element_wikispore_button.classList.add("hiddenElement");
+        if (getBoolConfig("wikispore_enable")) {
+            const wikispore = properties?.wikispore,
+                element_wikispore_button = detail_container.querySelector<HTMLAnchorElement>('.element_wikispore_button');
+            if (!element_wikispore_button) {
+                if (process.env.NODE_ENV === 'development') console.warn("Missing element_wikispore_button");
+            } else if (wikispore && wikispore !== 'null') {
+                element_wikispore_button.href = wikispore.startsWith("http") ? wikispore : `https://wikispore.wmflabs.org/wiki/${wikispore}`;
+                element_wikispore_button.classList.remove("hiddenElement");
+            } else {
+                element_wikispore_button.classList.add("hiddenElement");
+            }
         }
 
         const element_commons_button = detail_container.querySelector<HTMLAnchorElement>('.element_commons_button'),

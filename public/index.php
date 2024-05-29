@@ -159,6 +159,7 @@ if ($conf->has("pmtiles_base_url"))
     <?= $conf->getMetaTag("details_bbox_max_area", true); ?>
     <?= $conf->getMetaTag("max_relation_members", true); ?>
     <?= $conf->getMetaTag("fetch_parts_of_linked_entities", true); ?>
+    <?= $conf->getMetaTag("wikispore_enable", true); ?>
 </head>
 
 <body>
