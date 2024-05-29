@@ -19,7 +19,7 @@ $homeURL = (string)$conf->get("home_url");
 $contributingURL = (string)$conf->get("contributing_url");
 if ($conf->has("source_presets") && count($conf->getArray("source_presets")) == 1) {
     $presetID = $conf->getArray("source_presets")[0];
-    $presetPath = __DIR__ . "./presets/$presetID.json";
+    $presetPath = __DIR__ . "/presets/$presetID.json";
     if (!file_exists($presetPath))
         throw new Exception("Preset file not found: $presetPath");
 
