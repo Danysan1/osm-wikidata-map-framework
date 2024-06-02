@@ -1,0 +1,71 @@
+{
+  "name": "osm-wikidata-map-framework-front-end",
+  "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
+  "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues"
+  },
+  "author": {
+    "name": "Daniele Santini",
+    "url": "https://www.dsantini.it"
+  },
+  "funding": {
+    "type": "paypal",
+    "url": "https://paypal.me/dsantiniit"
+  },
+  "license": "GPL-3.0",
+  "keywords": [
+    "OpenStreetMap",
+    "Wikidata",
+    "map",
+    "mappa",
+    "karte",
+    "open data",
+    "linked data",
+    "structured data"
+  ],
+  "version": "4.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@maptiler/geocoding-control": "^1.2.4",
+    "@stadiamaps/maplibre-search-box": "^1.0.1",
+    "chart.js": "^4.4.3",
+    "dexie": "^4.0.7",
+    "i18next-chained-backend": "^4.6.2",
+    "i18next-http-backend": "^2.5.2",
+    "i18next-resources-to-backend": "^1.2.1",
+    "maplibre-gl": "^4.3.2",
+    "maplibregl-mapbox-request-transformer": "^0.0.2",
+    "next": "14.2.3",
+    "next-i18next": "^15.3.0",
+    "osmtogeojson": "^3.0.0-beta.5",
+    "overpass-ts": "^4.3.8",
+    "papaparse": "^5.4.1",
+    "pmtiles": "^3.0.6",
+    "react": "^18",
+    "react-dom": "^18",
+    "wellknown": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

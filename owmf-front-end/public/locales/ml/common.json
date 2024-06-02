@@ -1,0 +1,101 @@
+{
+    "title": "OSM-Wikidata Map Framework",
+    "description": "ഓപ്പൺസ്ട്രീറ്റ്മാപ്പിൽ നിന്നും വിക്കിഡാറ്റയിൽ നിന്നും ഭൂമിശാസ്ത്രപരമായ സവിശേഷതകളുമായി ബന്ധപ്പെട്ട എൻ്റിറ്റികളെക്കുറിച്ചുള്ള വിശദാംശങ്ങൾ സംയോജിപ്പിച്ച് പ്രദർശിപ്പിക്കുന്ന ഇൻ്ററാക്ടീവ് മാപ്പുകൾ സൃഷ്ടിക്കുന്നതിനുള്ള ചട്ടക്കൂട്",
+    "info_box": {
+        "open_popup": "വിവര പോപ്പ്അപ്പ് തുറക്കുക",
+        "click_anywhere": "പര്യവേക്ഷണം ചെയ്യാൻ മാപ്പിൽ എവിടെയും ക്ലിക്ക് ചെയ്യുക.",
+        "use_controls": "മറ്റ് ഡാറ്റ കാണുന്നതിന് വശങ്ങളിലെ നിയന്ത്രണങ്ങൾ ഉപയോഗിക്കുക:",
+        "to_see_statistics": "മൂലകങ്ങളെക്കുറിച്ചുള്ള സ്ഥിതിവിവരക്കണക്കുകൾ കാണാൻ (ഉയർന്ന സൂമിൽ മാത്രം)",
+        "to_choose_preset": "to choose which source preset to use",
+        "to_choose_backend": "to choose which back-end to use",
+        "to_overpass_query": "to view the source OverpassQL query (only with Overpass sources)",
+        "to_wikidata_query": "to view the source SPARQL query (only with Wikidata sources)",
+        "to_view_data_table": "ഒരു പട്ടികയിൽ ഡാറ്റ കാണുന്നതിന് (ഉയർന്ന സൂമിൽ മാത്രം)",
+        "to_change_background": "പശ്ചാത്തല മാപ്പ് ശൈലി മാറ്റാൻ",
+        "to_open_again": "ഈ പോപ്പ്അപ്പ് വീണ്ടും തുറക്കാൻ",
+        "contribute": "മാപ്പിലേക്ക് സംഭാവന ചെയ്യുക",
+        "download_dataset": "ഡാറ്റാസെറ്റായി ഡൗൺലോഡ് ചെയ്യുക",
+        "last_db_update": "അവസാന ഡാറ്റാബേസ് അപ്ഡേറ്റ്:",
+        "based_on": "ഇതിനെ അടിസ്ഥാനമാക്കി:",
+        "report_issue": "ഒരു പ്രശ്നം റിപ്പോർട്ട് ചെയ്യുക",
+        "report_issue_title": "ഈ ആപ്ലിക്കേഷൻ്റെ ഒരു പ്രശ്നം അല്ലെങ്കിൽ ഒരു ബഗ് റിപ്പോർട്ട് ചെയ്യുക",
+        "about_me": "എന്നെക്കുറിച്ച്",
+        "about_me_title": "Personal website of the author of OSM-Wikidata Map Framework"
+    },
+    "snackbar": {
+        "zoom_in": "Please zoom in to view data",
+        "fetch_error": "An error occurred while fetching the data",
+        "map_error": "A map error occurred",
+        "data_loaded": "Data loaded",
+        "no_data_in_this_area": "No data in this area",
+        "data_loaded_instructions": "Data loaded, click on any highlighted element to show its details"
+    },
+    "preset": {
+        "choose_preset": "Choose preset",
+        "architect": "Building architects",
+        "artist": "Artwork authors",
+        "base": "OSM + Wikidata",
+        "burial": "Burial places",
+        "etymology": "Etymologies (origin of names)",
+        "green_spaces": "Green spaces"
+    },
+    "source": {
+        "choose_source": "Choose data source",
+        "db_all": "All sources from DB",
+        "db_osm_wikidata_reverse": "Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}",
+        "propagated": "Propagated",
+        "all_osm_keys": "All OSM keys",
+        "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
+        "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
+        "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        "choose_scheme": "Choose color scheme and statistics",
+        "blue": "Blue",
+        "feature_source": "By element source",
+        "gender": "By gender",
+        "type": "By type",
+        "country": "By country",
+        "occupation": "By occupation",
+        "start_century": "By start/birth century",
+        "end_century": "By end/death century",
+        "link_count": "By Wikilink count",
+        "feature_picture": "By picture availability",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "osm_text_only": "OSM (text only)",
+        "uniform": "Uniform colors",
+        "feature_statistics": "Statistics on map elements",
+        "etymology_statistics": "Linked entity statistics",
+        "black": "Black",
+        "red": "Red",
+        "orange": "Orange",
+        "etymology_source": "By linked entity source"
+    },
+    "feature_details": {
+        "source": "Source:",
+        "loading_first_n_items": "Loading only first {{partial}} items out of {{total}}...",
+        "location": "Location",
+        "picture_via_commons": "Picture from Wikimedia Commons",
+        "loading": "Loading entities...",
+        "report_problem": "Report a problem in this element"
+    },
+    "etymology_details": {
+        "propagation": "propagation",
+        "propagation_title": "Description of the propagation mechanism"
+    },
+    "data_table": {
+        "view_data_table": "View the data in a table",
+        "names": "Names",
+        "actions": "Actions",
+        "linked_entities": "Linked entities"
+    },
+    "translate": "Translate",
+    "change_language": "Change language",
+    "choose_basemap": "Choose background style",
+    "choose_projection": "Choose map projection",
+    "overpass_turbo_query": "Source OverpassQL query on Overpass Turbo",
+    "wdqs_query": "Source SPARQL query on Wikidata Query Service",
+    "qlever_query": "Source SPARQL query on QLever UI",
+    "clear_cache": "Clear cache"
+}

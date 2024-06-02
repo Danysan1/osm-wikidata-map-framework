@@ -1,6 +1,6 @@
 import type { RequestTransformFunction } from 'maplibre-gl';
 import { isMapboxURL, transformMapboxUrl } from 'maplibregl-mapbox-request-transformer';
-import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from './monitoring';
+import { logErrorMessage, initSentry, initGoogleAnalytics, initMatomo } from '../owmf-front-end/src/monitoring';
 import { BackgroundStyle, maptilerStyle, mapboxStyle, stadiaStyle, jawgStyle } from './model/backgroundStyle';
 import { getBoolConfig, getConfig } from './config';
 import { setPageLocale } from './i18n';

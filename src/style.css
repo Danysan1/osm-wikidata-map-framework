@@ -469,15 +469,6 @@ div.pictures>div.pic-container {
   display: inline-flex;
 }
 
-p.pic-attr {
-  overflow: hidden;
-  max-height: 2em;
-  transition: height 0.5s, width 0.5s, opacity 0.5s;
-  margin-top: 0;
-  font-size: x-small;
-  text-align: center;
-}
-
 .maplibregl-ctrl-group>button,
 .maplibregl-ctrl-group>a,
 .mapboxgl-ctrl-group>button,
@@ -547,8 +538,4 @@ canvas.chart.hiddenElement {
 .dropdown-ctrl-title {
   font-weight: bold;
   margin: 0 0.5em;
-}
-
-.pic-attr img {
-  display: none;
 }

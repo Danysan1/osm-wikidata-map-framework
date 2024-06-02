@@ -1,0 +1,12 @@
+p.pic-attr {
+    overflow: hidden;
+    max-height: 2em;
+    transition: height 0.5s, width 0.5s, opacity 0.5s;
+    margin-top: 0;
+    font-size: x-small;
+    text-align: center;
+}
+
+.pic-attr img {
+    display: none;
+}

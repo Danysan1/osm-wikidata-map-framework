@@ -261,51 +261,6 @@ if ($conf->has("pmtiles_base_url"))
         </div>
     </template>
 
-    <template id="feature_buttons_template">
-        <div class="button_row">
-            <a title="Wikipedia" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button hiddenElement">
-                <img class="button_img" src="img/Wikipedia-logo-v2.svg" alt="Wikipedia logo">
-                <span class="button_text"> Wikipedia</span>
-            </a>
-            <a title="Wikispore" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikispore_button hiddenElement">
-                <img class="button_img" src="img/Wikispore_logo_without_text.svg" alt="Wikispore logo">
-                <span class="button_text"> Wikispore</span>
-            </a>
-            <a title="Wikimedia Commons" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button hiddenElement">
-                <img class="button_img" src="img/Commons-logo.svg" alt="Wikimedia Commons logo">
-                <span class="button_text"> Commons</span>
-            </a>
-            <a title="Wikidata" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button hiddenElement">
-                <img class="button_img" src="img/Wikidata.svg" alt="Wikidata logo">
-                <span class="button_text"> Wikidata</span>
-            </a>
-            <a title="OpenStreetMap" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button hiddenElement">
-                <img class="button_img" src="img/Openstreetmap_logo.svg" alt="OpenStreetMap logo">
-                <span class="button_text"> OpenStreetMap</span>
-            </a>
-            <a title="Official website" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_website_button hiddenElement">
-                <span class="button_img">🌐</span>
-                <span class="button_text"> Website</span>
-            </a>
-            <a title="OSM ↔ Wikidata matcher" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_matcher_button hiddenElement">
-                <img class="button_img" src="img/osm-wd-matcher.png" alt="OSM ↔ Wikidata matcher logo">
-                <span class="button_text"> OSM ↔ Wikidata matcher</span>
-            </a>
-            <a title="MapComplete" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_mapcomplete_button">
-                <img class="button_img" src="img/mapcomplete.svg" alt="MapComplete logo">
-                <span class="button_text"> Mapcomplete</span>
-            </a>
-            <a title="iD editor" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_id_button">
-                <img class="button_img" src="img/OpenStreetMap-Editor_iD_Logo.svg" alt="iD editor logo">
-                <span class="button_text"> iD editor</span>
-            </a>
-            <a title="Location" role="button" class="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button  title_i18n_location" target="_self">
-                <span class="button_img">🎯</span>
-                <span class="button_text i18n_location"> Location</span>
-            </a>
-        </div>
-    </template>
-
     <template id="detail_template">
         <div class="detail_container">
             <h3 class="element_name"></h3>

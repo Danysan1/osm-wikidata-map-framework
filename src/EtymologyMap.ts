@@ -3,10 +3,10 @@ import 'maplibre-gl/dist/maplibre-gl.css';
 import "@maptiler/geocoding-control/style.css";
 // import "maplibre-gl-inspect/dist/maplibre-gl-inspect.css";
 
-import { logErrorMessage } from './monitoring';
+import { logErrorMessage } from '../owmf-front-end/src/monitoring';
 import { UrlFragment } from './UrlFragment';
 import { InfoControl, openInfoWindow } from './controls/InfoControl';
-import { showLoadingSpinner, showSnackbar } from './snackbar';
+import { showLoadingSpinner, showSnackbar } from '../owmf-front-end/src/snackbar';
 import { getBoolConfig, getConfig, getFloatConfig } from './config';
 import type { GeoJSON, BBox } from 'geojson';
 import { getLanguage, loadTranslator } from './i18n';
@@ -18,27 +18,6 @@ import type { BackgroundStyle } from './model/backgroundStyle';
 import type { BackEndControl as BackEndControlType, EtymologyColorControl as EtymologyColorControlType, MapCompleteControl as MapCompleteControlType } from './controls';
 import { fetchSourcePreset } from './services/PresetService';
 import { SourcePreset } from './model/SourcePreset';
-
-const PMTILES_PREFIX = "pmtiles",
-    DETAILS_SOURCE = "detail_source",
-    POINT_LAYER = '_layer_point',
-    POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
-    LINE_LAYER = '_layer_lineString_line',
-    LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
-    POLYGON_BORDER_LAYER = '_layer_polygon_border',
-    POLYGON_FILL_LAYER = '_layer_polygon_fill',
-    ELEMENTS_SOURCE = "elements_source",
-    CLUSTER_LAYER = '_layer_cluster',
-    COUNT_LAYER = '_layer_count',
-    POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
-    POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
-    COUNTRY_MAX_ZOOM = 5,
-    COUNTRY_ADMIN_LEVEL = 2,
-    STATE_MAX_ZOOM = 7,
-    STATE_ADMIN_LEVEL = 4,
-    PROVINCE_MAX_ZOOM = 9,
-    PROVINCE_ADMIN_LEVEL = 6,
-    fragment = new UrlFragment();
 
 export class EtymologyMap extends Map {
     private backgroundStyles: BackgroundStyle[];
@@ -114,98 +93,6 @@ export class EtymologyMap extends Map {
         }).catch(
             err => console.error("Error loading mapbox-gl-rtl-text", err)
         );
-    }
-
-    private async updateSourcePreset() {
-        const sourcePresetID = fragment.sourcePreset;
-        if (sourcePresetID === this.lastSourcePresetID)
-            return;
-
-        if (process.env.NODE_ENV === 'development') console.debug("updateSourcePreset", { last: this.lastSourcePresetID, sourcePresetID });
-        this.lastSourcePresetID = sourcePresetID;
-        try {
-            // Update the map services to use the new preset
-            const [
-                sourcePreset, { CombinedCachedMapService }
-            ] = await Promise.all([
-                fetchSourcePreset(sourcePresetID), import("./services/CombinedCachedMapService")
-            ]);
-            this.service = new CombinedCachedMapService(sourcePreset);
-
-            this.updatePresetDependentControls(sourcePreset).catch(console.error);
-        } catch (e) {
-            this.lastSourcePresetID = undefined;
-            console.error("Failed updating source preset", e);
-            const t = await loadTranslator();
-            showSnackbar(t("snackbar.map_error"));
-        }
-    }
-
-    private async updatePresetDependentControls(preset: SourcePreset) {
-        const [
-            t,
-            { BackEndControl, EtymologyColorControl, MapCompleteControl }
-        ] = await Promise.all([
-            loadTranslator(),
-            import("./controls")
-        ]);
-
-        // Update the back-end control to reflect the available back-ends for the new preset
-        const newBackEndControl = new BackEndControl(
-            preset, fragment.backEnd, this.updateDataSource.bind(this), t
-        );
-        if (this.backEndControl)
-            this.removeControl(this.backEndControl);
-        this.backEndControl = newBackEndControl;
-        this.addControl(newBackEndControl, 'top-left');
-
-        const thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
-            onColorSchemeChange = (colorSchemeID: ColorSchemeID) => {
-                if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set colorScheme", { colorSchemeID });
-                if (fragment.colorScheme !== colorSchemeID) {
-                    fragment.colorScheme = colorSchemeID;
-                    this.updateDataSource();
-                }
-            },
-            setLayerColor = (color: string | ExpressionSpecification) => {
-                if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
-                [
-                    [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
-                    [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
-                    [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-extrusion-color'],
-                    [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
-                ].forEach(([layerID, property]) => {
-                    if (this?.getLayer(layerID)) {
-                        this.setPaintProperty(layerID, property, color);
-                    } else {
-                        console.warn("Layer does not exist, can't set property", { layerID, property, color });
-                    }
-                });
-            },
-            newColorControl = new EtymologyColorControl(
-                preset,
-                fragment.colorScheme,
-                onColorSchemeChange,
-                setLayerColor,
-                t,
-                DETAILS_SOURCE,
-                [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER]
-            );
-        if (this.colorControl)
-            this.removeControl(this.colorControl);
-        this.colorControl = newColorControl;
-        this.addControl(newColorControl, 'top-left');
-
-        if (preset.mapcomplete_theme) {
-            const newMapCompleteControl = new MapCompleteControl(preset.mapcomplete_theme, thresholdZoomLevel);
-            if (this.mapCompleteControl)
-                this.removeControl(this.mapCompleteControl);
-            this.mapCompleteControl = newMapCompleteControl;
-            this.addControl(newMapCompleteControl, 'top-right');
-        }
-
-        // Update data for the new preset through the newly created map services
-        this.updateDataSource();
     }
 
     /**
@@ -775,89 +662,6 @@ export class EtymologyMap extends Map {
         }
     }
 
-    private async addSecondaryControls() {
-        if (process.env.NODE_ENV === 'development') console.debug("Initializing translated controls");
-
-        const [
-            t,
-            { BackgroundStyleControl, DataTableControl, iDEditorControl, LanguageControl, LinkControl, OsmWikidataMatcherControl, SourcePresetControl }
-        ] = await Promise.all([
-            loadTranslator(),
-            import("./controls")
-        ]);
-
-        this.addControl(new LanguageControl(), 'top-right');
-        this.addControl(new BackgroundStyleControl(this.backgroundStyles), 'top-right');
-
-        const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
-            thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
-        if (process.env.NODE_ENV === 'development') console.debug("Initializing source & color controls", { minZoomLevel, thresholdZoomLevel });
-
-        try {
-            const templateControl = new SourcePresetControl(fragment.sourcePreset, this.updateDataSource.bind(this), t);
-            this.addControl(templateControl, 'top-left');
-        } catch (e) { console.error(e); }
-
-        /* Set up controls in the top RIGHT corner */
-        this.addControl(new LinkControl(
-            "img/Overpass-turbo.svg",
-            t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
-            [ELEMENTS_SOURCE, DETAILS_SOURCE],
-            "overpass_query",
-            "https://overpass-turbo.eu/?Q=",
-            minZoomLevel
-        ), 'top-right');
-
-        this.addControl(new LinkControl(
-            "img/Wikidata_Query_Service_Favicon.svg",
-            t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
-            [ELEMENTS_SOURCE, DETAILS_SOURCE],
-            "wdqs_query",
-            "https://query.wikidata.org/#",
-            minZoomLevel
-        ), 'top-right');
-
-        if (getBoolConfig("qlever_enable")) {
-            this.addControl(new LinkControl(
-                "img/qlever.ico",
-                t("qlever_query", "Source SPARQL query on QLever UI"),
-                [ELEMENTS_SOURCE, DETAILS_SOURCE],
-                "qlever_wd_query",
-                "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
-                minZoomLevel
-            ), 'top-right');
-
-            this.addControl(new LinkControl(
-                "img/qlever.ico",
-                t("qlever_query", "Source SPARQL query on QLever UI"),
-                [ELEMENTS_SOURCE, DETAILS_SOURCE],
-                "qlever_osm_query",
-                "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
-                minZoomLevel
-            ), 'top-right');
-        }
-
-        const enablePMTiles = !!getConfig("pmtiles_base_url");
-        this.addControl(new DataTableControl(
-            DETAILS_SOURCE,
-            [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_FILL_LAYER],
-            enablePMTiles ? 0 : thresholdZoomLevel
-        ), 'top-right');
-        this.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
-        this.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
-
-        /*if (process.env.NODE_ENV === 'development') {
-            void import("maplibre-gl-inspect").then(MaplibreInspect => {
-                this.addControl(new MaplibreInspect({
-                    popup: new Popup({
-                        closeButton: false,
-                        closeOnClick: false
-                    })
-                }), 'bottom-right');
-            });
-        }*/
-    }
-
     /**
      * Completes low-level common details of one of the high zoom Wikidata layers
      * - Handles clicks/taps on layer features
@@ -1241,35 +1045,6 @@ export class EtymologyMap extends Map {
         // this.addSecondaryControls(); // It can be done earlier; done here would improve speed on devices with slow networks but would not be executed if initial source loading fails
 
         void this.setupGeocoder();
-    }
-
-    private addBaseControls() {
-        // https://docs.mapbox.com/mapbox-gl-js/api/markers/#navigationcontrol
-        this.addControl(new NavigationControl({
-            visualizePitch: true
-        }), 'top-right');
-
-        // https://docs.mapbox.com/mapbox-gl-js/example/locate-user/
-        // Add geolocate control to the map.
-        this.addControl(new GeolocateControl({
-            positionOptions: {
-                enableHighAccuracy: true
-            },
-            // When active the map will receive updates to the device's location as it changes.
-            trackUserLocation: false,
-            // Draw an arrow next to the location dot to indicate which direction the device is heading.
-            //showUserHeading: true
-        }), 'top-right');
-
-        // https://docs.mapbox.com/mapbox-gl-js/api/markers/#scalecontrol
-        this.addControl(new ScaleControl({
-            maxWidth: 80,
-            unit: 'metric'
-        }), 'bottom-left');
-
-        this.addControl(new FullscreenControl(), 'top-right');
-
-        this.addControl(new InfoControl(), 'top-left');
     }
 
     /**
