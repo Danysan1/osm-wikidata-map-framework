@@ -1,10 +1,10 @@
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 
-import { getBoolConfig } from "../../src/config";
-import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from "../../src/i18n";
-import type { Etymology } from '../../src/model/Etymology';
-import type { EtymologyDetails } from '../../src/model/EtymologyDetails';
-import type { EtymologyFeatureProperties } from '../../src/model/EtymologyFeatureProperties';
+import { getBoolConfig } from "../../config";
+import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from "../../i18n";
+import type { Etymology } from '../../model/Etymology';
+import type { EtymologyDetails } from '../../model/EtymologyDetails';
+import type { EtymologyFeatureProperties } from '../../model/EtymologyFeatureProperties';
 import { logErrorMessage } from "../monitoring";
 import { WikidataDescriptionService } from '../services/WikidataDescriptionService';
 import { WikidataDetailsService } from '../services/WikidataDetailsService';

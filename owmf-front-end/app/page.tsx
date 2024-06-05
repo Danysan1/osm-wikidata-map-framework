@@ -1,4 +1,4 @@
-import OwmfMap from "./components/OwmfMap/OwmfMap";
+import OwmfMap from "@/src/components/OwmfMap/OwmfMap";
 import styles from "./page.module.css";
 
 export default function Home() {

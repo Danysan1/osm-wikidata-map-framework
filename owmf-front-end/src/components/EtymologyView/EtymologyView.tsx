@@ -297,7 +297,7 @@ export class EtymologyElement extends HTMLDivElement {
             console.warn("Missing .pictures");
         } else if (this.etymology.pictures) {
             this.etymology.pictures.slice(0, 5).forEach(
-                img => ety_pictures.appendChild(imageToDomElement(img))
+                img => ety_pictures.appendChild(imageToDomElement(img)) // TODO <CommonsImage name={img} />
             );
         } else {
             ety_pictures.style.display = 'none';
