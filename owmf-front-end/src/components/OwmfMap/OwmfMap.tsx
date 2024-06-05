@@ -12,6 +12,7 @@ import { OsmWikidataMatcherControl } from '@/src/controls/OsmWikidataMatcherCont
 import { SourcePresetControl } from '@/src/controls/SourcePresetControl';
 import { iDEditorControl } from '@/src/controls/iDEditorControl';
 import { SourcePreset } from '@/src/model/SourcePreset';
+import { BackgroundStyle, jawgStyle, mapboxStyle, maptilerStyle, stadiaStyle } from '@/src/model/backgroundStyle';
 import { CombinedCachedMapService } from '@/src/services/CombinedCachedMapService';
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from '@/src/services/PresetService';
@@ -21,7 +22,6 @@ import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, Navi
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useTranslation } from 'next-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { BackgroundStyle, jawgStyle, mapboxStyle, maptilerStyle, stadiaStyle } from '../../../model/backgroundStyle';
 import styles from "./OwmfMap.module.css";
 
 const PMTILES_PREFIX = "pmtiles",

@@ -21,7 +21,7 @@ export class WikidataDetailsService extends WikidataService {
             if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache hit, using cached response", { language, wikidataIDs, out });
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache miss, fetching data", { language, wikidataIDs });
-            const res = await this.etymologyIDsQuery(language, [...wikidataIDs], detailsQuery);
+            const res = await this.etymologyIDsQuery(language, Array.from(wikidataIDs), detailsQuery);
 
             if (!res?.results?.bindings?.length) {
                 console.warn("fetchEtymologyDetails: no results");

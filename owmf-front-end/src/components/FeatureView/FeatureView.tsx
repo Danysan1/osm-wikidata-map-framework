@@ -1,20 +1,17 @@
 import type { MapGeoJSONFeature } from 'maplibre-gl';
 
-import { getBoolConfig } from "../../config";
+import { parseBoolConfig } from "@/src/config";
+import { logErrorMessage } from "@/src/monitoring";
+import { WikidataDescriptionService } from '@/src/services/WikidataDescriptionService';
+import { WikidataDetailsService } from '@/src/services/WikidataDetailsService';
+import { WikidataLabelService } from '@/src/services/WikidataLabelService';
+import { WikidataStatementService } from '@/src/services/WikidataStatementService';
+import { getEtymologies } from '@/src/services/etymologyUtils';
+import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from "../../i18n";
 import type { Etymology } from '../../model/Etymology';
 import type { EtymologyDetails } from '../../model/EtymologyDetails';
 import type { EtymologyFeatureProperties } from '../../model/EtymologyFeatureProperties';
-import { logErrorMessage } from "../monitoring";
-import { WikidataDescriptionService } from '../services/WikidataDescriptionService';
-import { WikidataDetailsService } from '../services/WikidataDetailsService';
-import { WikidataLabelService } from '../services/WikidataLabelService';
-import { WikidataStatementService } from '../services/WikidataStatementService';
-import { getEtymologies } from '../services/etymologyUtils';
-import { showLoadingSpinner, showSnackbar } from "../snackbar";
-import { imageToDomElement } from "./CommonsImageElement";
-import { etymologyToDomElement } from "./EtymologyElement";
-import { featureToButtonsDomElement } from './FeatureButtonsElement';
 
 export class FeatureElement extends HTMLDivElement {
     private _currentZoom = 12.5;
@@ -215,7 +212,7 @@ export class FeatureElement extends HTMLDivElement {
         placeholder?.classList.add("hiddenElement");
 
         const parts_containers = etymologies_container.querySelectorAll<HTMLElement>(".etymology_parts_container")
-        if (!getBoolConfig("fetch_parts_of_linked_entities") || parts_containers.length == 0) {
+        if (!parseBoolConfig(process.env.owmf_fetch_parts_of_linked_entities) || parts_containers.length == 0) {
             if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: skipping fetching parts of linked entities", { filledEtymologies });
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("fetchAndShowEtymologies: fetching parts of linked entities", { filledEtymologies });
@@ -355,7 +352,7 @@ export class FeatureElement extends HTMLDivElement {
         if (etymologyIDs.size == 0)
             return etymologies;
 
-        let sortedIDs = [...etymologyIDs].sort((a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", "")));
+        let sortedIDs = Array.from(etymologyIDs).sort((a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", "")));
         if (etymologyIDs.size > maxItems) {
             // Too many items, limiting to the first N most famous ones
             sortedIDs = sortedIDs.slice(0, maxItems);
