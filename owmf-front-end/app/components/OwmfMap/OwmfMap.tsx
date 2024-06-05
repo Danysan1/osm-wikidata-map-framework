@@ -1,4 +1,5 @@
 "use client";
+import { parseBoolConfig } from '@/src/config';
 import { BackEndControl } from '@/src/controls/BackEndControl';
 import { BackgroundStyleControl } from '@/src/controls/BackgroundStyleControl';
 import { DataTableControl } from '@/src/controls/DataTableControl';
@@ -20,7 +21,6 @@ import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, Navi
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useTranslation } from 'next-i18next';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { getBoolConfig, getConfig } from '../../../src/config';
 import { BackgroundStyle, jawgStyle, mapboxStyle, maptilerStyle, stadiaStyle } from '../../../src/model/backgroundStyle';
 import styles from "./OwmfMap.module.css";
 
@@ -97,7 +97,7 @@ export default function OwmfMap() {
 
     initBaseControls(map.current);
 
-    const minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9");
+    const minZoomLevel = parseInt(process.env.owmf_min_zoom_level ?? "9");
     if (process.env.NODE_ENV === 'development') console.debug("Initializing source & color controls", { minZoomLevel });
 
     try {
@@ -126,7 +126,7 @@ export default function OwmfMap() {
       minZoomLevel
     ), 'top-right');
 
-    if (getBoolConfig("qlever_enable")) {
+    if (parseBoolConfig(process.env.owmf_qlever_enable)) {
       map.current.addControl(new LinkControl(
         "img/qlever.ico",
         t("qlever_query", "Source SPARQL query on QLever UI"),
@@ -181,7 +181,7 @@ export default function OwmfMap() {
     );
     setBackEndControl(newBackEndControl);
 
-    const thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
+    const thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
       setLayerColor = (color: string | ExpressionSpecification) => {
         if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
         [
@@ -222,10 +222,10 @@ export default function OwmfMap() {
 }
 
 function getBacgkroundStyles() {
-  const maptiler_key = getConfig("maptiler_key"),
-    enable_stadia_maps = getBoolConfig("enable_stadia_maps"),
-    jawg_token = getConfig("jawg_token"),
-    mapbox_token = getConfig("mapbox_token"),
+  const maptiler_key = process.env.owmf_maptiler_key,
+    enable_stadia_maps = parseBoolConfig(process.env.owmf_enable_stadia_maps),
+    jawg_token = process.env.owmf_jawg_token,
+    mapbox_token = process.env.owmf_mapbox_token,
     backgroundStyles: BackgroundStyle[] = [];
 
   if (mapbox_token) {
@@ -326,7 +326,7 @@ function initBaseControls(map: Map) {
   ), 'top-right');
 
 
-  const thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14");
+  const thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14");
   map.addControl(new iDEditorControl(thresholdZoomLevel), 'top-right');
   map.addControl(new OsmWikidataMatcherControl(thresholdZoomLevel), 'top-right');
 

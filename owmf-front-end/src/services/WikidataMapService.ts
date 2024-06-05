@@ -1,20 +1,19 @@
-import { WikidataService } from "./WikidataService";
-import indirectMapQuery from "./query/map/indirect.sparql";
-import reverseMapQuery from "./query/map/reverse.sparql";
-import qualifierMapQuery from "./query/map/qualifier.sparql";
-import directMapQuery from "./query/map/direct.sparql";
-import baseMapQuery from "./query/map/base.sparql";
-import { getConfig } from "../config";
+import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
-import type { Point, BBox } from "geojson";
+import type { MapDatabase } from "../db/MapDatabase";
+import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
+import type { Etymology } from "../model/Etymology";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
+import { SourcePreset } from "../model/SourcePreset";
 import { logErrorMessage } from "../monitoring";
 import type { MapService } from "./MapService";
-import type { Etymology } from "../model/Etymology";
-import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
+import { WikidataService } from "./WikidataService";
 import { getEtymologies } from "./etymologyUtils";
-import type { MapDatabase } from "../db/MapDatabase";
-import { SourcePreset } from "../model/SourcePreset";
+import baseMapQuery from "./query/map/base.sparql";
+import directMapQuery from "./query/map/direct.sparql";
+import indirectMapQuery from "./query/map/indirect.sparql";
+import qualifierMapQuery from "./query/map/qualifier.sparql";
+import reverseMapQuery from "./query/map/reverse.sparql";
 
 export class WikidataMapService extends WikidataService implements MapService {
     private readonly preset: SourcePreset;
@@ -48,8 +47,8 @@ export class WikidataMapService extends WikidataService implements MapService {
         else
             throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
 
-        const maxElements = getConfig("max_map_elements"),
-            wikidataCountry = getConfig("wikidata_country"),
+        const maxElements = process.env.owmf_max_map_elements,
+            wikidataCountry = process.env.owmf_wikidata_country,
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
             filterClasses = this.preset.wikidata_filter_classes?.map(c => `wd:${c}`).join(" "),
             classFilterQuery = filterClasses ? `VALUES ?class { ${filterClasses} } ?item wdt:P31/wdt:P279? ?class.` : '',

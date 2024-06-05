@@ -1,4 +1,4 @@
-import { getBoolConfig } from "@/src/config";
+import { parseBoolConfig } from "@/src/config";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { getLanguage, translateAnchorTitle, translateContent } from "../../src/i18n";
@@ -153,7 +153,7 @@ export class EtymologyElement extends HTMLDivElement {
             wikipedia_button.classList.add("hiddenElement");
         }
 
-        if (getBoolConfig("wikispore_enable")) {
+        if (parseBoolConfig("wikispore_enable")) {
             const wikispore_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikispore_button');
             if (!wikispore_button) {
                 console.warn("Missing .wikispore_button");

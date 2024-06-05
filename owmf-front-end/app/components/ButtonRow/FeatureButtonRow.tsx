@@ -1,4 +1,3 @@
-import { getConfig } from "@/src/config";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { Position } from "geojson";
 import { ButtonRow } from "./ButtonRow";
@@ -45,7 +44,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({ feature, des
     if (osm_full_id && !feature.properties?.wikidata && lat !== undefined && lon !== undefined) osmWikidataMatcher = `https://map.osm.wikidata.link/map/18/${lat}/${lon}`;
     if (feature.properties?.wikidata && !osm_full_id) osmWikidataMatcher = `https://map.osm.wikidata.link/item/${feature.properties.wikidata}`;
 
-    const mapcomplete_theme = getConfig("mapcomplete_theme"),
+    const mapcomplete_theme = process.env.owmf_mapcomplete_theme,
         mapcomplete = osm_full_id && mapcomplete_theme && lat !== undefined && lon !== undefined && !feature.properties?.boundary ? `https://mapcomplete.org/${mapcomplete_theme}?z=18&lat=${lat}&lon=${lon}#${osm_full_id}` : undefined,
         iD = feature.properties?.osm_type && feature.properties?.osm_id && !feature.properties?.boundary ? `https://www.openstreetmap.org/edit?editor=id&${feature.properties.osm_type}=${feature.properties.osm_id}` : undefined;
 

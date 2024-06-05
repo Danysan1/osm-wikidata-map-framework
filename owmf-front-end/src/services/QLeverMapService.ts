@@ -1,28 +1,27 @@
-import { WikidataService } from "./WikidataService";
-import osm_wd_query from "./query/qlever/osm_wd.sparql";
-import osm_all_query from "./query/qlever/osm_all.sparql";
-import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
-import osm_wd_direct_query from "./query/qlever/osm_wd_direct.sparql";
-import osm_wd_reverse_query from "./query/qlever/osm_wd_reverse.sparql";
-import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
-import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
-import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
-import wd_direct_query from "./query/qlever/wd_direct.sparql";
-import wd_base_query from "./query/qlever/wd_base.sparql";
-import { getConfig } from "../config";
+import type { BBox, Point } from "geojson";
 import { parse as parseWKT } from "wellknown";
-import type { Point, BBox } from "geojson";
-import type { Etymology } from "../model/Etymology";
-import { type EtymologyResponse, type EtymologyFeature, osmKeyToKeyID } from "../model/EtymologyResponse";
-import { logErrorMessage } from "../monitoring";
-import type { MapService } from "./MapService";
-import { Configuration } from "../generated/sparql/runtime";
+import type { MapDatabase } from "../db/MapDatabase";
 import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
-import { getEtymologies } from "./etymologyUtils";
-import type { MapDatabase } from "../db/MapDatabase";
+import { Configuration } from "../generated/sparql/runtime";
+import type { Etymology } from "../model/Etymology";
+import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
 import { SourcePreset } from "../model/SourcePreset";
+import { logErrorMessage } from "../monitoring";
+import type { MapService } from "./MapService";
+import { WikidataService } from "./WikidataService";
+import { getEtymologies } from "./etymologyUtils";
+import osm_all_query from "./query/qlever/osm_all.sparql";
+import osm_wd_query from "./query/qlever/osm_wd.sparql";
+import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
+import osm_wd_direct_query from "./query/qlever/osm_wd_direct.sparql";
+import osm_wd_reverse_query from "./query/qlever/osm_wd_reverse.sparql";
+import wd_base_query from "./query/qlever/wd_base.sparql";
+import wd_direct_query from "./query/qlever/wd_direct.sparql";
+import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
+import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
+import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -235,9 +234,9 @@ export class QLeverMapService implements MapService {
                 .replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "))
         }
 
-        const wikidataCountry = getConfig("wikidata_country"),
+        const wikidataCountry = process.env.owmf_wikidata_country,
             wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-            osmCountry = getConfig("osm_country"),
+            osmCountry = process.env.owmf_osm_country,
             osmCountryQuery = osmCountry ? `osmrel:${osmCountry} ogc:sfContains ?osm.` : '';
 
         return sparqlQuery

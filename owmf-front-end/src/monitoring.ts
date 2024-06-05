@@ -2,17 +2,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { getConfig } from "./config";
+import { SeverityLevel, captureException, captureMessage, init } from "@sentry/browser";
 import type { Extras } from '@sentry/types';
-import { SeverityLevel, init, captureException, captureMessage } from "@sentry/browser";
 
 /**
  * @see https://docs.sentry.io/platforms/javascript/
  * @see https://docs.sentry.io/platforms/javascript/session-replay/
  */
 function initSentry() {
-    const dsn = getConfig("sentry_js_dsn"),
-        environment = getConfig("sentry_js_env");
+    const dsn = process.env.owmf_sentry_js_dsn,
+        environment = process.env.owmf_sentry_js_env;
     if (dsn && environment) {
         if (process.env.NODE_ENV === 'development') console.debug("Initializing Sentry", { dsn, environment });
         init({ dsn, environment });
@@ -42,7 +41,7 @@ function logErrorMessage(message: string, level: SeverityLevel = "error", extra:
  * @see https://support.google.com/analytics/answer/9304153#zippy=%2Cadd-your-tag-using-google-tag-manager%2Cadd-the-google-tag-directly-to-your-web-pages
  */
 function initGoogleAnalytics() {
-    const google_analytics_id = getConfig("google_analytics_id"),
+    const google_analytics_id = process.env.owmf_google_analytics_id,
         // eslint-disable-next-line prefer-rest-params
         gtag: Gtag.Gtag = function () { (window as any).dataLayer.push(arguments); }
 
@@ -58,8 +57,8 @@ function initGoogleAnalytics() {
  * @see https://developer.matomo.org/guides/tracking-javascript-guide
  */
 function initMatomo() {
-    const matomo_domain = getConfig("matomo_domain"),
-        matomo_id = getConfig("matomo_id");
+    const matomo_domain = process.env.owmf_matomo_domain,
+        matomo_id = process.env.owmf_matomo_id;
 
     if (matomo_domain && matomo_id) {
         if (process.env.NODE_ENV === 'development') console.debug("Initializing Matomo", { matomo_domain, matomo_id });

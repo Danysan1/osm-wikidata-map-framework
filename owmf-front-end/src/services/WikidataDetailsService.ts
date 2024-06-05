@@ -1,17 +1,16 @@
-import detailsQuery from "./query/etymology-details.sparql";
+import { DetailsDatabase } from "../db/DetailsDatabase";
+import { getLanguage } from "../i18n";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
 import { logErrorMessage } from "../monitoring";
-import { DetailsDatabase } from "../db/DetailsDatabase";
 import { WikidataService } from "./WikidataService";
-import { getLanguage } from "../i18n";
-import { getConfig } from "../config";
+import detailsQuery from "./query/etymology-details.sparql";
 
 export class WikidataDetailsService extends WikidataService {
     private readonly db: DetailsDatabase;
 
     public constructor() {
         super();
-        const maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24");
+        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
         this.db = new DetailsDatabase(maxHours);
     }
 

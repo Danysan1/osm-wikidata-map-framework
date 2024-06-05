@@ -1,34 +1,34 @@
 import { BBox } from "geojson";
-import { getBoolConfig, getConfig, getFloatConfig, getStringArrayConfig } from "../config";
+import { parseBoolConfig, parseStringArrayConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
+import { EtymologyResponse } from "../model/EtymologyResponse";
+import { SourcePreset } from "../model/SourcePreset";
 import { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
 import { OverpassWikidataMapService } from "./OverpassWikidataMapService";
 import { QLeverMapService } from "./QLeverMapService";
 import { WikidataMapService } from "./WikidataMapService";
-import { EtymologyResponse } from "../model/EtymologyResponse";
-import { SourcePreset } from "../model/SourcePreset";
 
 export class CombinedCachedMapService implements MapService {
     private readonly services: MapService[];
 
     constructor(sourcePreset: SourcePreset) {
         this.services = [];
-        const qlever_enable = getBoolConfig("qlever_enable"),
-            maxHours = parseInt(getConfig("cache_timeout_hours") ?? "24"),
+        const qlever_enable = parseBoolConfig(process.env.owmf_qlever_enable),
+            maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24"),
             osm_text_key = sourcePreset?.osm_text_key,
             osm_description_key = sourcePreset?.osm_description_key,
-            rawMaxElements = getConfig("max_map_elements"),
+            rawMaxElements = process.env.owmf_max_map_elements,
             maxElements = rawMaxElements ? parseInt(rawMaxElements) : undefined,
-            rawMaxRelationMembers = getConfig("max_relation_members"),
+            rawMaxRelationMembers = process.env.owmf_max_relation_members,
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
             osmWikidataKeys = sourcePreset?.osm_wikidata_keys,
             osmFilterTags = sourcePreset?.osm_filter_tags,
-            overpassEndpoints = getStringArrayConfig("overpass_endpoints"),
-            westLon = getFloatConfig("min_lon"),
-            southLat = getFloatConfig("min_lat"),
-            eastLon = getFloatConfig("max_lon"),
-            northLat = getFloatConfig("max_lat"),
+            overpassEndpoints = parseStringArrayConfig(process.env.owmf_overpass_endpoints),
+            westLon = process.env.owmf_min_lon ? parseFloat(process.env.owmf_min_lon) : undefined,
+            southLat = process.env.owmf_min_lat ? parseFloat(process.env.owmf_min_lat) : undefined,
+            eastLon = process.env.owmf_max_lon ? parseFloat(process.env.owmf_max_lon) : undefined,
+            northLat = process.env.owmf_max_lat ? parseFloat(process.env.owmf_max_lat) : undefined,
             bbox: BBox | undefined = westLon && southLat && eastLon && northLat ? [westLon, southLat, eastLon, northLat] : undefined;
         if (process.env.NODE_ENV === 'development') console.debug("CombinedCachedMapService: initializing map services", {
             qlever_enable, maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, overpassEndpoints

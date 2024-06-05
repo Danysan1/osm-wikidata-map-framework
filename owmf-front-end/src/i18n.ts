@@ -4,7 +4,6 @@ import i18next from 'i18next';
 import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
 import resourcesToBackend from 'i18next-resources-to-backend';
-import { getConfig, getJsonConfig } from "./config";
 
 export function getLocale(): string | undefined {
     return document.documentElement.lang || // lang parameter of the html tag, set during initialization and used as single source of truth thereafter
@@ -14,7 +13,7 @@ export function getLocale(): string | undefined {
 }
 
 export function getLanguage(): string {
-    return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || getConfig("default_language") || 'en'
+    return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || process.env.owmf_default_language || 'en'
 }
 
 export function setPageLocale() {
@@ -67,7 +66,7 @@ export function loadTranslator() {
 async function loadI18n() {
     const defaultNamespace = "app",
         language = getLanguage(),
-        rawI18nOverride = getJsonConfig("i18n_override"),
+        rawI18nOverride = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined,
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [HttpBackend],
         backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];

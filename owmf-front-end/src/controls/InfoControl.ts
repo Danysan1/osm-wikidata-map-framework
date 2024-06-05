@@ -1,6 +1,5 @@
 import { IControl, Map, Popup } from 'maplibre-gl';
-import { loadTranslator, translateContent, translateAnchorTitle, getLanguage } from '../i18n';
-import { getConfig } from '../config';
+import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from '../i18n';
 
 /**
  * Opens the information intro window
@@ -62,7 +61,7 @@ function openInfoWindow(map: Map, showInstructions: boolean) {
 
 function setupDatasetButton(popup: Popup) {
     const datasetButton = popup.getElement().querySelector<HTMLAnchorElement>("a.dataset_button"),
-        pmtiles_base_url = getConfig("pmtiles_base_url");
+        pmtiles_base_url = process.env.owmf_pmtiles_base_url;
     if (!datasetButton) {
         if (process.env.NODE_ENV === 'development') console.warn("Missing dataset button");
     } else if (pmtiles_base_url) {
@@ -99,7 +98,7 @@ async function getLastDBUpdateDate(popup: Popup) {
     if (!container || !placeholder)
         return;
 
-    const pmtilesBaseURL = getConfig("pmtiles_base_url");
+    const pmtilesBaseURL = process.env.owmf_pmtiles_base_url;
     if (!pmtilesBaseURL)
         return;
 
@@ -154,4 +153,4 @@ class InfoControl implements IControl {
     }
 }
 
-export { openInfoWindow, InfoControl };
+export { InfoControl, openInfoWindow };

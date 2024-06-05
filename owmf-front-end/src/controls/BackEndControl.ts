@@ -1,6 +1,6 @@
 import type { TFunction } from "i18next";
 import type { Map } from 'maplibre-gl';
-import { getBoolConfig, getConfig } from '../config';
+import { parseBoolConfig } from '../config';
 import { DetailsDatabase } from '../db/DetailsDatabase';
 import { MapDatabase } from '../db/MapDatabase';
 import { StatsDatabase } from '../db/StatsDatabase';
@@ -29,9 +29,9 @@ export class BackEndControl extends DropdownControl {
         startBackEndID: string,
         onBackEndChange: (backEndID: string) => void, t: TFunction
     ) {
-        const propagationEnabled = getBoolConfig("propagate_data"),
-            qleverEnabled = getBoolConfig("qlever_enable"),
-            pmtilesURL = getConfig("pmtiles_base_url"),
+        const propagationEnabled = parseBoolConfig("propagate_data"),
+            qleverEnabled = parseBoolConfig("qlever_enable"),
+            pmtilesURL = process.env.owmf_pmtiles_base_url,
             dropdownItems: DropdownItem[] = [],
             selectBackEnd = (backEndID: string) => {
                 if (process.env.NODE_ENV === 'development') console.debug("Selecting back-end ", backEndID);

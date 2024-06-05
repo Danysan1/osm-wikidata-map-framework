@@ -1,23 +1,23 @@
 
-import { getBoolConfig, getConfig, getStringArrayConfig } from '../config';
+import { parseBoolConfig, parseStringArrayConfig } from '../config';
 import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 
 export async function fetchSourcePreset(sourcePresetID: string) {
     let preset: SourcePreset;
     if (sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
         preset = {
-            default_backend: getConfig("default_backend") ?? undefined,
-            fetch_parts_of_linked_entities: getBoolConfig("fetch_parts_of_linked_entities") ?? false,
+            default_backend: process.env.owmf_default_backend,
+            fetch_parts_of_linked_entities: parseBoolConfig(process.env.owmf_fetch_parts_of_linked_entities),
             id: DEFAULT_SOURCE_PRESET_ID,
-            mapcomplete_theme: getConfig("mapcomplete_theme") ?? undefined,
-            osm_filter_tags: getStringArrayConfig("osm_filter_tags") ?? undefined,
-            osm_text_key: getConfig("osm_text_key") ?? undefined,
-            osm_description_key: getConfig("osm_description_key") ?? undefined,
-            osm_wikidata_keys: getStringArrayConfig("osm_wikidata_keys") ?? undefined,
-            osm_wikidata_properties: getStringArrayConfig("osm_wikidata_properties") ?? undefined,
-            relation_role_whitelist: getStringArrayConfig("relation_role_whitelist") ?? undefined,
-            wikidata_indirect_property: getConfig("wikidata_indirect_property") ?? undefined,
-            wikidata_image_property: getConfig("wikidata_image_property") ?? undefined,
+            mapcomplete_theme: process.env.owmf_mapcomplete_theme,
+            osm_filter_tags: parseStringArrayConfig(process.env.owmf_osm_filter_tags),
+            osm_text_key: process.env.owmf_osm_text_key,
+            osm_description_key: process.env.owmf_osm_description_key,
+            osm_wikidata_keys: parseStringArrayConfig(process.env.owmf_osm_wikidata_keys),
+            osm_wikidata_properties: parseStringArrayConfig(process.env.owmf_osm_wikidata_properties),
+            relation_role_whitelist: parseStringArrayConfig(process.env.owmf_relation_role_whitelist),
+            wikidata_indirect_property: process.env.owmf_wikidata_indirect_property,
+            wikidata_image_property: process.env.owmf_wikidata_image_property,
         }
     } else {
         const presetResponse = await fetch(`presets/${sourcePresetID}.json`);
