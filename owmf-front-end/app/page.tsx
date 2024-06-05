@@ -1,5 +1,5 @@
-import styles from "./page.module.css";
 import OwmfMap from "./components/OwmfMap/OwmfMap";
+import styles from "./page.module.css";
 
 export default function Home() {
   return (

@@ -27,7 +27,7 @@ export function getJsonConfig(key: string): unknown {
     //     out = configElement?.textContent ? JSON.parse(configElement.textContent) as unknown : null;
     const raw = getConfig(key),
         out = raw ? JSON.parse(raw) as unknown : null;
-    console.debug("getJsonConfig", { key, raw, out, env:process.env });
+    console.debug("getJsonConfig", { key, raw, out, env: { ...process.env } });
     return out;
 }
 

@@ -38,6 +38,7 @@
   },
   "dependencies": {
     "@maptiler/geocoding-control": "^1.2.4",
+    "@sentry/nextjs": "^8.7.0",
     "@stadiamaps/maplibre-search-box": "^1.0.1",
     "chart.js": "^4.4.3",
     "dexie": "^4.0.7",
