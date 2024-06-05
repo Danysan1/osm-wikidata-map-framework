@@ -114,52 +114,7 @@ if ($conf->has("pmtiles_base_url"))
         echo $preload;
     } ?>
 
-    <?= $conf->getJsonScriptTag("source_presets", true); ?>
-    <?= $conf->getMetaTag("qlever_enable", true); ?>
-    <?= $conf->getMetaTag("pmtiles_base_url", true); ?>
-    <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
-    <?= $conf->getMetaTag("osm_text_key", true); ?>
-    <?= $conf->getMetaTag("osm_description_key", true); ?>
-    <?= $conf->getJsonScriptTag("osm_wikidata_keys", true); ?>
-    <?= $conf->getJsonScriptTag("osm_wikidata_properties", true); ?>
-    <?= $conf->getMetaTag("propagate_data", true); ?>
-    <?= $conf->getMetaTag("wikidata_indirect_property", true); ?>
-    <?= $conf->getMetaTag("wikidata_image_property", true); ?>
-    <?= $conf->getMetaTag("wikidata_country", true); ?>
-    <?= $conf->getMetaTag("osm_country", true); ?>
-    <?= $conf->getMetaTag("min_lon", true); ?>
-    <?= $conf->getMetaTag("max_lon", true); ?>
-    <?= $conf->getMetaTag("min_lat", true); ?>
-    <?= $conf->getMetaTag("max_lat", true); ?>
-    <?= $conf->getMetaTag("mapbox_token", true); ?>
-    <?= $conf->getMetaTag("maptiler_key", true); ?>
-    <?= $conf->getMetaTag("enable_stadia_maps", true); ?>
-    <?= $conf->getMetaTag("jawg_token", true); ?>
-    <?= $conf->getMetaTag("default_center_lat"); ?>
-    <?= $conf->getMetaTag("default_center_lon"); ?>
-    <?= $conf->getMetaTag("default_zoom"); ?>
-    <?= $conf->getMetaTag("threshold_zoom_level"); ?>
-    <?= $conf->getMetaTag("min_zoom_level"); ?>
-    <?= $conf->getMetaTag("default_background_style"); ?>
-    <?= $conf->getMetaTag("default_color_scheme"); ?>
-    <?= $conf->getMetaTag("default_backend", true); ?>
-    <?= $conf->getMetaTag("google_analytics_id", true); ?>
-    <?= $conf->getMetaTag("matomo_domain", true); ?>
-    <?= $conf->getMetaTag("matomo_id", true); ?>
-    <?= $conf->getMetaTag("sentry_js_dsn", true); ?>
-    <?= $conf->getMetaTag("sentry_js_env", true); ?>
-    <?= $conf->getJsonScriptTag("overpass_endpoints", true); ?>
-    <?= $conf->getMetaTag("wikidata_endpoint", true); ?>
-    <?= $conf->getMetaTag("mapcomplete_theme", true); ?>
-    <?= $conf->getJsonScriptTag("i18n_override", true); ?>
-    <?= $conf->getMetaTag("default_language"); ?>
-    <?= $conf->getMetaTag("max_map_elements", true); ?>
-    <?= $conf->getMetaTag("cache_timeout_hours", true); ?>
-    <?= $conf->getMetaTag("elements_bbox_max_area", true); ?>
-    <?= $conf->getMetaTag("details_bbox_max_area", true); ?>
-    <?= $conf->getMetaTag("max_relation_members", true); ?>
-    <?= $conf->getMetaTag("fetch_parts_of_linked_entities", true); ?>
-    <?= $conf->getMetaTag("wikispore_enable", true); ?>
+
 </head>
 
 <body>
