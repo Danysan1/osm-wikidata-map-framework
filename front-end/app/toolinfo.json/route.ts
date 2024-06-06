@@ -12,14 +12,14 @@ export function GET() {
     i18nStrings = i18nOverride?.[DEFAULT_LANGUAGE]?.[MAIN_NAMESPACE];
 
   if (typeof i18nStrings !== "object")
-    throw new Error(`Missing i18n configuration for the default language (${DEFAULT_LANGUAGE})`);
+    return NextResponse.json({ error: "Missing i18n configuration for the default language", DEFAULT_LANGUAGE, MAIN_NAMESPACE }, { status: 500 });
 
   const title = i18nStrings.title as unknown,
     description = i18nStrings.description as unknown;
   if (typeof title !== "string")
-    throw new Error("Missing title in i18n configuration");
+    return NextResponse.json({ error: "Missing title in i18n configuration for the default language" }, { status: 500 });
   if (typeof description !== "string")
-    throw new Error("Missing description in i18n configuration");
+    return NextResponse.json({ error: "Missing description in i18n configuration for the default language" }, { status: 500 });
 
   return NextResponse.json({
     "name": title.toLowerCase().replaceAll(/\s+/, '_'),
