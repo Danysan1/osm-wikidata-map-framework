@@ -22,7 +22,7 @@ export function GET() {
     return NextResponse.json({ error: "Missing description in i18n configuration for the default language" }, { status: 500 });
 
   return NextResponse.json({
-    "name": title.toLowerCase().replaceAll(/\s+/, '_'),
+    "name": title.toLowerCase().replaceAll(/\s+/g, '_'),
     "title": title,
     "description": description,
     "url": process.env.owmf_home_url,
