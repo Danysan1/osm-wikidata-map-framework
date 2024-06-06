@@ -3,5 +3,5 @@ git:
   - filter_type: dynamic
     file_format: KEYVALUEJSON
     source_language: en
-    source_files_expression: owmf-front-end/public/locales/en/common.json
-    translation_files_expression: 'owmf-front-end/public/locales/<lang>/common.json'
+    source_files_expression: front-end/public/locales/en/common.json
+    translation_files_expression: 'front-end/public/locales/<lang>/common.json'

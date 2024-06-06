@@ -6,7 +6,7 @@
     "generators": {
       "commons": {
         "inputSpec": "./commons.yaml",
-        "output": "../owmf-front-end/src/generated/commons",
+        "output": "../front-end/src/generated/commons",
         "generatorName": "typescript-fetch",
         "additionalProperties": {
           "modelPropertyNaming": "original"
@@ -14,7 +14,7 @@
       },
       "sparql": {
         "glob": "./sparql.yaml",
-        "output": "../owmf-front-end/src/generated/sparql",
+        "output": "../front-end/src/generated/sparql",
         "generatorName": "typescript-fetch",
         "additionalProperties": {
           "modelPropertyNaming": "original"
@@ -22,7 +22,7 @@
       },
       "wikibase": {
         "glob": "./wikibase.json",
-        "output": "../owmf-front-end/src/generated/wikibase",
+        "output": "../front-end/src/generated/wikibase",
         "generatorName": "typescript-fetch",
         "additionalProperties": {
           "modelPropertyNaming": "original"
