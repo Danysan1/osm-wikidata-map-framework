@@ -5,6 +5,10 @@ import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
 import resourcesToBackend from 'i18next-resources-to-backend';
 
+export const DEFAULT_LANGUAGE = "en",
+    MAIN_NAMESPACE = "app",
+    DEFAULT_NAMESPACE = "common";
+
 export function getLocale(): string | undefined {
     return document.documentElement.lang || // lang parameter of the html tag, set during initialization and used as single source of truth thereafter
         new URLSearchParams(document.location.search).get("lang") || // lang parameter of the URL, set by the user and used during initialization
@@ -13,7 +17,7 @@ export function getLocale(): string | undefined {
 }
 
 export function getLanguage(): string {
-    return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || process.env.owmf_default_language || 'en'
+    return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || process.env.owmf_default_language || DEFAULT_LANGUAGE;
 }
 
 export function setPageLocale() {
@@ -77,7 +81,7 @@ async function loadI18n() {
     }
     return await i18next.use(ChainedBackend).init({
         debug: process.env.NODE_ENV === 'development',
-        fallbackLng: 'en',
+        fallbackLng: DEFAULT_LANGUAGE,
         lng: language, // Currently uses only language, not locale
         backend: { backends, backendOptions },
         ns: ["common", defaultNamespace],
