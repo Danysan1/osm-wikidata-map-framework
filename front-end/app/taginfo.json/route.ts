@@ -1,9 +1,9 @@
-import { DEFAULT_LANGUAGE, MAIN_NAMESPACE } from "@/src/common";
 import { parseStringArrayConfig } from "@/src/config";
+import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
+import { loadServerI18n } from "@/src/i18n/server";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { getCustomSourcePreset } from "@/src/services/PresetService";
 import { existsSync, readFileSync } from "fs";
-import type { Resource } from "i18next";
 import { NextRequest, NextResponse } from "next/server";
 import { join } from "path";
 
@@ -20,20 +20,8 @@ interface TagInfoTag {
  * @see https://wiki.openstreetmap.org/wiki/Taginfo/Projects
  * @see https://wiki.openstreetmap.org/wiki/Taginfo
  */
-export function GET(request: NextRequest) {
-  const rawI18nOverride = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined,
-    i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
-    i18nStrings = i18nOverride?.[DEFAULT_LANGUAGE]?.[MAIN_NAMESPACE];
-
-  if (typeof i18nStrings !== "object")
-    return NextResponse.json({ error: "Missing i18n configuration for the default language", DEFAULT_LANGUAGE, MAIN_NAMESPACE }, { status: 500 });
-
-  const title = i18nStrings.title as unknown,
-    description = i18nStrings.description as unknown;
-  if (typeof title !== "string")
-    return NextResponse.json({ error: "Missing title in i18n configuration for the default language" }, { status: 500 });
-  if (typeof description !== "string")
-    return NextResponse.json({ error: "Missing description in i18n configuration for the default language" }, { status: 500 });
+export async function GET(request: NextRequest) {
+  const { t } = await loadServerI18n(DEFAULT_LANGUAGE);
 
   const contributingURL = process.env.owmf_contributing_url,
     sourcePresets = parseStringArrayConfig(process.env.owmf_source_presets);
@@ -167,8 +155,8 @@ export function GET(request: NextRequest) {
     "data_format": 1,
     "data_url": request.url,
     "project": {
-      "name": title,
-      "description": description,
+      "name": t("title"),
+      "description": t("description"),
       "project_url": process.env.owmf_home_url,
       "doc_url": contributingURL,
       "icon_url": process.env.owmf_home_url + "/favicon.ico",
