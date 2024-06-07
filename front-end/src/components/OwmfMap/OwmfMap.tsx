@@ -18,7 +18,7 @@ import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from '@/src/services/PresetService';
 import { showSnackbar } from '@/src/snackbar';
 import { useUrlFragment } from '@/src/useUrlFragment';
-import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, NavigationControl, ScaleControl } from 'maplibre-gl';
+import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, NavigationControl, ScaleControl, setRTLTextPlugin } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useTranslation } from 'next-i18next';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -127,6 +127,16 @@ export default function OwmfMap() {
         minZoomLevel
       ), 'top-right');
     }
+
+    // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
+    setRTLTextPlugin(
+        'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
+        true // Lazy load the plugin
+    ).then(() => {
+        if (process.env.NODE_ENV === 'development') console.debug("mapbox-gl-rtl-text loaded");
+    }).catch(
+        err => console.error("Error loading mapbox-gl-rtl-text", err)
+    );
   }, [backgroundStyle, lon, lat, zoom, backgroundStyles, setBackgroundStyleID, t, sourcePresetID, setSourcePresetID]);
 
   useEffect(() => {

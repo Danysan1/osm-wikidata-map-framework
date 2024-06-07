@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from "@sentry/nextjs";
 
 const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_default_center_lat",
@@ -49,6 +49,61 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_wikispore_enable",
 ];
 
+function generateCspHeaders() {
+  if (!process.env.owmf_csp_enable) return undefined;
+  
+  const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}`: "",
+    mapboxScript = process.env.owmf_mapbox_token ? " https://api.mapbox.com" : "",
+    mapboxConnect = 'https://unpkg.com/@mapbox/' + process.env.owmf_mapbox_token ? 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com' : "",
+    maptilerConnect = process.env.owmf_maptiler_key ? "https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/" : "",
+    maptilerImg = process.env.owmf_maptiler_key ? "https://cdn.maptiler.com/maptiler-geocoding-control/" : "",
+    stadiaConnect = process.env.owmf_enable_stadia_maps && process.env.owmf_enable_stadia_maps !== "false" ? 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/' : "",
+    jawgConnect = process.env.owmf_jawg_token ? 'https://api.jawg.io/ https://tile.jawg.io/' : "",
+    googleAnalyticsImg = process.env.owmf_google_analytics_id ? 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences' : "",
+    googleAnalyticsScript = process.env.owmf_google_analytics_id ? 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com' : "",
+    sentryConnect = process.env.owmf_sentry_js_dsn ? 'https://*.ingest.sentry.io' : "",
+    sentryScript = process.env.owmf_sentry_js_dsn ? 'https://js.sentry-cdn.com https://browser.sentry-cdn.com' : "",
+    matomoConnect = process.env.owmf_matomo_domain ? 'https://'+process.env.owmf_matomo_domain : "",
+    matomoScript = process.env.owmf_matomo_domain ? 'https://cdn.matomo.cloud/' : "",
+    wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org",
+    wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/",
+    overpassEndpoints = JSON.parse(process.env.owmf_overpass_endpoints);
+  if(!overpassEndpoints || !Array.isArray(overpassEndpoints))
+    throw new Error("Bad overpass_endpoint configuration");
+  const overpassConnect = overpassEndpoints.join(" "),
+    payPalForm = process.env.owmf_paypal_id ? 'https://www.paypal.com/donate' : "",
+    payPalImg = process.env.owmf_paypal_id ? 'https://www.paypal.com https://www.paypalobjects.com' : "",
+    qleverConnect = process.env.owmf_qlever_enable ? 'https://qlever.cs.uni-freiburg.de/api/' : "",
+    pmtilesConnect = process.env.owmf_pmtiles_base_url?.startsWith("http://localhost") ? process.env.owmf_pmtiles_base_url : "",
+    osmAmericanaConnect = 'https://zelonewolf.github.io/openstreetmap-americana/ https://osm-americana.github.io/fontstack66/ https://tile.ourmap.us/data/ https://*.cloudfront.net/planet/',
+    cspHeader = `
+    child-src blob: ;
+    connect-src 'self' ${wikimediaConnect} ${overpassConnect} ${sentryConnect} ${matomoConnect} ${mapboxConnect} ${maptilerConnect} ${stadiaConnect} ${jawgConnect} ${googleAnalyticsImg} ${qleverConnect} ${pmtilesConnect} ${osmAmericanaConnect} ;
+    default-src 'self' ;
+    font-src 'self' ;
+    form-action 'self' ${payPalForm} ;
+    frame-ancestors 'none' ;
+    img-src 'self' data: blob: ${wikimediaImg} ${payPalImg} ${googleAnalyticsImg} ${maptilerImg} ;
+    object-src 'none';
+    script-src 'self' ${sentryScript} ${matomoScript} ${mapboxScript} ${googleAnalyticsScript} ;
+    style-src 'self' https://fonts.googleapis.com ;
+    worker-src blob: ;
+    ${reportUri}
+    upgrade-insecure-requests;`;
+
+  return [
+    {
+      source: "/(.*)",
+      headers: [
+        {
+          key: "Content-Security-Policy",
+          value: cspHeader.replace(/\n/g, ""),
+        },
+      ],
+    },
+  ];
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   //output: "export",
@@ -59,12 +114,13 @@ const nextConfig = {
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.s(par)?ql$/,
-      type: 'asset/source',
+      type: "asset/source",
       exclude: /node_modules/,
     });
 
-    return config
+    return config;
   },
+  headers: generateCspHeaders(),
 };
 
 export default withSentryConfig(nextConfig, {
