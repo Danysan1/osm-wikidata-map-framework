@@ -1,5 +1,5 @@
 import { IControl, Map, Popup } from 'maplibre-gl';
-import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from '../i18n';
+import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from '../i18n/client';
 
 /**
  * Opens the information intro window
@@ -139,7 +139,7 @@ class InfoControl implements IControl {
         ctrlBtn.onclick = () => openInfoWindow(map, true);
         container.appendChild(ctrlBtn);
 
-        loadTranslator().then(t => {
+        loadTranslator().then(({t}) => {
             const title = t("info_box.open_popup", "Open the info popup");
             ctrlBtn.title = title;
             ctrlBtn.ariaLabel = title;

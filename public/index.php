@@ -76,47 +76,6 @@ if ($conf->has("pmtiles_base_url"))
 ?>
 <!DOCTYPE html>
 <html>
-
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=10">
-
-    <title><?= $title; ?></title>
-    <meta name="description" content="<?= $description; ?>" />
-
-    <?php if ($conf->has("google_analytics_id")) {
-        $analyticsId = (string)$conf->get("google_analytics_id"); ?>
-        <script defer src="<?= "https://www.googletagmanager.com/gtag/js?id=$analyticsId"; ?>"></script>
-    <?php } ?>
-    <script defer src="./<?= $jsScript; ?>" type="application/javascript"></script>
-    <link rel="stylesheet" href="./dist/main.css" type="text/css" />
-
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="<?= $canonicalURL; ?>" />
-    <meta property="og:title" content="<?= $title; ?>" />
-    <meta property="og:site_name" content="<?= $title; ?>" />
-    <meta property="og:description" content="<?= $description; ?>" />
-    <meta name="author" content="Daniele Santini" />
-    <meta name="robots" content="index, follow" />
-    <?= $metaKeywords; ?>
-    <link rel="canonical" href="<?= $canonicalURL; ?>" />
-    <?php foreach ($availableLanguages as $lang) { ?>
-        <link rel="alternate" hreflang="<?= $lang; ?>" href="<?= $canonicalURL; ?>?lang=<?= $lang; ?>" />
-    <?php } ?>
-
-    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="icon" type="image/x-icon" sizes="32x32" href="favicon.ico" />
-    <link rel="apple-touch-icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="apple-touch-icon" type="image/png" href="apple-touch-icon.png" />
-
-    <?php foreach ($preloads as $preload) {
-        echo $preload;
-    } ?>
-
-
-</head>
-
 <body>
     <div id='map' class="hiddenElement" aria-label="Map"></div>
     <noscript>

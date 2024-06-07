@@ -1,6 +1,6 @@
-import type { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent } from 'maplibre-gl';
+import type { IControl, Map, MapLibreEvent as MapEvent, MapSourceDataEvent } from 'maplibre-gl';
+import { loadTranslator } from '../i18n/client';
 import { logErrorMessage } from '../monitoring';
-import { loadTranslator } from '../i18n';
 
 export interface DropdownItem {
     id: string;
@@ -104,7 +104,7 @@ export class DropdownControl implements IControl {
         dropdownCell.className = 'dropdown-cell content-cell';
         this._dropdown = ctrlDropDown;
 
-        loadTranslator().then(t => {
+        loadTranslator().then(({t}) => {
             const title = t(this._titleKey);
             titleElement.innerText = title;
             ctrlBtn.title = title;

@@ -51,8 +51,8 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
 
 function generateCspHeaders() {
   if (!process.env.owmf_csp_enable) return undefined;
-  
-  const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}`: "",
+
+  const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}` : "",
     mapboxScript = process.env.owmf_mapbox_token ? " https://api.mapbox.com" : "",
     mapboxConnect = 'https://unpkg.com/@mapbox/' + process.env.owmf_mapbox_token ? 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com' : "",
     maptilerConnect = process.env.owmf_maptiler_key ? "https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/" : "",
@@ -63,12 +63,12 @@ function generateCspHeaders() {
     googleAnalyticsScript = process.env.owmf_google_analytics_id ? 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com' : "",
     sentryConnect = process.env.owmf_sentry_js_dsn ? 'https://*.ingest.sentry.io' : "",
     sentryScript = process.env.owmf_sentry_js_dsn ? 'https://js.sentry-cdn.com https://browser.sentry-cdn.com' : "",
-    matomoConnect = process.env.owmf_matomo_domain ? 'https://'+process.env.owmf_matomo_domain : "",
+    matomoConnect = process.env.owmf_matomo_domain ? 'https://' + process.env.owmf_matomo_domain : "",
     matomoScript = process.env.owmf_matomo_domain ? 'https://cdn.matomo.cloud/' : "",
     wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org",
     wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/",
     overpassEndpoints = JSON.parse(process.env.owmf_overpass_endpoints);
-  if(!overpassEndpoints || !Array.isArray(overpassEndpoints))
+  if (!overpassEndpoints || !Array.isArray(overpassEndpoints))
     throw new Error("Bad overpass_endpoint configuration");
   const overpassConnect = overpassEndpoints.join(" "),
     payPalForm = process.env.owmf_paypal_id ? 'https://www.paypal.com/donate' : "",

@@ -4,7 +4,7 @@ import { parseBoolConfig } from '../config';
 import { DetailsDatabase } from '../db/DetailsDatabase';
 import { MapDatabase } from '../db/MapDatabase';
 import { StatsDatabase } from '../db/StatsDatabase';
-import { translateAnchorTitle, translateContent } from '../i18n';
+import { translateAnchorTitle, translateContent } from '../i18n/client';
 import { osmKeyToKeyID } from '../model/EtymologyResponse';
 import { SourcePreset } from '../model/SourcePreset';
 import { logErrorMessage } from '../monitoring';

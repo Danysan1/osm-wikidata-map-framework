@@ -1,5 +1,5 @@
 import { DetailsDatabase } from "../db/DetailsDatabase";
-import { getLanguage } from "../i18n";
+import { getLanguage } from "../i18n/client";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
 import { logErrorMessage } from "../monitoring";
 import { WikidataService } from "./WikidataService";

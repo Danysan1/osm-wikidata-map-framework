@@ -1,5 +1,5 @@
+import { DEFAULT_LANGUAGE, MAIN_NAMESPACE } from "@/src/common";
 import { parseStringArrayConfig } from "@/src/config";
-import { DEFAULT_LANGUAGE, MAIN_NAMESPACE } from "@/src/i18n";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { getCustomSourcePreset } from "@/src/services/PresetService";
 import { existsSync, readFileSync } from "fs";

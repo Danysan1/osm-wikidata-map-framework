@@ -1,5 +1,5 @@
 import type { Map } from 'maplibre-gl';
-import { getLanguage, translateAnchorTitle, translateContent } from '../i18n';
+import { getLanguage, translateAnchorTitle, translateContent } from '../i18n/client';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 
 /**
@@ -11,7 +11,6 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
  **/
 export class LanguageControl extends DropdownControl {
     constructor() {
-        console.info("LanguageControl: Initializing", process.env.owmf_i18n_override)
         const currentLanguage = getLanguage(),
             i18n_override_raw = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined;
         let i18n_override: Record<string, string>,

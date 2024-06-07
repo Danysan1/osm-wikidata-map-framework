@@ -8,7 +8,7 @@ import { WikidataLabelService } from '@/src/services/WikidataLabelService';
 import { WikidataStatementService } from '@/src/services/WikidataStatementService';
 import { getEtymologies } from '@/src/services/etymologyUtils';
 import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
-import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from "../../i18n";
+import { getLanguage, loadTranslator, translateAnchorTitle, translateContent } from "../../i18n/client";
 import type { Etymology } from '../../model/Etymology';
 import type { EtymologyDetails } from '../../model/EtymologyDetails';
 import type { EtymologyFeatureProperties } from '../../model/EtymologyFeatureProperties';
@@ -357,7 +357,7 @@ export class FeatureElement extends HTMLDivElement {
             // Too many items, limiting to the first N most famous ones
             sortedIDs = sortedIDs.slice(0, maxItems);
             etymologyIDs = new Set(sortedIDs);
-            loadTranslator().then(t => showSnackbar(
+            loadTranslator().then(({ t }) => showSnackbar(
                 t("feature_details.loading_first_n_items", `Loading only first ${maxItems} items`, { partial: maxItems, total: etymologies.length }),
                 "lightsalmon",
                 10_000

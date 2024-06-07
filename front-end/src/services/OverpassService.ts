@@ -1,12 +1,11 @@
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
-import type { MapService } from "./MapService";
-import type { Etymology } from "../model/Etymology";
-import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
-import type { OsmType } from "../model/Etymology";
-import type { MapDatabase } from "../db/MapDatabase";
 import { overpass, type OverpassJson } from "overpass-ts";
+import type { MapDatabase } from "../db/MapDatabase";
+import type { Etymology, OsmType } from "../model/Etymology";
+import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
 import { SourcePreset } from "../model/SourcePreset";
+import type { MapService } from "./MapService";
 
 const COMMONS_CATEGORY_REGEX = /(Category:[^;]+)/,
     COMMONS_FILE_REGEX = /(File:[^;]+)/,

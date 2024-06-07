@@ -1,6 +1,6 @@
-import { IControl, Map, MapSourceDataEvent, MapLibreEvent as MapEvent, Popup } from 'maplibre-gl';
+import { IControl, Map, MapLibreEvent as MapEvent, MapSourceDataEvent, Popup } from 'maplibre-gl';
+import { getLanguage, loadTranslator } from '../i18n/client';
 import type { EtymologyFeature } from '../model/EtymologyResponse';
-import { getLanguage, loadTranslator } from '../i18n';
 import { getEtymologies } from '../services/etymologyUtils';
 
 export class DataTableControl implements IControl {
@@ -32,7 +32,7 @@ export class DataTableControl implements IControl {
 
         this.button = document.createElement("button");
         this.button.addEventListener("click", () => this.openTable(map.getZoom()));
-        loadTranslator().then(t => {
+        loadTranslator().then(({t}) => {
             if (this.button) {
                 const title = t("data_table.view_data_table", "View the data in a table");
                 this.button.title = title;
@@ -106,7 +106,7 @@ export class DataTableControl implements IControl {
             actionsHeadCell = document.createElement("th"),
             linkedEntitiesHeadCell = document.createElement("th"),
             tbody = document.createElement("tbody"),
-            t = await loadTranslator(),
+            {t} = await loadTranslator(),
             wikidataIDs = new Set<string>(),
             localNameKey = "name:" + getLanguage();
         let anyLinkedEntity = false;
