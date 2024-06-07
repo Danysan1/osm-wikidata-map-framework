@@ -22,43 +22,6 @@ export function getLanguage(): string {
     return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || process.env.owmf_default_language || DEFAULT_LANGUAGE;
 }
 
-export function setPageLocale() {
-    const lang = getLanguage();
-
-    if (process.env.NODE_ENV === 'development') console.debug("setPageLocale", {
-        lang, navLangs: navigator.languages, navLang: navigator.language
-    });
-
-    // <html lang='en'>
-    document.documentElement.setAttribute("lang", lang);
-
-    // <meta http-equiv='Content-Language' content='en' />
-    const metaLanguage = document.createElement("meta");
-    metaLanguage.httpEquiv = "Content-Language";
-    metaLanguage.content = lang;
-    document.head.appendChild(metaLanguage);
-
-    const preloadLang = document.createElement("link");
-    preloadLang.rel = "preload";
-    preloadLang.as = "fetch";
-    preloadLang.crossOrigin = "anonymous";
-    preloadLang.href = `locales/${lang}/common.json`;
-    document.head.appendChild(preloadLang);
-
-    loadTranslator().then(({ t }) => {
-        const title = document.head.querySelector<HTMLTitleElement>("title"),
-            descr = document.head.querySelector<HTMLMetaElement>('meta[name="description"]'),
-            og_title = document.head.querySelector<HTMLMetaElement>('meta[property="og:title"]'),
-            og_name = document.head.querySelector<HTMLMetaElement>('meta[property="og:site_name"]'),
-            og_description = document.head.querySelector<HTMLMetaElement>('meta[property="og:description"]');
-        if (title) title.innerText = t("title");
-        if (descr) descr.content = t("description");
-        if (og_title) og_title.content = t("title");
-        if (og_name) og_name.content = t("title");
-        if (og_description) og_description.content = t("description");
-    }).catch(console.error);
-}
-
 let tPromise: Promise<{ t: TFunction, i18nInstance: i18n }> | undefined;
 export function loadTranslator() {
     if (tPromise === undefined)

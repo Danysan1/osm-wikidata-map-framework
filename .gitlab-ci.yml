@@ -13,72 +13,35 @@ stages:
   #  - build
   - test
   #  - dast
-  - deploy
-  - force_deploy
+  - build
 
 gitlab_release:
-  extends: .gitlab_release
-
-psalm:
-  stage: test
-  image: composer:2
-  cache:
-    - key: "composer"
-      paths:
-        - vendor/
-    - key: "psalm"
-      paths:
-        - psalm_cache/
-  before_script:
-    - php --version
-    - composer --version
-    - composer install --no-interaction
-    - vendor/bin/psalm --version
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
-    - vendor/bin/psalm --stats --report=psalm.codeclimate.json || echo '==================== THERE ARE PROBLEMS IN THE CODE ===================='
-    #- vendor/bin/psalm --stats --taint-analysis --report=psalm_taint.codeclimate.json || echo '==================== THERE ARE SECURITY PROBLEMS IN THE CODE ===================='
-  coverage: '/^Psalm was able to infer types for \d+\.\d+% of the codebase$/'
-  #allow_failure: false
-  timeout: 2 minutes
-  artifacts:
-    when: "always"
-    reports:
-      codequality: psalm.codeclimate.json
-      #sarif: psalm_taint.codeclimate.json
-  rules:
-    - when: on_success
-
-# https://docs.gitlab.com/ee/ci/docker/using_docker_build.html#make-docker-in-docker-builds-faster-with-docker-layer-caching
-docker-build:
-  stage: deploy
-  image: docker:24.0-git
-  services:
-    - docker:dind
-  variables:
-    COMPOSE_PROFILES: "*"
-  before_script:
-    - cp .env.example .env
-    - sed -i "s/framework_image_tag=latest/framework_image_tag=${CI_COMMIT_REF_NAME}/" .env
-    - docker version
-    - docker buildx version
-    - docker run --rm --privileged multiarch/qemu-user-static --reset -p yes # https://forum.gitlab.com/t/build-multi-arch-docker-image/23569/4
-    #- docker run --privileged --rm tonistiigi/binfmt --install all # https://docs.docker.com/build/building/multi-platform/#building-multi-platform-images
-    - docker buildx create --use
-    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-    - cat docker-compose.yml
-    - docker buildx bake --print --file=docker-compose.yml
-  script:
-    - docker buildx bake owmf-web-prod --pull --push --file=docker-compose.yml
-    #- docker pull "$CI_REGISTRY_IMAGE" || echo "NO CACHE FOR $CI_REGISTRY_IMAGE , BUILDING FROM SCRATCH"
-    #- docker build --target "prod" --cache-from "$CI_REGISTRY_IMAGE" --tag "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG" --tag "$CI_REGISTRY_IMAGE" -f Dockerfile .
-    #- echo "Pushing $CI_REGISTRY_IMAGE"
-    #- docker image push "$CI_REGISTRY_IMAGE"
-    #- docker image push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG"
+    - echo "Creating release $CI_COMMIT_TAG"
+  release:
+    name: '$CI_COMMIT_TAG'
+    tag_name: '$CI_COMMIT_TAG'
+    description: "$(date '+%Y-%m-%d')"
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
-      exists:
-        - Dockerfile
       when: on_success
-    - exists:
-        - Dockerfile
-      when: manual
+
+next_build:
+  stage: build
+  image: node:22.2.0-alpine3.19
+  script:
+    - cp .env.example .env
+    - echo "Building the app"
+    - npm install
+    - npm run build
+  artifacts:
+    when: on_success
+    access: all
+    paths:
+      - ./front-end
+  rules:
+    - if: '$CI_COMMIT_TAG =~ /^v\d+(\.\d+)*$/'
+      when: on_success
+    - when: manual

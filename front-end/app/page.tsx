@@ -12,7 +12,6 @@ interface Props {
 
 export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
   const { t, i18nInstance } = await loadServerI18n(searchParams.lang);
-  console.debug("Generating metadata");
   return {
     title: t("title"),
     applicationName: t("title"),

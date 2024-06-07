@@ -8,28 +8,18 @@
 # https://github.com/meysholdt/laravel-apache-mysql-php-in-gitpod-example
 
 tasks:
-  - name: npm
-    init: npm install
-    command: npm run watch
-  - name: php
-    init: composer install
-  - name: Apache
-    env:
-      OWMF_ROOT: /workspace/osm-wikidata-map-framework
+  - name: node
     init: >
-        cp .env.example "$OWMF_ROOT/.env";
-        sed -i "s|/var/www/html|$OWMF_ROOT/public|" "$OWMF_ROOT/.env"
-    command: >
-        apachectl start;
-        multitail /var/log/apache2/error.log -I /var/log/apache2/access.log
+      cp .env.example ./front-end/.env";
+      cd ./front-end;
+      npm install;
+      npm run dev
+    command: npm run watch
 
 ports:
-  - name: Apache
-    port: 8001
-    onOpen: ignore
-  - name: npm
-    port: 8888
-    onOpen: ignore
+  - name: node
+    port: 3000
+    onOpen: open-browser
 
 vscode:
   extensions:
@@ -37,4 +27,3 @@ vscode:
     - mhutchie.git-graph
     - eamodio.gitlens
     - vemonet.stardog-rdf-grammars
-    - bmewburn.vscode-intelephense-client
