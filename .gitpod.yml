@@ -12,9 +12,8 @@ tasks:
     init: >
       cp .env.example ./front-end/.env;
       cd ./front-end;
-      npm install;
-      npm run dev
-    command: npm run watch
+      npm install
+    command: npm run dev
 
 ports:
   - name: node
