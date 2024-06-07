@@ -21,7 +21,7 @@ import { useUrlFragment } from '@/src/useUrlFragment';
 import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, NavigationControl, ScaleControl } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useTranslation } from 'next-i18next';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import styles from "./OwmfMap.module.css";
 
 const PMTILES_PREFIX = "pmtiles",
@@ -50,36 +50,12 @@ export default function OwmfMap() {
     { lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragment(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
-    [backEndControl, _setBackEndControl] = useState<BackEndControl | null>(null),
-    [colorControl, _setColorControl] = useState<EtymologyColorControl | null>(null),
-    [mapcompleteControl, _setMapcompleteControl] = useState<MapCompleteControl | null>(null),
+    [backEndControl, setBackEndControl] = useState<BackEndControl | null>(null),
+    [colorControl, setColorControl] = useState<EtymologyColorControl | null>(null),
+    [mapcompleteControl, setMapcompleteControl] = useState<MapCompleteControl | null>(null),
     backgroundStyles = useMemo(() => getBacgkroundStyles(), []),
     backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
-    { t } = useTranslation(),
-    setBackEndControl = useCallback((newControl: BackEndControl | null) => {
-      if (!map.current) return;
-      _setBackEndControl(oldControl => {
-        if (oldControl) map.current?.removeControl(oldControl);
-        return newControl;
-      });
-      if (newControl) map.current.addControl(newControl, 'top-left');
-    }, [_setBackEndControl]),
-    setColorControl = useCallback((newControl: EtymologyColorControl | null) => {
-      if (!map.current) return;
-      _setColorControl(oldControl => {
-        if (oldControl) map.current?.removeControl(oldControl);
-        return newControl;
-      });
-      if (newControl) map.current.addControl(newControl, 'top-left');
-    }, [_setColorControl]),
-    setMapcompleteControl = useCallback((newControl: MapCompleteControl | null) => {
-      if (!map.current) return;
-      _setMapcompleteControl(oldControl => {
-        if (oldControl) map.current?.removeControl(oldControl);
-        return newControl;
-      });
-      if (newControl) map.current.addControl(newControl, 'top-left');
-    }, [_setMapcompleteControl]);
+    { t } = useTranslation();
 
   /* Initialize the map */
   useEffect(() => {
@@ -166,15 +142,21 @@ export default function OwmfMap() {
     }
 
     if (process.env.NODE_ENV === 'development') console.debug("Fetching the source preset upon preset ID change", { sourcePresetID });
-    fetchSourcePreset(sourcePresetID).then(sourcePreset => {
-      setBackEndService(new CombinedCachedMapService(sourcePreset));
-      setSourcePreset(sourcePreset);
+    fetchSourcePreset(sourcePresetID).then(preset => {
+      if (process.env.NODE_ENV === 'development') console.debug("Updating source preset", preset);
+      setBackEndService(new CombinedCachedMapService(preset));
+      setSourcePreset(preset);
 
       // Update the back-end control to reflect the available back-ends for the new preset
       const newBackEndControl = new BackEndControl(
-        sourcePreset, backEndID, setBackEndID, t
+        preset, backEndID, setBackEndID, t
       );
-      setBackEndControl(newBackEndControl);
+      setBackEndControl(oldControl => {
+        if (!map.current || oldControl === newBackEndControl) return oldControl;
+        if (oldControl) map.current?.removeControl(oldControl);
+        map.current.addControl(newBackEndControl, 'top-left');
+        return newBackEndControl;
+      });
 
       const thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
         setLayerColor = (color: string | ExpressionSpecification) => {
@@ -193,7 +175,7 @@ export default function OwmfMap() {
           });
         },
         newColorControl = new EtymologyColorControl(
-          sourcePreset,
+          preset,
           colorScheme,
           setColorScheme,
           setLayerColor,
@@ -201,11 +183,21 @@ export default function OwmfMap() {
           DETAILS_SOURCE,
           [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER]
         );
-      setColorControl(newColorControl);
+      setColorControl(oldControl => {
+        if (!map.current || oldControl === newColorControl) return oldControl;
+        if (oldControl) map.current?.removeControl(oldControl);
+        map.current.addControl(newColorControl, 'top-left');
+        return newColorControl;
+      });
 
-      if (sourcePreset.mapcomplete_theme) {
-        const newMapCompleteControl = new MapCompleteControl(sourcePreset.mapcomplete_theme, thresholdZoomLevel);
-        setMapcompleteControl(newMapCompleteControl);
+      if (preset.mapcomplete_theme) {
+        const newMapCompleteControl = new MapCompleteControl(preset.mapcomplete_theme, thresholdZoomLevel);
+        setMapcompleteControl(oldControl => {
+          if (!map.current || oldControl === newMapCompleteControl) return oldControl;
+          if (oldControl) map.current?.removeControl(oldControl);
+          map.current.addControl(newMapCompleteControl, 'top-left');
+          return newMapCompleteControl;
+        });
       }
     }).catch(e => {
       //setBackEndService(null);
