@@ -10,7 +10,7 @@
 tasks:
   - name: node
     init: >
-      cp .env.example ./front-end/.env";
+      cp .env.example ./front-end/.env;
       cd ./front-end;
       npm install;
       npm run dev
