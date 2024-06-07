@@ -22,6 +22,7 @@ import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, Navi
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useTranslation } from 'next-i18next';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import ReactDOM from 'react-dom';
 import styles from "./OwmfMap.module.css";
 
 const PMTILES_PREFIX = "pmtiles",
@@ -56,6 +57,15 @@ export default function OwmfMap() {
     backgroundStyles = useMemo(() => getBacgkroundStyles(), []),
     backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
     { t } = useTranslation();
+
+  // https://nextjs.org/docs/app/api-reference/functions/generate-metadata#resource-hints
+  if (process.env.owmf_default_language) ReactDOM.preload(`locales/${process.env.owmf_default_language}/common.json`, { as: "fetch", crossOrigin: "anonymous" });
+  if (process.env.owmf_pmtiles_base_url) ReactDOM.preload(`${process.env.owmf_pmtiles_base_url}/date.txt`, { as: "fetch", crossOrigin: "anonymous" });
+  if (process.env.owmf_default_background_style === "stadia_alidade") ReactDOM.preload("https://tiles.stadiamaps.com/styles/alidade_smooth.json", { as: "fetch", crossOrigin: "anonymous" });
+  if (process.env.owmf_default_background_style?.startsWith("stadia_")) ReactDOM.preload("https://tiles.stadiamaps.com/data/openmaptiles.json", { as: "fetch", crossOrigin: "anonymous" });
+  if (process.env.owmf_default_background_sty === "stamen_toner_lite") ReactDOM.preload("https://tiles.stadiamaps.com/styles/stamen_toner_lite.json", { as: "fetch", crossOrigin: "anonymous" });
+  if (process.env.owmf_default_background_style === "stamen_toner") ReactDOM.preload("https://tiles.stadiamaps.com/styles/stamen_toner.json", { as: "fetch", crossOrigin: "anonymous" });
+  if (process.env.owmf_default_background_style?.startsWith("stamen_")) ReactDOM.preload("https://tiles.stadiamaps.com/data/stamen-omt.json", { as: "fetch", crossOrigin: "anonymous" });
 
   /* Initialize the map */
   useEffect(() => {
@@ -130,12 +140,12 @@ export default function OwmfMap() {
 
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     setRTLTextPlugin(
-        'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
-        true // Lazy load the plugin
+      'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
+      true // Lazy load the plugin
     ).then(() => {
-        if (process.env.NODE_ENV === 'development') console.debug("mapbox-gl-rtl-text loaded");
+      if (process.env.NODE_ENV === 'development') console.debug("mapbox-gl-rtl-text loaded");
     }).catch(
-        err => console.error("Error loading mapbox-gl-rtl-text", err)
+      err => console.error("Error loading mapbox-gl-rtl-text", err)
     );
   }, [backgroundStyle, lon, lat, zoom, backgroundStyles, setBackgroundStyleID, t, sourcePresetID, setSourcePresetID]);
 

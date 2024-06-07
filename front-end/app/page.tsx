@@ -1,9 +1,8 @@
 import OwmfMap from "@/src/components/OwmfMap/OwmfMap";
 import { loadServerI18n } from "@/src/i18n/server";
+import { GoogleTagManager } from '@next/third-parties/google';
 import { Metadata } from "next";
 import { Languages } from "next/dist/lib/metadata/types/alternative-urls-types";
-import Head from "next/head";
-import Script from "next/script";
 import styles from "./page.module.css";
 
 interface Props {
@@ -43,16 +42,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 export default function Home() {
   return (
     <main className={styles.main}>
-      <Head>
-        {process.env.owmf_google_analytics_id && <Script defer src={`https://www.googletagmanager.com/gtag/js?id=${process.env.owmf_google_analytics_id}`} />}
-        {process.env.owmf_default_language && <link rel="preload" href={`locales/${process.env.owmf_default_language}/common.json`} as="fetch" crossOrigin="anonymous" />}
-        {process.env.owmf_pmtiles_base_url && <link rel="preload" href={`${process.env.owmf_pmtiles_base_url}/date.txt`} as="fetch" crossOrigin="anonymous" />}
-        {process.env.owmf_default_background_style === "stadia_alidade" && <link rel="preload" href="https://tiles.stadiamaps.com/styles/alidade_smooth.json" as="fetch" crossOrigin="anonymous" />}
-        {process.env.owmf_default_background_style?.startsWith("stadia_") && <link rel="preload" href="https://tiles.stadiamaps.com/data/openmaptiles.json" as="fetch" crossOrigin="anonymous" />}
-        {process.env.owmf_default_background_style === "stamen_toner_lite" && <link rel="preload" href="https://tiles.stadiamaps.com/styles/stamen_toner_lite.json" as="fetch" crossOrigin="anonymous" />}
-        {process.env.owmf_default_background_style === "stamen_toner" && <link rel="preload" href="https://tiles.stadiamaps.com/styles/stamen_toner.json" as="fetch" crossOrigin="anonymous" />}
-        {process.env.owmf_default_background_style?.startsWith("stamen_") && <link rel="preload" href="https://tiles.stadiamaps.com/data/stamen-omt.json" as="fetch" crossOrigin="anonymous" />}
-      </Head>
+      {process.env.owmf_google_analytics_id && <GoogleTagManager gtmId={process.env.owmf_google_analytics_id} />}
       <OwmfMap />
     </main>
   );
