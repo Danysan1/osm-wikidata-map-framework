@@ -117,6 +117,7 @@ if ($conf->has("pmtiles_base_url"))
     <?= $conf->getJsonScriptTag("source_presets", true); ?>
     <?= $conf->getMetaTag("qlever_enable", true); ?>
     <?= $conf->getMetaTag("pmtiles_base_url", true); ?>
+    <?= $conf->getMetaTag("pmtiles_preset", true); ?>
     <?= $conf->getJsonScriptTag("osm_filter_tags", true); ?>
     <?= $conf->getMetaTag("osm_text_key", true); ?>
     <?= $conf->getMetaTag("osm_description_key", true); ?>

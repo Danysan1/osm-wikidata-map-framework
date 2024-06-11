@@ -30,6 +30,7 @@ export class BackEndControl extends DropdownControl {
     ) {
         const propagationEnabled = getBoolConfig("propagate_data"),
             qleverEnabled = getBoolConfig("qlever_enable"),
+            pmtilesPreset = getConfig("pmtiles_preset"),
             pmtilesURL = getConfig("pmtiles_base_url"),
             dropdownItems: DropdownItem[] = [],
             selectBackEnd = (backEndID: string) => {
@@ -54,7 +55,7 @@ export class BackEndControl extends DropdownControl {
                 }
             });
 
-        if (pmtilesURL)
+        if (pmtilesURL && pmtilesPreset === preset.id)
             dropdownItems.push(buildDropdownItem("pmtiles_all", t("source.db_all", "All sources from DB"), PMTILES_GROUP_NAME));
 
         const allKeysText = t("source.all_osm_keys", "All OSM keys");
@@ -70,7 +71,7 @@ export class BackEndControl extends DropdownControl {
              * @example "OSM wikidata=* > Wikidata P138/P825/P547"
              */
             const osmWikidataDirectText = `OSM wikidata=* > ${wikidataDirectText}`;
-            if (pmtilesURL) {
+            if (pmtilesURL && pmtilesPreset === preset.id) {
                 dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
             }
@@ -124,7 +125,7 @@ export class BackEndControl extends DropdownControl {
             const keyID = osmKeyToKeyID(key),
                 keyText = "OSM " + key;
             dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
-            if (pmtilesURL)
+            if (pmtilesURL && pmtilesPreset === preset.id)
                 dropdownItems.push(buildDropdownItem("pmtiles_" + keyID, keyText, PMTILES_GROUP_NAME));
             if (qleverEnabled)
                 dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
@@ -141,7 +142,7 @@ export class BackEndControl extends DropdownControl {
             }
         }
 
-        if (propagationEnabled && pmtilesURL)
+        if (propagationEnabled && pmtilesURL && pmtilesPreset === preset.id)
             dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
 
         if (dropdownItems.find(item => item.id === startBackEndID)) {

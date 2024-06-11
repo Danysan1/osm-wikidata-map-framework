@@ -342,13 +342,14 @@ export class EtymologyMap extends Map {
             isPMTilesSource = backEndID.startsWith(PMTILES_PREFIX),
             minZoomLevel = parseInt(getConfig("min_zoom_level") ?? "9"),
             thresholdZoomLevel = parseInt(getConfig("threshold_zoom_level") ?? "14"),
+            pmtilesPreset = getConfig("pmtiles_preset"),
             pmtilesBaseURL = getConfig("pmtiles_base_url");
 
         this.updateSourcePreset().catch(console.error);
 
         if (isPMTilesSource && backEndID === this.lastBackEndID) {
             if (process.env.NODE_ENV === 'development') console.debug("updateDataSource: PMTiles source unchanged, skipping source update");
-        } else if (isPMTilesSource && !pmtilesBaseURL?.length) {
+        } else if (isPMTilesSource && (!pmtilesBaseURL || pmtilesPreset !== fragment.sourcePreset)) {
             loadTranslator().then(t => showSnackbar(t("snackbar.map_error"))).catch(console.error);
             logErrorMessage("Requested to use pmtiles but no pmtiles base URL configured");
         } else if (isPMTilesSource) {
@@ -517,8 +518,9 @@ export class EtymologyMap extends Map {
      * @see https://docs.protomaps.com/pmtiles/maplibre
      */
     private preparePMTilesSource(vectorSourceID: string, fileName: string, minZoom?: number, maxZoom?: number) {
-        const pmtilesBaseURL = getConfig("pmtiles_base_url");
-        if (!pmtilesBaseURL)
+        const pmtilesPreset = getConfig("pmtiles_preset"),
+            pmtilesBaseURL = getConfig("pmtiles_base_url");
+        if (!pmtilesPreset || !pmtilesBaseURL)
             throw new Error("Missing pmtiles URL");
 
         const oldSource = this.getSource(vectorSourceID),
