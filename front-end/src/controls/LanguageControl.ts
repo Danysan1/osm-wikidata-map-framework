@@ -4,10 +4,6 @@ import { DropdownControl, DropdownItem } from './DropdownControl';
 
 /**
  * Let the user choose the language.
- * 
- * Control implemented as ES6 class
- * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/maplibregl.IControl/
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
 export class LanguageControl extends DropdownControl {
     constructor() {

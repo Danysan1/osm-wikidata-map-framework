@@ -13,7 +13,8 @@ export interface DropdownItem {
  * Let the user choose something through a dropdown.
  * 
  * Control implemented as ES6 class
- * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/maplibregl.IControl/
+ * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/IControl/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
  **/
 export class DropdownControl implements IControl {
     private readonly _buttonContent: string;
@@ -39,7 +40,7 @@ export class DropdownControl implements IControl {
         onHashChange?: (e: HashChangeEvent) => void,
         onSourceData?: (e: MapSourceDataEvent) => void
     ) {
-        if (process.env.NODE_ENV === 'development') console.debug("Initializing DropdownControl", { buttonContent, dropdownItems, startDropdownItemsId, titleKey, leftButton, minZoomLevel });
+        if (process.env.NODE_ENV === 'development') console.debug(buttonContent, "Initializing DropdownControl", { dropdownItems, startDropdownItemsId, titleKey, leftButton, minZoomLevel });
         this._titleKey = titleKey;
         this._buttonContent = buttonContent;
         this._startDropdownItemId = startDropdownItemsId;
@@ -104,7 +105,7 @@ export class DropdownControl implements IControl {
         dropdownCell.className = 'dropdown-cell content-cell';
         this._dropdown = ctrlDropDown;
 
-        loadTranslator().then(({t}) => {
+        loadTranslator().then(({ t }) => {
             const title = t(this._titleKey);
             titleElement.innerText = title;
             ctrlBtn.title = title;
@@ -116,7 +117,8 @@ export class DropdownControl implements IControl {
             actualStartID = okStartID ? this._startDropdownItemId : this._dropdownItems[0].id;
         if (!okStartID) {
             setTimeout(() => this._dropdownItems[0].onSelect(new Event("change")), 200);
-            console.warn(
+            if (process.env.NODE_ENV === 'development') console.warn(
+                this._buttonContent,
                 "Original starting source is null or invalid, using the first valid source",
                 { originalStartID: this._startDropdownItemId, actualStartID, items: this._dropdownItems }
             );
@@ -148,7 +150,7 @@ export class DropdownControl implements IControl {
         });
 
         if (this._dropdownItems.length < 2) {
-            if (process.env.NODE_ENV === 'development') console.debug("Only one dropdown item, hiding dropdown", { items: this._dropdownItems });
+            if (process.env.NODE_ENV === 'development') console.debug(this._buttonContent, "Only one dropdown item, hiding dropdown", { items: this._dropdownItems });
             this.show(false);
         }
 
@@ -171,12 +173,20 @@ export class DropdownControl implements IControl {
             map.off("sourcedata", this.sourceDataHandler);
         if (this.hashChangeHandler)
             window.removeEventListener("hashchange", this.hashChangeHandler);
-        this._container?.remove();
+        if (this._container?.parentNode) {
+            console.debug(this._buttonContent, "Removing dropdown container", { container: this._container, parent: this._container?.parentNode });
+            this._container.parentNode.removeChild(this._container);
+        } else {
+            console.warn(this._buttonContent, "Empty dropdown container parent node", { container: this._container, parent: this._container?.parentNode });
+        }
+        this._container = undefined;
+        this._dropdown = undefined;
+        this._title = undefined;
         this._map = undefined;
     }
 
     private btnClickHandler(event: MouseEvent) {
-        if (process.env.NODE_ENV === 'development') console.debug("DropdownControl button click", event);
+        if (process.env.NODE_ENV === 'development') console.debug(this._buttonContent, "DropdownControl button click", event);
         this.toggleDropdown(true);
     }
 
@@ -187,7 +197,7 @@ export class DropdownControl implements IControl {
         const dropdownItemId = dropDown.value,
             dropdownItemObj = this._dropdownItems.find(item => item.id === dropdownItemId);
         if (dropdownItemObj) {
-            if (process.env.NODE_ENV === 'development') console.debug("DropdownControl select", { dropdownItemObj, event });
+            if (process.env.NODE_ENV === 'development') console.debug(this._buttonContent, "DropdownControl select", { dropdownItemObj, event });
             dropdownItemObj.onSelect(event)
         } else {
             logErrorMessage("Invalid selected dropdown item", "error", { dropdownItemId });
@@ -198,7 +208,7 @@ export class DropdownControl implements IControl {
         return (e: MapEvent) => {
             const zoomLevel = e.target.getZoom(),
                 show = zoomLevel >= minZoomLevel;
-            if (process.env.NODE_ENV === 'development') console.debug("DropdownControl moveend", { e, zoomLevel, minZoomLevel, show, button: this._buttonContent });
+            if (process.env.NODE_ENV === 'development') console.debug(this._buttonContent, "DropdownControl moveend", { e, zoomLevel, minZoomLevel, show });
             this.show(show);
         }
     }
@@ -229,11 +239,11 @@ export class DropdownControl implements IControl {
     protected set value(id: string) {
         const dropdown = this.getDropdown();
         if (!dropdown?.options) {
-            console.warn("setCurrentID: dropdown not yet initialized", { id });
+            console.warn(this._buttonContent, "setCurrentID: dropdown not yet initialized", { id });
         } else if (dropdown.value === id) {
-            if (process.env.NODE_ENV === 'development') console.debug("setCurrentID: skipping change to same value", { id });
+            if (process.env.NODE_ENV === 'development') console.debug(this._buttonContent, "setCurrentID: skipping change to same value", { id });
         } else {
-            if (process.env.NODE_ENV === 'development') console.debug("setCurrentID: updating", { old: dropdown.value, next: id });
+            if (process.env.NODE_ENV === 'development') console.debug(this._buttonContent, "setCurrentID: updating", { old: dropdown.value, next: id });
             dropdown.value = id;
             dropdown.dispatchEvent(new Event("change"));
         }
@@ -241,7 +251,7 @@ export class DropdownControl implements IControl {
 
     protected show(show = true) {
         if (!this._container)
-            console.warn("Missing control container, failed showing/hiding it", { show });
+            console.warn(this._buttonContent, "Missing control container, failed showing/hiding it", { show });
         else if (show)
             this._container.classList?.remove("hiddenElement");
         else
@@ -250,7 +260,7 @@ export class DropdownControl implements IControl {
 
     protected showDropdown(show = true) {
         if (!this._dropdown) {
-            console.warn("Missing control dropdown, failed showing/hiding it", { show });
+            console.warn(this._buttonContent, "Missing control dropdown, failed showing/hiding it", { show });
         } else if (show) {
             this._dropdown.classList.remove("hiddenElement");
             this._title?.classList?.remove("hiddenElement");
@@ -262,7 +272,7 @@ export class DropdownControl implements IControl {
 
     protected toggleDropdown(focusOnShow = false) {
         if (!this._dropdown) {
-            console.warn("Missing control dropdown, failed toggling it");
+            console.warn(this._buttonContent, "Missing control dropdown, failed toggling it");
         } else if (this._dropdown.classList.contains("hiddenElement")) {
             this.showDropdown(true);
             if (focusOnShow) this._dropdown?.focus();
