@@ -1,5 +1,5 @@
 import type { IControl, Map, MapLibreEvent as MapEvent } from 'maplibre-gl';
-import { getLat, getLon, getZoom } from '../useUrlFragment';
+import { getLat, getLon, getZoom } from '../hooks/useUrlFragment';
 
 export class OsmWikidataMatcherControl implements IControl {
     private container?: HTMLDivElement;

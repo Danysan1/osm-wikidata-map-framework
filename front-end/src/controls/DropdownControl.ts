@@ -163,22 +163,28 @@ export class DropdownControl implements IControl {
         if (this.hashChangeHandler)
             window.addEventListener("hashchange", this.hashChangeHandler);
 
+        console.debug("Initialization completed", this._buttonContent);
         return this._container;
     }
 
     onRemove(map: Map) {
+        console.debug(this._buttonContent, "Removing dropdown control");
         if (this.moveEndHandler)
             map.off("moveend", this.moveEndHandler);
+
         if (this.sourceDataHandler)
             map.off("sourcedata", this.sourceDataHandler);
+
         if (this.hashChangeHandler)
             window.removeEventListener("hashchange", this.hashChangeHandler);
+
         if (this._container?.parentNode) {
-            console.debug(this._buttonContent, "Removing dropdown container", { container: this._container, parent: this._container?.parentNode });
+            console.debug(this._buttonContent, "Removing dropdown control container", { container: this._container, parent: this._container?.parentNode });
             this._container.parentNode.removeChild(this._container);
         } else {
             console.warn(this._buttonContent, "Empty dropdown container parent node", { container: this._container, parent: this._container?.parentNode });
         }
+
         this._container = undefined;
         this._dropdown = undefined;
         this._title = undefined;

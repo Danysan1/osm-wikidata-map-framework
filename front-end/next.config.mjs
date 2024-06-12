@@ -121,6 +121,7 @@ const nextConfig = {
     return config;
   },
   headers: generateCspHeaders(),
+  reactStrictMode: true,
 };
 
 export default withSentryConfig(nextConfig, {

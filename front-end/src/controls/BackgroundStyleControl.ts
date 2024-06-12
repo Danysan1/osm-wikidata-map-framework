@@ -1,7 +1,7 @@
 import type { StyleSpecification } from 'maplibre-gl';
+import { getBackgroundStyleID } from '../hooks/useUrlFragment';
 import type { BackgroundStyle } from '../model/backgroundStyle';
 import { DropdownControl } from './DropdownControl';
-import { getBackgroundStyleID } from '../useUrlFragment';
 
 /**
  * Let the user choose the map style.

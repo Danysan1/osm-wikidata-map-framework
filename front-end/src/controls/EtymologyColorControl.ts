@@ -1,15 +1,15 @@
-import type { MapLibreEvent as MapEvent, MapSourceDataEvent, ExpressionSpecification, Map } from 'maplibre-gl';
-import { Chart, ArcElement, PieController, Tooltip, Legend, ChartData } from 'chart.js';
-import { ColorSchemeID, colorSchemes } from '../model/colorScheme';
-import { DropdownControl, DropdownItem } from './DropdownControl';
+import { ArcElement, Chart, ChartData, Legend, PieController, Tooltip } from 'chart.js';
 import type { TFunction } from 'i18next';
+import type { ExpressionSpecification, Map, MapLibreEvent as MapEvent, MapSourceDataEvent } from 'maplibre-gl';
+import { getBackEndID, getBackgroundStyleID, getColorSchemeID } from '../hooks/useUrlFragment';
 import type { Etymology } from '../model/Etymology';
 import type { EtymologyFeatureProperties } from '../model/EtymologyFeatureProperties';
-import { showLoadingSpinner } from '../snackbar';
+import { SourcePreset } from '../model/SourcePreset';
+import { ColorSchemeID, colorSchemes } from '../model/colorScheme';
 import { WikidataStatsService, statsQueries } from '../services/WikidataStatsService';
 import { getEtymologies } from '../services/etymologyUtils';
-import { SourcePreset } from '../model/SourcePreset';
-import { getBackEndID, getBackgroundStyleID, getColorSchemeID } from '../useUrlFragment';
+import { showLoadingSpinner } from '../snackbar';
+import { DropdownControl, DropdownItem } from './DropdownControl';
 
 const MAX_CHART_ITEMS = 35;
 

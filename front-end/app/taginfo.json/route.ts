@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
   const { t } = await loadServerI18n(DEFAULT_LANGUAGE);
 
   const contributingURL = process.env.owmf_contributing_url,
-    sourcePresets = parseStringArrayConfig(process.env.owmf_source_presets);
+    sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
   let sourcePreset: SourcePreset | undefined;
   if (!sourcePresets?.length) {
     sourcePreset = getCustomSourcePreset();

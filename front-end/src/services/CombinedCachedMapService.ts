@@ -24,7 +24,7 @@ export class CombinedCachedMapService implements MapService {
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
             osmWikidataKeys = sourcePreset?.osm_wikidata_keys,
             osmFilterTags = sourcePreset?.osm_filter_tags,
-            overpassEndpoints = parseStringArrayConfig(process.env.owmf_overpass_endpoints),
+            overpassEndpoints = process.env.owmf_overpass_endpoints ? parseStringArrayConfig(process.env.owmf_overpass_endpoints) : undefined,
             westLon = process.env.owmf_min_lon ? parseFloat(process.env.owmf_min_lon) : undefined,
             southLat = process.env.owmf_min_lat ? parseFloat(process.env.owmf_min_lat) : undefined,
             eastLon = process.env.owmf_max_lon ? parseFloat(process.env.owmf_max_lon) : undefined,

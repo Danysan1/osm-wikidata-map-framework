@@ -4,12 +4,12 @@ import { parseBoolConfig } from '../config';
 import { DetailsDatabase } from '../db/DetailsDatabase';
 import { MapDatabase } from '../db/MapDatabase';
 import { StatsDatabase } from '../db/StatsDatabase';
+import { getBackEndID } from '../hooks/useUrlFragment';
 import { translateAnchorTitle, translateContent } from '../i18n/client';
 import { osmKeyToKeyID } from '../model/EtymologyResponse';
 import { SourcePreset } from '../model/SourcePreset';
 import { logErrorMessage } from '../monitoring';
 import { showSnackbar } from '../snackbar';
-import { getBackEndID } from '../useUrlFragment';
 import { DropdownControl, DropdownItem } from './DropdownControl';
 
 const PMTILES_GROUP_NAME = "Database (PMTiles)",

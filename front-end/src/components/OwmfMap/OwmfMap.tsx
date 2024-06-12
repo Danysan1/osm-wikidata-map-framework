@@ -11,17 +11,17 @@ import { MapCompleteControl } from '@/src/controls/MapCompleteControl';
 import { OsmWikidataMatcherControl } from '@/src/controls/OsmWikidataMatcherControl';
 import { SourcePresetControl } from '@/src/controls/SourcePresetControl';
 import { iDEditorControl } from '@/src/controls/iDEditorControl';
+import { useUrlFragment } from '@/src/hooks/useUrlFragment';
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { BackgroundStyle, jawgStyle, mapboxStyle, maptilerStyle, stadiaStyle } from '@/src/model/backgroundStyle';
 import { CombinedCachedMapService } from '@/src/services/CombinedCachedMapService';
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from '@/src/services/PresetService';
 import { showSnackbar } from '@/src/snackbar';
-import { useUrlFragment } from '@/src/useUrlFragment';
 import { ExpressionSpecification, FullscreenControl, GeolocateControl, Map, NavigationControl, ScaleControl, setRTLTextPlugin } from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { useTranslation } from 'next-i18next';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ReactDOM from 'react-dom';
 import styles from "./OwmfMap.module.css";
 
@@ -47,7 +47,7 @@ const PMTILES_PREFIX = "pmtiles",
 
 export default function OwmfMap() {
   const mapContainer = useRef<HTMLDivElement | null>(null),
-    map = useRef<maplibregl.Map | null>(null),
+    map = useRef<Map | null>(null),
     { lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragment(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
@@ -147,86 +147,100 @@ export default function OwmfMap() {
     }).catch(
       err => console.error("Error loading mapbox-gl-rtl-text", err)
     );
-  }, [backgroundStyle, lon, lat, zoom, backgroundStyles, setBackgroundStyleID, t, sourcePresetID, setSourcePresetID]);
+  }, [backgroundStyle, lon, lat, zoom, backgroundStyles, setBackgroundStyleID, t, sourcePresetID, setSourcePresetID, map]);
 
   useEffect(() => {
     if (!map.current || !backgroundStyle) return;
     if (process.env.NODE_ENV === 'development') console.debug("Updating the map background style upon style change", { backgroundStyle });
     map.current.setStyle(backgroundStyle.styleUrl);
-  }, [backgroundStyle]);
+  }, [backgroundStyle, map]);
+
+  const updatePresetDependantControls = useCallback((preset: SourcePreset) => {
+    console.debug("updatePresetDependantControls: updating", preset);
+    setBackEndService(new CombinedCachedMapService(preset));
+
+    const newBackEndControl: BackEndControl = new BackEndControl(
+      preset, backEndID, setBackEndID, t
+    );
+    setBackEndControl(oldControl => {
+      if (!map.current || oldControl === newBackEndControl) return oldControl;
+      if (oldControl) map.current?.removeControl(oldControl);
+      map.current.addControl(newBackEndControl, 'top-left');
+      return newBackEndControl;
+    });
+
+    const thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
+      setLayerColor = (color: string | ExpressionSpecification) => {
+        if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
+        [
+          [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
+          [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
+          [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-extrusion-color'],
+          [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
+        ].forEach(([layerID, property]) => {
+          if (map.current?.getLayer(layerID)) {
+            map.current.setPaintProperty(layerID, property, color);
+          } else {
+            console.warn("Layer does not exist, can't set property", { layerID, property, color });
+          }
+        });
+      },
+      newColorControl = new EtymologyColorControl(
+        preset,
+        colorScheme,
+        setColorScheme,
+        setLayerColor,
+        t,
+        DETAILS_SOURCE,
+        [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER]
+      );
+    setColorControl(oldControl => {
+      if (!map.current || oldControl === newColorControl) return oldControl;
+      if (oldControl) map.current?.removeControl(oldControl);
+      map.current.addControl(newColorControl, 'top-left');
+      return newColorControl;
+    });
+
+    if (preset.mapcomplete_theme) {
+      const newMapCompleteControl = new MapCompleteControl(preset.mapcomplete_theme, thresholdZoomLevel);
+      setMapcompleteControl(oldControl => {
+        if (!map.current || oldControl === newMapCompleteControl) return oldControl;
+        if (oldControl) map.current?.removeControl(oldControl);
+        map.current.addControl(newMapCompleteControl, 'top-left');
+        return newMapCompleteControl;
+      });
+    }
+  }, [backEndID, colorScheme, setBackEndID, setColorScheme, t]);
 
   useEffect(() => {
-    if (!map.current || !sourcePresetID || sourcePreset?.id === sourcePresetID) {
-      if (process.env.NODE_ENV === 'development') console.debug("Skipping redundant source preset update", { sourcePresetID });
+    if (!!process.env.REACT_APP_FETCHING_PRESET || sourcePreset?.id === sourcePresetID) {
+      if (process.env.NODE_ENV === 'development') console.warn("Skipping redundant source preset fetch", { alreadyFetching: process.env.REACT_APP_FETCHING_PRESET, new: sourcePresetID, old: sourcePreset?.id });
       return;
     }
 
-    if (process.env.NODE_ENV === 'development') console.debug("Fetching the source preset upon preset ID change", { sourcePresetID });
-    fetchSourcePreset(sourcePresetID).then(preset => {
-      if (process.env.NODE_ENV === 'development') console.debug("Updating source preset", preset);
-      setBackEndService(new CombinedCachedMapService(preset));
-      setSourcePreset(preset);
+    process.env.REACT_APP_FETCHING_PRESET = "1";
+    if (process.env.NODE_ENV === 'development') console.debug("Fetching source preset", { alreadyUpdating: process.env.REACT_APP_UPDATING_PRESET, new: sourcePresetID, old: sourcePreset?.id });
+    fetchSourcePreset(sourcePresetID).then(newPreset => {
+      setSourcePreset(oldPreset => {
+        if (oldPreset?.id === newPreset.id) {
+          if (process.env.NODE_ENV === 'development') console.warn("Skipping redundant source preset update", { old: oldPreset?.id, new: newPreset.id });
+          return oldPreset;
+        }
 
-      // Update the back-end control to reflect the available back-ends for the new preset
-      const newBackEndControl = new BackEndControl(
-        preset, backEndID, setBackEndID, t
-      );
-      setBackEndControl(oldControl => {
-        if (!map.current || oldControl === newBackEndControl) return oldControl;
-        if (oldControl) map.current?.removeControl(oldControl);
-        map.current.addControl(newBackEndControl, 'top-left');
-        return newBackEndControl;
+        if (process.env.NODE_ENV === 'development') console.debug("Updating source preset", { old: oldPreset?.id, new: newPreset.id });
+        updatePresetDependantControls(newPreset);
+        if (process.env.NODE_ENV === 'development') console.debug("Source preset updated", { old: oldPreset?.id, new: newPreset.id });
+        return newPreset;
       });
-
-      const thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
-        setLayerColor = (color: string | ExpressionSpecification) => {
-          if (process.env.NODE_ENV === 'development') console.debug("initWikidataControls set layer color", { color });
-          [
-            [DETAILS_SOURCE + POINT_LAYER, "circle-color"],
-            [DETAILS_SOURCE + LINE_LAYER, 'line-color'],
-            [DETAILS_SOURCE + POLYGON_FILL_LAYER, 'fill-extrusion-color'],
-            [DETAILS_SOURCE + POLYGON_BORDER_LAYER, 'line-color'],
-          ].forEach(([layerID, property]) => {
-            if (map.current?.getLayer(layerID)) {
-              map.current.setPaintProperty(layerID, property, color);
-            } else {
-              console.warn("Layer does not exist, can't set property", { layerID, property, color });
-            }
-          });
-        },
-        newColorControl = new EtymologyColorControl(
-          preset,
-          colorScheme,
-          setColorScheme,
-          setLayerColor,
-          t,
-          DETAILS_SOURCE,
-          [DETAILS_SOURCE + POINT_LAYER, DETAILS_SOURCE + LINE_LAYER, DETAILS_SOURCE + POLYGON_BORDER_LAYER]
-        );
-      setColorControl(oldControl => {
-        if (!map.current || oldControl === newColorControl) return oldControl;
-        if (oldControl) map.current?.removeControl(oldControl);
-        map.current.addControl(newColorControl, 'top-left');
-        return newColorControl;
-      });
-
-      if (preset.mapcomplete_theme) {
-        const newMapCompleteControl = new MapCompleteControl(preset.mapcomplete_theme, thresholdZoomLevel);
-        setMapcompleteControl(oldControl => {
-          if (!map.current || oldControl === newMapCompleteControl) return oldControl;
-          if (oldControl) map.current?.removeControl(oldControl);
-          map.current.addControl(newMapCompleteControl, 'top-left');
-          return newMapCompleteControl;
-        });
-      }
     }).catch(e => {
       //setBackEndService(null);
       //setSourcePreset(null);
       console.error("Failed updating source preset", e);
       showSnackbar(t("snackbar.map_error"));
+    }).finally(() => {
+      process.env.REACT_APP_FETCHING_PRESET = undefined;
     });
-
-  }, [backEndID, colorScheme, setBackEndControl, setBackEndID, setColorControl, setColorScheme, setMapcompleteControl, sourcePreset?.id, sourcePresetID, t]);
+  }, [sourcePreset?.id, sourcePresetID, t, updatePresetDependantControls]);
 
   return (
     <div className={styles["map-wrap"]}>

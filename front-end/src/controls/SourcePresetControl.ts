@@ -1,8 +1,8 @@
 import type { TFunction } from "i18next";
-import { DEFAULT_SOURCE_PRESET_ID } from '../model/SourcePreset';
-import { getSourcePresetID } from '../useUrlFragment';
-import { DropdownControl } from './DropdownControl';
 import { parseStringArrayConfig } from "../config";
+import { getSourcePresetID } from '../hooks/useUrlFragment';
+import { DEFAULT_SOURCE_PRESET_ID } from '../model/SourcePreset';
+import { DropdownControl } from './DropdownControl';
 
 /**
  * Let the user choose the tags template.
@@ -13,8 +13,7 @@ export class SourcePresetControl extends DropdownControl {
     constructor(
         startSourcePresetID: string, onPresetChange: (sourcePresetID: string) => void, t: TFunction
     ) {
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const sourcePresetIDs = parseStringArrayConfig(process.env.owmf_source_presets) || [DEFAULT_SOURCE_PRESET_ID],
+        const sourcePresetIDs = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : [DEFAULT_SOURCE_PRESET_ID],
             selectPreset = (sourcePresetID: string) => {
                 if (process.env.NODE_ENV === 'development') console.debug("Selecting source preset ", { sourcePresetID });
 

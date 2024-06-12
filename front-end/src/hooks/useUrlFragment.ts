@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { parseStringArrayConfig } from "./config";
-import { DEFAULT_SOURCE_PRESET_ID } from "./model/SourcePreset";
-import { ColorSchemeID } from "./model/colorScheme";
+import { parseStringArrayConfig } from "../config";
+import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
+import { ColorSchemeID } from "../model/colorScheme";
 
 export function useUrlFragment() {
     const [lon, setLon] = useState<number>(() => process.env.owmf_default_center_lat ? parseFloat(process.env.owmf_default_center_lat) : 0),
@@ -12,7 +12,10 @@ export function useUrlFragment() {
         [backEndID, setBackEndID] = useState<string>(() => process.env.owmf_default_backend || "overpass_all"),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => new URLSearchParams(window.location.search).get("style") || process.env.owmf_default_background_style || "stadia_alidade"),
-        [sourcePresetID, setSourcePresetID] = useState<string>(() => { const list = parseStringArrayConfig(process.env.owmf_source_presets); return list?.length ? list[0] : DEFAULT_SOURCE_PRESET_ID; }),
+        [sourcePresetID, setSourcePresetID] = useState<string>(() => {
+            const list = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
+            return list?.length ? list[0] : DEFAULT_SOURCE_PRESET_ID;
+        }),
         setLat = useCallback((lat: number) => {
             if (isNaN(lat) || lat < -90 || lat > 90)
                 throw new Error(`Invalid latitude: ${lat}`);
