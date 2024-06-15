@@ -1,6 +1,6 @@
 'use client';
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
-import MapCompleteControl from '@/src/components/controls/MapCompleteControl';
+import { MapCompleteControl } from '@/src/components/controls/MapCompleteControl';
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { MapService } from '@/src/services/MapService';
@@ -12,6 +12,29 @@ import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { getBackgroundStyles } from './backgroundStyles';
+import { QueryLinkControl } from "../controls/QueryLinkControl";
+import { useTranslation } from "next-i18next";
+import { parseBoolConfig } from "@/src/config";
+
+const PMTILES_PREFIX = "pmtiles",
+  DETAILS_SOURCE = "detail_source",
+  POINT_LAYER = '_layer_point',
+  POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
+  LINE_LAYER = '_layer_lineString_line',
+  LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
+  POLYGON_BORDER_LAYER = '_layer_polygon_border',
+  POLYGON_FILL_LAYER = '_layer_polygon_fill',
+  ELEMENTS_SOURCE = "elements_source",
+  CLUSTER_LAYER = '_layer_cluster',
+  COUNT_LAYER = '_layer_count',
+  POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
+  POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
+  COUNTRY_MAX_ZOOM = 5,
+  COUNTRY_ADMIN_LEVEL = 2,
+  STATE_MAX_ZOOM = 7,
+  STATE_ADMIN_LEVEL = 4,
+  PROVINCE_MAX_ZOOM = 9,
+  PROVINCE_ADMIN_LEVEL = 6;
 
 export const OwmfMap = () => {
     const { lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
@@ -19,7 +42,8 @@ export const OwmfMap = () => {
         [backEndService, setBackEndService] = useState<MapService | null>(null),
         backgroundStyles = useMemo(() => getBackgroundStyles(), []),
         backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
-        minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []);
+        minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
+        { t } = useTranslation();
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
         const center = e.target.getCenter();
@@ -93,6 +117,11 @@ export const OwmfMap = () => {
         <FullscreenControl position="top-right" />
         <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
         <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
+        <QueryLinkControl iconURL="/img/Overpass-turbo.svg" title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="overpass_query" baseURL="https://overpass-turbo.eu/?Q=" minZoomLevel={minZoomLevel} position="top-right" />
+        <QueryLinkControl iconURL="/img/Wikidata_Query_Service_Favicon.svg" title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="wdqs_query" baseURL="https://query.wikidata.org/#" minZoomLevel={minZoomLevel} position="top-right" />
+        {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_wd_query" baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
+        {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_osm_query" baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
+
 
         <ScaleControl position="bottom-right" />
     </Map>;

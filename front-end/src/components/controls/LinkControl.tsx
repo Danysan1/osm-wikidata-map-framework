@@ -50,7 +50,7 @@ class LinkControlObject implements IControl {
 }
 
 interface LinkControlProps {
-  linkURL: string;
+  linkURL?: string;
   iconURL: string;
   title: string;
   minZoomLevel?: number;
@@ -68,7 +68,10 @@ export const LinkControl: FC<LinkControlProps> = (props) => {
 
   const map = ctrl.getMap(),
     container = ctrl.getContainer();
-  const visible = useMemo(() => props.minZoomLevel === undefined || zoom >= props.minZoomLevel, [props.minZoomLevel, zoom]);
+  const visible = useMemo(
+    () => !!props.linkURL && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
+    [props.linkURL, props.minZoomLevel, zoom]
+  );
   const openLink = useCallback(() => window.open(props.linkURL), [props.linkURL]);
   const element = useMemo(() =>
     visible ? <div className={`maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl link-ctrl ${props.className} ${visible ? '' : 'hiddenElement'}`}>

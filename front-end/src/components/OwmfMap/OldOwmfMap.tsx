@@ -69,45 +69,6 @@ export default function OwmfMap() {
       console.error(e);
     }
 
-    /* Set up controls in the top RIGHT corner */
-    map.current.addControl(new LinkControl(
-      "img/Overpass-turbo.svg",
-      t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo"),
-      [ELEMENTS_SOURCE, DETAILS_SOURCE],
-      "overpass_query",
-      "https://overpass-turbo.eu/?Q=",
-      minZoomLevel
-    ), 'top-right');
-
-    map.current.addControl(new LinkControl(
-      "img/Wikidata_Query_Service_Favicon.svg",
-      t("wdqs_query", "Source SPARQL query on Wikidata Query Service"),
-      [ELEMENTS_SOURCE, DETAILS_SOURCE],
-      "wdqs_query",
-      "https://query.wikidata.org/#",
-      minZoomLevel
-    ), 'top-right');
-
-    if (parseBoolConfig(process.env.owmf_qlever_enable)) {
-      map.current.addControl(new LinkControl(
-        "img/qlever.ico",
-        t("qlever_query", "Source SPARQL query on QLever UI"),
-        [ELEMENTS_SOURCE, DETAILS_SOURCE],
-        "qlever_wd_query",
-        "https://qlever.cs.uni-freiburg.de/wikidata/?query=",
-        minZoomLevel
-      ), 'top-right');
-
-      map.current.addControl(new LinkControl(
-        "img/qlever.ico",
-        t("qlever_query", "Source SPARQL query on QLever UI"),
-        [ELEMENTS_SOURCE, DETAILS_SOURCE],
-        "qlever_osm_query",
-        "https://qlever.cs.uni-freiburg.de/osm-planet/?query=",
-        minZoomLevel
-      ), 'top-right');
-    }
-
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     setRTLTextPlugin(
       'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',

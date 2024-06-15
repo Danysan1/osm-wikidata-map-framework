@@ -43,12 +43,12 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = (props) => {
         }
     }, [props.baseURL, props.mapEventField, props.sourceIDs]);
 
-  return url ? <LinkControl
+  return <LinkControl
     linkURL={url}
     iconURL={props.iconURL}
     title={props.title}
     minZoomLevel={props.minZoomLevel}
     position={props.position}
     className={props.className}
-    onSourceData={onSourceDataHandler} /> : null;
+    onSourceData={onSourceDataHandler} />;
 }
