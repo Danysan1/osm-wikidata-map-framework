@@ -1,4 +1,5 @@
-import OwmfMap from "@/src/components/OwmfMap/OwmfMap";
+import { OwmfMap } from "@/src/components/OwmfMap/OwmfMap";
+import { UrlFragmentContextProvider } from "@/src/context/UrlFragmentContext";
 import { loadServerI18n } from "@/src/i18n/server";
 import { GoogleTagManager } from '@next/third-parties/google';
 import { Metadata } from "next";
@@ -43,7 +44,9 @@ export default function Home() {
   return (
     <main className={styles.main}>
       {process.env.owmf_google_analytics_id && <GoogleTagManager gtmId={process.env.owmf_google_analytics_id} />}
-      <OwmfMap />
+      <UrlFragmentContextProvider>
+        <OwmfMap />
+      </UrlFragmentContextProvider>
     </main>
   );
 }
