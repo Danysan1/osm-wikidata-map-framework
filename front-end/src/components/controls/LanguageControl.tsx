@@ -5,7 +5,6 @@ import { DropdownControl, DropdownItem } from "./DropdownControl";
 
 interface LanguageControlProps {
     position?: ControlPosition;
-    className?: string;
 }
 
 /**
@@ -42,7 +41,7 @@ export const LanguageControl: FC<LanguageControlProps> = (props) => {
         selectedValue={i18n.language}
         title={t("change_language")}
         position={props.position}
-        className={props.className}
+        className='language-ctrl'
     >
         <tr>
             <td colSpan={2}>

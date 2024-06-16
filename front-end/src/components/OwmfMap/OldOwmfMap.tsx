@@ -1,14 +1,8 @@
 "use client";
-import { parseBoolConfig } from '@/src/config';
-import { BackEndControl } from '@/src/controls/BackEndControl';
 import { BackgroundStyleControl } from '@/src/controls/BackgroundStyleControl';
 import { DataTableControl } from '@/src/controls/DataTableControl';
 import { EtymologyColorControl } from '@/src/controls/EtymologyColorControl';
 import { InfoControl } from '@/src/controls/InfoControl';
-import { LanguageControl } from '@/src/controls/LanguageControl';
-import { LinkControl } from '@/src/controls/LinkControl';
-import { MapCompleteControl } from '@/src/controls/MapCompleteControl';
-import { SourcePresetControl } from '@/src/controls/SourcePresetControl';
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { CombinedCachedMapService } from '@/src/services/CombinedCachedMapService';
 import { ExpressionSpecification, Map, setRTLTextPlugin } from 'maplibre-gl';
@@ -59,16 +53,6 @@ export default function OwmfMap() {
 
     initBaseControls(map.current);
 
-    const minZoomLevel = parseInt(process.env.owmf_min_zoom_level ?? "9");
-    if (process.env.NODE_ENV === 'development') console.debug("Initializing source & color controls", { minZoomLevel });
-
-    try {
-      const presetControl = new SourcePresetControl(sourcePresetID, setSourcePresetID, t);
-      map.current.addControl(presetControl, 'top-left');
-    } catch (e) {
-      console.error(e);
-    }
-
     // https://maplibre.org/maplibre-gl-js-docs/example/mapbox-gl-rtl-text/
     setRTLTextPlugin(
       'https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js',
@@ -84,16 +68,6 @@ export default function OwmfMap() {
   const updatePresetDependantControls = useCallback((preset: SourcePreset) => {
     console.debug("updatePresetDependantControls: updating", preset);
     setBackEndService(new CombinedCachedMapService(preset));
-
-    const newBackEndControl: BackEndControl = new BackEndControl(
-      preset, backEndID, setBackEndID, t
-    );
-    setBackEndControl(oldControl => {
-      if (!map.current || oldControl === newBackEndControl) return oldControl;
-      if (oldControl) map.current?.removeControl(oldControl);
-      map.current.addControl(newBackEndControl, 'top-left');
-      return newBackEndControl;
-    });
 
     const thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
       setLayerColor = (color: string | ExpressionSpecification) => {
@@ -126,16 +100,6 @@ export default function OwmfMap() {
       map.current.addControl(newColorControl, 'top-left');
       return newColorControl;
     });
-
-    if (preset.mapcomplete_theme) {
-      const newMapCompleteControl = new MapCompleteControl(preset.mapcomplete_theme, thresholdZoomLevel);
-      setMapcompleteControl(oldControl => {
-        if (!map.current || oldControl === newMapCompleteControl) return oldControl;
-        if (oldControl) map.current?.removeControl(oldControl);
-        map.current.addControl(newMapCompleteControl, 'top-left');
-        return newMapCompleteControl;
-      });
-    }
   }, [backEndID, colorScheme, setBackEndID, setColorScheme, t]);
 
   return (
@@ -148,8 +112,6 @@ export default function OwmfMap() {
 function initBaseControls(map: Map) {
 
   map.addControl(new InfoControl(), 'top-left');
-
-  map.addControl(new LanguageControl(), 'top-right');
 
   map.addControl(new DataTableControl(
     DETAILS_SOURCE,

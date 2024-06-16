@@ -8,7 +8,6 @@ import { DropdownControl } from "./DropdownControl";
 
 interface SourcePresetControlProps {
     position?: ControlPosition;
-    className?: string;
 }
 
 /**
@@ -34,6 +33,6 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = (props) => {
         selectedValue={sourcePresetID}
         title={t("preset.choose_preset")}
         position={props.position}
-        className={props.className}
+        className='preset-ctrl'
     />;
 }

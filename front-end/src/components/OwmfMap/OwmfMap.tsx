@@ -5,14 +5,18 @@ import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { loadTranslator } from "@/src/i18n/client";
 import { SourcePreset } from '@/src/model/SourcePreset';
+import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
+import { RequestTransformFunction } from "maplibre-gl";
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import { BackEndControl } from "../controls/BackEndControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../controls/QueryLinkControl";
@@ -39,10 +43,8 @@ const PMTILES_PREFIX = "pmtiles",
     PROVINCE_MAX_ZOOM = 9,
     PROVINCE_ADMIN_LEVEL = 6;
 
-loadTranslator().then(({ i18nInstance }) => {
-    if (process.env.NODE_ENV === 'development') console.warn("Loaded translator", i18nInstance);
-}).catch(e => {
-    if(process.env.NODE_ENV === 'development') console.error("Failed loading translator", e);
+loadTranslator().catch(e => {
+    if (process.env.NODE_ENV === 'development') console.error("Failed loading translator", e);
 });
 
 export const OwmfMap = () => {
@@ -60,6 +62,16 @@ export const OwmfMap = () => {
         setLat(center.lat);
         setZoom(e.target.getZoom());
     }, [setLat, setLon, setZoom]);
+
+    const requestTransformFunction: RequestTransformFunction = useCallback((url, resourceType) => {
+        if (process.env.owmf_mapbox_token && isMapboxURL(url))
+            return transformMapboxUrl(url, resourceType as string, process.env.owmf_mapbox_token);
+
+        if (/^http:\/\/[^/]+(?<!localhost)\/(elements|etymology_map)\//.test(url))
+            return { url: url.replace("http", "https") };
+
+        return { url };
+    }, []);
 
     useEffect(() => {
         // https://nextjs.org/docs/app/api-reference/functions/generate-metadata#resource-hints
@@ -96,6 +108,7 @@ export const OwmfMap = () => {
                 }
 
                 if (process.env.NODE_ENV === 'development') console.debug("Updating source preset", { old: oldPreset?.id, new: newPreset.id });
+                setBackEndService(new CombinedCachedMapService(newPreset));
                 return newPreset;
             });
         }).catch(e => {
@@ -110,6 +123,7 @@ export const OwmfMap = () => {
 
     return <Map
         mapLib={import('maplibre-gl')}
+        RTLTextPlugin='https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js'
         initialViewState={{
             longitude: lon,
             latitude: lat,
@@ -118,15 +132,17 @@ export const OwmfMap = () => {
         //style={{ width: 600, height: 400 }}
         mapStyle={backgroundStyle?.styleUrl}
         onMoveEnd={onMoveEndHandler}
+        transformRequest={requestTransformFunction}
     >
 
         <SourcePresetControl position="top-left" />
-        <LanguageControl position="top-left" />
+        {sourcePreset && <BackEndControl preset={sourcePreset} position="top-left" />}
         {sourcePreset?.mapcomplete_theme && <MapCompleteControl minZoomLevel={minZoomLevel} mapComplete_theme={sourcePreset?.mapcomplete_theme} position="top-left" />}
 
         <NavigationControl visualizePitch position="top-right" />
         <GeolocateControl positionOptions={{ enableHighAccuracy: true }} trackUserLocation={false} position="top-right" />
         <FullscreenControl position="top-right" />
+        <LanguageControl position="top-right" />
         <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
         <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
         <QueryLinkControl iconURL="/img/Overpass-turbo.svg" title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="overpass_query" baseURL="https://overpass-turbo.eu/?Q=" minZoomLevel={minZoomLevel} position="top-right" />
