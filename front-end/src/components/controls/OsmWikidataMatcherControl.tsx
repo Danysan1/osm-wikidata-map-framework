@@ -7,6 +7,10 @@ interface OsmWikidataMatcherControlProps {
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
+/**
+ * Let the user open the current view inside OSM <-> Wikidata matcher.
+ * @see https://map.osm.wikidata.link/
+ */
 export const OsmWikidataMatcherControl: FC<OsmWikidataMatcherControlProps> = (props) => {
   const { lon, lat, zoom } = useUrlFragmentContext(),
     url = useMemo(() => `https://map.osm.wikidata.link/map/${zoom.toFixed()}/${lat}/${lon}`, [lat, lon, zoom]);

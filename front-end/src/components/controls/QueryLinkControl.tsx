@@ -14,6 +14,9 @@ interface QueryLinkControlProps {
     className?: string;
 }
 
+/**
+ * Let the user open the query used to fetch the data shown in the current view inside their native editor.
+ */
 export const QueryLinkControl: FC<QueryLinkControlProps> = (props) => {
     const [url, setUrl] = useState<string|undefined>(undefined);
     const onSourceDataHandler = useCallback((e: MapSourceDataEvent) => {

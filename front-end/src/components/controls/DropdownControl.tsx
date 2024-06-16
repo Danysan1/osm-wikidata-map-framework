@@ -4,15 +4,6 @@ import { ChangeEvent, ChangeEventHandler, FC, cloneElement, useCallback, useMemo
 import { createPortal } from 'react-dom';
 import { useControl } from 'react-map-gl/maplibre';
 
-/**
- * Let the user choose something through a dropdown.
- * 
- * Control implemented as ES6 class and integrated in React through createPortal()
- * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/IControl/
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
- * @see https://react.dev/reference/react-dom/createPortal
- * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
- */
 class DropdownControlObject implements IControl {
     private _map?: Map;
     private _container?: HTMLElement;
@@ -58,7 +49,7 @@ export interface DropdownItem {
 interface DropdownControlProps {
     buttonContent: string;
     dropdownItems: DropdownItem[],
-    startDropdownItemsId: string,
+    selectedValue: string,
     title: string;
     buttonPosition: 'left' | 'right';
     minZoomLevel?: number;
@@ -67,6 +58,15 @@ interface DropdownControlProps {
     onSourceData?: (e: MapSourceDataEvent) => void;
 }
 
+/**
+ * Let the user choose something through a dropdown.
+ * 
+ * Control implemented as ES6 class and integrated in React through createPortal()
+ * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/IControl/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ * @see https://react.dev/reference/react-dom/createPortal
+ * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
+ */
 export const DropdownControl: FC<DropdownControlProps> = (props) => {
     const { zoom } = useUrlFragmentContext(),
         dropdownId = `dropdown_${props.className}`,
@@ -88,31 +88,27 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                 selectedItem = props.dropdownItems.find(item => item.id === selectedID);
             selectedItem && selectedItem.onSelect(e);
         }, [props.dropdownItems]),
-        dropdownCell = useMemo(() => {
-            if (!dropdownVisible) return null;
+        options = useMemo(() => {
             const itemToOption = (item: DropdownItem): JSX.Element => (
                 <option
                     key={item.id}
                     value={item.id}
                     title={item.text}
-                    aria-label={item.text}
-                    selected={item.id == props.startDropdownItemsId}>
+                    aria-label={item.text}>
                     {item.text}
                 </option>
             );
             const categories = new Set(props.dropdownItems.filter(item => item.category).map(item => item.category!));
 
-            return <td colSpan={2} className='dropdown-cell content-cell'>
-                <select id={dropdownId} className='dropdown-ctrl-dropdown' onChange={dropDownChangeHandler} name={props.className} title={props.title} >
-                    {Array.from(categories).map(category =>
-                        <optgroup key={category} label={category}>
-                            {props.dropdownItems.filter(item => item.category === category).map(itemToOption)}
-                        </optgroup>
-                    )}
-                    {props.dropdownItems.filter(item => !item.category).map(itemToOption)}
-                </select>
-            </td>;
-        }, [dropDownChangeHandler, dropdownId, dropdownVisible, props.className, props.dropdownItems, props.startDropdownItemsId, props.title]);
+            return <>
+                {Array.from(categories).map(category =>
+                    <optgroup key={category} label={category}>
+                        {props.dropdownItems.filter(item => item.category === category).map(itemToOption)}
+                    </optgroup>
+                )}
+                {props.dropdownItems.filter(item => !item.category).map(itemToOption)}
+            </>
+        }, [props.dropdownItems]);
 
     const element = useMemo(() =>
         visible ? <div className={`maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl dropdown-ctrl ${props.className} ${visible ? '' : 'hiddenElement'}`}>
@@ -123,12 +119,16 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                         {props.buttonPosition === 'left' ? titleCell : btnCell}
                     </tr>
                     <tr>
-                        {dropdownCell}
+                        {dropdownVisible && <td colSpan={2} className='dropdown-cell content-cell'>
+                            <select id={dropdownId} value={props.selectedValue} className='dropdown-ctrl-dropdown' onChange={dropDownChangeHandler} name={props.className} title={props.title} >
+                                {options}
+                            </select>
+                        </td>}
                     </tr>
                 </tbody>
             </table>
         </div> : null,
-        [btnCell, dropdownCell, props.buttonPosition, props.className, titleCell, visible]);
+        [btnCell, dropDownChangeHandler, dropdownId, dropdownVisible, options, props.buttonPosition, props.className, props.selectedValue, props.title, titleCell, visible]);
 
     return element && map && container && createPortal(cloneElement(element, { map }), container);
 }

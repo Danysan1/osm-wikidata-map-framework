@@ -59,7 +59,11 @@ export const UrlFragmentContextProvider = (props: PropsWithChildren) => {
         [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => new URLSearchParams(window.location.search).get("style") || process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID),
         [sourcePresetID, setSourcePresetID] = useState<string>(() => {
             const list = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
-            return list?.length ? list[0] : DEFAULT_SOURCE_PRESET_ID;
+            if(!list?.length) return DEFAULT_SOURCE_PRESET_ID;
+
+            if(window.location.hash?.split(',')?.length >= 7) return window.location.hash.split(',')[6];
+            
+            return list[0];
         }),
         setLat = useCallback((lat: number) => {
             if (isNaN(lat) || lat < -90 || lat > 90)

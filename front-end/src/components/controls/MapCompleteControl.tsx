@@ -9,6 +9,10 @@ interface MapCompleteControlProps {
   position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 }
 
+/**
+ * Let the user open the current view inside MapComplete.
+ * @see https://mapcomplete.org/
+ */
 export const MapCompleteControl: FC<MapCompleteControlProps> = (props) => {
   const { lon, lat, zoom } = useUrlFragmentContext();
   const url = useMemo(() => `https://mapcomplete.org/${props.mapComplete_theme}?z=${zoom}&lat=${lat}&lon=${lon}`, [lat, lon, props.mapComplete_theme, zoom]);

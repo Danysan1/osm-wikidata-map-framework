@@ -5,15 +5,6 @@ import { FC, cloneElement, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { useControl } from 'react-map-gl/maplibre';
 
-/**
- * Let the user open a link.
- * 
- * Control implemented as ES6 class and integrated in React through createPortal()
- * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/IControl/
- * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
- * @see https://react.dev/reference/react-dom/createPortal
- * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
- */
 class LinkControlObject implements IControl {
   private _map?: Map;
   private _container?: HTMLElement;
@@ -59,6 +50,15 @@ interface LinkControlProps {
   onSourceData?: (e: MapSourceDataEvent) => void;
 }
 
+/**
+ * Let the user open a link.
+ * 
+ * Control implemented as ES6 class and integrated in React through createPortal()
+ * @see https://maplibre.org/maplibre-gl-js/docs/API/interfaces/IControl/
+ * @see https://docs.mapbox.com/mapbox-gl-js/api/markers/#icontrol
+ * @see https://react.dev/reference/react-dom/createPortal
+ * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
+ */
 export const LinkControl: FC<LinkControlProps> = (props) => {
   const { zoom } = useUrlFragmentContext();
 

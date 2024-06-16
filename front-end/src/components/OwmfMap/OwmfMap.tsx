@@ -1,20 +1,21 @@
 'use client';
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from '@/src/components/controls/MapCompleteControl';
+import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
 import 'maplibre-gl/dist/maplibre-gl.css';
+import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
-import { getBackgroundStyles } from './backgroundStyles';
 import { QueryLinkControl } from "../controls/QueryLinkControl";
-import { useTranslation } from "next-i18next";
-import { parseBoolConfig } from "@/src/config";
+import { SourcePresetControl } from "../controls/SourcePresetControl";
+import { getBackgroundStyles } from './backgroundStyles';
 
 const PMTILES_PREFIX = "pmtiles",
   DETAILS_SOURCE = "detail_source",
@@ -110,6 +111,8 @@ export const OwmfMap = () => {
         mapStyle={backgroundStyle?.styleUrl}
         onMoveEnd={onMoveEndHandler}
     >
+
+        <SourcePresetControl position="top-left" />
         {sourcePreset?.mapcomplete_theme && <MapCompleteControl minZoomLevel={minZoomLevel} mapComplete_theme={sourcePreset?.mapcomplete_theme} position="top-left" />}
 
         <NavigationControl visualizePitch position="top-right" />

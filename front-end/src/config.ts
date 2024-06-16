@@ -3,7 +3,7 @@ export function parseBoolConfig(rawValue?: string): boolean {
 }
 
 export function parseStringArrayConfig(rawValue: string): string[] {
-    console.debug("parseStringArrayConfig", { rawValue });
+    //console.debug("parseStringArrayConfig", { rawValue });
     const rawObject = rawValue ? JSON.parse(rawValue) as unknown : null;
     if (!Array.isArray(rawObject))
         throw new Error("Invalid JSON object");
