@@ -1,4 +1,5 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
+import { ControlPosition } from 'maplibre-gl';
 import { FC, useMemo } from 'react';
 import { LinkControl } from './LinkControl';
 
@@ -6,7 +7,7 @@ import { LinkControl } from './LinkControl';
 interface MapCompleteControlProps {
   minZoomLevel: number;
   mapComplete_theme: string;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: ControlPosition;
 }
 
 /**

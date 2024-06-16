@@ -1,5 +1,5 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
-import type { IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
+import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
 import Image from 'next/image';
 import { FC, cloneElement, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -45,7 +45,7 @@ interface LinkControlProps {
   iconURL: string;
   title: string;
   minZoomLevel?: number;
-  position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+  position?: ControlPosition;
   className?: string;
   onSourceData?: (e: MapSourceDataEvent) => void;
 }

@@ -1,5 +1,5 @@
 import { EtymologyResponse } from '@/src/model/EtymologyResponse';
-import { MapSourceDataEvent } from 'maplibre-gl';
+import { ControlPosition, MapSourceDataEvent } from 'maplibre-gl';
 import { FC, useCallback, useState } from 'react';
 import { LinkControl } from './LinkControl';
 
@@ -10,7 +10,7 @@ interface QueryLinkControlProps {
     iconURL: string;
     title: string;
     minZoomLevel?: number;
-    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    position?: ControlPosition;
     className?: string;
 }
 

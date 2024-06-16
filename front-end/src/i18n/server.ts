@@ -1,9 +1,9 @@
 import { existsSync, readFileSync } from "fs";
-import { Resource } from 'i18next';
+import { Resource, createInstance } from 'i18next';
+import ChainedBackend from 'i18next-chained-backend';
 import resourcesToBackend from "i18next-resources-to-backend";
 import { join } from "path";
-import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, loadI18n } from "./common";
-
+import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, MAIN_NAMESPACE } from "./common";
 
 export async function loadServerI18n(lang?: string) {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -24,5 +24,16 @@ export async function loadServerI18n(lang?: string) {
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
-    return await loadI18n(language, backends, backendOptions);
+    const i18nInstance = createInstance();
+    const t = await i18nInstance.use(ChainedBackend)
+        .init({
+        debug: process.env.NODE_ENV === 'development',
+        fallbackLng: DEFAULT_LANGUAGE,
+        lng: lang, // Currently uses only language, not locale
+        backend: { backends, backendOptions },
+        ns: [MAIN_NAMESPACE, DEFAULT_NAMESPACE],
+        fallbackNS: DEFAULT_NAMESPACE,
+        defaultNS: DEFAULT_NAMESPACE
+    });
+    return { t, i18nInstance };
 }

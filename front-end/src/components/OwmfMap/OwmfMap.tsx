@@ -3,6 +3,7 @@ import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from '@/src/components/controls/MapCompleteControl';
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { loadTranslator } from "@/src/i18n/client";
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
@@ -12,30 +13,37 @@ import { useTranslation } from "next-i18next";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../controls/QueryLinkControl";
 import { SourcePresetControl } from "../controls/SourcePresetControl";
 import { getBackgroundStyles } from './backgroundStyles';
 
 const PMTILES_PREFIX = "pmtiles",
-  DETAILS_SOURCE = "detail_source",
-  POINT_LAYER = '_layer_point',
-  POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
-  LINE_LAYER = '_layer_lineString_line',
-  LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
-  POLYGON_BORDER_LAYER = '_layer_polygon_border',
-  POLYGON_FILL_LAYER = '_layer_polygon_fill',
-  ELEMENTS_SOURCE = "elements_source",
-  CLUSTER_LAYER = '_layer_cluster',
-  COUNT_LAYER = '_layer_count',
-  POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
-  POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
-  COUNTRY_MAX_ZOOM = 5,
-  COUNTRY_ADMIN_LEVEL = 2,
-  STATE_MAX_ZOOM = 7,
-  STATE_ADMIN_LEVEL = 4,
-  PROVINCE_MAX_ZOOM = 9,
-  PROVINCE_ADMIN_LEVEL = 6;
+    DETAILS_SOURCE = "detail_source",
+    POINT_LAYER = '_layer_point',
+    POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
+    LINE_LAYER = '_layer_lineString_line',
+    LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
+    POLYGON_BORDER_LAYER = '_layer_polygon_border',
+    POLYGON_FILL_LAYER = '_layer_polygon_fill',
+    ELEMENTS_SOURCE = "elements_source",
+    CLUSTER_LAYER = '_layer_cluster',
+    COUNT_LAYER = '_layer_count',
+    POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
+    POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
+    COUNTRY_MAX_ZOOM = 5,
+    COUNTRY_ADMIN_LEVEL = 2,
+    STATE_MAX_ZOOM = 7,
+    STATE_ADMIN_LEVEL = 4,
+    PROVINCE_MAX_ZOOM = 9,
+    PROVINCE_ADMIN_LEVEL = 6;
+
+loadTranslator().then(({ i18nInstance }) => {
+    if (process.env.NODE_ENV === 'development') console.warn("Loaded translator", i18nInstance);
+}).catch(e => {
+    if(process.env.NODE_ENV === 'development') console.error("Failed loading translator", e);
+});
 
 export const OwmfMap = () => {
     const { lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
@@ -113,6 +121,7 @@ export const OwmfMap = () => {
     >
 
         <SourcePresetControl position="top-left" />
+        <LanguageControl position="top-left" />
         {sourcePreset?.mapcomplete_theme && <MapCompleteControl minZoomLevel={minZoomLevel} mapComplete_theme={sourcePreset?.mapcomplete_theme} position="top-left" />}
 
         <NavigationControl visualizePitch position="top-right" />

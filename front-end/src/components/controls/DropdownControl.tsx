@@ -1,6 +1,6 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
-import type { IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
-import { ChangeEvent, ChangeEventHandler, FC, cloneElement, useCallback, useMemo, useState } from 'react';
+import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
+import { ChangeEvent, ChangeEventHandler, FC, PropsWithChildren, cloneElement, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useControl } from 'react-map-gl/maplibre';
 
@@ -46,14 +46,13 @@ export interface DropdownItem {
     onSelect: (event: ChangeEvent<HTMLSelectElement>) => void;
 }
 
-interface DropdownControlProps {
+interface DropdownControlProps extends PropsWithChildren {
     buttonContent: string;
     dropdownItems: DropdownItem[],
     selectedValue: string,
     title: string;
-    buttonPosition: 'left' | 'right';
     minZoomLevel?: number;
-    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    position?: ControlPosition;
     className?: string;
     onSourceData?: (e: MapSourceDataEvent) => void;
 }
@@ -75,10 +74,8 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
         }, { position: props.position }),
         map = ctrl.getMap(),
         container = ctrl.getContainer(),
-        visible = useMemo(
-            () => props.dropdownItems.length > 1 && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
-            [props.dropdownItems.length, props.minZoomLevel, zoom]
-        ),
+        buttonOnTheLeft = props.position === 'top-left' || props.position === 'bottom-left',
+        visible = props.dropdownItems.length > 1 && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
         [dropdownVisible, setDropdownVisible] = useState(true),
         onBtnClick = useCallback(() => setDropdownVisible(prev => !prev), []),
         btnCell = useMemo(() => <td className='title-cell'><button onClick={onBtnClick} className='dropdown-ctrl-button' title={props.title} aria-label={props.title}>{props.buttonContent}</button></td>, [onBtnClick, props.buttonContent, props.title]),
@@ -115,8 +112,8 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
             <table className='dropdown-ctrl-table custom-ctrl-table'>
                 <tbody>
                     <tr>
-                        {props.buttonPosition === 'left' ? btnCell : titleCell}
-                        {props.buttonPosition === 'left' ? titleCell : btnCell}
+                        {buttonOnTheLeft ? btnCell : titleCell}
+                        {buttonOnTheLeft ? titleCell : btnCell}
                     </tr>
                     <tr>
                         {dropdownVisible && <td colSpan={2} className='dropdown-cell content-cell'>
@@ -125,10 +122,11 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                             </select>
                         </td>}
                     </tr>
+                    {props.children}
                 </tbody>
             </table>
         </div> : null,
-        [btnCell, dropDownChangeHandler, dropdownId, dropdownVisible, options, props.buttonPosition, props.className, props.selectedValue, props.title, titleCell, visible]);
+        [btnCell, buttonOnTheLeft, dropDownChangeHandler, dropdownId, dropdownVisible, options, props.children, props.className, props.selectedValue, props.title, titleCell, visible]);
 
     return element && map && container && createPortal(cloneElement(element, { map }), container);
 }

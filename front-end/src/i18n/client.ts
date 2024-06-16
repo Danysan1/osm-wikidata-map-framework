@@ -1,9 +1,12 @@
-import { Resource, i18n } from 'i18next';
+'use client';
+
+import { Resource, createInstance, i18n } from 'i18next';
+import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import { TFunction } from 'next-i18next';
-import { DEFAULT_LANGUAGE, loadI18n } from "./common";
-
+import { initReactI18next } from 'react-i18next';
+import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, MAIN_NAMESPACE } from "./common";
 
 /**
  * Order of priority:
@@ -41,7 +44,19 @@ async function loadClientI18n() {
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
-    return await loadI18n(language, backends, backendOptions);
+    const i18nInstance = createInstance();
+    const t = await i18nInstance.use(ChainedBackend)
+        .use(initReactI18next)
+        .init({
+        debug: process.env.NODE_ENV === 'development',
+        fallbackLng: DEFAULT_LANGUAGE,
+        lng: language, // Currently uses only language, not locale
+        backend: { backends, backendOptions },
+        ns: [MAIN_NAMESPACE, DEFAULT_NAMESPACE],
+        fallbackNS: DEFAULT_NAMESPACE,
+        defaultNS: DEFAULT_NAMESPACE
+    });
+    return { t, i18nInstance };
 }
 
 export function translateContent(parent: HTMLElement, selector: string, key: string, defaultValue: string) {

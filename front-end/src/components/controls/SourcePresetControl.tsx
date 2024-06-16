@@ -1,12 +1,13 @@
 import { parseStringArrayConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DEFAULT_SOURCE_PRESET_ID } from "@/src/model/SourcePreset";
+import { ControlPosition } from "maplibre-gl";
 import { useTranslation } from "next-i18next";
 import { FC, useMemo } from "react";
 import { DropdownControl } from "./DropdownControl";
 
 interface SourcePresetControlProps {
-    position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+    position?: ControlPosition;
     className?: string;
 }
 
@@ -33,7 +34,6 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = (props) => {
         selectedValue={sourcePresetID}
         title={t("preset.choose_preset")}
         position={props.position}
-        buttonPosition={props.position === 'top-left' || props.position === 'bottom-left' ? 'left' : 'right'}
         className={props.className}
     />;
 }
