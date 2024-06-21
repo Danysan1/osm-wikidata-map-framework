@@ -137,7 +137,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
         buttonContent="⚙️"
         dropdownItems={dropdownItems}
         selectedValue={backEndID}
-        title={t("props.preset.choose_preset")}
+        title={t("source.choose_source")}
         position={props.position}
         className="back-end-ctrl"
     >

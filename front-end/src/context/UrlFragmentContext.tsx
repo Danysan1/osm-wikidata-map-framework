@@ -19,8 +19,8 @@ interface UrlFragmentState {
     setLat: (lat: number) => void;
     zoom: number;
     setZoom: (zoom: number) => void;
-    colorScheme: ColorSchemeID;
-    setColorScheme: (colorScheme: ColorSchemeID) => void;
+    colorSchemeID: ColorSchemeID;
+    setColorSchemeID: (colorScheme: ColorSchemeID) => void;
     backEndID: string;
     setBackEndID: (backEndID: string) => void;
     backgroundStyleID: string;
@@ -31,19 +31,19 @@ interface UrlFragmentState {
 
 const UrlFragmentContext = createContext<UrlFragmentState>({
     lon: DEFAULT_LAT,
-    setLon: () => {/* placeholder */},
+    setLon: () => {/* placeholder */ },
     lat: DEFAULT_LON,
-    setLat: () => {/* placeholder */},
+    setLat: () => {/* placeholder */ },
     zoom: DEFAULT_ZOOM,
-    setZoom: () => {/* placeholder */},
-    colorScheme: DEFAULT_COLOR_SCHEME,
-    setColorScheme: () => {/* placeholder */},
+    setZoom: () => {/* placeholder */ },
+    colorSchemeID: DEFAULT_COLOR_SCHEME,
+    setColorSchemeID: () => {/* placeholder */ },
     backEndID: DEFAULT_BACKEND_ID,
-    setBackEndID: () => {/* placeholder */},
+    setBackEndID: () => {/* placeholder */ },
     backgroundStyleID: DEFAULT_BACKGROUND_STYLE_ID,
-    setBackgroundStyleID: () => {/* placeholder */},
+    setBackgroundStyleID: () => {/* placeholder */ },
     sourcePresetID: DEFAULT_SOURCE_PRESET_ID,
-    setSourcePresetID: () => {/* placeholder */}
+    setSourcePresetID: () => {/* placeholder */ }
 });
 
 export const useUrlFragmentContext = () => useContext(UrlFragmentContext);
@@ -52,17 +52,17 @@ export const UrlFragmentContextProvider = (props: PropsWithChildren) => {
     const [lon, setLon] = useState<number>(() => process.env.owmf_default_center_lat ? parseFloat(process.env.owmf_default_center_lat) : DEFAULT_LAT),
         [lat, _setLat] = useState<number>(() => process.env.owmf_default_center_lon ? parseFloat(process.env.owmf_default_center_lon) : DEFAULT_LON),
         [zoom, _setZoom] = useState<number>(() => process.env.owmf_default_zoom ? parseInt(process.env.owmf_default_zoom) : DEFAULT_ZOOM),
-        [colorScheme, setColorScheme] = useState<ColorSchemeID>(() => { const raw = process.env.owmf_default_color_scheme; return raw && raw in ColorSchemeID ? raw as ColorSchemeID : DEFAULT_COLOR_SCHEME; }),
+        [colorSchemeID, setColorSchemeID] = useState<ColorSchemeID>(() => { const raw = process.env.owmf_default_color_scheme; return raw && raw in ColorSchemeID ? raw as ColorSchemeID : DEFAULT_COLOR_SCHEME; }),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         [backEndID, setBackEndID] = useState<string>(() => process.env.owmf_default_backend || DEFAULT_BACKEND_ID),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => new URLSearchParams(window.location.search).get("style") || process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID),
         [sourcePresetID, setSourcePresetID] = useState<string>(() => {
             const list = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
-            if(!list?.length) return DEFAULT_SOURCE_PRESET_ID;
+            if (!list?.length) return DEFAULT_SOURCE_PRESET_ID;
 
-            if(window.location.hash?.split(',')?.length >= 7) return window.location.hash.split(',')[6];
-            
+            if (window.location.hash?.split(',')?.length >= 7) return window.location.hash.split(',')[6];
+
             return list[0];
         }),
         setLat = useCallback((lat: number) => {
@@ -84,17 +84,17 @@ export const UrlFragmentContextProvider = (props: PropsWithChildren) => {
             strLat = lat.toFixed(4),
             strZoom = zoom.toFixed(1);
 
-        const fragment = `#${strLon},${strLat},${strZoom},${colorScheme},${backEndID},${backgroundStyleID},${sourcePresetID}`;
+        const fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID}`;
         if (window.location.hash !== fragment) {
-            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: CHANGE DETECTED", { old: window.location.hash, new: fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
+            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: CHANGE DETECTED", { old: window.location.hash, new: fragment, lon, lat, zoom, colorSchemeID, backEndID, backgroundStyleID, templateID: sourcePresetID });
             window.location.hash = fragment;
         } else {
-            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { fragment, lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, templateID: sourcePresetID });
+            if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: no change", { fragment, lon, lat, zoom, colorSchemeID, backEndID, backgroundStyleID, templateID: sourcePresetID });
         }
 
-    }, [lon, lat, zoom, colorScheme, backEndID, backgroundStyleID, sourcePresetID]);
+    }, [lon, lat, zoom, colorSchemeID, backEndID, backgroundStyleID, sourcePresetID]);
 
-    return <UrlFragmentContext.Provider value={{ lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID }}>
+    return <UrlFragmentContext.Provider value={{ lon, setLon, lat, setLat, zoom, setZoom, colorSchemeID, setColorSchemeID, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID }}>
         {props.children}
     </UrlFragmentContext.Provider>;
 }

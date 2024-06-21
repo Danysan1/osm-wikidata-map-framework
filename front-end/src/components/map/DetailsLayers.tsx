@@ -25,7 +25,7 @@ const LOW_ZOOM_POINT_RADIUS = 2,
     CITY_MAX_ZOOM = 13;
 
 interface DetailsLayersProps {
-    minZoom: number;
+    minZoom?: number;
     sourceID: string;
     keyID?: string;
     source_layer?: string;
@@ -61,13 +61,14 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
         lineTapAreaLayerID = useMemo(() => props.sourceID + LINE_TAP_AREA_LAYER, [props.sourceID]),
         polygonBorderLayerID = useMemo(() => props.sourceID + POLYGON_BORDER_LAYER, [props.sourceID]),
         polygonFillLayerID = useMemo(() => props.sourceID + POLYGON_FILL_LAYER, [props.sourceID]),
-        {current:map} = useMap();
-    
+        { current: map } = useMap();
+
     useEffect(() => { map?.on("click", pointTapAreaLayerID, onLayerClick); }, [map, onLayerClick, pointTapAreaLayerID]);
     useEffect(() => { map?.on("click", lineTapAreaLayerID, onLayerClick); }, [map, onLayerClick, lineTapAreaLayerID]);
     useEffect(() => { map?.on("click", polygonBorderLayerID, onLayerClick); }, [map, onLayerClick, polygonBorderLayerID]);
     useEffect(() => { map?.on("click", polygonFillLayerID, onLayerClick); }, [map, onLayerClick, polygonFillLayerID]);
 
+    if (process.env.NODE_ENV === "development") console.log("DetailsLayers", { pointFilter, lineStringFilter, polygonFilter });
     return <>
         <Layer id={pointTapAreaLayerID}
             source={props.sourceID}

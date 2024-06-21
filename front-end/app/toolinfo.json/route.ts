@@ -1,4 +1,4 @@
-import { DEFAULT_LANGUAGE, MAIN_NAMESPACE } from "@/src/common";
+import { DEFAULT_LANGUAGE, MAIN_NAMESPACE } from "@/src/i18n/common";
 import type { Resource } from "i18next";
 import { NextResponse } from "next/server";
 

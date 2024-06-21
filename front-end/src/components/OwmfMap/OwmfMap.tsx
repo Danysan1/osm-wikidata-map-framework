@@ -5,6 +5,7 @@ import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { loadTranslator } from "@/src/i18n/client";
 import { SourcePreset } from '@/src/model/SourcePreset';
+import { colorSchemes } from "@/src/model/colorScheme";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
@@ -17,17 +18,21 @@ import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, MapGeoJSONFeature, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import { useGeocodingControl } from '../../hooks/useGeocodingControl';
 import { BackEndControl } from "../controls/BackEndControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../controls/QueryLinkControl";
 import { SourcePresetControl } from "../controls/SourcePresetControl";
 import { ClusteredSourceAndLayers } from "../map/ClusteredSourceAndLayers";
+import { GeoJsonSourceAndLayers } from "../map/GeoJsonSourceAndLayers";
 import { PMTilesSourceAndLayers } from "../map/PMTilesSourceAndLayers";
 import { getBackgroundStyles } from './backgroundStyles';
+import mockDetailsData from './details.json';
 import mockElementsData from './elements.json';
 
 const PMTILES_PREFIX = "pmtiles",
+    PMTILES_SOURCE = "pmtiles_source",
     DETAILS_SOURCE = "detail_source",
     ELEMENTS_SOURCE = "elements_source";
 
@@ -36,18 +41,20 @@ loadTranslator().catch(e => {
 });
 
 export const OwmfMap = () => {
-    const { lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
+    const { lon, setLon, lat, setLat, zoom, setZoom, colorSchemeID, setColorSchemeID, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
         [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
         [backEndService, setBackEndService] = useState<MapService | null>(null),
         [openFeature, setOpenFeature] = useState<MapGeoJSONFeature | undefined>(undefined),
         backgroundStyles = useMemo(() => getBackgroundStyles(), []),
         backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
+        colorScheme = useMemo(() => colorSchemes[colorSchemeID], [colorSchemeID]),
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
         thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
         [pmtilesReady, setPMTilesReady] = useState(false),
         enablePMTiles = useMemo(() => !!process.env.owmf_pmtiles_base_url && pmtilesReady && backEndID.startsWith(PMTILES_PREFIX), [backEndID, pmtilesReady]),
         pmtilesKeyID = useMemo(() => backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""), [backEndID]),
         elementsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockElementsData, [backEndID]),
+        detailsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockDetailsData, [backEndID]),
         { t } = useTranslation();
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
@@ -79,13 +86,13 @@ export const OwmfMap = () => {
 
     }, []);
 
-useEffect(() => {
-    if (process.env.owmf_pmtiles_base_url) {
-        const pmtilesProtocol = new Protocol();
-        addProtocol("pmtiles", pmtilesProtocol.tile);
-        setPMTilesReady(true);
-    }
-}, []);
+    useEffect(() => {
+        if (process.env.owmf_pmtiles_base_url) {
+            const pmtilesProtocol = new Protocol();
+            addProtocol("pmtiles", pmtilesProtocol.tile);
+            setPMTilesReady(true);
+        }
+    }, []);
 
     useEffect(() => {
         const initialBackgroundStyle = backgroundStyle ?? backgroundStyles[0];
@@ -124,6 +131,8 @@ useEffect(() => {
         });
     }, [sourcePreset?.id, sourcePresetID]);
 
+    useGeocodingControl({ position: "bottom-left" });
+
     return <Map
         mapLib={import('maplibre-gl')}
         RTLTextPlugin='https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js'
@@ -156,6 +165,7 @@ useEffect(() => {
         <ScaleControl position="bottom-right" />
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
-        {enablePMTiles && <PMTilesSourceAndLayers sourceID={DETAILS_SOURCE} pmtilesBaseURL={process.env.owmf_pmtiles_base_url!} pmtilesFileName="etymology_map.pmtiles" keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} />}
+        {detailsData && <GeoJsonSourceAndLayers sourceID={DETAILS_SOURCE} data={detailsData} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
+        {enablePMTiles && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} pmtilesBaseURL={process.env.owmf_pmtiles_base_url!} pmtilesFileName="etymology_map.pmtiles" keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
     </Map>;
 }
