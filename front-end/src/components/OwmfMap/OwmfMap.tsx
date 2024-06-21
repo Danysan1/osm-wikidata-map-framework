@@ -21,7 +21,9 @@ import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../controls/QueryLinkControl";
 import { SourcePresetControl } from "../controls/SourcePresetControl";
+import { ClusteredSourceAndLayers } from "../map/ClusteredSourceAndLayers";
 import { getBackgroundStyles } from './backgroundStyles';
+import elementsData from './elements.json';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
@@ -32,8 +34,6 @@ const PMTILES_PREFIX = "pmtiles",
     POLYGON_BORDER_LAYER = '_layer_polygon_border',
     POLYGON_FILL_LAYER = '_layer_polygon_fill',
     ELEMENTS_SOURCE = "elements_source",
-    CLUSTER_LAYER = '_layer_cluster',
-    COUNT_LAYER = '_layer_count',
     POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
     POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
     COUNTRY_MAX_ZOOM = 5,
@@ -54,6 +54,7 @@ export const OwmfMap = () => {
         backgroundStyles = useMemo(() => getBackgroundStyles(), []),
         backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
+        thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
         { t } = useTranslation();
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
@@ -150,7 +151,9 @@ export const OwmfMap = () => {
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_wd_query" baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_osm_query" baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
 
-
         <ScaleControl position="bottom-right" />
+
+        <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />
+
     </Map>;
 }
