@@ -1,4 +1,4 @@
-import { CircleLayerSpecification, DataDrivenPropertyValueSpecification, Feature, FillExtrusionLayerSpecification, FilterSpecification, LineLayerSpecification } from "maplibre-gl";
+import { DataDrivenPropertyValueSpecification, Feature, FilterSpecification } from "maplibre-gl";
 import { useCallback, useEffect, useMemo } from "react";
 import { Layer, MapGeoJSONFeature, MapMouseEvent, useMap } from "react-map-gl/maplibre";
 
@@ -63,129 +63,107 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
         polygonFillLayerID = useMemo(() => props.sourceID + POLYGON_FILL_LAYER, [props.sourceID]),
         { current: map } = useMap();
 
-    const pointTapAreaLayerSpec: CircleLayerSpecification = {
-        'id': pointTapAreaLayerID,
-        'source': props.sourceID,
-        'type': "circle",
-        'filter': pointFilter,
-        'minzoom': props.minZoom,
-        'paint': {
-            'circle-color': '#ffffff',
-            'circle-opacity': 0,
-            'circle-radius': [
-                "interpolate", ["linear"], ["zoom"],
-                11, LOW_ZOOM_POINT_RADIUS + 6,
-                16, MID_ZOOM_POINT_RADIUS + 4,
-                21, MID_ZOOM_POINT_RADIUS + 2,
-            ],
-        }
-    };
-    if (props.source_layer) pointTapAreaLayerSpec['source-layer'] = props.source_layer;
-
-    const pointLayerSpec: CircleLayerSpecification = {
-        'id': pointLayerID,
-        'source': props.sourceID,
-        'type': "circle",
-        'filter': pointFilter,
-        'minzoom': props.minZoom,
-        'paint': {
-            'circle-color': props.color,
-            'circle-opacity': 0.8,
-            'circle-radius': [
-                "interpolate", ["linear"], ["zoom"],
-                11, LOW_ZOOM_POINT_RADIUS,
-                16, MID_ZOOM_POINT_RADIUS,
-                21, HIGH_ZOOM_POINT_RADIUS,
-            ],
-            'circle-stroke-width': 1,
-            'circle-stroke-color': 'white'
-        }
-    };
-    if (props.source_layer) pointLayerSpec['source-layer'] = props.source_layer;
-
-    const lineTapAreaLayerSpec: LineLayerSpecification = {
-        'id': lineTapAreaLayerID,
-        'source': props.sourceID,
-        'type': "line",
-        'filter': lineStringFilter,
-        'minzoom': props.minZoom,
-        'paint': {
-            'line-color': '#ffffff',
-            'line-opacity': 0,
-            'line-width': [
-                "interpolate", ["linear"], ["zoom"],
-                11, LOW_ZOOM_LINE_WIDTH + 6,
-                16, MID_ZOOM_LINE_WIDTH + 4,
-                21, HIGH_ZOOM_LINE_WIDTH + 2,
-            ],
-        }
-    };
-    if (props.source_layer) lineTapAreaLayerSpec['source-layer'] = props.source_layer;
-
-    const lineLayerSpec: LineLayerSpecification = {
-        'id': lineLayerID,
-        'source': props.sourceID,
-        'type': "line",
-        'filter': lineStringFilter,
-        'minzoom': props.minZoom,
-        'paint': {
-            'line-color': props.color,
-            'line-opacity': 0.6,
-            'line-width': [
-                "interpolate", ["linear"], ["zoom"],
-                11, LOW_ZOOM_LINE_WIDTH,
-                16, MID_ZOOM_LINE_WIDTH,
-                21, HIGH_ZOOM_LINE_WIDTH,
-            ],
-        }
-    };
-    if (props.source_layer) lineLayerSpec['source-layer'] = props.source_layer;
-
-    const polygonBorderLayerSpec: LineLayerSpecification = {
-        'id': polygonBorderLayerID,
-        'source': props.sourceID,
-        'type': "line",
-        'filter': polygonFilter,
-        'minzoom': props.minZoom,
-        'paint': {
-            'line-color': props.color,
-            'line-opacity': 0.6,
-            'line-width': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH],
-            'line-offset': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH / 2, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2], // https://maplibre.org/maplibre-style-spec/layers/#paint-line-line-offset
-        }
-    };
-    if (props.source_layer) polygonBorderLayerSpec['source-layer'] = props.source_layer;
-
-    const polygonFillLayerSpec: FillExtrusionLayerSpecification = {
-        'id': polygonFillLayerID,
-        'source': props.sourceID,
-        'type': "fill-extrusion",
-        'filter': polygonFilter,
-        'minzoom': props.minZoom,
-        'paint': { // https://maplibre.org/maplibre-gl-js/docs/examples/3d-buildings/
-            'fill-extrusion-color': props.color,
-            'fill-extrusion-opacity': 0.3,
-            'fill-extrusion-height': [
-                'interpolate', ['linear'], ['zoom'],
-                15, 0,
-                16, ['to-number', ['coalesce', ['get', 'render_height'], 0]]
-            ],
-        }
-    };
-    if (props.source_layer) polygonFillLayerSpec['source-layer'] = props.source_layer;
-
     useEffect(() => { map?.on("click", pointTapAreaLayerID, onLayerClick); }, [map, onLayerClick, pointTapAreaLayerID]);
     useEffect(() => { map?.on("click", lineTapAreaLayerID, onLayerClick); }, [map, onLayerClick, lineTapAreaLayerID]);
     useEffect(() => { map?.on("click", polygonBorderLayerID, onLayerClick); }, [map, onLayerClick, polygonBorderLayerID]);
     useEffect(() => { map?.on("click", polygonFillLayerID, onLayerClick); }, [map, onLayerClick, polygonFillLayerID]);
 
+    const commonProps: { 'source': string, 'minzoom'?: number, 'source-layer'?: string } = {
+        source: props.sourceID, minzoom: props.minZoom
+    };
+    if (props.source_layer) commonProps["source-layer"] = props.source_layer;
+
     if (process.env.NODE_ENV === "development") console.log("DetailsLayers", { pointFilter, lineStringFilter, polygonFilter });
     return <>
-        <Layer {...pointTapAreaLayerSpec} />
-        <Layer {...pointLayerSpec} />
-        <Layer {...lineTapAreaLayerSpec} beforeId={pointLayerID /* Lines are shown below points but on top of polygons */} />
-        <Layer {...lineLayerSpec} beforeId={pointLayerID /* Lines are shown below points but on top of polygons */} />
-        <Layer {...polygonBorderLayerSpec} beforeId={lineLayerID /* Polygon borders are shown below lines and points but on top of polygon fill */} />
-        <Layer {...polygonFillLayerSpec} beforeId={polygonBorderLayerID /* Polygon fill is shown below everything else */} />
+        <Layer id={pointTapAreaLayerID}
+            {...commonProps}
+            type="circle"
+            filter={pointFilter}
+            paint={{
+                'circle-color': '#ffffff',
+                'circle-opacity': 0,
+                'circle-radius': [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, LOW_ZOOM_POINT_RADIUS + 6,
+                    16, MID_ZOOM_POINT_RADIUS + 4,
+                    21, MID_ZOOM_POINT_RADIUS + 2,
+                ],
+            }} />
+
+        <Layer id={pointLayerID}
+            {...commonProps}
+            type="circle"
+            filter={pointFilter}
+            paint={{
+                'circle-color': props.color,
+                'circle-opacity': 0.8,
+                'circle-radius': [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, LOW_ZOOM_POINT_RADIUS,
+                    16, MID_ZOOM_POINT_RADIUS,
+                    21, HIGH_ZOOM_POINT_RADIUS,
+                ],
+                'circle-stroke-width': 1,
+                'circle-stroke-color': 'white'
+            }} />
+
+        <Layer id={lineTapAreaLayerID}
+            beforeId={pointLayerID} // Lines are shown below points but on top of polygons
+            {...commonProps}
+            type="line"
+            filter={lineStringFilter}
+            paint={{
+                'line-color': '#ffffff',
+                'line-opacity': 0,
+                'line-width': [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, LOW_ZOOM_LINE_WIDTH + 6,
+                    16, MID_ZOOM_LINE_WIDTH + 4,
+                    21, HIGH_ZOOM_LINE_WIDTH + 2,
+                ],
+            }} />
+
+        <Layer id={lineLayerID}
+            beforeId={pointLayerID} // Lines are shown below points but on top of polygons
+            {...commonProps}
+            type="line"
+            filter={lineStringFilter}
+            paint={{
+                'line-color': props.color,
+                'line-opacity': 0.6,
+                'line-width': [
+                    "interpolate", ["linear"], ["zoom"],
+                    11, LOW_ZOOM_LINE_WIDTH,
+                    16, MID_ZOOM_LINE_WIDTH,
+                    21, HIGH_ZOOM_LINE_WIDTH,
+                ],
+            }} />
+
+        <Layer id={polygonBorderLayerID}
+            beforeId={lineLayerID} // Polygon borders are shown below lines and points but on top of polygon fill
+            {...commonProps}
+            type="line"
+            filter={polygonFilter}
+            paint={{
+                'line-color': props.color,
+                'line-opacity': 0.6,
+                'line-width': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH],
+                'line-offset': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH / 2, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2], // https://maplibre.org/maplibre-style-spec/layers/#paint-line-line-offset
+            }} />
+
+        <Layer id={polygonFillLayerID}
+            beforeId={polygonBorderLayerID} // Polygon fill is shown below everything else
+            {...commonProps}
+            type="fill-extrusion"
+            filter={polygonFilter}
+            paint={{ // https://maplibre.org/maplibre-gl-js/docs/examples/3d-buildings/
+                'fill-extrusion-color': props.color,
+                'fill-extrusion-opacity': 0.3,
+                'fill-extrusion-height': [
+                    'interpolate', ['linear'], ['zoom'],
+                    15, 0,
+                    16, ['to-number', ['coalesce', ['get', 'render_height'], 0]]
+                ],
+            }} />
     </>
 }
