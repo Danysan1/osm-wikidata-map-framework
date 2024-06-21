@@ -2,13 +2,14 @@ import { parseBoolConfig } from '@/src/config';
 import { GeocodingControl } from '@maptiler/geocoding-control/maplibregl';
 import { MapLibreSearchControl } from '@stadiamaps/maplibre-search-box';
 import type { ControlPosition } from 'maplibre-gl';
+import { FC } from 'react';
 import { useControl } from 'react-map-gl/maplibre';
 
-interface GeocodingControlProps {
+interface OwmfGeocodingControlProps {
   position?: ControlPosition;
 }
 
-export const useGeocodingControl = (props: GeocodingControlProps) => {
+export const OwmfGeocodingControl: FC<OwmfGeocodingControlProps> = (props) => {
   const maptiler_key = process.env.owmf_maptiler_key;
   useControl<GeocodingControl | MapLibreSearchControl>(() => {
     if (maptiler_key) {
@@ -23,4 +24,6 @@ export const useGeocodingControl = (props: GeocodingControlProps) => {
       throw new Error('Maptiler or Stadia Maps are required to use GeocodingControl');
     }
   }, { position: props.position });
+
+  return null;
 }

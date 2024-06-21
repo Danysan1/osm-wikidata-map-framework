@@ -3,6 +3,8 @@ import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from '@/src/components/controls/MapCompleteControl';
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { InspectControl } from "@/src/controls/InspectControl";
+import { OwmfGeocodingControl } from "@/src/controls/OwmfGeocodingControl";
 import { loadTranslator } from "@/src/i18n/client";
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { colorSchemes } from "@/src/model/colorScheme";
@@ -130,8 +132,6 @@ export const OwmfMap = () => {
         });
     }, [sourcePreset?.id, sourcePresetID]);
 
-    //useGeocodingControl({ position: "bottom-left" });
-
     return <Map
         mapLib={import('maplibre-gl')}
         RTLTextPlugin='https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js'
@@ -161,7 +161,10 @@ export const OwmfMap = () => {
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_wd_query" baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_osm_query" baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
 
+        <OwmfGeocodingControl position="bottom-left" />
+
         <ScaleControl position="bottom-right" />
+        {process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />}
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
         {detailsData && <GeoJsonSourceAndLayers sourceID={DETAILS_SOURCE} data={detailsData} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
