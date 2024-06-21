@@ -9,39 +9,27 @@ import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapServic
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
-import { RequestTransformFunction } from "maplibre-gl";
+import { RequestTransformFunction, addProtocol } from "maplibre-gl";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { useTranslation } from "next-i18next";
+import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import Map, { FullscreenControl, GeolocateControl, MapGeoJSONFeature, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { BackEndControl } from "../controls/BackEndControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../controls/QueryLinkControl";
 import { SourcePresetControl } from "../controls/SourcePresetControl";
 import { ClusteredSourceAndLayers } from "../map/ClusteredSourceAndLayers";
+import { PMTilesSourceAndLayers } from "../map/PMTilesSourceAndLayers";
 import { getBackgroundStyles } from './backgroundStyles';
-import elementsData from './elements.json';
+import mockElementsData from './elements.json';
 
 const PMTILES_PREFIX = "pmtiles",
     DETAILS_SOURCE = "detail_source",
-    POINT_LAYER = '_layer_point',
-    POINT_TAP_AREA_LAYER = '_layer_point_tapArea',
-    LINE_LAYER = '_layer_lineString_line',
-    LINE_TAP_AREA_LAYER = '_layer_lineString_tapArea',
-    POLYGON_BORDER_LAYER = '_layer_polygon_border',
-    POLYGON_FILL_LAYER = '_layer_polygon_fill',
-    ELEMENTS_SOURCE = "elements_source",
-    POLYGON_BORDER_LOW_ZOOM_WIDTH = 2,
-    POLYGON_BORDER_HIGH_ZOOM_WIDTH = 6,
-    COUNTRY_MAX_ZOOM = 5,
-    COUNTRY_ADMIN_LEVEL = 2,
-    STATE_MAX_ZOOM = 7,
-    STATE_ADMIN_LEVEL = 4,
-    PROVINCE_MAX_ZOOM = 9,
-    PROVINCE_ADMIN_LEVEL = 6;
+    ELEMENTS_SOURCE = "elements_source";
 
 loadTranslator().catch(e => {
     if (process.env.NODE_ENV === 'development') console.error("Failed loading translator", e);
@@ -51,10 +39,15 @@ export const OwmfMap = () => {
     const { lon, setLon, lat, setLat, zoom, setZoom, colorScheme, setColorScheme, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
         [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
         [backEndService, setBackEndService] = useState<MapService | null>(null),
+        [openFeature, setOpenFeature] = useState<MapGeoJSONFeature | undefined>(undefined),
         backgroundStyles = useMemo(() => getBackgroundStyles(), []),
         backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
         thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
+        [pmtilesReady, setPMTilesReady] = useState(false),
+        enablePMTiles = useMemo(() => !!process.env.owmf_pmtiles_base_url && pmtilesReady && backEndID.startsWith(PMTILES_PREFIX), [backEndID, pmtilesReady]),
+        pmtilesKeyID = useMemo(() => backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""), [backEndID]),
+        elementsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockElementsData, [backEndID]),
         { t } = useTranslation();
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
@@ -77,13 +70,22 @@ export const OwmfMap = () => {
     useEffect(() => {
         // https://nextjs.org/docs/app/api-reference/functions/generate-metadata#resource-hints
         if (process.env.owmf_default_language) ReactDOM.preload(`locales/${process.env.owmf_default_language}/common.json`, { as: "fetch", crossOrigin: "anonymous" });
-        if (process.env.owmf_pmtiles_base_url) ReactDOM.preload(`${process.env.owmf_pmtiles_base_url}/date.txt`, { as: "fetch", crossOrigin: "anonymous" });
+        if (process.env.owmf_pmtiles_base_url) ReactDOM.preload(`${process.env.owmf_pmtiles_base_url}date.txt`, { as: "fetch", crossOrigin: "anonymous" });
         if (process.env.owmf_default_background_style === "stadia_alidade") ReactDOM.preload("https://tiles.stadiamaps.com/styles/alidade_smooth.json", { as: "fetch", crossOrigin: "anonymous" });
         if (process.env.owmf_default_background_style?.startsWith("stadia_")) ReactDOM.preload("https://tiles.stadiamaps.com/data/openmaptiles.json", { as: "fetch", crossOrigin: "anonymous" });
         if (process.env.owmf_default_background_sty === "stamen_toner_lite") ReactDOM.preload("https://tiles.stadiamaps.com/styles/stamen_toner_lite.json", { as: "fetch", crossOrigin: "anonymous" });
         if (process.env.owmf_default_background_style === "stamen_toner") ReactDOM.preload("https://tiles.stadiamaps.com/styles/stamen_toner.json", { as: "fetch", crossOrigin: "anonymous" });
         if (process.env.owmf_default_background_style?.startsWith("stamen_")) ReactDOM.preload("https://tiles.stadiamaps.com/data/stamen-omt.json", { as: "fetch", crossOrigin: "anonymous" });
+
     }, []);
+
+useEffect(() => {
+    if (process.env.owmf_pmtiles_base_url) {
+        const pmtilesProtocol = new Protocol();
+        addProtocol("pmtiles", pmtilesProtocol.tile);
+        setPMTilesReady(true);
+    }
+}, []);
 
     useEffect(() => {
         const initialBackgroundStyle = backgroundStyle ?? backgroundStyles[0];
@@ -153,7 +155,7 @@ export const OwmfMap = () => {
 
         <ScaleControl position="bottom-right" />
 
-        <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />
-
+        {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
+        {enablePMTiles && <PMTilesSourceAndLayers sourceID={DETAILS_SOURCE} pmtilesBaseURL={process.env.owmf_pmtiles_base_url!} pmtilesFileName="etymology_map.pmtiles" keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} />}
     </Map>;
 }

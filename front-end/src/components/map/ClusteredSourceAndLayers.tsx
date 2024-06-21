@@ -19,10 +19,10 @@ interface ClusteredSourceAndLayersProps {
     clusterProperties?: object;
 
     /** Minimum zoom level to show the layers */
-    minZoom?: number;
+    minZoom: number;
 
     /** Maximum zoom level to show the layers */
-    maxZoom?: number;
+    maxZoom: number;
 
     /** Threshold below which blue clusters are shown */
     minCountThreshold?: number;
@@ -39,9 +39,7 @@ interface ClusteredSourceAndLayersProps {
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
  */
 export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> = (props) => {
-    const minZoom = props.minZoom ?? 0,
-        maxZoom = props.maxZoom ?? 15,
-        minThreshold = props.minCountThreshold ?? 3000,
+    const minThreshold = props.minCountThreshold ?? 3000,
         maxThreshold = props.maxCountThreshold ?? 60000,
         countFieldName = props.countFieldName ?? "point_count",
         countShowFieldName = props.countShowFieldName ?? "point_count_abbreviated",
@@ -87,7 +85,7 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         <Source id={props.sourceID}
             type="geojson"
             data={props.data}
-            maxzoom={maxZoom}
+            maxzoom={props.maxZoom}
             cluster={true}
             clusterMinPoints={1}
             clusterRadius={125} // Radius of each cluster when clustering points (defaults to 50)
@@ -95,8 +93,8 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
             clusterProperties={props.clusterProperties}>
             <Layer id={clusterLayerID}
                 type="circle"
-                minzoom={minZoom}
-                maxzoom={maxZoom}
+                minzoom={props.minZoom}
+                maxzoom={props.maxZoom}
                 filter={['has', countFieldName]}
                 paint={{
                     // Use step expressions (https://docs.mapbox.com/mapbox-gl-js/style-spec/#expressions-step)
@@ -119,8 +117,8 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
 
             <Layer id={countLayerID}
                 type="symbol"
-                minzoom={minZoom}
-                maxzoom={maxZoom}
+                minzoom={props.minZoom}
+                maxzoom={props.maxZoom}
                 filter={['has', countFieldName]}
                 layout={{
                     'text-font': ["Open Sans Regular"],
@@ -130,8 +128,8 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
 
             <Layer id={unclusteredLayerID}
                 type="circle"
-                minzoom={minZoom}
-                maxzoom={maxZoom}
+                minzoom={props.minZoom}
+                maxzoom={props.maxZoom}
                 filter={['!', ['has', countFieldName]]}
                 paint={{
                     'circle-color': '#51bbd6',
