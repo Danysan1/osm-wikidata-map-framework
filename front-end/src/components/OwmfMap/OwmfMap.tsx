@@ -18,7 +18,6 @@ import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, MapGeoJSONFeature, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
-import { useGeocodingControl } from '../../hooks/useGeocodingControl';
 import { BackEndControl } from "../controls/BackEndControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
@@ -131,7 +130,7 @@ export const OwmfMap = () => {
         });
     }, [sourcePreset?.id, sourcePresetID]);
 
-    useGeocodingControl({ position: "bottom-left" });
+    //useGeocodingControl({ position: "bottom-left" });
 
     return <Map
         mapLib={import('maplibre-gl')}
