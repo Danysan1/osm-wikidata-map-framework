@@ -11,6 +11,7 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_default_language",
   "owmf_source_presets",
   "owmf_qlever_enable",
+  "owmf_pmtiles_preset",
   "owmf_pmtiles_base_url",
   "owmf_osm_filter_tags",
   "owmf_osm_text_key",

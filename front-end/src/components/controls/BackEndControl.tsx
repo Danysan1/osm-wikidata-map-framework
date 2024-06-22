@@ -27,7 +27,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
         dropdownItems = useMemo(() => {
             const propagationEnabled = parseBoolConfig("propagate_data"),
                 qleverEnabled = parseBoolConfig("qlever_enable"),
-                pmtilesURL = process.env.owmf_pmtiles_base_url,
+                pmtilesURL = process.env.owmf_pmtiles_preset === props.preset.id ? process.env.owmf_pmtiles_base_url : undefined,
                 dropdownItems: DropdownItem[] = [],
                 buildDropdownItem = (backEndID: string, text: string, category?: string): DropdownItem => ({
                     id: backEndID,
@@ -127,7 +127,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
 
             return dropdownItems;
-        }, [props.preset.osm_text_key, props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, setBackEndID, t]);
+        }, [props.preset.id, props.preset.osm_text_key, props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, setBackEndID, t]);
 
     const clearCache = useCallback(() => {
         // TODO

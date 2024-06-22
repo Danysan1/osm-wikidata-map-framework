@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, MapGeoJSONFeature, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { BackEndControl } from "../controls/BackEndControl";
+import { InfoControl } from "../controls/InfoControl/InfoControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../controls/QueryLinkControl";
@@ -31,7 +32,6 @@ import { PMTilesSourceAndLayers } from "../map/PMTilesSourceAndLayers";
 import { getBackgroundStyles } from './backgroundStyles';
 import mockDetailsData from './details.json';
 import mockElementsData from './elements.json';
-import { InfoControl } from "../controls/InfoControl/InfoControl";
 
 const PMTILES_PREFIX = "pmtiles",
     PMTILES_SOURCE = "pmtiles_source",
@@ -53,7 +53,7 @@ export const OwmfMap = () => {
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
         thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
         [pmtilesReady, setPMTilesReady] = useState(false),
-        enablePMTiles = useMemo(() => !!process.env.owmf_pmtiles_base_url && pmtilesReady && backEndID.startsWith(PMTILES_PREFIX), [backEndID, pmtilesReady]),
+        enablePMTiles = useMemo(() => !!process.env.owmf_pmtiles_base_url && process.env.owmf_pmtiles_preset === sourcePresetID && pmtilesReady && backEndID.startsWith(PMTILES_PREFIX), [backEndID, pmtilesReady, sourcePresetID]),
         pmtilesKeyID = useMemo(() => backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""), [backEndID]),
         elementsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockElementsData, [backEndID]),
         detailsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockDetailsData, [backEndID]),
