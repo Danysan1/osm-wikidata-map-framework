@@ -1,12 +1,11 @@
 import { DataDrivenPropertyValueSpecification } from "maplibre-gl";
-import { useMemo } from "react";
 import { MapGeoJSONFeature, Source } from "react-map-gl/maplibre";
 import { DetailsLayers } from "./DetailsLayers";
 
+const PMTILES_FILE_NAME = "etymology_map.pmtiles";
+
 interface PMTilesSourceAndLayersProps {
     sourceID: string;
-    pmtilesBaseURL: string;
-    pmtilesFileName: string;
     keyID?: string;
 
     color: DataDrivenPropertyValueSpecification<string>;
@@ -21,7 +20,12 @@ interface PMTilesSourceAndLayersProps {
  * @see https://docs.protomaps.com/pmtiles/maplibre
  */
 export const PMTilesSourceAndLayers: React.FC<PMTilesSourceAndLayersProps> = (props) => {
-    const fullPMTilesURL = useMemo(() => `pmtiles://${props.pmtilesBaseURL}${props.pmtilesFileName}`, [props.pmtilesBaseURL, props.pmtilesFileName]);
+    if (!process.env.owmf_pmtiles_base_url) {
+        console.warn("PMTilesSourceAndLayers: owmf_pmtiles_base_url is not defined");
+        return null;
+    }
+
+    const fullPMTilesURL = `pmtiles://${process.env.owmf_pmtiles_base_url}${PMTILES_FILE_NAME}`;
 
     if (process.env.NODE_ENV === "development") console.log("PMTilesSourceAndLayers", { fullPMTilesURL, keyID: props.keyID });
     return <Source id={props.sourceID} type="vector" url={fullPMTilesURL}>

@@ -1,3 +1,4 @@
+import { parseBoolConfig } from '@/src/config';
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
 import { ChangeEvent, ChangeEventHandler, FC, PropsWithChildren, cloneElement, useCallback, useMemo, useState } from 'react';
@@ -17,6 +18,7 @@ class DropdownControlObject implements IControl {
         this._map = map;
         if (this._onSourceData) map.on('sourcedata', this._onSourceData);
         this._container = document.createElement('div');
+        this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl dropdown-ctrl';
         return this._container;
     }
 
@@ -72,14 +74,12 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
         ctrl = useControl<DropdownControlObject>(() => {
             return new DropdownControlObject(props.onSourceData);
         }, { position: props.position }),
-        map = ctrl.getMap(),
-        container = ctrl.getContainer(),
         buttonOnTheLeft = props.position === 'top-left' || props.position === 'bottom-left',
         visible = props.dropdownItems.length > 1 && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
-        [dropdownVisible, setDropdownVisible] = useState(true),
+        [dropdownVisible, setDropdownVisible] = useState(parseBoolConfig(process.env.owmf_start_dropdown_open)),
         onBtnClick = useCallback(() => setDropdownVisible(prev => !prev), []),
         btnCell = useMemo(() => <td className='title-cell'><button onClick={onBtnClick} className='dropdown-ctrl-button' title={props.title} aria-label={props.title}>{props.buttonContent}</button></td>, [onBtnClick, props.buttonContent, props.title]),
-        titleCell = useMemo(() => <td className='button-cell'><label htmlFor={dropdownId} className='dropdown-ctrl-title'>{props.title}</label></td>, [dropdownId, props.title]),
+        titleCell = useMemo(() => dropdownVisible && <td className='button-cell'><label htmlFor={dropdownId} className='dropdown-ctrl-title'>{props.title}</label></td>, [dropdownId, dropdownVisible, props.title]),
         dropDownChangeHandler: ChangeEventHandler<HTMLSelectElement> = useCallback((e) => {
             const selectedID = e.target.value,
                 selectedItem = props.dropdownItems.find(item => item.id === selectedID);
@@ -108,7 +108,7 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
         }, [props.dropdownItems]);
 
     const element = useMemo(() =>
-        visible ? <div className={`maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl dropdown-ctrl ${props.className} ${visible ? '' : 'hiddenElement'}`}>
+        visible ? <div className={props.className}>
             <table className='dropdown-ctrl-table custom-ctrl-table'>
                 <tbody>
                     <tr>
@@ -122,11 +122,13 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                             </select>
                         </td>}
                     </tr>
-                    {props.children}
+                    {dropdownVisible && props.children}
                 </tbody>
             </table>
         </div> : null,
         [btnCell, buttonOnTheLeft, dropDownChangeHandler, dropdownId, dropdownVisible, options, props.children, props.className, props.selectedValue, props.title, titleCell, visible]);
 
+    const map = ctrl.getMap(),
+        container = ctrl.getContainer();
     return element && map && container && createPortal(cloneElement(element, { map }), container);
 }

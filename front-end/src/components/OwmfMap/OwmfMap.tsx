@@ -31,6 +31,7 @@ import { PMTilesSourceAndLayers } from "../map/PMTilesSourceAndLayers";
 import { getBackgroundStyles } from './backgroundStyles';
 import mockDetailsData from './details.json';
 import mockElementsData from './elements.json';
+import { InfoControl } from "../controls/InfoControl/InfoControl";
 
 const PMTILES_PREFIX = "pmtiles",
     PMTILES_SOURCE = "pmtiles_source",
@@ -145,7 +146,7 @@ export const OwmfMap = () => {
         onMoveEnd={onMoveEndHandler}
         transformRequest={requestTransformFunction}
     >
-
+        <InfoControl position="top-left" />
         <SourcePresetControl position="top-left" />
         {sourcePreset && <BackEndControl preset={sourcePreset} position="top-left" />}
         {sourcePreset?.mapcomplete_theme && <MapCompleteControl minZoomLevel={minZoomLevel} mapComplete_theme={sourcePreset?.mapcomplete_theme} position="top-left" />}
@@ -168,6 +169,6 @@ export const OwmfMap = () => {
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
         {detailsData && <GeoJsonSourceAndLayers sourceID={DETAILS_SOURCE} data={detailsData} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
-        {enablePMTiles && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} pmtilesBaseURL={process.env.owmf_pmtiles_base_url!} pmtilesFileName="etymology_map.pmtiles" keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
+        {enablePMTiles && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
     </Map>;
 }

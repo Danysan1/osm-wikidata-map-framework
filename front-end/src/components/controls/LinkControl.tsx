@@ -18,6 +18,7 @@ class LinkControlObject implements IControl {
     this._map = map;
     if (this._onSourceData) map.on('sourcedata', this._onSourceData);
     this._container = document.createElement('div');
+    this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl link-ctrl';
     return this._container;
   }
 
@@ -66,20 +67,20 @@ export const LinkControl: FC<LinkControlProps> = (props) => {
     return new LinkControlObject(props.onSourceData);
   }, { position: props.position });
 
-  const map = ctrl.getMap(),
-    container = ctrl.getContainer();
   const visible = useMemo(
     () => !!props.linkURL && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
     [props.linkURL, props.minZoomLevel, zoom]
   );
   const openLink = useCallback(() => window.open(props.linkURL), [props.linkURL]);
   const element = useMemo(() =>
-    visible ? <div className={`maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl link-ctrl ${props.className} ${visible ? '' : 'hiddenElement'}`}>
+    visible ? <div className={props.className}>
       <button title={props.title} aria-label={props.title} onClick={openLink}>
         <Image className="button_img" alt={props.title + " logo"} src={props.iconURL} loading="lazy" width={23} height={23} />
       </button>
     </div> : null,
     [openLink, props.className, props.iconURL, props.title, visible]);
 
+  const map = ctrl.getMap(),
+    container = ctrl.getContainer();
   return element && map && container && createPortal(cloneElement(element, { map }), container);
 }
