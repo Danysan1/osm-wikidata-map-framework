@@ -1,5 +1,11 @@
 import { parseBoolConfig } from "@/src/config";
+import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { BackgroundStyle, jawgStyle, mapboxStyle, maptilerStyle, stadiaStyle } from "@/src/model/backgroundStyle";
+import { showSnackbar } from "@/src/snackbar";
+import type { ControlPosition, StyleSpecification } from "maplibre-gl";
+import { useTranslation } from "next-i18next";
+import { FC, useEffect, useMemo } from "react";
+import { DropdownControl } from "./DropdownControl";
 
 export function getBackgroundStyles() {
     const maptiler_key = process.env.owmf_maptiler_key,
@@ -68,4 +74,52 @@ export function getBackgroundStyles() {
         );
     }
     return backgroundStyles;
+}
+
+interface BackgroundStyleControlProps {
+    position?: ControlPosition;
+    setBackgroundStyle: (style: string | StyleSpecification | undefined) => void;
+}
+
+/**
+ * Let the user choose the background style from a list of styles.
+ **/
+export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) => {
+    const { t } = useTranslation(),
+        { backgroundStyleID, setBackgroundStyleID } = useUrlFragmentContext(),
+        backgroundStyles = getBackgroundStyles(),
+        dropdownItems = useMemo(() => backgroundStyles.map(style => ({
+            id: style.id,
+            category: style.vendorText,
+            text: style.styleText,
+            onSelect: () => setBackgroundStyleID(style.id)
+        })), [backgroundStyles, setBackgroundStyleID]);
+
+    useEffect(() => {
+        const style = backgroundStyles.find(style => style.id === backgroundStyleID);
+        if (!style) {
+            console.warn("Empty default background style, using the first available", { backgroundStyleID, backgroundStyles });
+            setBackgroundStyleID(backgroundStyles[0].id);
+            props.setBackgroundStyle(backgroundStyles[0].styleUrl);
+        } else if (style.keyPlaceholder && style.key) {
+            fetch(style.styleUrl).then(resp => resp.text()).then(rawJSON => {
+                const json = rawJSON.replaceAll(style.keyPlaceholder!, style.key!);
+                if (process.env.NODE_ENV === 'development') console.debug("Setting json style", { style, json });
+                props.setBackgroundStyle(JSON.parse(json) as StyleSpecification);
+            }).catch(e => {
+                console.error("Failed setting json style", e);
+                showSnackbar("snackbar.map_error");
+            });
+        } else {
+            props.setBackgroundStyle(style.styleUrl);
+        }
+    }, [backgroundStyleID, backgroundStyles, props, setBackgroundStyleID]);
+
+    return <DropdownControl
+        buttonContent="🌍"
+        dropdownItems={dropdownItems}
+        selectedValue={backgroundStyleID}
+        title={t("choose_basemap")}
+        position={props.position}
+        className='background-style-ctrl' />;
 }

@@ -1,4 +1,4 @@
-import { DropdownControl } from './DropdownControl';
+/*import { DropdownControl } from './DropdownControl';
 
 export interface Projection {
     id: string;
@@ -22,7 +22,7 @@ const projections: Projection[] = [
  * @see https://github.com/maplibre/maplibre/discussions/161
  * @see https://docs.mapbox.com/mapbox-gl-js/guides/projections/
  * @see https://docs.mapbox.com/mapbox-gl-js/example/projections/
- **/
+ **
 export class ProjectionControl extends DropdownControl {
     constructor(startProjectionId?: string) {
         super(
@@ -40,3 +40,4 @@ export class ProjectionControl extends DropdownControl {
         );
     }
 }
+*/

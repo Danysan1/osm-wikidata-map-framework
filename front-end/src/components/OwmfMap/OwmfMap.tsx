@@ -1,10 +1,10 @@
 'use client';
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
+import { InspectControl } from "@/src/components/controls/InspectControl";
 import { MapCompleteControl } from '@/src/components/controls/MapCompleteControl';
+import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { InspectControl } from "@/src/controls/InspectControl";
-import { OwmfGeocodingControl } from "@/src/controls/OwmfGeocodingControl";
 import { loadTranslator } from "@/src/i18n/client";
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { colorSchemes } from "@/src/model/colorScheme";
@@ -12,7 +12,7 @@ import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapServic
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
-import { RequestTransformFunction, addProtocol } from "maplibre-gl";
+import { RequestTransformFunction, StyleSpecification, addProtocol } from "maplibre-gl";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { useTranslation } from "next-i18next";
@@ -21,6 +21,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Map, { FullscreenControl, GeolocateControl, MapGeoJSONFeature, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { BackEndControl } from "../controls/BackEndControl";
+import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
 import { InfoControl } from "../controls/InfoControl/InfoControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
@@ -29,7 +30,6 @@ import { SourcePresetControl } from "../controls/SourcePresetControl";
 import { ClusteredSourceAndLayers } from "../map/ClusteredSourceAndLayers";
 import { GeoJsonSourceAndLayers } from "../map/GeoJsonSourceAndLayers";
 import { PMTilesSourceAndLayers } from "../map/PMTilesSourceAndLayers";
-import { getBackgroundStyles } from './backgroundStyles';
 import mockDetailsData from './details.json';
 import mockElementsData from './elements.json';
 
@@ -43,12 +43,11 @@ loadTranslator().catch(e => {
 });
 
 export const OwmfMap = () => {
-    const { lon, setLon, lat, setLat, zoom, setZoom, colorSchemeID, setColorSchemeID, backEndID, setBackEndID, backgroundStyleID, setBackgroundStyleID, sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
+    const { lon, setLon, lat, setLat, zoom, setZoom, colorSchemeID, backEndID, sourcePresetID } = useUrlFragmentContext(),
         [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
         [backEndService, setBackEndService] = useState<MapService | null>(null),
         [openFeature, setOpenFeature] = useState<MapGeoJSONFeature | undefined>(undefined),
-        backgroundStyles = useMemo(() => getBackgroundStyles(), []),
-        backgroundStyle = useMemo(() => backgroundStyles.find(style => style.id === backgroundStyleID), [backgroundStyles, backgroundStyleID]),
+        [backgroundStyle, setBackgroundStyle] = useState<string | StyleSpecification | undefined>(undefined),
         colorScheme = useMemo(() => colorSchemes[colorSchemeID], [colorSchemeID]),
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
         thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
@@ -97,14 +96,6 @@ export const OwmfMap = () => {
     }, []);
 
     useEffect(() => {
-        const initialBackgroundStyle = backgroundStyle ?? backgroundStyles[0];
-        if (backgroundStyle !== initialBackgroundStyle) {
-            console.warn("Empty default background style, using the first available", { backgroundStyle, backgroundStyles, initialBackgroundStyle });
-            setBackgroundStyleID(initialBackgroundStyle.id);
-        }
-    }, [backgroundStyle, backgroundStyles, setBackgroundStyleID]);
-
-    useEffect(() => {
         if (!!process.env.REACT_APP_FETCHING_PRESET || sourcePreset?.id === sourcePresetID) {
             if (process.env.NODE_ENV === 'development') console.warn("Skipping redundant source preset fetch", { alreadyFetching: process.env.REACT_APP_FETCHING_PRESET, new: sourcePresetID, old: sourcePreset?.id });
             return;
@@ -133,6 +124,9 @@ export const OwmfMap = () => {
         });
     }, [sourcePreset?.id, sourcePresetID]);
 
+    if (!isWebglSupported())
+        return "Your browser does not support WebGL and Maplibre GL JS, which are needed to render the map.";
+
     return <Map
         mapLib={import('maplibre-gl')}
         RTLTextPlugin='https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js'
@@ -142,7 +136,7 @@ export const OwmfMap = () => {
             zoom: zoom
         }}
         //style={{ width: 600, height: 400 }}
-        mapStyle={backgroundStyle?.styleUrl}
+        mapStyle={backgroundStyle}
         onMoveEnd={onMoveEndHandler}
         transformRequest={requestTransformFunction}
     >
@@ -154,6 +148,7 @@ export const OwmfMap = () => {
         <NavigationControl visualizePitch position="top-right" />
         <GeolocateControl positionOptions={{ enableHighAccuracy: true }} trackUserLocation={false} position="top-right" />
         <FullscreenControl position="top-right" />
+        <BackgroundStyleControl setBackgroundStyle={setBackgroundStyle} position="top-right" />
         <LanguageControl position="top-right" />
         <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
         <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
@@ -171,4 +166,23 @@ export const OwmfMap = () => {
         {detailsData && <GeoJsonSourceAndLayers sourceID={DETAILS_SOURCE} data={detailsData} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
         {enablePMTiles && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
     </Map>;
+}
+
+/**
+ * @see https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
+ */
+function isWebglSupported() {
+    if (!window.WebGLRenderingContext)
+        return false; // WebGL not supported
+
+    const canvas = document.createElement('canvas');
+    try {
+        const context = canvas.getContext('webgl2') ?? canvas.getContext('webgl');
+        if (context && typeof context.getParameter == 'function') {
+            return true; // WebGL is supported and enabled
+        }
+        return false; // WebGL is not supported
+    } catch (e) {
+        return false; // WebGL is supported, but disabled
+    }
 }

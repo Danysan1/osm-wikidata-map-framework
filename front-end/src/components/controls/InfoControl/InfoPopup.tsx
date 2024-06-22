@@ -22,43 +22,45 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
             <p>{t("info_box.click_anywhere")}</p>
             <p>{t("info_box.use_controls")}</p>
             <table>
-                <tr>
-                    <td>📊</td>
-                    <td>{t("info_box.to_see_statistics")}</td>
-                </tr>
-                <tr>
-                    <td>🗃️</td>
-                    <td>{t("info_box.to_choose_preset")}</td>
-                </tr>
-                <tr>
-                    <td>⚙️</td>
-                    <td>{t("info_box.to_choose_backend")}</td>
-                </tr>
-                <tr>
-                    <td><Image src="img/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" loading="lazy" /></td>
-                    <td>{t("info_box.to_overpass_query")}</td>
-                </tr>
-                <tr>
-                    <td><Image src="img/Wikidata_Query_Service_Favicon.svg" width="16" height="16" alt="Wikidata Query Service logo" loading="lazy" /></td>
-                    <td>{t("info_box.to_wikidata_query")}</td>
-                </tr>
-                <tr>
-                    <td><Image src="img/Simple_icon_table.svg" width="16" height="13" alt="Table" loading="lazy" /></td>
-                    <td>{t("info_box.to_view_data_table")}</td>
-                </tr>
-                <tr>
-                    <td>🌍</td>
-                    <td>{t("info_box.to_change_background")}</td>
-                </tr>
-                <tr>
-                    <td>ℹ️</td>
-                    <td>{t("info_box.to_open_again")}</td>
-                </tr>
+                <tbody>
+                    <tr>
+                        <td>📊</td>
+                        <td>{t("info_box.to_see_statistics")}</td>
+                    </tr>
+                    <tr>
+                        <td>🗃️</td>
+                        <td>{t("info_box.to_choose_preset")}</td>
+                    </tr>
+                    <tr>
+                        <td>⚙️</td>
+                        <td>{t("info_box.to_choose_backend")}</td>
+                    </tr>
+                    <tr>
+                        <td><Image src="img/Overpass-turbo.svg" width="16" height="16" alt="Overpass Turbo logo" loading="lazy" /></td>
+                        <td>{t("info_box.to_overpass_query")}</td>
+                    </tr>
+                    <tr>
+                        <td><Image src="img/Wikidata_Query_Service_Favicon.svg" width="16" height="16" alt="Wikidata Query Service logo" loading="lazy" /></td>
+                        <td>{t("info_box.to_wikidata_query")}</td>
+                    </tr>
+                    <tr>
+                        <td><Image src="img/Simple_icon_table.svg" width="16" height="13" alt="Table" loading="lazy" /></td>
+                        <td>{t("info_box.to_view_data_table")}</td>
+                    </tr>
+                    <tr>
+                        <td>🌍</td>
+                        <td>{t("info_box.to_change_background")}</td>
+                    </tr>
+                    <tr>
+                        <td>ℹ️</td>
+                        <td>{t("info_box.to_open_again")}</td>
+                    </tr>
+                </tbody>
             </table>
         </div>
 
         <p>
-            {process.env.owmf_contributing_url && <a title="Contribute to the map" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href={process.env.owmf_contributing_url} >
+            {process.env.owmf_contributing_url && <a title={t("info_box.contribute")} role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 contribute_button title_i18n_contribute" href={process.env.owmf_contributing_url} >
                 <span className="button_img">📖</span> &nbsp;
                 <span>{t("info_box.contribute")}</span>
             </a>}
@@ -91,7 +93,7 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
                 <a title={t("info_box.about_me_title")} href="https://www.dsantini.it/" target="_blank" rel="noopener noreferrer">{t("about_me")}</a>
                 {process.env.owmf_issues_url && <>
                     |
-                    <a title="Report a problem or a bug" className="i18n_report_issue title_i18n_report_issue" href={process.env.owmf_issues_url} target="_blank" rel="noopener noreferrer">Report a problem</a>
+                    <a title={t("info_box.about_me_title")} className="i18n_report_issue title_i18n_report_issue" href={process.env.owmf_issues_url} target="_blank" rel="noopener noreferrer">Report a problem</a>
                 </>}
             </div>
         </footer>
