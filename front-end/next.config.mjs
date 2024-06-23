@@ -1,4 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import packageJSON from './package.json' assert { type: 'json' };
 
 const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_default_center_lat",
@@ -112,7 +113,7 @@ const nextConfig = {
   env: CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
     acc[key] = process.env[key];
     return acc;
-  }, {}),
+  }, { owmf_version: packageJSON.version }),
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.s(par)?ql$/,

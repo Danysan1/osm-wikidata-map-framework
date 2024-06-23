@@ -20,23 +20,29 @@ import { useTranslation } from "next-i18next";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
-import { FeaturePopup } from "../FeaturePopup";
-import { BackEndControl } from "../controls/BackEndControl";
-import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
-import { DataTableControl } from "../controls/DataTableControl/DataTableControl";
-import { InfoControl } from "../controls/InfoControl/InfoControl";
-import { LanguageControl } from "../controls/LanguageControl";
-import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
-import { QueryLinkControl } from "../controls/QueryLinkControl";
-import { SourcePresetControl } from "../controls/SourcePresetControl";
-import { ClusteredSourceAndLayers } from "../map/ClusteredSourceAndLayers";
-import { GeoJsonSourceAndLayers } from "../map/GeoJsonSourceAndLayers";
-import { PMTilesSourceAndLayers } from "../map/PMTilesSourceAndLayers";
+import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, Source, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import { FeaturePopup } from "../../FeaturePopup";
+import { BackEndControl } from "../../controls/BackEndControl";
+import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
+import { DataTableControl } from "../../controls/DataTableControl/DataTableControl";
+import { InfoControl } from "../../controls/InfoControl/InfoControl";
+import { LanguageControl } from "../../controls/LanguageControl";
+import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
+import { QueryLinkControl } from "../../controls/QueryLinkControl";
+import { SourcePresetControl } from "../../controls/SourcePresetControl";
+import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
+import { DetailsLayers } from "../DetailsLayers";
+import { PMTilesSource } from "../PMTilesSource";
 import mockDetailsData from './details.json';
 import mockElementsData from './elements.json';
 
 const PMTILES_PREFIX = "pmtiles",
+    POINT_LAYER = 'layer_point',
+    POINT_TAP_AREA_LAYER = 'layer_point_tapArea',
+    LINE_LAYER = 'layer_lineString_line',
+    LINE_TAP_AREA_LAYER = 'layer_lineString_tapArea',
+    POLYGON_BORDER_LAYER = 'layer_polygon_border',
+    POLYGON_FILL_LAYER = 'layer_polygon_fill',
     PMTILES_SOURCE = "pmtiles_source",
     DETAILS_SOURCE = "detail_source",
     ELEMENTS_SOURCE = "elements_source";
@@ -157,7 +163,7 @@ export const OwmfMap = () => {
         <LanguageControl position="top-right" />
         <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
         <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
-        <DataTableControl sourceID={pmtilesActive ? PMTILES_SOURCE : ELEMENTS_SOURCE} layerIDs={["TODO"]} position="top-right" />
+        <DataTableControl sourceID={pmtilesActive ? PMTILES_SOURCE : ELEMENTS_SOURCE} layerIDs={[POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER]} position="top-right" />
         <QueryLinkControl iconURL="/img/Overpass-turbo.svg" title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="overpass_query" baseURL="https://overpass-turbo.eu/?Q=" minZoomLevel={minZoomLevel} position="top-right" />
         <QueryLinkControl iconURL="/img/Wikidata_Query_Service_Favicon.svg" title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="wdqs_query" baseURL="https://query.wikidata.org/#" minZoomLevel={minZoomLevel} position="top-right" />
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_wd_query" baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
@@ -169,8 +175,12 @@ export const OwmfMap = () => {
         {process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />}
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
-        {detailsData && <GeoJsonSourceAndLayers sourceID={DETAILS_SOURCE} data={detailsData} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
-        {pmtilesActive && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
+        {detailsData && <Source id={DETAILS_SOURCE} type="geojson" data={detailsData}>
+            <DetailsLayers sourceID={DETAILS_SOURCE} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} minZoom={thresholdZoomLevel} />
+        </Source>}
+        {pmtilesActive && <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
+            <DetailsLayers sourceID={PMTILES_SOURCE} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} source_layer="etymology_map" />
+        </PMTilesSource>}
 
         {openFeature && <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />}
     </Map>;

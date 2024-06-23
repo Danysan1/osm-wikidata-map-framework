@@ -1,6 +1,6 @@
 'use client';
 
-import { PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
+import { FC, PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { parseStringArrayConfig } from "../config";
 import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
 import { ColorSchemeID } from "../model/colorScheme";
@@ -48,7 +48,7 @@ const UrlFragmentContext = createContext<UrlFragmentState>({
 
 export const useUrlFragmentContext = () => useContext(UrlFragmentContext);
 
-export const UrlFragmentContextProvider = (props: PropsWithChildren) => {
+export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
     const [lon, setLon] = useState<number>(() => process.env.owmf_default_center_lat ? parseFloat(process.env.owmf_default_center_lat) : DEFAULT_LAT),
         [lat, _setLat] = useState<number>(() => process.env.owmf_default_center_lon ? parseFloat(process.env.owmf_default_center_lon) : DEFAULT_LON),
         [zoom, _setZoom] = useState<number>(() => process.env.owmf_default_zoom ? parseInt(process.env.owmf_default_zoom) : DEFAULT_ZOOM),
@@ -56,12 +56,14 @@ export const UrlFragmentContextProvider = (props: PropsWithChildren) => {
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
         [backEndID, setBackEndID] = useState<string>(() => process.env.owmf_default_backend || DEFAULT_BACKEND_ID),
         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => new URLSearchParams(window.location.search).get("style") || process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID),
+        [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => (typeof window === "object" ? new URLSearchParams(window.location.search).get("style") : null) || process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID),
         [sourcePresetID, setSourcePresetID] = useState<string>(() => {
             const list = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
-            if (!list?.length) return DEFAULT_SOURCE_PRESET_ID;
+            if (!list?.length)
+                return DEFAULT_SOURCE_PRESET_ID;
 
-            if (window.location.hash?.split(',')?.length >= 7) return window.location.hash.split(',')[6];
+            if (typeof window === "object" && window.location.hash?.split(',')?.length >= 7)
+                return window.location.hash.split(',')[6];
 
             return list[0];
         }),

@@ -1,4 +1,4 @@
-import { OwmfMap } from "@/src/components/OwmfMap/OwmfMap";
+import { OwmfMap } from "@/src/components/map/OwmfMap/OwmfMap";
 import { UrlFragmentContextProvider } from "@/src/context/UrlFragmentContext";
 import { loadServerI18n } from "@/src/i18n/server";
 import { GoogleTagManager } from '@next/third-parties/google';
