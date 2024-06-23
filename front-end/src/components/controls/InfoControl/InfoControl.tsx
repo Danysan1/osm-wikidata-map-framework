@@ -1,6 +1,6 @@
 import { t } from 'i18next';
 import type { ControlPosition, IControl, Map } from 'maplibre-gl';
-import { FC, cloneElement, useEffect, useMemo, useState } from 'react';
+import { FC, cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useControl } from 'react-map-gl/maplibre';
 import { InfoPopup } from './InfoPopup';
@@ -37,7 +37,9 @@ interface InfoControlProps {
 }
 
 export const InfoControl: FC<InfoControlProps> = (props) => {
-  const [openPopup, setOpenPopup] = useState(true),
+  const [isPopupOpen, setPopupOpen] = useState(true),
+    openPopup = useCallback(() => setPopupOpen(true), []),
+    closePopup = useCallback(() => setPopupOpen(false), []),
     [lastUpdateDate, setLastUpdateDate] = useState<string | undefined>(undefined);
 
   const ctrl = useControl<InfoControlObject>(() => {
@@ -56,10 +58,10 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
     container = ctrl.getContainer();
   const element = useMemo(() =>
     <div className={props.className}>
-      <button className='info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon' onClick={() => setOpenPopup(true)} title={t("info_box.open_popup")} aria-label={t("info_box.open_popup")}>ℹ️</button>
-      {openPopup && map && <InfoPopup position={map.getBounds().getSouthWest()} lastUpdateDate={lastUpdateDate} onClose={() => setOpenPopup(false)} />}
+      <button className='info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon' onClick={openPopup} title={t("info_box.open_popup")} aria-label={t("info_box.open_popup")}>ℹ️</button>
+      {isPopupOpen && map && <InfoPopup position={map.getBounds().getSouthWest()} lastUpdateDate={lastUpdateDate} onClose={closePopup} />}
     </div>,
-    [lastUpdateDate, map, openPopup, props.className]);
+    [props.className, openPopup, isPopupOpen, map, lastUpdateDate, closePopup]);
 
   return element && map && container && createPortal(cloneElement(element, { map }), container);
 }

@@ -6,6 +6,7 @@ import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingCon
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { loadTranslator } from "@/src/i18n/client";
+import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from '@/src/model/SourcePreset';
 import { colorSchemes } from "@/src/model/colorScheme";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
@@ -19,9 +20,11 @@ import { useTranslation } from "next-i18next";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Map, { FullscreenControl, GeolocateControl, MapGeoJSONFeature, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import { FeaturePopup } from "../FeaturePopup";
 import { BackEndControl } from "../controls/BackEndControl";
 import { BackgroundStyleControl } from "../controls/BackgroundStyleControl";
+import { DataTableControl } from "../controls/DataTableControl/DataTableControl";
 import { InfoControl } from "../controls/InfoControl/InfoControl";
 import { LanguageControl } from "../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../controls/OsmWikidataMatcherControl";
@@ -46,16 +49,16 @@ export const OwmfMap = () => {
     const { lon, setLon, lat, setLat, zoom, setZoom, colorSchemeID, backEndID, sourcePresetID } = useUrlFragmentContext(),
         [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
         [backEndService, setBackEndService] = useState<MapService | null>(null),
-        [openFeature, setOpenFeature] = useState<MapGeoJSONFeature | undefined>(undefined),
+        [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(undefined),
         [backgroundStyle, setBackgroundStyle] = useState<string | StyleSpecification | undefined>(undefined),
         colorScheme = useMemo(() => colorSchemes[colorSchemeID], [colorSchemeID]),
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
         thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
         [pmtilesReady, setPMTilesReady] = useState(false),
-        enablePMTiles = useMemo(() => !!process.env.owmf_pmtiles_base_url && process.env.owmf_pmtiles_preset === sourcePresetID && pmtilesReady && backEndID.startsWith(PMTILES_PREFIX), [backEndID, pmtilesReady, sourcePresetID]),
+        pmtilesActive = useMemo(() => !!process.env.owmf_pmtiles_base_url && process.env.owmf_pmtiles_preset === sourcePresetID && pmtilesReady && backEndID.startsWith(PMTILES_PREFIX), [backEndID, pmtilesReady, sourcePresetID]),
         pmtilesKeyID = useMemo(() => backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""), [backEndID]),
-        elementsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockElementsData, [backEndID]),
-        detailsData = useMemo(() => backEndID.startsWith(PMTILES_PREFIX) ? null : mockDetailsData, [backEndID]),
+        elementsData = useMemo(() => pmtilesActive ? null : mockElementsData, [pmtilesActive]),
+        detailsData = useMemo(() => pmtilesActive ? null : mockDetailsData, [pmtilesActive]),
         { t } = useTranslation();
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
@@ -124,6 +127,8 @@ export const OwmfMap = () => {
         });
     }, [sourcePreset?.id, sourcePresetID]);
 
+    const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
+
     if (!isWebglSupported())
         return "Your browser does not support WebGL and Maplibre GL JS, which are needed to render the map.";
 
@@ -152,6 +157,7 @@ export const OwmfMap = () => {
         <LanguageControl position="top-right" />
         <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
         <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
+        <DataTableControl sourceID={pmtilesActive ? PMTILES_SOURCE : ELEMENTS_SOURCE} layerIDs={["TODO"]} position="top-right" />
         <QueryLinkControl iconURL="/img/Overpass-turbo.svg" title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="overpass_query" baseURL="https://overpass-turbo.eu/?Q=" minZoomLevel={minZoomLevel} position="top-right" />
         <QueryLinkControl iconURL="/img/Wikidata_Query_Service_Favicon.svg" title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="wdqs_query" baseURL="https://query.wikidata.org/#" minZoomLevel={minZoomLevel} position="top-right" />
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_wd_query" baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
@@ -164,7 +170,9 @@ export const OwmfMap = () => {
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
         {detailsData && <GeoJsonSourceAndLayers sourceID={DETAILS_SOURCE} data={detailsData} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
-        {enablePMTiles && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
+        {pmtilesActive && <PMTilesSourceAndLayers sourceID={PMTILES_SOURCE} keyID={pmtilesKeyID} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} />}
+
+        {openFeature && <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />}
     </Map>;
 }
 

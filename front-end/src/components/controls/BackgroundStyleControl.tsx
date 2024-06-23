@@ -7,7 +7,7 @@ import { useTranslation } from "next-i18next";
 import { FC, useEffect, useMemo } from "react";
 import { DropdownControl } from "./DropdownControl";
 
-export function getBackgroundStyles() {
+function getBackgroundStyles() {
     const maptiler_key = process.env.owmf_maptiler_key,
         enable_stadia_maps = parseBoolConfig(process.env.owmf_enable_stadia_maps),
         jawg_token = process.env.owmf_jawg_token,

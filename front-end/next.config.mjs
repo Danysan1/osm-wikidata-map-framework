@@ -48,6 +48,7 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_max_relation_members",
   "owmf_fetch_parts_of_linked_entities",
   "owmf_wikispore_enable",
+  "owmf_contributing_url",
 ];
 
 function generateCspHeaders() {
@@ -55,7 +56,7 @@ function generateCspHeaders() {
 
   const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}` : "",
     mapboxScript = process.env.owmf_mapbox_token ? " https://api.mapbox.com" : "",
-    mapboxConnect = 'https://unpkg.com/@mapbox/' + process.env.owmf_mapbox_token ? 'https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com' : "",
+    mapboxConnect = 'https://unpkg.com/@mapbox/' + process.env.owmf_mapbox_token ? ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com' : "",
     maptilerConnect = process.env.owmf_maptiler_key ? "https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/" : "",
     maptilerImg = process.env.owmf_maptiler_key ? "https://cdn.maptiler.com/maptiler-geocoding-control/" : "",
     stadiaConnect = process.env.owmf_enable_stadia_maps && process.env.owmf_enable_stadia_maps !== "false" ? 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/' : "",
