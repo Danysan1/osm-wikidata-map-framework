@@ -30,6 +30,7 @@ import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../../controls/QueryLinkControl";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
+import { StatisticsColorControl } from "../../controls/StatisticsColorControl";
 import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
 import { DetailsLayers } from "../DetailsLayers";
 import { PMTilesSource } from "../PMTilesSource";
@@ -67,6 +68,13 @@ export const OwmfMap = () => {
         detailsData = useMemo(() => pmtilesActive ? null : mockDetailsData, [pmtilesActive]),
         dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []),
         { t } = useTranslation();
+
+    const layerPaintPropertyMap = useMemo(() => ({
+        [POINT_LAYER]: 'circle-color',
+        [LINE_LAYER]: 'line-color',
+        [POLYGON_FILL_LAYER]: 'fill-extrusion-color',
+        [POLYGON_BORDER_LAYER]: 'line-color',
+    }), []);
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
         const center = e.target.getCenter();
@@ -156,6 +164,7 @@ export const OwmfMap = () => {
         <SourcePresetControl position="top-left" />
         {sourcePreset && <BackEndControl preset={sourcePreset} position="top-left" />}
         {sourcePreset?.mapcomplete_theme && <MapCompleteControl minZoomLevel={minZoomLevel} mapComplete_theme={sourcePreset?.mapcomplete_theme} position="top-left" />}
+        {sourcePreset && <StatisticsColorControl preset={sourcePreset} sourceId={DETAILS_SOURCE} layerPaintPropertyMap={layerPaintPropertyMap} position="top-left" />}
 
         <NavigationControl visualizePitch position="top-right" />
         <GeolocateControl positionOptions={{ enableHighAccuracy: true }} trackUserLocation={false} position="top-right" />

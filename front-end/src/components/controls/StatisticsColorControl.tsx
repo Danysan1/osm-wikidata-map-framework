@@ -6,6 +6,7 @@ import type { ControlPosition, ExpressionSpecification } from "maplibre-gl";
 import { useTranslation } from "next-i18next";
 import { FC, useMemo, useState } from "react";
 import { Pie } from 'react-chartjs-2';
+import { useMap } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "./DropdownControl";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -78,9 +79,8 @@ const MAX_CHART_ITEMS = 35,
 
 interface StatisticsColorControlProps {
     preset: SourcePreset,
-    setLayerColor: (color: string | ExpressionSpecification) => void,
     sourceId: string,
-    layerIDs: string[]
+    layerPaintPropertyMap: Record<string, string>;
     position?: ControlPosition;
 }
 
@@ -89,31 +89,33 @@ interface StatisticsColorControlProps {
  **/
 export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) => {
     const { t } = useTranslation(),
-        { colorScheme, setColorScheme } = useUrlFragmentContext(),
-        [chartData, setChartData] = useState<ChartData<"pie">>();
+        { colorSchemeID, setColorSchemeID } = useUrlFragmentContext(),
+        [chartData, setChartData] = useState<ChartData<"pie">>(),
+        { current: map } = useMap();
+
     const dropdownItems = useMemo((): DropdownItem[] => {
-            const keys = props.preset.osm_wikidata_keys,
-                wdDirectProperties = props.preset.osm_wikidata_properties,
-                indirectWdProperty = props.preset.wikidata_indirect_property,
-                anyEtymology = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
-                entries = Object.entries(colorSchemes),
-                usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology);
-            return usableColorSchemes.map(([id, item]) => ({
-                id,
-                text: t(item.textKey, item.defaultText),
-                category: t(item.categoryKey, item.defaultCategoryText),
-                onSelect: (event) => {
-                    // this.updateChart(event);
-                    // onSchemeChange(id as ColorSchemeID);
-                }
-            }));
-        }, [props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, t]);
-        
+        const keys = props.preset.osm_wikidata_keys,
+            wdDirectProperties = props.preset.osm_wikidata_properties,
+            indirectWdProperty = props.preset.wikidata_indirect_property,
+            anyEtymology = !!keys?.length || !!wdDirectProperties?.length || !!indirectWdProperty,
+            entries = Object.entries(colorSchemes),
+            usableColorSchemes = anyEtymology ? entries : entries.filter(([, scheme]) => scheme.showWithoutEtymology);
+        return usableColorSchemes.map(([id, item]) => ({
+            id,
+            text: t(item.textKey, item.defaultText),
+            category: t(item.categoryKey, item.defaultCategoryText),
+            onSelect: (event) => {
+                // this.updateChart(event);
+                // onSchemeChange(id as ColorSchemeID);
+            }
+        }));
+    }, [props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, t]);
+
 
     return <DropdownControl
         buttonContent="📊"
         dropdownItems={dropdownItems}
-        selectedValue={colorScheme}
+        selectedValue={colorSchemeID}
         title={t("color_scheme.choose_scheme")}
         position={props.position}
         className='color-ctrl'
