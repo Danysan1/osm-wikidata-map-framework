@@ -69,7 +69,7 @@ export const InfoPanel: FC<InfoPanelProps> = (props) => {
         <footer>
             {props.lastUpdateDate && <p><span>{t("info_box.last_db_update")}</span> {props.lastUpdateDate}</p>}
             <p>
-                {t("info_box.based_on")}
+                {t("info_box.based_on")} &nbsp;
                 <a title="OSM-Wikidata Map Framework"
                     aria-label="OSM-Wikidata Map Framework"
                     href="https://wiki.openstreetmap.org/wiki/OSM-Wikidata_Map_Framework"
@@ -77,7 +77,7 @@ export const InfoPanel: FC<InfoPanelProps> = (props) => {
                     rel="noopener noreferrer">
                     OSM-Wikidata Map Framework
                 </a>
-                {process.env.owmf_framework_image_tag ?? process.env.owmf_version}
+                &nbsp; {process.env.owmf_framework_image_tag ?? process.env.owmf_version}
             </p>
             <div id="last_info_row">
                 {process.env.owmf_liberapay_id && <><a href={`https://liberapay.com/${process.env.owmf_liberapay_id}/donate`} id="liberapay_donate">

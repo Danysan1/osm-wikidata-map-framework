@@ -73,13 +73,31 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         onClusterLayerClick = useCallback((e: MapMouseEvent) => onClusterClick(clusterLayerID, e), [clusterLayerID, onClusterClick]),
         onUnclusteredLayerClick = useCallback((e: MapMouseEvent) => onClusterClick(unclusteredLayerID, e), [onClusterClick, unclusteredLayerID]);
 
-    useEffect(() => { map?.on("mouseenter", clusterLayerID, onMouseEnter), [map, onMouseEnter, clusterLayerID]; });
-    useEffect(() => { map?.on("mouseleave", clusterLayerID, onMouseLeave), [map, onMouseLeave, clusterLayerID]; });
-    useEffect(() => { map?.on("click", clusterLayerID, onClusterLayerClick), [map, onClusterLayerClick, clusterLayerID]; });
+    useEffect(() => {
+        map?.on("mouseenter", clusterLayerID, onMouseEnter);
+        return () => void map?.off("mouseenter", clusterLayerID, onMouseEnter);
+    }, [map, onMouseEnter, clusterLayerID]);
+    useEffect(() => {
+        map?.on("mouseleave", clusterLayerID, onMouseLeave);
+        return () => void map?.off("mouseleave", clusterLayerID, onMouseLeave);
+    }, [map, onMouseLeave, clusterLayerID]);
+    useEffect(() => {
+        map?.on("click", clusterLayerID, onClusterLayerClick);
+        return () => void map?.off("click", clusterLayerID, onClusterLayerClick);
+    }, [map, onClusterLayerClick, clusterLayerID]);
 
-    useEffect(() => { map?.on("mouseenter", unclusteredLayerID, onMouseEnter), [map, onMouseEnter, unclusteredLayerID]; });
-    useEffect(() => { map?.on("mouseleave", unclusteredLayerID, onMouseLeave), [map, onMouseLeave, unclusteredLayerID]; });
-    useEffect(() => { map?.on("click", unclusteredLayerID, onUnclusteredLayerClick), [map, onUnclusteredLayerClick, unclusteredLayerID]; });
+    useEffect(() => {
+        map?.on("mouseenter", unclusteredLayerID, onMouseEnter);
+        return () => void map?.off("mouseenter", unclusteredLayerID, onMouseEnter);
+    }, [map, onMouseEnter, unclusteredLayerID]);
+    useEffect(() => {
+        map?.on("mouseleave", unclusteredLayerID, onMouseLeave);
+        return () => void map?.off("mouseleave", unclusteredLayerID, onMouseLeave);
+    }, [map, onMouseLeave, unclusteredLayerID]);
+    useEffect(() => {
+        map?.on("click", unclusteredLayerID, onUnclusteredLayerClick);
+        return () => void map?.off("click", unclusteredLayerID, onUnclusteredLayerClick);
+    }, [map, onUnclusteredLayerClick, unclusteredLayerID]);
 
     return (
         <Source id={props.sourceID}

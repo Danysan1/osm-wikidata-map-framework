@@ -105,7 +105,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
             fetch(style.styleUrl).then(resp => resp.text()).then(rawJSON => {
                 const json = rawJSON.replaceAll(style.keyPlaceholder!, style.key!);
                 if (process.env.NODE_ENV === 'development') console.debug("Setting json style", { style, json });
-                props.setBackgroundStyle(JSON.parse(json) as StyleSpecification);
+                props.setBackgroundStyle(JSON.parse(json) as StyleSpecification); // TODO fix infinite loop
             }).catch(e => {
                 console.error("Failed setting json style", e);
                 showSnackbar("snackbar.map_error");

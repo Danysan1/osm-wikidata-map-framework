@@ -11,8 +11,9 @@ interface FeaturePopupProps {
 
 export const FeaturePopup: FC<FeaturePopupProps> = (props) => {
     const { t } = useTranslation();
-    const { map } = useMap();
+    const { current: map } = useMap();
     const position = map?.getBounds()?.getSouthWest(); // No useMemo is correct, the coordinates change over time
+    if (process.env.NODE_ENV === "development") console.debug("FeaturePopup", { ...props });
     return position && <Popup longitude={position.lng} latitude={position.lat} className={props.className} maxWidth="none" closeButton closeOnClick closeOnMove onClose={props.onClose}>
         {JSON.stringify(props.feature.properties)}
     </Popup>

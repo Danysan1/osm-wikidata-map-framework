@@ -1,6 +1,6 @@
 import { DataDrivenPropertyValueSpecification, Feature, FilterSpecification } from "maplibre-gl";
 import { useCallback, useEffect, useMemo } from "react";
-import { Layer, MapGeoJSONFeature, MapMouseEvent, useMap } from "react-map-gl/maplibre";
+import { Layer, MapGeoJSONFeature, MapLayerMouseEvent, useMap } from "react-map-gl/maplibre";
 
 const LOW_ZOOM_POINT_RADIUS = 2,
     MID_ZOOM_POINT_RADIUS = 8,
@@ -41,7 +41,10 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
             out.push(["in", props.keyID, ["get", "from_key_ids"]]);
         return out;
     }, [props.keyID]);
-    const onLayerClick = useCallback((ev: MapMouseEvent & { features?: MapGeoJSONFeature[] | undefined }) => props.setOpenFeature(ev.features?.[0]), [props]);
+    const onLayerClick = useCallback((ev: MapLayerMouseEvent) => {
+        if (process.env.NODE_ENV === "development") console.debug("DetailsLayers onLayerClick", { ev, feature: ev.features?.[0]?.properties });
+        props.setOpenFeature(ev.features?.[0]);
+    }, [props]);
     const pointFilter = useMemo(() => createFilter("Point"), [createFilter]),
         lineStringFilter = useMemo(() => createFilter("LineString"), [createFilter]),
         polygonFilter = useMemo(() => {
@@ -57,10 +60,22 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
         }, [createFilter]),
         { current: map } = useMap();
 
-    useEffect(() => { map?.on("click", props.pointTapAreaLayerID, onLayerClick); }, [map, onLayerClick, props.pointTapAreaLayerID]);
-    useEffect(() => { map?.on("click", props.lineTapAreaLayerID, onLayerClick); }, [map, onLayerClick, props.lineTapAreaLayerID]);
-    useEffect(() => { map?.on("click", props.polygonBorderLayerID, onLayerClick); }, [map, onLayerClick, props.polygonBorderLayerID]);
-    useEffect(() => { map?.on("click", props.polygonFillLayerID, onLayerClick); }, [map, onLayerClick, props.polygonFillLayerID]);
+    useEffect(() => { 
+        map?.on("click", props.pointTapAreaLayerID, onLayerClick);
+        return () => void map?.off("click", props.pointTapAreaLayerID, onLayerClick);
+     }, [map, onLayerClick, props.pointTapAreaLayerID]);
+    useEffect(() => { 
+        map?.on("click", props.lineTapAreaLayerID, onLayerClick);
+        return () => void map?.off("click", props.lineTapAreaLayerID, onLayerClick);
+     }, [map, onLayerClick, props.lineTapAreaLayerID]);
+    useEffect(() => { 
+        map?.on("click", props.polygonBorderLayerID, onLayerClick);
+        return () => void map?.off("click", props.polygonBorderLayerID, onLayerClick);
+     }, [map, onLayerClick, props.polygonBorderLayerID]);
+    useEffect(() => { 
+        map?.on("click", props.polygonFillLayerID, onLayerClick);
+        return () => void map?.off("click", props.polygonFillLayerID, onLayerClick);
+     }, [map, onLayerClick, props.polygonFillLayerID]);
 
     const commonProps: { 'source': string, 'minzoom'?: number, 'source-layer'?: string } = {
         source: props.sourceID
@@ -68,7 +83,7 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
     if (props.minZoom) commonProps.minzoom = props.minZoom;
     if (props.source_layer) commonProps["source-layer"] = props.source_layer;
 
-    if (process.env.NODE_ENV === "development") console.log("DetailsLayers", { pointFilter, lineStringFilter, polygonFilter });
+    if (process.env.NODE_ENV === "development") console.log("DetailsLayers", { ...props, pointFilter, lineStringFilter, polygonFilter });
     return <>
         <Layer id={props.pointTapAreaLayerID}
             {...commonProps}

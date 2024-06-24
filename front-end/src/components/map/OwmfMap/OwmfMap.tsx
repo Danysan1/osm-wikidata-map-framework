@@ -65,6 +65,7 @@ export const OwmfMap = () => {
         pmtilesKeyID = useMemo(() => backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""), [backEndID]),
         elementsData = useMemo(() => pmtilesActive ? null : mockElementsData, [pmtilesActive]),
         detailsData = useMemo(() => pmtilesActive ? null : mockDetailsData, [pmtilesActive]),
+        dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []),
         { t } = useTranslation();
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
@@ -163,7 +164,7 @@ export const OwmfMap = () => {
         <LanguageControl position="top-right" />
         <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
         <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
-        <DataTableControl sourceID={pmtilesActive ? PMTILES_SOURCE : ELEMENTS_SOURCE} layerIDs={[POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER]} position="top-right" />
+        <DataTableControl sourceID={pmtilesActive ? PMTILES_SOURCE : ELEMENTS_SOURCE} layerIDs={dataLayerIDs} position="top-right" />
         <QueryLinkControl iconURL="/img/Overpass-turbo.svg" title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="overpass_query" baseURL="https://overpass-turbo.eu/?Q=" minZoomLevel={minZoomLevel} position="top-right" />
         <QueryLinkControl iconURL="/img/Wikidata_Query_Service_Favicon.svg" title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="wdqs_query" baseURL="https://query.wikidata.org/#" minZoomLevel={minZoomLevel} position="top-right" />
         {parseBoolConfig(process.env.owmf_qlever_enable) && <QueryLinkControl iconURL="/img/qlever.ico" title={t("qlever_query", "Source SPARQL query on QLever UI")} sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} mapEventField="qlever_wd_query" baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query=" minZoomLevel={minZoomLevel} position="top-right" />}
@@ -176,10 +177,10 @@ export const OwmfMap = () => {
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
         {detailsData && <Source id={DETAILS_SOURCE} type="geojson" data={detailsData}>
-            <DetailsLayers sourceID={DETAILS_SOURCE} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} minZoom={thresholdZoomLevel} />
+            <DetailsLayers sourceID={DETAILS_SOURCE} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} />
         </Source>}
         {pmtilesActive && <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
-            <DetailsLayers sourceID={PMTILES_SOURCE} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} source_layer="etymology_map" />
+            <DetailsLayers sourceID={PMTILES_SOURCE} source_layer="etymology_map" setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} />
         </PMTilesSource>}
 
         {openFeature && <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />}
