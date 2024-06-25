@@ -25,8 +25,6 @@ export interface ColorScheme {
     categoryKey: string;
     /** Fallback text for the label to be shown in the dropdown category for this  */
     defaultCategoryText: string;
-    /** Fixed color to be shown */
-    color?: string;
     /** Whether this color scheme should be available also when no etymology is available (es. https://osmwd.dsantini.it ) */
     showWithoutEtymology?: boolean;
 }
@@ -66,15 +64,15 @@ export const colorSchemes: Record<ColorSchemeID, ColorScheme> = {
         textKey: "color_scheme.link_count", defaultText: "By Wikilink count", categoryKey: "color_scheme.etymology_statistics", defaultCategoryText: "Linked entity statistics",
     },
     blue: {
-        textKey: 'color_scheme.blue', defaultText: "Blue", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", color: '#3bb2d0', showWithoutEtymology: true,
+        textKey: 'color_scheme.blue', defaultText: "Blue", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
     },
     black: {
-        textKey: 'color_scheme.black', defaultText: "Black", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", color: '#223b53', showWithoutEtymology: true,
+        textKey: 'color_scheme.black', defaultText: "Black", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
     },
     red: {
-        textKey: 'color_scheme.red', defaultText: "Red", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", color: '#e55e5e', showWithoutEtymology: true,
+        textKey: 'color_scheme.red', defaultText: "Red", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
     },
     orange: {
-        textKey: 'color_scheme.orange', defaultText: "Orange", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", color: '#fbb03b', showWithoutEtymology: true,
+        textKey: 'color_scheme.orange', defaultText: "Orange", categoryKey: "color_scheme.uniform", defaultCategoryText: "Uniform", showWithoutEtymology: true,
     },
 };

@@ -8,19 +8,18 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { loadTranslator } from "@/src/i18n/client";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from '@/src/model/SourcePreset';
-import { colorSchemes } from "@/src/model/colorScheme";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from '@/src/services/MapService';
 import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
-import { RequestTransformFunction, StyleSpecification, addProtocol } from "maplibre-gl";
+import { DataDrivenPropertyValueSpecification, RequestTransformFunction, addProtocol } from "maplibre-gl";
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { useTranslation } from "next-i18next";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import ReactDOM from 'react-dom';
-import Map, { FullscreenControl, GeolocateControl, NavigationControl, ScaleControl, Source, ViewStateChangeEvent } from 'react-map-gl/maplibre';
+import Map, { FullscreenControl, GeolocateControl, MapStyle, NavigationControl, ScaleControl, Source, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { FeaturePopup } from "../../FeaturePopup";
 import { BackEndControl } from "../../controls/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
@@ -38,6 +37,7 @@ import mockDetailsData from './details.json';
 import mockElementsData from './elements.json';
 
 const PMTILES_PREFIX = "pmtiles",
+    FALLBACK_COLOR = '#3bb2d0',
     POINT_LAYER = 'layer_point',
     POINT_TAP_AREA_LAYER = 'layer_point_tapArea',
     LINE_LAYER = 'layer_lineString_line',
@@ -53,12 +53,12 @@ loadTranslator().catch(e => {
 });
 
 export const OwmfMap = () => {
-    const { lon, setLon, lat, setLat, zoom, setZoom, colorSchemeID, backEndID, sourcePresetID } = useUrlFragmentContext(),
+    const { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } = useUrlFragmentContext(),
         [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
         [backEndService, setBackEndService] = useState<MapService | null>(null),
         [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(undefined),
-        [backgroundStyle, setBackgroundStyle] = useState<string | StyleSpecification | undefined>(undefined),
-        colorScheme = useMemo(() => colorSchemes[colorSchemeID], [colorSchemeID]),
+        [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(undefined),
+        [layerColor, setLayerColor] = useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
         minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
         thresholdZoomLevel = useMemo(() => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []),
         [pmtilesReady, setPMTilesReady] = useState(false),
@@ -68,13 +68,6 @@ export const OwmfMap = () => {
         detailsData = useMemo(() => pmtilesActive ? null : mockDetailsData, [pmtilesActive]),
         dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []),
         { t } = useTranslation();
-
-    const layerPaintPropertyMap = useMemo(() => ({
-        [POINT_LAYER]: 'circle-color',
-        [LINE_LAYER]: 'line-color',
-        [POLYGON_FILL_LAYER]: 'fill-extrusion-color',
-        [POLYGON_BORDER_LAYER]: 'line-color',
-    }), []);
 
     const onMoveEndHandler = useCallback((e: ViewStateChangeEvent) => {
         const center = e.target.getCenter();
@@ -164,7 +157,7 @@ export const OwmfMap = () => {
         <SourcePresetControl position="top-left" />
         {sourcePreset && <BackEndControl preset={sourcePreset} position="top-left" />}
         {sourcePreset?.mapcomplete_theme && <MapCompleteControl minZoomLevel={minZoomLevel} mapComplete_theme={sourcePreset?.mapcomplete_theme} position="top-left" />}
-        {sourcePreset && <StatisticsColorControl preset={sourcePreset} sourceId={DETAILS_SOURCE} layerPaintPropertyMap={layerPaintPropertyMap} position="top-left" />}
+        {sourcePreset && <StatisticsColorControl preset={sourcePreset} sourceId={DETAILS_SOURCE} layerIDs={dataLayerIDs} setLayerColor={setLayerColor} position="top-left" />}
 
         <NavigationControl visualizePitch position="top-right" />
         <GeolocateControl positionOptions={{ enableHighAccuracy: true }} trackUserLocation={false} position="top-right" />
@@ -186,10 +179,10 @@ export const OwmfMap = () => {
 
         {elementsData && <ClusteredSourceAndLayers sourceID={ELEMENTS_SOURCE} data={elementsData} minZoom={minZoomLevel} maxZoom={thresholdZoomLevel} />}
         {detailsData && <Source id={DETAILS_SOURCE} type="geojson" data={detailsData}>
-            <DetailsLayers sourceID={DETAILS_SOURCE} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} />
+            <DetailsLayers sourceID={DETAILS_SOURCE} minZoom={thresholdZoomLevel} setOpenFeature={setOpenFeature} color={layerColor} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} />
         </Source>}
         {pmtilesActive && <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
-            <DetailsLayers sourceID={PMTILES_SOURCE} source_layer="etymology_map" setOpenFeature={setOpenFeature} color={colorScheme.color ?? '#0000ff'} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} />
+            <DetailsLayers sourceID={PMTILES_SOURCE} source_layer="etymology_map" setOpenFeature={setOpenFeature} color={layerColor} pointLayerID={POINT_LAYER} pointTapAreaLayerID={POINT_TAP_AREA_LAYER} lineLayerID={LINE_LAYER} lineTapAreaLayerID={LINE_TAP_AREA_LAYER} polygonBorderLayerID={POLYGON_BORDER_LAYER} polygonFillLayerID={POLYGON_FILL_LAYER} />
         </PMTilesSource>}
 
         {openFeature && <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />}

@@ -5,6 +5,7 @@ import { showSnackbar } from "@/src/snackbar";
 import type { ControlPosition, StyleSpecification } from "maplibre-gl";
 import { useTranslation } from "next-i18next";
 import { FC, useEffect, useMemo } from "react";
+import { MapStyle } from "react-map-gl/maplibre";
 import { DropdownControl } from "./DropdownControl";
 
 function getBackgroundStyles() {
@@ -78,7 +79,7 @@ function getBackgroundStyles() {
 
 interface BackgroundStyleControlProps {
     position?: ControlPosition;
-    setBackgroundStyle: (style: string | StyleSpecification | undefined) => void;
+    setBackgroundStyle: (style: MapStyle) => void;
 }
 
 /**
