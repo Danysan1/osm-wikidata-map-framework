@@ -37,7 +37,9 @@
         "base": "OSM + Wikidata",
         "burial": "Luoghi di sepoltura",
         "etymology": "Etimologie (origine dei nomi)",
-        "green_spaces": "Spazi verdi"
+        "green_spaces": "Spazi verdi",
+        "holy_wells": "Pozzi sacri",
+        "holy_well_etymology": "Etimologia dei pozzi sacri"
     },
     "source": {
         "choose_source": "Scegli fonte dati",

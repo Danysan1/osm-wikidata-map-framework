@@ -7,7 +7,7 @@
         "use_controls": "Brug kontrolelementerne på siderne til at se andre data:",
         "to_see_statistics": "for at se statistik om elementer (kun ved høj zoom)",
         "to_choose_preset": "for at vælge, hvilken forudindstilling der skal bruges",
-        "to_choose_backend": "for at vælge, hvilken datakilde der skal bruges",
+        "to_choose_backend": "for at vælge, hvilken back-end der skal bruges",
         "to_overpass_query": "for at se kildens OverpassQL-forespørgsel (kun med Overpass-kilder)",
         "to_wikidata_query": "for at se kildens SPARQL-forespørgsel (kun med Wikidata-kilder)",
         "to_view_data_table": "for at se data i en tabel (kun ved høj zoom)",
@@ -32,10 +32,14 @@
     },
     "preset": {
         "choose_preset": "Vælg forudindstilling",
+        "architect": "Bygningsarkitekter",
+        "artist": "Kunstværksforfattere",
         "base": "OSM + Wikidata",
-        "etymology": "Etymologier (navnenes oprindelse)",
         "burial": "Gravsteder",
-        "artist": "Kunstværksforfattere"
+        "etymology": "Etymologier (navnenes oprindelse)",
+        "green_spaces": "Grønne områder",
+        "holy_wells": "Hellige kilder",
+        "holy_well_etymology": "Etymologi af hellige kilder"
     },
     "source": {
         "choose_source": "Vælg datakilde",

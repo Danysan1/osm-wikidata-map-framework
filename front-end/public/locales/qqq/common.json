@@ -30,8 +30,19 @@
         "no_data_in_this_area": "Warning message when the viewport is intentionally wmpty because it contains no data",
         "data_loaded_instructions": "Instructions shown after the first load to click on any highlighted element to show its details"
     },
+    "preset": {
+        "choose_preset": "Alt text for the '🗃️' button to show/hide the preset choice dropdown",
+        "architect": "Name of the 'architect' source preset",
+        "artist": "Name of the 'artist' source preset",
+        "base": "Name of the 'base' source preset",
+        "burial": "Name of the 'burial' source preset",
+        "etymology": "Name of the 'etymology' source preset",
+        "green_spaces": "Name of the 'green_spaces' source preset",
+        "holy_wells": "Name of the 'holy_wells' source preset",
+        "holy_well_etymology": "Name of the 'holy_well_etymology' source preset"
+    },
     "source": {
-        "choose_source": "Alt text for the '⚙️' button to show/hide the source dropdown",
+        "choose_source": "Alt text for the '⚙️' button to show/hide the source choice dropdown",
         "db_all": "All sources from DB",
         "db_osm_wikidata_reverse": "Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}",
         "propagated": "Propagated",
@@ -41,7 +52,7 @@
         "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
     },
     "color_scheme": {
-        "choose_scheme": "Alt text for the '📊' button to show/hide the color scheme / stats dropdown",
+        "choose_scheme": "Alt text for the '📊' button to show/hide the color scheme / stats choice dropdown",
         "blue": "Dropdown item for uniform blue color",
         "feature_source": "Dropdown item for map feature source statistics",
         "gender": "Dropdown item for linked entity gender statistics",
@@ -83,8 +94,8 @@
     },
     "translate": "Translate",
     "change_language": "Alt text for the language selection control",
-    "choose_basemap": "Alt text for the '🌍' button to show/hide the style dropdown",
-    "choose_projection": "Alt text for the '🌐' button to show/hide the projection dropdown",
+    "choose_basemap": "Alt text for the '🌍' button to show/hide the style choice dropdown",
+    "choose_projection": "Alt text for the '🌐' button to show/hide the projection choice dropdown",
     "overpass_turbo_query": "Alt text for the button that links to the source OverpassQL query on Overpass Turbo",
     "wdqs_query": "Alt text for the button that links to the source SPARQL query on Wikidata Query Service",
     "qlever_query": "Alt text for the button that links to the source SPARQL query on QLever",
