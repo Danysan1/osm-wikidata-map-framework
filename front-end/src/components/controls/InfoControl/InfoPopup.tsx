@@ -1,6 +1,7 @@
 import { FC } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
 import { InfoPanel } from "./InfoPanel";
+import styles from "./InfoPopup.module.css";
 
 interface InfoPopupProps {
     lastUpdateDate?: string;
@@ -12,7 +13,7 @@ interface InfoPopupProps {
 export const InfoPopup: FC<InfoPopupProps> = (props) => {
     return <Popup longitude={props.position.lng}
         latitude={props.position.lat}
-        className={props.className}
+        className={styles.owmf_info_popup + " " + props.className}
         maxWidth="none"
         closeButton
         closeOnClick

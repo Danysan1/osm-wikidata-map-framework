@@ -10,3 +10,8 @@ p.pic-attr {
 .pic-attr img {
     display: none;
 }
+
+img.pic-img {
+    width: 300px;
+    height: auto;
+}

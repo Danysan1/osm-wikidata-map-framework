@@ -14,7 +14,7 @@ export const InfoPanel: FC<InfoPanelProps> = (props) => {
             <p>{t("description")}</p>
         </header>
 
-        <div className="instructions_container hiddenElement">
+        <div className="instructions_container">
             <p>{t("info_box.click_anywhere")}</p>
             <p>{t("info_box.use_controls")}</p>
             <table>

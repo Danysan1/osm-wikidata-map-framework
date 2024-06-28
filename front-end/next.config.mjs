@@ -123,6 +123,14 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'commons.wikimedia.org',
+      },
+    ],
+  },
   headers: generateCspHeaders(),
   reactStrictMode: true,
 };

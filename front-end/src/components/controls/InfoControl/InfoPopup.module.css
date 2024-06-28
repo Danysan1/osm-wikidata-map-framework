@@ -1,0 +1,46 @@
+
+div.owmf_etymology_popup,
+div.owmf_info_popup {
+    min-width: 15em;
+    max-width: 80%;
+    min-height: 15em;
+    max-height: 98%;
+    /*width: 80%;*/
+    /*height: 80%;*/
+    /*position: absolute;*/
+    margin-top: 1em;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+div.owmf_info_popup .contribute_button,
+div.owmf_info_popup .dataset_button {
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+div.owmf_info_popup table tr td:first-child,
+div.owmf_info_popup table tr td:first-child {
+    text-align: center;
+}
+
+div.owmf_info_popup #last_info_row,
+div.owmf_info_popup #last_info_row {
+    line-height: 2em;
+    height: 2em;
+}
+
+div.owmf_info_popup #last_info_row *,
+div.owmf_info_popup #last_info_row * {
+    max-height: 2em;
+    vertical-align: middle;
+}
+
+div.owmf_info_popup #liberapay_donate {
+    text-decoration: none;
+}
+
+div.owmf_info_popup #paypal_donate {
+    display: inline-block;
+}
