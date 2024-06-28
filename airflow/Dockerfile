@@ -10,5 +10,5 @@ RUN groupadd -g $DOCKER_GID docker && \
 	usermod -aG docker airflow
 
 USER airflow
-COPY "./airflow/requirements.txt" /
+COPY "./requirements.txt" /
 RUN pip install --no-cache-dir -r /requirements.txt

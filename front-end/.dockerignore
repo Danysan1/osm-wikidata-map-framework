@@ -4,13 +4,24 @@
 **.gz
 **.mvt
 **.pmtiles
+owmf.ini
+LAST_UPDATE
+promtail/config.yaml
+promtail/key
 **.pbf
+db-data
+pgadmin-data
 **.sqlite
 **.db
 **.backup
 **.sqlite-journal
 **.pbf.*
 **.tmp.*
+.pgpass
+vendor/
+cache/
+storage/
+airflow_test/
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,visualstudiocode,nextjs
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,visualstudiocode,nextjs

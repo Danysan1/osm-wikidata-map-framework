@@ -404,7 +404,6 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data:delegated
     networks:
-      - owmf-internal
       - pgadmin-db-bridge
       - airflow-postgis-bridge
     logging:
@@ -442,133 +441,6 @@ services:
     restart: unless-stopped
     profiles:
       - airflow
-  
-  swagger-ui:
-    image: swaggerapi/swagger-ui:v5.1.0
-    ports:
-      - "${owmf_swagger_port:-8001}:8080"
-    volumes:
-      - ./openapi/overpass.yaml:/usr/share/nginx/html/overpass.yaml
-      - ./openapi/wikidata.yaml:/usr/share/nginx/html/wikidata.yaml
-    environment:
-      - API_URL=overpass.yaml
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80/"]
-      interval: 20s
-      timeout: 1s
-      retries: 5
-    restart: unless-stopped
-    profiles:
-      - swagger
-
-  owmf-web-dev:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: dev
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/dev
-    env_file:
-      - .env
-    ports:
-      - "${owmf_web_http_port:-80}:80"
-    networks:
-      - owmf-internal
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
-      interval: 20s
-      timeout: 1s
-      retries: 5
-    restart: unless-stopped
-    volumes:
-      - ./public:/var/www/html
-      - ./app:/var/www/app
-    profiles:
-      - dev
-
-  owmf-web-prod:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: prod
-      x-bake:
-        # https://docs.docker.com/build/customize/bake/compose-file/
-        # https://docs.docker.com/engine/reference/commandline/buildx_bake/
-        platforms:
-          - "linux/amd64"
-          - "linux/arm64"
-        tags:
-          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag:-latest}
-          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
-        cache-from:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache
-        cache-to:
-          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache,mode=max
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag:-latest}
-    env_file:
-      - .env
-    ports:
-      - "${owmf_web_http_port:-80}:80"
-      - "${owmf_web_https_port:-443}:443"
-    networks:
-      - owmf-internal
-    logging:
-      driver: json-file
-      options:
-        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
-    healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
-      interval: 20s
-      timeout: 1s
-      retries: 5
-    restart: unless-stopped
-    volumes:
-      - apache-sites-available:/etc/apache2/sites-available/
-      - apache-sites-enabled:/etc/apache2/sites-enabled/
-      - letsencrypt-certs:/etc/letsencrypt/
-    profiles:
-      - prod
-
-  # https://maplibre.org/martin/
-  # https://maplibre.org/martin/run-with-docker-compose.html
-  owmf-martin:
-    image: ghcr.io/maplibre/martin:v0.9.3
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    networks:
-      - owmf-internal
-    healthcheck:
-      test: ["CMD", "wget", "-O", "-", "http://localhost:3000/health"]
-      interval: 20s
-      timeout: 1s
-      retries: 5
-    environment:
-      - DATABASE_URL=postgresql://${owmf_db_user}:${owmf_db_password}@${owmf_db_host}:${owmf_db_port}/${owmf_db_database}
-      - DEFAULT_SRID=4326
-    profiles:
-      - martin
-
-  promtail:
-    image: grafana/promtail:2.8.2
-    volumes:
-      - ./promtail:/etc/promtail
-      - /var/log:/var/log
-      - /var/lib/docker/containers:/var/lib/docker/containers
-    command: -config.file=/etc/promtail/config.yaml
-    profiles:
-      - promtail
-
-  owmf-load-related:
-    build:
-      context: .
-      dockerfile: Dockerfile.load-related
-    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related
-    env_file:
-      - .env
-    networks:
-      - owmf-internal
-    profiles:
-      - load-related
 
 
 volumes:
@@ -576,13 +448,9 @@ volumes:
   airflow-postgres-db-volume:
   db-data:
   pgadmin-data:
-  apache-sites-available:
-  apache-sites-enabled:
-  letsencrypt-certs:
   torrent-daemon-config:
 
 networks:
-  owmf-internal:
   airflow-internal:
   airflow-postgis-bridge:
   airflow-torrent-bridge:
