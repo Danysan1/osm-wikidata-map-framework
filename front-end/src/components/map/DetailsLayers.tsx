@@ -18,7 +18,7 @@ const LOW_ZOOM_POINT_RADIUS = 2,
     PROVINCE_ADMIN_LEVEL = 6,
     CITY_MAX_ZOOM = 13;
 
-interface DetailsLayersProps {
+export interface DetailsLayersProps {
     minZoom?: number;
     sourceID: string;
     keyID?: string;

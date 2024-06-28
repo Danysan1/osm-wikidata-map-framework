@@ -6,8 +6,7 @@ import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { loadTranslator } from "@/src/i18n/client";
 import {
-    EtymologyFeature,
-    EtymologyResponse,
+  EtymologyFeature
 } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
@@ -15,27 +14,26 @@ import { MapService } from "@/src/services/MapService";
 import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
 import {
-    DataDrivenPropertyValueSpecification,
-    RequestTransformFunction,
-    addProtocol,
+  DataDrivenPropertyValueSpecification,
+  RequestTransformFunction,
+  addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
-    isMapboxURL,
-    transformMapboxUrl,
+  isMapboxURL,
+  transformMapboxUrl,
 } from "maplibregl-mapbox-request-transformer";
 import { useTranslation } from "next-i18next";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import Map, {
-    FullscreenControl,
-    GeolocateControl,
-    MapStyle,
-    NavigationControl,
-    ScaleControl,
-    Source,
-    ViewStateChangeEvent,
+  FullscreenControl,
+  GeolocateControl,
+  MapStyle,
+  NavigationControl,
+  ScaleControl,
+  ViewStateChangeEvent
 } from "react-map-gl/maplibre";
 import { FeaturePopup } from "../../FeaturePopup";
 import { BackEndControl } from "../../controls/BackEndControl";
@@ -46,11 +44,11 @@ import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
 import { QueryLinkControl } from "../../controls/QueryLinkControl";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
+import { StatisticsColorControl } from "../../controls/StatisticsColorControl";
 import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
 import { DetailsLayers } from "../DetailsLayers";
+import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
 import { PMTilesSource } from "../PMTilesSource";
-import mockDetailsData from "./details.json";
-import mockElementsData from "./elements.json";
 
 const PMTILES_PREFIX = "pmtiles",
   FALLBACK_COLOR = "#3bb2d0",
@@ -71,7 +69,7 @@ loadTranslator().catch((e) => {
 
 export const OwmfMap = () => {
   const { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } =
-      useUrlFragmentContext(),
+    useUrlFragmentContext(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(
@@ -105,17 +103,6 @@ export const OwmfMap = () => {
           ? undefined
           : backEndID.replace("pmtiles_", ""),
       [backEndID]
-    ),
-    elementsData = useMemo<EtymologyResponse | null>(
-      () =>
-        pmtilesActive || zoom < minZoomLevel || zoom >= thresholdZoomLevel
-          ? null
-          : mockElementsData,
-      [minZoomLevel, pmtilesActive, thresholdZoomLevel, zoom]
-    ),
-    detailsData = useMemo<EtymologyResponse | null>(
-      () => pmtilesActive || zoom < thresholdZoomLevel ? null : mockDetailsData,
-      [pmtilesActive, thresholdZoomLevel, zoom]
     ),
     dataLayerIDs = useMemo(
       () => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER],
@@ -281,7 +268,7 @@ export const OwmfMap = () => {
           position="top-left"
         />
       )}
-      {/*sourcePreset && (
+      {sourcePreset && (
         <StatisticsColorControl
           preset={sourcePreset}
           sourceId={DETAILS_SOURCE}
@@ -289,7 +276,7 @@ export const OwmfMap = () => {
           setLayerColor={setLayerColor}
           position="top-left"
         />
-      )*/}
+      )}
 
       <NavigationControl visualizePitch position="top-right" />
       <GeolocateControl
@@ -362,17 +349,19 @@ export const OwmfMap = () => {
       <ScaleControl position="bottom-right" />
       {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
 
-      {elementsData && (
+      {!pmtilesActive && backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel && (
         <ClusteredSourceAndLayers
+          backEndService={backEndService}
+          backEndID={backEndID}
           sourceID={ELEMENTS_SOURCE}
-          data={elementsData}
           minZoom={minZoomLevel}
           maxZoom={thresholdZoomLevel}
         />
       )}
-      {detailsData && (
-        <Source id={DETAILS_SOURCE} type="geojson" data={detailsData}>
-          <DetailsLayers
+      {!pmtilesActive && backEndService && zoom >= thresholdZoomLevel && (
+        <DetailsSourceAndLayers
+            backEndService={backEndService}
+            backEndID={backEndID}
             sourceID={DETAILS_SOURCE}
             minZoom={thresholdZoomLevel}
             setOpenFeature={setOpenFeature}
@@ -384,7 +373,6 @@ export const OwmfMap = () => {
             polygonBorderLayerID={POLYGON_BORDER_LAYER}
             polygonFillLayerID={POLYGON_FILL_LAYER}
           />
-        </Source>
       )}
       {pmtilesActive && (
         <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>

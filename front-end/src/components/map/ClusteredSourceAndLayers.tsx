@@ -1,5 +1,10 @@
+import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyResponse } from "@/src/model/EtymologyResponse";
-import { useCallback, useEffect, useMemo } from "react";
+import { MapService } from "@/src/services/MapService";
+import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
+import type { BBox } from "geojson";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Layer, LngLatLike, MapMouseEvent, Source, useMap } from "react-map-gl/maplibre";
 
 const CLUSTER_LAYER = '_layer_cluster',
@@ -7,7 +12,8 @@ const CLUSTER_LAYER = '_layer_cluster',
     UNCLUSTERED_LAYER = '_layer_unclustered';
 
 interface ClusteredSourceAndLayersProps {
-    data: EtymologyResponse;
+    backEndService: MapService;
+    backEndID: string;
 
     /** Map source ID */
     sourceID: string;
@@ -49,7 +55,29 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         clusterLayerID = useMemo(() => props.sourceID + CLUSTER_LAYER, [props.sourceID]),
         countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
         unclusteredLayerID = useMemo(() => props.sourceID + UNCLUSTERED_LAYER, [props.sourceID]),
-        { current: map } = useMap();
+        [elementsData, setElementsData] = useState<EtymologyResponse | null>(null),
+        { zoom } = useUrlFragmentContext(),
+        { current: map } = useMap(),
+        { i18n } = useTranslation();
+
+    useEffect(() => {
+        if ((props.minZoom && zoom < props.minZoom) || (props.maxZoom && zoom >= props.maxZoom)) return;
+
+        const bounds = map?.getBounds().toArray(),
+            bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
+        if (process.env.NODE_ENV === "development") console.debug("ClusteredSourceAndLayers useEffect", { bbox });
+        if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
+            showLoadingSpinner(true);
+            props.backEndService.fetchMapElements(props.backEndID, true, bbox, i18n.language).then(data => {
+                setElementsData(data);
+            }).catch(e => {
+                console.error("Failed fetching map elements", e);
+                showSnackbar("snackbar.map_error");
+            }).finally(() => showLoadingSpinner(false));
+        } else {
+            setElementsData(null);
+        }
+    }, [i18n.language, map, props.backEndID, props.backEndService, props.maxZoom, props.minZoom, zoom]);
 
     /**
      * Handles the click on a cluster.
@@ -102,10 +130,10 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         return () => void map?.off("click", unclusteredLayerID, onUnclusteredLayerClick);
     }, [map, onUnclusteredLayerClick, unclusteredLayerID]);
 
-    return (
+    return elementsData && (
         <Source id={props.sourceID}
             type="geojson"
-            data={props.data}
+            data={elementsData}
             maxzoom={props.maxZoom}
             cluster={true}
             clusterMinPoints={1}
