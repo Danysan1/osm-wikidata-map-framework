@@ -18,7 +18,7 @@ interface ButtonRowProps {
 }
 
 export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
-    const { t } = useTranslation('common');
+    const { t } = useTranslation();
 
     return <div className={`${styles["button-row"]} ${props.className}`}>
         {props.wikipedia && <a href={props.wikipedia} title="Wikipedia" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button">

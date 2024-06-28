@@ -13,7 +13,7 @@ interface ImageWithAttributionProps {
  * Display an image and its attribution
  */
 export const ImageWithAttribution: React.FC<ImageWithAttributionProps> = ({ previewUrl, originalUrl, attribution, className }) => {
-    const { t } = useTranslation('common');
+    const { t } = useTranslation();
     const title = t("feature_details.picture_via_commons", "Picture from Wikimedia Commons");
     return <div className={styles["pic-container"]}>
         <a className={styles["pic-link"]} href={originalUrl} title={title} aria-label={title}>

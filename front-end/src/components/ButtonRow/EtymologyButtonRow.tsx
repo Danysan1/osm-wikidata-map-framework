@@ -9,7 +9,7 @@ interface EtymologyButtonRowProps {
 }
 
 export const EtymologyButtonRow: React.FC<EtymologyButtonRowProps> = ({ etymology }) => {
-    const { i18n } = useTranslation('app'),
+    const { i18n } = useTranslation(),
         entitree = useMemo(
             () => i18n.language && etymology.wikidata && etymology.instanceID == "Q5" ? `https://www.entitree.com/${i18n.language}/family_tree/${etymology.wikidata}` : undefined,
             [etymology.instanceID, etymology.wikidata, i18n.language]

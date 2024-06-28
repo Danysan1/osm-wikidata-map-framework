@@ -1,6 +1,6 @@
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
@@ -10,7 +10,8 @@ interface EtymologyViewProps {
 }
 
 export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
-    const { t, i18n } = useTranslation();
+    const { t, i18n } = useTranslation(),
+        [wikipediaExtract, setWikipediaExtract] = useState<string>();
 
     /**
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
@@ -52,6 +53,14 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
         return out;
     }, [i18n.language]);
 
+    useEffect(() => {
+        if (etymology.wikipedia) {
+            new WikipediaService().fetchExtract(etymology.wikipedia)
+                .then(res => setWikipediaExtract(res))
+                .catch(console.error);
+        }
+    }, [etymology.wikipedia]);
+
     return (
         <div className="etymology">
             <div className="grid grid-auto">
@@ -63,13 +72,13 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
                     <div className="info column">
                         <EtymologyButtonRow etymology={etymology} />
 
-                        <p className="wikipedia_extract"></p>
+                        {wikipediaExtract && <p className="wikipedia_extract">📖 {wikipediaExtract}</p>}
                         <p className="start_end_date"></p>
-                        <p className="event_place"></p>
-                        <p className="citizenship"></p>
-                        <p className="gender"></p>
-                        <p className="occupations"></p>
-                        <p className="prizes"></p>
+                        {etymology.event_place && <p className="event_place">📍 {etymology.event_place}</p>}
+                        {etymology.citizenship && <p className="citizenship">🌍 {etymology.citizenship}</p>}
+                        {etymology.gender && <p className="gender">⚧️ {etymology.gender}</p>}
+                        {etymology.occupations && <p className="occupations">🛠️ {etymology.occupations}</p>}
+                        {etymology.prizes && <p className="prizes">🏆 {etymology.prizes}</p>}
                     </div>
                 </div>
 
@@ -106,23 +115,6 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
 export class EtymologyElement extends HTMLDivElement {
     private render() {
 
-
-        const wikipedia_extract = etyDomElement.querySelector<HTMLElement>('.wikipedia_extract');
-        if (!wikipedia_extract) {
-            console.warn("Missing .wikipedia_extract");
-        } else if (this.etymology.wikipedia) {
-            new WikipediaService().fetchExtract(this.etymology.wikipedia)
-                .then(res => {
-                    wikipedia_extract.innerText = '📖 ' + res;
-                })
-                .catch(err => {
-                    console.warn(err);
-                    wikipedia_extract.style.display = 'none';
-                });
-        } else {
-            wikipedia_extract.style.display = 'none';
-        }
-
         const start_end_date = etyDomElement.querySelector<HTMLElement>('.start_end_date')
         if (!start_end_date) {
             console.warn("Missing .start_end_date");
@@ -141,62 +133,6 @@ export class EtymologyElement extends HTMLDivElement {
             start_end_date.innerText = `📅 ${event_date}`
         } else {
             start_end_date.style.display = 'none';
-        }
-
-        const event_place = etyDomElement.querySelector<HTMLElement>('.event_place');
-        if (!event_place) {
-            console.warn("Missing .event_place");
-        } else if (this.etymology.event_place) {
-            event_place.innerText = '📍 ' + this.etymology.event_place;
-        } else {
-            event_place.style.display = 'none';
-        }
-
-        const citizenship = etyDomElement.querySelector<HTMLElement>('.citizenship');
-        if (!citizenship) {
-            console.warn("Missing .citizenship");
-        } else if (this.etymology.citizenship) {
-            citizenship.innerText = '🌍 ' + this.etymology.citizenship;
-        } else {
-            citizenship.style.display = 'none';
-        }
-
-        const gender = etyDomElement.querySelector<HTMLElement>('.gender');
-        if (!gender) {
-            console.warn("Missing .gender");
-        } else if (this.etymology.gender) {
-            gender.innerText = '⚧️ ' + this.etymology.gender;
-        } else {
-            gender.style.display = 'none';
-        }
-
-        const occupations = etyDomElement.querySelector<HTMLElement>('.occupations');
-        if (!occupations) {
-            console.warn("Missing .occupations");
-        } else if (this.etymology.occupations) {
-            occupations.innerText = '🛠️ ' + this.etymology.occupations;
-        } else {
-            occupations.style.display = 'none';
-        }
-
-        const prizes = etyDomElement.querySelector<HTMLElement>('.prizes');
-        if (!prizes) {
-            console.warn("Missing .prizes");
-        } else if (this.etymology.prizes) {
-            prizes.innerText = '🏆 ' + this.etymology.prizes;
-        } else {
-            prizes.style.display = 'none';
-        }
-
-        const ety_pictures = etyDomElement.querySelector<HTMLDivElement>('.ety_pictures');
-        if (!ety_pictures) {
-            console.warn("Missing .pictures");
-        } else if (this.etymology.pictures) {
-            this.etymology.pictures.slice(0, 5).forEach(
-                img => ety_pictures.appendChild(imageToDomElement(img)) // TODO <CommonsImage name={img} />
-            );
-        } else {
-            ety_pictures.style.display = 'none';
         }
 
         const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
