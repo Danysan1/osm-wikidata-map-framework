@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
 import { useCallback } from "react";
@@ -11,7 +10,7 @@ interface EtymologyViewProps {
 }
 
 export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
-    const {t, i18n} = useTranslation();
+    const { t, i18n } = useTranslation();
 
     /**
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
@@ -20,7 +19,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
     const formatDate = useCallback((date: Date | string | number, precision?: DatePrecision): string => {
         let dateObject: Date;
         const options: Intl.DateTimeFormatOptions = {};
-    
+
         if (date instanceof Date) {
             dateObject = date;
         } else if (typeof date === 'string' && date.startsWith('-')) {
@@ -34,7 +33,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
         } else {
             throw new Error("Invalid date parameter");
         }
-    
+
         if (precision) {
             if (precision >= DatePrecision.second) options.second = 'numeric';
             if (precision >= DatePrecision.minute) options.minute = 'numeric';
@@ -43,11 +42,11 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
             if (precision >= DatePrecision.month) options.month = 'numeric';
             options.year = 'numeric';
         }
-    
+
         if (dateObject < new Date('0000-01-01T00:00:00')) {
             options.era = "short";
         }
-    
+
         const out = dateObject.toLocaleDateString(i18n.language, options);
         //if (process.env.NODE_ENV === 'development') console.debug("formatDate", { date, precision, dateObject, options, out });
         return out;
@@ -75,17 +74,19 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
                 </div>
 
                 {etymology.pictures && <div className="etymology_pictures columns">
-                {etymology.pictures.map((img, i) => <CommonsImage key={i} name={img} />)}
-            </div>}
+                    {etymology.pictures.map((img, i) => <CommonsImage key={i} name={img} />)}
+                </div>}
             </div>
             <span className="etymology_src_wrapper">
-                <span className="i18n_source">Source:</span>
+                <span>{t("feature_details.source")}</span>
                 <a className="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
                 <span className="src_osm_plus_wd hiddenElement"> &gt; </span>
                 <a className="etymology_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
                 <span className="etymology_propagated_wrapper hiddenElement">
                     &gt;
-                    <a title="Description of the propagation mechanism" className="i18n_propagation title_i18n_propagation" href={process.env.owmf_propagation_docs_url}>propagation</a>
+                    <a title={t("etymology_details.propagation")} href={process.env.owmf_propagation_docs_url}>
+                        {t("etymology_details.propagation")}
+                    </a>
                 </span>
                 <span className="etymology_src_part_of_wd_wrapper hiddenElement">
                     &gt;
@@ -103,169 +104,8 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
  * WebComponent to display an etymology
  */
 export class EtymologyElement extends HTMLDivElement {
-    private _currentZoom = 12.5;
-    private _ety?: EtymologyDetails;
-
-    constructor() {
-        super();
-        this.classList.add('etymology-container', 'hiddenElement', 'custom-component');
-    }
-
-    get currentZoom(): number {
-        return this._currentZoom;
-    }
-
-    set currentZoom(currentZoom: number) {
-        this._currentZoom = currentZoom;
-        // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: setting currentZoom", { currentZoom });
-        this.render();
-    }
-
-    get etymology(): EtymologyDetails | undefined {
-        return this._ety;
-    }
-
-    set etymology(ety: EtymologyDetails | undefined) {
-        if (!ety) {
-            this._ety = undefined;
-            // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: unsetting etymology");
-        } else {
-            this._ety = ety;
-            // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: setting etymology", { ety });
-        }
-        this.render();
-    }
-
     private render() {
-        if (!this.etymology) {
-            if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: no etymology, hiding");
-            this.classList.add("hiddenElement");
-            this.innerHTML = "";
-            return;
-        }
 
-        const etymology_template = document.getElementById('etymology_template');
-        if (!(etymology_template instanceof HTMLTemplateElement))
-            throw new Error("Missing etymology template");
-
-        const etyDomElement = etymology_template.content.cloneNode(true) as HTMLElement;
-
-        const lang = getLanguage();
-        if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement", { ety: this.etymology, etyDomElement, lang });
-
-        translateContent(etyDomElement, ".i18n_source", "feature_details.source", "Source:");
-        translateContent(etyDomElement, ".i18n_location", "feature_details.location", "Location");
-        translateAnchorTitle(etyDomElement, ".title_i18n_location", "feature_details.location", "Location");
-        translateContent(etyDomElement, ".i18n_propagation", "etymology_details.propagation", "propagation");
-        translateAnchorTitle(etyDomElement, ".title_i18n_propagation", "etymology_details.propagation_title", "Description of the propagation mechanism");
-
-        const etymology_name = etyDomElement.querySelector<HTMLElement>('.etymology_name');
-        if (!etymology_name) {
-            console.warn("Missing .etymology_name");
-        } else if (this.etymology.name) {
-            etymology_name.innerText = this.etymology.name;
-            etymology_name.classList.remove("hiddenElement");
-        } else {
-            etymology_name.classList.add("hiddenElement");
-        }
-
-        const etymology_description = etyDomElement.querySelector<HTMLElement>('.etymology_description');
-        if (!etymology_description) {
-            console.warn("Missing .etymology_description");
-        } else if (this.etymology.description) {
-            etymology_description.innerText = this.etymology.description;
-            etymology_description.classList.remove("hiddenElement");
-        } else {
-            etymology_description.classList.add("hiddenElement");
-        }
-
-        const wikidata_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikidata_button');
-        if (!wikidata_button) {
-            console.warn("Missing .wikidata_button");
-        } else if (this.etymology.wikidata) {
-            wikidata_button.href = 'https://www.wikidata.org/wiki/' + this.etymology.wikidata
-            wikidata_button.classList.remove("hiddenElement");
-        } else {
-            wikidata_button.classList.add("hiddenElement");
-        }
-
-        const entitree_button = etyDomElement.querySelector<HTMLAnchorElement>('.entitree_button');
-        if (!entitree_button) {
-            console.warn("Missing .entitree_button");
-        } else if (lang && this.etymology.wikidata && this.etymology.instanceID == "Q5") {
-            entitree_button.href = `https://www.entitree.com/${lang}/family_tree/${this.etymology.wikidata}`;
-            entitree_button.classList.remove("hiddenElement");
-        } else {
-            entitree_button.classList.add("hiddenElement");
-        }
-
-        const wikipedia_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikipedia_button');
-        if (!wikipedia_button) {
-            console.warn("Missing .wikipedia_button");
-        } else if (this.etymology.wikipedia) {
-            wikipedia_button.href = this.etymology.wikipedia.startsWith("http") ? this.etymology.wikipedia : `https://www.wikipedia.org/wiki/${this.etymology.wikipedia}`;
-            wikipedia_button.classList.remove("hiddenElement");
-        } else {
-            wikipedia_button.classList.add("hiddenElement");
-        }
-
-        if (parseBoolConfig("wikispore_enable")) {
-            const wikispore_button = etyDomElement.querySelector<HTMLAnchorElement>('.wikispore_button');
-            if (!wikispore_button) {
-                console.warn("Missing .wikispore_button");
-            } else if (this.etymology.wikispore) {
-                wikispore_button.href = this.etymology.wikispore.startsWith("http") ? this.etymology.wikispore : `https://wikispore.wmflabs.org/wiki/${this.etymology.wikispore}`;
-                wikispore_button.classList.remove("hiddenElement");
-            } else {
-                wikispore_button.classList.add("hiddenElement");
-            }
-        }
-
-        const commons_button = etyDomElement.querySelector<HTMLAnchorElement>('.commons_button');
-        if (!commons_button) {
-            console.warn("Missing .commons_button");
-        } else if (this.etymology.commons) {
-            if (this.etymology.commons.startsWith("http"))
-                commons_button.href = this.etymology.commons;
-            else if (this.etymology.commons.startsWith("Category:"))
-                commons_button.href = `https://commons.wikimedia.org/wiki/${this.etymology.commons}`;
-            else
-                commons_button.href = `https://commons.wikimedia.org/wiki/Category:${this.etymology.commons}`;
-            commons_button.classList.remove("hiddenElement");
-        } else {
-            commons_button.classList.add("hiddenElement");
-        }
-
-        const location_button = etyDomElement.querySelector<HTMLAnchorElement>('.subject_location_button');
-        if (!location_button) {
-            console.warn("Missing .location_button");
-        } else {
-            let ety_lat = NaN, ety_lon = NaN;
-            if (this.etymology.wkt_coords) {
-                const coords = /Point\(([-\dE.]+) ([-\dE.]+)\)/i.exec(this.etymology.wkt_coords),
-                    coordsOk = !!coords && coords.length == 3,
-                    strLon = coordsOk ? coords.at(1) : null,
-                    strLat = coordsOk ? coords.at(2) : null;
-                ety_lat = strLat ? parseFloat(strLat) : NaN;
-                ety_lon = strLon ? parseFloat(strLon) : NaN;
-
-                if (!isNaN(ety_lon) && !isNaN(ety_lat)) {
-                    location_button.addEventListener("click", () => {
-                        const destinationZoomLevel = Math.max(this.currentZoom, Math.min(this.currentZoom + 2, 18));
-                        fragment.setFragmentParams(ety_lon, ety_lat, destinationZoomLevel);
-                        return false;
-                    });
-                    location_button.classList.remove("hiddenElement");
-                } else {
-                    location_button.classList.add("hiddenElement");
-                    console.warn("Failed converting wkt_coords:", {
-                        ety_lat, ety_lon, wkt_coords: this.etymology.wkt_coords
-                    });
-                }
-            } else {
-                location_button.classList.add("hiddenElement");
-            }
-        }
 
         const wikipedia_extract = etyDomElement.querySelector<HTMLElement>('.wikipedia_extract');
         if (!wikipedia_extract) {
