@@ -38,7 +38,8 @@
         "burial": "Burial places",
         "etymology": "Etymologies (origin of names)",
         "green_spaces": "Green spaces",
-        "holy_wells": "Holy wells"
+        "holy_wells": "Holy wells",
+        "holy_well_etymology": "Holy well etymology"
     },
     "source": {
         "choose_source": "Choose data source",

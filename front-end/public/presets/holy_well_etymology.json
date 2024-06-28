@@ -1,0 +1,19 @@
+{
+    "default_backend": "overpass_wd+wd_base",
+    "fetch_parts_of_linked_entities": true,
+    "mapcomplete_theme": "etymology",
+    "osm_filter_tags": [
+        "place_of_worship=holy_well"
+    ],
+    "osm_text_key": "name:etymology",
+    "osm_description_key": "name:etymology:description",
+    "osm_wikidata_keys": [
+        "name:etymology:wikidata", "subject:wikidata"
+    ],
+    "osm_wikidata_properties": [
+        "P138", "P825", "P547"
+    ],
+    "wikidata_filter_classes": [
+        "Q1371047", "Q126443332"
+    ]
+}
