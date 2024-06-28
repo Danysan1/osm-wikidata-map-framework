@@ -1,8 +1,11 @@
+import { parseBoolConfig } from "@/src/config";
+import { Etymology } from "@/src/model/Etymology";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
+import { EtymologyList } from "../EtymologyList/EtymologyList";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 
 interface EtymologyViewProps {
@@ -11,7 +14,13 @@ interface EtymologyViewProps {
 
 export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
     const { t, i18n } = useTranslation(),
-        [wikipediaExtract, setWikipediaExtract] = useState<string>();
+        [wikipediaExtract, setWikipediaExtract] = useState<string>(),
+        osmUrlA = (etymology.osm_wd_join_field === "OSM" || !!etymology.from_osm || etymology.propagated) && etymology.from_osm_type && etymology.from_osm_id ? `https://www.openstreetmap.org/${etymology.from_osm_type}/${etymology.from_osm_id}` : null,
+        wdUrlA = etymology.osm_wd_join_field && etymology.osm_wd_join_field !== "OSM" && etymology.from_wikidata_entity ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${etymology.osm_wd_join_field}` : null,
+        wdUrlB = etymology.from_wikidata_entity ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${etymology.from_wikidata_prop ?? ""}` : null,
+        showArrow = (!!osmUrlA || !!wdUrlA) && wdUrlB,
+        wdUrlPartOf = etymology.from_parts_of_wikidata_cod ? `https://www.wikidata.org/wiki/${etymology.from_parts_of_wikidata_cod}#P527` : null,
+        wdUrlC = `https://www.wikidata.org/wiki/${etymology.wikidata}`;
 
     /**
      * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
@@ -61,6 +70,20 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
         }
     }, [etymology.wikipedia]);
 
+    const parts = useMemo(
+        () => {
+            if (!parseBoolConfig(process.env.owmf_fetch_parts_of_linked_entities) || etymology.from_parts_of_wikidata_cod)
+                return;
+
+            return etymology.parts?.map((qid): Etymology => ({
+                ...etymology,
+                wikidata: qid,
+                from_parts_of_wikidata_cod: etymology.wikidata
+            }));
+        },
+        []
+    );
+
     return (
         <div className="etymology">
             <div className="grid grid-auto">
@@ -88,23 +111,26 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
             </div>
             <span className="etymology_src_wrapper">
                 <span>{t("feature_details.source")}</span>
-                <a className="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
-                <span className="src_osm_plus_wd hiddenElement"> &gt; </span>
-                <a className="etymology_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
-                <span className="etymology_propagated_wrapper hiddenElement">
+                {osmUrlA && <a className="etymology_src_a" href={osmUrlA}>OpenStreetMap</a>}
+                {wdUrlA && <a className="etymology_src_a" href={wdUrlA}>Wikidata</a>}
+                {showArrow && <span className="src_osm_plus_wd"> &gt; </span>}
+                {wdUrlB && <a className="etymology_src_wd" href={wdUrlB}>Wikidata</a>}
+                {etymology.propagated && <span className="etymology_propagated_wrapper">
                     &gt;
                     <a title={t("etymology_details.propagation")} href={process.env.owmf_propagation_docs_url}>
                         {t("etymology_details.propagation")}
                     </a>
-                </span>
-                <span className="etymology_src_part_of_wd_wrapper hiddenElement">
+                </span>}
+                {wdUrlPartOf && <span className="etymology_src_part_of_wd_wrapper">
                     &gt;
-                    <a className="etymology_src_part_of_wd">Wikidata</a>
-                </span>
+                    <a className="etymology_src_part_of_wd" href={wdUrlPartOf}>Wikidata</a>
+                </span>}
                 &gt;
-                <a className="etymology_src_entity" href="https://www.wikidata.org">Wikidata</a>
+                <a className="etymology_src_entity" href={wdUrlC}>Wikidata</a>
             </span>
-            <div className="etymology_parts_container hiddenElement"></div>
+            <div className="etymology_parts_container">
+                {parts?.length && <EtymologyList etymologies={parts} />}
+            </div>
         </div>
     );
 };
@@ -134,97 +160,5 @@ export class EtymologyElement extends HTMLDivElement {
         } else {
             start_end_date.style.display = 'none';
         }
-
-        const src_osm = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_osm'),
-            src_osm_plus_wd = etyDomElement.querySelector<HTMLAnchorElement>('.src_osm_plus_wd'),
-            src_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_wd'),
-            showOsmJoinSource = (this.etymology.osm_wd_join_field === "OSM" || !!this.etymology.from_osm || this.etymology.propagated) && this.etymology.from_osm_type && this.etymology.from_osm_id && src_osm,
-            showWdJoinSource = this.etymology.osm_wd_join_field && this.etymology.osm_wd_join_field !== "OSM" && this.etymology.from_wikidata_entity && src_wd;
-        if (!src_osm) {
-            console.warn("Missing .etymology_src_osm");
-        } else if (showOsmJoinSource) {
-            const osmURL = `https://www.openstreetmap.org/${this.etymology.from_osm_type}/${this.etymology.from_osm_id}`;
-            if (process.env.NODE_ENV === 'development') console.debug("Showing OSM etymology source", { ety: this.etymology, osmURL, src_osm });
-            src_osm.innerText = "OpenStreetMap";
-            src_osm.href = osmURL;
-            src_osm.classList.remove('hiddenElement');
-        } else if (showWdJoinSource) {
-            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.from_wikidata_entity}#${this.etymology.osm_wd_join_field}`;
-            src_osm.innerText = "Wikidata";
-            src_osm.href = wdURL;
-            src_osm.classList.remove('hiddenElement');
-        } else {
-            src_osm.classList.add('hiddenElement');
-        }
-
-        if (!src_osm_plus_wd)
-            console.warn("Missing .src_osm_plus_wd");
-        else if ((!!showOsmJoinSource || showWdJoinSource) && this.etymology.from_wikidata_entity)
-            src_osm_plus_wd.classList.remove("hiddenElement");
-        else
-            src_osm_plus_wd.classList.add("hiddenElement");
-
-        if (!src_wd) {
-            console.warn("Missing .etymology_src_wd");
-        } else if (this.etymology.from_wikidata_entity) {
-            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.from_wikidata_entity}#${this.etymology.from_wikidata_prop ?? ""}`;
-            if (process.env.NODE_ENV === 'development') console.debug("Showing WD etymology source", { ety: this.etymology, wdURL, src_wd });
-            src_wd.href = wdURL;
-            src_wd.classList.remove("hiddenElement");
-        } else {
-            src_wd.classList.add("hiddenElement");
-        }
-
-        const src_part_of_wd = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_part_of_wd'),
-            src_part_of_wd_wrapper = etyDomElement.querySelector<HTMLElement>('.etymology_src_part_of_wd_wrapper');
-        if (!src_part_of_wd_wrapper) {
-            console.warn("Missing .etymology_src_part_of_wd_wrapper");
-        } else if (this.etymology.from_parts_of_wikidata_cod && src_part_of_wd) {
-            src_part_of_wd.href = `https://www.wikidata.org/wiki/${this.etymology.from_parts_of_wikidata_cod}#P527`;
-            src_part_of_wd_wrapper.classList.remove("hiddenElement");
-        } else {
-            src_part_of_wd_wrapper.classList.add("hiddenElement");
-        }
-
-        const propagated = etyDomElement.querySelector<HTMLElement>('.etymology_propagated_wrapper');
-        if (propagated && this.etymology.propagated) {
-            propagated.classList.remove("hiddenElement");
-        } else if (propagated) {
-            propagated.classList.add("hiddenElement");
-        }
-
-        const src_entity = etyDomElement.querySelector<HTMLAnchorElement>('.etymology_src_entity');
-        if (!src_entity) {
-            console.warn("Missing .etymology_src_entity");
-        } else if (this.etymology.wikidata) {
-            const wdURL = `https://www.wikidata.org/wiki/${this.etymology.wikidata}`;
-            if (process.env.NODE_ENV === 'development') console.debug("Showing WD etymology entity source", { ety: this.etymology, wdURL, src_entity });
-            src_entity.href = wdURL;
-            src_entity.classList.remove("hiddenElement");
-        } else {
-            src_entity.classList.add("hiddenElement");
-        }
-
-        const etymology_parts_container = etyDomElement.querySelector<HTMLDivElement>('.etymology_parts_container');
-        if (!etymology_parts_container) {
-            console.warn("Missing .etymology_parts_container");
-        } else {
-            etymology_parts_container.dataset.wikidataCod = this.etymology.wikidata;
-            etymology_parts_container.classList.add("hiddenElement");
-        }
-
-        this.innerHTML = "";
-        // if (process.env.NODE_ENV === 'development') console.debug("EtymologyElement: rendering", { etyDomElement });
-        this.appendChild(etyDomElement);
-        this.classList.remove("hiddenElement");
     }
-}
-
-customElements.define("owmf-etymology", EtymologyElement, { extends: "div" });
-
-export function etymologyToDomElement(ety: EtymologyDetails, currentZoom = 12.5): EtymologyElement {
-    const etymologyElement = document.createElement("div", { is: "owmf-etymology" }) as EtymologyElement;
-    etymologyElement.currentZoom = currentZoom;
-    etymologyElement.etymology = ety;
-    return etymologyElement;
 }
