@@ -1,20 +1,18 @@
+import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { Position } from "geojson";
 import { ButtonRow } from "./ButtonRow";
 
 interface FeatureButtonRowProps {
     feature: EtymologyFeature;
-    destinationZoomLevel: number;
     className?: string;
-    setLon: (lon: number) => void;
-    setLat: (lat: number) => void;
-    setZoom: (zoom: number) => void;
 }
 
-export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({ feature, destinationZoomLevel, className, setLon, setLat, setZoom }) => {
+export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({ feature, className }) => {
     const osm_full_id = feature.properties?.osm_type && feature.properties?.osm_id ? feature.properties.osm_type + '/' + feature.properties?.osm_id : null,
         openstreetmap = osm_full_id ? `https://www.openstreetmap.org/${osm_full_id}` : undefined,
-        wikidata = feature.properties?.wikidata && feature.properties?.wikidata !== 'null' ? `https://www.wikidata.org/wiki/${feature.properties?.wikidata}` : undefined;
+        wikidata = feature.properties?.wikidata && feature.properties?.wikidata !== 'null' ? `https://www.wikidata.org/wiki/${feature.properties?.wikidata}` : undefined,
+        { setLat, setLon, setZoom } = useUrlFragmentContext();
 
     let commons = feature.properties?.commons && feature.properties?.commons !== 'null' ? feature.properties?.commons : undefined;
     if (commons?.startsWith("Category:")) commons = `https://commons.wikimedia.org/wiki/${commons}`;
@@ -38,7 +36,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({ feature, des
     }
     const lon = pos?.at(0),
         lat = pos?.at(1),
-        zoomOnLocation = lon !== undefined && lat !== undefined ? () => { setLon(lon); setLat(lat); setZoom(destinationZoomLevel); } : undefined;
+        zoomOnLocation = lon !== undefined && lat !== undefined ? () => { setLon(lon); setLat(lat); setZoom(oldZoom => oldZoom + 2); } : undefined;
 
     let osmWikidataMatcher;
     if (osm_full_id && !feature.properties?.wikidata && lat !== undefined && lon !== undefined) osmWikidataMatcher = `https://map.osm.wikidata.link/map/18/${lat}/${lon}`;

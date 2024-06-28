@@ -1,47 +1,103 @@
 import { parseBoolConfig } from "@/src/config";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
-import { getLanguage, translateAnchorTitle, translateContent } from "../../src/i18n";
+import { useCallback } from "react";
+import { useTranslation } from "react-i18next";
+import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
+import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 
-/**
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
- * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
- */
-function formatDate(date: Date | string | number, precision?: DatePrecision): string {
-    let dateObject: Date;
-    const options: Intl.DateTimeFormatOptions = {};
-
-    if (date instanceof Date) {
-        dateObject = date;
-    } else if (typeof date === 'string' && date.startsWith('-')) {
-        dateObject = new Date(date.slice(1));
-        dateObject.setFullYear(-dateObject.getFullYear());
-    } else if (typeof date === 'string') {
-        dateObject = new Date(date);
-    } else if (typeof date === 'number') {
-        // Convert the epoch timestamp to a Date: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
-        dateObject = new Date(date * 1000);
-    } else {
-        throw new Error("Invalid date parameter");
-    }
-
-    if (precision) {
-        if (precision >= DatePrecision.second) options.second = 'numeric';
-        if (precision >= DatePrecision.minute) options.minute = 'numeric';
-        if (precision >= DatePrecision.hour) options.hour = 'numeric';
-        if (precision >= DatePrecision.day) options.day = 'numeric';
-        if (precision >= DatePrecision.month) options.month = 'numeric';
-        options.year = 'numeric';
-    }
-
-    if (dateObject < new Date('0000-01-01T00:00:00')) {
-        options.era = "short";
-    }
-
-    const out = dateObject.toLocaleDateString(getLanguage(), options);
-    //if (process.env.NODE_ENV === 'development') console.debug("formatDate", { date, precision, dateObject, options, out });
-    return out;
+interface EtymologyViewProps {
+    etymology: EtymologyDetails;
 }
+
+export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
+    const {t, i18n} = useTranslation();
+
+    /**
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toLocaleDateString
+     * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat
+     */
+    const formatDate = useCallback((date: Date | string | number, precision?: DatePrecision): string => {
+        let dateObject: Date;
+        const options: Intl.DateTimeFormatOptions = {};
+    
+        if (date instanceof Date) {
+            dateObject = date;
+        } else if (typeof date === 'string' && date.startsWith('-')) {
+            dateObject = new Date(date.slice(1));
+            dateObject.setFullYear(-dateObject.getFullYear());
+        } else if (typeof date === 'string') {
+            dateObject = new Date(date);
+        } else if (typeof date === 'number') {
+            // Convert the epoch timestamp to a Date: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date#the_ecmascript_epoch_and_timestamps
+            dateObject = new Date(date * 1000);
+        } else {
+            throw new Error("Invalid date parameter");
+        }
+    
+        if (precision) {
+            if (precision >= DatePrecision.second) options.second = 'numeric';
+            if (precision >= DatePrecision.minute) options.minute = 'numeric';
+            if (precision >= DatePrecision.hour) options.hour = 'numeric';
+            if (precision >= DatePrecision.day) options.day = 'numeric';
+            if (precision >= DatePrecision.month) options.month = 'numeric';
+            options.year = 'numeric';
+        }
+    
+        if (dateObject < new Date('0000-01-01T00:00:00')) {
+            options.era = "short";
+        }
+    
+        const out = dateObject.toLocaleDateString(i18n.language, options);
+        //if (process.env.NODE_ENV === 'development') console.debug("formatDate", { date, precision, dateObject, options, out });
+        return out;
+    }, [i18n.language]);
+
+    return (
+        <div className="etymology">
+            <div className="grid grid-auto">
+                <div className="column">
+                    <div className="header column etymology_header">
+                        <h2 className="etymology_name">{etymology.name}</h2>
+                        <h3 className="etymology_description">{etymology.description}</h3>
+                    </div>
+                    <div className="info column">
+                        <EtymologyButtonRow etymology={etymology} />
+
+                        <p className="wikipedia_extract"></p>
+                        <p className="start_end_date"></p>
+                        <p className="event_place"></p>
+                        <p className="citizenship"></p>
+                        <p className="gender"></p>
+                        <p className="occupations"></p>
+                        <p className="prizes"></p>
+                    </div>
+                </div>
+
+                {etymology.pictures && <div className="etymology_pictures columns">
+                {etymology.pictures.map((img, i) => <CommonsImage key={i} name={img} />)}
+            </div>}
+            </div>
+            <span className="etymology_src_wrapper">
+                <span className="i18n_source">Source:</span>
+                <a className="etymology_src_osm hiddenElement" href="https://www.openstreetmap.org">OpenStreetMap</a>
+                <span className="src_osm_plus_wd hiddenElement"> &gt; </span>
+                <a className="etymology_src_wd hiddenElement" href="https://www.wikidata.org">Wikidata</a>
+                <span className="etymology_propagated_wrapper hiddenElement">
+                    &gt;
+                    <a title="Description of the propagation mechanism" className="i18n_propagation title_i18n_propagation" href={process.env.owmf_propagation_docs_url}>propagation</a>
+                </span>
+                <span className="etymology_src_part_of_wd_wrapper hiddenElement">
+                    &gt;
+                    <a className="etymology_src_part_of_wd">Wikidata</a>
+                </span>
+                &gt;
+                <a className="etymology_src_entity" href="https://www.wikidata.org">Wikidata</a>
+            </span>
+            <div className="etymology_parts_container hiddenElement"></div>
+        </div>
+    );
+};
 
 /**
  * WebComponent to display an etymology

@@ -1,4 +1,4 @@
-import { Popup } from 'maplibre-gl';
+/*import { Popup } from 'maplibre-gl';
 import MaplibreInspect from 'maplibre-gl-inspect';
 import 'maplibre-gl-inspect/dist/maplibre-gl-inspect.css';
 import { FC } from 'react';
@@ -17,4 +17,4 @@ export const InspectControl: FC<InspectControlProps> = (props) => {
     }), { position: props.position });
 
     return null;
-}
+}*/

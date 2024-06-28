@@ -27,7 +27,7 @@
         "fetch_error": "Error message shown when an error occurred while fetching the data",
         "map_error": "Error message shown when an internal error occurred",
         "data_loaded": "Success message shown when the data has been successfully fetched and loaded",
-        "no_data_in_this_area": "Warning message when the viewport is intentionally wmpty because it contains no data",
+        "no_data_in_this_area": "Warning message when the viewport is intentionally empty because it contains no data",
         "data_loaded_instructions": "Instructions shown after the first load to click on any highlighted element to show its details"
     },
     "preset": {

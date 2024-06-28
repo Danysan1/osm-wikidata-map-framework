@@ -1,12 +1,19 @@
 'use client';
 
-import { FC, PropsWithChildren, createContext, useCallback, useContext, useEffect, useState } from "react";
+import { Dispatch, FC, PropsWithChildren, SetStateAction, createContext, useCallback, useContext, useEffect, useState } from "react";
 import { parseStringArrayConfig } from "../config";
 import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
 import { ColorSchemeID } from "../model/colorScheme";
 
-const DEFAULT_LAT = 0,
-    DEFAULT_LON = 0,
+const LATITUDE_POSITION = 0,
+    LONGITUDE_POSITION = 1,
+    ZOOM_POSITION = 2,
+    COLOR_SCHEME_POSITION = 3,
+    BACK_END_POSITION = 4,
+    BACKGROUND_STYLE_POSITION = 5,
+    PRESET_POSITION = 6,
+    DEFAULT_LATITUDE = 0,
+    DEFAULT_LONGITUDE = 0,
     DEFAULT_ZOOM = 1,
     DEFAULT_COLOR_SCHEME = ColorSchemeID.blue,
     DEFAULT_BACKEND_ID = "overpass_all",
@@ -18,7 +25,7 @@ interface UrlFragmentState {
     lat: number;
     setLat: (lat: number) => void;
     zoom: number;
-    setZoom: (zoom: number) => void;
+    setZoom: Dispatch<SetStateAction<number>>;
     colorSchemeID: ColorSchemeID;
     setColorSchemeID: (colorScheme: ColorSchemeID) => void;
     backEndID: string;
@@ -30,9 +37,9 @@ interface UrlFragmentState {
 }
 
 const UrlFragmentContext = createContext<UrlFragmentState>({
-    lon: DEFAULT_LAT,
+    lon: DEFAULT_LATITUDE,
     setLon: () => {/* placeholder */ },
-    lat: DEFAULT_LON,
+    lat: DEFAULT_LONGITUDE,
     setLat: () => {/* placeholder */ },
     zoom: DEFAULT_ZOOM,
     setZoom: () => {/* placeholder */ },
@@ -49,23 +56,33 @@ const UrlFragmentContext = createContext<UrlFragmentState>({
 export const useUrlFragmentContext = () => useContext(UrlFragmentContext);
 
 export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
-    const [lon, setLon] = useState<number>(() => process.env.owmf_default_center_lat ? parseFloat(process.env.owmf_default_center_lat) : DEFAULT_LAT),
-        [lat, _setLat] = useState<number>(() => process.env.owmf_default_center_lon ? parseFloat(process.env.owmf_default_center_lon) : DEFAULT_LON),
-        [zoom, _setZoom] = useState<number>(() => process.env.owmf_default_zoom ? parseInt(process.env.owmf_default_zoom) : DEFAULT_ZOOM),
-        [colorSchemeID, setColorSchemeID] = useState<ColorSchemeID>(() => { const raw = process.env.owmf_default_color_scheme; return raw && raw in ColorSchemeID ? raw as ColorSchemeID : DEFAULT_COLOR_SCHEME; }),
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        [backEndID, setBackEndID] = useState<string>(() => process.env.owmf_default_backend || DEFAULT_BACKEND_ID),
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => (typeof window === "object" ? new URLSearchParams(window.location.search).get("style") : null) || process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID),
+    const [lat, _setLat] = useState<number>(() => {
+        const fromConfig = process.env.owmf_default_center_lat ? parseFloat(process.env.owmf_default_center_lat) : undefined;
+        return (fromConfig !== undefined && !isNaN(fromConfig)) ? fromConfig : DEFAULT_LATITUDE;
+    }),
+        [lon, setLon] = useState<number>(() => {
+            const fromConfig = process.env.owmf_default_center_lon ? parseFloat(process.env.owmf_default_center_lon) : undefined;
+            return (fromConfig !== undefined && !isNaN(fromConfig)) ? fromConfig : DEFAULT_LONGITUDE;
+        }),
+        [zoom, _setZoom] = useState<number>(() => {
+            const fromConfig = process.env.owmf_default_zoom ? parseInt(process.env.owmf_default_zoom) : undefined;
+            return (fromConfig !== undefined && !isNaN(fromConfig)) ? fromConfig : DEFAULT_ZOOM;
+        }),
+        [colorSchemeID, setColorSchemeID] = useState<ColorSchemeID>(() => {
+            const fromConfig = process.env.owmf_default_color_scheme as ColorSchemeID;
+            return (fromConfig && Object.values(ColorSchemeID).includes(fromConfig)) ? fromConfig : DEFAULT_COLOR_SCHEME;
+        }),
+        [backEndID, setBackEndID] = useState<string>(() => {
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            return process.env.owmf_default_backend || DEFAULT_BACKEND_ID;
+        }),
+        [backgroundStyleID, setBackgroundStyleID] = useState<string>(() => {
+            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+            return process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID;
+        }),
         [sourcePresetID, setSourcePresetID] = useState<string>(() => {
-            const list = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
-            if (!list?.length)
-                return DEFAULT_SOURCE_PRESET_ID;
-
-            if (typeof window === "object" && window.location.hash?.split(',')?.length >= 7)
-                return window.location.hash.split(',')[6];
-
-            return list[0];
+            const availablePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
+            return availablePresets?.length ? availablePresets[0] : DEFAULT_SOURCE_PRESET_ID;
         }),
         setLat = useCallback((lat: number) => {
             if (isNaN(lat) || lat < -90 || lat > 90)
@@ -73,12 +90,50 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
             else
                 _setLat(lat);
         }, [_setLat]),
-        setZoom = useCallback((zoom: number) => {
-            if (isNaN(zoom) || zoom < 0 || zoom > 20)
+        setZoom: Dispatch<SetStateAction<number>> = useCallback((zoom) => {
+            if (typeof zoom === "number" && (isNaN(zoom) || zoom < 0 || zoom > 20))
                 throw new Error(`Invalid zoom: ${zoom}`);
             else
                 _setZoom(zoom);
         }, [_setZoom]);
+
+    /** Load URL fragment on initial load */
+    useEffect(() => {
+        const splitFragment = window.location.hash.split(',') ?? [],
+            latitudeFromFragmentRaw = splitFragment[LATITUDE_POSITION],
+            latitudeFromFragment = latitudeFromFragmentRaw ? parseFloat(latitudeFromFragmentRaw) : undefined;
+        if (latitudeFromFragment !== undefined && !isNaN(latitudeFromFragment))
+            setLat(latitudeFromFragment);
+
+        const longitudeFromFragmentRaw = splitFragment[LONGITUDE_POSITION],
+            longitudeFromFragment = longitudeFromFragmentRaw ? parseFloat(longitudeFromFragmentRaw) : undefined;
+        if (longitudeFromFragment !== undefined && !isNaN(longitudeFromFragment))
+            setLon(longitudeFromFragment);
+
+        const zoomFromFragmentRaw = splitFragment[ZOOM_POSITION],
+            zoomFromFragment = zoomFromFragmentRaw ? parseFloat(zoomFromFragmentRaw) : undefined;
+        if (zoomFromFragment !== undefined && !isNaN(zoomFromFragment))
+            setZoom(zoomFromFragment);
+
+        const colorSchemeFromFragment = splitFragment[COLOR_SCHEME_POSITION];
+        if (colorSchemeFromFragment && Object.values(ColorSchemeID).includes(colorSchemeFromFragment as ColorSchemeID))
+            setColorSchemeID(colorSchemeFromFragment as ColorSchemeID);
+
+        const backEndFromFragment = splitFragment[BACK_END_POSITION];
+        if (backEndFromFragment)
+            setBackEndID(backEndFromFragment);
+
+        const backgroundStyleFromFragment = splitFragment[BACKGROUND_STYLE_POSITION],
+            backgroundStyleFromQueryString = window.location.search ? new URLSearchParams(window.location.search).get("style") : null;
+        if (backgroundStyleFromFragment)
+            setBackgroundStyleID(backgroundStyleFromFragment);
+        else if (backgroundStyleFromQueryString)
+            setBackgroundStyleID(backgroundStyleFromQueryString);
+
+        const sourcePresetFromFragment = splitFragment[PRESET_POSITION];
+        if (sourcePresetFromFragment)
+            setSourcePresetID(sourcePresetFromFragment);
+    }, [setLat, setZoom]);
 
     /** Update the URL fragment on state change */
     useEffect(() => {
@@ -86,7 +141,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
             strLat = lat.toFixed(4),
             strZoom = zoom.toFixed(1);
 
-        const fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID}`;
+        const fragment = `#${strLat},${strLon},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID}`;
         if (window.location.hash !== fragment) {
             if (process.env.NODE_ENV === 'development') console.debug("setFragmentParams: CHANGE DETECTED", { old: window.location.hash, new: fragment, lon, lat, zoom, colorSchemeID, backEndID, backgroundStyleID, templateID: sourcePresetID });
             window.location.hash = fragment;
