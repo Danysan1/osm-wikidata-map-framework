@@ -49,7 +49,6 @@
     "i18next-http-backend": "^2.5.2",
     "i18next-resources-to-backend": "^1.2.1",
     "maplibre-gl": "^4.3.2",
-    "maplibre-gl-inspect": "^0.0.6",
     "maplibregl-mapbox-request-transformer": "^0.0.2",
     "next": "14.2.3",
     "next-i18next": "^15.3.0",

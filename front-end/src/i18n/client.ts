@@ -40,7 +40,7 @@ async function loadClientI18n() {
         backends: object[] = [HttpBackend],
         backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
     if (i18nOverride) {
-        if (process.env.NODE_ENV === 'development') console.debug("loadI18n: using i18n_override:", { language, i18nOverride });
+        //if (process.env.NODE_ENV === 'development') console.debug("loadI18n: using i18n_override:", { language, i18nOverride });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }

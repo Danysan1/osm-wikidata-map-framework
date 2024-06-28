@@ -1,3 +1,4 @@
+import { EtymologyResponse } from "@/src/model/EtymologyResponse";
 import { useCallback, useEffect, useMemo } from "react";
 import { Layer, LngLatLike, MapMouseEvent, Source, useMap } from "react-map-gl/maplibre";
 
@@ -6,7 +7,9 @@ const CLUSTER_LAYER = '_layer_cluster',
     UNCLUSTERED_LAYER = '_layer_unclustered';
 
 interface ClusteredSourceAndLayersProps {
-    data: unknown;
+    data: EtymologyResponse;
+
+    /** Map source ID */
     sourceID: string;
 
     /** The name of the field to be used as count */
