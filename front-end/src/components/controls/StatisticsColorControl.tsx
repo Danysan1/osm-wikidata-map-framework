@@ -1,7 +1,8 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { Etymology } from "@/src/model/Etymology";
-import { EtymologyFeatureProperties } from "@/src/model/EtymologyFeatureProperties";
-import { SourcePreset } from "@/src/model/SourcePreset";
+import type { Etymology } from "@/src/model/Etymology";
+import type { EtymologyFeatureProperties } from "@/src/model/EtymologyFeatureProperties";
+import type { EtymologyStat } from "@/src/model/EtymologyStat";
+import type { SourcePreset } from "@/src/model/SourcePreset";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService";
 import { getEtymologies } from "@/src/services/etymologyUtils";
@@ -14,27 +15,6 @@ import { useMap } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "./DropdownControl";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
-
-/** Statistics row with a name and a numeric value */
-export interface EtymologyStat {
-    /** Human friendly name of this statistic */
-    name: string;
-
-    /** Numeric value of this statistic */
-    count: number;
-
-    /** Hex color code for this statistic, including the trailing hashtag */
-    color?: string;
-
-    /** Q-ID of the Wikidata entity of this statistic */
-    id?: string;
-
-    /** Q-ID of a Wikidata superclass of the entity of this statistic */
-    class?: string;
-
-    /** Q-IDs of the Wikidata entities this statistic represents */
-    subjects?: string[];
-}
 
 const MAX_CHART_ITEMS = 35,
     PROPAGATED_COLOR = '#ff3333',

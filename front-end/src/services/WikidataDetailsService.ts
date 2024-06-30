@@ -1,7 +1,6 @@
 import { DetailsDatabase } from "../db/DetailsDatabase";
 import { getLanguage } from "../i18n/client";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
-import { logErrorMessage } from "../monitoring";
 import { WikidataService } from "./WikidataService";
 import detailsQuery from "./query/etymology-details.sparql";
 
@@ -85,7 +84,7 @@ export class WikidataDetailsService extends WikidataService {
                 if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Finished fetching, saving cache", { language, wikidataIDs, out });
                 void this.db.addDetails(out, wikidataIDs, language);
             } catch (e) {
-                logErrorMessage("Failed to store details data in cache", "warning", { language, wikidataIDs, out, e });
+                console.warn("Failed to store details data in cache", { language, wikidataIDs, out, e });
             }
         }
         return out;

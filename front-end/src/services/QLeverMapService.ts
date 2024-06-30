@@ -8,7 +8,6 @@ import { Configuration } from "../generated/sparql/runtime";
 import type { Etymology } from "../model/Etymology";
 import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
 import { SourcePreset } from "../model/SourcePreset";
-import { logErrorMessage } from "../monitoring";
 import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
 import { getEtymologies } from "./etymologyUtils";
@@ -256,7 +255,7 @@ export class QLeverMapService implements MapService {
 
     private featureReducer(this: void, acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
         if (!row.location?.value) {
-            logErrorMessage("Invalid response from Wikidata (no location)", "warning", row);
+            console.warn("Invalid response from Wikidata (no location)", row);
             return acc;
         }
 

@@ -1,6 +1,5 @@
 
 import { EtymologyFeature } from '@/src/model/EtymologyResponse';
-import { logErrorMessage } from "@/src/monitoring";
 import { WikidataDescriptionService } from '@/src/services/WikidataDescriptionService';
 import { WikidataLabelService } from '@/src/services/WikidataLabelService';
 import { WikidataStatementService } from '@/src/services/WikidataStatementService';
@@ -96,7 +95,7 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
                     setCommons([image]);
                 }
             }).catch(() => {
-                logErrorMessage("Failed getting image from Wikidata", 'error', { props });
+                console.warn("Failed getting image from Wikidata", props);
             });
         }
     }, [props]);

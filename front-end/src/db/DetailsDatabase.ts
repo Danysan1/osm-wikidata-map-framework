@@ -34,16 +34,7 @@ export class DetailsDatabase extends Dexie {
             const row = await this.transaction('r', this.details, async () => {
                 return await this.details
                     .where({ language })
-                    .and(row => {
-                        if (wikidataIDs.size > row.wikidataIDs.size)
-                            return false;
-
-                        for (const id of wikidataIDs) {
-                            if (!row.wikidataIDs.has(id))
-                                return false;
-                        }
-                        return true;
-                    })
+                    .and(row => wikidataIDs.symmetricDifference(row.wikidataIDs).size === 0)
                     .first();
             });
             return row?.details;

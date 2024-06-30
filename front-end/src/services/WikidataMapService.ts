@@ -5,7 +5,6 @@ import type { SparqlResponseBindingValue } from "../generated/sparql/models/Spar
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyFeature, EtymologyResponse } from "../model/EtymologyResponse";
 import { SourcePreset } from "../model/SourcePreset";
-import { logErrorMessage } from "../monitoring";
 import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
 import { getEtymologies } from "./etymologyUtils";
@@ -132,7 +131,7 @@ export class WikidataMapService extends WikidataService implements MapService {
 
     private featureReducer(acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
         if (!row.location?.value) {
-            logErrorMessage("Invalid response from Wikidata (no location)", "warning", row);
+            console.warn("Invalid response from Wikidata (no location)", row);
             return acc;
         }
 

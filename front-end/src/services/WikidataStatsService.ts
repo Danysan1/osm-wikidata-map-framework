@@ -1,7 +1,7 @@
 import { parse } from "papaparse";
-import type { EtymologyStat } from "../controls/EtymologyColorControl";
 import { StatsDatabase } from "../db/StatsDatabase";
 import { getLanguage } from "../i18n/client";
+import type { EtymologyStat } from "../model/EtymologyStat";
 import type { ColorSchemeID } from "../model/colorScheme";
 import { WikidataService } from "./WikidataService";
 import countryStatsQuery from "./query/stats/country.sparql";

@@ -1,5 +1,5 @@
 import Dexie, { Table } from 'dexie';
-import type { EtymologyStat } from '../controls/EtymologyColorControl';
+import type { EtymologyStat } from '../model/EtymologyStat';
 import type { ColorSchemeID } from '../model/colorScheme';
 
 interface StatsRow {
