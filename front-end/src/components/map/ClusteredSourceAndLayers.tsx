@@ -56,7 +56,7 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
         unclusteredLayerID = useMemo(() => props.sourceID + UNCLUSTERED_LAYER, [props.sourceID]),
         [elementsData, setElementsData] = useState<EtymologyResponse | null>(null),
-        { zoom } = useUrlFragmentContext(),
+        { lat, lon, zoom } = useUrlFragmentContext(),
         { current: map } = useMap(),
         { i18n } = useTranslation();
 
@@ -77,7 +77,7 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         } else {
             setElementsData(null);
         }
-    }, [i18n.language, map, props.backEndID, props.backEndService, props.maxZoom, props.minZoom, zoom]);
+    }, [i18n.language, map, props.backEndID, props.backEndService, props.maxZoom, props.minZoom, lat, lon, zoom]);
 
     /**
      * Handles the click on a cluster.

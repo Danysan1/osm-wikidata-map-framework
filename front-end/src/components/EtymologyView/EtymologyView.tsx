@@ -62,6 +62,22 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
         return out;
     }, [i18n.language]);
 
+    const startEndDate = useMemo(() => {
+        if (!!etymology.birth_date || !!etymology.birth_place || !!etymology.death_date || etymology.death_place) {
+            const birth_date = etymology.birth_date ? formatDate(etymology.birth_date, etymology.birth_date_precision) : "?",
+                birth_place = etymology.birth_place ? etymology.birth_place : "?",
+                death_date = etymology.death_date ? formatDate(etymology.death_date, etymology.death_date_precision) : "?",
+                death_place = etymology.death_place ? etymology.death_place : "?";
+            return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
+        } else if (!!etymology.start_date || etymology.end_date) {
+            const start_date = etymology.start_date ? formatDate(etymology.start_date, etymology.start_date_precision) : "?",
+                end_date = etymology.end_date ? formatDate(etymology.end_date, etymology.end_date_precision) : "?";
+            return `${start_date} - ${end_date}`;
+        } else if (etymology.event_date) {
+            return formatDate(etymology.event_date, etymology.event_date_precision);
+        }
+    }, [etymology.birth_date, etymology.birth_date_precision, etymology.birth_place, etymology.death_date, etymology.death_date_precision, etymology.death_place, etymology.end_date, etymology.end_date_precision, etymology.event_date, etymology.event_date_precision, etymology.start_date, etymology.start_date_precision, formatDate]);
+
     useEffect(() => {
         if (etymology.wikipedia) {
             new WikipediaService().fetchExtract(etymology.wikipedia)
@@ -81,7 +97,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
                 from_parts_of_wikidata_cod: etymology.wikidata
             }));
         },
-        []
+        [etymology]
     );
 
     return (
@@ -96,7 +112,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
                         <EtymologyButtonRow etymology={etymology} />
 
                         {wikipediaExtract && <p className="wikipedia_extract">📖 {wikipediaExtract}</p>}
-                        <p className="start_end_date"></p>
+                        {startEndDate && <p className="start_end_date">📅 {startEndDate}</p>}
                         {etymology.event_place && <p className="event_place">📍 {etymology.event_place}</p>}
                         {etymology.citizenship && <p className="citizenship">🌍 {etymology.citizenship}</p>}
                         {etymology.gender && <p className="gender">⚧️ {etymology.gender}</p>}
@@ -134,31 +150,3 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
         </div>
     );
 };
-
-/**
- * WebComponent to display an etymology
- */
-export class EtymologyElement extends HTMLDivElement {
-    private render() {
-
-        const start_end_date = etyDomElement.querySelector<HTMLElement>('.start_end_date')
-        if (!start_end_date) {
-            console.warn("Missing .start_end_date");
-        } else if (!!this.etymology.birth_date || !!this.etymology.birth_place || !!this.etymology.death_date || this.etymology.death_place) {
-            const birth_date = this.etymology.birth_date ? formatDate(this.etymology.birth_date, this.etymology.birth_date_precision) : "?",
-                birth_place = this.etymology.birth_place ? this.etymology.birth_place : "?",
-                death_date = this.etymology.death_date ? formatDate(this.etymology.death_date, this.etymology.death_date_precision) : "?",
-                death_place = this.etymology.death_place ? this.etymology.death_place : "?";
-            start_end_date.innerText = `📅 ${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-        } else if (!!this.etymology.start_date || this.etymology.end_date) {
-            const start_date = this.etymology.start_date ? formatDate(this.etymology.start_date, this.etymology.start_date_precision) : "?",
-                end_date = this.etymology.end_date ? formatDate(this.etymology.end_date, this.etymology.end_date_precision) : "?";
-            start_end_date.innerText = `📅 ${start_date} - ${end_date}`;
-        } else if (this.etymology.event_date) {
-            const event_date = formatDate(this.etymology.event_date, this.etymology.event_date_precision);
-            start_end_date.innerText = `📅 ${event_date}`
-        } else {
-            start_end_date.style.display = 'none';
-        }
-    }
-}

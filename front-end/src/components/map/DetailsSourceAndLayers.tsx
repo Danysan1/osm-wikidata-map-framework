@@ -15,7 +15,7 @@ interface DetailsSourceAndLayersProps extends DetailsLayersProps {
 
 export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (props) => {
     const [detailsData, setDetailsData] = useState<EtymologyResponse | null>(null),
-        { zoom } = useUrlFragmentContext(),
+        { lat, lon, zoom } = useUrlFragmentContext(),
         { current: map } = useMap(),
         { i18n } = useTranslation();
 
@@ -36,7 +36,7 @@ export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (pr
         } else {
             setDetailsData(null);
         }
-    }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, zoom]);
+    }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, lat, lon, zoom]);
 
     return detailsData && (
         <Source id={props.sourceID} type="geojson" data={detailsData}>

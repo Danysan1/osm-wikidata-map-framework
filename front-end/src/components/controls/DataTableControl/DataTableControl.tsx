@@ -5,7 +5,7 @@ import { useTranslation } from 'next-i18next';
 import Image from 'next/image';
 import { FC, cloneElement, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useControl } from 'react-map-gl/maplibre';
+import { LngLat, useControl } from 'react-map-gl/maplibre';
 import { DataTablePopup } from './DataTablePopup';
 
 class DataTableControlObject implements IControl {
@@ -19,7 +19,10 @@ class DataTableControlObject implements IControl {
 
   onAdd(map: Map) {
     this._map = map;
-    if (this._onSourceData) map.on('sourcedata', this._onSourceData);
+    if (this._onSourceData) {
+      if (process.env.NODE_ENV === "development") console.debug("DataTableControlObject.onAdd: setting sourcedata");
+      map.on('sourcedata', this._onSourceData);
+    }
     this._container = document.createElement('div');
     this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl data-table-ctrl';
     return this._container;
@@ -28,10 +31,11 @@ class DataTableControlObject implements IControl {
   onRemove() {
     this._container?.remove();
     this._container = undefined;
-    if (this._onSourceData) {
+    /*if (this._onSourceData) {
+      if (process.env.NODE_ENV === "development") console.debug("DataTableControlObject.onRemove: unsetting sourcedata");
       this._map?.off('sourcedata', this._onSourceData);
       this._onSourceData = undefined;
-    }
+    }*/
     this._map = undefined;
   }
 
@@ -46,7 +50,7 @@ class DataTableControlObject implements IControl {
 
 interface DataTableControlProps {
   sourceID: string;
-  layerIDs: string[];
+  dataLayerIDs: string[];
   minZoomLevel?: number;
   position?: ControlPosition;
   className?: string;
@@ -66,22 +70,28 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
   }, { position: props.position });
   const map = ctrl.getMap(),
     container = ctrl.getContainer(),
-    popupPosition = map?.getBounds()?.getNorthWest();
+    [popupPosition, setPopupPosition] = useState<LngLat>();
 
-  const visible = useMemo(
-    () => dataLoaded && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
-    [dataLoaded, props.minZoomLevel, zoom]
-  ),
+  const visible = dataLoaded && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
     [tableFeatures, setTableFeatures] = useState<EtymologyFeature[] | undefined>(),
-    openTable = useCallback(() => setTableFeatures(map?.queryRenderedFeatures({ layers: props.layerIDs })), [map, props.layerIDs]),
-    closeTable = useCallback(() => setTableFeatures(undefined), []);
+    openTable = useCallback(() => {
+      setPopupPosition(map?.getBounds()?.getNorthWest());
+      setTableFeatures(map?.queryRenderedFeatures({ layers: props.dataLayerIDs }));
+    }, [map, props.dataLayerIDs]),
+    closeTable = useCallback(() => {
+      setPopupPosition(undefined);
+      setTableFeatures(undefined)
+    }, []);
   const element = useMemo(() =>
-    visible ? <div className={props.className}>
-      <button title={t("data_table.view_data_table")} aria-label={t("data_table.view_data_table")} onClick={openTable}>
+    visible && <div className={props.className}>
+      <button
+        title={t("data_table.view_data_table")}
+        aria-label={t("data_table.view_data_table")}
+        onClick={openTable}>
         <Image className="button_img" alt={"Data table symbol"} src="img/Simple_icon_table.svg" loading="lazy" width={23} height={23} />
       </button>
       {tableFeatures && popupPosition && <DataTablePopup features={tableFeatures} onClose={closeTable} position={popupPosition} />}
-    </div> : null,
+    </div>,
     [closeTable, openTable, popupPosition, props.className, t, tableFeatures, visible]);
 
   return element && map && container && createPortal(cloneElement(element, { map }), container);

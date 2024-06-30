@@ -296,8 +296,9 @@ export const OwmfMap = () => {
         position="top-right"
       />
       <DataTableControl
-        sourceID={pmtilesActive ? PMTILES_SOURCE : ELEMENTS_SOURCE}
-        layerIDs={dataLayerIDs}
+        sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
+        dataLayerIDs={dataLayerIDs}
+        minZoomLevel={pmtilesActive ? undefined : thresholdZoomLevel}
         position="top-right"
       />
       <QueryLinkControl

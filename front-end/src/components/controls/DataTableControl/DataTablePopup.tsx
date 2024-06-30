@@ -1,7 +1,7 @@
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { FC } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
-import { DataTablePanel } from "./DataTablePanel";
+import { DataTable } from "./DataTable";
 
 interface DataTablePopupProps {
     features: EtymologyFeature[];
@@ -19,6 +19,6 @@ export const DataTablePopup: FC<DataTablePopupProps> = (props) => {
         closeOnClick
         closeOnMove
         onClose={props.onClose}>
-        <DataTablePanel features={props.features} />
+        <DataTable features={props.features} />
     </Popup>
 }
