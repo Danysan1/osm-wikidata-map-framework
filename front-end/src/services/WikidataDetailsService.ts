@@ -1,8 +1,8 @@
+import detailsQuery from "raw-loader!./query/etymology-details.sparql";
 import { DetailsDatabase } from "../db/DetailsDatabase";
 import { getLanguage } from "../i18n/client";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
 import { WikidataService } from "./WikidataService";
-import detailsQuery from "./query/etymology-details.sparql";
 
 export class WikidataDetailsService extends WikidataService {
     private readonly db: DetailsDatabase;

@@ -75,6 +75,8 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
             return `${start_date} - ${end_date}`;
         } else if (etymology.event_date) {
             return formatDate(etymology.event_date, etymology.event_date_precision);
+        } else {
+            return null;
         }
     }, [etymology.birth_date, etymology.birth_date_precision, etymology.birth_place, etymology.death_date, etymology.death_date_precision, etymology.death_place, etymology.end_date, etymology.end_date_precision, etymology.event_date, etymology.event_date_precision, etymology.start_date, etymology.start_date_precision, formatDate]);
 

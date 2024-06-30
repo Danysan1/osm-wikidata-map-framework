@@ -1,17 +1,17 @@
 import { parse } from "papaparse";
+import countryStatsQuery from "raw-loader!./query/stats/country.sparql";
+import endCenturyStatsQuery from "raw-loader!./query/stats/end-century.sparql";
+import genderStatsQuery from "raw-loader!./query/stats/gender.sparql";
+import occupationStatsQuery from "raw-loader!./query/stats/occupation.sparql";
+import pictureStatsQuery from "raw-loader!./query/stats/picture.sparql";
+import startCenturyStatsQuery from "raw-loader!./query/stats/start-century.sparql";
+import typeStatsQuery from "raw-loader!./query/stats/type.sparql";
+import wikilinkStatsQuery from "raw-loader!./query/stats/wikilink.sparql";
 import { StatsDatabase } from "../db/StatsDatabase";
 import { getLanguage } from "../i18n/client";
 import type { EtymologyStat } from "../model/EtymologyStat";
 import type { ColorSchemeID } from "../model/colorScheme";
 import { WikidataService } from "./WikidataService";
-import countryStatsQuery from "./query/stats/country.sparql";
-import endCenturyStatsQuery from "./query/stats/end-century.sparql";
-import genderStatsQuery from "./query/stats/gender.sparql";
-import occupationStatsQuery from "./query/stats/occupation.sparql";
-import pictureStatsQuery from "./query/stats/picture.sparql";
-import startCenturyStatsQuery from "./query/stats/start-century.sparql";
-import typeStatsQuery from "./query/stats/type.sparql";
-import wikilinkStatsQuery from "./query/stats/wikilink.sparql";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",

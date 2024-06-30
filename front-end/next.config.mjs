@@ -1,5 +1,5 @@
 // import { withSentryConfig } from "@sentry/nextjs";
-import packageJSON from './package.json' assert { type: 'json' };
+// import packageJSON from './package.json' assert { type: 'json' };
 
 const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_default_center_lat",
@@ -111,11 +111,12 @@ const nextConfig = {
   env: CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
     acc[key] = process.env[key];
     return acc;
-  }, { owmf_version: packageJSON.version }),
+  }, { /*owmf_version: packageJSON.version*/ }),
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.s(par)?ql$/,
       type: "asset/source",
+      use: 'raw-loader',
       exclude: /node_modules/,
     });
 
@@ -133,6 +134,7 @@ const nextConfig = {
   reactStrictMode: true,
 };
 
+export default nextConfig;
 // export default withSentryConfig(nextConfig, {
 //   // For all available options, see:
 //   // https://github.com/getsentry/sentry-webpack-plugin#options

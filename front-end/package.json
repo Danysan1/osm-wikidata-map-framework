@@ -56,6 +56,7 @@
     "overpass-ts": "^4.3.8",
     "papaparse": "^5.4.1",
     "pmtiles": "^3.0.6",
+    "raw-loader": "^4.0.2",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
     "react-dom": "^18",

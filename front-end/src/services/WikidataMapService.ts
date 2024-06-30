@@ -1,4 +1,9 @@
 import type { BBox, Point } from "geojson";
+import baseMapQuery from "raw-loader!./query/map/base.sparql";
+import directMapQuery from "raw-loader!./query/map/direct.sparql";
+import indirectMapQuery from "raw-loader!./query/map/indirect.sparql";
+import qualifierMapQuery from "raw-loader!./query/map/qualifier.sparql";
+import reverseMapQuery from "raw-loader!./query/map/reverse.sparql";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
@@ -8,11 +13,6 @@ import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
 import { getEtymologies } from "./etymologyUtils";
-import baseMapQuery from "./query/map/base.sparql";
-import directMapQuery from "./query/map/direct.sparql";
-import indirectMapQuery from "./query/map/indirect.sparql";
-import qualifierMapQuery from "./query/map/qualifier.sparql";
-import reverseMapQuery from "./query/map/reverse.sparql";
 
 export class WikidataMapService extends WikidataService implements MapService {
     private readonly preset: SourcePreset;
