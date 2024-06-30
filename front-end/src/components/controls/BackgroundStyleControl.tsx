@@ -1,16 +1,16 @@
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import {
-    BackgroundStyle,
-    jawgStyle,
-    mapboxStyle,
-    maptilerStyle,
-    stadiaStyle,
+  BackgroundStyle,
+  jawgStyle,
+  mapboxStyle,
+  maptilerStyle,
+  stadiaStyle,
 } from "@/src/model/backgroundStyle";
 import { showSnackbar } from "@/src/snackbar";
 import type { ControlPosition, StyleSpecification } from "maplibre-gl";
-import { useTranslation } from "next-i18next";
 import { FC, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { MapStyle } from "react-map-gl/maplibre";
 import { DropdownControl } from "./DropdownControl";
 

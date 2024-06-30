@@ -1,7 +1,7 @@
 import { parseBoolConfig } from "@/src/config";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { useTranslation } from "next-i18next";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { ButtonRow } from "./ButtonRow";
 
 interface EtymologyButtonRowProps {

@@ -1,7 +1,7 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import { EtymologyFeature } from '@/src/model/EtymologyResponse';
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
-import { useTranslation } from 'next-i18next';
+import { useTranslation } from "react-i18next";
 import Image from 'next/image';
 import { FC, cloneElement, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';

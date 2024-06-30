@@ -4,7 +4,6 @@ import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { loadTranslator } from "@/src/i18n/client";
 import {
   EtymologyFeature
 } from "@/src/model/EtymologyResponse";
@@ -23,10 +22,10 @@ import {
   isMapboxURL,
   transformMapboxUrl,
 } from "maplibregl-mapbox-request-transformer";
-import { useTranslation } from "next-i18next";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
+import { useTranslation } from "react-i18next";
 import Map, {
   FullscreenControl,
   GeolocateControl,
@@ -62,22 +61,16 @@ const PMTILES_PREFIX = "pmtiles",
   DETAILS_SOURCE = "detail_source",
   ELEMENTS_SOURCE = "elements_source";
 
-loadTranslator().catch((e) => {
-  if (process.env.NODE_ENV === "development")
-    console.error("Failed loading translator", e);
-});
-
 export const OwmfMap = () => {
-  const { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } =
-    useUrlFragmentContext(),
-    [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
+  const {
+    lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID
+  } = useUrlFragmentContext();
+  const [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(
       undefined
     ),
-    [backgroundStyle, setBackgroundStyle] = useState<
-      string | MapStyle | undefined
-    >(undefined),
+    [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(undefined),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(
@@ -239,180 +232,157 @@ export const OwmfMap = () => {
 
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 
-  if (!isWebglSupported())
-    return "Your browser does not support WebGL and Maplibre GL JS, which are needed to render the map.";
-
-  return (
-    <Map
-      mapLib={import("maplibre-gl")}
-      RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
-      initialViewState={{
-        longitude: lon,
-        latitude: lat,
-        zoom: zoom,
-      }}
-      //style={{ width: 600, height: 400 }}
-      mapStyle={backgroundStyle}
-      onMoveEnd={onMoveEndHandler}
-      transformRequest={requestTransformFunction}
-    >
-      <InfoControl position="top-left" />
-      <SourcePresetControl position="top-left" />
-      {sourcePreset && (
-        <BackEndControl preset={sourcePreset} position="top-left" />
-      )}
-      {sourcePreset?.mapcomplete_theme && (
-        <MapCompleteControl
-          minZoomLevel={minZoomLevel}
-          mapComplete_theme={sourcePreset?.mapcomplete_theme}
-          position="top-left"
-        />
-      )}
-      {sourcePreset && (
-        <StatisticsColorControl
-          preset={sourcePreset}
-          sourceId={DETAILS_SOURCE}
-          layerIDs={dataLayerIDs}
-          setLayerColor={setLayerColor}
-          position="top-left"
-        />
-      )}
-
-      <NavigationControl visualizePitch position="top-right" />
-      <GeolocateControl
-        positionOptions={{ enableHighAccuracy: true }}
-        trackUserLocation={false}
-        position="top-right"
-      />
-      <FullscreenControl position="top-right" />
-      <BackgroundStyleControl
-        setBackgroundStyle={setBackgroundStyle}
-        position="top-right"
-      />
-      <LanguageControl position="top-right" />
-      <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
-      <OsmWikidataMatcherControl
+  return <Map
+    mapLib={import("maplibre-gl")}
+    RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
+    initialViewState={{
+      longitude: lon,
+      latitude: lat,
+      zoom: zoom,
+    }}
+    //style={{ width: 600, height: 400 }}
+    mapStyle={backgroundStyle}
+    onMoveEnd={onMoveEndHandler}
+    transformRequest={requestTransformFunction}
+  >
+    <InfoControl position="top-left" />
+    <SourcePresetControl position="top-left" />
+    {sourcePreset && (
+      <BackEndControl preset={sourcePreset} position="top-left" />
+    )}
+    {sourcePreset?.mapcomplete_theme && (
+      <MapCompleteControl
         minZoomLevel={minZoomLevel}
-        position="top-right"
+        mapComplete_theme={sourcePreset?.mapcomplete_theme}
+        position="top-left"
       />
-      <DataTableControl
-        sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
-        dataLayerIDs={dataLayerIDs}
-        minZoomLevel={pmtilesActive ? undefined : thresholdZoomLevel}
-        position="top-right"
+    )}
+    {sourcePreset && (
+      <StatisticsColorControl
+        preset={sourcePreset}
+        sourceId={DETAILS_SOURCE}
+        layerIDs={dataLayerIDs}
+        setLayerColor={setLayerColor}
+        position="top-left"
       />
+    )}
+
+    <NavigationControl visualizePitch position="top-right" />
+    <GeolocateControl
+      positionOptions={{ enableHighAccuracy: true }}
+      trackUserLocation={false}
+      position="top-right"
+    />
+    <FullscreenControl position="top-right" />
+    <BackgroundStyleControl
+      setBackgroundStyle={setBackgroundStyle}
+      position="top-right"
+    />
+    <LanguageControl position="top-right" />
+    <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
+    <OsmWikidataMatcherControl
+      minZoomLevel={minZoomLevel}
+      position="top-right"
+    />
+    <DataTableControl
+      sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
+      dataLayerIDs={dataLayerIDs}
+      minZoomLevel={pmtilesActive ? undefined : thresholdZoomLevel}
+      position="top-right"
+    />
+    <QueryLinkControl
+      iconURL="/img/Overpass-turbo.svg"
+      title={t(
+        "overpass_turbo_query",
+        "Source OverpassQL query on Overpass Turbo"
+      )}
+      sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+      mapEventField="overpass_query"
+      baseURL="https://overpass-turbo.eu/?Q="
+      minZoomLevel={minZoomLevel}
+      position="top-right"
+    />
+    <QueryLinkControl
+      iconURL="/img/Wikidata_Query_Service_Favicon.svg"
+      title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
+      sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+      mapEventField="wdqs_query"
+      baseURL="https://query.wikidata.org/#"
+      minZoomLevel={minZoomLevel}
+      position="top-right"
+    />
+    {parseBoolConfig(process.env.owmf_qlever_enable) && (
       <QueryLinkControl
-        iconURL="/img/Overpass-turbo.svg"
-        title={t(
-          "overpass_turbo_query",
-          "Source OverpassQL query on Overpass Turbo"
-        )}
+        iconURL="/img/qlever.ico"
+        title={t("qlever_query", "Source SPARQL query on QLever UI")}
         sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-        mapEventField="overpass_query"
-        baseURL="https://overpass-turbo.eu/?Q="
+        mapEventField="qlever_wd_query"
+        baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query="
         minZoomLevel={minZoomLevel}
         position="top-right"
       />
+    )}
+    {parseBoolConfig(process.env.owmf_qlever_enable) && (
       <QueryLinkControl
-        iconURL="/img/Wikidata_Query_Service_Favicon.svg"
-        title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
+        iconURL="/img/qlever.ico"
+        title={t("qlever_query", "Source SPARQL query on QLever UI")}
         sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-        mapEventField="wdqs_query"
-        baseURL="https://query.wikidata.org/#"
+        mapEventField="qlever_osm_query"
+        baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query="
         minZoomLevel={minZoomLevel}
         position="top-right"
       />
-      {parseBoolConfig(process.env.owmf_qlever_enable) && (
-        <QueryLinkControl
-          iconURL="/img/qlever.ico"
-          title={t("qlever_query", "Source SPARQL query on QLever UI")}
-          sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-          mapEventField="qlever_wd_query"
-          baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query="
-          minZoomLevel={minZoomLevel}
-          position="top-right"
+    )}
+
+    <OwmfGeocodingControl position="bottom-left" />
+
+    <ScaleControl position="bottom-right" />
+    {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
+
+    {!pmtilesActive && backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel && (
+      <ClusteredSourceAndLayers
+        backEndService={backEndService}
+        backEndID={backEndID}
+        sourceID={ELEMENTS_SOURCE}
+        minZoom={minZoomLevel}
+        maxZoom={thresholdZoomLevel}
+      />
+    )}
+    {!pmtilesActive && backEndService && zoom >= thresholdZoomLevel && (
+      <DetailsSourceAndLayers
+        backEndService={backEndService}
+        backEndID={backEndID}
+        sourceID={DETAILS_SOURCE}
+        minZoom={thresholdZoomLevel}
+        setOpenFeature={setOpenFeature}
+        color={layerColor}
+        pointLayerID={POINT_LAYER}
+        pointTapAreaLayerID={POINT_TAP_AREA_LAYER}
+        lineLayerID={LINE_LAYER}
+        lineTapAreaLayerID={LINE_TAP_AREA_LAYER}
+        polygonBorderLayerID={POLYGON_BORDER_LAYER}
+        polygonFillLayerID={POLYGON_FILL_LAYER}
+      />
+    )}
+    {pmtilesActive && (
+      <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
+        <DetailsLayers
+          sourceID={PMTILES_SOURCE}
+          source_layer="etymology_map"
+          setOpenFeature={setOpenFeature}
+          color={layerColor}
+          pointLayerID={POINT_LAYER}
+          pointTapAreaLayerID={POINT_TAP_AREA_LAYER}
+          lineLayerID={LINE_LAYER}
+          lineTapAreaLayerID={LINE_TAP_AREA_LAYER}
+          polygonBorderLayerID={POLYGON_BORDER_LAYER}
+          polygonFillLayerID={POLYGON_FILL_LAYER}
         />
-      )}
-      {parseBoolConfig(process.env.owmf_qlever_enable) && (
-        <QueryLinkControl
-          iconURL="/img/qlever.ico"
-          title={t("qlever_query", "Source SPARQL query on QLever UI")}
-          sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-          mapEventField="qlever_osm_query"
-          baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query="
-          minZoomLevel={minZoomLevel}
-          position="top-right"
-        />
-      )}
+      </PMTilesSource>
+    )}
 
-      <OwmfGeocodingControl position="bottom-left" />
-
-      <ScaleControl position="bottom-right" />
-      {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
-
-      {!pmtilesActive && backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel && (
-        <ClusteredSourceAndLayers
-          backEndService={backEndService}
-          backEndID={backEndID}
-          sourceID={ELEMENTS_SOURCE}
-          minZoom={minZoomLevel}
-          maxZoom={thresholdZoomLevel}
-        />
-      )}
-      {!pmtilesActive && backEndService && zoom >= thresholdZoomLevel && (
-        <DetailsSourceAndLayers
-            backEndService={backEndService}
-            backEndID={backEndID}
-            sourceID={DETAILS_SOURCE}
-            minZoom={thresholdZoomLevel}
-            setOpenFeature={setOpenFeature}
-            color={layerColor}
-            pointLayerID={POINT_LAYER}
-            pointTapAreaLayerID={POINT_TAP_AREA_LAYER}
-            lineLayerID={LINE_LAYER}
-            lineTapAreaLayerID={LINE_TAP_AREA_LAYER}
-            polygonBorderLayerID={POLYGON_BORDER_LAYER}
-            polygonFillLayerID={POLYGON_FILL_LAYER}
-          />
-      )}
-      {pmtilesActive && (
-        <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
-          <DetailsLayers
-            sourceID={PMTILES_SOURCE}
-            source_layer="etymology_map"
-            setOpenFeature={setOpenFeature}
-            color={layerColor}
-            pointLayerID={POINT_LAYER}
-            pointTapAreaLayerID={POINT_TAP_AREA_LAYER}
-            lineLayerID={LINE_LAYER}
-            lineTapAreaLayerID={LINE_TAP_AREA_LAYER}
-            polygonBorderLayerID={POLYGON_BORDER_LAYER}
-            polygonFillLayerID={POLYGON_FILL_LAYER}
-          />
-        </PMTilesSource>
-      )}
-
-      {openFeature && (
-        <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />
-      )}
-    </Map>
-  );
+    {openFeature && (
+      <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />
+    )}
+  </Map>;
 };
-
-/**
- * @see https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
- */
-function isWebglSupported() {
-  if (!window.WebGLRenderingContext) return false; // WebGL not supported
-
-  const canvas = document.createElement("canvas");
-  try {
-    const context = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
-    if (context && typeof context.getParameter == "function") {
-      return true; // WebGL is supported and enabled
-    }
-    return false; // WebGL is not supported
-  } catch (e) {
-    return false; // WebGL is supported, but disabled
-  }
-}

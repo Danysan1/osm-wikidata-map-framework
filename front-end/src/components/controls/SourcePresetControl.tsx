@@ -2,8 +2,8 @@ import { parseStringArrayConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DEFAULT_SOURCE_PRESET_ID } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
-import { useTranslation } from "next-i18next";
 import { FC, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { DropdownControl } from "./DropdownControl";
 
 interface SourcePresetControlProps {

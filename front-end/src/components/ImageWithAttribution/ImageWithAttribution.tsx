@@ -1,5 +1,5 @@
-import { useTranslation } from 'next-i18next';
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import styles from "./Image.module.css";
 
 interface ImageWithAttributionProps {

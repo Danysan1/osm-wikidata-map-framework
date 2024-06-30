@@ -3,8 +3,8 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { osmKeyToKeyID } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
-import { useTranslation } from "next-i18next";
 import { FC, useCallback, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { DropdownControl, DropdownItem } from "./DropdownControl";
 
 interface BackEndControlProps {

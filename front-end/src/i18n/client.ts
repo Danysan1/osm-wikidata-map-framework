@@ -1,10 +1,9 @@
 'use client';
 
-import { Resource, createInstance, i18n } from 'i18next';
+import { Resource, createInstance } from 'i18next';
 import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
 import resourcesToBackend from 'i18next-resources-to-backend';
-import { TFunction } from 'next-i18next';
 import { initReactI18next } from 'react-i18next';
 import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, MAIN_NAMESPACE } from "./common";
 
@@ -25,22 +24,17 @@ export function getLanguage(): string {
     return getLocale()?.match(/^[a-zA-Z]{2,3}/)?.at(0) || process.env.owmf_default_language || DEFAULT_LANGUAGE;
 }
 
-let tPromise: Promise<{ t: TFunction, i18nInstance: i18n }> | undefined;
-export function loadTranslator() {
-    if (tPromise === undefined)
-        tPromise = loadClientI18n();
+export async function loadClientI18n(lang?: string) {
+    if (typeof window === 'undefined')
+        throw new Error("loadClientI18n: trying to load client i18n from server component");
 
-    return tPromise;
-}
-
-async function loadClientI18n() {
-    const language = getLanguage(),
+    const language = lang ?? getLanguage(),
         rawI18nOverride = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined,
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [HttpBackend],
         backendOptions: object[] = [{ loadPath: 'locales/{{lng}}/{{ns}}.json' }];
     if (i18nOverride) {
-        //if (process.env.NODE_ENV === 'development') console.debug("loadI18n: using i18n_override:", { language, i18nOverride });
+        if (process.env.NODE_ENV === 'development') console.debug("loadClientI18n: using i18n_override:", { language, i18nOverride });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
@@ -48,43 +42,13 @@ async function loadClientI18n() {
     const t = await i18nInstance.use(ChainedBackend)
         .use(initReactI18next)
         .init({
-        debug: process.env.NODE_ENV === 'development',
-        fallbackLng: DEFAULT_LANGUAGE,
-        lng: language, // Currently uses only language, not locale
-        backend: { backends, backendOptions },
-        ns: [MAIN_NAMESPACE, DEFAULT_NAMESPACE],
-        fallbackNS: DEFAULT_NAMESPACE,
-        defaultNS: DEFAULT_NAMESPACE
-    });
+            debug: process.env.NODE_ENV === 'development',
+            fallbackLng: DEFAULT_LANGUAGE,
+            lng: language, // Currently uses only language, not locale
+            backend: { backends, backendOptions },
+            ns: [MAIN_NAMESPACE, DEFAULT_NAMESPACE],
+            fallbackNS: DEFAULT_NAMESPACE,
+            defaultNS: DEFAULT_NAMESPACE
+        });
     return { t, i18nInstance };
-}
-
-export function translateContent(parent: HTMLElement, selector: string, key: string, defaultValue: string) {
-    const domElement = parent.querySelector<HTMLElement>(selector);
-    if (!domElement) {
-        if (process.env.NODE_ENV === 'development') console.error("translateContent: failed finding element", "error", { parentClasses: parent.classList, selector });
-    } else {
-        loadTranslator().then(({ t }) => {
-            const label = t(key, defaultValue);
-            domElement.textContent = label;
-            domElement.ariaLabel = label; // https://dequeuniversity.com/rules/axe/4.7/label-content-name-mismatch
-        }).catch(
-            (e: unknown) => { if (process.env.NODE_ENV === 'development') console.error("Failed initializing or using i18next", "error", { error: e, key }); }
-        );
-    }
-}
-
-export function translateAnchorTitle(parent: HTMLElement, selector: string, key: string, defaultValue: string) {
-    const domElement = parent.querySelector<HTMLAnchorElement>(selector);
-    if (!domElement) {
-        if (process.env.NODE_ENV === 'development') console.debug("translateTitle: failed finding element", { parentClasses: parent.classList, selector });
-    } else {
-        loadTranslator().then(({ t }) => {
-            const title = t(key, defaultValue);
-            domElement.title = title;
-            //domElement.ariaLabel = title;
-        }).catch(
-            (e: unknown) => { if (process.env.NODE_ENV === 'development') console.error("Failed initializing or using i18next", "error", { error: e, key }); }
-        );
-    }
 }

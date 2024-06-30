@@ -8,9 +8,9 @@ import { WikidataStatsService } from "@/src/services/WikidataStatsService";
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import type { ControlPosition, DataDrivenPropertyValueSpecification, ExpressionSpecification } from "maplibre-gl";
-import { useTranslation } from "next-i18next";
 import { FC, useEffect, useMemo, useState } from "react";
 import { Pie } from 'react-chartjs-2';
+import { useTranslation } from "react-i18next";
 import { useMap } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "./DropdownControl";
 

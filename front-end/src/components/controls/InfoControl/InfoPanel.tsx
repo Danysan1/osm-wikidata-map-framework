@@ -1,6 +1,6 @@
-import { useTranslation } from "next-i18next";
 import Image from "next/image";
 import { FC } from "react";
+import { useTranslation } from "react-i18next";
 
 interface InfoPanelProps {
     lastUpdateDate?: string;

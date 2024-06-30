@@ -2,8 +2,8 @@ import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService";
 import { getEtymologies } from "@/src/services/etymologyUtils";
-import { useTranslation } from "next-i18next";
 import { FC, useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { FeatureButtonRow } from "../../ButtonRow/FeatureButtonRow";
 
 interface DataTableProps {

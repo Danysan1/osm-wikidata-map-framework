@@ -2,8 +2,8 @@ import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService";
 import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
-import { useTranslation } from "next-i18next";
 import { FC, useCallback, useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
 
 interface EtymologyListProps {
