@@ -1,6 +1,5 @@
 import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
-import { overpass, type OverpassJson } from "overpass-ts";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType } from "../model/Etymology";
 import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
@@ -109,8 +108,8 @@ export class OverpassService implements MapService {
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_query");
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
-            response = await overpass(query, { endpoint: this.overpassEndpoint }),
-            res = await response.json() as OverpassJson;
+            { overpassJson } = await import("overpass-ts"),
+            res = await overpassJson(query, { endpoint: this.overpassEndpoint });
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
         if (!res.elements)
             throw new Error("Bad response from Overpass");
