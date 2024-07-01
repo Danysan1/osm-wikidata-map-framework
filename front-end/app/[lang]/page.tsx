@@ -1,14 +1,14 @@
 import { OwmfMapIfSupported } from "@/src/components/map/OwmfMapIfSupported";
 import { loadServerI18n } from "@/src/i18n/server";
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import { Languages } from "next/dist/lib/metadata/types/alternative-urls-types";
 import styles from "./page.module.css";
 
-interface Props {
+interface LanguageHomeProps {
   params: { lang?: string };
 }
 
-export async function generateMetadata({ params: { lang } }: Props): Promise<Metadata> {
+export async function generateMetadata({ params: { lang } }: LanguageHomeProps): Promise<Metadata> {
   const { t, i18nInstance } = await loadServerI18n(lang);
   return {
     title: t("title"),
@@ -38,10 +38,10 @@ export async function generateMetadata({ params: { lang } }: Props): Promise<Met
   }
 }
 
-export default function Home({ params: { lang } }: Props) {
+export default function LanguageHome({ params: { lang } }: LanguageHomeProps) {
   return (
     <main className={styles.main}>
-      <OwmfMapIfSupported lang={lang}/>
+      <OwmfMapIfSupported lang={lang} />
     </main>
   );
 }

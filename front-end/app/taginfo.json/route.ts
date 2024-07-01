@@ -4,7 +4,7 @@ import { loadServerI18n } from "@/src/i18n/server";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { getCustomSourcePreset } from "@/src/services/PresetService";
 import { existsSync, readFileSync } from "fs";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { join } from "path";
 
 interface TagInfoTag {
@@ -20,7 +20,7 @@ interface TagInfoTag {
  * @see https://wiki.openstreetmap.org/wiki/Taginfo/Projects
  * @see https://wiki.openstreetmap.org/wiki/Taginfo
  */
-export async function GET(request: NextRequest) {
+export async function GET() {
   const { t } = await loadServerI18n(DEFAULT_LANGUAGE);
 
   const contributingURL = process.env.owmf_contributing_url,
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     sourcePreset = getCustomSourcePreset();
   } else {
     if (sourcePresets?.length !== 1)
-      console.warn("Multiple source presets not supported yet");
+      console.warn("!! taginfo.json generation with multiple source presets not supported yet !!");
 
     const presetID = sourcePresets[0],
       presetPath = join(process.cwd(), "public", "presets", presetID + ".json");
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     "data_format": 1,
-    "data_url": request.url,
+    "data_url": process.env.owmf_home_url + "/taginfo.json",
     "project": {
       "name": t("title"),
       "description": t("description"),

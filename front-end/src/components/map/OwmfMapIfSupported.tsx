@@ -10,7 +10,7 @@ interface Props {
 }
 
 export function OwmfMapIfSupported({ lang }: Props) {
-    const [isWebglSupported, setIsWebglSupported] = useState(false);
+    const [isWebglSupported, setIsWebglSupported] = useState(true);
 
     useEffect(() => {
         // https://maplibre.org/maplibre-gl-js/docs/examples/check-for-support/
