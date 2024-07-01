@@ -5,11 +5,9 @@ import { loadClientI18n } from "@/src/i18n/client";
 import { useEffect, useState } from "react";
 import { OwmfMap } from "./OwmfMap/OwmfMap";
 
-interface Props {
-    lang?: string;
-}
+loadClientI18n().catch((e) => { throw e; });
 
-export function OwmfMapIfSupported({ lang }: Props) {
+export function OwmfMapIfSupported() {
     const [isWebglSupported, setIsWebglSupported] = useState(true);
 
     useEffect(() => {
@@ -33,13 +31,6 @@ export function OwmfMapIfSupported({ lang }: Props) {
             }
         }
     }, []);
-
-    useEffect(() => {
-        loadClientI18n(lang).catch((e) => {
-            if (process.env.NODE_ENV === "development")
-                console.error("Failed loading translator", e);
-        });
-    });
 
     return isWebglSupported ? (
         <UrlFragmentContextProvider>

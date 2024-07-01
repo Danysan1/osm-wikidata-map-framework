@@ -20,7 +20,6 @@ export const LanguageControl: FC<LanguageControlProps> = (props) => {
                 es: "Español",
                 fr: "Français",
                 it: "Italiano",
-                ml: "മലയാളം",
             };
             return Object.keys(languageNames).map((lang): DropdownItem => ({
                 id: lang,

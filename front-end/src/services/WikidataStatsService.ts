@@ -8,7 +8,6 @@ import startCenturyStatsQuery from "raw-loader!./query/stats/start-century.sparq
 import typeStatsQuery from "raw-loader!./query/stats/type.sparql";
 import wikilinkStatsQuery from "raw-loader!./query/stats/wikilink.sparql";
 import { StatsDatabase } from "../db/StatsDatabase";
-import { getLanguage } from "../i18n/client";
 import type { EtymologyStat } from "../model/EtymologyStat";
 import type { ColorSchemeID } from "../model/colorScheme";
 import { WikidataService } from "./WikidataService";
@@ -34,16 +33,17 @@ export const statsQueries: Partial<Record<ColorSchemeID, string>> = {
 
 export class WikidataStatsService extends WikidataService {
     private readonly db: StatsDatabase;
+    private readonly language: string;
 
-    public constructor() {
+    public constructor(language: string) {
         super();
         const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
         this.db = new StatsDatabase(maxHours);
+        this.language = language;
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
-        const language = getLanguage();
-        let out = await this.db.getStats(colorSchemeID, wikidataIDs, language);
+        let out = await this.db.getStats(colorSchemeID, wikidataIDs, this.language);
         if (out) {
             if (process.env.NODE_ENV === 'development') console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
@@ -52,7 +52,7 @@ export class WikidataStatsService extends WikidataService {
                 sparqlQuery = statsQueries[colorSchemeID];
             if (!sparqlQuery)
                 throw new Error("downloadChartData: can't download data for a color scheme with no query - " + colorSchemeID);
-            const res = await this.etymologyIDsQuery(language, wikidataIDs, sparqlQuery);
+            const res = await this.etymologyIDsQuery(this.language, wikidataIDs, sparqlQuery);
             let csvData: string[][] | undefined;
             if (csvPath) {
                 const csvResponse = await fetch(csvPath),
@@ -78,7 +78,7 @@ export class WikidataStatsService extends WikidataService {
                     color: x.color?.value || csvData?.find(row => row[0] === entityID || row[0] === classID)?.at(3),
                 };
             }) ?? [];
-            void this.db.addStats(out, colorSchemeID, wikidataIDs, language);
+            void this.db.addStats(out, colorSchemeID, wikidataIDs, this.language);
         }
         return out;
     }

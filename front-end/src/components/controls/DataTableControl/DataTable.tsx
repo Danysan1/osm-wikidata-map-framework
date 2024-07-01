@@ -11,19 +11,19 @@ interface DataTableProps {
 }
 
 export const DataTable: FC<DataTableProps> = ({ features }) => {
-    const { t } = useTranslation(),
+    const { t, i18n } = useTranslation(),
         [etymologyDetails, setEtymologyDetails] = useState<Record<string, EtymologyDetails>>();
 
     useEffect(() => {
         const wikidataIdArray = features.flatMap(f => getEtymologies(f)?.filter(e => e.wikidata)?.map(e => e.wikidata!) ?? []),
             wikidataIdSet = new Set<string>(wikidataIdArray),
-            detailsService = new WikidataDetailsService();
+            detailsService = new WikidataDetailsService(i18n.language);
         detailsService.fetchEtymologyDetails(wikidataIdSet).then(
             (details) => setEtymologyDetails(details)
         ).catch(
             (e) => console.error("Error fetching etymology details", e)
         );
-    }, [features]);
+    }, [features, i18n.language]);
 
     return <table className="owmf_data_table">
         <thead>

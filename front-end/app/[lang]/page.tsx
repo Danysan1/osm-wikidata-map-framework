@@ -38,10 +38,10 @@ export async function generateMetadata({ params: { lang } }: LanguageHomeProps):
   }
 }
 
-export default function LanguageHome({ params: { lang } }: LanguageHomeProps) {
+export default function LanguageHome() {
   return (
     <main className={styles.main}>
-      <OwmfMapIfSupported lang={lang} />
+      <OwmfMapIfSupported />
     </main>
   );
 }

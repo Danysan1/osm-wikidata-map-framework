@@ -11,7 +11,7 @@ interface EtymologyListProps {
 }
 
 export const EtymologyList: FC<EtymologyListProps> = ({ etymologies }) => {
-    const { t } = useTranslation(),
+    const { t, i18n } = useTranslation(),
         [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
         [etymologyDetails, setEtymologyDetails] = useState<EtymologyDetails[]>(),
         downloadEtymologyDetails = useCallback(async (etymologies?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
@@ -38,7 +38,7 @@ export const EtymologyList: FC<EtymologyListProps> = ({ etymologies }) => {
             }
 
             try {
-                const detailsService = new WikidataDetailsService(),
+                const detailsService = new WikidataDetailsService(i18n.language),
                     downloadedEtymologies = await detailsService.fetchEtymologyDetails(etymologyIDs);
                 return sortedIDs.map((wikidataID): EtymologyDetails => {
                     const baseEntity = etymologies.find(oldEty => oldEty.wikidata === wikidataID),
@@ -49,7 +49,7 @@ export const EtymologyList: FC<EtymologyListProps> = ({ etymologies }) => {
                 console.error("Failed downloading etymology details", etymologyIDs, err);
                 return etymologies;
             }
-        }, [t]);
+        }, [i18n.language, t]);
 
     useEffect(() => {
         const etys = typeof etymologies === "string" ? JSON.parse(etymologies) as Etymology[] : etymologies;

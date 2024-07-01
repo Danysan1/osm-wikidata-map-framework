@@ -64,8 +64,9 @@ const PMTILES_PREFIX = "pmtiles",
 export const OwmfMap = () => {
   const {
     lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID
-  } = useUrlFragmentContext();
-  const [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
+  } = useUrlFragmentContext(),
+    { t } = useTranslation(),
+    [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(
       undefined
@@ -100,8 +101,7 @@ export const OwmfMap = () => {
     dataLayerIDs = useMemo(
       () => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER],
       []
-    ),
-    { t } = useTranslation();
+    );
 
   const onMoveEndHandler = useCallback(
     (e: ViewStateChangeEvent) => {

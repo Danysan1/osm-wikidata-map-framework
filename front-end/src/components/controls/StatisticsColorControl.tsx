@@ -73,13 +73,13 @@ interface StatisticsColorControlProps {
     setLayerColor: (color: DataDrivenPropertyValueSpecification<string>) => void;
 }
 
-type StatisticsCalculator = (features: EtymologyFeatureProperties[]) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
+type StatisticsCalculator = (features: EtymologyFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
 
 /**
  * Let the user choose a color scheme for the map data and see statistics about the data
  **/
 export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) => {
-    const { t } = useTranslation(),
+    const { t, i18n } = useTranslation(),
         { current: map } = useMap(),
         { lat, lon, zoom } = useUrlFragmentContext(),
         { colorSchemeID, setColorSchemeID } = useUrlFragmentContext(),
@@ -102,7 +102,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
             }
             const calculateLocalChartData = async (calculateChartData: StatisticsCalculator) => {
                 const features: EtymologyFeatureProperties[] | undefined = map?.queryRenderedFeatures({ layers: props.layerIDs })?.map(f => f.properties);
-                const [stats, color] = await calculateChartData(features ?? []);
+                const [stats, color] = await calculateChartData(features ?? [], i18n.language);
                 if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating chart", { features, stats, color });
                 if (color) props.setLayerColor(color);
                 if (stats) setChartStats(stats);
@@ -155,7 +155,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
                 }
 
                 const idSet = new Set(wikidataIDs), // de-duplicate
-                    stats = await downloadChartDataForWikidataIDs(idSet, colorSchemeID);
+                    stats = await downloadChartDataForWikidataIDs(idSet, colorSchemeID, i18n.language);
                 if (stats?.length) {
                     setChartStats(stats)
                     setLayerColorForStats(stats);
@@ -181,7 +181,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
                 startCentury: () => void downloadChartDataFromWikidata(ColorSchemeID.startCentury),
                 type: () => void downloadChartDataFromWikidata(ColorSchemeID.type),
             };
-        }, [map, props, t]);
+        }, [i18n.language, map, props, t]);
 
     const dropdownItems = useMemo((): DropdownItem[] => {
         const keys = props.preset.osm_wikidata_keys,
@@ -288,7 +288,7 @@ function calculateEtymologySourceStats(osmTextOnlyLabel: string): StatisticsCalc
 /**
  * Common gateway for all statistics based on a query to Wikidata
  */
-async function downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID: ColorSchemeID): Promise<EtymologyStat[] | null> {
+async function downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID: ColorSchemeID, language: string): Promise<EtymologyStat[] | null> {
     if (idSet.size === 0) {
         if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
         return [];
@@ -298,7 +298,7 @@ async function downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID
     if (process.env.NODE_ENV === 'development') console.debug("downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, idSet });
 
     try {
-        const statsService = new WikidataStatsService();
+        const statsService = new WikidataStatsService(language);
         const stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
         if (!stats.length) {
@@ -314,7 +314,7 @@ async function downloadChartDataForWikidataIDs(idSet: Set<string>, colorSchemeID
 }
 
 function loadPictureAvailabilityChartData(pictureAvailableLabel: string, pictureUnavailableLabel: string): StatisticsCalculator {
-    return async (features) => {
+    return async (features, language) => {
         const with_picture_IDs = new Set<string | number>(),
             unknown_picture_IDs = new Set<string>(),
             without_picture_IDs = new Set<string | number>();
@@ -328,7 +328,7 @@ function loadPictureAvailabilityChartData(pictureAvailableLabel: string, picture
             else
                 without_picture_IDs.add(id);
         });
-        const stats = await downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture);
+        const stats = await downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture, language);
         let data: ExpressionSpecification | null = null;
         if (stats) {
             const withPictureObject = stats.find(stat => stat.id === 'available'),
@@ -378,13 +378,13 @@ function loadPictureAvailabilityChartData(pictureAvailableLabel: string, picture
     }
 }
 
-const loadWikilinkChartData: StatisticsCalculator = async (features) => {
+const loadWikilinkChartData: StatisticsCalculator = async (features, language) => {
     const wikidataIDs = new Set<string>();
     features?.forEach(props => {
         if (props.wikidata)
             wikidataIDs.add(props.wikidata);
     });
-    const stats = await downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count);
+    const stats = await downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count, language);
     let data: ExpressionSpecification | null = null;
     if (stats) {
         const statsData: (ExpressionSpecification | string)[] = []
