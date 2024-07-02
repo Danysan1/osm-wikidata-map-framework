@@ -1,16 +1,16 @@
 import { parse } from "papaparse";
-import { StatsDatabase } from "../db/StatsDatabase";
-import type { EtymologyStat } from "../model/EtymologyStat";
-import type { ColorSchemeID } from "../model/colorScheme";
-import { WikidataService } from "./WikidataService";
-import countryStatsQuery from "./query/stats/country.sparql";
-import endCenturyStatsQuery from "./query/stats/end-century.sparql";
-import genderStatsQuery from "./query/stats/gender.sparql";
-import occupationStatsQuery from "./query/stats/occupation.sparql";
-import pictureStatsQuery from "./query/stats/picture.sparql";
-import startCenturyStatsQuery from "./query/stats/start-century.sparql";
-import typeStatsQuery from "./query/stats/type.sparql";
-import wikilinkStatsQuery from "./query/stats/wikilink.sparql";
+import { StatsDatabase } from "../../db/StatsDatabase";
+import type { EtymologyStat } from "../../model/EtymologyStat";
+import type { ColorSchemeID } from "../../model/colorScheme";
+import { WikidataService } from "../WikidataService";
+import countryStatsQuery from "./country.sparql";
+import endCenturyStatsQuery from "./end-century.sparql";
+import genderStatsQuery from "./gender.sparql";
+import occupationStatsQuery from "./occupation.sparql";
+import pictureStatsQuery from "./picture.sparql";
+import startCenturyStatsQuery from "./start-century.sparql";
+import typeStatsQuery from "./type.sparql";
+import wikilinkStatsQuery from "./wikilink.sparql";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
     type: "csv/wikidata_types.csv",

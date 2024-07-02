@@ -114,8 +114,12 @@ const nextConfig = {
   }, { /*owmf_version: packageJSON.version*/ }),
   webpack: (config, options) => {
     config.module.rules.push({
-      test: /\.s(par)?ql$/,
+      test: /\.sparql$/,
       type: "asset/resource",
+      exclude: /node_modules/,
+    },{
+      test: /\.sql$/,
+      type: "asset/source",
       exclude: /node_modules/,
     });
 

@@ -1,6 +1,6 @@
-import { WikidataBulkService } from './services/WikidataBulkService';
-import directEtymologyQuery from "./services/query/loadRelated/direct-etymology.sql";
-import directMapQuery from "./services/query/loadRelated/direct-map.sparql";
+import { WikidataBulkService } from '../services/WikidataBulkService/WikidataBulkService';
+import directEtymologyQuery from "./direct-etymology.sql";
+import directMapQuery from "./direct-map.sparql";
 
 if (process.env.NODE_ENV !== 'development')
     throw new Error("This is a reserved script to initialize the DB, enabled only in development mode");

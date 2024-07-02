@@ -1,7 +1,7 @@
-import { DetailsDatabase } from "../db/DetailsDatabase";
-import type { EtymologyDetails } from "../model/EtymologyDetails";
-import { WikidataService } from "./WikidataService";
-import detailsQueryURL from "./query/etymology-details.sparql";
+import { DetailsDatabase } from "../../db/DetailsDatabase";
+import type { EtymologyDetails } from "../../model/EtymologyDetails";
+import { WikidataService } from "../WikidataService";
+import detailsQueryURL from "./etymology-details.sparql";
 
 export class WikidataDetailsService extends WikidataService {
     private readonly db: DetailsDatabase;

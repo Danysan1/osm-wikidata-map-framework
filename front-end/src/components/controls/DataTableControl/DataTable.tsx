@@ -1,6 +1,6 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
-import { WikidataDetailsService } from "@/src/services/WikidataDetailsService";
+import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";

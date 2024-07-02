@@ -1,6 +1,6 @@
 import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { WikidataDetailsService } from "@/src/services/WikidataDetailsService";
+import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";

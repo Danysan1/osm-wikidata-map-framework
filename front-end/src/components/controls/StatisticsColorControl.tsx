@@ -5,7 +5,7 @@ import type { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import type { EtymologyStat } from "@/src/model/EtymologyStat";
 import type { SourcePreset } from "@/src/model/SourcePreset";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
-import { WikidataStatsService } from "@/src/services/WikidataStatsService";
+import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import type { ControlPosition, DataDrivenPropertyValueSpecification, ExpressionSpecification } from "maplibre-gl";

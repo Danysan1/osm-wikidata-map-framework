@@ -1,11 +1,11 @@
 const defaultIcon = "img/Translation_-_Noun_project_987.svg",
     flags: Record<string, string> = { // https://commons.wikimedia.org/wiki/Category:SVG_sovereign_state_flags
-        "en": "img/English_language.svg",
-        "fr": "img/Flag_of_France_%282020%E2%80%93present%29.svg",
-        "de": "img/Flag_of_Germany.svg",
-        "it": "img/Flag_of_Italy.svg",
-        "es": "img/Bandera_de_Espa%C3%B1a.svg",
-        "da": "img/Flag_of_Denmark.svg",
+        "en": "./English_language.svg",
+        "fr": "./Flag_of_France.svg",
+        "de": "./Flag_of_Germany.svg",
+        "it": "./Flag_of_Italy.svg",
+        "es": "./Flag_of_Spain.svg",
+        "da": "./Flag_of_Denmark.svg",
     };
 
 /**

@@ -1,10 +1,10 @@
 import { Connection, DataTypeOIDs, PreparedStatement } from 'postgresql-client';
-import elementUpdateQuery from "./query/loadRelated/element-update.sql";
-import elementInsertQuery from "./query/loadRelated/element-insert.sql";
-import wikidataQuery from "./query/loadRelated/wikidata.sql";
-import { Configuration } from "../generated/sparql/runtime";
-import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
-import type { SparqlBackend } from "../generated/sparql/models/SparqlBackend";
+import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
+import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
+import { Configuration } from "../../generated/sparql/runtime";
+import elementInsertQuery from "./element-insert.sql";
+import elementUpdateQuery from "./element-update.sql";
+import wikidataQuery from "./wikidata.sql";
 
 const SLEEP_TIME_MS = 5_000;
 

@@ -1,6 +1,12 @@
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import styles from "./ButtonRow.module.css";
+import commonsLogo from "./img/Commons-logo.svg";
+import openStreetMapLogo from "./img/OpenStreetMap_logo.svg";
+import wikidataLogo from "./img/Wikidata.svg";
+import wikisporeLogo from "./img/Wikispore_logo_without_text.svg";
+import entitreeLogo from "./img/entitree.png";
+import wikipediaLogo from "./img/Wikipedia-logo-v2.svg";
 
 interface ButtonRowProps {
     commons?: string;
@@ -22,23 +28,23 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
 
     return <div className={`${styles["button-row"]} ${props.className}`}>
         {props.wikipedia && <a href={props.wikipedia} title="Wikipedia" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button">
-            <Image className="button_img" src="/img/Wikipedia-logo-v2.svg" alt="Wikipedia logo" width={25} height={25} />
+            <Image className="button_img" src={wikipediaLogo} alt="Wikipedia logo" width={25} height={25} />
             <span className="button_text"> Wikipedia</span>
         </a>}
         {props.wikispore && <a href={props.wikispore} title="Wikispore" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikispore_button">
-            <Image className="button_img" src="/img/Wikispore_logo_without_text.svg" alt="Wikispore logo" width={25} height={25} />
+            <Image className="button_img" src={wikisporeLogo} alt="Wikispore logo" width={25} height={25} />
             <span className="button_text"> Wikispore</span>
         </a>}
         {props.commons && <a href={props.commons} title="Wikimedia Commons" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button">
-            <Image className="button_img" src="/img/Commons-logo.svg" alt="Wikimedia Commons logo" width={25} height={25} />
+            <Image className="button_img" src={commonsLogo} alt="Wikimedia Commons logo" width={25} height={25} />
             <span className="button_text"> Commons</span>
         </a>}
         {props.wikidata && <a href={props.wikidata} title="Wikidata" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button">
-            <Image className="button_img" src="/img/Wikidata.svg" alt="Wikidata logo" width={25} height={25} />
+            <Image className="button_img" src={wikidataLogo} alt="Wikidata logo" width={25} height={25} />
             <span className="button_text"> Wikidata</span>
         </a>}
         {props.openstreetmap && <a href={props.openstreetmap} title="OpenStreetMap" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
-            <Image className="button_img" src="/img/Openstreetmap_logo.svg" alt="OpenStreetMap logo" width={25} height={25} />
+            <Image className="button_img" src={openStreetMapLogo} alt="OpenStreetMap logo" width={25} height={25} />
             <span className="button_text"> OpenStreetMap</span>
         </a>}
         {props.website && <a href={props.website} title="Official website" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_website_button">
@@ -58,7 +64,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
             <span className="button_text"> iD editor</span>
         </a>}
         {props.entitree && <a href={props.entitree} title="EntiTree" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 entitree_button">
-            <Image className="button_img" src="/img/entitree.png" alt="EntiTree logo" width={25} height={25} />
+            <Image className="button_img" src={entitreeLogo} alt="EntiTree logo" width={25} height={25} />
             <span className="button_text"> EntiTree</span>
         </a>}
         {props.location && <a onClick={typeof props.location === 'function' ? props.location : undefined} href={typeof props.location === 'string' ? props.location : undefined} title={t("feature_details.location", "Location")} role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_location_button" target="_self">
