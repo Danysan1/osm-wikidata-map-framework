@@ -1,7 +1,7 @@
-import detailsQuery from "raw-loader!./query/etymology-details.sparql";
 import { DetailsDatabase } from "../db/DetailsDatabase";
 import type { EtymologyDetails } from "../model/EtymologyDetails";
 import { WikidataService } from "./WikidataService";
+import detailsQueryURL from "./query/etymology-details.sparql";
 
 export class WikidataDetailsService extends WikidataService {
     private readonly db: DetailsDatabase;
@@ -20,7 +20,8 @@ export class WikidataDetailsService extends WikidataService {
             if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache hit, using cached response", { lang: this.language, wikidataIDs, out });
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: this.language, wikidataIDs });
-            const res = await this.etymologyIDsQuery(this.language, Array.from(wikidataIDs), detailsQuery);
+            const sparqlQueryTemplate = await fetch(detailsQueryURL).then(res => res.text()),
+             res = await this.etymologyIDsQuery(this.language, Array.from(wikidataIDs), sparqlQueryTemplate);
 
             if (!res?.results?.bindings?.length) {
                 console.warn("fetchEtymologyDetails: no results");

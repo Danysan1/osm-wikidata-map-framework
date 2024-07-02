@@ -1,14 +1,4 @@
 import type { BBox, Point } from "geojson";
-import osm_all_query from "raw-loader!./query/qlever/osm_all.sparql";
-import osm_wd_query from "raw-loader!./query/qlever/osm_wd.sparql";
-import osm_wd_base_query from "raw-loader!./query/qlever/osm_wd_base.sparql";
-import osm_wd_direct_query from "raw-loader!./query/qlever/osm_wd_direct.sparql";
-import osm_wd_reverse_query from "raw-loader!./query/qlever/osm_wd_reverse.sparql";
-import wd_base_query from "raw-loader!./query/qlever/wd_base.sparql";
-import wd_direct_query from "raw-loader!./query/qlever/wd_direct.sparql";
-import wd_indirect_query from "raw-loader!./query/qlever/wd_indirect.sparql";
-import wd_qualifier_query from "raw-loader!./query/qlever/wd_qualifier.sparql";
-import wd_reverse_query from "raw-loader!./query/qlever/wd_reverse.sparql";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
 import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
@@ -21,6 +11,16 @@ import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
 import { getEtymologies } from "./etymologyUtils";
+import osm_all_query from "./query/qlever/osm_all.sparql";
+import osm_wd_query from "./query/qlever/osm_wd.sparql";
+import osm_wd_base_query from "./query/qlever/osm_wd_base.sparql";
+import osm_wd_direct_query from "./query/qlever/osm_wd_direct.sparql";
+import osm_wd_reverse_query from "./query/qlever/osm_wd_reverse.sparql";
+import wd_base_query from "./query/qlever/wd_base.sparql";
+import wd_direct_query from "./query/qlever/wd_direct.sparql";
+import wd_indirect_query from "./query/qlever/wd_indirect.sparql";
+import wd_qualifier_query from "./query/qlever/wd_qualifier.sparql";
+import wd_reverse_query from "./query/qlever/wd_reverse.sparql";
 
 const OSMKEY = "https://www.openstreetmap.org/wiki/Key:";
 /**
@@ -89,7 +89,7 @@ export class QLeverMapService implements MapService {
             return cachedResponse;
 
         const backend = this.getSparqlBackEnd(backEndID),
-            sparqlQueryTemplate = this.getSparqlQueryTemplate(backEndID),
+            sparqlQueryTemplate = await this.getSparqlQueryTemplate(backEndID),
             sparqlQuery = this.fillPlaceholders(backEndID, onlyCentroids, sparqlQueryTemplate, bbox)
                 .replaceAll('${language}', language)
                 .replaceAll('${limit}', this.maxElements ? "LIMIT " + this.maxElements : ""),
@@ -124,29 +124,32 @@ export class QLeverMapService implements MapService {
         return backEnd.startsWith("qlever_osm_") ? "osm-planet" : "wikidata";
     }
 
-    private getSparqlQueryTemplate(backEndID: string): string {
+    private async getSparqlQueryTemplate(backEndID: string) {
+        let queryURL: string;
         if (backEndID === "qlever_osm_wd")
-            return osm_wd_query;
+            queryURL = osm_wd_query;
         else if (backEndID === "qlever_osm_wd_base")
-            return osm_wd_base_query;
+            queryURL = osm_wd_base_query;
         else if (backEndID === "qlever_osm_wikidata_direct")
-            return osm_wd_direct_query;
+            queryURL = osm_wd_direct_query;
         else if (backEndID === "qlever_osm_wikidata_reverse")
-            return osm_wd_reverse_query;
+            queryURL = osm_wd_reverse_query;
         else if (/^qlever_osm_[^w]/.test(backEndID))
-            return osm_all_query;
+            queryURL = osm_all_query;
         else if (backEndID === "qlever_wd_base")
-            return wd_base_query;
+            queryURL = wd_base_query;
         else if (backEndID.startsWith("qlever_wd_direct"))
-            return wd_direct_query;
+            queryURL = wd_direct_query;
         else if (backEndID === "qlever_wd_indirect")
-            return wd_indirect_query;
+            queryURL = wd_indirect_query;
         else if (backEndID === "qlever_wd_reverse")
-            return wd_reverse_query;
+            queryURL = wd_reverse_query;
         else if (backEndID === "qlever_wd_qualifier")
-            return wd_qualifier_query;
+            queryURL = wd_qualifier_query;
         else
             throw new Error(`Invalid QLever back-end ID: "${backEndID}"`);
+
+        return await fetch(queryURL).then(response => response.text());
     }
 
     private fillPlaceholders(backEndID: string, onlyCentroids: boolean, sparqlQuery: string, bbox: BBox): string {

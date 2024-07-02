@@ -1,9 +1,4 @@
 import type { BBox, Point } from "geojson";
-import baseMapQuery from "raw-loader!./query/map/base.sparql";
-import directMapQuery from "raw-loader!./query/map/direct.sparql";
-import indirectMapQuery from "raw-loader!./query/map/indirect.sparql";
-import qualifierMapQuery from "raw-loader!./query/map/qualifier.sparql";
-import reverseMapQuery from "raw-loader!./query/map/reverse.sparql";
 import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { SparqlResponseBindingValue } from "../generated/sparql/models/SparqlResponseBindingValue";
@@ -13,6 +8,11 @@ import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 import { WikidataService } from "./WikidataService";
 import { getEtymologies } from "./etymologyUtils";
+import baseMapQuery from "./query/map/base.sparql";
+import directMapQuery from "./query/map/direct.sparql";
+import indirectMapQuery from "./query/map/indirect.sparql";
+import qualifierMapQuery from "./query/map/qualifier.sparql";
+import reverseMapQuery from "./query/map/reverse.sparql";
 
 export class WikidataMapService extends WikidataService implements MapService {
     private readonly preset: SourcePreset;
@@ -38,11 +38,11 @@ export class WikidataMapService extends WikidataService implements MapService {
 
         let sparqlQueryTemplate: string;
         if (backEndID === "wd_base")
-            sparqlQueryTemplate = baseMapQuery;
+            sparqlQueryTemplate = await this.getBaseSparqlQuery();
         else if (backEndID.startsWith("wd_direct"))
-            sparqlQueryTemplate = this.getDirectSparqlQuery(backEndID);
+            sparqlQueryTemplate = await this.getDirectSparqlQuery(backEndID);
         else if (/^wd_(reverse|qualifier|indirect)$/.test(backEndID))
-            sparqlQueryTemplate = this.getIndirectSparqlQuery(backEndID);
+            sparqlQueryTemplate = await this.getIndirectSparqlQuery(backEndID);
         else
             throw new Error(`Invalid Wikidata back-end ID: "${backEndID}"`);
 
@@ -89,11 +89,14 @@ export class WikidataMapService extends WikidataService implements MapService {
         return out;
     }
 
-    private getDirectSparqlQuery(backEndID: string): string {
+    private async getBaseSparqlQuery() {
+        return await fetch(baseMapQuery).then(r => r.text());
+    }
+
+    private async getDirectSparqlQuery(backEndID: string) {
         let properties: string[];
         const sourceProperty = /^wd_direct_(P\d+)$/.exec(backEndID)?.at(1),
-            directProperties = this.preset.osm_wikidata_properties,
-            sparqlQueryTemplate = directMapQuery;
+            directProperties = this.preset.osm_wikidata_properties;
         if (!directProperties?.length)
             throw new Error("Empty direct properties");
 
@@ -104,25 +107,27 @@ export class WikidataMapService extends WikidataService implements MapService {
         else
             properties = [sourceProperty];
 
+        const sparqlQueryTemplate = await fetch(directMapQuery).then(r => r.text());
         return sparqlQueryTemplate.replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "));
     }
 
-    private getIndirectSparqlQuery(backEndID: string): string {
+    private async getIndirectSparqlQuery(backEndID: string) {
         const indirectProperty = this.preset.wikidata_indirect_property;
         if (!indirectProperty)
             throw new Error("No indirect property defined");
 
-        let sparqlQueryTemplate: string;
+        let queryURL: string;
         if (backEndID === "wd_indirect")
-            sparqlQueryTemplate = indirectMapQuery;
+            queryURL = indirectMapQuery;
         else if (backEndID === "wd_reverse")
-            sparqlQueryTemplate = reverseMapQuery;
+            queryURL = reverseMapQuery;
         else if (backEndID === "wd_qualifier")
-            sparqlQueryTemplate = qualifierMapQuery;
+            queryURL = qualifierMapQuery;
         else
             throw new Error(`Invalid Wikidata indirect back-end ID: "${backEndID}"`);
 
         const imageProperty = this.preset.wikidata_image_property,
+            sparqlQueryTemplate = await fetch(queryURL).then(r => r.text()),
             pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
         return sparqlQueryTemplate
             .replaceAll('${indirectProperty}', indirectProperty)

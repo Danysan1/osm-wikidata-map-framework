@@ -115,8 +115,7 @@ const nextConfig = {
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.s(par)?ql$/,
-      type: "asset/source",
-      use: 'raw-loader',
+      type: "asset/resource",
       exclude: /node_modules/,
     });
 
