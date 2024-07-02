@@ -1,6 +1,7 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import type { Etymology } from "@/src/model/Etymology";
 import type { EtymologyFeatureProperties } from "@/src/model/EtymologyFeatureProperties";
+import type { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import type { EtymologyStat } from "@/src/model/EtymologyStat";
 import type { SourcePreset } from "@/src/model/SourcePreset";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
@@ -100,9 +101,20 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
                     }]
                 });
             }
+
+            const queryFeaturesOnScreen = (): EtymologyFeature[] | undefined => {
+                if (props.layerIDs.some(layerID => !map?.getLayer(layerID))) {
+                    if (process.env.NODE_ENV === "development")
+                        console.warn("At least one layer is missing, can't update stats", { colorSchemeID, layers: props.layerIDs });
+                    return undefined;
+                }
+
+                return map?.queryRenderedFeatures({ layers: props.layerIDs });
+            }
+
             const calculateLocalChartData = async (calculateChartData: StatisticsCalculator) => {
-                const features: EtymologyFeatureProperties[] | undefined = map?.queryRenderedFeatures({ layers: props.layerIDs })?.map(f => f.properties);
-                const [stats, color] = await calculateChartData(features ?? [], i18n.language);
+                const features = queryFeaturesOnScreen()?.map(f => f.properties!) ?? [];
+                const [stats, color] = await calculateChartData(features, i18n.language);
                 if (process.env.NODE_ENV === 'development') console.debug("calculateAndLoadChartData: updating chart", { features, stats, color });
                 if (color) props.setLayerColor(color);
                 if (stats) setChartStats(stats);
@@ -140,17 +152,23 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
              * Downloads the statistics from Wikidata and loads it into the chart
              */
             const downloadChartDataFromWikidata = async (colorSchemeID: ColorSchemeID) => {
+                const allLayersAreAvailable = props.layerIDs.every(layerID => map?.getLayer(layerID));
+                if (!allLayersAreAvailable) {
+                    if (process.env.NODE_ENV === "development")
+                        console.warn("At least one layer is missing, can't update stats", { colorSchemeID, layers: props.layerIDs });
+                    return;
+                }
+
                 let wikidataIDs: string[] = [];
                 try {
-                    wikidataIDs = map
-                        ?.queryRenderedFeatures({ layers: props.layerIDs })
+                    wikidataIDs = queryFeaturesOnScreen()
                         ?.flatMap(f => getEtymologies(f) ?? [])
                         ?.filter(etymology => etymology.wikidata)
                         ?.map(etymology => etymology.wikidata!) ?? [];
                 } catch (error) {
-                    if (process.env.NODE_ENV === 'development') console.error("Error querying rendered features", {
-                        colorSchemeID, layers: props.layerIDs, error
-                    });
+                    if (process.env.NODE_ENV === 'development')
+                        console.error("Error querying rendered features", { colorSchemeID, layers: props.layerIDs, error });
+
                     return;
                 }
 
@@ -181,7 +199,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
                 startCentury: () => void downloadChartDataFromWikidata(ColorSchemeID.startCentury),
                 type: () => void downloadChartDataFromWikidata(ColorSchemeID.type),
             };
-        }, [i18n.language, map, props, t]);
+        }, [colorSchemeID, i18n.language, map, props, t]);
 
     const dropdownItems = useMemo((): DropdownItem[] => {
         const keys = props.preset.osm_wikidata_keys,
@@ -204,7 +222,8 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
     }, [props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, setColorSchemeID, t]);
 
     useEffect(() => {
-        console.debug("StatisticsColorControl: updating stats", { colorSchemeID, lat, lon, zoom });
+        if (process.env.NODE_ENV === "development")
+            console.debug("StatisticsColorControl: updating stats", { colorSchemeID, lat, lon, zoom });
         handlers[colorSchemeID]();
     }, [colorSchemeID, handlers, lat, lon, zoom]);
 

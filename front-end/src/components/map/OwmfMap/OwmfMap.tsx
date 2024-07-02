@@ -24,7 +24,6 @@ import {
 } from "maplibregl-mapbox-request-transformer";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import ReactDOM from "react-dom";
 import { useTranslation } from "react-i18next";
 import Map, {
   FullscreenControl,
@@ -129,45 +128,6 @@ export const OwmfMap = () => {
     },
     []
   );
-
-  useEffect(() => {
-    // https://nextjs.org/docs/app/api-reference/functions/generate-metadata#resource-hints
-    if (process.env.owmf_default_language)
-      ReactDOM.preload(
-        `locales/${process.env.owmf_default_language}/common.json`,
-        { as: "fetch", crossOrigin: "anonymous" }
-      );
-    if (process.env.owmf_pmtiles_base_url)
-      ReactDOM.preload(`${process.env.owmf_pmtiles_base_url}date.txt`, {
-        as: "fetch",
-        crossOrigin: "anonymous",
-      });
-    if (process.env.owmf_default_background_style === "stadia_alidade")
-      ReactDOM.preload(
-        "https://tiles.stadiamaps.com/styles/alidade_smooth.json",
-        { as: "fetch", crossOrigin: "anonymous" }
-      );
-    if (process.env.owmf_default_background_style?.startsWith("stadia_"))
-      ReactDOM.preload("https://tiles.stadiamaps.com/data/openmaptiles.json", {
-        as: "fetch",
-        crossOrigin: "anonymous",
-      });
-    if (process.env.owmf_default_background_sty === "stamen_toner_lite")
-      ReactDOM.preload(
-        "https://tiles.stadiamaps.com/styles/stamen_toner_lite.json",
-        { as: "fetch", crossOrigin: "anonymous" }
-      );
-    if (process.env.owmf_default_background_style === "stamen_toner")
-      ReactDOM.preload(
-        "https://tiles.stadiamaps.com/styles/stamen_toner.json",
-        { as: "fetch", crossOrigin: "anonymous" }
-      );
-    if (process.env.owmf_default_background_style?.startsWith("stamen_"))
-      ReactDOM.preload("https://tiles.stadiamaps.com/data/stamen-omt.json", {
-        as: "fetch",
-        crossOrigin: "anonymous",
-      });
-  }, []);
 
   useEffect(() => {
     if (process.env.owmf_pmtiles_base_url) {
@@ -292,10 +252,7 @@ export const OwmfMap = () => {
     />
     <QueryLinkControl
       iconURL="/img/Overpass-turbo.svg"
-      title={t(
-        "overpass_turbo_query",
-        "Source OverpassQL query on Overpass Turbo"
-      )}
+      title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
       sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
       mapEventField="overpass_query"
       baseURL="https://overpass-turbo.eu/?Q="

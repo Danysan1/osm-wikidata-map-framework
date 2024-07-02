@@ -1,4 +1,5 @@
 import { GoogleTagManager } from "@next/third-parties/google";
+import "./globals.css";
 
 interface RootLayoutProps {
   children: React.ReactNode;

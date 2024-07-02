@@ -1,8 +1,14 @@
 import { OwmfMapIfSupported } from "@/src/components/map/OwmfMapIfSupported";
+import { LANGUAGES } from "@/src/i18n/common";
 import { loadServerI18n } from "@/src/i18n/server";
 import type { Metadata } from "next";
 import { Languages } from "next/dist/lib/metadata/types/alternative-urls-types";
 import styles from "./page.module.css";
+
+// https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
+export function generateStaticParams() {
+  return LANGUAGES.map((lang) => ({ lang }));
+}
 
 interface LanguageHomeProps {
   params: { lang?: string };

@@ -107,7 +107,7 @@ function generateCspHeaders() {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  //output: "export",
+  output: "export",
   env: CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
     acc[key] = process.env[key];
     return acc;
@@ -123,6 +123,7 @@ const nextConfig = {
     return config;
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
       {
         protocol: 'https',

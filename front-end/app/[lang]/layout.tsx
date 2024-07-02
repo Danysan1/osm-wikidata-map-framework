@@ -1,11 +1,6 @@
-import { LANGUAGES } from "@/src/i18n/common";
 import { GoogleTagManager } from "@next/third-parties/google";
 import { dir } from "i18next";
-
-// https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
-export function generateStaticParams() {
-  return LANGUAGES.map((lang) => ({ params: { lang } }));
-}
+import "../globals.css";
 
 interface LanguageLayoutProps {
   children: React.ReactNode;

@@ -1,6 +1,8 @@
 import { parseBoolConfig } from '@/src/config';
 import { GeocodingControl } from '@maptiler/geocoding-control/maplibregl';
+import "@maptiler/geocoding-control/style.css";
 import { MapLibreSearchControl } from '@stadiamaps/maplibre-search-box';
+import "@stadiamaps/maplibre-search-box/dist/style.css";
 import type { ControlPosition } from 'maplibre-gl';
 import { FC, useEffect } from 'react';
 import { useControl } from 'react-map-gl/maplibre';
