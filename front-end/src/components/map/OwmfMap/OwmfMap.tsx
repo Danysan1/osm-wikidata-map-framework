@@ -64,6 +64,9 @@ export const OwmfMap = () => {
   const {
     lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID
   } = useUrlFragmentContext(),
+    [mapLon, setMapLon] = useState(lon),
+    [mapLat, setMapLat] = useState(lat),
+    [mapZoom, setMapZoom] = useState(zoom),
     { t } = useTranslation(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
@@ -102,12 +105,26 @@ export const OwmfMap = () => {
       []
     );
 
+  const onMoveHandler = useCallback(
+    (e: ViewStateChangeEvent) => {
+      setMapLon(e.viewState.longitude);
+      setMapLat(e.viewState.latitude);
+      setMapZoom(e.viewState.zoom);
+    },
+    []
+  );
+
+  useEffect(() => {
+    setMapLat(lat);
+    setMapLon(lon);
+    setMapZoom(zoom);
+  }, [lat, lon, zoom]);
+
   const onMoveEndHandler = useCallback(
     (e: ViewStateChangeEvent) => {
-      const center = e.target.getCenter();
-      setLon(center.lng);
-      setLat(center.lat);
-      setZoom(e.target.getZoom());
+      setLon(e.viewState.longitude);
+      setLat(e.viewState.latitude);
+      setZoom(e.viewState.zoom);
     },
     [setLat, setLon, setZoom]
   );
@@ -195,13 +212,11 @@ export const OwmfMap = () => {
   return <Map
     mapLib={import("maplibre-gl")}
     RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
-    initialViewState={{
-      longitude: lon,
-      latitude: lat,
-      zoom: zoom,
-    }}
-    //style={{ width: 600, height: 400 }}
     mapStyle={backgroundStyle}
+    latitude={mapLat}
+    longitude={mapLon}
+    zoom={mapZoom}
+    onMove={onMoveHandler}
     onMoveEnd={onMoveEndHandler}
     transformRequest={requestTransformFunction}
   >
