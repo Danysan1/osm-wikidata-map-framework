@@ -18,7 +18,7 @@ export const IDEditorControl: FC<IDEditorControlProps> = (props) => {
 
   return <LinkControl
     linkURL={url}
-    iconURL="/img/OpenStreetMap-Editor_iD_Logo.svg"
+    icon="/img/OpenStreetMap-Editor_iD_Logo.svg"
     title="iD editor"
     minZoomLevel={props.minZoomLevel}
     position={props.position}

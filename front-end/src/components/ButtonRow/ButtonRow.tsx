@@ -1,12 +1,13 @@
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import { useTranslation } from "react-i18next";
 import styles from "./ButtonRow.module.css";
 import commonsLogo from "./img/Commons-logo.svg";
 import openStreetMapLogo from "./img/OpenStreetMap_logo.svg";
 import wikidataLogo from "./img/Wikidata.svg";
+import wikipediaLogo from "./img/Wikipedia-logo-v2.svg";
 import wikisporeLogo from "./img/Wikispore_logo_without_text.svg";
 import entitreeLogo from "./img/entitree.png";
-import wikipediaLogo from "./img/Wikipedia-logo-v2.svg";
 
 interface ButtonRowProps {
     commons?: string;
@@ -28,23 +29,23 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
 
     return <div className={`${styles["button-row"]} ${props.className}`}>
         {props.wikipedia && <a href={props.wikipedia} title="Wikipedia" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikipedia_button">
-            <Image className="button_img" src={wikipediaLogo} alt="Wikipedia logo" width={25} height={25} />
+            <Image className="button_img" src={wikipediaLogo as StaticImport} alt="Wikipedia logo" width={25} height={25} />
             <span className="button_text"> Wikipedia</span>
         </a>}
         {props.wikispore && <a href={props.wikispore} title="Wikispore" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikispore_button">
-            <Image className="button_img" src={wikisporeLogo} alt="Wikispore logo" width={25} height={25} />
+            <Image className="button_img" src={wikisporeLogo as StaticImport} alt="Wikispore logo" width={25} height={25} />
             <span className="button_text"> Wikispore</span>
         </a>}
         {props.commons && <a href={props.commons} title="Wikimedia Commons" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_commons_button">
-            <Image className="button_img" src={commonsLogo} alt="Wikimedia Commons logo" width={25} height={25} />
+            <Image className="button_img" src={commonsLogo as StaticImport} alt="Wikimedia Commons logo" width={25} height={25} />
             <span className="button_text"> Commons</span>
         </a>}
         {props.wikidata && <a href={props.wikidata} title="Wikidata" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_wikidata_button">
-            <Image className="button_img" src={wikidataLogo} alt="Wikidata logo" width={25} height={25} />
+            <Image className="button_img" src={wikidataLogo as StaticImport} alt="Wikidata logo" width={25} height={25} />
             <span className="button_text"> Wikidata</span>
         </a>}
         {props.openstreetmap && <a href={props.openstreetmap} title="OpenStreetMap" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_osm_button">
-            <Image className="button_img" src={openStreetMapLogo} alt="OpenStreetMap logo" width={25} height={25} />
+            <Image className="button_img" src={openStreetMapLogo as StaticImport} alt="OpenStreetMap logo" width={25} height={25} />
             <span className="button_text"> OpenStreetMap</span>
         </a>}
         {props.website && <a href={props.website} title="Official website" role="button" className="k-button w3-button w3-white w3-border w3-round-large button-6 element_website_button">

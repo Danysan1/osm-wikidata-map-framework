@@ -20,7 +20,7 @@ export const MapCompleteControl: FC<MapCompleteControlProps> = (props) => {
 
   return <LinkControl
     linkURL={url}
-    iconURL="/img/mapcomplete.svg"
+    icon="/img/mapcomplete.svg"
     title="MapComplete"
     minZoomLevel={props.minZoomLevel}
     position={props.position}

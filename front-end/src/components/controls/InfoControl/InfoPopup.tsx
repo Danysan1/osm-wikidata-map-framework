@@ -1,6 +1,6 @@
 import { FC } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
-import { InfoPanel } from "./InfoPanel";
+import { InfoPanel } from "../../InfoPanel/InfoPanel";
 import styles from "./InfoPopup.module.css";
 
 interface InfoPopupProps {

@@ -1,5 +1,6 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
+import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import Image from 'next/image';
 import { FC, cloneElement, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -43,7 +44,7 @@ class LinkControlObject implements IControl {
 
 interface LinkControlProps {
   linkURL?: string;
-  iconURL: string;
+  icon: string | StaticImport;
   title: string;
   minZoomLevel?: number;
   position?: ControlPosition;
@@ -75,10 +76,10 @@ export const LinkControl: FC<LinkControlProps> = (props) => {
   const element = useMemo(() =>
     visible ? <div className={props.className}>
       <button title={props.title} aria-label={props.title} onClick={openLink}>
-        <Image className="button_img" alt={props.title + " logo"} src={props.iconURL} loading="lazy" width={23} height={23} />
+        <Image className="button_img" alt={props.title + " logo"} src={props.icon} loading="lazy" width={23} height={23} />
       </button>
     </div> : null,
-    [openLink, props.className, props.iconURL, props.title, visible]);
+    [openLink, props.className, props.icon, props.title, visible]);
 
   const map = ctrl.getMap(),
     container = ctrl.getContainer();

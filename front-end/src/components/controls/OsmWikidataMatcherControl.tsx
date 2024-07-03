@@ -18,7 +18,7 @@ export const OsmWikidataMatcherControl: FC<OsmWikidataMatcherControlProps> = (pr
 
   return <LinkControl
     linkURL={url}
-    iconURL="/img/osm-wd-matcher.png"
+    icon="/img/osm-wd-matcher.png"
     title="OSM <-> Wikidata matcher"
     minZoomLevel={props.minZoomLevel}
     position={props.position}

@@ -1,6 +1,8 @@
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import { FC } from "react";
 import { useTranslation } from "react-i18next";
+import liberapayDonate from "./liberapay_donate.svg";
 
 interface InfoPanelProps {
     lastUpdateDate?: string;
@@ -81,7 +83,7 @@ export const InfoPanel: FC<InfoPanelProps> = (props) => {
             </p>
             <div id="last_info_row">
                 {process.env.owmf_liberapay_id && <><a href={`https://liberapay.com/${process.env.owmf_liberapay_id}/donate`} id="liberapay_donate">
-                    <Image alt="Donate using Liberapay" src="img/liberapay_donate.svg" width="72" height="26" />
+                    <Image alt="Donate using Liberapay" src={liberapayDonate as StaticImport} width="72" height="26" />
                 </a> | </>}
 
                 {process.env.owmf_paypal_id && <><form action="https://www.paypal.com/donate" method="post" target="_top" id="paypal_donate">

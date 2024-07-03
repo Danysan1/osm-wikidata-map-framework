@@ -2,7 +2,6 @@
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
-import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import {
   EtymologyFeature
@@ -40,6 +39,7 @@ import { DataTableControl } from "../../controls/DataTableControl/DataTableContr
 import { InfoControl } from "../../controls/InfoControl/InfoControl";
 import { LanguageControl } from "../../controls/LanguageControl";
 import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherControl";
+import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/QLeverQueryLinkControl";
 import { QueryLinkControl } from "../../controls/QueryLinkControl";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
 import { StatisticsColorControl } from "../../controls/StatisticsColorControl";
@@ -266,7 +266,7 @@ export const OwmfMap = () => {
       position="top-right"
     />
     <QueryLinkControl
-      iconURL="/img/Overpass-turbo.svg"
+      icon="/img/Overpass-turbo.svg"
       title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
       sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
       mapEventField="overpass_query"
@@ -275,7 +275,7 @@ export const OwmfMap = () => {
       position="top-right"
     />
     <QueryLinkControl
-      iconURL="/img/Wikidata_Query_Service_Favicon.svg"
+      icon="/img/Wikidata_Query_Service_Favicon.svg"
       title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
       sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
       mapEventField="wdqs_query"
@@ -283,28 +283,7 @@ export const OwmfMap = () => {
       minZoomLevel={minZoomLevel}
       position="top-right"
     />
-    {parseBoolConfig(process.env.owmf_qlever_enable) && (
-      <QueryLinkControl
-        iconURL="/img/qlever.ico"
-        title={t("qlever_query", "Source SPARQL query on QLever UI")}
-        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-        mapEventField="qlever_wd_query"
-        baseURL="https://qlever.cs.uni-freiburg.de/wikidata/?query="
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-    )}
-    {parseBoolConfig(process.env.owmf_qlever_enable) && (
-      <QueryLinkControl
-        iconURL="/img/qlever.ico"
-        title={t("qlever_query", "Source SPARQL query on QLever UI")}
-        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-        mapEventField="qlever_osm_query"
-        baseURL="https://qlever.cs.uni-freiburg.de/osm-planet/?query="
-        minZoomLevel={minZoomLevel}
-        position="top-right"
-      />
-    )}
+    <QLeverQueryLinkControls sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} minZoomLevel={minZoomLevel} position="top-right" />
 
     <OwmfGeocodingControl position="bottom-left" />
 
