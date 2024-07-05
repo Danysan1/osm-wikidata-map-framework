@@ -143,7 +143,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
     >
         <tr>
             <td colSpan={2}>
-                <button onClick={clearCache} className="hiddenElement k-button w3-button w3-white w3-border w3-round-large button-6 clear_cache_button" title={t("clear_cache")} aria-label={t("clear_cache")} >
+                <button onClick={clearCache} className="hiddenElement w3-button w3-white w3-border w3-round-large button-6 clear_cache_button" title={t("clear_cache")} aria-label={t("clear_cache")} >
                     <span className="button_img">🗑️ &nbsp;</span>
                     <span>{t("clear_cache")}</span>
                 </button>

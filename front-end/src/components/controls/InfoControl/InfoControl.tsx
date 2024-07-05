@@ -1,9 +1,9 @@
-import { t } from 'i18next';
-import type { ControlPosition, IControl, Map } from 'maplibre-gl';
-import { FC, cloneElement, useCallback, useEffect, useMemo, useState } from 'react';
-import { createPortal } from 'react-dom';
-import { useControl } from 'react-map-gl/maplibre';
-import { InfoPopup } from './InfoPopup';
+import { t } from "i18next";
+import type { ControlPosition, IControl, Map } from "maplibre-gl";
+import { FC, cloneElement, useCallback, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { useControl } from "react-map-gl/maplibre";
+import { InfoPopup } from "../../InfoPopup/InfoPopup";
 
 class InfoControlObject implements IControl {
   private _map?: Map;
@@ -11,8 +11,9 @@ class InfoControlObject implements IControl {
 
   onAdd(map: Map) {
     this._map = map;
-    this._container = document.createElement('div');
-    this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl';
+    this._container = document.createElement("div");
+    this._container.className =
+      "maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl";
     return this._container;
   }
 
@@ -39,29 +40,34 @@ interface InfoControlProps {
 export const InfoControl: FC<InfoControlProps> = (props) => {
   const [isPopupOpen, setPopupOpen] = useState(true),
     openPopup = useCallback(() => setPopupOpen(true), []),
-    closePopup = useCallback(() => setPopupOpen(false), []),
-    [lastUpdateDate, setLastUpdateDate] = useState<string | undefined>(undefined);
+    closePopup = useCallback(() => setPopupOpen(false), []);
 
-  const ctrl = useControl<InfoControlObject>(() => {
-    return new InfoControlObject();
-  }, { position: props.position });
-
-  useEffect(() => {
-    if (process.env.owmf_pmtiles_base_url) {
-      fetch(process.env.owmf_pmtiles_base_url + "date.txt").then(
-        res => res.text().then(text => setLastUpdateDate(text.trim()))
-      ).catch(console.error);
-    }
-  }, []);
+  const ctrl = useControl<InfoControlObject>(() => new InfoControlObject(), {
+    position: props.position,
+  });
 
   const map = ctrl.getMap(),
     container = ctrl.getContainer();
-  const element = useMemo(() =>
-    <div className={props.className}>
-      <button className='info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon' onClick={openPopup} title={t("info_box.open_popup")} aria-label={t("info_box.open_popup")}>ℹ️</button>
-      {isPopupOpen && map && <InfoPopup position={map.getBounds().getSouthWest()} lastUpdateDate={lastUpdateDate} onClose={closePopup} />}
-    </div>,
-    [props.className, openPopup, isPopupOpen, map, lastUpdateDate, closePopup]);
+  const element = useMemo(
+    () => (
+      <div className={props.className}>
+        <button
+          className="info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon"
+          onClick={openPopup}
+          title={t("info_box.open_popup")}
+          aria-label={t("info_box.open_popup")}
+        >
+          ℹ️
+        </button>
+        {isPopupOpen && map && (
+          <InfoPopup position={map.getBounds().getSouthWest()} onClose={closePopup} />
+        )}
+      </div>
+    ),
+    [props.className, openPopup, isPopupOpen, map, closePopup]
+  );
 
-  return element && map && container && createPortal(cloneElement(element, { map }), container);
-}
+  return (
+    element && map && container && createPortal(cloneElement(element, { map }), container)
+  );
+};

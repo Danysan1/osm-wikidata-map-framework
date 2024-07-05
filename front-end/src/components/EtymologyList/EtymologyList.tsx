@@ -4,72 +4,93 @@ import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/Wi
 import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import { FC, useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EtymologyView } from "../EtymologyView/EtymologyView";
+import styles from "./EtymologyList.module.css";
+import { EtymologyView } from "./EtymologyView";
 
 interface EtymologyListProps {
-    etymologies: string | Etymology[];
+  etymologies: string | Etymology[];
 }
 
 export const EtymologyList: FC<EtymologyListProps> = ({ etymologies }) => {
-    const { t, i18n } = useTranslation(),
-        [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
-        [etymologyDetails, setEtymologyDetails] = useState<EtymologyDetails[]>(),
-        downloadEtymologyDetails = useCallback(async (etymologies?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
-            if (!etymologies?.length)
-                return [];
+  const { t, i18n } = useTranslation(),
+    [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
+    [etymologyDetails, setEtymologyDetails] = useState<EtymologyDetails[]>(),
+    downloadEtymologyDetails = useCallback(
+      async (etymologies?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
+        if (!etymologies?.length) return [];
 
-            // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
-            let etymologyIDs = new Set(
-                etymologies.map(e => e.wikidata ?? "").filter(x => x !== "")
+        // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
+        let etymologyIDs = new Set(
+          etymologies.map((e) => e.wikidata ?? "").filter((x) => x !== "")
+        );
+        if (etymologyIDs.size == 0) return etymologies;
+
+        let sortedIDs = Array.from(etymologyIDs).sort(
+          (a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", ""))
+        );
+        if (etymologyIDs.size > maxItems) {
+          // Too many items, limiting to the first N most famous ones
+          sortedIDs = sortedIDs.slice(0, maxItems);
+          etymologyIDs = new Set(sortedIDs);
+          showSnackbar(
+            t(
+              "feature_details.loading_first_n_items",
+              `Loading only first ${maxItems} items`,
+              { partial: maxItems, total: etymologies.length }
+            ),
+            "lightsalmon",
+            10_000
+          );
+        }
+
+        try {
+          const detailsService = new WikidataDetailsService(i18n.language),
+            downloadedEtymologies = await detailsService.fetchEtymologyDetails(
+              etymologyIDs
             );
-            if (etymologyIDs.size == 0)
-                return etymologies;
+          return sortedIDs.map((wikidataID): EtymologyDetails => {
+            const baseEntity = etymologies.find(
+                (oldEty) => oldEty.wikidata === wikidataID
+              ),
+              downloadedDetails = downloadedEtymologies[wikidataID];
+            return { ...baseEntity, ...downloadedDetails };
+          });
+        } catch (err) {
+          console.error("Failed downloading etymology details", etymologyIDs, err);
+          return etymologies;
+        }
+      },
+      [i18n.language, t]
+    );
 
-            let sortedIDs = Array.from(etymologyIDs).sort((a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", "")));
-            if (etymologyIDs.size > maxItems) {
-                // Too many items, limiting to the first N most famous ones
-                sortedIDs = sortedIDs.slice(0, maxItems);
-                etymologyIDs = new Set(sortedIDs);
-                showSnackbar(
-                    t("feature_details.loading_first_n_items", `Loading only first ${maxItems} items`, { partial: maxItems, total: etymologies.length }),
-                    "lightsalmon",
-                    10_000
-                );
-            }
+  useEffect(() => {
+    const etys =
+      typeof etymologies === "string"
+        ? (JSON.parse(etymologies) as Etymology[])
+        : etymologies;
+    showLoadingSpinner(true);
+    downloadEtymologyDetails(etys)
+      .then(setEtymologyDetails)
+      .catch(console.error)
+      .finally(() => {
+        setLoadingEtymologies(false);
+        showLoadingSpinner(false);
+      });
+  }, [downloadEtymologyDetails, etymologies]);
 
-            try {
-                const detailsService = new WikidataDetailsService(i18n.language),
-                    downloadedEtymologies = await detailsService.fetchEtymologyDetails(etymologyIDs);
-                return sortedIDs.map((wikidataID): EtymologyDetails => {
-                    const baseEntity = etymologies.find(oldEty => oldEty.wikidata === wikidataID),
-                        downloadedDetails = downloadedEtymologies[wikidataID];
-                    return { ...baseEntity, ...downloadedDetails };
-                });
-            } catch (err) {
-                console.error("Failed downloading etymology details", etymologyIDs, err);
-                return etymologies;
-            }
-        }, [i18n.language, t]);
-
-    useEffect(() => {
-        const etys = typeof etymologies === "string" ? JSON.parse(etymologies) as Etymology[] : etymologies;
-        showLoadingSpinner(true);
-        downloadEtymologyDetails(etys)
-            .then(setEtymologyDetails)
-            .catch(console.error)
-            .finally(() => {
-                setLoadingEtymologies(false)
-                showLoadingSpinner(false);
-            });
-    }, [downloadEtymologyDetails, etymologies]);
-
-    return <div className="etymologies_container grid grid-auto">
-        {loadingEtymologies && <div className="etymology etymology_loading">
-            <h3>{t("feature_details.loading")}</h3>
-        </div>}
-        {etymologyDetails?.map((ety, i) => <EtymologyView key={i} etymology={ety} />)}
-    </div>;
-}
+  return (
+    <div className={styles.grid_auto}>
+      {loadingEtymologies && (
+        <div className="etymology etymology_loading">
+          <h3>{t("feature_details.loading")}</h3>
+        </div>
+      )}
+      {etymologyDetails?.map((ety, i) => (
+        <EtymologyView key={i} etymology={ety} />
+      ))}
+    </div>
+  );
+};
 
 /*export class FeatureElement extends HTMLDivElement {
 

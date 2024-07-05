@@ -3,9 +3,7 @@ import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import {
-  EtymologyFeature
-} from "@/src/model/EtymologyResponse";
+import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
@@ -17,10 +15,7 @@ import {
   addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import {
-  isMapboxURL,
-  transformMapboxUrl,
-} from "maplibregl-mapbox-request-transformer";
+import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -30,7 +25,7 @@ import Map, {
   MapStyle,
   NavigationControl,
   ScaleControl,
-  ViewStateChangeEvent
+  ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { FeaturePopup } from "../../FeaturePopup/FeaturePopup";
 import { BackEndControl } from "../../controls/BackEndControl";
@@ -61,25 +56,21 @@ const PMTILES_PREFIX = "pmtiles",
   ELEMENTS_SOURCE = "elements_source";
 
 export const OwmfMap = () => {
-  const {
-    lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID
-  } = useUrlFragmentContext(),
+  const { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } =
+      useUrlFragmentContext(),
     [mapLon, setMapLon] = useState(lon),
     [mapLat, setMapLat] = useState(lat),
     [mapZoom, setMapZoom] = useState(zoom),
     { t } = useTranslation(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
-    [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(
+    [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(undefined),
+    [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(
       undefined
     ),
-    [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(undefined),
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
-    minZoomLevel = useMemo(
-      () => parseInt(process.env.owmf_min_zoom_level ?? "9"),
-      []
-    ),
+    minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
     thresholdZoomLevel = useMemo(
       () => parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
       []
@@ -94,25 +85,16 @@ export const OwmfMap = () => {
       [backEndID, pmtilesReady, sourcePresetID]
     ),
     pmtilesKeyID = useMemo(
-      () =>
-        backEndID === "pmtiles_all"
-          ? undefined
-          : backEndID.replace("pmtiles_", ""),
+      () => (backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "")),
       [backEndID]
     ),
-    dataLayerIDs = useMemo(
-      () => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER],
-      []
-    );
+    dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []);
 
-  const onMoveHandler = useCallback(
-    (e: ViewStateChangeEvent) => {
-      setMapLon(e.viewState.longitude);
-      setMapLat(e.viewState.latitude);
-      setMapZoom(e.viewState.zoom);
-    },
-    []
-  );
+  const onMoveHandler = useCallback((e: ViewStateChangeEvent) => {
+    setMapLon(e.viewState.longitude);
+    setMapLat(e.viewState.latitude);
+    setMapZoom(e.viewState.zoom);
+  }, []);
 
   useEffect(() => {
     setMapLat(lat);
@@ -155,10 +137,7 @@ export const OwmfMap = () => {
   }, []);
 
   useEffect(() => {
-    if (
-      !!process.env.REACT_APP_FETCHING_PRESET ||
-      sourcePreset?.id === sourcePresetID
-    ) {
+    if (!!process.env.REACT_APP_FETCHING_PRESET || sourcePreset?.id === sourcePresetID) {
       if (process.env.NODE_ENV === "development")
         console.warn("Skipping redundant source preset fetch", {
           alreadyFetching: process.env.REACT_APP_FETCHING_PRESET,
@@ -209,117 +188,105 @@ export const OwmfMap = () => {
 
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 
-  return <Map
-    mapLib={import("maplibre-gl")}
-    RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
-    mapStyle={backgroundStyle}
-    latitude={mapLat}
-    longitude={mapLon}
-    zoom={mapZoom}
-    onMove={onMoveHandler}
-    onMoveEnd={onMoveEndHandler}
-    transformRequest={requestTransformFunction}
-  >
-    <InfoControl position="top-left" />
-    <SourcePresetControl position="top-left" />
-    {sourcePreset && (
-      <BackEndControl preset={sourcePreset} position="top-left" />
-    )}
-    {sourcePreset?.mapcomplete_theme && (
-      <MapCompleteControl
+  return (
+    <Map
+      mapLib={import("maplibre-gl")}
+      RTLTextPlugin="https://unpkg.com/@mapbox/mapbox-gl-rtl-text@0.2.3/mapbox-gl-rtl-text.min.js"
+      mapStyle={backgroundStyle}
+      latitude={mapLat}
+      longitude={mapLon}
+      zoom={mapZoom}
+      onMove={onMoveHandler}
+      onMoveEnd={onMoveEndHandler}
+      transformRequest={requestTransformFunction}
+    >
+      <InfoControl position="top-left" />
+      <SourcePresetControl position="top-left" />
+      {sourcePreset && <BackEndControl preset={sourcePreset} position="top-left" />}
+      {sourcePreset?.mapcomplete_theme && (
+        <MapCompleteControl
+          minZoomLevel={minZoomLevel}
+          mapComplete_theme={sourcePreset?.mapcomplete_theme}
+          position="top-left"
+        />
+      )}
+      {sourcePreset && (
+        <StatisticsColorControl
+          preset={sourcePreset}
+          sourceId={DETAILS_SOURCE}
+          layerIDs={dataLayerIDs}
+          setLayerColor={setLayerColor}
+          position="top-left"
+        />
+      )}
+
+      <NavigationControl visualizePitch position="top-right" />
+      <GeolocateControl
+        positionOptions={{ enableHighAccuracy: true }}
+        trackUserLocation={false}
+        position="top-right"
+      />
+      <FullscreenControl position="top-right" />
+      <BackgroundStyleControl
+        setBackgroundStyle={setBackgroundStyle}
+        position="top-right"
+      />
+      <LanguageControl position="top-right" />
+      <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
+      <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
+      <DataTableControl
+        sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
+        dataLayerIDs={dataLayerIDs}
+        minZoomLevel={pmtilesActive ? undefined : thresholdZoomLevel}
+        position="top-right"
+      />
+      <QueryLinkControl
+        icon="/img/Overpass-turbo.svg"
+        title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
+        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+        mapEventField="overpass_query"
+        baseURL="https://overpass-turbo.eu/?Q="
         minZoomLevel={minZoomLevel}
-        mapComplete_theme={sourcePreset?.mapcomplete_theme}
-        position="top-left"
+        position="top-right"
       />
-    )}
-    {sourcePreset && (
-      <StatisticsColorControl
-        preset={sourcePreset}
-        sourceId={DETAILS_SOURCE}
-        layerIDs={dataLayerIDs}
-        setLayerColor={setLayerColor}
-        position="top-left"
+      <QueryLinkControl
+        icon="/img/Wikidata_Query_Service_Favicon.svg"
+        title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
+        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+        mapEventField="wdqs_query"
+        baseURL="https://query.wikidata.org/#"
+        minZoomLevel={minZoomLevel}
+        position="top-right"
       />
-    )}
-
-    <NavigationControl visualizePitch position="top-right" />
-    <GeolocateControl
-      positionOptions={{ enableHighAccuracy: true }}
-      trackUserLocation={false}
-      position="top-right"
-    />
-    <FullscreenControl position="top-right" />
-    <BackgroundStyleControl
-      setBackgroundStyle={setBackgroundStyle}
-      position="top-right"
-    />
-    <LanguageControl position="top-right" />
-    <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
-    <OsmWikidataMatcherControl
-      minZoomLevel={minZoomLevel}
-      position="top-right"
-    />
-    <DataTableControl
-      sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
-      dataLayerIDs={dataLayerIDs}
-      minZoomLevel={pmtilesActive ? undefined : thresholdZoomLevel}
-      position="top-right"
-    />
-    <QueryLinkControl
-      icon="/img/Overpass-turbo.svg"
-      title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
-      sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-      mapEventField="overpass_query"
-      baseURL="https://overpass-turbo.eu/?Q="
-      minZoomLevel={minZoomLevel}
-      position="top-right"
-    />
-    <QueryLinkControl
-      icon="/img/Wikidata_Query_Service_Favicon.svg"
-      title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
-      sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
-      mapEventField="wdqs_query"
-      baseURL="https://query.wikidata.org/#"
-      minZoomLevel={minZoomLevel}
-      position="top-right"
-    />
-    <QLeverQueryLinkControls sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]} minZoomLevel={minZoomLevel} position="top-right" />
-
-    <OwmfGeocodingControl position="bottom-left" />
-
-    <ScaleControl position="bottom-right" />
-    {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
-
-    {!pmtilesActive && backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel && (
-      <ClusteredSourceAndLayers
-        backEndService={backEndService}
-        backEndID={backEndID}
-        sourceID={ELEMENTS_SOURCE}
-        minZoom={minZoomLevel}
-        maxZoom={thresholdZoomLevel}
+      <QLeverQueryLinkControls
+        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+        minZoomLevel={minZoomLevel}
+        position="top-right"
       />
-    )}
-    {!pmtilesActive && backEndService && zoom >= thresholdZoomLevel && (
-      <DetailsSourceAndLayers
-        backEndService={backEndService}
-        backEndID={backEndID}
-        sourceID={DETAILS_SOURCE}
-        minZoom={thresholdZoomLevel}
-        setOpenFeature={setOpenFeature}
-        color={layerColor}
-        pointLayerID={POINT_LAYER}
-        pointTapAreaLayerID={POINT_TAP_AREA_LAYER}
-        lineLayerID={LINE_LAYER}
-        lineTapAreaLayerID={LINE_TAP_AREA_LAYER}
-        polygonBorderLayerID={POLYGON_BORDER_LAYER}
-        polygonFillLayerID={POLYGON_FILL_LAYER}
-      />
-    )}
-    {pmtilesActive && (
-      <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
-        <DetailsLayers
-          sourceID={PMTILES_SOURCE}
-          source_layer="etymology_map"
+
+      <OwmfGeocodingControl position="bottom-left" />
+
+      <ScaleControl position="bottom-right" />
+      {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
+
+      {!pmtilesActive &&
+        backEndService &&
+        zoom >= minZoomLevel &&
+        zoom < thresholdZoomLevel && (
+          <ClusteredSourceAndLayers
+            backEndService={backEndService}
+            backEndID={backEndID}
+            sourceID={ELEMENTS_SOURCE}
+            minZoom={minZoomLevel}
+            maxZoom={thresholdZoomLevel}
+          />
+        )}
+      {!pmtilesActive && backEndService && zoom >= thresholdZoomLevel && (
+        <DetailsSourceAndLayers
+          backEndService={backEndService}
+          backEndID={backEndID}
+          sourceID={DETAILS_SOURCE}
+          minZoom={thresholdZoomLevel}
           setOpenFeature={setOpenFeature}
           color={layerColor}
           pointLayerID={POINT_LAYER}
@@ -329,11 +296,25 @@ export const OwmfMap = () => {
           polygonBorderLayerID={POLYGON_BORDER_LAYER}
           polygonFillLayerID={POLYGON_FILL_LAYER}
         />
-      </PMTilesSource>
-    )}
+      )}
+      {pmtilesActive && (
+        <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
+          <DetailsLayers
+            sourceID={PMTILES_SOURCE}
+            source_layer="etymology_map"
+            setOpenFeature={setOpenFeature}
+            color={layerColor}
+            pointLayerID={POINT_LAYER}
+            pointTapAreaLayerID={POINT_TAP_AREA_LAYER}
+            lineLayerID={LINE_LAYER}
+            lineTapAreaLayerID={LINE_TAP_AREA_LAYER}
+            polygonBorderLayerID={POLYGON_BORDER_LAYER}
+            polygonFillLayerID={POLYGON_FILL_LAYER}
+          />
+        </PMTilesSource>
+      )}
 
-    {openFeature && (
-      <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />
-    )}
-  </Map>;
+      {openFeature && <FeaturePopup feature={openFeature} onClose={closeFeaturePopup} />}
+    </Map>
+  );
 };

@@ -44,7 +44,7 @@ export const LanguageControl: FC<LanguageControlProps> = (props) => {
     >
         <tr>
             <td colSpan={2}>
-                <a href="https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/" target="_blank" role="button" className="hiddenElement k-button w3-button w3-white w3-border w3-round-large button-6 translate_button" title={t("translate")} aria-label={t("translate")} >
+                <a href="https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/" target="_blank" role="button" className="hiddenElement w3-button w3-white w3-border w3-round-large button-6 translate_button" title={t("translate")} aria-label={t("translate")} >
                     <span className="button_img">🔣 &nbsp;</span>
                     <span>{t("translate")}</span>
                 </a>

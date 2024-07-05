@@ -1,0 +1,43 @@
+
+
+.info_panel .contribute_button,
+.info_panel .dataset_button {
+    margin-top: 0.2em;
+    margin-bottom: 0.2em;
+}
+
+.info_panel table tr td:first-child {
+    text-align: center;
+}
+
+.info_panel .last_info_row {
+    line-height: 2em;
+    height: 2em;
+}
+
+.info_panel .last_info_row * {
+    max-height: 2em;
+    vertical-align: middle;
+}
+
+.info_panel .liberapay_donate {
+    text-decoration: none;
+}
+
+.info_panel .paypal_donate {
+    display: inline-block;
+}
+
+.info_panel h1,
+.info_panel h2,
+.info_panel h3 {
+  margin: 1em 0.5em;
+}
+
+.info_panel {
+    font-size: medium;
+}
+
+.info_panel>footer {
+    font-size: small;
+}

@@ -98,33 +98,6 @@ a {
     margin: 1em 1em 0 1em;
 }
 
-#wikidata_grid img {
-    max-width: 15em;
-    max-height: 15em;
-}
-
-div#map_container,
-img#map_static_preview,
-div#map {
-    position: absolute;
-    /*margin: 10em auto;*/
-    width: 100%;
-    height: 100%;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-}
-
-
-div.button_row {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-}
-
 div.maplibregl-popup-content,
 div.mapboxgl-popup-content {
     width: -moz-fit-content;
@@ -141,75 +114,6 @@ div.mapboxgl-popup-content,
 div.mapboxgl-ctrl select,
 div.snackbar {
     font-family: "Segoe UI", "Open Sans Regular", "Arial Unicode MS Regular", sans-serif;
-}
-
-div.intro {
-    font-size: medium;
-}
-
-div.intro>footer {
-    font-size: small;
-}
-
-div.detail_container {
-    text-align: center;
-    max-height: 100%;
-    overflow: auto;
-}
-
-div.detail_container div.grid {
-    /* https://css-tricks.com/look-ma-no-media-queries-responsive-layouts-using-css-grid/ */
-    /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
-    display: grid;
-    grid-template-rows: auto;
-    align-items: start;
-    justify-content: center;
-    justify-items: center;
-    grid-row-gap: 0.5em;
-    grid-column-gap: 0.5em;
-}
-
-div.detail_container div.grid-auto {
-    /*grid-template-columns: repeat(2, 1fr);*/
-    /*grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));*/
-    grid-template-columns: repeat(auto-fit, minmax(25em, 1fr));
-}
-
-div.detail_container div.grid-two {
-    grid-template-columns: 1fr auto;
-}
-
-div.detail_container div.etymology {
-    border: 1px solid #ccc;
-    margin: 0.5em;
-    /* padding: 0.5em; */
-    text-align: center;
-    background-color: hsl(200, 30%, 95%);
-    border-radius: 0.5em;
-    /*height: 100%;*/
-}
-
-div.detail_container div.pictures img {
-    margin: 0.5em;
-    /*padding: 0.5em;*/
-    min-width: 15em;
-    min-height: 15em;
-    max-width: 26em;
-    max-height: 26em;
-}
-
-div.detail_container a.k-button,
-div.button_row a.k-button {
-    margin: 0.5em;
-}
-
-div.detail_container a.k-button>.button_img,
-div.button_row a.k-button>.button_img {
-    width: 1.25em;
-    max-width: 1.25em;
-    max-height: 1.25em;
-    /* margin-right: 0.5em; */
-    font-size: 1.25em;
 }
 
 canvas.chart {
@@ -415,15 +319,6 @@ span.legend-key {
     margin-right: 0.5em;
 }
 
-body>div#map>div.maplibregl-popup,
-body>div#map>div.mapboxgl-popup {
-    max-height: 90vh !important;
-    /*max-height: 99vh !important;*/
-    max-width: 95vw !important;
-    transform: translate(10px, 0) !important;
-    z-index: 1000;
-}
-
 button.maplibregl-popup-close-button,
 button.mapboxgl-popup-close-button {
     font-size: 2em;
@@ -437,15 +332,6 @@ button.maplibregl-popup-close-button:hover,
 button.mapboxgl-popup-close-button:hover {
     background-color: #f00;
     color: white;
-}
-
-.maplibregl-popup-content h1,
-.maplibregl-popup-content h2,
-.maplibregl-popup-content h3,
-.mapboxgl-popup-content h1,
-.mapboxgl-popup-content h2,
-.mapboxgl-popup-content h3 {
-    margin: 1em 0.5em;
 }
 
 .button-6 {
@@ -503,18 +389,6 @@ span.button_text {
     display: none;
 }
 
-div.pictures>div.pic-container {
-    /*border-width: 0.5px;*/
-    /*border-style: solid;*/
-    /*border-color: #ccc;*/
-    /*border-radius: 0.5em;*/
-    margin: 1px;
-}
-
-.k-button {
-    display: inline-flex;
-}
-
 .maplibregl-ctrl-group>button,
 .maplibregl-ctrl-group>a,
 .mapboxgl-ctrl-group>button,
@@ -567,19 +441,6 @@ th {
 
 table.owmf_data_table tr:nth-child(even) {
     background-color: #eee;
-}
-
-.hiddenElement,
-div.mapboxgl-ctrl-group button.hiddenElement,
-div.maplibregl-ctrl-group button.hiddenElement,
-div.pictures>div.pic-container.hiddenElement,
-div.detail_container>a.k-button.hiddenElement,
-div.info>a.k-button.hiddenElement,
-select.dropdown-ctrl-dropdown.hiddenElement,
-table.dropdown-ctrl-table.hiddenElement,
-table.custom-ctrl-table.hiddenElement,
-canvas.chart.hiddenElement {
-    display: none;
 }
 
 .dropdown-ctrl-title {
