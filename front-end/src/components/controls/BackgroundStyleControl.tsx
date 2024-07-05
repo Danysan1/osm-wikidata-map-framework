@@ -1,5 +1,6 @@
 import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import {
   BackgroundStyle,
   jawgStyle,
@@ -8,7 +9,11 @@ import {
   stadiaStyle,
 } from "@/src/model/backgroundStyle";
 import { showSnackbar } from "@/src/snackbar";
-import type { ControlPosition, StyleSpecification } from "maplibre-gl";
+import type {
+  ControlPosition,
+  DataDrivenPropertyValueSpecification,
+  StyleSpecification
+} from "maplibre-gl";
 import { FC, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { MapStyle } from "react-map-gl/maplibre";
@@ -23,20 +28,8 @@ function getBackgroundStyles() {
 
   if (mapbox_token) {
     backgroundStyles.push(
-      mapboxStyle(
-        "mapbox_streets",
-        "Streets",
-        "mapbox",
-        "streets-v12",
-        mapbox_token
-      ),
-      mapboxStyle(
-        "mapbox_outdoors",
-        "Outdoors",
-        "mapbox",
-        "outdoors-v12",
-        mapbox_token
-      ),
+      mapboxStyle("mapbox_streets", "Streets", "mapbox", "streets-v12", mapbox_token),
+      mapboxStyle("mapbox_outdoors", "Outdoors", "mapbox", "outdoors-v12", mapbox_token),
       mapboxStyle("mapbox_light", "Light", "mapbox", "light-v11", mapbox_token),
       mapboxStyle("mapbox_dark", "Dark", "mapbox", "dark-v11", mapbox_token),
       mapboxStyle(
@@ -51,22 +44,14 @@ function getBackgroundStyles() {
 
   if (enable_stadia_maps) {
     backgroundStyles.push(
-      stadiaStyle(
-        "stadia_alidade_dark",
-        "Alidade smooth dark",
-        "alidade_smooth_dark"
-      ),
+      stadiaStyle("stadia_alidade_dark", "Alidade smooth dark", "alidade_smooth_dark"),
       stadiaStyle("stadia_alidade", "Alidade smooth", "alidade_smooth"),
       //stadiaStyle('stadia_satellite', "Alidade Satellite", 'alidade_satellite'),
       stadiaStyle("stadia_outdoors", "Outdoors", "outdoors"),
       stadiaStyle("stadia_osm_bright", "OSM Bright", "osm_bright"),
       stadiaStyle("stamen_terrain", "Stamen Terrain", "stamen_terrain"),
       stadiaStyle("stamen_toner", "Stamen Toner", "stamen_toner"),
-      stadiaStyle(
-        "stamen_toner_lite",
-        "Stamen Toner Lite",
-        "stamen_toner_lite"
-      ),
+      stadiaStyle("stamen_toner_lite", "Stamen Toner Lite", "stamen_toner_lite"),
       stadiaStyle("stamen_watercolor", "Stamen Watercolor", "stamen_watercolor")
     );
   }
@@ -74,13 +59,7 @@ function getBackgroundStyles() {
   if (jawg_token) {
     backgroundStyles.push(
       jawgStyle("jawg_streets", "Streets", "jawg-streets", jawg_token),
-      jawgStyle(
-        "jawg_streets_3d",
-        "Streets 3D",
-        "jawg-streets",
-        jawg_token,
-        true
-      ),
+      jawgStyle("jawg_streets_3d", "Streets 3D", "jawg-streets", jawg_token, true),
       jawgStyle("jawg_lagoon", "Lagoon", "jawg-lagoon", jawg_token),
       jawgStyle("jawg_lagoon_3d", "Lagoon 3D", "jawg-lagoon", jawg_token, true),
       jawgStyle("jawg_sunny", "Sunny", "jawg-sunny", jawg_token),
@@ -115,24 +94,9 @@ function getBackgroundStyles() {
       maptilerStyle("maptiler_dataviz", "Dataviz", "dataviz", maptiler_key),
       maptilerStyle("maptiler_dark", "Dark", "dataviz-dark", maptiler_key),
       maptilerStyle("maptiler_ocean", "Ocean", "ocean", maptiler_key),
-      maptilerStyle(
-        "maptiler_osm_carto",
-        "OSM Carto",
-        "openstreetmap",
-        maptiler_key
-      ),
-      maptilerStyle(
-        "maptiler_outdoors",
-        "Outdoors",
-        "outdoor-v2",
-        maptiler_key
-      ),
-      maptilerStyle(
-        "maptiler_satellite_hybrid",
-        "Satellite",
-        "hybrid",
-        maptiler_key
-      ),
+      maptilerStyle("maptiler_osm_carto", "OSM Carto", "openstreetmap", maptiler_key),
+      maptilerStyle("maptiler_outdoors", "Outdoors", "outdoor-v2", maptiler_key),
+      maptilerStyle("maptiler_satellite_hybrid", "Satellite", "hybrid", maptiler_key),
       maptilerStyle("maptiler_streets", "Streets", "streets-v2", maptiler_key),
       maptilerStyle("maptiler_toner", "Toner", "toner-v2", maptiler_key),
       maptilerStyle("maptiler_topo", "Topo", "topo-v2", maptiler_key),
@@ -144,14 +108,14 @@ function getBackgroundStyles() {
 
 interface BackgroundStyleControlProps {
   position?: ControlPosition;
-  setBackgroundStyle: (style: string | MapStyle) => void;
+  setBackgroundStyle: (style: MapStyle) => void;
 }
 
 /**
  * Let the user choose the background style from a list of styles.
  **/
 export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) => {
-  const { t } = useTranslation(),
+  const { t, i18n } = useTranslation(),
     { backgroundStyleID, setBackgroundStyleID } = useUrlFragmentContext(),
     backgroundStyles = useMemo(() => getBackgroundStyles(), []),
     dropdownItems = useMemo(
@@ -166,47 +130,57 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
     );
 
   useEffect(() => {
-    const style = backgroundStyles.find(
-      (style) => style.id === backgroundStyleID
-    );
+    const style = backgroundStyles.find((style) => style.id === backgroundStyleID);
     if (!style) {
-      console.warn(
-        "Empty default background style, using the first available",
-        { backgroundStyleID, backgroundStyles }
-      );
+      console.warn("Empty default background style, using the first available", {
+        backgroundStyleID,
+        backgroundStyles,
+      });
       setBackgroundStyleID(backgroundStyles[0].id);
-      props.setBackgroundStyle(backgroundStyles[0].styleUrl);
-    } else if (style.keyPlaceholder && style.key) {
-      if (process.env.OWMF_FETCHING_STYLE) {
-        if (process.env.NODE_ENV === "development")
-          console.warn("Skipping duplicated style fetch", style);
-      } else {
-        if (process.env.NODE_ENV === "development")
-          console.debug("Fetching style", style);
-        process.env.OWMF_FETCHING_STYLE = "1";
-        fetch(style.styleUrl)
-          .then((resp) => resp.text())
-          .then((rawJSON) => {
-            const json = rawJSON.replaceAll(style.keyPlaceholder!, style.key!);
-            if (process.env.NODE_ENV === "development")
-              console.debug("Setting json style", { style, json });
-            const styleSpec = JSON.parse(json) as StyleSpecification;
-            // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
-            props.setBackgroundStyle(styleSpec);
-          })
-          .catch((e) => {
-            console.error("Failed setting json style", e);
-            showSnackbar("snackbar.map_error");
-          })
-          .finally(() => {
-            process.env.OWMF_FETCHING_STYLE = undefined;
-          });
-      }
     } else {
-      props.setBackgroundStyle(style.styleUrl);
+      if (process.env.NODE_ENV === "development") console.debug("Fetching style", style);
+      fetch(style.styleUrl)
+        .then((resp) => resp.json())
+        .then((json) => {
+          const styleSpec = json as StyleSpecification;
+          if (style.keyPlaceholder && style.key) {
+            Object.values(styleSpec.sources)
+              .filter((src) => src.type === "vector")
+              .forEach((src) => src.url?.replace(style.keyPlaceholder!, style.key!));
+          }
+
+          const newTextField: DataDrivenPropertyValueSpecification<string> = [
+            "coalesce",
+            ["get", "name:" + i18n.language], // Main language name in OpenMapTiles vector tiles
+            ["get", "name_" + i18n.language], // Main language name in Mapbox vector tiles
+            ["get", "name"],
+            ["get", "name:" + DEFAULT_LANGUAGE], // Default language name in OpenMapTiles vector tiles. Usually the name in the main language is in name=*, not in name:<main_language>=*, so using name:<default_launguage>=* before name=* would often hide the name in the main language
+            ["get", "name_" + DEFAULT_LANGUAGE], // Default language name in Mapbox vector tiles. Usually the name in the main language is in name=*, not in name_<main_language>=*, so using name_<default_launguage>=* before name=* would often hide the name in the main language
+          ];
+          styleSpec.layers?.forEach((layer) => {
+            if (layer.type === "symbol" && layer.layout) {
+              const labelExpression = layer.layout["text-field"],
+                isSimpleName =
+                  typeof labelExpression === "string" &&
+                  labelExpression.startsWith("{name"); // "{name}" / "{name:en}" / "{name:latin}\n{name:nonlatin}" / ...
+              if (isSimpleName || someArrayItemStartWithName(labelExpression)) {
+                layer.layout["text-field"] = newTextField;
+              }
+            }
+          });
+          // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
+
+          if (process.env.NODE_ENV === "development")
+            console.debug("Setting json style", { style, styleSpec });
+          props.setBackgroundStyle(styleSpec);
+        })
+        .catch((e) => {
+          console.error("Failed setting json style", e);
+          showSnackbar("snackbar.map_error");
+        });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [backgroundStyleID, backgroundStyles, setBackgroundStyleID]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [backgroundStyleID, backgroundStyles, i18n.language, setBackgroundStyleID]);
 
   return (
     <DropdownControl
@@ -219,3 +193,16 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
     />
   );
 };
+
+/**
+ * Checks recursively if any element in the array or in it sub-arrays is a string that starts with "name"
+ */
+function someArrayItemStartWithName(expression: unknown): boolean {
+  return (
+    Array.isArray(expression) &&
+    expression.some(
+      (x) =>
+        (typeof x === "string" && x.startsWith("name")) || someArrayItemStartWithName(x)
+    )
+  );
+}

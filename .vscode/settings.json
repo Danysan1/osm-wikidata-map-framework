@@ -2,6 +2,7 @@
   "files.watcherExclude": {
     "**/target": true
   },
+  "prettier.printWidth": 90,
   "cSpell.words": [
     "bbox",
     "CURLOPT",
