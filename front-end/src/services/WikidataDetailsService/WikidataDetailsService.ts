@@ -64,7 +64,7 @@ export class WikidataDetailsService extends WikidataService {
                     instanceID: row.instanceID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                     name: row.name?.value,
                     occupations: row.occupations?.value,
-                    pictures: row.pictures?.value?.split("||"),
+                    pictures: row.pictures?.value?.split("||")?.filter(p => p?.length),
                     prizes: row.prizes?.value,
                     start_date: row.start_date?.value,
                     start_date_precision: row.start_date_precision?.value ? parseInt(row.start_date_precision?.value) : undefined,

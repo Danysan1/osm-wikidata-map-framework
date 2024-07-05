@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
+import { EtymologyView } from "../EtymologyList/EtymologyView";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./FeatureView.module.css";
 
@@ -135,7 +136,7 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
   return (
     <div className={styles.detail_container}>
       <h3 className={styles.element_name}>📍 {mainName}</h3>
-      {altNames?.length && (
+      {!!altNames?.length && (
         <p className={styles.element_alt_names}>
           {altNames.map((name) => '"' + name + '"').join(" / ")}
         </p>
@@ -144,7 +145,7 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
       <div className={styles.feature_buttons_container}>
         <FeatureButtonRow feature={feature} />
       </div>
-      {commons?.length && (
+      {!!commons?.length && (
         <div className="feature_pictures column">
           {commons.map((img, i) => (
             <CommonsImage key={i} name={img} />
@@ -153,6 +154,10 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
       )}
 
       {props?.etymologies && <EtymologyList etymologies={props.etymologies} />}
+      {props?.text_etymology && <EtymologyView etymology={{
+        name: props.text_etymology,
+        description: props.text_etymology_descr,
+      }} />}
 
       <Button
         title={t("feature_details.report_problem")}

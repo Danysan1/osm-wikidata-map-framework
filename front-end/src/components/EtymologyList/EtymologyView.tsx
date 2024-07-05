@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { Etymology } from "@/src/model/Etymology";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
@@ -138,12 +137,22 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
     }
   }, [etymology.wikipedia]);
 
-  const parts = useMemo(() => {
-    if (
-      !parseBoolConfig(process.env.owmf_fetch_parts_of_linked_entities) ||
-      etymology.from_parts_of_wikidata_cod
-    )
-      return;
+  const parts = useMemo((): Etymology[] | undefined => {
+    if (etymology.from_parts_of_wikidata_cod) {
+      if (process.env.NODE_ENV === "development")
+        console.debug("Not fetching parts of parts", etymology);
+      return undefined;
+    }
+
+    if (etymology.statementEntity) {
+      return [
+        {
+          ...etymology,
+          wikidata: etymology.statementEntity,
+          from_statement_of_wikidata_cod: etymology.wikidata,
+        },
+      ];
+    }
 
     return etymology.parts?.map(
       (qid): Etymology => ({
@@ -183,7 +192,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
           </div>
         </div>
 
-        {etymology.pictures && (
+        {!!etymology.pictures?.length && (
           <div className="etymology_pictures column">
             {etymology.pictures.map((img, i) => (
               <CommonsImage key={i} name={img} className={styles.etymology_image} />
@@ -191,7 +200,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
           </div>
         )}
       </div>
-      
+
       <span className="etymology_src_wrapper">
         {t("feature_details.source")}&nbsp;
         {osmUrlA && (
@@ -218,14 +227,17 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
               href={process.env.owmf_propagation_docs_url}
             >
               {t("etymology_details.propagation")}
-            </a>&nbsp;
+            </a>
+            &nbsp;
           </span>
         )}
         {wdUrlPartOf && (
           <span className="etymology_src_part_of_wd_wrapper">
+            &gt;&nbsp;
             <a className="etymology_src_part_of_wd" href={wdUrlPartOf}>
               Wikidata
-            </a>&nbsp;
+            </a>
+            &nbsp;
           </span>
         )}
         &gt;&nbsp;
@@ -234,7 +246,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
         </a>
       </span>
       <div className="etymology_parts_container">
-        {parts?.length && <EtymologyList etymologies={parts} />}
+        {!!parts?.length && <EtymologyList etymologies={parts} />}
       </div>
     </div>
   );

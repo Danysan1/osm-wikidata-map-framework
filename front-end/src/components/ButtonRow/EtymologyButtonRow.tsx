@@ -18,8 +18,8 @@ export const EtymologyButtonRow: React.FC<EtymologyButtonRowProps> = ({ etymolog
     [etymology.instanceID, etymology.wikidata, i18n.language]
   );
   const wikispore = useMemo(() => {
-    if (!parseBoolConfig("wikispore_enable")) return undefined;
-    return etymology.wikispore?.startsWith("http")
+    if (!etymology.wikispore || !parseBoolConfig("wikispore_enable")) return undefined;
+    return etymology.wikispore.startsWith("http")
       ? etymology.wikispore
       : `https://wikispore.wmflabs.org/wiki/${etymology.wikispore}`;
   }, [etymology.wikispore]);
