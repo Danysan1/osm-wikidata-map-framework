@@ -165,16 +165,16 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
       />
 
       <div className="feature_src_wrapper">
-        <span>{t("feature_details.source")}</span>
+        {t("feature_details.source")}&nbsp;
         {fromOsmUrl && (
           <a className="feature_src_osm" href={fromOsmUrl}>
             OpenStreetMap
           </a>
         )}
-        {fromOsmUrl && fromWikidataUrl && <span className="src_osm_and_wd">&</span>}
+        {fromOsmUrl && fromWikidataUrl && <span className="src_osm_and_wd">&nbsp;&</span>}
         {fromWikidataUrl && (
           <a className="feature_src_wd" href={fromWikidataUrl}>
-            Wikidata
+            &nbsp;Wikidata
           </a>
         )}
       </div>

@@ -1,4 +1,4 @@
-.info_popup {
+div.info_popup {
   min-width: 15em;
   max-width: 95vw !important;
   min-height: 15em;
@@ -8,4 +8,5 @@
   left: 0;
   transform: translate(10px, 0) !important;
   z-index: 1000;
+  overflow: auto;
 }

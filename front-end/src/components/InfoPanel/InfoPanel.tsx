@@ -50,6 +50,7 @@ export const InfoPanel: FC = () => {
                   height="16"
                   alt="Overpass Turbo logo"
                   loading="lazy"
+                  className={styles.table_img}
                 />
               </td>
               <td>{t("info_box.to_overpass_query")}</td>
@@ -62,6 +63,7 @@ export const InfoPanel: FC = () => {
                   height="16"
                   alt="Wikidata Query Service logo"
                   loading="lazy"
+                  className={styles.table_img}
                 />
               </td>
               <td>{t("info_box.to_wikidata_query")}</td>
@@ -74,6 +76,7 @@ export const InfoPanel: FC = () => {
                   height="13"
                   alt="Table"
                   loading="lazy"
+                  className={styles.table_img}
                 />
               </td>
               <td>{t("info_box.to_view_data_table")}</td>

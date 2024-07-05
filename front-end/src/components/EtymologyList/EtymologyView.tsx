@@ -191,44 +191,44 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
           </div>
         )}
       </div>
+      
       <span className="etymology_src_wrapper">
-        <span>{t("feature_details.source")}</span>
+        {t("feature_details.source")}&nbsp;
         {osmUrlA && (
           <a className="etymology_src_a" href={osmUrlA}>
-            OpenStreetMap
+            OpenStreetMap&nbsp;
           </a>
         )}
         {wdUrlA && (
           <a className="etymology_src_a" href={wdUrlA}>
-            Wikidata
+            Wikidata&nbsp;
           </a>
         )}
-        {showArrow && <span className="src_osm_plus_wd"> &gt; </span>}
+        {showArrow && <span className="src_osm_plus_wd">&gt;&nbsp;</span>}
         {wdUrlB && (
           <a className="etymology_src_wd" href={wdUrlB}>
-            Wikidata
+            Wikidata&nbsp;
           </a>
         )}
         {etymology.propagated && (
           <span className="etymology_propagated_wrapper">
-            &gt;
+            &gt;&nbsp;
             <a
               title={t("etymology_details.propagation")}
               href={process.env.owmf_propagation_docs_url}
             >
               {t("etymology_details.propagation")}
-            </a>
+            </a>&nbsp;
           </span>
         )}
         {wdUrlPartOf && (
           <span className="etymology_src_part_of_wd_wrapper">
-            &gt;
             <a className="etymology_src_part_of_wd" href={wdUrlPartOf}>
               Wikidata
-            </a>
+            </a>&nbsp;
           </span>
         )}
-        &gt;
+        &gt;&nbsp;
         <a className="etymology_src_entity" href={wdUrlC}>
           Wikidata
         </a>

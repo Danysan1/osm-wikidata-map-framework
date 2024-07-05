@@ -4,12 +4,6 @@ div.detail_container h3 {
   margin: 1em 0.5em;
 }
 
-div.detail_container {
-    text-align: center;
-    max-height: 100%;
-    overflow: auto;
-}
-
 div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,
