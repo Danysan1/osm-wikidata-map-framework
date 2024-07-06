@@ -13,6 +13,9 @@ export interface EtymologyFeatureProperties {
     [key: string]: unknown;
     /**
      * osmtogeojson dumps OSM tags here
+     * 
+     * Typically in GeoJSON backends etymologies are sent as a JS object.
+     * Vector sources in both Mapbox GL and MapLibre GL however stringify the array as JSON in some circumstances.
      */
     tags?: Record<string, string>;
     /**
@@ -46,7 +49,8 @@ export interface EtymologyFeatureProperties {
     /**
      * List of linked items that describe some aspect of this feature.
      * Which aspect is represented depends on the configuration of this OWMF instance.
-     * Typically in GeoJSON backends etymologies are sent as an array of Etymology objects.
+     * 
+     * Typically in GeoJSON backends etymologies are sent as an array of Etymology JS objects.
      * Vector sources in both Mapbox GL and MapLibre GL however stringify the array as JSON in some circumstances.
      */
     etymologies?: Etymology[] | string;

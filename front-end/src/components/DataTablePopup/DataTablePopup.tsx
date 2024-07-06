@@ -8,6 +8,7 @@ interface DataTablePopupProps {
     features: EtymologyFeature[];
     position: LngLat;
     onClose: () => void;
+    setOpenFeature: (feature: EtymologyFeature) => void;
 }
 
 export const DataTablePopup: FC<DataTablePopupProps> = (props) => {
@@ -18,7 +19,7 @@ export const DataTablePopup: FC<DataTablePopupProps> = (props) => {
         closeButton
         closeOnClick
         closeOnMove
-        onClose={props.onClose}>
-        <DataTable features={props.features} />
+        onClose={props.onClose} >
+        <DataTable features={props.features} setOpenFeature={props.setOpenFeature} />
     </Popup>
 }

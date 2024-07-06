@@ -3,12 +3,16 @@ table.data_table {
     /*border-spacing: 0;*/
 }
 
-table.data_table td,
-table.data_table th {
+tr.data_table_row td,
+tr.data_table_row th {
     border: 1px solid #ddd;
     padding: 0 8px;
 }
 
-table.data_table tr:nth-child(even) {
+tr.data_table_row td>ul {
+    list-style-type: none;
+}
+
+tr.data_table_row:nth-child(even) {
     background-color: #eee;
 }

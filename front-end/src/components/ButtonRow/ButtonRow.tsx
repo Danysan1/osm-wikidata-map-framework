@@ -1,4 +1,5 @@
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
+import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./ButtonRow.module.css";
@@ -22,18 +23,44 @@ interface ButtonRowProps {
   wikipedia?: string;
   wikispore?: string;
   className?: string;
+  openInfo?: () => void;
 }
 
 export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(),
+    commonsURL = useMemo(() => {
+      if (!props.commons || props.commons === "null")
+        return undefined;
+
+      if (props.commons.startsWith("Category:"))
+        return `https://commons.wikimedia.org/wiki/${props.commons}`;
+
+      if (
+        !props.commons.startsWith("http") &&
+        !props.commons.includes("File:")
+      )
+        return `https://commons.wikimedia.org/wiki/Category:${props.commons}`;
+
+      return props.commons;
+    }, [props.commons]);
 
   return (
     <div className={`${styles.button_row} ${props.className}`}>
+      {props.openInfo && (
+        <Button
+          onClick={props.openInfo}
+          title="More info"
+          className="info_button"
+          iconText="ℹ️"
+          iconAlt="Information symbol"
+          text="More info"
+        />
+      )}
       {props.wikipedia && (
         <Button
           href={props.wikipedia}
           title="Wikipedia"
-          className="element_wikipedia_button"
+          className="wikipedia_button"
           icon={wikipediaLogo as StaticImport}
           iconAlt="Wikipedia logo"
           text="Wikipedia"
@@ -43,7 +70,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.wikispore}
           title="Wikispore"
-          className="element_wikispore_button"
+          className="wikispore_button"
           icon={wikisporeLogo as StaticImport}
           iconAlt="Wikispore logo"
           text="Wikispore"
@@ -51,9 +78,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
       )}
       {props.commons && (
         <Button
-          href={props.commons}
+          href={commonsURL}
           title="Wikimedia Commons"
-          className="element_commons_button"
+          className="commons_button"
           icon={commonsLogo as StaticImport}
           iconAlt="Wikimedia Commons logo"
           text="Commons"
@@ -63,7 +90,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.wikidata}
           title="Wikidata"
-          className="element_wikidata_button"
+          className="wikidata_button"
           icon={wikidataLogo as StaticImport}
           iconAlt="Wikidata logo"
           text="Wikidata"
@@ -73,7 +100,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.openstreetmap}
           title="OpenStreetMap"
-          className="element_osm_button"
+          className="osm_button"
           icon={openStreetMapLogo as StaticImport}
           iconAlt="OpenStreetMap logo"
           text="OpenStreetMap"
@@ -83,7 +110,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.website}
           title="Official website"
-          className="element_website_button"
+          className="website_button"
           iconText="🌐"
           iconAlt="Official website symbol"
           text="Website"
@@ -93,7 +120,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.osmWikidataMatcher}
           title="OSM ↔ Wikidata matcher"
-          className="element_matcher_button"
+          className="matcher_button"
           icon="/img/osm-wd-matcher.png"
           iconAlt="OSM ↔ Wikidata matcher logo"
           text="OSM ↔ Wikidata matcher"
@@ -103,7 +130,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.mapcomplete}
           title="MapComplete"
-          className="element_mapcomplete_button"
+          className="mapcomplete_button"
           icon="/img/mapcomplete.svg"
           iconAlt="MapComplete logo"
           text="Mapcomplete"
@@ -113,7 +140,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         <Button
           href={props.iD}
           title="iD editor"
-          className="element_id_button"
+          className="id_button"
           icon="/img/OpenStreetMap-Editor_iD_Logo.svg"
           iconAlt="iD editor logo"
           text="iD editor"
@@ -134,7 +161,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           onClick={typeof props.location === "function" ? props.location : undefined}
           href={typeof props.location === "string" ? props.location : undefined}
           title={t("feature_details.location", "Location")}
-          className="element_location_button"
+          className="location_button"
           iconText="🎯"
           iconAlt="Location symbol"
           text={t("feature_details.location", "Location")}

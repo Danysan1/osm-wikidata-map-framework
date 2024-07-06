@@ -23,24 +23,13 @@ export const EtymologyButtonRow: React.FC<EtymologyButtonRowProps> = ({ etymolog
       ? etymology.wikispore
       : `https://wikispore.wmflabs.org/wiki/${etymology.wikispore}`;
   }, [etymology.wikispore]);
-  const commons = useMemo(() => {
-    if (!etymology?.commons || etymology.commons === "null") return undefined;
-
-    if (etymology.commons.startsWith("Category:"))
-      return `https://commons.wikimedia.org/wiki/${etymology.commons}`;
-
-    if (!etymology.commons.startsWith("http") && !etymology.commons.includes("File:"))
-      return `https://commons.wikimedia.org/wiki/Category:${etymology.commons}`;
-
-    return etymology.commons;
-  }, [etymology?.commons]);
 
   return (
     <ButtonRow
       entitree={entitree}
       wikidata={etymology.wikidata}
       wikipedia={etymology.wikipedia}
-      commons={commons}
+      commons={etymology.commons}
       wikispore={wikispore}
     />
   );

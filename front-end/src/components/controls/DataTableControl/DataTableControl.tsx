@@ -54,6 +54,7 @@ interface DataTableControlProps {
   minZoomLevel?: number;
   position?: ControlPosition;
   className?: string;
+  setOpenFeature: (feature: EtymologyFeature) => void;
 }
 
 export const DataTableControl: FC<DataTableControlProps> = (props) => {
@@ -90,9 +91,11 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
         onClick={openTable}>
         <Image className="button_img" alt={"Data table symbol"} src="img/Simple_icon_table.svg" loading="lazy" width={23} height={23} />
       </button>
-      {tableFeatures && popupPosition && <DataTablePopup features={tableFeatures} onClose={closeTable} position={popupPosition} />}
+      {tableFeatures && popupPosition && (
+        <DataTablePopup features={tableFeatures} onClose={closeTable} position={popupPosition} setOpenFeature={props.setOpenFeature} />
+      )}
     </div>,
-    [closeTable, openTable, popupPosition, props.className, t, tableFeatures, visible]);
+    [closeTable, openTable, popupPosition, props.className, props.setOpenFeature, t, tableFeatures, visible]);
 
   return element && map && container && createPortal(cloneElement(element, { map }), container);
 }

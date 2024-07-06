@@ -1,22 +1,23 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { Position } from "geojson";
-import { useMemo } from "react";
 import { ButtonRow } from "./ButtonRow";
 
 interface FeatureButtonRowProps {
   feature: EtymologyFeature;
   className?: string;
+  openFeatureDetails?: () => void;
 }
 
 export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
   feature,
   className,
+  openFeatureDetails,
 }) => {
   const osm_full_id =
-      feature.properties?.osm_type && feature.properties?.osm_id
-        ? feature.properties.osm_type + "/" + feature.properties?.osm_id
-        : null,
+    feature.properties?.osm_type && feature.properties?.osm_id
+      ? feature.properties.osm_type + "/" + feature.properties?.osm_id
+      : null,
     openstreetmap = osm_full_id
       ? `https://www.openstreetmap.org/${osm_full_id}`
       : undefined,
@@ -25,22 +26,6 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
         ? `https://www.wikidata.org/wiki/${feature.properties?.wikidata}`
         : undefined,
     { setLat, setLon, setZoom } = useUrlFragmentContext();
-
-  const commons = useMemo(() => {
-    if (!feature.properties?.commons || feature.properties.commons === "null")
-      return undefined;
-
-    if (feature.properties.commons.startsWith("Category:"))
-      return `https://commons.wikimedia.org/wiki/${feature.properties.commons}`;
-
-    if (
-      !feature.properties.commons.startsWith("http") &&
-      !feature.properties.commons.includes("File:")
-    )
-      return `https://commons.wikimedia.org/wiki/Category:${feature.properties.commons}`;
-
-    return feature.properties.commons;
-  }, [feature.properties?.commons]);
 
   let wikipedia =
     feature.properties?.wikipedia && feature.properties?.wikipedia !== "null"
@@ -71,10 +56,10 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
     zoomOnLocation =
       lon !== undefined && lat !== undefined
         ? () => {
-            setLon(lon);
-            setLat(lat);
-            setZoom((oldZoom) => oldZoom + 2);
-          }
+          setLon(lon);
+          setLat(lat);
+          setZoom((oldZoom) => oldZoom + 2);
+        }
         : undefined;
 
   let osmWikidataMatcher;
@@ -91,22 +76,22 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
   const mapcomplete_theme = process.env.owmf_mapcomplete_theme,
     mapcomplete =
       osm_full_id &&
-      mapcomplete_theme &&
-      lat !== undefined &&
-      lon !== undefined &&
-      !feature.properties?.boundary
+        mapcomplete_theme &&
+        lat !== undefined &&
+        lon !== undefined &&
+        !feature.properties?.boundary
         ? `https://mapcomplete.org/${mapcomplete_theme}?z=18&lat=${lat}&lon=${lon}#${osm_full_id}`
         : undefined,
     iD =
       feature.properties?.osm_type &&
-      feature.properties?.osm_id &&
-      !feature.properties?.boundary
+        feature.properties?.osm_id &&
+        !feature.properties?.boundary
         ? `https://www.openstreetmap.org/edit?editor=id&${feature.properties.osm_type}=${feature.properties.osm_id}`
         : undefined;
 
   return (
     <ButtonRow
-      commons={commons}
+      commons={feature.properties?.commons}
       iD={iD}
       location={zoomOnLocation}
       mapcomplete={mapcomplete}
@@ -117,6 +102,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
       wikipedia={wikipedia}
       wikispore={wikispore}
       className={className}
+      openInfo={openFeatureDetails}
     />
   );
 };

@@ -11,3 +11,11 @@ div.feature_popup {
   text-align: center;
   overflow: auto;
 }
+
+div.feature_popup :global(.maplibregl-popup-content) {
+  border: 1px solid #ccc;
+}
+
+div.feature_popup :global(.maplibregl-popup-tip) {
+  display: none;
+}

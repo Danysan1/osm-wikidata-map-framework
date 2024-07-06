@@ -230,6 +230,7 @@ export const OwmfMap = () => {
         dataLayerIDs={dataLayerIDs}
         minZoomLevel={pmtilesActive ? undefined : thresholdZoomLevel}
         position="top-right"
+        setOpenFeature={setOpenFeature}
       />
       <QueryLinkControl
         icon="/img/Overpass-turbo.svg"
