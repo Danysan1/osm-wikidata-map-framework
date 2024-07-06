@@ -41,9 +41,11 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
             out.push(["in", props.keyID, ["get", "from_key_ids"]]);
         return out;
     }, [props.keyID]);
-    const onLayerClick = useCallback((ev: MapLayerMouseEvent) => {
+    const onLayerClick = useCallback((ev: MapLayerMouseEvent & { popupAlreadyShown?: boolean }) => {
+        if (ev.popupAlreadyShown) return;
         if (process.env.NODE_ENV === "development") console.debug("DetailsLayers onLayerClick", { ev, feature: ev.features?.[0]?.properties });
         props.setOpenFeature(ev.features?.[0]);
+        ev.popupAlreadyShown = true; // If multiple elements extend over the clicked point, make sure only the first is shown
     }, [props]);
     const pointFilter = useMemo(() => createFilter("Point"), [createFilter]),
         lineStringFilter = useMemo(() => createFilter("LineString"), [createFilter]),
@@ -60,22 +62,22 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
         }, [createFilter]),
         { current: map } = useMap();
 
-    useEffect(() => { 
+    useEffect(() => {
         map?.on("click", props.pointTapAreaLayerID, onLayerClick);
         return () => void map?.off("click", props.pointTapAreaLayerID, onLayerClick);
-     }, [map, onLayerClick, props.pointTapAreaLayerID]);
-    useEffect(() => { 
+    }, [map, onLayerClick, props.pointTapAreaLayerID]);
+    useEffect(() => {
         map?.on("click", props.lineTapAreaLayerID, onLayerClick);
         return () => void map?.off("click", props.lineTapAreaLayerID, onLayerClick);
-     }, [map, onLayerClick, props.lineTapAreaLayerID]);
-    useEffect(() => { 
+    }, [map, onLayerClick, props.lineTapAreaLayerID]);
+    useEffect(() => {
         map?.on("click", props.polygonBorderLayerID, onLayerClick);
         return () => void map?.off("click", props.polygonBorderLayerID, onLayerClick);
-     }, [map, onLayerClick, props.polygonBorderLayerID]);
-    useEffect(() => { 
+    }, [map, onLayerClick, props.polygonBorderLayerID]);
+    useEffect(() => {
         map?.on("click", props.polygonFillLayerID, onLayerClick);
         return () => void map?.off("click", props.polygonFillLayerID, onLayerClick);
-     }, [map, onLayerClick, props.polygonFillLayerID]);
+    }, [map, onLayerClick, props.polygonFillLayerID]);
 
     const commonProps: { 'source': string, 'minzoom'?: number, 'source-layer'?: string } = {
         source: props.sourceID

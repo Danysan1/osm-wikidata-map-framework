@@ -3,7 +3,8 @@
   /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
   display: grid;
   grid-template-rows: auto;
-  align-items: start;
+  align-content: center;
+  align-items: center;
   justify-content: center;
   justify-items: center;
   grid-row-gap: 0.5em;
@@ -34,7 +35,7 @@
 
 .grid,
 .column {
-    max-width: 40em;
+    /*max-width: 40em;*/
     margin-left: auto;
     margin-right: auto;
 }

@@ -149,6 +149,7 @@ export class OverpassService implements MapService {
             full_osm_id = full_osm_base_id ?? full_osm_props_id,
             osm_type = full_osm_id?.split("/")?.[0],
             osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined;
+        feature.id = "osm.org/" + full_osm_id;
         feature.properties.osm_id = osm_id;
         feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
 

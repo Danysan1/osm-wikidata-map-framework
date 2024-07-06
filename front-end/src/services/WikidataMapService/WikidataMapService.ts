@@ -114,7 +114,7 @@ export class WikidataMapService extends WikidataService implements MapService {
     private async getIndirectSparqlQuery(backEndID: string) {
         const indirectProperty = this.preset.wikidata_indirect_property;
         if (!indirectProperty)
-            throw new Error("No indirect property defined");
+            throw new Error("No indirect property in preset " + this.preset.id);
 
         let queryURL: string;
         if (backEndID === "wd_indirect")
@@ -147,10 +147,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             return acc;
         }
 
-        const feature_wd_id: string | undefined = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-            etymology_wd_id: string | undefined = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+        const feature_wd_id = row.item?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+            etymology_wd_id = row.etymology?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
             existingFeature = acc.find(feature => {
-                if (feature.id !== feature_wd_id)
+                if (feature_wd_id && feature.properties?.wikidata !== feature_wd_id)
                     return false; // Not the same feature
 
                 //console.info("Checking feature for merging", { wd_id: feature.id, feature_wd_id, geom: feature.geometry, geometry });
@@ -196,9 +196,11 @@ export class WikidataMapService extends WikidataService implements MapService {
                 else if (row.building?.value)
                     render_height = 6;
 
+                const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
+                    from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
                 acc.push({
                     type: "Feature",
-                    id: feature_wd_id,
+                    id: "wikidata.org/entity/" + from_wikidata_entity + "#" + from_wikidata_prop,
                     geometry,
                     properties: {
                         commons: row.commons?.value,
@@ -206,8 +208,8 @@ export class WikidataMapService extends WikidataService implements MapService {
                         etymologies: etymology ? [etymology] : undefined,
                         from_osm: false,
                         from_wikidata: true,
-                        from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                        from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+                        from_wikidata_entity,
+                        from_wikidata_prop,
                         name: row.itemLabel?.value,
                         osm_id,
                         osm_type,

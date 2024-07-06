@@ -8,7 +8,7 @@ div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,
 div.detail_container .feature_buttons_container {
-    max-width: 40em;
+    /*max-width: 40em;*/
     margin-left: auto;
     margin-right: auto;
 }

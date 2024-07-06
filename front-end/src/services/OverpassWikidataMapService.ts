@@ -1,11 +1,11 @@
-import type { EtymologyResponse, EtymologyResponseFeatureProperties } from "../model/EtymologyResponse";
-import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
-import type { MapService } from "./MapService";
-import type { BBox, Geometry, Feature } from "geojson";
-import { getEtymologies } from "./etymologyUtils";
+import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
+import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
 import { EtymologyFeatureProperties } from "../model/EtymologyFeatureProperties";
+import type { EtymologyResponse, EtymologyResponseFeatureProperties } from "../model/EtymologyResponse";
 import { SourcePreset } from "../model/SourcePreset";
+import { getEtymologies } from "./etymologyUtils";
+import type { MapService } from "./MapService";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
     node: "P11693",
@@ -112,6 +112,8 @@ export class OverpassWikidataMapService implements MapService {
             osmFeatures.push(wikidataFeature); // No existing OSM feature to merge with => Add the standalone Wikidata feature
 
         osmFeaturesToMerge.forEach((osmFeature) => {
+            osmFeature.id = osmFeature.id + "_" + wikidataFeature.id;
+
             if (!osmFeature.properties)
                 osmFeature.properties = {};
             osmFeature.properties.from_wikidata = true;

@@ -211,7 +211,7 @@ export class QLeverMapService implements MapService {
         if (backEndID.includes("indirect") || backEndID.includes("reverse") || backEndID.includes("qualifier")) {
             const indirectProperty = this.preset.wikidata_indirect_property;
             if (!indirectProperty)
-                throw new Error("No indirect property defined");
+                throw new Error("No indirect property in preset" + this.preset.id);
             const imageProperty = this.preset.wikidata_image_property,
                 pictureQuery = imageProperty ? `OPTIONAL { ?etymology wdt:${imageProperty} ?_picture. }` : '';
 
@@ -335,9 +335,19 @@ export class QLeverMapService implements MapService {
                     else if (row.building?.value)
                         render_height = 6;
 
+                    const from_wikidata_entity = feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
+                        from_wikidata_prop = feature_wd_id ? "P625" : etymology?.from_wikidata_prop;
+                    let id;
+                    if (feature_from_osm && feature_from_wikidata)
+                        id = "osm.org/" + osm_type + "/" + osm_id + "_wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
+                    else if (feature_from_osm)
+                        id = "osm.org/" + osm_type + "/" + osm_id;
+                    else
+                        id = "wikidata.org/" + from_wikidata_entity + "/" + from_wikidata_prop;
+
                     acc.push({
                         type: "Feature",
-                        id: feature_wd_id,
+                        id,
                         geometry,
                         properties: {
                             commons: commons,
@@ -347,8 +357,8 @@ export class QLeverMapService implements MapService {
                             text_etymology_descr: row.etymology_description?.value,
                             from_osm: feature_from_osm,
                             from_wikidata: feature_from_wikidata,
-                            from_wikidata_entity: feature_wd_id ? feature_wd_id : etymology?.from_wikidata_entity,
-                            from_wikidata_prop: feature_wd_id ? "P625" : etymology?.from_wikidata_prop,
+                            from_wikidata_entity,
+                            from_wikidata_prop,
                             render_height: render_height,
                             name: row.itemLabel?.value,
                             osm_id,
