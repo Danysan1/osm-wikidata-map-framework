@@ -4,7 +4,8 @@ import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/Wi
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { FeatureButtonRow } from "../../ButtonRow/FeatureButtonRow";
+import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
+import styles from "./DataTable.module.css";
 
 interface DataTableProps {
     features: EtymologyFeature[];
@@ -25,7 +26,7 @@ export const DataTable: FC<DataTableProps> = ({ features }) => {
         );
     }, [features, i18n.language]);
 
-    return <table className="owmf_data_table">
+    return <table className={styles.data_table}>
         <thead>
             <tr>
                 <th>{t("data_table.names")}</th>

@@ -1,0 +1,14 @@
+.dropdown_select {
+    display: inline-block;
+    margin: 5px;
+    min-width: 95%;
+}
+
+.button {
+    font-size: large;
+}
+
+.title {
+    font-weight: bold;
+    margin: 0 0.5em;
+}

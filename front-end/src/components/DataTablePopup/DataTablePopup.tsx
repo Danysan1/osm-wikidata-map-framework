@@ -1,11 +1,11 @@
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { FC } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
-import { DataTable } from "./DataTable";
+import { DataTable } from "../DataTable/DataTable";
+import styles from "./DataTablePopup.module.css";
 
 interface DataTablePopupProps {
     features: EtymologyFeature[];
-    className?: string;
     position: LngLat;
     onClose: () => void;
 }
@@ -13,7 +13,7 @@ interface DataTablePopupProps {
 export const DataTablePopup: FC<DataTablePopupProps> = (props) => {
     return <Popup longitude={props.position.lng}
         latitude={props.position.lat}
-        className={props.className}
+        className={styles.data_table_popup}
         maxWidth="none"
         closeButton
         closeOnClick

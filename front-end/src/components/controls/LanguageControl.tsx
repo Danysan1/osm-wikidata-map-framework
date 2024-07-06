@@ -1,7 +1,7 @@
 import type { ControlPosition } from "maplibre-gl";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { DropdownControl, DropdownItem } from "./DropdownControl";
+import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
 
 interface LanguageControlProps {
     position?: ControlPosition;

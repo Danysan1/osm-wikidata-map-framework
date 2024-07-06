@@ -2,22 +2,22 @@ import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import {
-  BackgroundStyle,
-  jawgStyle,
-  mapboxStyle,
-  maptilerStyle,
-  stadiaStyle,
+    BackgroundStyle,
+    jawgStyle,
+    mapboxStyle,
+    maptilerStyle,
+    stadiaStyle,
 } from "@/src/model/backgroundStyle";
 import { showSnackbar } from "@/src/snackbar";
 import type {
-  ControlPosition,
-  DataDrivenPropertyValueSpecification,
-  StyleSpecification
+    ControlPosition,
+    DataDrivenPropertyValueSpecification,
+    StyleSpecification
 } from "maplibre-gl";
 import { FC, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { MapStyle } from "react-map-gl/maplibre";
-import { DropdownControl } from "./DropdownControl";
+import { DropdownControl } from "./DropdownControl/DropdownControl";
 
 function getBackgroundStyles() {
   const maptiler_key = process.env.owmf_maptiler_key,

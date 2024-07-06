@@ -1,12 +1,12 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import { EtymologyFeature } from '@/src/model/EtymologyResponse';
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibre-gl';
-import { useTranslation } from "react-i18next";
 import Image from 'next/image';
 import { FC, cloneElement, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from "react-i18next";
 import { LngLat, useControl } from 'react-map-gl/maplibre';
-import { DataTablePopup } from './DataTablePopup';
+import { DataTablePopup } from '../../DataTablePopup/DataTablePopup';
 
 class DataTableControlObject implements IControl {
   private _map?: Map;

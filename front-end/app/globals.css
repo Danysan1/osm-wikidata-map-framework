@@ -107,12 +107,6 @@ canvas.chart {
     height: 40em;
 }
 
-.dropdown-ctrl-dropdown {
-    display: inline-block;
-    margin: 5px;
-    min-width: 95%;
-}
-
 div.snackbar,
 div.custom-ctrl,
 div#welcome_board {
@@ -406,22 +400,3 @@ span.button_text {
     vertical-align: middle;
 }
 
-table.owmf_data_table {
-    border-collapse: collapse;
-    /*border-spacing: 0;*/
-}
-
-table.owmf_data_table td,
-th {
-    border: 1px solid #ddd;
-    padding: 0 8px;
-}
-
-table.owmf_data_table tr:nth-child(even) {
-    background-color: #eee;
-}
-
-.dropdown-ctrl-title {
-    font-weight: bold;
-    margin: 0 0.5em;
-}

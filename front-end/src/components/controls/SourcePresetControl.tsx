@@ -4,7 +4,7 @@ import { DEFAULT_SOURCE_PRESET_ID } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { DropdownControl } from "./DropdownControl";
+import { DropdownControl } from "./DropdownControl/DropdownControl";
 
 interface SourcePresetControlProps {
     position?: ControlPosition;

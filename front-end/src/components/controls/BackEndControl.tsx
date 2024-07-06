@@ -5,7 +5,7 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
 import { FC, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { DropdownControl, DropdownItem } from "./DropdownControl";
+import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
 
 interface BackEndControlProps {
     preset: SourcePreset;

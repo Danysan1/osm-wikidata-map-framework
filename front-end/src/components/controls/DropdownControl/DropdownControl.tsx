@@ -4,6 +4,7 @@ import type { ControlPosition, IControl, Map, MapSourceDataEvent } from 'maplibr
 import { ChangeEvent, ChangeEventHandler, FC, PropsWithChildren, cloneElement, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useControl } from 'react-map-gl/maplibre';
+import styles from "./DropdownControl.module.css";
 
 class DropdownControlObject implements IControl {
     private _map?: Map;
@@ -78,8 +79,8 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
         visible = props.dropdownItems.length > 1 && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
         [dropdownVisible, setDropdownVisible] = useState(parseBoolConfig(process.env.owmf_start_dropdown_open)),
         onBtnClick = useCallback(() => setDropdownVisible(prev => !prev), []),
-        btnCell = useMemo(() => <td className='title-cell'><button onClick={onBtnClick} className='dropdown-ctrl-button' title={props.title} aria-label={props.title}>{props.buttonContent}</button></td>, [onBtnClick, props.buttonContent, props.title]),
-        titleCell = useMemo(() => dropdownVisible && <td className='button-cell'><label htmlFor={dropdownId} className='dropdown-ctrl-title'>{props.title}</label></td>, [dropdownId, dropdownVisible, props.title]),
+        btnCell = useMemo(() => <td className='title-cell'><button onClick={onBtnClick} className={styles.button} title={props.title} aria-label={props.title}>{props.buttonContent}</button></td>, [onBtnClick, props.buttonContent, props.title]),
+        titleCell = useMemo(() => dropdownVisible && <td className='button-cell'><label htmlFor={dropdownId} className={styles.title} >{props.title}</label></td>, [dropdownId, dropdownVisible, props.title]),
         dropDownChangeHandler: ChangeEventHandler<HTMLSelectElement> = useCallback((e) => {
             const selectedID = e.target.value,
                 selectedItem = props.dropdownItems.find(item => item.id === selectedID);
@@ -117,7 +118,7 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                     </tr>
                     <tr>
                         {dropdownVisible && <td colSpan={2} className='dropdown-cell content-cell'>
-                            <select id={dropdownId} value={props.selectedValue} className='dropdown-ctrl-dropdown' onChange={dropDownChangeHandler} name={props.className} title={props.title} >
+                            <select id={dropdownId} value={props.selectedValue} className={styles.dropdown_select} onChange={dropDownChangeHandler} name={props.className} title={props.title} >
                                 {options}
                             </select>
                         </td>}
