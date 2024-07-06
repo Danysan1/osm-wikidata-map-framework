@@ -149,6 +149,18 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
               .forEach((src) => src.url?.replace(style.keyPlaceholder!, style.key!));
           }
 
+          /**
+           * Set the application culture for i18n
+           * 
+           * Mainly, sets the map's query to get labels.
+           * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
+           * Mapbox vector tiles use the fields name_*.
+           * 
+           * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
+           * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
+           * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
+           * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map#setlayoutproperty
+           */
           const newTextField: DataDrivenPropertyValueSpecification<string> = [
             "coalesce",
             ["get", "name:" + i18n.language], // Main language name in OpenMapTiles vector tiles

@@ -22,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import Map, {
   FullscreenControl,
   GeolocateControl,
+  MapSourceDataEvent,
   MapStyle,
   NavigationControl,
   ScaleControl,
@@ -73,8 +74,7 @@ export const OwmfMap = () => {
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
     thresholdZoomLevel = useMemo(
-      () => parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
-      []
+      () => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []
     ),
     [pmtilesReady, setPMTilesReady] = useState(false),
     pmtilesActive = useMemo(
@@ -179,6 +179,36 @@ export const OwmfMap = () => {
 
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 
+  /**
+   * Event listener that fires when one of the map's sources loads or changes.
+   * 
+   * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:sourcedata
+   * @see https://docs.mapbox.com/mapbox-gl-js/api/events/#mapdataevent
+   */
+  const mapSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
+    if (!e.isSourceLoaded || e.dataType !== "source")
+      return;
+
+    const detailsSourceEvent = e.sourceId === DETAILS_SOURCE,
+      elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
+
+    if (detailsSourceEvent || elementsSourceEvent) {
+      if (process.env.NODE_ENV === 'development') console.debug(
+        "mapSourceDataHandler: data loaded",
+        { detailsSourceEvent, elementsSourceEvent, e, source: e.sourceId }
+      );
+
+      const noFeatures = detailsSourceEvent &&
+        e.source.type === "geojson" && // Vector tile sources don't support querySourceFeatures()
+        e.target.querySourceFeatures(DETAILS_SOURCE).length === 0;
+
+      if (noFeatures)
+        showSnackbar(t("snackbar.no_data_in_this_area", "No data in this area"), "wheat", 3000);
+      else if (detailsSourceEvent)
+        showSnackbar(t("snackbar.data_loaded_instructions", "Data loaded, click on any highlighted element to show its details"), "lightgreen", 10000);
+    }
+  }, [t]);
+
   return (
     <Map
       mapLib={import("maplibre-gl")}
@@ -190,6 +220,7 @@ export const OwmfMap = () => {
       onMove={onMoveHandler}
       onMoveEnd={onMoveEndHandler}
       transformRequest={requestTransformFunction}
+      onSourceData={mapSourceDataHandler}
     >
       <InfoControl position="top-left" />
       <SourcePresetControl position="top-left" />

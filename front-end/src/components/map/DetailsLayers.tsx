@@ -31,7 +31,7 @@ export interface DetailsLayersProps {
     polygonBorderLayerID: string;
     polygonFillLayerID: string;
 
-    setOpenFeature: (feature?: MapGeoJSONFeature) => void;
+    setOpenFeature: (feature: MapGeoJSONFeature) => void;
 }
 
 export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
@@ -41,12 +41,33 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
             out.push(["in", props.keyID, ["get", "from_key_ids"]]);
         return out;
     }, [props.keyID]);
+
+    /**
+     * Open the feature details popup when a feature on a detail layer is clicked.
+     * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:click
+     */
     const onLayerClick = useCallback((ev: MapLayerMouseEvent & { popupAlreadyShown?: boolean }) => {
         if (ev.popupAlreadyShown) return;
-        if (process.env.NODE_ENV === "development") console.debug("DetailsLayers onLayerClick", { ev, feature: ev.features?.[0]?.properties });
-        props.setOpenFeature(ev.features?.[0]);
-        ev.popupAlreadyShown = true; // If multiple elements extend over the clicked point, make sure only the first is shown
+        if (process.env.NODE_ENV === "development") console.debug(
+            "DetailsLayers onLayerClick", { ev, feature: ev.features?.[0]?.properties }
+        );
+        if (ev.features?.length) {
+            props.setOpenFeature(ev.features[0]);
+            ev.popupAlreadyShown = true; // If multiple elements extend over the clicked point, make sure only the first is shown
+        }
     }, [props]);
+
+    /** Change the cursor to a pointer when the mouse is over a detail layer
+     * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseenterà
+     */
+    const onMouseEnter = useCallback((ev: MapLayerMouseEvent) => { ev.target.getCanvas().style.cursor = 'pointer'; }, []);
+
+    /**
+     * Change the cursor back to a pointer when it leaves a detail layer.
+     * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseleave
+     */
+    const onMouseLeave = useCallback((ev: MapLayerMouseEvent) => { ev.target.getCanvas().style.cursor = ''; }, []);
+
     const pointFilter = useMemo(() => createFilter("Point"), [createFilter]),
         lineStringFilter = useMemo(() => createFilter("LineString"), [createFilter]),
         polygonFilter = useMemo(() => {
@@ -64,20 +85,28 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
 
     useEffect(() => {
         map?.on("click", props.pointTapAreaLayerID, onLayerClick);
+        map?.on("mouseenter", props.pointTapAreaLayerID, onMouseEnter);
+        map?.on("mouseleave", props.pointTapAreaLayerID, onMouseLeave);
         return () => void map?.off("click", props.pointTapAreaLayerID, onLayerClick);
-    }, [map, onLayerClick, props.pointTapAreaLayerID]);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.pointTapAreaLayerID]);
     useEffect(() => {
         map?.on("click", props.lineTapAreaLayerID, onLayerClick);
+        map?.on("mouseenter", props.lineTapAreaLayerID, onMouseEnter);
+        map?.on("mouseleave", props.lineTapAreaLayerID, onMouseLeave);
         return () => void map?.off("click", props.lineTapAreaLayerID, onLayerClick);
-    }, [map, onLayerClick, props.lineTapAreaLayerID]);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.lineTapAreaLayerID]);
     useEffect(() => {
         map?.on("click", props.polygonBorderLayerID, onLayerClick);
+        map?.on("mouseenter", props.polygonBorderLayerID, onMouseEnter);
+        map?.on("mouseleave", props.polygonBorderLayerID, onMouseLeave);
         return () => void map?.off("click", props.polygonBorderLayerID, onLayerClick);
-    }, [map, onLayerClick, props.polygonBorderLayerID]);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.polygonBorderLayerID]);
     useEffect(() => {
         map?.on("click", props.polygonFillLayerID, onLayerClick);
+        map?.on("mouseenter", props.polygonFillLayerID, onMouseEnter);
+        map?.on("mouseleave", props.polygonFillLayerID, onMouseLeave);
         return () => void map?.off("click", props.polygonFillLayerID, onLayerClick);
-    }, [map, onLayerClick, props.polygonFillLayerID]);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.polygonFillLayerID]);
 
     const commonProps: { 'source': string, 'minzoom'?: number, 'source-layer'?: string } = {
         source: props.sourceID
