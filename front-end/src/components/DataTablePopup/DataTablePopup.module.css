@@ -8,5 +8,6 @@ div.data_table_popup {
   left: 0;
   transform: translate(10px, 0) !important;
   z-index: 1000;
+  text-align: center;
   overflow: auto;
 }

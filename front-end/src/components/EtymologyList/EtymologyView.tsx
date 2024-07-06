@@ -19,20 +19,19 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
       (etymology.osm_wd_join_field === "OSM" ||
         !!etymology.from_osm ||
         etymology.propagated) &&
-      etymology.from_osm_type &&
-      etymology.from_osm_id
+        etymology.from_osm_type &&
+        etymology.from_osm_id
         ? `https://www.openstreetmap.org/${etymology.from_osm_type}/${etymology.from_osm_id}`
         : null,
     wdUrlA =
       etymology.osm_wd_join_field &&
-      etymology.osm_wd_join_field !== "OSM" &&
-      etymology.from_wikidata_entity
+        etymology.osm_wd_join_field !== "OSM" &&
+        etymology.from_wikidata_entity
         ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${etymology.osm_wd_join_field}`
         : null,
     wdUrlB = etymology.from_wikidata_entity
-      ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${
-          etymology.from_wikidata_prop ?? ""
-        }`
+      ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${etymology.from_wikidata_prop ?? ""
+      }`
       : null,
     showArrow = (!!osmUrlA || !!wdUrlA) && wdUrlB,
     wdUrlPartOf = etymology.from_parts_of_wikidata_cod
@@ -91,8 +90,8 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
       etymology.death_place
     ) {
       const birth_date = etymology.birth_date
-          ? formatDate(etymology.birth_date, etymology.birth_date_precision)
-          : "?",
+        ? formatDate(etymology.birth_date, etymology.birth_date_precision)
+        : "?",
         birth_place = etymology.birth_place ? etymology.birth_place : "?",
         death_date = etymology.death_date
           ? formatDate(etymology.death_date, etymology.death_date_precision)
@@ -101,8 +100,8 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
       return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
     } else if (!!etymology.start_date || etymology.end_date) {
       const start_date = etymology.start_date
-          ? formatDate(etymology.start_date, etymology.start_date_precision)
-          : "?",
+        ? formatDate(etymology.start_date, etymology.start_date_precision)
+        : "?",
         end_date = etymology.end_date
           ? formatDate(etymology.end_date, etymology.end_date_precision)
           : "?";
@@ -139,8 +138,9 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
 
   const parts = useMemo((): Etymology[] | undefined => {
     if (etymology.from_parts_of_wikidata_cod) {
-      if (process.env.NODE_ENV === "development")
-        console.debug("Not fetching parts of parts", etymology);
+      if (process.env.NODE_ENV === "development") console.debug(
+        "Not fetching parts of parts", etymology
+      );
       return undefined;
     }
 

@@ -183,10 +183,9 @@ export class OverpassWikidataMapService implements MapService {
         wikidataData.features.forEach(feature => this.mergeWikidataFeature(feature, overpassData.features));
         overpassData.wdqs_query = wikidataData.wdqs_query;
         overpassData.truncated = !!overpassData.truncated || !!wikidataData.truncated;
-        if (process.env.NODE_ENV === 'development') {
-            console.debug(`Overpass+Wikidata mergeMapData found ${overpassData.features.length} features`);
-            // console.table(overpassData.features);
-        }
+        if (process.env.NODE_ENV === 'development') console.debug(
+            "Overpass+Wikidata mergeMapData merged features", overpassData.features
+        );
         return overpassData;
     }
 }

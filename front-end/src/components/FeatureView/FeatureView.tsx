@@ -2,7 +2,7 @@ import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
@@ -33,7 +33,20 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         ? `https://www.wikidata.org/wiki/${fromWdEntity}#${fromWdProperty}`
         : undefined,
     [mainName, setMainName] = useState<string>(),
-    [altNames, setAltNames] = useState<string[]>(),
+    altNames = useMemo(() => {
+      const alt_name_set = new Set<string>();
+      [props?.name, props?.official_name, props?.alt_name]
+        .flatMap((name) => name?.split(";"))
+        .map((name) => name?.trim())
+        .filter(
+          (name) =>
+            name &&
+            name !== "null" &&
+            (!mainName || name.toLowerCase() !== mainName.toLowerCase())
+        )
+        .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
+      return (alt_name_set.size > 0) ? Array.from(alt_name_set) : undefined;
+    }, [mainName, props?.alt_name, props?.name, props?.official_name]),
     [description, setDescription] = useState<string>(),
     [commons, setCommons] = useState<string[]>();
   useEffect(() => {
@@ -51,39 +64,27 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
     } else if (props?.alt_name && props.alt_name !== "null") {
       setMainName(props.alt_name);
     } else if (props?.wikidata) {
+      setMainName(undefined);
       const labelService = new WikidataLabelService();
       labelService
         .getSomeLabelFromWikidataID(props.wikidata, i18n.language)
         .then((label) => {
           if (label) {
-            if (process.env.NODE_ENV === "development")
-              console.debug("Found label from Wikidata", { qid: props.wikidata, label });
+            if (process.env.NODE_ENV === "development") console.debug(
+              "Found label from Wikidata", { qid: props.wikidata, label }
+            );
             setMainName(label);
           }
         })
         .catch(() => {
-          if (process.env.NODE_ENV === "development")
-            console.warn("Failed getting label from Wikidata", { qid: props.wikidata });
+          if (process.env.NODE_ENV === "development") console.warn(
+            "Failed getting label from Wikidata", { qid: props.wikidata }
+          );
         });
+    } else {
+      setMainName(undefined);
     }
   }, [i18n.language, props]);
-
-  useEffect(() => {
-    const alt_name_set = new Set<string>();
-    [props?.name, props?.official_name, props?.alt_name]
-      .flatMap((name) => name?.split(";"))
-      .map((name) => name?.trim())
-      .filter(
-        (name) =>
-          name &&
-          name !== "null" &&
-          (!mainName || name.toLowerCase() !== mainName.toLowerCase())
-      )
-      .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
-    if (alt_name_set.size > 0) {
-      setAltNames(Array.from(alt_name_set));
-    }
-  }, [mainName, props?.alt_name, props?.name, props?.official_name]);
 
   useEffect(() => {
     if (props?.description && props.description !== "null") {
@@ -94,11 +95,10 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         .getDescriptionFromWikidataID(props.wikidata, i18n.language)
         .then((desc) => {
           if (desc) {
-            if (process.env.NODE_ENV === "development")
-              console.debug("Found description from Wikidata", {
-                qid: props.wikidata,
-                desc,
-              });
+            if (process.env.NODE_ENV === "development") console.debug(
+              "Found description from Wikidata",
+              { qid: props.wikidata, desc }
+            );
             setDescription(desc);
           }
         })
@@ -122,8 +122,9 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         .getCommonsImageFromWikidataID(props.wikidata)
         .then((image) => {
           if (image) {
-            if (process.env.NODE_ENV === "development")
-              console.debug("Found image from Wikidata", { props, image });
+            if (process.env.NODE_ENV === "development") console.debug(
+              "Found image from Wikidata", { props, image }
+            );
             setCommons([image]);
           }
         })
@@ -133,6 +134,7 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [props]);
 
+  if (process.env.NODE_ENV === "development") console.debug("FeatureView", { feature, mainName, altNames, description, commons, fromOsmUrl, fromWikidataUrl });
   return (
     <div className={styles.detail_container}>
       <h3 className={styles.element_name}>📍 {mainName}</h3>

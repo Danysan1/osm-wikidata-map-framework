@@ -222,8 +222,9 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
     }, [props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, setColorSchemeID, t]);
 
     useEffect(() => {
-        if (process.env.NODE_ENV === "development")
-            console.debug("StatisticsColorControl: updating stats", { colorSchemeID, lat, lon, zoom });
+        if (process.env.NODE_ENV === "development") console.debug(
+            "StatisticsColorControl: updating stats", { colorSchemeID, lat, lon, zoom }
+        );
         handlers[colorSchemeID]();
     }, [colorSchemeID, handlers, lat, lon, zoom]);
 

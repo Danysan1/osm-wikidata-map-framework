@@ -37,16 +37,10 @@ export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
           )),
       nthTextEtyName = nthTextEtyNameExists ? textEtyNames[n] : undefined,
       nthTextEtyDescr = nthTextEtyDescrExists ? textEtyDescrs[n] : undefined;
-    if (process.env.NODE_ENV === "development")
-      console.debug("showEtymologies: showing text etymology? ", {
-        n,
-        nthTextEtyNameExists,
-        nthTextEtyName,
-        nthTextEtyDescrExists,
-        nthTextEtyDescr,
-        textEtyShouldBeShown,
-        etymologies,
-      });
+    if (process.env.NODE_ENV === "development") console.debug(
+      "showEtymologies: showing text etymology? ",
+      { n, nthTextEtyName, nthTextEtyDescr, textEtyShouldBeShown, etymologies }
+    );
     if (textEtyShouldBeShown) {
       etymologies.push({
         name: nthTextEtyName,
@@ -57,7 +51,7 @@ export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
       });
     }
   }
-  
+
   return (
     <>
       {etymologies?.map((ety, i) => (

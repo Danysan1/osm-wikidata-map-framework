@@ -56,12 +56,13 @@ const PMTILES_PREFIX = "pmtiles",
   ELEMENTS_SOURCE = "elements_source";
 
 export const OwmfMap = () => {
-  const { lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID } =
-      useUrlFragmentContext(),
+  const { t } = useTranslation(),
+    {
+      lon, setLon, lat, setLat, zoom, setZoom, backEndID, sourcePresetID
+    } = useUrlFragmentContext(),
     [mapLon, setMapLon] = useState(lon),
     [mapLat, setMapLat] = useState(lat),
     [mapZoom, setMapZoom] = useState(zoom),
-    { t } = useTranslation(),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
     [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(undefined),
@@ -137,40 +138,33 @@ export const OwmfMap = () => {
   }, []);
 
   useEffect(() => {
-    if (!!process.env.REACT_APP_FETCHING_PRESET || sourcePreset?.id === sourcePresetID) {
-      if (process.env.NODE_ENV === "development")
-        console.warn("Skipping redundant source preset fetch", {
-          alreadyFetching: process.env.REACT_APP_FETCHING_PRESET,
-          new: sourcePresetID,
-          old: sourcePreset?.id,
-        });
+    if (sourcePreset?.id === sourcePresetID) {
+      if (process.env.NODE_ENV === "development") console.warn(
+        "Skipping redundant source preset fetch",
+        { new: sourcePresetID, old: sourcePreset?.id }
+      );
       return;
     }
 
-    process.env.REACT_APP_FETCHING_PRESET = "1";
-    if (process.env.NODE_ENV === "development")
-      console.debug("Fetching source preset", {
-        alreadyUpdating: process.env.REACT_APP_UPDATING_PRESET,
-        new: sourcePresetID,
-        old: sourcePreset?.id,
-      });
+    if (process.env.NODE_ENV === "development") console.debug(
+      "Fetching source preset",
+      { new: sourcePresetID, old: sourcePreset?.id }
+    );
     fetchSourcePreset(sourcePresetID)
       .then((newPreset) => {
         setSourcePreset((oldPreset) => {
           if (oldPreset?.id === newPreset.id) {
-            if (process.env.NODE_ENV === "development")
-              console.warn("Skipping redundant source preset update", {
-                old: oldPreset?.id,
-                new: newPreset.id,
-              });
+            if (process.env.NODE_ENV === "development") console.warn(
+              "Skipping redundant source preset update",
+              { old: oldPreset?.id, new: newPreset.id }
+            );
             return oldPreset;
           }
 
-          if (process.env.NODE_ENV === "development")
-            console.debug("Updating source preset", {
-              old: oldPreset?.id,
-              new: newPreset.id,
-            });
+          if (process.env.NODE_ENV === "development") console.debug(
+            "Updating source preset",
+            { old: oldPreset?.id, new: newPreset.id }
+          );
           setBackEndService(new CombinedCachedMapService(newPreset));
           return newPreset;
         });
@@ -180,9 +174,6 @@ export const OwmfMap = () => {
         //setSourcePreset(null);
         console.error("Failed updating source preset", e);
         showSnackbar("snackbar.map_error");
-      })
-      .finally(() => {
-        process.env.REACT_APP_FETCHING_PRESET = undefined;
       });
   }, [sourcePreset?.id, sourcePresetID]);
 

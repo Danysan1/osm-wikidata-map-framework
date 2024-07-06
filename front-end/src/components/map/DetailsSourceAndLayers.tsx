@@ -24,8 +24,9 @@ export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (pr
 
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (process.env.NODE_ENV === "development")
-      console.debug("DetailsSourceAndLayers useEffect", { bbox });
+    if (process.env.NODE_ENV === "development") console.debug(
+      "DetailsSourceAndLayers useEffect", { bbox }
+    );
     if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
       showLoadingSpinner(true);
       props.backEndService

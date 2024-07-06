@@ -2,17 +2,17 @@ import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import {
-    BackgroundStyle,
-    jawgStyle,
-    mapboxStyle,
-    maptilerStyle,
-    stadiaStyle,
+  BackgroundStyle,
+  jawgStyle,
+  mapboxStyle,
+  maptilerStyle,
+  stadiaStyle,
 } from "@/src/model/backgroundStyle";
 import { showSnackbar } from "@/src/snackbar";
 import type {
-    ControlPosition,
-    DataDrivenPropertyValueSpecification,
-    StyleSpecification
+  ControlPosition,
+  DataDrivenPropertyValueSpecification,
+  StyleSpecification
 } from "maplibre-gl";
 import { FC, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -170,8 +170,9 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
           });
           // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
-          if (process.env.NODE_ENV === "development")
-            console.debug("Setting json style", { style, styleSpec });
+          if (process.env.NODE_ENV === "development") console.debug(
+            "Setting json style", { style, styleSpec }
+          );
           props.setBackgroundStyle(styleSpec);
         })
         .catch((e) => {
