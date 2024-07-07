@@ -50,7 +50,9 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_contributing_url",
   "owmf_liberapay_id",
   "owmf_paypal_id",
-  "owmf_issues_url"
+  "owmf_issues_url",
+  "owmf_custom_intro_html",
+  "owmf_custom_intro_js",
 ];
 
 function generateCspHeaders() {

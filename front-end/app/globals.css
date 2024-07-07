@@ -301,6 +301,7 @@ span.legend-key {
 
 button.maplibregl-popup-close-button,
 button.mapboxgl-popup-close-button {
+    width: 1em;
     font-size: 2em;
     font-weight: bold;
     background-color: #f33;
