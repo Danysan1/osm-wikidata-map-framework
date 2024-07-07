@@ -20,9 +20,13 @@ interface TagInfoTag {
 export async function GET() {
   const { t } = await loadServerI18n(DEFAULT_LANGUAGE);
 
-  const contributingURL = process.env.owmf_contributing_url,
-    sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined,
-    sourcePreset = readSourcePreset(sourcePresets?.[0]);
+  const sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined,
+    sourcePreset = readSourcePreset(sourcePresets?.[0]),
+    contributingURL = process.env.owmf_home_url + "/contributing/" + DEFAULT_LANGUAGE + "/" + sourcePreset.id;
+
+  if (sourcePresets?.length !== 1) console.warn(
+    " !! taginfo.json: multiple source presets found, using the first one:", sourcePreset.id
+  );
 
   const tags: TagInfoTag[] = [{
     "key": "alt_name",

@@ -1,21 +1,26 @@
-import { loadServerI18n } from "@/src/i18n/server";
+"use client";
+
+import { loadClientI18n } from "@/src/i18n/client";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { FC, useMemo } from "react";
+import { useTranslation } from "react-i18next";
+
+loadClientI18n().catch((e) => { throw e; });
 
 interface ContributingProps {
     lang?: string;
     sourcePreset: SourcePreset;
 }
 
-export const Contributing: FC<ContributingProps> = async ({ lang, sourcePreset }) => {
-    const { t } = await loadServerI18n(lang);
+export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
+    const { t } = useTranslation();
     const mapcompleteURL = useMemo(
         () => sourcePreset?.mapcomplete_theme ? `https://mapcomplete.org/${sourcePreset?.mapcomplete_theme}` : undefined,
         [sourcePreset?.mapcomplete_theme]
     );
 
     return <div>
-        <h1>Contributing</h1>
+        <h1>{t("info_box.contribute")}</h1>
 
         {sourcePreset?.osm_wikidata_keys?.length && <>
             <h2>How to report a problem in the etymology of an element</h2>

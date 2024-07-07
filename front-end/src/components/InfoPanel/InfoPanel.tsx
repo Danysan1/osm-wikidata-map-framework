@@ -7,7 +7,7 @@ import styles from "./InfoPanel.module.css";
 import liberapayDonate from "./liberapay_donate.svg";
 
 export const InfoPanel: FC = () => {
-  const { t } = useTranslation(),
+  const { t, i18n } = useTranslation(),
     [lastUpdateDate, setLastUpdateDate] = useState<string | undefined>(undefined);
 
   useEffect(() => {
@@ -94,17 +94,15 @@ export const InfoPanel: FC = () => {
       </div>
 
       <p>
-        {process.env.owmf_contributing_url && (
-          <Button
-            className="contribute_button"
-            href={process.env.owmf_contributing_url}
-            iconText="📖"
-            iconAlt="Contribute symbol"
-            showText
-            text={t("info_box.contribute")}
-            title={t("info_box.contribute")}
-          />
-        )}
+        <Button
+          className="contribute_button"
+          href={process.env.owmf_home_url + "/contributing/" + i18n.language}
+          iconText="📖"
+          iconAlt="Contribute symbol"
+          showText
+          text={t("info_box.contribute")}
+          title={t("info_box.contribute")}
+        />
         &nbsp;
         {process.env.owmf_pmtiles_base_url && (
           <Button

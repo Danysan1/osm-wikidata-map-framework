@@ -47,7 +47,6 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
   "owmf_max_relation_members",
   "owmf_fetch_parts_of_linked_entities",
   "owmf_wikispore_enable",
-  "owmf_contributing_url",
   "owmf_liberapay_id",
   "owmf_paypal_id",
   "owmf_issues_url",
