@@ -1,4 +1,5 @@
 "use client";
+import { fetchSourcePreset } from "@/src/SourcePreset/client";
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
@@ -7,7 +8,6 @@ import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
-import { fetchSourcePreset } from "@/src/services/PresetService";
 import { showSnackbar } from "@/src/snackbar";
 import {
   DataDrivenPropertyValueSpecification,

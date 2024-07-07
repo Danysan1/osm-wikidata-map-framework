@@ -1,11 +1,8 @@
 import { parseStringArrayConfig } from "@/src/config";
 import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import { loadServerI18n } from "@/src/i18n/server";
-import { SourcePreset } from "@/src/model/SourcePreset";
-import { getCustomSourcePreset } from "@/src/services/PresetService";
-import { existsSync, readFileSync } from "fs";
+import { readSourcePreset } from "@/src/SourcePreset/server";
 import { NextResponse } from "next/server";
-import { join } from "path";
 
 interface TagInfoTag {
   key: string;
@@ -24,25 +21,8 @@ export async function GET() {
   const { t } = await loadServerI18n(DEFAULT_LANGUAGE);
 
   const contributingURL = process.env.owmf_contributing_url,
-    sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined;
-  let sourcePreset: SourcePreset | undefined;
-  if (!sourcePresets?.length) {
-    sourcePreset = getCustomSourcePreset();
-  } else {
-    if (sourcePresets?.length !== 1)
-      console.warn("!! taginfo.json generation with multiple source presets not supported yet !!");
-
-    const presetID = sourcePresets[0],
-      presetPath = join(process.cwd(), "public", "presets", presetID + ".json");
-    if (!existsSync(presetPath))
-      throw new Error("Preset file not found: " + presetPath);
-
-    const presetContent = readFileSync(presetPath, "utf8"),
-      presetObj: unknown = JSON.parse(presetContent);
-    if (!presetObj || typeof presetObj !== "object")
-      throw new Error("Invalid preset object found in " + presetPath);
-    sourcePreset = { id: presetID, ...presetObj };
-  }
+    sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined,
+    sourcePreset = readSourcePreset(sourcePresets?.[0]);
 
   const tags: TagInfoTag[] = [{
     "key": "alt_name",

@@ -39,7 +39,8 @@
         "etymology": "Etimologie (origine dei nomi)",
         "green_spaces": "Spazi verdi",
         "holy_wells": "Pozzi sacri",
-        "holy_well_etymology": "Etimologia dei pozzi sacri"
+        "holy_well_etymology": "Etimologia dei pozzi sacri",
+        "protected_areas": "Aree protette"
     },
     "source": {
         "choose_source": "Scegli fonte dati",

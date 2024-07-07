@@ -26,16 +26,19 @@ export interface SourcePreset {
 
     /**
      * OSM key whose value contains the human readable name of the linked entity
+     * @example "name:etymology"
      */
     osm_text_key?: string;
 
     /**
      * OSM key whose value contains the description of the linked entity
+     * @example "name:etymology:description"
      */
     osm_description_key?: string;
 
     /**
      * OSM keys which connect the subject (map element) to the linked entity (popup element)
+     * @example ["name:etymology:wikidata","subject:wikidata"]
      */
     osm_wikidata_keys?: string[];
 

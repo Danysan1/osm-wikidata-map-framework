@@ -39,7 +39,8 @@
         "etymology": "Etymologies (origin of names)",
         "green_spaces": "Green spaces",
         "holy_wells": "Holy wells",
-        "holy_well_etymology": "Etymology of holy wells"
+        "holy_well_etymology": "Etymology of holy wells",
+        "protected_areas": "Protected areas"
     },
     "source": {
         "choose_source": "Choose data source",
