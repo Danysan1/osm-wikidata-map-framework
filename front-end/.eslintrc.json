@@ -9,7 +9,7 @@
     "plugin:@typescript-eslint/recommended-type-checked",
     "plugin:@typescript-eslint/stylistic-type-checked"
   ],
-  "ignorePatterns": [ "node_modules/", ".next/", "src/generated/" ],
+  "ignorePatterns": [ "next.config.mjs", "node_modules/", ".next/", "src/generated/" ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaVersion": "latest",

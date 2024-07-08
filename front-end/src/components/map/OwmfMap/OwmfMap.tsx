@@ -4,6 +4,8 @@ import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import overpassLogo from "@/src/img/Overpass-turbo.svg";
+import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
@@ -16,6 +18,7 @@ import {
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -28,7 +31,6 @@ import Map, {
   ScaleControl,
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
-import { FeaturePopup } from "../../popup/FeaturePopup";
 import { BackEndControl } from "../../controls/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
 import { DataTableControl } from "../../controls/DataTableControl/DataTableControl";
@@ -39,10 +41,12 @@ import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/Q
 import { QueryLinkControl } from "../../controls/QueryLinkControl";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
 import { StatisticsColorControl } from "../../controls/StatisticsColorControl";
+import { FeaturePopup } from "../../popup/FeaturePopup";
 import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
 import { DetailsLayers } from "../DetailsLayers";
 import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
 import { PMTilesSource } from "../PMTilesSource";
+
 
 const PMTILES_PREFIX = "pmtiles",
   FALLBACK_COLOR = "#3bb2d0",
@@ -264,7 +268,7 @@ export const OwmfMap = () => {
         setOpenFeature={setOpenFeature}
       />
       <QueryLinkControl
-        icon="/img/Overpass-turbo.svg"
+        icon={overpassLogo as StaticImport}
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
         mapEventField="overpass_query"
@@ -273,7 +277,7 @@ export const OwmfMap = () => {
         position="top-right"
       />
       <QueryLinkControl
-        icon="/img/Wikidata_Query_Service_Favicon.svg"
+        icon={wikidataLogo as StaticImport}
         title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
         sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
         mapEventField="wdqs_query"

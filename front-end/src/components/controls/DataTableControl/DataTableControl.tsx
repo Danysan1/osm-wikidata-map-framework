@@ -1,6 +1,8 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import dataTableIcon from "@/src/img/Simple_icon_table.svg";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
+import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
@@ -104,7 +106,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
             <Image
               className="button_img"
               alt={"Data table symbol"}
-              src="img/Simple_icon_table.svg"
+              src={dataTableIcon as StaticImport}
               loading="lazy"
               width={23}
               height={23}

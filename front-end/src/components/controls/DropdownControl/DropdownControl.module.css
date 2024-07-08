@@ -23,16 +23,28 @@
   width: 100%;
 }
 
-.control table.ctrl_table > tbody > tr > td.dropdown_cell {
+.control table.ctrl_table>tbody>tr>td.dropdown_cell {
   max-height: 1em;
 }
 
-.control table.ctrl_table > tbody > tr > td.button_cell {
+.control table.ctrl_table>tbody>tr>td.button_cell {
   width: 1em;
 }
 
-.control table.ctrl_table > tbody > tr > td {
+.control table.ctrl_table>tbody>tr>td {
   padding: 0;
   /*text-align: left;*/
   /*text-align: right;*/
+}
+
+.show_on_desktop {
+  @media (max-width: 800px) {
+    display: none;
+  }
+}
+
+.show_on_mobile {
+  @media (min-width: 800px) {
+    display: none;
+  }
 }

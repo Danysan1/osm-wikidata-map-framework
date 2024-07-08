@@ -234,12 +234,9 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = (props) =
         selectedValue={colorSchemeID}
         title={t("color_scheme.choose_scheme")}
         position={props.position}
-        className='color-ctrl' >
-        <tr>
-            <td colSpan={2}>
-                {chartData && <Pie data={chartData} />}
-            </td>
-        </tr>
+        className='color-ctrl'
+    >
+        {chartData && <Pie data={chartData} />}
     </DropdownControl>;
 }
 

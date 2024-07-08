@@ -1,3 +1,6 @@
+import overpassLogo from "@/src/img/Overpass-turbo.svg";
+import dataTableIcon from "@/src/img/Simple_icon_table.svg";
+import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
 import { FC, useEffect, useState } from "react";
@@ -45,7 +48,7 @@ export const InfoPanel: FC = () => {
             <tr>
               <td>
                 <Image
-                  src="img/Overpass-turbo.svg"
+                  src={overpassLogo as StaticImport}
                   width="16"
                   height="16"
                   alt="Overpass Turbo logo"
@@ -58,7 +61,7 @@ export const InfoPanel: FC = () => {
             <tr>
               <td>
                 <Image
-                  src="img/Wikidata_Query_Service_Favicon.svg"
+                  src={wikidataLogo as StaticImport}
                   width="16"
                   height="16"
                   alt="Wikidata Query Service logo"
@@ -71,10 +74,10 @@ export const InfoPanel: FC = () => {
             <tr>
               <td>
                 <Image
-                  src="img/Simple_icon_table.svg"
+                  src={dataTableIcon as StaticImport}
                   width="16"
                   height="13"
-                  alt="Table"
+                  alt="Table symbol"
                   loading="lazy"
                   className={styles.table_img}
                 />

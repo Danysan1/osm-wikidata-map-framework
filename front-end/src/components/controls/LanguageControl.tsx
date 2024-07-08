@@ -43,18 +43,14 @@ export const LanguageControl: FC<LanguageControlProps> = (props) => {
         position={props.position}
         className='language-ctrl'
     >
-        <tr>
-            <td colSpan={2}>
-                <Button
-                    href="https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/"
-                    className="translate_button"
-                    title={t("translate")}
-                    iconText="🔣"
-                    iconAlt="Translation symbol"
-                    text={t("translate")}
-                    showText
-                />
-            </td>
-        </tr>
+        <Button
+            href="https://app.transifex.com/osm-wikidata-maps/osm-wikidata-map-framework/dashboard/"
+            className="translate_button"
+            title={t("translate")}
+            iconText="🔣"
+            iconAlt="Translation symbol"
+            text={t("translate")}
+            showText
+        />
     </DropdownControl>;
 }

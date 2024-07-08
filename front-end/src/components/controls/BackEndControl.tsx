@@ -142,18 +142,14 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
         position={props.position}
         className="back-end-ctrl"
     >
-        <tr>
-            <td colSpan={2}>
-                <Button
-                    onClick={clearCache}
-                    className="clear_cache_button"
-                    title={t("clear_cache")}
-                    iconText="🗑️"
-                    iconAlt="Clear cache symbol"
-                    text={t("clear_cache")}
-                    showText
-                />
-            </td>
-        </tr>
+        <Button
+            onClick={clearCache}
+            className="clear_cache_button"
+            title={t("clear_cache")}
+            iconText="🗑️"
+            iconAlt="Clear cache symbol"
+            text={t("clear_cache")}
+            showText
+        />
     </DropdownControl>;
 }

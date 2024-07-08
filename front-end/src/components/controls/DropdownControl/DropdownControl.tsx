@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import {
@@ -91,10 +90,8 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
     visible =
       props.dropdownItems.length > 1 &&
       (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
-    [dropdownVisible, setDropdownVisible] = useState(
-      parseBoolConfig(process.env.owmf_start_dropdown_open)
-    ),
-    onBtnClick = useCallback(() => setDropdownVisible((prev) => !prev), []),
+    [dropdownToggled, setDropdownToggled] = useState(false),
+    onBtnClick = useCallback(() => setDropdownToggled((prev) => !prev), []),
     btnCell = useMemo(
       () => (
         <td className={styles.button_cell}>
@@ -111,15 +108,14 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
       [onBtnClick, props.buttonContent, props.title]
     ),
     titleCell = useMemo(
-      () =>
-        dropdownVisible && (
-          <td className={styles.title_cell}>
-            <label htmlFor={dropdownId} className={styles.title}>
-              {props.title}
-            </label>
-          </td>
-        ),
-      [dropdownId, dropdownVisible, props.title]
+      () => (
+        <td className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
+          <label htmlFor={dropdownId} className={styles.title}>
+            {props.title}
+          </label>
+        </td>
+      ),
+      [dropdownId, dropdownToggled, props.title]
     ),
     dropDownChangeHandler: ChangeEventHandler<HTMLSelectElement> = useCallback(
       (e) => {
@@ -163,23 +159,27 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                 {buttonOnTheLeft ? btnCell : titleCell}
                 {buttonOnTheLeft ? titleCell : btnCell}
               </tr>
-              <tr>
-                {dropdownVisible && (
-                  <td colSpan={2} className={styles.dropdown_cell}>
-                    <select
-                      id={dropdownId}
-                      value={props.selectedValue}
-                      className={styles.dropdown_select}
-                      onChange={dropDownChangeHandler}
-                      name={props.className}
-                      title={props.title}
-                    >
-                      {options}
-                    </select>
-                  </td>
-                )}
+              <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
+                <td colSpan={2} className={styles.dropdown_cell}>
+                  <select
+                    id={dropdownId}
+                    value={props.selectedValue}
+                    className={styles.dropdown_select}
+                    onChange={dropDownChangeHandler}
+                    name={props.className}
+                    title={props.title}
+                  >
+                    {options}
+                  </select>
+                </td>
               </tr>
-              {dropdownVisible && props.children}
+              {props.children && (
+                <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
+                  <td colSpan={2}>
+                    {props.children}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -189,7 +189,7 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
       buttonOnTheLeft,
       dropDownChangeHandler,
       dropdownId,
-      dropdownVisible,
+      dropdownToggled,
       options,
       props.children,
       props.className,

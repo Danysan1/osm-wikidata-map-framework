@@ -23,8 +23,8 @@ export async function generateOwmfMetadata(lang?: string): Promise<Metadata> {
       locale: i18nInstance.language,
     },
     icons: {
-      icon: ["favicon.svg", "favicon.ico"],
-      apple: "apple-touch-icon.png"
+      icon: [`${process.env.owmf_base_path}/favicon.svg`, `${process.env.owmf_base_path}/favicon.ico`],
+      apple: `${process.env.owmf_base_path}/apple-touch-icon.png`,
     },
     authors: [{ name: "Daniele Santini", url: "https://www.dsantini.it" }],
     keywords: process.env.owmf_keywords,
