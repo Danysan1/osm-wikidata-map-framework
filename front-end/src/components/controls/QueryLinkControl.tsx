@@ -2,7 +2,7 @@ import { EtymologyResponse } from '@/src/model/EtymologyResponse';
 import { ControlPosition, MapSourceDataEvent } from 'maplibre-gl';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useCallback, useState } from 'react';
-import { LinkControl } from './LinkControl';
+import { LinkControl } from './LinkControl/LinkControl';
 
 interface QueryLinkControlProps {
     sourceIDs: string[];

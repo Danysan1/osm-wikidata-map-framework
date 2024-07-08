@@ -96,7 +96,7 @@ export const InfoPanel: FC = () => {
       <p>
         <Button
           className="contribute_button"
-          href={`${process.env.owmf_home_url ?? ""}/contributing/${i18n.language}`}
+          href={`/contributing/${i18n.language}`}
           iconText="📖"
           iconAlt="Contribute symbol"
           showText

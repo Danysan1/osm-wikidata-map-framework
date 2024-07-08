@@ -1,3 +1,5 @@
+import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { Etymology } from "@/src/model/Etymology";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
@@ -17,6 +19,7 @@ interface FeatureViewProps {
 
 export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
   const { t, i18n } = useTranslation(),
+    { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,
     osm_full_id =
       props?.osm_type && props.osm_id ? props.osm_type + "/" + props.osm_id : null,
@@ -45,10 +48,11 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
             (!mainName || name.toLowerCase() !== mainName.toLowerCase())
         )
         .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
-      return (alt_name_set.size > 0) ? Array.from(alt_name_set) : undefined;
+      return alt_name_set.size > 0 ? Array.from(alt_name_set) : undefined;
     }, [mainName, props?.alt_name, props?.name, props?.official_name]),
     [description, setDescription] = useState<string>(),
     [commons, setCommons] = useState<string[]>();
+
   useEffect(() => {
     const local_name = props?.["name:" + i18n.language],
       default_name = props?.["name:en"];
@@ -70,16 +74,14 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         .getSomeLabelFromWikidataID(props.wikidata, i18n.language)
         .then((label) => {
           if (label) {
-            if (process.env.NODE_ENV === "development") console.debug(
-              "Found label from Wikidata", { qid: props.wikidata, label }
-            );
+            if (process.env.NODE_ENV === "development")
+              console.debug("Found label from Wikidata", { qid: props.wikidata, label });
             setMainName(label);
           }
         })
         .catch(() => {
-          if (process.env.NODE_ENV === "development") console.warn(
-            "Failed getting label from Wikidata", { qid: props.wikidata }
-          );
+          if (process.env.NODE_ENV === "development")
+            console.warn("Failed getting label from Wikidata", { qid: props.wikidata });
         });
     } else {
       setMainName(undefined);
@@ -95,10 +97,11 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         .getDescriptionFromWikidataID(props.wikidata, i18n.language)
         .then((desc) => {
           if (desc) {
-            if (process.env.NODE_ENV === "development") console.debug(
-              "Found description from Wikidata",
-              { qid: props.wikidata, desc }
-            );
+            if (process.env.NODE_ENV === "development")
+              console.debug("Found description from Wikidata", {
+                qid: props.wikidata,
+                desc,
+              });
             setDescription(desc);
           }
         })
@@ -122,9 +125,8 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         .getCommonsImageFromWikidataID(props.wikidata)
         .then((image) => {
           if (image) {
-            if (process.env.NODE_ENV === "development") console.debug(
-              "Found image from Wikidata", { props, image }
-            );
+            if (process.env.NODE_ENV === "development")
+              console.debug("Found image from Wikidata", { props, image });
             setCommons([image]);
           }
         })
@@ -134,7 +136,36 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [props]);
 
-  if (process.env.NODE_ENV === "development") console.debug("FeatureView", { feature, mainName, altNames, description, commons, fromOsmUrl, fromWikidataUrl });
+  const textEtymology: Etymology | null = useMemo(
+    () =>
+      !!props?.text_etymology || props?.text_etymology_descr
+        ? {
+            name: props.text_etymology,
+            description: props.text_etymology_descr,
+            from_osm: props.from_osm,
+            from_osm_id: props.osm_id,
+            from_osm_type: props.osm_type,
+          }
+        : null,
+    [
+      props?.from_osm,
+      props?.osm_id,
+      props?.osm_type,
+      props?.text_etymology,
+      props?.text_etymology_descr,
+    ]
+  );
+
+  if (process.env.NODE_ENV === "development")
+    console.debug("FeatureView", {
+      feature,
+      mainName,
+      altNames,
+      description,
+      commons,
+      fromOsmUrl,
+      fromWikidataUrl,
+    });
   return (
     <div className={styles.detail_container}>
       <h3 className={styles.element_name}>📍 {mainName}</h3>
@@ -156,15 +187,12 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
       )}
 
       {props?.etymologies && <EtymologyList etymologies={props.etymologies} />}
-      {props?.text_etymology && <EtymologyView etymology={{
-        name: props.text_etymology,
-        description: props.text_etymology_descr,
-      }} />}
+      {textEtymology && <EtymologyView etymology={textEtymology} />}
 
       <Button
         title={t("feature_details.report_problem")}
         className="ety_error_button"
-        href={process.env.owmf_element_issue_url}
+        href={`/contributing/${i18n.language}/${sourcePresetID}`}
         iconText="⚠️"
         iconAlt="Problem symbol"
         showText

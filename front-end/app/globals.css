@@ -113,32 +113,6 @@ div#welcome_board {
     opacity: 0.8;
 }
 
-div.custom-ctrl>table {
-    border-collapse: collapse;
-    border-spacing: 0;
-    width: 100%;
-}
-
-div.custom-ctrl>table>tr>td.content-cell {
-    max-height: 1em;
-}
-
-div.custom-ctrl>table>tr>td.button-cell {
-    width: 1em;
-}
-
-div.custom-ctrl>table>tr>td {
-    padding: 0;
-    text-align: left;
-    /*text-align: right;*/
-}
-
-.maplibregl-ctrl-icon,
-.mapboxgl-ctrl-icon,
-.dropdown-ctrl .dropdown-ctrl-button {
-    font-size: large;
-}
-
 div.detail_container .element_name,
 div.detail_container .element_alt_names,
 div.detail_container .element_description,

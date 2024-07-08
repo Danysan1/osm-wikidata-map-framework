@@ -1,7 +1,7 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import type { ControlPosition } from "maplibre-gl";
 import { FC, useMemo } from 'react';
-import { LinkControl } from './LinkControl';
+import { LinkControl } from './LinkControl/LinkControl';
 
 interface IDEditorControlProps {
   minZoomLevel: number;

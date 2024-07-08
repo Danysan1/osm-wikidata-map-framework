@@ -1,7 +1,7 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
 import { ControlPosition } from 'maplibre-gl';
 import { FC, useMemo } from 'react';
-import { LinkControl } from './LinkControl';
+import { LinkControl } from './LinkControl/LinkControl';
 
 
 interface MapCompleteControlProps {

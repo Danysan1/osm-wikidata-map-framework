@@ -4,6 +4,7 @@ import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
 import { InfoPopup } from "../../popup/InfoPopup";
+import styles from "./InfoControl.module.css";
 
 class InfoControlObject implements IControl {
   private _map?: Map;
@@ -12,8 +13,7 @@ class InfoControlObject implements IControl {
   onAdd(map: Map) {
     this._map = map;
     this._container = document.createElement("div");
-    this._container.className =
-      "maplibregl-ctrl maplibregl-ctrl-group mapboxgl-ctrl mapboxgl-ctrl-group custom-ctrl info-ctrl";
+    this._container.className = `maplibregl-ctrl maplibregl-ctrl-group ${styles.control}`;
     return this._container;
   }
 
@@ -52,7 +52,7 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
     () => (
       <div className={props.className}>
         <button
-          className="info-ctrl-button mapboxgl-ctrl-icon maplibregl-ctrl-icon"
+          className={styles.button}
           onClick={openPopup}
           title={t("info_box.open_popup")}
           aria-label={t("info_box.open_popup")}

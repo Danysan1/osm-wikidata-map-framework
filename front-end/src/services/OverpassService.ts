@@ -81,7 +81,7 @@ export class OverpassService implements MapService {
             search_text_key = undefined;
             use_wikidata = true;
         } else if (!this.preset?.osm_wikidata_keys) {
-            throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${this.preset?.osm_wikidata_keys?.join(',')}"`)
+            throw new Error(`No Wikidata keys configured, invalid Overpass back-end ID: "${backEndID}"`)
         } else if (backEndID.includes("overpass_all_wd")) {
             // Search all elements with an etymology (all wikidata_keys) and/or with wikidata=*
             osm_keys = this.preset.osm_wikidata_keys;
