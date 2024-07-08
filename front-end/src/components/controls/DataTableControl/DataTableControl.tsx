@@ -6,7 +6,7 @@ import { FC, cloneElement, useCallback, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from "react-i18next";
 import { LngLat, useControl } from 'react-map-gl/maplibre';
-import { DataTablePopup } from '../../DataTablePopup/DataTablePopup';
+import { DataTablePopup } from '../../popup/DataTablePopup';
 
 class DataTableControlObject implements IControl {
   private _map?: Map;

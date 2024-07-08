@@ -28,7 +28,7 @@ import Map, {
   ScaleControl,
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
-import { FeaturePopup } from "../../FeaturePopup/FeaturePopup";
+import { FeaturePopup } from "../../popup/FeaturePopup";
 import { BackEndControl } from "../../controls/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
 import { DataTableControl } from "../../controls/DataTableControl/DataTableControl";

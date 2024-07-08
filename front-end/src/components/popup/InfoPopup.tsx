@@ -2,7 +2,7 @@ import Script from "next/script";
 import { FC, useEffect, useState } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
 import { InfoPanel } from "../InfoPanel/InfoPanel";
-import styles from "./InfoPopup.module.css";
+import styles from "./popup.module.css";
 
 interface InfoPopupProps {
   position: LngLat;
@@ -32,7 +32,7 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
     <Popup
       longitude={props.position.lng}
       latitude={props.position.lat}
-      className={styles.info_popup}
+      className={styles.custom_popup}
       maxWidth="none"
       closeButton
       closeOnClick

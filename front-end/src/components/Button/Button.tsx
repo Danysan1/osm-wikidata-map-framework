@@ -21,8 +21,9 @@ export const Button: FC<ButtonProps> = (props) => {
       onClick={props.onClick}
       href={props.href}
       title={props.title}
+      aria-label={props.title}
       role="button"
-      className={`w3-button w3-white w3-border w3-round-large button-6 ${styles.button} ${props.className}`}
+      className={`${styles.button} ${props.className}`}
     >
       {props.icon && (
         <Image

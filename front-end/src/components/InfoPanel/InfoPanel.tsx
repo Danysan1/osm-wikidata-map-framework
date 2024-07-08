@@ -96,7 +96,7 @@ export const InfoPanel: FC = () => {
       <p>
         <Button
           className="contribute_button"
-          href={process.env.owmf_home_url + "/contributing/" + i18n.language}
+          href={`${process.env.owmf_home_url ?? ""}/contributing/${i18n.language}`}
           iconText="📖"
           iconAlt="Contribute symbol"
           showText
@@ -124,7 +124,7 @@ export const InfoPanel: FC = () => {
           </p>
         )}
         <p>
-          {t("info_box.based_on")} &nbsp;
+          {t("info_box.based_on")}&nbsp;
           <a
             title="OSM-Wikidata Map Framework"
             aria-label="OSM-Wikidata Map Framework"

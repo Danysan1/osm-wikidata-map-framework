@@ -22,7 +22,7 @@ export async function GET() {
 
   const sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined,
     sourcePreset = readSourcePreset(sourcePresets?.[0]),
-    contributingURL = process.env.owmf_home_url + "/contributing/" + DEFAULT_LANGUAGE + "/" + sourcePreset.id;
+    contributingURL = `${process.env.owmf_home_url}/contributing/${DEFAULT_LANGUAGE}/${sourcePreset.id}`;
 
   if (sourcePresets?.length !== 1) console.warn(
     " !! taginfo.json: multiple source presets found, using the first one:", sourcePreset.id
@@ -137,13 +137,13 @@ export async function GET() {
 
   return NextResponse.json({
     "data_format": 1,
-    "data_url": process.env.owmf_home_url + "/taginfo.json",
+    "data_url": `${process.env.owmf_home_url}/taginfo.json`,
     "project": {
       "name": t("title"),
       "description": t("description"),
       "project_url": process.env.owmf_home_url,
       "doc_url": contributingURL,
-      "icon_url": process.env.owmf_home_url + "/favicon.ico",
+      "icon_url": `${process.env.owmf_home_url}/favicon.ico`,
       "contact_name": process.env.owmf_contact_name,
       "contact_email": process.env.owmf_contact_email,
     },

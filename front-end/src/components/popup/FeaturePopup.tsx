@@ -2,7 +2,7 @@ import { FC } from "react";
 import { Popup, useMap } from "react-map-gl/maplibre";
 import { EtymologyFeature } from "../../model/EtymologyResponse";
 import { FeatureView } from "../FeatureView/FeatureView";
-import styles from "./FeaturePopup.module.css";
+import styles from "./popup.module.css";
 
 interface FeaturePopupProps {
   feature: EtymologyFeature;
@@ -20,7 +20,7 @@ export const FeaturePopup: FC<FeaturePopupProps> = (props) => {
       <Popup
         longitude={position.lng}
         latitude={position.lat}
-        className={styles.feature_popup}
+        className={styles.custom_popup}
         maxWidth="none"
         closeButton
         closeOnClick

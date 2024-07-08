@@ -1,3 +1,7 @@
+div.detail_container {
+  text-align: center;
+}
+
 div.detail_container h1,
 div.detail_container h2,
 div.detail_container h3 {

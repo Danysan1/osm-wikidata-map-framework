@@ -3,7 +3,7 @@ import type { ControlPosition, IControl, Map } from "maplibre-gl";
 import { FC, cloneElement, useCallback, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
-import { InfoPopup } from "../../InfoPopup/InfoPopup";
+import { InfoPopup } from "../../popup/InfoPopup";
 
 class InfoControlObject implements IControl {
   private _map?: Map;

@@ -5,6 +5,7 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
 import { FC, useCallback, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import { Button } from "../Button/Button";
 import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
 
 interface BackEndControlProps {
@@ -143,10 +144,15 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
     >
         <tr>
             <td colSpan={2}>
-                <button onClick={clearCache} className="hiddenElement w3-button w3-white w3-border w3-round-large button-6 clear_cache_button" title={t("clear_cache")} aria-label={t("clear_cache")} >
-                    <span className="button_img">🗑️ &nbsp;</span>
-                    <span>{t("clear_cache")}</span>
-                </button>
+                <Button
+                    onClick={clearCache}
+                    className="clear_cache_button"
+                    title={t("clear_cache")}
+                    iconText="🗑️"
+                    iconAlt="Clear cache symbol"
+                    text={t("clear_cache")}
+                    showText
+                />
             </td>
         </tr>
     </DropdownControl>;
