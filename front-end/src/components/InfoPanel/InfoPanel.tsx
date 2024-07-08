@@ -134,7 +134,8 @@ export const InfoPanel: FC = () => {
           >
             OSM-Wikidata Map Framework
           </a>
-          &nbsp; {process.env.owmf_framework_image_tag ?? process.env.owmf_version}
+          &nbsp;
+          {process.env.owmf_version}
         </p>
         <div className={styles.last_info_row}>
           {process.env.owmf_liberapay_id && (
