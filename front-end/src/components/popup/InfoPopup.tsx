@@ -1,5 +1,5 @@
 import Script from "next/script";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
 import { InfoPanel } from "../InfoPanel/InfoPanel";
 import styles from "./popup.module.css";
@@ -11,6 +11,7 @@ interface InfoPopupProps {
 
 export const InfoPopup: FC<InfoPopupProps> = (props) => {
   const [customIntroHTML, setCustomIntroHTML] = useState<string>(),
+    headRef = useRef<HTMLAnchorElement>(null),
     [customIntroJS, setCustomIntroJS] = useState<string>();
 
   useEffect(() => {
@@ -28,6 +29,9 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
         .catch((error) => console.error("Failed to load custom intro HTML", error));
     }
   }, []);
+
+  useEffect(() => headRef.current?.scrollIntoView(), [headRef]);
+
   return (
     <Popup
       longitude={props.position.lng}
@@ -39,6 +43,7 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
       closeOnMove
       onClose={props.onClose}
     >
+      <a ref={headRef}></a>
       {customIntroHTML ? <div id="custom_intro" dangerouslySetInnerHTML={{ __html: customIntroHTML }} /> : <InfoPanel />}
       {customIntroJS && <Script src={customIntroJS} strategy="afterInteractive" />}
     </Popup>

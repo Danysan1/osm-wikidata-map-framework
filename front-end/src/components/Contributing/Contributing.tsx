@@ -67,10 +67,10 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
         <p>If those tools aren&apos;t enough for your needs and you want to manually add or correct the etymology of an element you can do it on <a href="https://www.openstreetmap.org/">openstreetmap.org</a>.</p>
         <p>You can learn how to map on <a href="https://www.openstreetmap.org/welcome">the official welcome page</a> and on <a href="https://learnosm.org/">LearnOSM</a>.</p>
         <p>The wikidata ID of an item (object/person/...) can be found by searching its name on <a href="https://www.wikidata.org/wiki/Wikidata:Main_Page">wikidata.org</a>, once the subject will be opened its alphanumeric ID will be both on the right of the title and in the URL.</p>
-        <p>Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find its page at https://www.wikidata.org/wiki/Q8023 . As can be seen from the URL, its ID is `Q8023`.</p>
+        <p>Suppose for example that you want to tag something named after Nelson Mandela: after searching it on wikidata you will find its page at <a href="https://www.wikidata.org/wiki/Q8023">https://www.wikidata.org/wiki/Q8023</a> . As can be seen from the URL, its ID is <code>Q8023</code>.</p>
         <p>OSM-Wikidata Map Framework obtains the etymology data from multiple tags:</p>
 
-        <p>Possible patterns of tags and properties used by OSM-Wikidata Map Framework are listed in the [README](README.md). Examples of tags and properties to be configured for these patterns are:</p>
+        <p>Possible patterns of tags and properties used by OSM-Wikidata Map Framework are listed in <a href="https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/README.md">README.md</a>. Examples of tags and properties to be configured for these patterns are:</p>
 
         <table>
             <thead>
