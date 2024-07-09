@@ -1,7 +1,7 @@
 // import { withSentryConfig } from "@sentry/nextjs";
 import packageJSON from './package.json' assert { type: "json" };
 
-const BASE_PATH = "/out",
+const BASE_PATH = "",
   CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
     "owmf_default_center_lat",
     "owmf_default_center_lon",

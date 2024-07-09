@@ -6,13 +6,14 @@ export async function fetchSourcePreset(sourcePresetID?: string) {
     if (!sourcePresetID || sourcePresetID === DEFAULT_SOURCE_PRESET_ID) {
         preset = getCustomSourcePreset();
     } else {
-        const presetResponse = await fetch(`${process.env.owmf_base_path}/presets/${sourcePresetID}.json`);
+        const presetURL = `${process.env.owmf_base_path ?? ""}/presets/${sourcePresetID}.json`,
+            presetResponse = await fetch(presetURL);
         if (!presetResponse.ok)
-            throw new Error(`Failed fetching preset "${sourcePresetID}.json"`);
+            throw new Error(`Failed fetching preset "${presetURL}"`);
 
         const presetObj: unknown = await presetResponse.json();
         if (presetObj === null || typeof presetObj !== "object")
-            throw new Error(`Invalid preset object found in "${sourcePresetID}.json"`);
+            throw new Error(`Invalid preset object found in "${presetURL}"`);
 
         preset = { id: sourcePresetID, ...presetObj };
     }

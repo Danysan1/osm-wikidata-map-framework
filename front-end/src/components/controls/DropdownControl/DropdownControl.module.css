@@ -37,14 +37,14 @@
   /*text-align: right;*/
 }
 
-.show_on_desktop {
-  @media (max-width: 800px) {
+@media (max-width: 768px) {
+  .show_on_desktop {
     display: none;
   }
 }
 
-.show_on_mobile {
-  @media (min-width: 800px) {
+@media (min-width: 768px) {
+  .show_on_mobile {
     display: none;
   }
 }
