@@ -23,6 +23,7 @@ import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Map, {
+  ErrorEvent,
   FullscreenControl,
   GeolocateControl,
   MapSourceDataEvent,
@@ -181,6 +182,21 @@ export const OwmfMap = () => {
       });
   }, [sourcePreset?.id, sourcePresetID]);
 
+  /**
+   * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
+   */
+  const mapErrorHandler = useCallback((err: ErrorEvent & { sourceId?: string }) => {
+    let errorMessage;
+    if (err.sourceId && [ELEMENTS_SOURCE, DETAILS_SOURCE].includes(err.sourceId)) {
+      showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
+      errorMessage = "An error occurred while fetching " + err.sourceId;
+    } else {
+      showSnackbar(t("snackbar.map_error"));
+      errorMessage = "Map error: " + err.sourceId
+    }
+    console.warn(errorMessage, "error", { error: err });
+  }, [t]);
+
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 
   /**
@@ -225,6 +241,7 @@ export const OwmfMap = () => {
       onMoveEnd={onMoveEndHandler}
       transformRequest={requestTransformFunction}
       onSourceData={mapSourceDataHandler}
+      onError={mapErrorHandler}
     >
       <InfoControl position="top-left" />
       <SourcePresetControl position="top-left" />
