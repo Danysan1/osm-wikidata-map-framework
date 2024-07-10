@@ -39,7 +39,11 @@ interface InfoControlProps {
 
 export const InfoControl: FC<InfoControlProps> = (props) => {
   const [isPopupOpen, setPopupOpen] = useState(true),
-    openPopup = useCallback(() => setPopupOpen(true), []),
+    [showInstructions, setShowInstructions] = useState(false),
+    openPopup = useCallback(() => {
+      setPopupOpen(true);
+      setShowInstructions(true);
+    }, []),
     closePopup = useCallback(() => setPopupOpen(false), []);
 
   const ctrl = useControl<InfoControlObject>(() => new InfoControlObject(), {
@@ -60,11 +64,14 @@ export const InfoControl: FC<InfoControlProps> = (props) => {
           ℹ️
         </button>
         {isPopupOpen && map && (
-          <InfoPopup position={map.getBounds().getSouthWest()} onClose={closePopup} />
+          <InfoPopup
+            position={map.getBounds().getSouthWest()}
+            onClose={closePopup}
+            showInstructions={showInstructions} />
         )}
       </div>
     ),
-    [props.className, openPopup, isPopupOpen, map, closePopup]
+    [props.className, openPopup, isPopupOpen, map, closePopup, showInstructions]
   );
 
   return (

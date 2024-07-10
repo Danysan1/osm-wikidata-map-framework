@@ -3,7 +3,7 @@ import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
+import { ButtonRow } from "../ButtonRow/ButtonRow";
 import styles from "./DataTable.module.css";
 
 interface DataTableRowProps {
@@ -43,7 +43,8 @@ export const DataTableRow: FC<DataTableRowProps> = ({ feature, details, openFeat
 
     return <tr className={styles.data_table_row}>
         <td>{nameCellContent}</td>
-        <td><FeatureButtonRow feature={feature} openFeatureDetails={openFeatureDetails} /></td>
+        {/*<td><FeatureButtonRow feature={feature} openFeatureDetails={openFeatureDetails} /></td>*/}
+        <td><ButtonRow openInfo={openFeatureDetails} /></td>
         <td>{etyCellContent}</td>
     </tr>;
 }

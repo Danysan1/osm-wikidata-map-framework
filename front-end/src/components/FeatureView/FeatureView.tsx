@@ -1,5 +1,4 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { Etymology } from "@/src/model/Etymology";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
@@ -9,7 +8,6 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
-import { EtymologyView } from "../EtymologyList/EtymologyView";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./FeatureView.module.css";
 
@@ -136,26 +134,6 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [props]);
 
-  const textEtymology: Etymology | null = useMemo(
-    () =>
-      !!props?.text_etymology || props?.text_etymology_descr
-        ? {
-            name: props.text_etymology,
-            description: props.text_etymology_descr,
-            from_osm: props.from_osm,
-            from_osm_id: props.osm_id,
-            from_osm_type: props.osm_type,
-          }
-        : null,
-    [
-      props?.from_osm,
-      props?.osm_id,
-      props?.osm_type,
-      props?.text_etymology,
-      props?.text_etymology_descr,
-    ]
-  );
-
   if (process.env.NODE_ENV === "development")
     console.debug("FeatureView", {
       feature,
@@ -186,8 +164,13 @@ export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
         </div>
       )}
 
-      {props?.etymologies && <EtymologyList etymologies={props.etymologies} />}
-      {textEtymology && <EtymologyView etymology={textEtymology} />}
+      {(!!props?.etymologies || props?.text_etymology) && <EtymologyList
+        etymologies={props.etymologies ?? []}
+        text_etymology={props.text_etymology}
+        text_etymology_descr={props.text_etymology_descr}
+        from_osm_id={props.osm_id}
+        from_osm_type={props.osm_type}
+      />}
 
       <Button
         title={t("feature_details.report_problem")}

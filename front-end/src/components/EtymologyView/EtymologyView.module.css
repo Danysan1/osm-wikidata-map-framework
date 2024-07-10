@@ -1,0 +1,30 @@
+.etymology_grid {
+  display: grid;
+  grid-template-rows: auto;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+  grid-row-gap: 0.5em;
+  grid-column-gap: 0.5em;
+  grid-template-columns: repeat(auto-fill, minmax(20em, 1fr));
+}
+
+.etymology {
+  border: 1px solid #ccc;
+  margin: 0.5em;
+  padding: 1em;
+  text-align: center;
+  background-color: hsl(200, 30%, 95%);
+  border-radius: 0.5em;
+  /*height: 100%;*/
+}
+
+.etymology_image img {
+    margin: 0.5em;
+    /*padding: 0.5em;*/
+    min-width: 15em;
+    min-height: 15em;
+    max-width: 26em;
+    max-height: 26em;
+}

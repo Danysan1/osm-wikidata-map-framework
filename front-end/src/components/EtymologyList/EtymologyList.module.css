@@ -1,4 +1,4 @@
-.grid_auto {
+.etymologies_grid {
   /* https://css-tricks.com/look-ma-no-media-queries-responsive-layouts-using-css-grid/ */
   /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
   display: grid;
@@ -9,33 +9,5 @@
   justify-items: center;
   grid-row-gap: 0.5em;
   grid-column-gap: 0.5em;
-  /*grid-template-columns: repeat(2, 1fr);*/
-  /*grid-template-columns: repeat(auto-fit, minmax(15em, 1fr));*/
-  grid-template-columns: repeat(auto-fit, minmax(25em, 1fr));
-}
-
-.etymology {
-  border: 1px solid #ccc;
-  margin: 0.5em;
-  /* padding: 0.5em; */
-  text-align: center;
-  background-color: hsl(200, 30%, 95%);
-  border-radius: 0.5em;
-  /*height: 100%;*/
-}
-
-.etymology_image img {
-    margin: 0.5em;
-    /*padding: 0.5em;*/
-    min-width: 15em;
-    min-height: 15em;
-    max-width: 26em;
-    max-height: 26em;
-}
-
-.grid,
-.column {
-    /*max-width: 40em;*/
-    margin-left: auto;
-    margin-right: auto;
+  grid-template-columns: repeat(auto-fit, minmax(20em, max-content));
 }

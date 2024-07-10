@@ -9,7 +9,11 @@ import { Button } from "../Button/Button";
 import styles from "./InfoPanel.module.css";
 import liberapayDonate from "./liberapay_donate.svg";
 
-export const InfoPanel: FC = () => {
+interface InfoPanelProps {
+  showInstructions?: boolean;
+}
+
+export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
   const { t, i18n } = useTranslation(),
     [lastUpdateDate, setLastUpdateDate] = useState<string | undefined>(undefined);
 
@@ -28,7 +32,7 @@ export const InfoPanel: FC = () => {
         <p>{t("description")}</p>
       </header>
 
-      <div className={styles.instructions_container}>
+      {showInstructions && <div className={styles.instructions_container}>
         <p>{t("info_box.click_anywhere")}</p>
         <p>{t("info_box.use_controls")}</p>
         <table>
@@ -94,7 +98,7 @@ export const InfoPanel: FC = () => {
             </tr>
           </tbody>
         </table>
-      </div>
+      </div>}
 
       <p>
         <Button

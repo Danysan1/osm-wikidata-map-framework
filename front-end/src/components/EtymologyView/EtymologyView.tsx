@@ -4,9 +4,9 @@ import { WikipediaService } from "@/src/services/WikipediaService";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
+import { EtymologyList } from "../EtymologyList/EtymologyList";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
-import { EtymologyList } from "./EtymologyList";
-import styles from "./EtymologyList.module.css";
+import styles from "./EtymologyView.module.css";
 
 interface EtymologyViewProps {
   etymology: EtymologyDetails;
@@ -165,9 +165,9 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
 
   return (
     <div className={styles.etymology}>
-      <div className={styles.grid_auto}>
+      <div className={styles.etymology_grid}>
         <div className="column">
-          <div className="header column etymology_header">
+          <div>
             <h2 className="etymology_name">{etymology.name}</h2>
             <h3 className="etymology_description">{etymology.description}</h3>
           </div>

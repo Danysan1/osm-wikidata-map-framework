@@ -1,4 +1,5 @@
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { Popup as PopupRef } from "maplibre-gl";
 import { FC, useEffect, useRef } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
 import { DataTable } from "../DataTable/DataTable";
@@ -12,9 +13,12 @@ interface DataTablePopupProps {
 }
 
 export const DataTablePopup: FC<DataTablePopupProps> = (props) => {
-  const headRef = useRef<HTMLAnchorElement>(null);
+  const popupRef = useRef<PopupRef>(null);
 
-  useEffect(() => headRef.current?.scrollIntoView(), [headRef]);
+  useEffect(
+    () => popupRef.current?.getElement()?.querySelector(".maplibregl-popup-close-button")?.scrollIntoView(true),
+    [popupRef, props.features]
+  );
 
   return <Popup longitude={props.position.lng}
     latitude={props.position.lat}
@@ -24,8 +28,8 @@ export const DataTablePopup: FC<DataTablePopupProps> = (props) => {
     closeOnClick
     closeOnMove
     onClose={props.onClose}
+    ref={popupRef}
   >
-    <a ref={headRef}></a>
     <DataTable features={props.features} setOpenFeature={props.setOpenFeature} />
   </Popup>
 }

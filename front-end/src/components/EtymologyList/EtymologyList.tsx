@@ -4,8 +4,8 @@ import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/Wi
 import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { EtymologyView } from "../EtymologyView/EtymologyView";
 import styles from "./EtymologyList.module.css";
-import { EtymologyView } from "./EtymologyView";
 import { TextEtymologies, TextEtymologiesProps } from "./TextEtymologies";
 
 interface EtymologyListProps extends TextEtymologiesProps {
@@ -58,8 +58,8 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
             );
           return sortedIDs.map((wikidataID): EtymologyDetails => {
             const baseEntity = etymologies.find(
-                (oldEty) => oldEty.wikidata === wikidataID
-              ),
+              (oldEty) => oldEty.wikidata === wikidataID
+            ),
               downloadedDetails = downloadedEtymologies[wikidataID];
             return { ...baseEntity, ...downloadedDetails };
           });
@@ -83,7 +83,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
   }, [downloadEtymologyDetails, etys]);
 
   return (
-    <div className={styles.grid_auto}>
+    <div className={etymologyDetails?.length == 1 ? "" : styles.etymologies_grid}>
       {loadingEtymologies && (
         <div className="etymology etymology_loading">
           <h3>{t("feature_details.loading")}</h3>
@@ -95,7 +95,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
         ?.map((ety, i) => (
           <EtymologyView key={i} etymology={ety} />
         ))}
-      <TextEtymologies {...props} other_etymologies={etys} />
+      <TextEtymologies {...props} other_etymologies={etymologyDetails} />
     </div>
   );
 };

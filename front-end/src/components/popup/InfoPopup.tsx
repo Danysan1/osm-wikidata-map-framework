@@ -1,3 +1,4 @@
+import { Popup as PopupRef } from "maplibre-gl";
 import Script from "next/script";
 import { FC, useEffect, useRef, useState } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
@@ -5,13 +6,14 @@ import { InfoPanel } from "../InfoPanel/InfoPanel";
 import styles from "./popup.module.css";
 
 interface InfoPopupProps {
+  showInstructions?: boolean;
   position: LngLat;
   onClose: () => void;
 }
 
 export const InfoPopup: FC<InfoPopupProps> = (props) => {
   const [customIntroHTML, setCustomIntroHTML] = useState<string>(),
-    headRef = useRef<HTMLAnchorElement>(null),
+    popupRef = useRef<PopupRef>(null),
     [customIntroJS, setCustomIntroJS] = useState<string>();
 
   useEffect(() => {
@@ -30,7 +32,10 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
     }
   }, []);
 
-  useEffect(() => headRef.current?.scrollIntoView(), [headRef]);
+  useEffect(
+    () => popupRef.current?.getElement()?.querySelector(".maplibregl-popup-close-button")?.scrollIntoView(true),
+    [popupRef, props.showInstructions]
+  );
 
   return (
     <Popup
@@ -42,9 +47,13 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
       closeOnClick
       closeOnMove
       onClose={props.onClose}
+      ref={popupRef}
     >
-      <a ref={headRef}></a>
-      {customIntroHTML ? <div id="custom_intro" dangerouslySetInnerHTML={{ __html: customIntroHTML }} /> : <InfoPanel />}
+      {customIntroHTML ? (
+        <div id="custom_intro" dangerouslySetInnerHTML={{ __html: customIntroHTML }} />
+      ) : (
+        <InfoPanel showInstructions={props.showInstructions} />
+      )}
       {customIntroJS && <Script src={customIntroJS} strategy="afterInteractive" />}
     </Popup>
   );

@@ -1,7 +1,7 @@
 import { OsmType } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { FC } from "react";
-import { EtymologyView } from "./EtymologyView";
+import { FC, useMemo } from "react";
+import { EtymologyView } from "../EtymologyView/EtymologyView";
 
 export interface TextEtymologiesProps {
   text_etymology?: string;
@@ -12,45 +12,41 @@ export interface TextEtymologiesProps {
 }
 
 export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
-  const textEtyName = props.text_etymology === "null" ? undefined : props.text_etymology,
-    textEtyNames = textEtyName ? textEtyName.split(";") : [],
-    textEtyDescr =
-      props.text_etymology_descr === "null" ? undefined : props.text_etymology_descr,
-    textEtyDescrs = textEtyDescr ? textEtyDescr.split(";") : [];
-
-  const etymologies: EtymologyDetails[] = [];
-  for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
-    const nthTextEtyNameExists = n < textEtyNames.length,
-      nthTextEtyDescrExists = n < textEtyDescrs.length,
-      // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
-      textEtyShouldBeShown =
-        nthTextEtyDescrExists ||
-        (nthTextEtyNameExists &&
-          props.other_etymologies?.every(
-            (etymology) =>
-              !etymology?.name
-                ?.toLowerCase()
-                ?.includes(textEtyNames[n].trim().toLowerCase()) &&
-              !etymology?.description
-                ?.toLowerCase()
-                ?.includes(textEtyNames[n].trim().toLowerCase())
-          )),
-      nthTextEtyName = nthTextEtyNameExists ? textEtyNames[n] : undefined,
-      nthTextEtyDescr = nthTextEtyDescrExists ? textEtyDescrs[n] : undefined;
-    if (process.env.NODE_ENV === "development") console.debug(
-      "showEtymologies: showing text etymology? ",
-      { n, nthTextEtyName, nthTextEtyDescr, textEtyShouldBeShown, etymologies }
-    );
-    if (textEtyShouldBeShown) {
-      etymologies.push({
-        name: nthTextEtyName,
-        description: nthTextEtyDescr,
-        from_osm: true,
-        from_osm_type: props.from_osm_type,
-        from_osm_id: props.from_osm_id,
-      });
+  const etymologies = useMemo(() => {
+    const textEtyName = props.text_etymology === "null" ? undefined : props.text_etymology,
+      textEtyNames = textEtyName ? textEtyName.split(";") : [],
+      textEtyDescr = props.text_etymology_descr === "null" ? undefined : props.text_etymology_descr,
+      textEtyDescrs = textEtyDescr ? textEtyDescr.split(";") : [],
+      etys: EtymologyDetails[] = [];
+    for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
+      const nthTextEtyName = n < textEtyNames.length ? textEtyNames[n].trim() : undefined,
+        nthTextEtyDescr = n < textEtyDescrs.length ? textEtyDescrs[n].trim() : undefined,
+        // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+        textEtyShouldBeShown = !!nthTextEtyDescr || (nthTextEtyName &&
+          props.other_etymologies?.every((ety) => {
+            const a = !ety.name?.toLowerCase()?.includes(nthTextEtyName?.toLowerCase()),
+            b = !ety.description?.toLowerCase()?.includes(nthTextEtyName?.toLowerCase()),
+            out = a && b;
+            console.debug("showEtymologies: should show text etymology? ", { a, b, ety, nthTextEtyName });
+            return out;
+          })
+        );
+      if (process.env.NODE_ENV === "development") console.debug(
+        "showEtymologies: showing text etymology? ",
+        { n, nthTextEtyName, nthTextEtyDescr, textEtyShouldBeShown, etys }
+      );
+      if (textEtyShouldBeShown) {
+        etys.push({
+          name: nthTextEtyName,
+          description: nthTextEtyDescr,
+          from_osm: true,
+          from_osm_type: props.from_osm_type,
+          from_osm_id: props.from_osm_id,
+        });
+      }
     }
-  }
+    return etys;
+  }, [props.from_osm_id, props.from_osm_type, props.other_etymologies, props.text_etymology, props.text_etymology_descr]);
 
   return (
     <>
