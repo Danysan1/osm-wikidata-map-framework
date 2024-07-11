@@ -8,6 +8,8 @@ import { EtymologyList } from "../EtymologyList/EtymologyList";
 import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./EtymologyView.module.css";
 
+const MAX_IMAGES = 3;
+
 interface EtymologyViewProps {
   etymology: EtymologyDetails;
 }
@@ -194,7 +196,7 @@ export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
 
         {!!etymology.pictures?.length && (
           <div className="etymology_pictures column">
-            {etymology.pictures.map((img, i) => (
+            {etymology.pictures.slice(0, MAX_IMAGES).map((img, i) => (
               <CommonsImage key={i} name={img} className={styles.etymology_image} />
             ))}
           </div>

@@ -41,7 +41,7 @@ import { OsmWikidataMatcherControl } from "../../controls/OsmWikidataMatcherCont
 import { QLeverQueryLinkControls } from "../../controls/QLeverQueryLinkControl/QLeverQueryLinkControl";
 import { QueryLinkControl } from "../../controls/QueryLinkControl";
 import { SourcePresetControl } from "../../controls/SourcePresetControl";
-import { StatisticsColorControl } from "../../controls/StatisticsColorControl";
+import { StatisticsColorControl } from "../../controls/StatisticsColorControl/StatisticsColorControl";
 import { FeaturePopup } from "../../popup/FeaturePopup";
 import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
 import { DetailsLayers } from "../DetailsLayers";
@@ -256,7 +256,6 @@ export const OwmfMap = () => {
       {sourcePreset && (
         <StatisticsColorControl
           preset={sourcePreset}
-          sourceId={DETAILS_SOURCE}
           layerIDs={dataLayerIDs}
           setLayerColor={setLayerColor}
           position="top-left"
