@@ -228,7 +228,7 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
     "calculateFeatureSourceStats",
     { features: features, out, osm_wikidata_IDs, wikidata_IDs, osm_IDs }
   );
-  return new Promise(() => [stats, FEATURE_SOURCE_LAYER_COLOR] as const);
+  return Promise.resolve(out);
 }
 
 export function calculateEtymologySourceStats(osmTextOnlyLabel: string): StatisticsCalculator {
@@ -283,7 +283,7 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       "calculateEtymologySourceStats",
       { features, out, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names, osmTextOnlyLabel }
     );
-    return new Promise(() => out);
+    return Promise.resolve(out);
   }
 }
 
