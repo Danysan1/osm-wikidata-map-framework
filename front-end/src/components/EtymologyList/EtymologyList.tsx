@@ -83,7 +83,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
   }, [downloadEtymologyDetails, etys]);
 
   return (
-    <div className={etymologyDetails?.length == 1 ? "" : styles.etymologies_grid}>
+    <div className={styles.etymologies_grid}>
       {loadingEtymologies && (
         <div className="etymology etymology_loading">
           <h3>{t("feature_details.loading")}</h3>
