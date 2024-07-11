@@ -1,5 +1,5 @@
 // import { withSentryConfig } from "@sentry/nextjs";
-import packageJSON from './package.json' assert { type: "json" };
+// import packageJSON from './package.json' assert { type: "json" };
 
 const BASE_PATH = undefined,
   CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
@@ -120,7 +120,7 @@ const nextConfig = {
     acc[key] = process.env[key];
     return acc;
   }, {
-    owmf_version: packageJSON.version,
+    // owmf_version: packageJSON.version,
     owmf_base_path: BASE_PATH,
   }),
   webpack: (config, options) => {

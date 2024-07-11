@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./ButtonRow.module.css";
 import commonsLogo from "./img/Commons-logo.svg";
-import openStreetMapLogo from "./img/OpenStreetMap_logo.svg";
+import openStreetMapLogo from "./img/Openstreetmap_logo.svg";
 import wikidataLogo from "./img/Wikidata.svg";
 import wikipediaLogo from "./img/Wikipedia-logo-v2.svg";
 import wikisporeLogo from "./img/Wikispore_logo_without_text.svg";
