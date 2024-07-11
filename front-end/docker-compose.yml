@@ -20,14 +20,13 @@ services:
     env_file:
       - .env.local
     ports:
-      - "${owmf_web_http_port:-80}:80"
-      - "${owmf_web_https_port:-443}:443"
+      - "${owmf_web_http_port:-3000}:3000"
     logging:
       driver: json-file
       options:
         tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
     healthcheck:
-      test: ["CMD", "curl", "--fail", "http://localhost:80/health.php"]
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/"]
       interval: 20s
       timeout: 1s
       retries: 5

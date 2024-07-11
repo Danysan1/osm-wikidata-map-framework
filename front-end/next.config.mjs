@@ -115,7 +115,7 @@ function generateCspHeaders() {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: BASE_PATH,
-  output: "export",
+  // output: "export",
   env: CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
     acc[key] = process.env[key];
     return acc;
