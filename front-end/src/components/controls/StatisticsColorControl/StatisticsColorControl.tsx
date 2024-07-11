@@ -95,13 +95,6 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
        * Downloads the statistics from Wikidata and loads it into the chart
        */
       const downloadChartDataFromWikidata = async (colorSchemeID: ColorSchemeID) => {
-        const allLayersAreAvailable = layerIDs.every(layerID => map?.getLayer(layerID));
-        if (!allLayersAreAvailable) {
-          if (process.env.NODE_ENV === "development")
-            console.warn("At least one layer is missing, can't update stats", { colorSchemeID, layers: layerIDs });
-          return;
-        }
-
         let wikidataIDs: string[] = [];
         try {
           wikidataIDs = queryFeaturesOnScreen()
@@ -109,8 +102,10 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
             ?.filter(etymology => etymology.wikidata)
             ?.map(etymology => etymology.wikidata!) ?? [];
         } catch (error) {
-          if (process.env.NODE_ENV === 'development')
-            console.error("Error querying rendered features", { colorSchemeID, layers: layerIDs, error });
+          if (process.env.NODE_ENV === 'development') console.error(
+            "Error querying rendered features",
+            { colorSchemeID, layers: layerIDs, error }
+          );
 
           return;
         }

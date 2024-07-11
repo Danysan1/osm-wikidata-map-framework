@@ -7,7 +7,7 @@ import { ExpressionSpecification } from "maplibre-gl";
 
 export type StatisticsCalculator = (features: EtymologyFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
 
-export const FALLBACK_COLOR = '#3bb2d0',
+export const FALLBACK_COLOR = '#000000',
   BLUE = '#3bb2d0',
   RED = '#e55e5e',
   ORANGE = '#fbb03b',
