@@ -77,19 +77,21 @@ interface DropdownControlProps extends PropsWithChildren {
  * @see https://react.dev/reference/react-dom/createPortal
  * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
  */
-export const DropdownControl: FC<DropdownControlProps> = (props) => {
+export const DropdownControl: FC<DropdownControlProps> = ({
+  buttonContent, dropdownItems, selectedValue, title, minZoomLevel, position, className, onSourceData, children
+}) => {
   const { zoom } = useUrlFragmentContext(),
-    dropdownId = `dropdown_${props.className}`,
+    dropdownId = `dropdown_${className}`,
     ctrl = useControl<DropdownControlObject>(
       () => {
-        return new DropdownControlObject(props.onSourceData);
+        return new DropdownControlObject(onSourceData);
       },
-      { position: props.position }
+      { position: position }
     ),
-    buttonOnTheLeft = props.position === "top-left" || props.position === "bottom-left",
+    buttonOnTheLeft = position === "top-left" || position === "bottom-left",
     visible =
-      props.dropdownItems.length > 1 &&
-      (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
+      dropdownItems.length > 1 &&
+      (minZoomLevel === undefined || zoom >= minZoomLevel),
     [dropdownToggled, setDropdownToggled] = useState(false),
     onBtnClick = useCallback(() => setDropdownToggled((prev) => !prev), []),
     btnCell = useMemo(
@@ -98,32 +100,32 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
           <button
             onClick={onBtnClick}
             className={styles.button}
-            title={props.title}
-            aria-label={props.title}
+            title={title}
+            aria-label={title}
           >
-            {props.buttonContent}
+            {buttonContent}
           </button>
         </td>
       ),
-      [onBtnClick, props.buttonContent, props.title]
+      [onBtnClick, buttonContent, title]
     ),
     titleCell = useMemo(
       () => (
         <td className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
           <label htmlFor={dropdownId} className={styles.title}>
-            {props.title}
+            {title}
           </label>
         </td>
       ),
-      [dropdownId, dropdownToggled, props.title]
+      [dropdownId, dropdownToggled, title]
     ),
     dropDownChangeHandler: ChangeEventHandler<HTMLSelectElement> = useCallback(
       (e) => {
         const selectedID = e.target.value,
-          selectedItem = props.dropdownItems.find((item) => item.id === selectedID);
+          selectedItem = dropdownItems.find((item) => item.id === selectedID);
         selectedItem && selectedItem.onSelect(e);
       },
-      [props.dropdownItems]
+      [dropdownItems]
     ),
     options = useMemo(() => {
       const itemToOption = (item: DropdownItem): JSX.Element => (
@@ -132,27 +134,27 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
         </option>
       );
       const categories = new Set(
-        props.dropdownItems.filter((item) => item.category).map((item) => item.category!)
+        dropdownItems.filter((item) => item.category).map((item) => item.category!)
       );
 
       return (
         <>
           {Array.from(categories).map((category) => (
             <optgroup key={category} label={category}>
-              {props.dropdownItems
+              {dropdownItems
                 .filter((item) => item.category === category)
                 .map(itemToOption)}
             </optgroup>
           ))}
-          {props.dropdownItems.filter((item) => !item.category).map(itemToOption)}
+          {dropdownItems.filter((item) => !item.category).map(itemToOption)}
         </>
       );
-    }, [props.dropdownItems]);
+    }, [dropdownItems]);
 
   const element = useMemo(
     () =>
       visible ? (
-        <div className={props.className}>
+        <div className={className}>
           <table className={styles.ctrl_table}>
             <tbody>
               <tr>
@@ -163,20 +165,20 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
                 <td colSpan={2} className={styles.dropdown_cell}>
                   <select
                     id={dropdownId}
-                    value={props.selectedValue}
+                    value={selectedValue}
                     className={styles.dropdown_select}
                     onChange={dropDownChangeHandler}
-                    name={props.className}
-                    title={props.title}
+                    name={className}
+                    title={title}
                   >
                     {options}
                   </select>
                 </td>
               </tr>
-              {props.children && (
+              {children && (
                 <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
                   <td colSpan={2}>
-                    {props.children}
+                    {children}
                   </td>
                 </tr>
               )}
@@ -191,10 +193,10 @@ export const DropdownControl: FC<DropdownControlProps> = (props) => {
       dropdownId,
       dropdownToggled,
       options,
-      props.children,
-      props.className,
-      props.selectedValue,
-      props.title,
+      children,
+      className,
+      selectedValue,
+      title,
       titleCell,
       visible,
     ]

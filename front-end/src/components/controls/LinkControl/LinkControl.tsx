@@ -62,31 +62,33 @@ interface LinkControlProps {
  * @see https://react.dev/reference/react-dom/createPortal
  * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
  */
-export const LinkControl: FC<LinkControlProps> = (props) => {
+export const LinkControl: FC<LinkControlProps> = ({
+  linkURL, title, icon, minZoomLevel, position, className, onSourceData
+}) => {
   const { zoom } = useUrlFragmentContext();
 
   const ctrl = useControl<LinkControlObject>(
     () => {
-      return new LinkControlObject(props.onSourceData);
+      return new LinkControlObject(onSourceData);
     },
-    { position: props.position }
+    { position: position }
   );
 
   const visible = useMemo(
     () =>
-      !!props.linkURL && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
-    [props.linkURL, props.minZoomLevel, zoom]
+      !!linkURL && (minZoomLevel === undefined || zoom >= minZoomLevel),
+    [linkURL, minZoomLevel, zoom]
   );
-  const openLink = useCallback(() => window.open(props.linkURL), [props.linkURL]);
+  const openLink = useCallback(() => window.open(linkURL), [linkURL]);
   const element = useMemo(
     () =>
       visible ? (
-        <div className={props.className}>
-          <button title={props.title} aria-label={props.title} onClick={openLink} className={styles.button}>
+        <div className={className}>
+          <button title={title} aria-label={title} onClick={openLink} className={styles.button}>
             <Image
               className="button_img"
-              alt={props.title + " logo"}
-              src={props.icon}
+              alt={title + " logo"}
+              src={icon}
               loading="lazy"
               width={23}
               height={23}
@@ -94,7 +96,7 @@ export const LinkControl: FC<LinkControlProps> = (props) => {
           </button>
         </div>
       ) : null,
-    [openLink, props.className, props.icon, props.title, visible]
+    [openLink, className, icon, title, visible]
   );
 
   const map = ctrl.getMap(),

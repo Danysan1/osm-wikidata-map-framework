@@ -34,13 +34,15 @@ export interface DetailsLayersProps {
     setOpenFeature: (feature: MapGeoJSONFeature) => void;
 }
 
-export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
+export const DetailsLayers: React.FC<DetailsLayersProps> = ({
+    minZoom, sourceID, keyID, source_layer, color, pointLayerID, pointTapAreaLayerID, lineLayerID, lineTapAreaLayerID, polygonBorderLayerID, polygonFillLayerID, setOpenFeature
+}) => {
     const createFilter = useCallback((geometryType: Feature["type"]) => {
         const out: FilterSpecification = ["all", ["==", ["geometry-type"], geometryType]];
-        if (props.keyID)
-            out.push(["in", props.keyID, ["get", "from_key_ids"]]);
+        if (keyID)
+            out.push(["in", keyID, ["get", "from_key_ids"]]);
         return out;
-    }, [props.keyID]);
+    }, [keyID]);
 
     /**
      * Open the feature details popup when a feature on a detail layer is clicked.
@@ -52,15 +54,17 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
             "DetailsLayers onLayerClick", { ev, feature: ev.features?.[0]?.properties }
         );
         if (ev.features?.length) {
-            props.setOpenFeature(ev.features[0]);
+            setOpenFeature(ev.features[0]);
             ev.popupAlreadyShown = true; // If multiple elements extend over the clicked point, make sure only the first is shown
         }
-    }, [props]);
+    }, [setOpenFeature]);
 
     /** Change the cursor to a pointer when the mouse is over a detail layer
      * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseenterà
      */
-    const onMouseEnter = useCallback((ev: MapLayerMouseEvent) => { ev.target.getCanvas().style.cursor = 'pointer'; }, []);
+    const onMouseEnter = useCallback(
+        (ev: MapLayerMouseEvent) => ev.target.getCanvas().style.cursor = 'pointer', []
+    );
 
     /**
      * Change the cursor back to a pointer when it leaves a detail layer.
@@ -84,39 +88,41 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
         { current: map } = useMap();
 
     useEffect(() => {
-        map?.on("click", props.pointTapAreaLayerID, onLayerClick);
-        map?.on("mouseenter", props.pointTapAreaLayerID, onMouseEnter);
-        map?.on("mouseleave", props.pointTapAreaLayerID, onMouseLeave);
-        return () => void map?.off("click", props.pointTapAreaLayerID, onLayerClick);
-    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.pointTapAreaLayerID]);
+        map?.on("click", pointTapAreaLayerID, onLayerClick);
+        map?.on("mouseenter", pointTapAreaLayerID, onMouseEnter);
+        map?.on("mouseleave", pointTapAreaLayerID, onMouseLeave);
+        return () => void map?.off("click", pointTapAreaLayerID, onLayerClick);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, pointTapAreaLayerID]);
     useEffect(() => {
-        map?.on("click", props.lineTapAreaLayerID, onLayerClick);
-        map?.on("mouseenter", props.lineTapAreaLayerID, onMouseEnter);
-        map?.on("mouseleave", props.lineTapAreaLayerID, onMouseLeave);
-        return () => void map?.off("click", props.lineTapAreaLayerID, onLayerClick);
-    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.lineTapAreaLayerID]);
+        map?.on("click", lineTapAreaLayerID, onLayerClick);
+        map?.on("mouseenter", lineTapAreaLayerID, onMouseEnter);
+        map?.on("mouseleave", lineTapAreaLayerID, onMouseLeave);
+        return () => void map?.off("click", lineTapAreaLayerID, onLayerClick);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, lineTapAreaLayerID]);
     useEffect(() => {
-        map?.on("click", props.polygonBorderLayerID, onLayerClick);
-        map?.on("mouseenter", props.polygonBorderLayerID, onMouseEnter);
-        map?.on("mouseleave", props.polygonBorderLayerID, onMouseLeave);
-        return () => void map?.off("click", props.polygonBorderLayerID, onLayerClick);
-    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.polygonBorderLayerID]);
+        map?.on("click", polygonBorderLayerID, onLayerClick);
+        map?.on("mouseenter", polygonBorderLayerID, onMouseEnter);
+        map?.on("mouseleave", polygonBorderLayerID, onMouseLeave);
+        return () => void map?.off("click", polygonBorderLayerID, onLayerClick);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, polygonBorderLayerID]);
     useEffect(() => {
-        map?.on("click", props.polygonFillLayerID, onLayerClick);
-        map?.on("mouseenter", props.polygonFillLayerID, onMouseEnter);
-        map?.on("mouseleave", props.polygonFillLayerID, onMouseLeave);
-        return () => void map?.off("click", props.polygonFillLayerID, onLayerClick);
-    }, [map, onLayerClick, onMouseEnter, onMouseLeave, props.polygonFillLayerID]);
+        map?.on("click", polygonFillLayerID, onLayerClick);
+        map?.on("mouseenter", polygonFillLayerID, onMouseEnter);
+        map?.on("mouseleave", polygonFillLayerID, onMouseLeave);
+        return () => void map?.off("click", polygonFillLayerID, onLayerClick);
+    }, [map, onLayerClick, onMouseEnter, onMouseLeave, polygonFillLayerID]);
 
     const commonProps: { 'source': string, 'minzoom'?: number, 'source-layer'?: string } = {
-        source: props.sourceID
+        source: sourceID
     };
-    if (props.minZoom) commonProps.minzoom = props.minZoom;
-    if (props.source_layer) commonProps["source-layer"] = props.source_layer;
+    if (minZoom) commonProps.minzoom = minZoom;
+    if (source_layer) commonProps["source-layer"] = source_layer;
 
-    if (process.env.NODE_ENV === "development") console.log("DetailsLayers", { ...props, pointFilter, lineStringFilter, polygonFilter });
+    if (process.env.NODE_ENV === "development") console.log(
+        "DetailsLayers", { pointFilter, lineStringFilter, polygonFilter }
+    );
     return <>
-        <Layer id={props.pointTapAreaLayerID}
+        <Layer id={pointTapAreaLayerID}
             {...commonProps}
             type="circle"
             filter={pointFilter}
@@ -131,12 +137,12 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
                 ],
             }} />
 
-        <Layer id={props.pointLayerID}
+        <Layer id={pointLayerID}
             {...commonProps}
             type="circle"
             filter={pointFilter}
             paint={{
-                'circle-color': props.color,
+                'circle-color': color,
                 'circle-opacity': 0.8,
                 'circle-radius': [
                     "interpolate", ["linear"], ["zoom"],
@@ -148,8 +154,8 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
                 'circle-stroke-color': 'white'
             }} />
 
-        <Layer id={props.lineTapAreaLayerID}
-            beforeId={props.pointLayerID} // Lines are shown below points but on top of polygons
+        <Layer id={lineTapAreaLayerID}
+            beforeId={pointLayerID} // Lines are shown below points but on top of polygons
             {...commonProps}
             type="line"
             filter={lineStringFilter}
@@ -164,13 +170,13 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
                 ],
             }} />
 
-        <Layer id={props.lineLayerID}
-            beforeId={props.pointLayerID} // Lines are shown below points but on top of polygons
+        <Layer id={lineLayerID}
+            beforeId={pointLayerID} // Lines are shown below points but on top of polygons
             {...commonProps}
             type="line"
             filter={lineStringFilter}
             paint={{
-                'line-color': props.color,
+                'line-color': color,
                 'line-opacity': 0.6,
                 'line-width': [
                     "interpolate", ["linear"], ["zoom"],
@@ -180,25 +186,25 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = (props) => {
                 ],
             }} />
 
-        <Layer id={props.polygonBorderLayerID}
-            beforeId={props.lineLayerID} // Polygon borders are shown below lines and points but on top of polygon fill
+        <Layer id={polygonBorderLayerID}
+            beforeId={lineLayerID} // Polygon borders are shown below lines and points but on top of polygon fill
             {...commonProps}
             type="line"
             filter={polygonFilter}
             paint={{
-                'line-color': props.color,
+                'line-color': color,
                 'line-opacity': 0.6,
                 'line-width': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH],
                 'line-offset': ["step", ["zoom"], POLYGON_BORDER_LOW_ZOOM_WIDTH / 2, CITY_MAX_ZOOM, POLYGON_BORDER_HIGH_ZOOM_WIDTH / 2], // https://maplibre.org/maplibre-style-spec/layers/#paint-line-line-offset
             }} />
 
-        <Layer id={props.polygonFillLayerID}
-            beforeId={props.polygonBorderLayerID} // Polygon fill is shown below everything else
+        <Layer id={polygonFillLayerID}
+            beforeId={polygonBorderLayerID} // Polygon fill is shown below everything else
             {...commonProps}
             type="fill-extrusion"
             filter={polygonFilter}
             paint={{ // https://maplibre.org/maplibre-gl-js/docs/examples/3d-buildings/
-                'fill-extrusion-color': props.color,
+                'fill-extrusion-color': color,
                 'fill-extrusion-opacity': 0.3,
                 'fill-extrusion-height': [
                     'interpolate', ['linear'], ['zoom'],

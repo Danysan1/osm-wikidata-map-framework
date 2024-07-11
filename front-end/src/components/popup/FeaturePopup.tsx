@@ -10,17 +10,17 @@ interface FeaturePopupProps {
   onClose: () => void;
 }
 
-export const FeaturePopup: FC<FeaturePopupProps> = (props) => {
+export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, onClose }) => {
   const { current: map } = useMap(),
     popupRef = useRef<PopupRef>(null),
     position = map?.getBounds()?.getSouthWest(); // No useMemo is correct, the coordinates change over time
   if (process.env.NODE_ENV === "development") console.debug(
-    "FeaturePopup", { ...props, position }
+    "FeaturePopup", { feature, position }
   );
 
   useEffect(
     () => popupRef.current?.getElement()?.querySelector(".maplibregl-popup-close-button")?.scrollIntoView(true),
-    [popupRef, props.feature]
+    [popupRef]
   );
 
   return (
@@ -33,10 +33,10 @@ export const FeaturePopup: FC<FeaturePopupProps> = (props) => {
         closeButton
         closeOnClick
         closeOnMove
-        onClose={props.onClose}
+        onClose={onClose}
         ref={popupRef}
       >
-        <FeatureView feature={props.feature} />
+        <FeatureView feature={feature} />
       </Popup>
     )
   );

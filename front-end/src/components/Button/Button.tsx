@@ -16,51 +16,53 @@ interface ButtonProps {
   className?: string;
 }
 
-export const Button: FC<ButtonProps> = (props) => {
+export const Button: FC<ButtonProps> = ({
+  href, onClick, title, text, showText, icon, iconText, iconAlt, className
+}) => {
   const content = useMemo(
     () => (
       <>
-        {props.icon && (
+        {icon && (
           <Image
             className={styles.button_img}
-            src={props.icon}
-            alt={props.iconAlt}
+            src={icon}
+            alt={iconAlt}
             width={25}
             height={25}
           />
         )}
-        {props.iconText && (
-          <span className={styles.button_img} title={props.iconAlt}>
-            {props.iconText}
+        {iconText && (
+          <span className={styles.button_img} title={iconAlt}>
+            {iconText}
           </span>
         )}
         &nbsp;
-        <span className={props.showText ? "" : styles.no_text}>{props.text}</span>
+        <span className={showText ? "" : styles.no_text}>{text}</span>
       </>
     ),
-    [props.icon, props.iconAlt, props.iconText, props.showText, props.text]
+    [icon, iconAlt, iconText, showText, text]
   );
 
-  if (props.href) {
+  if (href) {
     return (
       <Link
-        href={props.href}
-        title={props.title}
-        aria-label={props.title}
+        href={href}
+        title={title}
+        aria-label={title}
         role="button"
-        className={`${styles.button} ${props.className}`}
+        className={`${styles.button} ${className}`}
       >
         {content}
       </Link>
     );
-  } else if (props.onClick) {
+  } else if (onClick) {
     return (
       <a
-        onClick={props.onClick}
-        title={props.title}
-        aria-label={props.title}
+        onClick={onClick}
+        title={title}
+        aria-label={title}
         role="button"
-        className={`${styles.button} ${props.className}`}
+        className={`${styles.button} ${className}`}
       >
         {content}
       </a>
