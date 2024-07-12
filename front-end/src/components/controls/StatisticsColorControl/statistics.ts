@@ -85,6 +85,10 @@ export async function downloadChartDataForWikidataIDs(
       );
       return null;
     } else {
+      if (process.env.NODE_ENV === 'development') console.debug(
+        "downloadChartDataForWikidataIDs: stats fetched",
+        { colorSchemeID, uniqueIDs, stats }
+      );
       return stats;
     }
   } catch (e) {
@@ -142,7 +146,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
         } else {
           if (process.env.NODE_ENV === 'development') console.debug(
             "loadPictureAvailabilityChartData: skipping row with no color or subjects",
-            { row }
+            row
           );
         }
       });
@@ -184,7 +188,9 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
           statsData.push(["==", subject, ["get", "wikidata"]], color);
         });
       } else {
-        if (process.env.NODE_ENV === 'development') console.debug("loadPictureAvailabilityChartData: skipping row with no color or subjects", { row });
+        if (process.env.NODE_ENV === 'development') console.debug(
+          "loadWikilinkChartData: skipping row with no color or subjects", row
+        );
       }
     });
 
@@ -299,7 +305,9 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
         statsData.push(["in", subject + '"', ["to-string", ["get", "etymologies"]]], color);
       });
     } else {
-      if (process.env.NODE_ENV === 'development') console.debug("setLayerColorForStats: skipping row with no color or subjects", { row });
+      if (process.env.NODE_ENV === 'development') console.debug(
+        "getLayerColorFromStats: skipping row with no color or subjects", row
+      );
     }
   });
 

@@ -13,10 +13,10 @@ import typeStatsQuery from "./type.sparql";
 import wikilinkStatsQuery from "./wikilink.sparql";
 
 const statsCSVPaths: Partial<Record<ColorSchemeID, string>> = {
-    type: "csv/wikidata_types.csv",
-    gender: "csv/wikidata_genders.csv",
-    country: "csv/wikidata_countries.csv",
-    occupation: "csv/wikidata_occupations.csv",
+    type: `${process.env.owmf_base_path ?? ""}/csv/wikidata_types.csv`,
+    gender: `${process.env.owmf_base_path ?? ""}/csv/wikidata_genders.csv`,
+    country: `${process.env.owmf_base_path ?? ""}/csv/wikidata_countries.csv`,
+    occupation: `${process.env.owmf_base_path ?? ""}/csv/wikidata_occupations.csv`,
 }
 
 export const statsQueryURLs: Partial<Record<ColorSchemeID, string>> = {
