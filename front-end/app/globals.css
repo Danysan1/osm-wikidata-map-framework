@@ -1,0 +1,180 @@
+
+html,
+body {
+    max-width: 100vw;
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+    color: #15141a;
+    background-color: #ffffff;
+    font-family: "Segoe UI", "Open Sans Regular", "Arial Unicode MS Regular", sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        color-scheme: dark;
+    }
+
+    body {
+    color: #fbfbfe;
+    background-color: #1c1b22;
+    }
+}
+
+/* The snackbar - position it at the bottom and in the middle of the screen */
+
+div#spinner,
+div.snackbar {
+    visibility: hidden;
+    /* Hidden by default. Visible on click */
+    min-width: 250px;
+    /* Set a default minimum width */
+    margin-left: -125px;
+    /* Divide value of min-width by 2 */
+    /*background-color: #333;*/
+    /* Black background color */
+    /*background-color: lightcoral;*/
+    color: #333;
+    /*color: #fff;*/
+    /* White text color */
+    text-align: center;
+    /* Centered text */
+    border-radius: 2px;
+    /* Rounded borders */
+    padding: 16px;
+    /* Padding */
+    position: fixed;
+    /* Sit on top of the screen */
+    z-index: 1;
+    /* Add a z-index if needed */
+    left: 50%;
+    /* Center the snackbar */
+    bottom: 30px;
+    /* 30px from the bottom */
+}
+
+/* Show the snackbar when clicking on a button (class added with JavaScript) */
+
+div.snackbar.show {
+    visibility: visible;
+    /* Show the snackbar */
+    -webkit-animation: fadein 0.2s;
+    animation: fadein 0.2s;
+    max-width: 70vw;
+}
+
+div#spinner.show {
+    visibility: visible;
+}
+
+div#spinner.show::after {
+    content: "";
+    display: block;
+    margin: auto;
+    height: 36px;
+    width: 36px;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' version='1.1' width='36' height='36' viewBox='0 0 36 36'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23333;%7D.b%7Bopacity:0.1;%7D%3C/style%3E%3C/defs%3E%3Cpath class='a' d='M5.2721,5.2721,7.3934,7.3934a15,15,0,0,1,21.2132,0l2.1213-2.1213A18,18,0,0,0,5.2721,5.2721Z'/%3E%3Cg class='b'%3E%3Cpath d='M28.6066,28.6066A15,15,0,0,1,7.3934,7.3934L5.2721,5.2721a18,18,0,1,0,25.4558,0L28.6066,7.3934A15,15,0,0,1,28.6066,28.6066Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    -webkit-animation-name: spin;
+    -webkit-animation-duration: 0.8s;
+    -webkit-animation-iteration-count: infinite;
+    -webkit-animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+    animation-name: spin;
+    animation-duration: 0.8s;
+    animation-iteration-count: infinite;
+    animation-timing-function: cubic-bezier(0.45, 0.05, 0.55, 0.95);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Animations to fade the snackbar in and out */
+
+@-webkit-keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 0.9;
+    }
+}
+
+@keyframes fadein {
+    from {
+        bottom: 0;
+        opacity: 0;
+    }
+
+    to {
+        bottom: 30px;
+        opacity: 0.9;
+    }
+}
+
+@-webkit-keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 0.9;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes fadeout {
+    from {
+        bottom: 30px;
+        opacity: 0.9;
+    }
+
+    to {
+        bottom: 0;
+        opacity: 0;
+    }
+}
+
+.maplibregl-ctrl-group>button,
+.maplibregl-ctrl-group>a,
+.mapboxgl-ctrl-group>button,
+.mapboxgl-ctrl-group>a {
+    background-color: transparent;
+    border: 0;
+    box-sizing: border-box;
+    cursor: pointer;
+    display: block;
+    height: 29px;
+    outline: none;
+    overflow: hidden;
+    padding: 0;
+    width: 29px;
+}
+
+.maplibregl-ctrl-group>button img,
+.maplibregl-ctrl-group>a img,
+.mapboxgl-ctrl-group>button img,
+.mapboxgl-ctrl-group>a img,
+.maplibregl-ctrl-group button img,
+.maplibregl-ctrl-group a img,
+.mapboxgl-ctrl-group button img,
+.mapboxgl-ctrl-group a img {
+    max-height: 23px;
+    width: 23px;
+    aspect-ratio: auto;
+    margin: 3px;
+    vertical-align: middle;
+}
+

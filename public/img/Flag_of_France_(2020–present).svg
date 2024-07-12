@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg viewBox="0 0 900 600" xmlns="http://www.w3.org/2000/svg">
- <path d="m0 0h300v600h-300" fill="#000091"/>
- <path d="m300 0h300v600h-300" fill="#fff"/>
- <path d="m600 0h300v600h-300" fill="#e1000f"/>
-</svg>

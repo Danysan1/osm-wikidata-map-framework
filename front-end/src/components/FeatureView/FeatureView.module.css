@@ -1,0 +1,18 @@
+div.detail_container {
+  text-align: center;
+}
+
+div.detail_container h1,
+div.detail_container h2,
+div.detail_container h3 {
+  margin: 1em 0.5em;
+}
+
+div.detail_container .element_name,
+div.detail_container .element_alt_names,
+div.detail_container .element_description,
+div.detail_container .feature_buttons_container {
+    /*max-width: 40em;*/
+    margin-left: auto;
+    margin-right: auto;
+}

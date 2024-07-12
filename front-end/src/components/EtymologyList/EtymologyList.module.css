@@ -1,0 +1,13 @@
+.etymologies_grid {
+  /* https://css-tricks.com/look-ma-no-media-queries-responsive-layouts-using-css-grid/ */
+  /* https://css-tricks.com/auto-sizing-columns-css-grid-auto-fill-vs-auto-fit/ */
+  display: grid;
+  grid-template-rows: auto;
+  align-content: center;
+  align-items: start;
+  justify-content: center;
+  justify-items: center;
+  grid-row-gap: 0.5em;
+  grid-column-gap: 0.5em;
+  grid-template-columns: repeat(auto-fit, minmax(20em, max-content));
+}

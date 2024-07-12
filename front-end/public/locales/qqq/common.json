@@ -1,0 +1,103 @@
+{
+    "title": "Fallback title for the infobox and the browser tab title, this should always be replaced by the title of the actual map through the i18n_override configuration",
+    "description": "Fallback description for the infobox, this should always be replaced by the title of the actual map through the i18n_override configuration",
+    "info_box": {
+        "open_popup": "Alt text for the 'ℹ️' button to open the info popup",
+        "click_anywhere": "Click anywhere on the map to explore.",
+        "use_controls": "Instructions to use the controls on the sides to see other data",
+        "to_see_statistics": "Instructions to use the button to see statistics about elements",
+        "to_choose_preset": "Instructions to use the button to choose which source preset to use",
+        "to_choose_backend": "Instructions to use the button to choose which back-end to use",
+        "to_overpass_query": "Instructions to use the button to view the source OverpassQL query",
+        "to_wikidata_query": "Instructions to use the button to view the source SPARQL query",
+        "to_view_data_table": "Instructions to use the button to open a table with the map features",
+        "to_change_background": "Instructions to use the button to change the background map style",
+        "to_open_again": "Instructions to use the button to open again the info popup",
+        "contribute": "Text of the button that links to the documentation to contribute to the map",
+        "download_dataset": "Text of the button to download the data as dataset",
+        "last_db_update": "Text before the date of the last database update",
+        "based_on": "Text before the link to the OSM-Wikidata Map Framework repository",
+        "report_issue": "Text of the link to the issue tracker",
+        "report_issue_title": "Alt text of the link to the issue tracker",
+        "about_me": "Text of the About me button",
+        "about_me_title": "Alt text of the About me button"
+    },
+    "snackbar": {
+        "zoom_in": "Instructions to zoom in to view data",
+        "fetch_error": "Error message shown when an error occurred while fetching the data",
+        "map_error": "Error message shown when an internal error occurred",
+        "data_loaded": "Success message shown when the data has been successfully fetched and loaded",
+        "no_data_in_this_area": "Warning message when the viewport is intentionally empty because it contains no data",
+        "data_loaded_instructions": "Instructions shown after the first load to click on any highlighted element to show its details"
+    },
+    "preset": {
+        "choose_preset": "Alt text for the '🗃️' button to show/hide the preset choice dropdown",
+        "architect": "Name of the 'architect' source preset",
+        "artist": "Name of the 'artist' source preset",
+        "base": "Name of the 'base' source preset",
+        "burial": "Name of the 'burial' source preset",
+        "etymology": "Name of the 'etymology' source preset",
+        "green_spaces": "Name of the 'green_spaces' source preset",
+        "holy_wells": "Name of the 'holy_wells' source preset",
+        "holy_well_etymology": "Name of the 'holy_well_etymology' source preset"
+    },
+    "source": {
+        "choose_source": "Alt text for the '⚙️' button to show/hide the source choice dropdown",
+        "db_all": "All sources from DB",
+        "db_osm_wikidata_reverse": "Wikidata entities referenced with OSM wikidata=* and {{indirectWdProperty}}",
+        "propagated": "Propagated",
+        "all_osm_keys": "All OSM keys",
+        "wd_reverse": "Wikidata entities referenced with {{indirectWdProperty}}",
+        "wd_qualifier": "P625 qualifiers on {{indirectWdProperty}}",
+        "wd_indirect": "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}"
+    },
+    "color_scheme": {
+        "choose_scheme": "Alt text for the '📊' button to show/hide the color scheme / stats choice dropdown",
+        "blue": "Dropdown item for uniform blue color",
+        "feature_source": "Dropdown item for map feature source statistics",
+        "gender": "Dropdown item for linked entity gender statistics",
+        "type": "Dropdown item for linked entity type statistics",
+        "country": "Dropdown item for linked entity country statistics",
+        "occupation": "Dropdown item for linked entity occupation statistics",
+        "start_century": "Dropdown item for linked entity start/birth century statistics",
+        "end_century": "Dropdown item for linked entity end/death century statistics",
+        "link_count": "Dropdown item for linked entity Wikilink count statistics",
+        "feature_picture": "Dropdown item for feature picture availability statistics",
+        "available": "Available",
+        "unavailable": "Unavailable",
+        "osm_text_only": "Features with only text etymology (no linked entities)",
+        "uniform": "Dropdown category for uniform colors",
+        "feature_statistics": "Dropdown category for featutre statistics",
+        "etymology_statistics": "Dropdown category for linked entity statistics",
+        "black": "Dropdown item for uniform black color",
+        "red": "Dropdown item for uniform red color",
+        "orange": "Dropdown item for uniform orange color",
+        "etymology_source": "Dropdown item for linked entity source statistics"
+    },
+    "feature_details": {
+        "source": "Source:",
+        "loading_first_n_items": "Warning message shown when a feature contains more etymologies than the max configured limit, should contain the variables {{partial}} (number of shown etymologies) and {{total}} (total etymologies)",
+        "location": "Alt text of the '🎯' button to move the map to the location of the feature/etymology",
+        "picture_via_commons": "Attribution to Wikimedia Commons under the images",
+        "loading": "Placeholder text shown while fetching and loading the etymologies",
+        "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"
+    },
+    "etymology_details": {
+        "propagation": "propagation",
+        "propagation_title": "Alt text of the link to the description of the propagation mechanism"
+    },
+    "data_table": {
+        "view_data_table": "View the data in a table",
+        "names": "Names",
+        "actions": "Actions",
+        "linked_entities": "Linked entities"
+    },
+    "translate": "Translate",
+    "change_language": "Alt text for the language selection control",
+    "choose_basemap": "Alt text for the '🌍' button to show/hide the style choice dropdown",
+    "choose_projection": "Alt text for the '🌐' button to show/hide the projection choice dropdown",
+    "overpass_turbo_query": "Alt text for the button that links to the source OverpassQL query on Overpass Turbo",
+    "wdqs_query": "Alt text for the button that links to the source SPARQL query on Wikidata Query Service",
+    "qlever_query": "Alt text for the button that links to the source SPARQL query on QLever",
+    "clear_cache": "Alt text for the '🗑️' button to clear the IndexedDB map/details/stats cache"
+}

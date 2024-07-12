@@ -1,0 +1,85 @@
+{
+  "name": "osm-wikidata-map-framework-front-end",
+  "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
+  "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
+  "repository": {
+    "type": "git",
+    "url": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git"
+  },
+  "bugs": {
+    "url": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/issues"
+  },
+  "author": {
+    "name": "Daniele Santini",
+    "url": "https://www.dsantini.it"
+  },
+  "funding": {
+    "type": "paypal",
+    "url": "https://paypal.me/dsantiniit"
+  },
+  "license": "GPL-3.0",
+  "keywords": [
+    "OpenStreetMap",
+    "Wikidata",
+    "map",
+    "mappa",
+    "karte",
+    "open data",
+    "linked data",
+    "structured data"
+  ],
+  "version": "4.0.0",
+  "private": true,
+  "scripts": {
+    "load-related": "tsx src/load-related/load-related.ts",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@maptiler/geocoding-control": "^1.2.4",
+    "@next/third-parties": "^14.2.3",
+    "@sentry/nextjs": "^8.7.0",
+    "@stadiamaps/maplibre-search-box": "^1.0.1",
+    "chart.js": "^4.4.3",
+    "dexie": "^4.0.7",
+    "i18next": "^23.11.5",
+    "i18next-browser-languagedetector": "^8.0.0",
+    "i18next-chained-backend": "^4.6.2",
+    "i18next-http-backend": "^2.5.2",
+    "i18next-resources-to-backend": "^1.2.1",
+    "maplibre-gl": "^4.3.2",
+    "maplibregl-mapbox-request-transformer": "^0.0.2",
+    "next": "^14.2.4",
+    "osmtogeojson": "^3.0.0-beta.5",
+    "overpass-ts": "^4.3.8",
+    "papaparse": "^5.4.1",
+    "pmtiles": "^3.0.6",
+    "raw-loader": "^4.0.2",
+    "react": "^18",
+    "react-chartjs-2": "^5.2.0",
+    "react-dom": "^18",
+    "react-i18next": "^14.1.2",
+    "react-map-gl": "^7.1.7",
+    "serve": "^14.2.3",
+    "wellknown": "^0.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/papaparse": "^5.3.14",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "@types/wellknown": "^0.5.8",
+    "@typescript-eslint/eslint-plugin": "^7.11.0",
+    "@typescript-eslint/parser": "^7.11.0",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.3",
+    "postcss": "^8",
+    "postgresql-client": "^2.11.0",
+    "sharp": "^0.33.4",
+    "tailwindcss": "^3.4.1",
+    "tsx": "^4.12.0",
+    "typescript": "^5"
+  }
+}

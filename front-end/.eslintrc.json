@@ -1,0 +1,26 @@
+{
+  "env": {
+      "browser": true,
+      "node": false
+  },
+  "extends": [
+    "next/core-web-vitals",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended-type-checked",
+    "plugin:@typescript-eslint/stylistic-type-checked"
+  ],
+  "ignorePatterns": [ "next.config.mjs", "node_modules/", ".next/", "src/generated/" ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "project": true,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "@typescript-eslint"
+  ],
+  "root": true,
+  "rules": {
+    "no-constant-binary-expression": "error"
+  }
+}

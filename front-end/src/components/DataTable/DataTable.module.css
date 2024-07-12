@@ -1,0 +1,19 @@
+table.data_table {
+    border-collapse: collapse;
+    /*border-spacing: 0;*/
+    text-align: center;
+}
+
+tr.data_table_row td,
+tr.data_table_row th {
+    border: 1px solid #ddd;
+    padding: 0 8px;
+}
+
+tr.data_table_row td>ul {
+    list-style-type: none;
+}
+
+tr.data_table_row:nth-child(even) {
+    background-color: #eee;
+}

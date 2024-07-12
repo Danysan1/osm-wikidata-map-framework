@@ -2,6 +2,7 @@
   "files.watcherExclude": {
     "**/target": true
   },
+  "prettier.printWidth": 90,
   "cSpell.words": [
     "bbox",
     "CURLOPT",
@@ -36,6 +37,9 @@
   ],
   "[typescript]": {
       "editor.defaultFormatter": "vscode.typescript-language-features"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
   },
   "i18n-ally.keystyle": "nested",
   "i18n-ally.indent": 4

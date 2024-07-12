@@ -1,0 +1,42 @@
+services:
+  owmf-web-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      x-bake:
+        # https://docs.docker.com/build/customize/bake/compose-file/
+        # https://docs.docker.com/engine/reference/commandline/buildx_bake/
+        platforms:
+          - "linux/amd64"
+          - "linux/arm64"
+        tags:
+          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag:-latest}
+          - registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
+        cache-from:
+          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache
+        cache-to:
+          - type=registry,ref=registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:buildx_bake_cache,mode=max
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:${owmf_framework_image_tag:-latest}
+    env_file:
+      - .env.local
+    ports:
+      - "${owmf_web_http_port:-3000}:3000"
+    logging:
+      driver: json-file
+      options:
+        tag: "{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:3000/"]
+      interval: 20s
+      timeout: 1s
+      retries: 5
+    restart: unless-stopped
+
+  owmf-load-related:
+    build:
+      context: .
+      dockerfile: Dockerfile.load-related
+    image: registry.gitlab.com/openetymologymap/osm-wikidata-map-framework/load-related
+    env_file:
+      - .env.local
+

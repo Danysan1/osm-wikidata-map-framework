@@ -1,0 +1,34 @@
+{
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "6.6.0",
+    "generators": {
+      "commons": {
+        "inputSpec": "./commons.yaml",
+        "output": "../front-end/src/generated/commons",
+        "generatorName": "typescript-fetch",
+        "additionalProperties": {
+          "modelPropertyNaming": "original"
+        }
+      },
+      "sparql": {
+        "glob": "./sparql.yaml",
+        "output": "../front-end/src/generated/sparql",
+        "generatorName": "typescript-fetch",
+        "additionalProperties": {
+          "modelPropertyNaming": "original"
+        }
+      },
+      "wikibase": {
+        "glob": "./wikibase.json",
+        "output": "../front-end/src/generated/wikibase",
+        "generatorName": "typescript-fetch",
+        "additionalProperties": {
+          "modelPropertyNaming": "original"
+        },
+        "skipValidateSpec": true
+      }
+    }
+  }
+}
