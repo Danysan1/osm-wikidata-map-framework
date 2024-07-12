@@ -1,5 +1,7 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
+import mapcompleteLogo from "@/src/img/mapcomplete.svg";
 import { ControlPosition } from 'maplibre-gl';
+import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useMemo } from 'react';
 import { LinkControl } from './LinkControl/LinkControl';
 
@@ -20,7 +22,7 @@ export const MapCompleteControl: FC<MapCompleteControlProps> = (props) => {
 
   return <LinkControl
     linkURL={url}
-    icon="/img/mapcomplete.svg"
+    icon={mapcompleteLogo as StaticImport}
     title="MapComplete"
     minZoomLevel={props.minZoomLevel}
     position={props.position}

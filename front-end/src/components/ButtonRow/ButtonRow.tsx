@@ -1,14 +1,17 @@
+import mapcompleteLogo from "@/src/img/mapcomplete.svg";
+import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
+import osmWdMatcherLogo from "@/src/img/osm-wd-matcher.png";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./ButtonRow.module.css";
 import commonsLogo from "./img/Commons-logo.svg";
+import entitreeLogo from "./img/entitree.png";
 import openStreetMapLogo from "./img/Openstreetmap_logo.svg";
 import wikidataLogo from "./img/Wikidata.svg";
 import wikipediaLogo from "./img/Wikipedia-logo-v2.svg";
 import wikisporeLogo from "./img/Wikispore_logo_without_text.svg";
-import entitreeLogo from "./img/entitree.png";
 
 interface ButtonRowProps {
   commons?: string;
@@ -121,7 +124,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           href={props.osmWikidataMatcher}
           title="OSM ↔ Wikidata matcher"
           className="matcher_button"
-          icon="/img/osm-wd-matcher.png"
+          icon={osmWdMatcherLogo as StaticImport}
           iconAlt="OSM ↔ Wikidata matcher logo"
           text="OSM ↔ Wikidata matcher"
         />
@@ -131,7 +134,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           href={props.mapcomplete}
           title="MapComplete"
           className="mapcomplete_button"
-          icon="/img/mapcomplete.svg"
+          icon={mapcompleteLogo as StaticImport}
           iconAlt="MapComplete logo"
           text="Mapcomplete"
         />
@@ -141,7 +144,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           href={props.iD}
           title="iD editor"
           className="id_button"
-          icon="/img/OpenStreetMap-Editor_iD_Logo.svg"
+          icon={iDEditorLogo as StaticImport}
           iconAlt="iD editor logo"
           text="iD editor"
         />

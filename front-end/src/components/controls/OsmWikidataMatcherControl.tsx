@@ -1,5 +1,7 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
+import osmWdMatcherLogo from "@/src/img/osm-wd-matcher.png";
 import { ControlPosition } from 'maplibre-gl';
+import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useMemo } from 'react';
 import { LinkControl } from './LinkControl/LinkControl';
 
@@ -18,7 +20,7 @@ export const OsmWikidataMatcherControl: FC<OsmWikidataMatcherControlProps> = (pr
 
   return <LinkControl
     linkURL={url}
-    icon="/img/osm-wd-matcher.png"
+    icon={osmWdMatcherLogo as StaticImport}
     title="OSM <-> Wikidata matcher"
     minZoomLevel={props.minZoomLevel}
     position={props.position}

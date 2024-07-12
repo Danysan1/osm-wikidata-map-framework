@@ -1,5 +1,7 @@
 import { useUrlFragmentContext } from '@/src/context/UrlFragmentContext';
+import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
 import type { ControlPosition } from "maplibre-gl";
+import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useMemo } from 'react';
 import { LinkControl } from './LinkControl/LinkControl';
 
@@ -18,7 +20,7 @@ export const IDEditorControl: FC<IDEditorControlProps> = (props) => {
 
   return <LinkControl
     linkURL={url}
-    icon="/img/OpenStreetMap-Editor_iD_Logo.svg"
+    icon={iDEditorLogo as StaticImport}
     title="iD editor"
     minZoomLevel={props.minZoomLevel}
     position={props.position}
