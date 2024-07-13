@@ -136,10 +136,6 @@ services:
     networks:
       - airflow-internal
       - pgadmin-db-bridge
-    profiles:
-      - airflow-init
-      - airflow-minimal
-      - airflow
 
   redis:
     image: redis:latest
@@ -154,10 +150,6 @@ services:
     restart: unless-stopped
     networks:
       - airflow-internal
-    profiles:
-      - airflow-init
-      - airflow-minimal
-      - airflow
 
   airflow-webserver:
     <<: *airflow-common
@@ -178,8 +170,6 @@ services:
     networks:
       - airflow-internal
       - airflow-postgis-bridge
-    profiles:
-      - airflow
 
   # https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/scheduler.html
   airflow-scheduler:
@@ -198,9 +188,6 @@ services:
       #   condition: service_completed_successfully
     networks:
       - airflow-internal
-    profiles:
-      - airflow-minimal
-      - airflow
 
   airflow-worker:
     <<: *airflow-common
@@ -238,9 +225,6 @@ services:
       - //var/run/docker.sock:/var/run/docker.sock:rw
     group_add:
       - docker
-    profiles:
-      - airflow-minimal
-      - airflow
 
   airflow-triggerer:
     <<: *airflow-common
@@ -258,9 +242,6 @@ services:
       #   condition: service_completed_successfully
     networks:
       - airflow-internal
-    profiles:
-      - airflow-minimal
-      - airflow
 
   airflow-init:
     <<: *airflow-common
@@ -387,9 +368,6 @@ services:
       - 51413:51413
       - 51413:51413/udp
     restart: unless-stopped
-    profiles:
-      - torrent
-      - airflow
 
   owmf-postgis:
     image: postgis/postgis:15-3.4-alpine # arm64 currently not supported, TODO check https://github.com/postgis/docker-postgis/issues/216
@@ -416,8 +394,6 @@ services:
       timeout: 1s
       retries: 5
     restart: unless-stopped
-    profiles:
-      - airflow
 
   pgadmin:
     image: dpage/pgadmin4:7.8
@@ -439,8 +415,6 @@ services:
       timeout: 1s
       retries: 5
     restart: unless-stopped
-    profiles:
-      - airflow
 
 
 volumes:

@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import {
@@ -21,7 +20,6 @@ import { DropdownControl } from "./DropdownControl/DropdownControl";
 
 function getBackgroundStyles() {
   const maptiler_key = process.env.owmf_maptiler_key,
-    enable_stadia_maps = parseBoolConfig(process.env.owmf_enable_stadia_maps),
     jawg_token = process.env.owmf_jawg_token,
     mapbox_token = process.env.owmf_mapbox_token,
     backgroundStyles: BackgroundStyle[] = [];
@@ -42,7 +40,7 @@ function getBackgroundStyles() {
     );
   }
 
-  if (enable_stadia_maps) {
+  if (process.env.owmf_enable_stadia_maps) {
     backgroundStyles.push(
       stadiaStyle("stadia_alidade_dark", "Alidade smooth dark", "alidade_smooth_dark"),
       stadiaStyle("stadia_alidade", "Alidade smooth", "alidade_smooth"),

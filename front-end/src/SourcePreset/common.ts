@@ -1,10 +1,10 @@
-import { parseBoolConfig, parseStringArrayConfig } from '../config';
+import { parseStringArrayConfig } from '../config';
 import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 
 export function getCustomSourcePreset(): SourcePreset {
     return {
         default_backend: process.env.owmf_default_backend,
-        fetch_parts_of_linked_entities: parseBoolConfig(process.env.owmf_fetch_parts_of_linked_entities),
+        fetch_parts_of_linked_entities: !!process.env.owmf_fetch_parts_of_linked_entities,
         id: DEFAULT_SOURCE_PRESET_ID,
         mapcomplete_theme: process.env.owmf_mapcomplete_theme,
         osm_filter_tags: process.env.owmf_osm_filter_tags ? parseStringArrayConfig(process.env.owmf_osm_filter_tags) : undefined,

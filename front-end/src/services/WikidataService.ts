@@ -1,6 +1,6 @@
-import { Configuration } from "../generated/sparql/runtime";
 import { SparqlApi } from "../generated/sparql/apis/SparqlApi";
 import type { SparqlResponse } from "../generated/sparql/models/SparqlResponse";
+import { Configuration } from "../generated/sparql/runtime";
 
 export class WikidataService {
     public static readonly WD_ENTITY_PREFIX = "http://www.wikidata.org/entity/";
@@ -8,9 +8,9 @@ export class WikidataService {
     public static readonly WD_PROPERTY_P_PREFIX = "http://www.wikidata.org/prop/";
     protected readonly api: SparqlApi;
 
-    public constructor(basePath = 'https://query.wikidata.org') {
+    public constructor(basePath = process.env.owmf_wikidata_endpoint) {
         this.api = new SparqlApi(new Configuration({
-            basePath,
+            basePath: basePath?.length ? basePath : 'https://query.wikidata.org',
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" } // In theory it should be set (https://foundation.wikimedia.org/wiki/Policy:User-Agent_policy) but in practice it causes a CORS error
         }));
     }

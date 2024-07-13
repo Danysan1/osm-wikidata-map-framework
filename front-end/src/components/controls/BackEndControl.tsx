@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { osmKeyToKeyID } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
@@ -26,8 +25,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
     const { t } = useTranslation(),
         { backEndID, setBackEndID } = useUrlFragmentContext(),
         dropdownItems = useMemo(() => {
-            const propagationEnabled = parseBoolConfig("propagate_data"),
-                qleverEnabled = parseBoolConfig("qlever_enable"),
+            const qleverEnabled = !!process.env.owmf_qlever_enable,
                 pmtilesURL = process.env.owmf_pmtiles_preset === props.preset.id ? process.env.owmf_pmtiles_base_url : undefined,
                 dropdownItems: DropdownItem[] = [],
                 buildDropdownItem = (backEndID: string, text: string, category?: string): DropdownItem => ({
@@ -124,7 +122,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 }
             }
 
-            if (propagationEnabled && pmtilesURL)
+            if (!!process.env.owmf_propagate_data && pmtilesURL)
                 dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
 
             return dropdownItems;

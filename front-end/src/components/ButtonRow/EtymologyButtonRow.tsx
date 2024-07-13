@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -18,7 +17,8 @@ export const EtymologyButtonRow: React.FC<EtymologyButtonRowProps> = ({ etymolog
     [etymology.instanceID, etymology.wikidata, i18n.language]
   );
   const wikispore = useMemo(() => {
-    if (!etymology.wikispore || !parseBoolConfig("wikispore_enable")) return undefined;
+    if (!etymology.wikispore || !process.env.owmf_wikispore_enable) return undefined;
+
     return etymology.wikispore.startsWith("http")
       ? etymology.wikispore
       : `https://wikispore.wmflabs.org/wiki/${etymology.wikispore}`;

@@ -1,6 +1,6 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import { dir } from "i18next";
-import "../globals.css";
+import "../../globals.css";
 
 interface LanguageLayoutProps {
   children: React.ReactNode;

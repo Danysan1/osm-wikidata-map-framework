@@ -1,4 +1,3 @@
-import { parseBoolConfig } from '@/src/config';
 import { GeocodingControl } from '@maptiler/geocoding-control/maplibregl';
 import "@maptiler/geocoding-control/style.css";
 import { MapLibreSearchControl } from '@stadiamaps/maplibre-search-box';
@@ -30,7 +29,7 @@ export const OwmfGeocodingControl: FC<OwmfGeocodingControlProps> = (props) => {
         collapsed: true,
         marker: false, // Markers require to pass maplibregl as argument
       });
-    } else if (parseBoolConfig("enable_stadia_maps")) {
+    } else if (process.env.owmf_enable_stadia_maps) {
       return new MapLibreSearchControl({});
     } else {
       throw new Error('Maptiler or Stadia Maps are required to use GeocodingControl');

@@ -27,8 +27,7 @@ export class OverpassService implements MapService {
         bbox?: BBox,
         overpassEndpoints?: string[]
     ) {
-        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-        const endpoints = overpassEndpoints || ["https://overpass-api.de/api"],
+        const endpoints = overpassEndpoints?.length ? overpassEndpoints : ["https://overpass-api.de/api"],
             randomIndex = Math.floor(Math.random() * endpoints.length);
         this.overpassEndpoint = endpoints[randomIndex] + "interpreter";
         this.preset = preset;

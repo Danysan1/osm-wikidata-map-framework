@@ -1,4 +1,3 @@
-import { parseBoolConfig } from "@/src/config";
 import { useTranslation } from "react-i18next";
 import { ControlPosition } from "react-map-gl/maplibre";
 import { QueryLinkControl } from "../QueryLinkControl";
@@ -12,7 +11,7 @@ interface QLeverQueryLinkControlProps {
 
 export const QLeverQueryLinkControls: React.FC<QLeverQueryLinkControlProps> = (props) => {
     const { t } = useTranslation();
-    return parseBoolConfig(process.env.owmf_qlever_enable) && (<>
+    return !!process.env.owmf_qlever_enable && (<>
         <QueryLinkControl
             icon={qleverLogo}
             title={t("qlever_query", "Source SPARQL query on QLever UI")}
