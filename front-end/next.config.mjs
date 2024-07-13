@@ -2,6 +2,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 // import packageJSON from './package.json' assert { type: "json" };
 
 const BASE_PATH = undefined,
+  STATIC_EXPORT = true,
   CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
     "owmf_default_center_lat",
     "owmf_default_center_lon",
@@ -115,13 +116,14 @@ function generateCspHeaders() {
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   basePath: BASE_PATH,
-  // output: "export",
+  output: STATIC_EXPORT ? "export" : undefined,
   env: CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
     acc[key] = process.env[key];
     return acc;
   }, {
     // owmf_version: packageJSON.version,
     owmf_base_path: BASE_PATH,
+    owmf_static_export: STATIC_EXPORT ? "true" : undefined,
   }),
   webpack: (config, options) => {
     config.module.rules.push({

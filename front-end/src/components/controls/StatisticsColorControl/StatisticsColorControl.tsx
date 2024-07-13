@@ -1,8 +1,8 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
 import type { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import type { EtymologyStat } from "@/src/model/EtymologyStat";
 import type { SourcePreset } from "@/src/model/SourcePreset";
-import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import type { ControlPosition, DataDrivenPropertyValueSpecification } from "maplibre-gl";
@@ -58,15 +58,19 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
       };
 
       const setChartStats = (stats: EtymologyStat[]) => {
-        const usedStats = stats.slice(0, MAX_CHART_ITEMS);
-        setChartData({
-          labels: usedStats.map(row => row.name),
-          datasets: [{
-            data: usedStats.map(row => row.count),
-            // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-            backgroundColor: usedStats.map(row => row.color || FALLBACK_COLOR),
-          }]
-        });
+        const usedStats = stats.slice(0, MAX_CHART_ITEMS),
+          data: ChartData<"pie"> = {
+            labels: usedStats.map(row => row.name),
+            datasets: [{
+              data: usedStats.map(row => row.count),
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              backgroundColor: usedStats.map(row => row.color || FALLBACK_COLOR),
+            }]
+          };
+        if (process.env.NODE_ENV === 'development') console.debug(
+          "setChartStats: updating chart", { stats, usedStats, data }
+        );
+        setChartData(data);
       }
 
       const queryFeaturesOnScreen = (): EtymologyFeature[] | undefined => {
@@ -174,6 +178,6 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     position={position}
     className='color-ctrl'
   >
-    {chartData && <Pie data={chartData} />}
+    {!!chartData?.labels?.length && <Pie data={chartData} className="stats_chart" />}
   </DropdownControl>;
 }

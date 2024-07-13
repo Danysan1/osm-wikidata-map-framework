@@ -11,7 +11,7 @@ export async function generateOwmfMetadata(lang?: string): Promise<Metadata> {
     alternates: {
       canonical: process.env.owmf_home_url,
       languages: i18nInstance.languages?.reduce((acc: Languages<string>, lang) => {
-        acc[lang as keyof Languages<string>] = `${process.env.owmf_home_url}/map/${lang}`;
+        acc[lang as keyof Languages<string>] = `${process.env.owmf_home_url}/map/${lang}${process.env.owmf_static_export ? ".html" : ""}`;
         return acc;
       }, {}),
     },
