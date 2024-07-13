@@ -1,8 +1,11 @@
+import { readFileSync } from 'fs';
 import { WikidataBulkService } from '../services/WikidataBulkService/WikidataBulkService';
-import directEtymologyQuery from "./direct-etymology.sql";
-import directMapQuery from "./direct-map.sparql";
 
-if (process.env.NODE_ENV !== 'development')
+// This file is compiled with tsc without webpack, so we can't use import for raw assets
+const directEtymologyQuery = readFileSync("src/load-related/direct-etymology.sql", "utf8"),
+    directMapQuery = readFileSync("src/load-related/direct-map.sparql", "utf8");
+
+if (process.env.NODE_ENV === 'production')
     throw new Error("This is a reserved script to initialize the DB, enabled only in development mode");
 
 const type: string = process.argv[2] || "direct",
@@ -32,8 +35,11 @@ const jsonPropList = jsonProps.map(prop => {
         return prop;
     else
         throw new Error("Non-string property in properties list: " + rawJsonProps);
-}),
-    sparqlQuery = sparqlQueryMap[type].replaceAll('${directPropertyValues}', jsonPropList.map(pID => `(p:${pID} ps:${pID})`).join(" ")),
+});
+const sparqlQuery = sparqlQueryMap[type].replace(
+    '${directPropertyValues}',
+    jsonPropList.map(pID => `(p:${pID} ps:${pID})`).join(" ")
+),
     etymologyQuery = etymologyQueryMap[type];
 
 // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing

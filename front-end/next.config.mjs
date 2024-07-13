@@ -1,5 +1,7 @@
 import { withSentryConfig } from "@sentry/nextjs";
-// import packageJSON from './package.json' assert { type: "json" };
+import { readFileSync } from "fs";
+
+const owmf_version = JSON.parse(readFileSync('package.json','utf8')).version;
 
 const BASE_PATH = undefined,
   STATIC_EXPORT = true,
@@ -121,7 +123,7 @@ const nextConfig = {
     acc[key] = process.env[key];
     return acc;
   }, {
-    // owmf_version: packageJSON.version,
+    owmf_version: owmf_version,
     owmf_base_path: BASE_PATH,
     owmf_static_export: STATIC_EXPORT ? "true" : undefined,
   }),

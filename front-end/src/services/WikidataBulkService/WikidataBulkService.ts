@@ -1,10 +1,13 @@
+import { readFileSync } from 'fs';
 import { Connection, DataTypeOIDs, PreparedStatement } from 'postgresql-client';
 import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
 import { Configuration } from "../../generated/sparql/runtime";
-import elementInsertQuery from "./element-insert.sql";
-import elementUpdateQuery from "./element-update.sql";
-import wikidataQuery from "./wikidata.sql";
+
+// This file is compiled with tsc without webpack, so we can't use import for raw assets
+const elementInsertQuery = readFileSync("src/services/WikidataBulkService/element-insert.sql", "utf8"),
+    elementUpdateQuery = readFileSync("src/services/WikidataBulkService/element-update.sql", "utf8"),
+    wikidataQuery = readFileSync("src/services/WikidataBulkService/wikidata.sql", "utf8");
 
 const SLEEP_TIME_MS = 5_000;
 
@@ -41,7 +44,7 @@ export class WikidataBulkService {
 
 
             const wikidataCountryQuery = wikidataCountry ? `?item wdt:P17 wd:${wikidataCountry}.` : '',
-                baseSparqlQuery = sparqlQueryTemplate.replaceAll("${wikidataCountryQuery}", wikidataCountryQuery);
+                baseSparqlQuery = sparqlQueryTemplate.replace("${wikidataCountryQuery}", wikidataCountryQuery);
             console.debug("Using SPARQL query:\n", baseSparqlQuery);
             for (let pageNumber = 0; pageNumber < 10; pageNumber++) {
                 const sparqlQuery = baseSparqlQuery.replace('${lastDigit}', `${pageNumber}`);
