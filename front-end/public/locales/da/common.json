@@ -39,7 +39,8 @@
         "etymology": "Etymologier (navnenes oprindelse)",
         "green_spaces": "Grønne områder",
         "holy_wells": "Hellige kilder",
-        "holy_well_etymology": "Etymologi af hellige kilder"
+        "holy_well_etymology": "Etymologi af hellige kilder",
+        "protected_areas": "Beskyttede områder"
     },
     "source": {
         "choose_source": "Vælg datakilde",
