@@ -6,7 +6,7 @@ import * as Sentry from "@sentry/nextjs";
 
 const replaysOnErrorSampleRate = process.env.owmf_sentry_js_replays_on_error_sample_rate ? parseFloat(process.env.owmf_sentry_js_replays_on_error_sample_rate) : undefined,
   replaysSessionSampleRate = process.env.owmf_sentry_js_replays_session_sample_rate ? parseFloat(process.env.owmf_sentry_js_replays_session_sample_rate) : undefined,
-  enableReplay = !!replaysOnErrorSampleRate || !!replaysSessionSampleRate;
+  enableReplay = replaysOnErrorSampleRate && replaysOnErrorSampleRate > 0;
 
 Sentry.init({
   dsn: process.env.owmf_sentry_js_dsn,

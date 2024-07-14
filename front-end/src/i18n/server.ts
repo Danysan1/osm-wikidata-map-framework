@@ -28,8 +28,8 @@ export async function loadServerI18n(lang?: string) {
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
-    const i18nInstance = createInstance();
-    const t = await i18nInstance.use(ChainedBackend)
+    const i18n = createInstance();
+    const t = await i18n.use(ChainedBackend)
         .init({
             supportedLngs: LANGUAGES,
             debug: process.env.NODE_ENV === 'development',
@@ -40,5 +40,5 @@ export async function loadServerI18n(lang?: string) {
             fallbackNS: DEFAULT_NAMESPACE,
             defaultNS: DEFAULT_NAMESPACE
         });
-    return { t, i18nInstance };
+    return { t, i18n };
 }

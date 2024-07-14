@@ -1,5 +1,4 @@
 import { parseStringArrayConfig } from "@/src/config";
-import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import { loadServerI18n } from "@/src/i18n/server";
 import { readSourcePreset } from "@/src/SourcePreset/server";
 import { NextResponse } from "next/server";
@@ -18,11 +17,11 @@ interface TagInfoTag {
  * @see https://wiki.openstreetmap.org/wiki/Taginfo
  */
 export async function GET() {
-  const { t } = await loadServerI18n(DEFAULT_LANGUAGE);
+  const { t, i18n } = await loadServerI18n();
 
   const sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined,
     sourcePreset = readSourcePreset(sourcePresets?.[0]),
-    contributingURL = `${process.env.owmf_home_url}/contributing/${DEFAULT_LANGUAGE}/${sourcePreset.id}`;
+    contributingURL = `${process.env.owmf_home_url}/contributing/${i18n.language}/${sourcePreset.id}`;
 
   if (sourcePresets?.length !== 1) console.warn(
     " !! taginfo.json: multiple source presets found, using the first one:", sourcePreset.id

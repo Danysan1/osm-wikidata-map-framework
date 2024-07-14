@@ -3,14 +3,14 @@ import { Languages } from "next/dist/lib/metadata/types/alternative-urls-types";
 import { loadServerI18n } from "./i18n/server";
 
 export async function generateOwmfMetadata(lang?: string): Promise<Metadata> {
-  const { t, i18nInstance } = await loadServerI18n(lang);
+  const { t, i18n } = await loadServerI18n(lang);
   return {
     title: t("title"),
     applicationName: t("title"),
     description: t("description"),
     alternates: {
       canonical: process.env.owmf_home_url,
-      languages: i18nInstance.languages?.reduce((acc: Languages<string>, lang) => {
+      languages: i18n.languages?.reduce((acc: Languages<string>, lang) => {
         acc[lang as keyof Languages<string>] = `${process.env.owmf_home_url}/map/${lang}${process.env.owmf_static_export ? ".html" : ""}`;
         return acc;
       }, {}),
@@ -20,7 +20,7 @@ export async function generateOwmfMetadata(lang?: string): Promise<Metadata> {
       title: t("title"),
       description: t("description"),
       type: 'website',
-      locale: i18nInstance.language,
+      locale: i18n.language,
     },
     icons: {
       icon: [
