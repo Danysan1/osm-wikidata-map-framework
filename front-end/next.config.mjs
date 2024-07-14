@@ -55,7 +55,6 @@ const BASE_PATH = undefined,
     "owmf_paypal_id",
     "owmf_home_url",
     "owmf_issues_url",
-    "owmf_element_issue_url",
     "owmf_custom_intro_html",
     "owmf_custom_intro_js",
   ];
