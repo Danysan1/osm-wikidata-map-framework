@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { SparqlResponseBindingValue } from './SparqlResponseBindingValue';
 import {
     SparqlResponseBindingValueFromJSON,
@@ -37,10 +37,8 @@ export interface SparqlResponseResults {
 /**
  * Check if a given object implements the SparqlResponseResults interface.
  */
-export function instanceOfSparqlResponseResults(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfSparqlResponseResults(value: object): value is SparqlResponseResults {
+    return true;
 }
 
 export function SparqlResponseResultsFromJSON(json: any): SparqlResponseResults {
@@ -48,25 +46,22 @@ export function SparqlResponseResultsFromJSON(json: any): SparqlResponseResults 
 }
 
 export function SparqlResponseResultsFromJSONTyped(json: any, ignoreDiscriminator: boolean): SparqlResponseResults {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'bindings': !exists(json, 'bindings') ? undefined : json['bindings'],
+        'bindings': json['bindings'] == null ? undefined : json['bindings'],
     };
 }
 
 export function SparqlResponseResultsToJSON(value?: SparqlResponseResults | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'bindings': value.bindings,
+        'bindings': value['bindings'],
     };
 }
 

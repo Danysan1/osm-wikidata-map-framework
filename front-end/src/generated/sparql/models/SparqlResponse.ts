@@ -12,19 +12,19 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
-import type { SparqlResponseHead } from './SparqlResponseHead';
-import {
-    SparqlResponseHeadFromJSON,
-    SparqlResponseHeadFromJSONTyped,
-    SparqlResponseHeadToJSON,
-} from './SparqlResponseHead';
+import { mapValues } from '../runtime';
 import type { SparqlResponseResults } from './SparqlResponseResults';
 import {
     SparqlResponseResultsFromJSON,
     SparqlResponseResultsFromJSONTyped,
     SparqlResponseResultsToJSON,
 } from './SparqlResponseResults';
+import type { SparqlResponseHead } from './SparqlResponseHead';
+import {
+    SparqlResponseHeadFromJSON,
+    SparqlResponseHeadFromJSONTyped,
+    SparqlResponseHeadToJSON,
+} from './SparqlResponseHead';
 
 /**
  * 
@@ -49,10 +49,8 @@ export interface SparqlResponse {
 /**
  * Check if a given object implements the SparqlResponse interface.
  */
-export function instanceOfSparqlResponse(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfSparqlResponse(value: object): value is SparqlResponse {
+    return true;
 }
 
 export function SparqlResponseFromJSON(json: any): SparqlResponse {
@@ -60,27 +58,24 @@ export function SparqlResponseFromJSON(json: any): SparqlResponse {
 }
 
 export function SparqlResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): SparqlResponse {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'head': !exists(json, 'head') ? undefined : SparqlResponseHeadFromJSON(json['head']),
-        'results': !exists(json, 'results') ? undefined : SparqlResponseResultsFromJSON(json['results']),
+        'head': json['head'] == null ? undefined : SparqlResponseHeadFromJSON(json['head']),
+        'results': json['results'] == null ? undefined : SparqlResponseResultsFromJSON(json['results']),
     };
 }
 
 export function SparqlResponseToJSON(value?: SparqlResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'head': SparqlResponseHeadToJSON(value.head),
-        'results': SparqlResponseResultsToJSON(value.results),
+        'head': SparqlResponseHeadToJSON(value['head']),
+        'results': SparqlResponseResultsToJSON(value['results']),
     };
 }
 

@@ -16,11 +16,11 @@
 import * as runtime from '../runtime';
 import type {
   CommonsApiResponse,
-} from '../models';
+} from '../models/index';
 import {
     CommonsApiResponseFromJSON,
     CommonsApiResponseToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface ApiCallRequest {
     action: string;
@@ -42,42 +42,45 @@ export class CommonsApi extends runtime.BaseAPI {
      * Execute a call to the API
      */
     async apiCallRaw(requestParameters: ApiCallRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<CommonsApiResponse>> {
-        if (requestParameters.action === null || requestParameters.action === undefined) {
-            throw new runtime.RequiredError('action','Required parameter requestParameters.action was null or undefined when calling apiCall.');
+        if (requestParameters['action'] == null) {
+            throw new runtime.RequiredError(
+                'action',
+                'Required parameter "action" was null or undefined when calling apiCall().'
+            );
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.action !== undefined) {
-            queryParameters['action'] = requestParameters.action;
+        if (requestParameters['action'] != null) {
+            queryParameters['action'] = requestParameters['action'];
         }
 
-        if (requestParameters.format !== undefined) {
-            queryParameters['format'] = requestParameters.format;
+        if (requestParameters['format'] != null) {
+            queryParameters['format'] = requestParameters['format'];
         }
 
-        if (requestParameters.iiextmetadatafilter !== undefined) {
-            queryParameters['iiextmetadatafilter'] = requestParameters.iiextmetadatafilter;
+        if (requestParameters['iiextmetadatafilter'] != null) {
+            queryParameters['iiextmetadatafilter'] = requestParameters['iiextmetadatafilter'];
         }
 
-        if (requestParameters.iiprop !== undefined) {
-            queryParameters['iiprop'] = requestParameters.iiprop;
+        if (requestParameters['iiprop'] != null) {
+            queryParameters['iiprop'] = requestParameters['iiprop'];
         }
 
-        if (requestParameters.origin !== undefined) {
-            queryParameters['origin'] = requestParameters.origin;
+        if (requestParameters['origin'] != null) {
+            queryParameters['origin'] = requestParameters['origin'];
         }
 
-        if (requestParameters.prop !== undefined) {
-            queryParameters['prop'] = requestParameters.prop;
+        if (requestParameters['prop'] != null) {
+            queryParameters['prop'] = requestParameters['prop'];
         }
 
-        if (requestParameters.titles !== undefined) {
-            queryParameters['titles'] = requestParameters.titles;
+        if (requestParameters['titles'] != null) {
+            queryParameters['titles'] = requestParameters['titles'];
         }
 
-        if (requestParameters.uselang !== undefined) {
-            queryParameters['uselang'] = requestParameters.uselang;
+        if (requestParameters['uselang'] != null) {
+            queryParameters['uselang'] = requestParameters['uselang'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};

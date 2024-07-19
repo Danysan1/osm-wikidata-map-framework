@@ -1,0 +1,17 @@
+services:  
+  swagger-ui:
+    image: swaggerapi/swagger-ui:v5.17.13
+    ports:
+      - "${owmf_swagger_port:-8080}:8080"
+    volumes:
+      - ./openapi/commons.yaml:/usr/share/nginx/html/commons.yaml
+      - ./openapi/wikidata.yaml:/usr/share/nginx/html/wikidata.yaml
+      - ./openapi/wikibase.json:/usr/share/nginx/html/wikibase.json
+    environment:
+      - API_URL=wikibase.json
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8080/"]
+      interval: 20s
+      timeout: 1s
+      retries: 5
+    restart: unless-stopped

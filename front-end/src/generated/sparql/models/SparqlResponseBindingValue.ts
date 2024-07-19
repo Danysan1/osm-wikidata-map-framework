@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -48,10 +48,8 @@ export interface SparqlResponseBindingValue {
 /**
  * Check if a given object implements the SparqlResponseBindingValue interface.
  */
-export function instanceOfSparqlResponseBindingValue(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfSparqlResponseBindingValue(value: object): value is SparqlResponseBindingValue {
+    return true;
 }
 
 export function SparqlResponseBindingValueFromJSON(json: any): SparqlResponseBindingValue {
@@ -59,31 +57,28 @@ export function SparqlResponseBindingValueFromJSON(json: any): SparqlResponseBin
 }
 
 export function SparqlResponseBindingValueFromJSONTyped(json: any, ignoreDiscriminator: boolean): SparqlResponseBindingValue {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'type': !exists(json, 'type') ? undefined : json['type'],
-        'value': !exists(json, 'value') ? undefined : json['value'],
-        'datatype': !exists(json, 'datatype') ? undefined : json['datatype'],
-        'xmllang': !exists(json, 'xml:lang') ? undefined : json['xml:lang'],
+        'type': json['type'] == null ? undefined : json['type'],
+        'value': json['value'] == null ? undefined : json['value'],
+        'datatype': json['datatype'] == null ? undefined : json['datatype'],
+        'xmllang': json['xml:lang'] == null ? undefined : json['xml:lang'],
     };
 }
 
 export function SparqlResponseBindingValueToJSON(value?: SparqlResponseBindingValue | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'type': value.type,
-        'value': value.value,
-        'datatype': value.datatype,
-        'xml:lang': value.xmllang,
+        'type': value['type'],
+        'value': value['value'],
+        'datatype': value['datatype'],
+        'xml:lang': value['xmllang'],
     };
 }
 

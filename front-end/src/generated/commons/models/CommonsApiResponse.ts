@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { CommonsApiResponseQuery } from './CommonsApiResponseQuery';
 import {
     CommonsApiResponseQueryFromJSON,
@@ -37,10 +37,8 @@ export interface CommonsApiResponse {
 /**
  * Check if a given object implements the CommonsApiResponse interface.
  */
-export function instanceOfCommonsApiResponse(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfCommonsApiResponse(value: object): value is CommonsApiResponse {
+    return true;
 }
 
 export function CommonsApiResponseFromJSON(json: any): CommonsApiResponse {
@@ -48,25 +46,22 @@ export function CommonsApiResponseFromJSON(json: any): CommonsApiResponse {
 }
 
 export function CommonsApiResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommonsApiResponse {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'query': !exists(json, 'query') ? undefined : CommonsApiResponseQueryFromJSON(json['query']),
+        'query': json['query'] == null ? undefined : CommonsApiResponseQueryFromJSON(json['query']),
     };
 }
 
 export function CommonsApiResponseToJSON(value?: CommonsApiResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'query': CommonsApiResponseQueryToJSON(value.query),
+        'query': CommonsApiResponseQueryToJSON(value['query']),
     };
 }
 

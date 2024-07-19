@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { ExtMetadataItem } from './ExtMetadataItem';
 import {
     ExtMetadataItemFromJSON,
@@ -109,10 +109,8 @@ export interface ImageInfoItem {
 /**
  * Check if a given object implements the ImageInfoItem interface.
  */
-export function instanceOfImageInfoItem(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfImageInfoItem(value: object): value is ImageInfoItem {
+    return true;
 }
 
 export function ImageInfoItemFromJSON(json: any): ImageInfoItem {
@@ -120,49 +118,46 @@ export function ImageInfoItemFromJSON(json: any): ImageInfoItem {
 }
 
 export function ImageInfoItemFromJSONTyped(json: any, ignoreDiscriminator: boolean): ImageInfoItem {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'timestamp': !exists(json, 'timestamp') ? undefined : json['timestamp'],
-        'user': !exists(json, 'user') ? undefined : json['user'],
-        'userid': !exists(json, 'userid') ? undefined : json['userid'],
-        'size': !exists(json, 'size') ? undefined : json['size'],
-        'width': !exists(json, 'width') ? undefined : json['width'],
-        'height': !exists(json, 'height') ? undefined : json['height'],
-        'url': !exists(json, 'url') ? undefined : json['url'],
-        'descriptionurl': !exists(json, 'descriptionurl') ? undefined : json['descriptionurl'],
-        'descriptionshorturl': !exists(json, 'descriptionshorturl') ? undefined : json['descriptionshorturl'],
-        'mime': !exists(json, 'mime') ? undefined : json['mime'],
-        'mediatype': !exists(json, 'mediatype') ? undefined : json['mediatype'],
-        'mediaid': !exists(json, 'mediaid') ? undefined : json['mediaid'],
-        'extmetadata': !exists(json, 'extmetadata') ? undefined : (mapValues(json['extmetadata'], ExtMetadataItemFromJSON)),
+        'timestamp': json['timestamp'] == null ? undefined : json['timestamp'],
+        'user': json['user'] == null ? undefined : json['user'],
+        'userid': json['userid'] == null ? undefined : json['userid'],
+        'size': json['size'] == null ? undefined : json['size'],
+        'width': json['width'] == null ? undefined : json['width'],
+        'height': json['height'] == null ? undefined : json['height'],
+        'url': json['url'] == null ? undefined : json['url'],
+        'descriptionurl': json['descriptionurl'] == null ? undefined : json['descriptionurl'],
+        'descriptionshorturl': json['descriptionshorturl'] == null ? undefined : json['descriptionshorturl'],
+        'mime': json['mime'] == null ? undefined : json['mime'],
+        'mediatype': json['mediatype'] == null ? undefined : json['mediatype'],
+        'mediaid': json['mediaid'] == null ? undefined : json['mediaid'],
+        'extmetadata': json['extmetadata'] == null ? undefined : (mapValues(json['extmetadata'], ExtMetadataItemFromJSON)),
     };
 }
 
 export function ImageInfoItemToJSON(value?: ImageInfoItem | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'timestamp': value.timestamp,
-        'user': value.user,
-        'userid': value.userid,
-        'size': value.size,
-        'width': value.width,
-        'height': value.height,
-        'url': value.url,
-        'descriptionurl': value.descriptionurl,
-        'descriptionshorturl': value.descriptionshorturl,
-        'mime': value.mime,
-        'mediatype': value.mediatype,
-        'mediaid': value.mediaid,
-        'extmetadata': value.extmetadata === undefined ? undefined : (mapValues(value.extmetadata, ExtMetadataItemToJSON)),
+        'timestamp': value['timestamp'],
+        'user': value['user'],
+        'userid': value['userid'],
+        'size': value['size'],
+        'width': value['width'],
+        'height': value['height'],
+        'url': value['url'],
+        'descriptionurl': value['descriptionurl'],
+        'descriptionshorturl': value['descriptionshorturl'],
+        'mime': value['mime'],
+        'mediatype': value['mediatype'],
+        'mediaid': value['mediaid'],
+        'extmetadata': value['extmetadata'] == null ? undefined : (mapValues(value['extmetadata'], ExtMetadataItemToJSON)),
     };
 }
 

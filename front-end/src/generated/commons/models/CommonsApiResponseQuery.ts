@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { Page } from './Page';
 import {
     PageFromJSON,
@@ -37,10 +37,8 @@ export interface CommonsApiResponseQuery {
 /**
  * Check if a given object implements the CommonsApiResponseQuery interface.
  */
-export function instanceOfCommonsApiResponseQuery(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfCommonsApiResponseQuery(value: object): value is CommonsApiResponseQuery {
+    return true;
 }
 
 export function CommonsApiResponseQueryFromJSON(json: any): CommonsApiResponseQuery {
@@ -48,25 +46,22 @@ export function CommonsApiResponseQueryFromJSON(json: any): CommonsApiResponseQu
 }
 
 export function CommonsApiResponseQueryFromJSONTyped(json: any, ignoreDiscriminator: boolean): CommonsApiResponseQuery {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'pages': !exists(json, 'pages') ? undefined : (mapValues(json['pages'], PageFromJSON)),
+        'pages': json['pages'] == null ? undefined : (mapValues(json['pages'], PageFromJSON)),
     };
 }
 
 export function CommonsApiResponseQueryToJSON(value?: CommonsApiResponseQuery | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'pages': value.pages === undefined ? undefined : (mapValues(value.pages, PageToJSON)),
+        'pages': value['pages'] == null ? undefined : (mapValues(value['pages'], PageToJSON)),
     };
 }
 

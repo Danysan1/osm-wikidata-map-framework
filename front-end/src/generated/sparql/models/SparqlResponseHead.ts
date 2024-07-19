@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -30,10 +30,8 @@ export interface SparqlResponseHead {
 /**
  * Check if a given object implements the SparqlResponseHead interface.
  */
-export function instanceOfSparqlResponseHead(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfSparqlResponseHead(value: object): value is SparqlResponseHead {
+    return true;
 }
 
 export function SparqlResponseHeadFromJSON(json: any): SparqlResponseHead {
@@ -41,25 +39,22 @@ export function SparqlResponseHeadFromJSON(json: any): SparqlResponseHead {
 }
 
 export function SparqlResponseHeadFromJSONTyped(json: any, ignoreDiscriminator: boolean): SparqlResponseHead {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'vars': !exists(json, 'vars') ? undefined : json['vars'],
+        'vars': json['vars'] == null ? undefined : json['vars'],
     };
 }
 
 export function SparqlResponseHeadToJSON(value?: SparqlResponseHead | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'vars': value.vars,
+        'vars': value['vars'],
     };
 }
 

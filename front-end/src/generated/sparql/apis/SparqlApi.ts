@@ -18,7 +18,7 @@ import type {
   QLeverResponse,
   SparqlBackend,
   SparqlResponse,
-} from '../models';
+} from '../models/index';
 import {
     QLeverResponseFromJSON,
     QLeverResponseToJSON,
@@ -26,7 +26,7 @@ import {
     SparqlBackendToJSON,
     SparqlResponseFromJSON,
     SparqlResponseToJSON,
-} from '../models';
+} from '../models/index';
 
 export interface GetSparqlQueryRequest {
     backend: SparqlBackend;
@@ -48,24 +48,30 @@ export class SparqlApi extends runtime.BaseAPI {
      * Run SPARQL query via GET
      */
     async getSparqlQueryRaw(requestParameters: GetSparqlQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SparqlResponse>> {
-        if (requestParameters.backend === null || requestParameters.backend === undefined) {
-            throw new runtime.RequiredError('backend','Required parameter requestParameters.backend was null or undefined when calling getSparqlQuery.');
+        if (requestParameters['backend'] == null) {
+            throw new runtime.RequiredError(
+                'backend',
+                'Required parameter "backend" was null or undefined when calling getSparqlQuery().'
+            );
         }
 
-        if (requestParameters.query === null || requestParameters.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling getSparqlQuery.');
+        if (requestParameters['query'] == null) {
+            throw new runtime.RequiredError(
+                'query',
+                'Required parameter "query" was null or undefined when calling getSparqlQuery().'
+            );
         }
 
         const queryParameters: any = {};
 
-        if (requestParameters.query !== undefined) {
-            queryParameters['query'] = requestParameters.query;
+        if (requestParameters['query'] != null) {
+            queryParameters['query'] = requestParameters['query'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
 
         const response = await this.request({
-            path: `/{backend}`.replace(`{${"backend"}}`, encodeURIComponent(String(requestParameters.backend))),
+            path: `/{backend}`.replace(`{${"backend"}}`, encodeURIComponent(String(requestParameters['backend']))),
             method: 'GET',
             headers: headerParameters,
             query: queryParameters,
@@ -86,12 +92,18 @@ export class SparqlApi extends runtime.BaseAPI {
      * Run SPARQL query via POST
      */
     async postSparqlQueryRaw(requestParameters: PostSparqlQueryRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<SparqlResponse>> {
-        if (requestParameters.backend === null || requestParameters.backend === undefined) {
-            throw new runtime.RequiredError('backend','Required parameter requestParameters.backend was null or undefined when calling postSparqlQuery.');
+        if (requestParameters['backend'] == null) {
+            throw new runtime.RequiredError(
+                'backend',
+                'Required parameter "backend" was null or undefined when calling postSparqlQuery().'
+            );
         }
 
-        if (requestParameters.query === null || requestParameters.query === undefined) {
-            throw new runtime.RequiredError('query','Required parameter requestParameters.query was null or undefined when calling postSparqlQuery.');
+        if (requestParameters['query'] == null) {
+            throw new runtime.RequiredError(
+                'query',
+                'Required parameter "query" was null or undefined when calling postSparqlQuery().'
+            );
         }
 
         const queryParameters: any = {};
@@ -112,16 +124,16 @@ export class SparqlApi extends runtime.BaseAPI {
             formParams = new URLSearchParams();
         }
 
-        if (requestParameters.query !== undefined) {
-            formParams.append('query', requestParameters.query as any);
+        if (requestParameters['query'] != null) {
+            formParams.append('query', requestParameters['query'] as any);
         }
 
-        if (requestParameters.format !== undefined) {
-            formParams.append('format', requestParameters.format as any);
+        if (requestParameters['format'] != null) {
+            formParams.append('format', requestParameters['format'] as any);
         }
 
         const response = await this.request({
-            path: `/{backend}`.replace(`{${"backend"}}`, encodeURIComponent(String(requestParameters.backend))),
+            path: `/{backend}`.replace(`{${"backend"}}`, encodeURIComponent(String(requestParameters['backend']))),
             method: 'POST',
             headers: headerParameters,
             query: queryParameters,

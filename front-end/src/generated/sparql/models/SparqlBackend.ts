@@ -25,6 +25,17 @@ export const SparqlBackend = {
 export type SparqlBackend = typeof SparqlBackend[keyof typeof SparqlBackend];
 
 
+export function instanceOfSparqlBackend(value: any): boolean {
+    for (const key in SparqlBackend) {
+        if (Object.prototype.hasOwnProperty.call(SparqlBackend, key)) {
+            if ((SparqlBackend as Record<string, SparqlBackend>)[key] === value) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 export function SparqlBackendFromJSON(json: any): SparqlBackend {
     return SparqlBackendFromJSONTyped(json, false);
 }

@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -72,10 +72,8 @@ export interface QLeverResponse {
 /**
  * Check if a given object implements the QLeverResponse interface.
  */
-export function instanceOfQLeverResponse(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfQLeverResponse(value: object): value is QLeverResponse {
+    return true;
 }
 
 export function QLeverResponseFromJSON(json: any): QLeverResponse {
@@ -83,39 +81,36 @@ export function QLeverResponseFromJSON(json: any): QLeverResponse {
 }
 
 export function QLeverResponseFromJSONTyped(json: any, ignoreDiscriminator: boolean): QLeverResponse {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'query': !exists(json, 'query') ? undefined : json['query'],
-        'res': !exists(json, 'res') ? undefined : json['res'],
-        'resultSize': !exists(json, 'resultSize') ? undefined : json['resultSize'],
-        'runtimeInformation': !exists(json, 'runtimeInformation') ? undefined : json['runtimeInformation'],
-        'selected': !exists(json, 'selected') ? undefined : json['selected'],
-        'status': !exists(json, 'status') ? undefined : json['status'],
-        'time': !exists(json, 'time') ? undefined : json['time'],
-        'warnings': !exists(json, 'warnings') ? undefined : json['warnings'],
+        'query': json['query'] == null ? undefined : json['query'],
+        'res': json['res'] == null ? undefined : json['res'],
+        'resultSize': json['resultSize'] == null ? undefined : json['resultSize'],
+        'runtimeInformation': json['runtimeInformation'] == null ? undefined : json['runtimeInformation'],
+        'selected': json['selected'] == null ? undefined : json['selected'],
+        'status': json['status'] == null ? undefined : json['status'],
+        'time': json['time'] == null ? undefined : json['time'],
+        'warnings': json['warnings'] == null ? undefined : json['warnings'],
     };
 }
 
 export function QLeverResponseToJSON(value?: QLeverResponse | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'query': value.query,
-        'res': value.res,
-        'resultSize': value.resultSize,
-        'runtimeInformation': value.runtimeInformation,
-        'selected': value.selected,
-        'status': value.status,
-        'time': value.time,
-        'warnings': value.warnings,
+        'query': value['query'],
+        'res': value['res'],
+        'resultSize': value['resultSize'],
+        'runtimeInformation': value['runtimeInformation'],
+        'selected': value['selected'],
+        'status': value['status'],
+        'time': value['time'],
+        'warnings': value['warnings'],
     };
 }
 

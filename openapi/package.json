@@ -1,7 +1,8 @@
 {
     "name": "osm-wikidata-map-framework-openapi-generator",
     "scripts": {
-        "generate": "npx @openapitools/openapi-generator-cli generate"
+        "generate": "openapi-generator-cli generate",
+        "list-versions": "openapi-generator-cli version-manager list"
     },
     "dependencies": {
         "@openapitools/openapi-generator-cli": "^2.13.4"

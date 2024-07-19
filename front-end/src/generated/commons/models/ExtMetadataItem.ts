@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 /**
  * 
  * @export
@@ -42,10 +42,8 @@ export interface ExtMetadataItem {
 /**
  * Check if a given object implements the ExtMetadataItem interface.
  */
-export function instanceOfExtMetadataItem(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfExtMetadataItem(value: object): value is ExtMetadataItem {
+    return true;
 }
 
 export function ExtMetadataItemFromJSON(json: any): ExtMetadataItem {
@@ -53,29 +51,26 @@ export function ExtMetadataItemFromJSON(json: any): ExtMetadataItem {
 }
 
 export function ExtMetadataItemFromJSONTyped(json: any, ignoreDiscriminator: boolean): ExtMetadataItem {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'source': !exists(json, 'source') ? undefined : json['source'],
-        'value': !exists(json, 'value') ? undefined : json['value'],
-        'hidden': !exists(json, 'hidden') ? undefined : json['hidden'],
+        'source': json['source'] == null ? undefined : json['source'],
+        'value': json['value'] == null ? undefined : json['value'],
+        'hidden': json['hidden'] == null ? undefined : json['hidden'],
     };
 }
 
 export function ExtMetadataItemToJSON(value?: ExtMetadataItem | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'source': value.source,
-        'value': value.value,
-        'hidden': value.hidden,
+        'source': value['source'],
+        'value': value['value'],
+        'hidden': value['hidden'],
     };
 }
 

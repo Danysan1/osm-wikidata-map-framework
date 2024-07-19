@@ -12,7 +12,7 @@
  * Do not edit the class manually.
  */
 
-import { exists, mapValues } from '../runtime';
+import { mapValues } from '../runtime';
 import type { ImageInfoItem } from './ImageInfoItem';
 import {
     ImageInfoItemFromJSON,
@@ -61,10 +61,8 @@ export interface Page {
 /**
  * Check if a given object implements the Page interface.
  */
-export function instanceOfPage(value: object): boolean {
-    let isInstance = true;
-
-    return isInstance;
+export function instanceOfPage(value: object): value is Page {
+    return true;
 }
 
 export function PageFromJSON(json: any): Page {
@@ -72,33 +70,30 @@ export function PageFromJSON(json: any): Page {
 }
 
 export function PageFromJSONTyped(json: any, ignoreDiscriminator: boolean): Page {
-    if ((json === undefined) || (json === null)) {
+    if (json == null) {
         return json;
     }
     return {
         
-        'pageid': !exists(json, 'pageid') ? undefined : json['pageid'],
-        'ns': !exists(json, 'ns') ? undefined : json['ns'],
-        'title': !exists(json, 'title') ? undefined : json['title'],
-        'imagerepository': !exists(json, 'imagerepository') ? undefined : json['imagerepository'],
-        'imageinfo': !exists(json, 'imageinfo') ? undefined : ((json['imageinfo'] as Array<any>).map(ImageInfoItemFromJSON)),
+        'pageid': json['pageid'] == null ? undefined : json['pageid'],
+        'ns': json['ns'] == null ? undefined : json['ns'],
+        'title': json['title'] == null ? undefined : json['title'],
+        'imagerepository': json['imagerepository'] == null ? undefined : json['imagerepository'],
+        'imageinfo': json['imageinfo'] == null ? undefined : ((json['imageinfo'] as Array<any>).map(ImageInfoItemFromJSON)),
     };
 }
 
 export function PageToJSON(value?: Page | null): any {
-    if (value === undefined) {
-        return undefined;
-    }
-    if (value === null) {
-        return null;
+    if (value == null) {
+        return value;
     }
     return {
         
-        'pageid': value.pageid,
-        'ns': value.ns,
-        'title': value.title,
-        'imagerepository': value.imagerepository,
-        'imageinfo': value.imageinfo === undefined ? undefined : ((value.imageinfo as Array<any>).map(ImageInfoItemToJSON)),
+        'pageid': value['pageid'],
+        'ns': value['ns'],
+        'title': value['title'],
+        'imagerepository': value['imagerepository'],
+        'imageinfo': value['imageinfo'] == null ? undefined : ((value['imageinfo'] as Array<any>).map(ImageInfoItemToJSON)),
     };
 }
 
