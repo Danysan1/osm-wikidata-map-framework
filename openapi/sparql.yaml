@@ -83,6 +83,12 @@ paths:
             application/qlever-results+json:
               schema:
                 $ref: '#/components/schemas/QLeverResponse'
+            text/csv:
+              schema:
+                type: string
+            text/tab-separated-values:
+              schema:
+                type: string
         '400':
           description: Bad request or malformed query
         '500':
