@@ -1,5 +1,4 @@
-import { Configuration } from "../generated/wikibase/runtime";
-import { DescriptionsApi } from "../generated/wikibase/apis/DescriptionsApi";
+import { Configuration, DescriptionsApi } from "wikibase-rest-api-ts";
 
 export class WikidataDescriptionService {
     protected readonly api: DescriptionsApi;

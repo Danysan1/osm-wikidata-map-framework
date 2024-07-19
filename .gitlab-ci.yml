@@ -31,9 +31,10 @@ next_js_build:
   stage: build
   image: node:22.2.0-alpine3.19
   script:
-    - cp .env.example .env
+    - cd front-end
+    - cp ../.env.example .env
     - echo "Building the app"
-    - npm install
+    - npm clean-install
     - npm run build
   artifacts:
     when: on_success

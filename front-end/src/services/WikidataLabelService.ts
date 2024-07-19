@@ -1,5 +1,4 @@
-import { Configuration } from "../generated/wikibase/runtime";
-import { LabelsApi } from "../generated/wikibase/apis/LabelsApi";
+import { Configuration, LabelsApi } from "wikibase-rest-api-ts";
 
 export class WikidataLabelService {
     protected readonly api: LabelsApi;

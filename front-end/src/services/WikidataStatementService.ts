@@ -1,5 +1,4 @@
-import { Configuration } from "../generated/wikibase/runtime";
-import { StatementsApi } from "../generated/wikibase/apis/StatementsApi";
+import { Configuration, StatementsApi } from "wikibase-rest-api-ts";
 
 export class WikidataStatementService {
     protected readonly api: StatementsApi;

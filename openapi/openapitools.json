@@ -19,15 +19,6 @@
         "additionalProperties": {
           "modelPropertyNaming": "original"
         }
-      },
-      "wikibase": {
-        "glob": "./wikibase.json",
-        "output": "../front-end/src/generated/wikibase",
-        "generatorName": "typescript-fetch",
-        "additionalProperties": {
-          "modelPropertyNaming": "original"
-        },
-        "skipValidateSpec": true
       }
     }
   }
