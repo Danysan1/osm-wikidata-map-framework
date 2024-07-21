@@ -1,4 +1,5 @@
 {
+  "version": "4.0.1",
   "name": "osm-wikidata-map-framework-front-end",
   "homepage": "https://gitlab.com/openetymologymap/osm-wikidata-map-framework",
   "description": "OSM-Wikidata Map Framework - Framework for creating interactive maps that shows details about map elements based on OpenStreetMap and Wikidata",
@@ -28,7 +29,6 @@
     "linked data",
     "structured data"
   ],
-  "version": "4.0.1",
   "private": true,
   "scripts": {
     "build-load-related": "tsc src/load-related/load-related.ts",
@@ -36,6 +36,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "serve": "serve out",
     "lint": "next lint"
   },
   "dependencies": {

@@ -12,5 +12,5 @@ Sentry.init({
   tracesSampleRate: process.env.NODE_ENV === 'development' ? 1 : 0.5,
 
   // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: process.env.NODE_ENV === 'development',
+  // debug: process.env.NODE_ENV === 'development',
 });

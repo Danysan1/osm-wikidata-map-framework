@@ -178,6 +178,10 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
               }
             }
           });
+          if(styleSpec.projection?.type)
+            styleSpec.projection = { type: styleSpec.projection.type }
+          else
+            styleSpec.projection = undefined; // Prevent 'Error: name: unknown property "name"' with Mapbox styles
           // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
           if (process.env.NODE_ENV === "development") console.debug(

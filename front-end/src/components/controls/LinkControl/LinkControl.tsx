@@ -86,7 +86,7 @@ export const LinkControl: FC<LinkControlProps> = ({
         <div className={className}>
           <button title={title} aria-label={title} onClick={openLink} className={styles.button}>
             <Image
-              className="button_img"
+              className={styles.icon}
               alt={title + " logo"}
               src={icon}
               loading="lazy"

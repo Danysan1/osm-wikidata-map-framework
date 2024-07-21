@@ -104,7 +104,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
             onClick={openTable}
           >
             <Image
-              className="button_img"
+              className={styles.icon}
               alt={"Data table symbol"}
               src={dataTableIcon as StaticImport}
               loading="lazy"

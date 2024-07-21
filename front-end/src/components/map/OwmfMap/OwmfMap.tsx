@@ -275,7 +275,7 @@ export const OwmfMap = () => {
       />
       <LanguageControl position="top-right" />
       <IDEditorControl minZoomLevel={minZoomLevel} position="top-right" />
-      <OsmWikidataMatcherControl minZoomLevel={minZoomLevel} position="top-right" />
+      <OsmWikidataMatcherControl position="top-right" />
       <DataTableControl
         sourceID={pmtilesActive ? PMTILES_SOURCE : DETAILS_SOURCE}
         dataLayerIDs={dataLayerIDs}

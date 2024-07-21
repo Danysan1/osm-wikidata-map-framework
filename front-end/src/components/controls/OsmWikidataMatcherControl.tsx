@@ -6,7 +6,6 @@ import { FC, useMemo } from 'react';
 import { LinkControl } from './LinkControl/LinkControl';
 
 interface OsmWikidataMatcherControlProps {
-  minZoomLevel: number;
   position?: ControlPosition;
 }
 
@@ -16,13 +15,16 @@ interface OsmWikidataMatcherControlProps {
  */
 export const OsmWikidataMatcherControl: FC<OsmWikidataMatcherControlProps> = (props) => {
   const { lon, lat, zoom } = useUrlFragmentContext(),
-    url = useMemo(() => `https://map.osm.wikidata.link/map/${zoom.toFixed()}/${lat}/${lon}`, [lat, lon, zoom]);
+    url = useMemo(
+      () => `https://map.osm.wikidata.link/map/${zoom.toFixed(0)}/${lat.toFixed(4)}/${lon.toFixed(4)}`,
+      [lat, lon, zoom]
+    );
 
   return <LinkControl
     linkURL={url}
     icon={osmWdMatcherLogo as StaticImport}
     title="OSM <-> Wikidata matcher"
-    minZoomLevel={props.minZoomLevel}
+    minZoomLevel={16}
     position={props.position}
     className='osm-wd-matcher-ctrl' />;
 }

@@ -148,7 +148,7 @@ const nextConfig = {
       },
     ],
   },
-  headers: generateCspHeaders(),
+  // headers: generateCspHeaders,
   reactStrictMode: true,
 };
 
@@ -164,7 +164,7 @@ export default withSentryConfig(nextConfig, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
-  debug: process.env.NODE_ENV !== "production",
+  // debug: process.env.NODE_ENV === "development",
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/
@@ -182,7 +182,7 @@ export default withSentryConfig(nextConfig, {
   hideSourceMaps: true,
 
   // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
+  disableLogger: true, //process.env.NODE_ENV !== "development", // https://github.com/getsentry/sentry-javascript/issues/10951#issuecomment-1982739125
 
   // Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
   // See the following for more information:
