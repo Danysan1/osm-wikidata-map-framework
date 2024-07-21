@@ -1,6 +1,5 @@
-import { parseStringArrayConfig } from "@/src/config";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { DEFAULT_SOURCE_PRESET_ID } from "@/src/model/SourcePreset";
+import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { ControlPosition } from "maplibre-gl";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -13,12 +12,11 @@ interface SourcePresetControlProps {
 /**
  * Let the user choose the source preset from a list of presets.
  **/
-export const SourcePresetControl: FC<SourcePresetControlProps> = (props) => {
+export const SourcePresetControl: FC<SourcePresetControlProps> = ({ position }) => {
     const { t } = useTranslation(),
-        {sourcePresetID, setSourcePresetID} = useUrlFragmentContext(),
+        { sourcePresetID, setSourcePresetID } = useUrlFragmentContext(),
         dropdownItems = useMemo(() => {
-            const sourcePresetIDs = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : [DEFAULT_SOURCE_PRESET_ID];
-            return sourcePresetIDs.map(
+            return getActiveSourcePresetIDs().map(
                 sourcePresetID => ({
                     id: sourcePresetID,
                     text: t("preset." + sourcePresetID),
@@ -32,7 +30,7 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = (props) => {
         dropdownItems={dropdownItems}
         selectedValue={sourcePresetID}
         title={t("preset.choose_preset")}
-        position={props.position}
+        position={position}
         className='preset-ctrl'
     />;
 }

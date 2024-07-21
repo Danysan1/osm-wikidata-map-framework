@@ -1,6 +1,15 @@
 import { parseStringArrayConfig } from '../config';
 import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 
+export function getActiveSourcePresetIDs(): string[] {
+    if (process.env.owmf_source_presets) {
+        const presets = parseStringArrayConfig(process.env.owmf_source_presets);
+        if (presets.length) return presets;
+    }
+
+    return [DEFAULT_SOURCE_PRESET_ID];
+}
+
 export function getCustomSourcePreset(): SourcePreset {
     return {
         default_backend: process.env.owmf_default_backend,

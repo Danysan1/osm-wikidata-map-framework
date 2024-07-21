@@ -1,19 +1,19 @@
 "use client";
 
 import {
-    Dispatch,
-    FC,
-    PropsWithChildren,
-    SetStateAction,
-    createContext,
-    useCallback,
-    useContext,
-    useEffect,
-    useState,
+  Dispatch,
+  FC,
+  PropsWithChildren,
+  SetStateAction,
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
 } from "react";
-import { parseStringArrayConfig } from "../config";
-import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
 import { ColorSchemeID } from "../model/colorScheme";
+import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
+import { getActiveSourcePresetIDs } from "../SourcePreset/common";
 
 const LONGITUDE_POSITION = 0,
   LATITUDE_POSITION = 1,
@@ -79,7 +79,7 @@ const UrlFragmentContext = createContext<UrlFragmentState>({
 
 export const useUrlFragmentContext = () => useContext(UrlFragmentContext);
 
-export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
+export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) => {
   const [initialized, setInitialized] = useState(false),
     [lat, _setLat] = useState<number>(() => {
       const latFromConfig = process.env.owmf_default_center_lat
@@ -119,12 +119,9 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       () => process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID
     ),
-    [sourcePresetID, setSourcePresetID] = useState<string>(() => {
-      const availablePresets = process.env.owmf_source_presets
-        ? parseStringArrayConfig(process.env.owmf_source_presets)
-        : undefined;
-      return availablePresets?.length ? availablePresets[0] : DEFAULT_SOURCE_PRESET_ID;
-    }),
+    [sourcePresetID, setSourcePresetID] = useState<string>(
+      () => getActiveSourcePresetIDs()[0]
+    ),
     setLat: Dispatch<SetStateAction<number>> = useCallback(
       (lat) => {
         if (typeof lat === "number" && (isNaN(lat) || lat < -90 || lat > 90))
@@ -164,27 +161,22 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
       newZoom =
         zoomFromFragment !== undefined && !isNaN(zoomFromFragment)
           ? zoomFromFragment
-          : undefined,
-      newColorScheme =
-        split[COLOR_SCHEME_POSITION] &&
-        Object.values(ColorSchemeID).includes(
-          split[COLOR_SCHEME_POSITION] as ColorSchemeID
-        )
-          ? (split[COLOR_SCHEME_POSITION] as ColorSchemeID)
-          : undefined,
-      newBackEnd = split[BACK_END_POSITION],
+          : undefined;
+    let newColorScheme: ColorSchemeID | undefined = split[COLOR_SCHEME_POSITION] as ColorSchemeID;
+    if (!newColorScheme || !Object.values(ColorSchemeID).includes(newColorScheme)) {
+      console.warn("Invalid or empty color scheme in URL fragment", newColorScheme);
+      newColorScheme = undefined;
+    }
+    const newBackEnd = split[BACK_END_POSITION],
       backgroundStyleFromFragment = split[BACKGROUND_STYLE_POSITION],
       backgroundStyleFromQueryString = window.location.search
         ? new URLSearchParams(window.location.search).get("style")
-        : null,
-      newSourcePreset =
-        split[PRESET_POSITION] &&
-        process.env.owmf_source_presets &&
-        parseStringArrayConfig(process.env.owmf_source_presets).includes(
-          split[PRESET_POSITION]
-        )
-          ? split[PRESET_POSITION]
-          : undefined;
+        : null;
+    let newSourcePreset: string | undefined = split[PRESET_POSITION];
+    if (!newSourcePreset || !getActiveSourcePresetIDs().includes(newSourcePreset)) {
+      console.warn("Invalid or empty source preset in URL fragment", newSourcePreset);
+      newSourcePreset = undefined;
+    }
 
     if (newLat) setLat(newLat);
     if (newLon) setLon(newLon);
@@ -283,7 +275,7 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = (props) => {
         setSourcePresetID,
       }}
     >
-      {props.children}
+      {children}
     </UrlFragmentContext.Provider>
   );
 };

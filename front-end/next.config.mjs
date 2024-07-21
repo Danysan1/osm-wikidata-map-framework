@@ -1,7 +1,6 @@
 import { withSentryConfig } from "@sentry/nextjs";
-import { readFileSync } from "fs";
-
-const owmf_version = JSON.parse(readFileSync('package.json','utf8')).version;
+import { existsSync, readdirSync, readFileSync } from "fs";
+import { join } from "path";
 
 const BASE_PATH = undefined,
   STATIC_EXPORT = true,
@@ -46,8 +45,6 @@ const BASE_PATH = undefined,
     "owmf_i18n_override",
     "owmf_max_map_elements",
     "owmf_cache_timeout_hours",
-    "owmf_elements_bbox_max_area",
-    "owmf_details_bbox_max_area",
     "owmf_max_relation_members",
     "owmf_fetch_parts_of_linked_entities",
     "owmf_wikispore_enable",
@@ -59,9 +56,26 @@ const BASE_PATH = undefined,
     "owmf_custom_intro_js",
   ];
 
-function generateCspHeaders() {
-  if (!process.env.owmf_csp_enable) return undefined;
+const owmf_version = JSON.parse(readFileSync('package.json', 'utf8')).version,
+  clientEnv = CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
+    acc[key] = process.env[key];
+    return acc;
+  }, {
+    owmf_version: owmf_version,
+    owmf_base_path: BASE_PATH,
+    owmf_static_export: STATIC_EXPORT ? "true" : undefined,
+  });
+if (process.env.owmf_source_presets === "all") {
+  const presetDir = join(process.cwd(), "public", "presets"),
+    presetFiles = existsSync(presetDir) ? readdirSync(presetDir) : [],
+    allPresets = presetFiles
+      .filter(fileName => fileName.endsWith(".json"))
+      .map(fileName => fileName.replace(/\.json$/, ""));
+  clientEnv.owmf_source_presets = JSON.stringify(allPresets);
+}
+console.debug("OSM-Wikidata Map Framework version", owmf_version);
 
+function generateCspHeaders() {
   const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}` : "",
     mapboxScript = process.env.owmf_mapbox_token ? " https://api.mapbox.com" : "",
     mapboxConnect = 'https://unpkg.com/@mapbox/' + process.env.owmf_mapbox_token ? ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com' : "",
@@ -118,14 +132,7 @@ function generateCspHeaders() {
 const nextConfig = {
   basePath: BASE_PATH,
   output: STATIC_EXPORT ? "export" : undefined,
-  env: CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
-    acc[key] = process.env[key];
-    return acc;
-  }, {
-    owmf_version: owmf_version,
-    owmf_base_path: BASE_PATH,
-    owmf_static_export: STATIC_EXPORT ? "true" : undefined,
-  }),
+  env: clientEnv,
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.sparql$/,
@@ -148,7 +155,7 @@ const nextConfig = {
       },
     ],
   },
-  // headers: generateCspHeaders,
+  headers: process.env.owmf_csp_enable ? generateCspHeaders : undefined,
   reactStrictMode: true,
 };
 

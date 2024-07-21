@@ -1,7 +1,7 @@
 import { Contributing } from "@/src/components/Contributing/Contributing";
-import { parseStringArrayConfig } from "@/src/config";
 import { LANGUAGES } from "@/src/i18n/common";
 import { loadServerI18n } from "@/src/i18n/server";
+import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { readSourcePreset } from "@/src/SourcePreset/server";
 import Link from "next/link";
 
@@ -16,7 +16,7 @@ interface LanguageContributingProps {
 
 export default async function LanguageContributing({ params: { lang } }: LanguageContributingProps) {
     const { t } = await loadServerI18n(lang);
-    const presets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : ["custom"];
+    const presets = getActiveSourcePresetIDs();
     return (
         <main>
             {!presets.length && "ERROR: No presets found"}

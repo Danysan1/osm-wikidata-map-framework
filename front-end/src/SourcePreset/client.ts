@@ -15,7 +15,11 @@ export async function fetchSourcePreset(sourcePresetID?: string) {
         if (presetObj === null || typeof presetObj !== "object")
             throw new Error(`Invalid preset object found in "${presetURL}"`);
 
-        preset = { id: sourcePresetID, ...presetObj };
+        preset = {
+            default_backend: process.env.owmf_default_backend,
+            ...presetObj,
+            id: sourcePresetID,
+        };
     }
     if (process.env.NODE_ENV === 'development') console.debug(
         "fetchSourcePreset", { sourcePresetID, preset }

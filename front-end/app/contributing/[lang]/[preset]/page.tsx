@@ -1,13 +1,12 @@
 import { Contributing } from "@/src/components/Contributing/Contributing";
-import { parseStringArrayConfig } from "@/src/config";
 import { LANGUAGES } from "@/src/i18n/common";
+import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { readSourcePreset } from "@/src/SourcePreset/server";
 
 // https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
 export function generateStaticParams() {
-  const presets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : ["custom"];
   return LANGUAGES.flatMap(
-    (lang) => presets.map((preset) => ({ lang, preset }))
+    (lang) => getActiveSourcePresetIDs().map((preset) => ({ lang, preset }))
   );
 }
 

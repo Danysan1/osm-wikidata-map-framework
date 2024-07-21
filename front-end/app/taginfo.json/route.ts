@@ -1,5 +1,5 @@
-import { parseStringArrayConfig } from "@/src/config";
 import { loadServerI18n } from "@/src/i18n/server";
+import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { readSourcePreset } from "@/src/SourcePreset/server";
 import { NextResponse } from "next/server";
 
@@ -19,11 +19,11 @@ interface TagInfoTag {
 export async function GET() {
   const { t, i18n } = await loadServerI18n();
 
-  const sourcePresets = process.env.owmf_source_presets ? parseStringArrayConfig(process.env.owmf_source_presets) : undefined,
-    sourcePreset = readSourcePreset(sourcePresets?.[0]),
+  const presets = getActiveSourcePresetIDs(),
+    sourcePreset = readSourcePreset(presets?.[0]),
     contributingURL = `${process.env.owmf_home_url}/contributing/${i18n.language}/${sourcePreset.id}`;
 
-  if (sourcePresets?.length !== 1) console.warn(
+  if (presets?.length !== 1) console.warn(
     " !! taginfo.json: multiple source presets found, using the first one:", sourcePreset.id
   );
 
