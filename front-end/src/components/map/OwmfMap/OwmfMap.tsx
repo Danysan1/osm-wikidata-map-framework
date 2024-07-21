@@ -237,6 +237,7 @@ export const OwmfMap = () => {
       latitude={mapLat}
       longitude={mapLon}
       zoom={mapZoom}
+      maxZoom={18}
       onMove={onMoveHandler}
       onMoveEnd={onMoveEndHandler}
       transformRequest={requestTransformFunction}

@@ -47,16 +47,17 @@ export class OverpassService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
-            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
+        const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
+        if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
+            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox });
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, bbox, language);
+        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox, language);
         if (cachedResponse)
             return cachedResponse;
 
-        const out = await this.fetchMapData(backEndID, onlyCentroids, bbox, language);
+        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, language);
         if (!onlyCentroids) {
             out.features = out.features.filter(
                 (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
@@ -70,6 +71,10 @@ export class OverpassService implements MapService {
     }
 
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+        const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
+        if(area < 0.00000001 || area > 1.5)
+            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`); 
+
         let osm_keys: string[],
             use_wikidata: boolean,
             search_text_key: string | undefined = this.preset?.osm_text_key;

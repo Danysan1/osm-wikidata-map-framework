@@ -71,7 +71,7 @@ function getBackgroundStyles() {
     id: "americana",
     vendorText: "OpenStreetMap US",
     styleText: "OSM Americana",
-    styleUrl: "https://zelonewolf.github.io/openstreetmap-americana/style.json",
+    styleUrl: "https://americanamap.org/style.json",
     keyPlaceholder: "https://tile.ourmap.us/data/v3.json",
     key: "https://tiles.stadiamaps.com/data/openmaptiles.json",
   });
@@ -144,7 +144,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
           if (style.keyPlaceholder && style.key) {
             Object.values(styleSpec.sources)
               .filter((src) => src.type === "vector")
-              .forEach((src) => src.url?.replace(style.keyPlaceholder!, style.key!));
+              .forEach((src) => src.url = src.url?.replace(style.keyPlaceholder!, style.key!));
           }
 
           /**
