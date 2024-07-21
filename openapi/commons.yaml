@@ -25,13 +25,20 @@ paths:
           in: query
           required: true
           example: query
+          description: Which action to perform.
           schema:
-            type: string
+            $ref: "#/components/schemas/ActionType"
         - name: format
           in: query
           example: json
+          description: The format of the output.
           schema:
             type: string
+        - name: maxlag
+          in: query
+          example: 5
+          schema:
+            type: integer
         - name: iiextmetadatafilter
           in: query
           example: "Artist|LicenseShortName"
@@ -45,6 +52,7 @@ paths:
         - name: origin
           in: query
           example: "*"
+          description: When accessing the API using a cross-domain AJAX request (CORS), set this to the originating domain. This must be included in any pre-flight request, and therefore must be part of the request URI (not the POST body).
           schema:
             type: string
         - name: prop
@@ -60,6 +68,12 @@ paths:
         - name: uselang
           in: query
           example: en
+          description: Language to use for message translations.
+          schema:
+            type: string
+        - name: variant
+          in: query
+          description: Variant of the language. Only works if the base language supports variant conversion.
           schema:
             type: string
       responses:
@@ -76,6 +90,144 @@ paths:
 
 components:
   schemas:
+    ActionType:
+      type: string
+      enum:
+        - abusefiltercheckmatch
+        - abusefilterchecksyntax
+        - abusefilterevalexpression
+        - abusefilterunblockautopromote
+        - abuselogprivatedetails
+        - acquiretempusername
+        - aggregategroups
+        - antispoof
+        - block
+        - centralauthtoken
+        - centralnoticecdncacheupdatebanner
+        - centralnoticechoicedata
+        - centralnoticequerycampaign
+        - changeauthenticationdata
+        - changecontentmodel
+        - checktoken
+        - cirrus-config-dump
+        - cirrus-mapping-dump
+        - cirrus-profiles-dump
+        - cirrus-settings-dump
+        - clearhasmsg
+        - clientlogin
+        - compare
+        - createaccount
+        - createlocalaccount
+        - delete
+        - deleteglobalaccount
+        - discussiontoolsedit
+        - discussiontoolsfindcomment
+        - discussiontoolsgetsubscriptions
+        - discussiontoolssubscribe
+        - discussiontoolsthank
+        - echocreateevent
+        - echomarkread
+        - echomarkseen
+        - echomute
+        - edit
+        - editmassmessagelist
+        - emailuser
+        - expandtemplates
+        - featuredfeed
+        - feedcontributions
+        - feedrecentchanges
+        - feedwatchlist
+        - filerevert
+        - flickrblacklist
+        - flow
+        - flow-parsoid-utils
+        - flowthank
+        - globalblock
+        - globalpreferenceoverrides
+        - globalpreferences
+        - globaluserrights
+        - groupreview
+        - help
+        - imagerotate
+        - import
+        - jsonconfig
+        - languagesearch
+        - linkaccount
+        - login
+        - logout
+        - managetags
+        - markfortranslation
+        - massmessage
+        - mediadetection
+        - mergehistory
+        - move
+        - opensearch
+        - options
+        - paraminfo
+        - parse
+        - patrol
+        - protect
+        - purge
+        - query
+        - removeauthenticationdata
+        - resetpassword
+        - revisiondelete
+        - rollback
+        - rsd
+        - searchtranslations
+        - setglobalaccountstatus
+        - setnotificationtimestamp
+        - setpagelanguage
+        - shortenurl
+        - sitematrix
+        - spamblacklist
+        - streamconfigs
+        - strikevote
+        - tag
+        - templatedata
+        - thank
+        - titleblacklist
+        - torblock
+        - transcodereset
+        - translationaids
+        - translationreview
+        - translationstats
+        - ttmserver
+        - unblock
+        - undelete
+        - unlinkaccount
+        - upload
+        - userrights
+        - validatepassword
+        - watch
+        - wbavailablebadges
+        - wbcheckconstraintparameters
+        - wbcheckconstraints
+        - wbcreateclaim
+        - wbcreateredirect
+        - wbeditentity
+        - wbformatentities
+        - wbformatvalue
+        - wbgetclaims
+        - wbgetentities
+        - wblinktitles
+        - wbmergeitems
+        - wbparsevalue
+        - wbremoveclaims
+        - wbremovequalifiers
+        - wbremovereferences
+        - wbsearchentities
+        - wbsetaliases
+        - wbsetclaim
+        - wbsetclaimvalue
+        - wbsetdescription
+        - wbsetlabel
+        - wbsetqualifier
+        - wbsetreference
+        - wbsetsitelink
+        - webapp-manifest
+        - webauthn
+        - wikilove
     CommonsApiResponse:
       type: object
       properties:

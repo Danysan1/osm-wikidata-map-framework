@@ -15,22 +15,27 @@
 
 import * as runtime from '../runtime';
 import type {
+  ActionType,
   CommonsApiResponse,
 } from '../models/index';
 import {
+    ActionTypeFromJSON,
+    ActionTypeToJSON,
     CommonsApiResponseFromJSON,
     CommonsApiResponseToJSON,
 } from '../models/index';
 
 export interface ApiCallRequest {
-    action: string;
+    action: ActionType;
     format?: string;
+    maxlag?: number;
     iiextmetadatafilter?: string;
     iiprop?: string;
     origin?: string;
     prop?: string;
     titles?: string;
     uselang?: string;
+    variant?: string;
 }
 
 /**
@@ -59,6 +64,10 @@ export class CommonsApi extends runtime.BaseAPI {
             queryParameters['format'] = requestParameters['format'];
         }
 
+        if (requestParameters['maxlag'] != null) {
+            queryParameters['maxlag'] = requestParameters['maxlag'];
+        }
+
         if (requestParameters['iiextmetadatafilter'] != null) {
             queryParameters['iiextmetadatafilter'] = requestParameters['iiextmetadatafilter'];
         }
@@ -81,6 +90,10 @@ export class CommonsApi extends runtime.BaseAPI {
 
         if (requestParameters['uselang'] != null) {
             queryParameters['uselang'] = requestParameters['uselang'];
+        }
+
+        if (requestParameters['variant'] != null) {
+            queryParameters['variant'] = requestParameters['variant'];
         }
 
         const headerParameters: runtime.HTTPHeaders = {};
