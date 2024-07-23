@@ -1,15 +1,22 @@
 # OSM-Wikidata Map Framework front-end
 
 This is a [Next.js](https://nextjs.org/)+Typescript project that is responsible for rendering the front-end of OWMF-based projects, the actual map that you can use to explore the data.
-The map is created using [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/) and the charts are created using [chart.js](https://www.chartjs.org/).
 
-At very low zoom level (zoom < [`min_zoom_level`](../.env.example)) clustered element counts are shown only for PMTiles and Vector DB sources.
+Used libraries include
+* [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/) and [react-map-gl](https://visgl.github.io/react-map-gl/) for the map
+* [i18next](https://www.i18next.com/) for internationalization
+* [chart.js](https://www.chartjs.org/) for the charts
+* [osmtogeojson](http://tyrasd.github.io/osmtogeojson/) to handle Overpass output
+* [wikibase-rest-api-ts](https://www.npmjs.com/package/wikibase-rest-api-ts) to interact with Wikidata REST API
 
-At low zoom level (zoom < [`threshold_zoom_level`](../.env.example)) clustered element counts are shown fol all sources.
+The map has different behaviors depending on the zoom level and back-end:
+* At low or very low zoom level (zoom < [`threshold_zoom_level`](../.env.example)) with PMTiles vector tiles, only boundaries are shown
+* At high zoom level (zoom > [`threshold_zoom_level`](../.env.example)) with PMTiles vector tiles, non-boundary element details are shown
+* At very low zoom level (zoom < [`min_zoom_level`](../.env.example)) with other back-ends, nothing is shown
+* At low zoom level (zoom < [`threshold_zoom_level`](../.env.example)) with other back-ends, clustered element counts are shown
+* At high zoom level (zoom > [`threshold_zoom_level`](../.env.example)) with other back-ends, non-boundary element details are shown
 
-At high zoom level (zoom > [`threshold_zoom_level`](../.env.example)) actual elements and their etymologies are shown.
-
-The API code used to connect to Overpass, WDQS and other APIs is automatically generated from the OpenAPI specification files in [`/openapi/`](../openapi/) through `npm run generate` into [`src/generated/`](./src/generated/).
+The API code used to connect to Mediawiki API, WDQS and QLever is automatically generated from the OpenAPI specification files in [`/openapi/`](../openapi/) through `npm run generate` into [`src/generated/`](./src/generated/).
 
 ## File structure
 
@@ -29,6 +36,9 @@ Main files and folders:
 
 ## Development
 
+In order to run an instance its configuration must be set in `.env` or `.env.local`.
+You can copy it from the template file [`.env.example`](../.env.example).
+
 To run the local development server:
 
 ```bash
@@ -47,47 +57,22 @@ To learn more about Next.js, take a look at the following resources:
 
 ## Deployment
 
-In order to make a deployed instance function correctly all instance settings must be set in `.env`.
+In order to build a deployable instance its configuration must be set in `.env` or `.env.production`.
+You can copy it from the template file [`.env.example`](../.env.example).
 
-You can copy the template file [`.env.example`](../.env.example), while other options should already be ok as a starting point.
+You will also need to specify [a token/key in `.env` for the background map](../.env.example#L45) (either `mapbox_token`, `maptiler_key`, `enable_stadia_maps` or `jawg_token`).
 
-If you expose your app on a domain/address different than localhost or 127.0.0.1 you will also need to specify a token/key for the background map (either `mapbox_token`, `maptiler_key`, `enable_stadia_maps` or `jawg_token`).
+If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS Sentry project and set [the `sentry-*` parameters in `.env`](../.env.example#L122) according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
 
-If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS and/or PHP Sentry project and set the `sentry-*` parameters according with the values you can find in `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/keys/` and `https://sentry.io/settings/_ORGANIZATION_/projects/_PROJECT_/security-headers/csp/`.
+### Static deployment
 
-### Production deployment with Docker
+If `STATIC_EXPORT` is `true` in [next.config.mjs](./next.config.mjs) and you run `npm run build` a static export ready for production deployment of your OWMF instance will be generated in the [out](./out) folder.
+You can then simply copy that folder into the web root of any web server like Nginx or Apache httpd.
 
-The latest version can be deployed through Docker using the image [`registry.gitlab.com/openetymologymap/osm-wikidata-map-framework`](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/container_registry/3032190).
-```sh
-docker run --rm -d  -p 80:80/tcp registry.gitlab.com/openetymologymap/osm-wikidata-map-framework:latest
-```
+For more details see [the Static exports documentation of Next.js](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports)
 
-A full installation without DB (using Overpass) can be deployed with docker-compose:
-```sh
-git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
-cd osm-wikidata-map-framework
-cp ".env.example" ".env"
-# At this point edit the .env file with the desired settings
-docker-compose --profile "prod" up -d
-```
+### Dynamic deployment
 
-A full installation complete with DB can be deployed with docker-compose:
-```sh
-git clone https://gitlab.com/openetymologymap/osm-wikidata-map-framework.git
-cd osm-wikidata-map-framework
-cp ".env.example" ".env"
-# At this point edit the .env file with the desired settings and set db_enable=true
-COMPOSE_PROFILES=prod,db docker-compose up -d
-```
-At this point you need to load a dump of the DB on the DB exposed on localhost:5432 or initialize it [through the Airflow pipeline](#database-initialization)
+If `STATIC_EXPORT` is `false` in [next.config.mjs](./next.config.mjs) and you run `npm run build`, you can then copy the whole front-end folder to your target machine (where Node.js must be installed) and then run in the new folder `npm run start` to start the Next.js web server.
 
-<details>
-<summary>Deployment diagram</summary>
-
-![deployment diagram](images/deployment/prod.png)
-
-![deployment diagram](images/deployment/prod+db.png)
-
-![deployment diagram](images/deployment/prod+promtail.png)
-
-</details>
+For more details see [the Deploying documentation of Next.js](https://nextjs.org/docs/pages/building-your-application/deploying#nodejs-server)

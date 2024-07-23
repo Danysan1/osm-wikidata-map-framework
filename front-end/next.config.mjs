@@ -73,7 +73,6 @@ if (process.env.owmf_source_presets === "all") {
       .map(fileName => fileName.replace(/\.json$/, ""));
   clientEnv.owmf_source_presets = JSON.stringify(allPresets);
 }
-console.debug("OSM-Wikidata Map Framework version", owmf_version);
 
 function generateCspHeaders() {
   const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}` : "",
