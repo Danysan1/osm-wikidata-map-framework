@@ -56,16 +56,18 @@ const BASE_PATH = undefined,
     "owmf_custom_intro_js",
   ];
 
-const owmf_version = JSON.parse(readFileSync('package.json', 'utf8')).version,
-  clientEnv = CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
+const baseEnv = {
+  owmf_version: JSON.parse(readFileSync('package.json', 'utf8')).version,
+  owmf_base_path: BASE_PATH,
+  owmf_static_export: STATIC_EXPORT ? "true" : undefined,
+  owmf_i18n_override: existsSync("i18n.json") ? readFileSync("i18n.json", "utf8") : undefined
+};
+const clientEnv = CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
+  if (process.env[key])
     acc[key] = process.env[key];
-    return acc;
-  }, {
-    owmf_version: owmf_version,
-    owmf_base_path: BASE_PATH,
-    owmf_static_export: STATIC_EXPORT ? "true" : undefined,
-  });
-if (process.env.owmf_source_presets === "all") {
+  return acc;
+}, baseEnv);
+if (process.env.owmf_source_presets === "all") { // Fill owmf_source_presets with all available presets
   const presetDir = join(process.cwd(), "public", "presets"),
     presetFiles = existsSync(presetDir) ? readdirSync(presetDir) : [],
     allPresets = presetFiles

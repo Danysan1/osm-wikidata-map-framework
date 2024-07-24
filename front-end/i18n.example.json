@@ -1,0 +1,32 @@
+{
+    "da": {
+        "app": {
+            "title": "OWMF Title DA",
+            "description": "OWMF Description DA"
+        }
+    },
+    "en": {
+        "app": {
+            "title": "OWMF Title EN",
+            "description": "OWMF Description EN"
+        }
+    },
+    "es": {
+        "app": {
+            "title": "OWMF Title ES",
+            "description": "OWMF Description ES"
+        }
+    },
+    "fr": {
+        "app": {
+            "title": "OWMF Title FR",
+            "description": "OWMF Description FR"
+        }
+    },
+    "it": {
+        "app": {
+            "title": "OWMF Test IT",
+            "description": "OWMF Description IT"
+        }
+    }
+}

@@ -11,6 +11,7 @@
 **.sqlite-journal
 **.pbf.*
 **.tmp.*
+i18n.json
 
 # Created by https://www.toptal.com/developers/gitignore/api/node,visualstudiocode,nextjs
 # Edit at https://www.toptal.com/developers/gitignore?templates=node,visualstudiocode,nextjs
