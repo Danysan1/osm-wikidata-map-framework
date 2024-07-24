@@ -1,5 +1,4 @@
-import { Popup as PopupRef } from "maplibre-gl";
-import { FC, useEffect, useRef } from "react";
+import { FC } from "react";
 import { Popup, useMap } from "react-map-gl/maplibre";
 import { EtymologyFeature } from "../../model/EtymologyResponse";
 import { FeatureView } from "../FeatureView/FeatureView";
@@ -12,15 +11,9 @@ interface FeaturePopupProps {
 
 export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, onClose }) => {
   const { current: map } = useMap(),
-    popupRef = useRef<PopupRef>(null),
-    position = map?.getBounds()?.getSouthWest(); // No useMemo is correct, the coordinates change over time
+    position = map?.getBounds()?.getNorthWest(); // No useMemo is correct, the coordinates change over time
   if (process.env.NODE_ENV === "development") console.debug(
     "FeaturePopup", { feature, position }
-  );
-
-  useEffect(
-    () => popupRef.current?.getElement()?.querySelector(".maplibregl-popup-close-button")?.scrollIntoView(true),
-    [popupRef]
   );
 
   return (
@@ -34,7 +27,7 @@ export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, onClose }) => {
         closeOnClick
         closeOnMove
         onClose={onClose}
-        ref={popupRef}
+        anchor="top-left"
       >
         <FeatureView feature={feature} />
       </Popup>

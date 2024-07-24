@@ -9,6 +9,7 @@ div.custom_popup {
   transform: translate(10px, 0) !important;
   z-index: 1000;
   overflow: auto;
+  flex-direction: column;
 }
 
 div.custom_popup :global(.maplibregl-popup-content) {
