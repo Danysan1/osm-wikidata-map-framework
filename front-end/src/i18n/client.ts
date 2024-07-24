@@ -6,7 +6,7 @@ import ChainedBackend from 'i18next-chained-backend';
 import HttpBackend from 'i18next-http-backend';
 import resourcesToBackend from 'i18next-resources-to-backend';
 import { initReactI18next } from 'react-i18next';
-import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from "./common";
+import { DEFAULT_LANGUAGE, FALLBACK_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from "./common";
 
 /**
  * 
@@ -34,8 +34,8 @@ export async function loadClientI18n() {
             debug: process.env.NODE_ENV === 'development',
             fallbackLng: DEFAULT_LANGUAGE,
             backend: { backends, backendOptions },
-            ns: [MAIN_NAMESPACE, DEFAULT_NAMESPACE],
-            fallbackNS: DEFAULT_NAMESPACE,
-            defaultNS: DEFAULT_NAMESPACE
+            ns: [MAIN_NAMESPACE, FALLBACK_NAMESPACE],
+            fallbackNS: FALLBACK_NAMESPACE,
+            defaultNS: MAIN_NAMESPACE
         });
 }

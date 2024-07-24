@@ -3,7 +3,7 @@ import { Resource, createInstance } from 'i18next';
 import ChainedBackend from 'i18next-chained-backend';
 import resourcesToBackend from "i18next-resources-to-backend";
 import { join } from "path";
-import { DEFAULT_LANGUAGE, DEFAULT_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from "./common";
+import { DEFAULT_LANGUAGE, FALLBACK_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from "./common";
 
 export async function loadServerI18n(lang?: string) {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
@@ -11,9 +11,9 @@ export async function loadServerI18n(lang?: string) {
     if (!LANGUAGES.includes(language))
         throw new Error("Invalid language: " + language);
 
-    const commonBackendPath = join(process.cwd(), "public", "locales", language, DEFAULT_NAMESPACE + '.json'),
+    const commonBackendPath = join(process.cwd(), "public", "locales", language, FALLBACK_NAMESPACE + '.json'),
         rawCommonBackend = existsSync(commonBackendPath) ? JSON.parse(readFileSync(commonBackendPath, 'utf8')) as unknown : undefined,
-        commonBackend = rawCommonBackend && typeof rawCommonBackend === 'object' ? { [language]: { [DEFAULT_NAMESPACE]: rawCommonBackend } } as Resource : undefined,
+        commonBackend = rawCommonBackend && typeof rawCommonBackend === 'object' ? { [language]: { [FALLBACK_NAMESPACE]: rawCommonBackend } } as Resource : undefined,
         rawI18nOverride = process.env.owmf_i18n_override ? JSON.parse(process.env.owmf_i18n_override) as unknown : undefined,
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [],
@@ -36,9 +36,9 @@ export async function loadServerI18n(lang?: string) {
             fallbackLng: DEFAULT_LANGUAGE,
             lng: language, // Currently uses only language, not locale
             backend: { backends, backendOptions },
-            ns: [MAIN_NAMESPACE, DEFAULT_NAMESPACE],
-            fallbackNS: DEFAULT_NAMESPACE,
-            defaultNS: DEFAULT_NAMESPACE
+            ns: [MAIN_NAMESPACE, FALLBACK_NAMESPACE],
+            fallbackNS: FALLBACK_NAMESPACE,
+            defaultNS: MAIN_NAMESPACE,
         });
     return { t, i18n };
 }
