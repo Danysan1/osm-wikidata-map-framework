@@ -76,6 +76,7 @@ if (process.env.owmf_source_presets === "all") { // Fill owmf_source_presets wit
   clientEnv.owmf_source_presets = JSON.stringify(allPresets);
 }
 
+const csp_enable = !!process.env.owmf_csp_enable && process.env.owmf_csp_enable !== "false";
 function generateCspHeaders() {
   const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}` : "",
     mapboxScript = process.env.owmf_mapbox_token ? " https://api.mapbox.com" : "",
@@ -156,7 +157,7 @@ const nextConfig = {
       },
     ],
   },
-  headers: process.env.owmf_csp_enable ? generateCspHeaders : undefined,
+  headers: csp_enable ? generateCspHeaders : undefined,
   reactStrictMode: true,
 };
 

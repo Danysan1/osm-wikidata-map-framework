@@ -1,5 +1,5 @@
 import { readFileSync } from 'fs';
-import { Connection, DataTypeOIDs, PreparedStatement } from 'postgresql-client';
+import { Connection, DataTypeOIDs, PreparedStatement } from 'postgrejs';
 import { SparqlApi } from "../../generated/sparql/apis/SparqlApi";
 import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend";
 import { Configuration } from "../../generated/sparql/runtime";
