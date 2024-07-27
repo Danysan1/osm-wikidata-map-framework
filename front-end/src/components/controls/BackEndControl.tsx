@@ -1,4 +1,7 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
+import { DetailsDatabase } from "@/src/db/DetailsDatabase";
+import { MapDatabase } from "@/src/db/MapDatabase";
+import { StatsDatabase } from "@/src/db/StatsDatabase";
 import { osmKeyToKeyID } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
@@ -131,8 +134,9 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
     if (process.env.NODE_ENV === 'development') console.debug("BackEndControl", { preset, dropdownItems });
 
     const clearCache = useCallback(() => {
-        //TODO
-        // new MapDatabase().clearCache();
+        new MapDatabase().clearMaps().catch(e => console.error("Failed clearing map cache", e));
+        new DetailsDatabase().clearDetails().catch(e => console.error("Failed clearing details cache", e));
+        new StatsDatabase().clearStats().catch(e => console.error("Failed clearing stats cache", e));
     }, []);
 
     return <DropdownControl

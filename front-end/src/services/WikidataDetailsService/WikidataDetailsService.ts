@@ -9,9 +9,11 @@ export class WikidataDetailsService extends WikidataService {
 
     public constructor(language: string) {
         super();
-        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
-        this.db = new DetailsDatabase(maxHours);
+        this.db = new DetailsDatabase();
         this.language = language;
+
+        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
+        setTimeout(() => void this.db.clearDetails(maxHours), 10_000);
     }
 
     public async fetchEtymologyDetails(wikidataIDs: Set<string>): Promise<Record<string, EtymologyDetails>> {
@@ -21,7 +23,7 @@ export class WikidataDetailsService extends WikidataService {
         } else {
             if (process.env.NODE_ENV === 'development') console.debug("fetchEtymologyDetails: Cache miss, fetching data", { lang: this.language, wikidataIDs });
             const sparqlQueryTemplate = await fetch(detailsQueryURL).then(res => res.text()),
-             res = await this.etymologyIDsQuery(this.language, Array.from(wikidataIDs), sparqlQueryTemplate);
+                res = await this.etymologyIDsQuery(this.language, Array.from(wikidataIDs), sparqlQueryTemplate);
 
             if (!res?.results?.bindings?.length) {
                 console.warn("fetchEtymologyDetails: no results");

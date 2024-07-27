@@ -12,21 +12,24 @@ interface DetailsRow {
 export class DetailsDatabase extends Dexie {
     public details!: Table<DetailsRow, number>;
 
-    public constructor(maxHours?: number) {
+    public constructor() {
         super("DetailsDatabase");
         this.version(1).stores({
             details: "++id, language"
         });
+    }
 
-        if (maxHours) {
-            setTimeout(() => {
-                void this.transaction('rw', this.details, async () => {
-                    const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
-                        count = await this.details.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                    if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, threshold });
-                });
-            }, 10_000);
-        }
+    public async clearDetails(maxHours?: number) {
+        await this.transaction('rw', this.details, async () => {
+            if (maxHours) {
+                const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                    count = await this.details.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old details from indexedDB", { maxHours, count, threshold });
+            } else {
+                await this.details.clear();
+                if (process.env.NODE_ENV === 'development') console.debug("Cleared all details from indexedDB");
+            }
+        });
     }
 
     public async getDetails(wikidataIDs: Set<string>, language?: string): Promise<Record<string, EtymologyDetails> | undefined> {

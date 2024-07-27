@@ -33,7 +33,7 @@ export class CombinedCachedMapService implements MapService {
             "CombinedCachedMapService: initializing map services",
             { maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, overpassEndpoints }
         );
-        const db = new MapDatabase(maxHours),
+        const db = new MapDatabase(),
             overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox, overpassEndpoints),
             wikidataService = new WikidataMapService(sourcePreset, db);
         this.services.push(
@@ -43,6 +43,8 @@ export class CombinedCachedMapService implements MapService {
         )
         if (!!process.env.owmf_qlever_enable && process.env.owmf_qlever_enable !== "false")
             this.services.push(new QLeverMapService(sourcePreset, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox));
+
+        setTimeout(() => void db.clearMaps(maxHours), 10_000);
     }
 
     public canHandleBackEnd(backEndID: string): boolean {

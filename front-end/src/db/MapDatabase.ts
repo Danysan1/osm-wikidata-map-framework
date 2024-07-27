@@ -1,32 +1,35 @@
 import Dexie, { Table } from 'dexie';
-import type { EtymologyResponse } from '../model/EtymologyResponse';
 import type { BBox } from 'geojson';
+import type { EtymologyResponse } from '../model/EtymologyResponse';
 
 type MapRow = EtymologyResponse & { id?: number };
 
 export class MapDatabase extends Dexie {
     public maps!: Table<MapRow, number>;
 
-    public constructor(maxHours?: number) {
+    public constructor() {
         super("MapDatabase");
 
         this.version(6).stores({
             //maps: "++id, [sourcePresetID+backEndID+onlyCentroids+language]" // Does not work: https://stackoverflow.com/a/56661425
             maps: "++id, [sourcePresetID+backEndID+language]"
         });
-
-        if (maxHours) {
-            setTimeout(() => {
-                void this.transaction('rw', this.maps, async () => {
-                    const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
-                        count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                    if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { count, threshold });
-                });
-            }, 10_000);
-        }
     }
 
-    public async getMap(sourcePresetID:string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language?: string): Promise<MapRow | undefined> {
+    public async clearMaps(maxHours?: number) {
+        await this.transaction('rw', this.maps, async () => {
+            if (maxHours) {
+                const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
+                    count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
+                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { maxHours, count, threshold });
+            } else {
+                await this.maps.clear();
+                if (process.env.NODE_ENV === 'development') console.debug("Cleared all maps from indexedDB");
+            }
+        });
+    }
+
+    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language?: string): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {

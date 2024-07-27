@@ -37,9 +37,11 @@ export class WikidataStatsService extends WikidataService {
 
     public constructor(language: string) {
         super();
-        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
-        this.db = new StatsDatabase(maxHours);
+        this.db = new StatsDatabase();
         this.language = language;
+
+        const maxHours = parseInt(process.env.owmf_cache_timeout_hours ?? "24");
+        setTimeout(() => void this.db.clearStats(maxHours), 10_000);
     }
 
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
