@@ -7,6 +7,7 @@ import {
   PropsWithChildren,
   cloneElement,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -54,7 +55,7 @@ export interface DropdownItem {
   id: string;
   text: string;
   category?: string | null;
-  onSelect: (event: ChangeEvent<HTMLSelectElement>) => void;
+  onSelect: (event?: ChangeEvent<HTMLSelectElement>) => void;
 }
 
 interface DropdownControlProps extends PropsWithChildren {
@@ -83,9 +84,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
   const { zoom } = useUrlFragmentContext(),
     dropdownId = `dropdown_${className}`,
     ctrl = useControl<DropdownControlObject>(
-      () => {
-        return new DropdownControlObject(onSourceData);
-      },
+      () => new DropdownControlObject(onSourceData),
       { position: position }
     ),
     buttonOnTheLeft = position === "top-left" || position === "bottom-left",
@@ -150,6 +149,21 @@ export const DropdownControl: FC<DropdownControlProps> = ({
         </>
       );
     }, [dropdownItems]);
+
+  useEffect(() => {
+    if(!dropdownItems.length) {
+      if (process.env.NODE_ENV === 'development') console.warn(
+        "DropdownControl: no dropdownItems provided",
+        { dropdownItems }
+      );
+    } else if (!dropdownItems.some(item => item.id === selectedValue)) {
+      if (process.env.NODE_ENV === 'development') console.warn(
+        "DropdownControl: selectedValue not found in dropdownItems, selecting first item",
+        { selectedValue, dropdownItems }
+      );
+      dropdownItems[0].onSelect();
+    }
+  }, [dropdownItems, selectedValue]);
 
   const element = useMemo(
     () =>

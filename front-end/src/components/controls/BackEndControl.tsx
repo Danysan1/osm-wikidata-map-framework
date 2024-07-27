@@ -19,14 +19,14 @@ const PMTILES_GROUP_NAME = "Database (PMTiles)",
     QLEVER_GROUP_NAME = "QLever (beta)";
 
 /**
- * Let the user choose the back-end from a list of available back-ends for the current instance and source props.preset.
+ * Let the user choose the back-end from a list of available back-ends for the current instance and source preset.
  **/
-export const BackEndControl: FC<BackEndControlProps> = (props) => {
+export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) => {
     const { t } = useTranslation(),
         { backEndID, setBackEndID } = useUrlFragmentContext(),
         dropdownItems = useMemo(() => {
-            const qleverEnabled = !!process.env.owmf_qlever_enable,
-                pmtilesURL = process.env.owmf_pmtiles_preset === props.preset.id ? process.env.owmf_pmtiles_base_url : undefined,
+            const qleverEnabled = !!process.env.owmf_qlever_enable && process.env.owmf_qlever_enable !== "false",
+                pmtilesURL = process.env.owmf_pmtiles_preset === preset.id ? process.env.owmf_pmtiles_base_url : undefined,
                 dropdownItems: DropdownItem[] = [],
                 buildDropdownItem = (backEndID: string, text: string, category?: string): DropdownItem => ({
                     id: backEndID,
@@ -39,14 +39,14 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 dropdownItems.push(buildDropdownItem("pmtiles_all", t("source.db_all", "All sources from DB"), PMTILES_GROUP_NAME));
 
             const allKeysText = t("source.all_osm_keys", "All OSM keys");
-            if (props.preset.osm_wikidata_keys?.length)
+            if (preset.osm_wikidata_keys?.length)
                 dropdownItems.push(buildDropdownItem("overpass_all", allKeysText, OVERPASS_GROUP_NAME));
 
-            if (props.preset.osm_wikidata_properties?.length) {
+            if (preset.osm_wikidata_properties?.length) {
                 /**
                  * @example "Wikidata P138/P825/P547"
                  */
-                const wikidataDirectText = "Wikidata " + props.preset.osm_wikidata_properties.join("/");
+                const wikidataDirectText = "Wikidata " + preset.osm_wikidata_properties.join("/");
                 /**
                  * @example "OSM wikidata=* > Wikidata P138/P825/P547"
                  */
@@ -55,7 +55,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                     dropdownItems.push(buildDropdownItem("pmtiles_osm_wikidata_direct", osmWikidataDirectText, PMTILES_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("pmtiles_wd_direct", wikidataDirectText, PMTILES_GROUP_NAME));
                 }
-                if (props.preset.osm_wikidata_keys?.length)
+                if (preset.osm_wikidata_keys?.length)
                     dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_direct", `${allKeysText} + ${wikidataDirectText}`, OVERPASS_WDQS_GROUP_NAME));
 
                 dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", osmWikidataDirectText, OVERPASS_WDQS_GROUP_NAME));
@@ -67,12 +67,12 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 }
             }
 
-            if (props.preset.wikidata_indirect_property) {
-                const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty: props.preset.wikidata_indirect_property }),
-                    qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty: props.preset.wikidata_indirect_property }),
-                    reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty: props.preset.wikidata_indirect_property });
+            if (preset.wikidata_indirect_property) {
+                const indirectText = t("source.wd_indirect", "P625 qualifiers on {{indirectWdProperty}} and Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty: preset.wikidata_indirect_property }),
+                    qualifierText = t("source.wd_qualifier", "P625 qualifiers on {{indirectWdProperty}}", { indirectWdProperty: preset.wikidata_indirect_property }),
+                    reverseText = t("source.wd_reverse", "Wikidata entities referenced with {{indirectWdProperty}}", { indirectWdProperty: preset.wikidata_indirect_property });
 
-                if (props.preset.osm_wikidata_keys?.length) {
+                if (preset.osm_wikidata_keys?.length) {
                     dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("overpass_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
@@ -85,7 +85,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 dropdownItems.push(buildDropdownItem("wd_reverse", reverseText, WDQS_GROUP_NAME));
 
                 if (qleverEnabled) {
-                    if (props.preset.osm_wikidata_keys?.length) {
+                    if (preset.osm_wikidata_keys?.length) {
                         // dropdownItems.push(buildDropdownItem("qlever_osm_all_indirect", `${allKeysText} + ${indirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                         // dropdownItems.push(buildDropdownItem("qlever_osm_all_qualifier", `${allKeysText} + ${qualifierText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                         // dropdownItems.push(buildDropdownItem("qlever_osm_all_reverse", `${allKeysText} + ${reverseText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
@@ -98,10 +98,10 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 }
             }
 
-            if (props.preset.osm_wikidata_keys?.length && qleverEnabled)
+            if (preset.osm_wikidata_keys?.length && qleverEnabled)
                 dropdownItems.push(buildDropdownItem("qlever_osm_all", `${allKeysText} (beta)`, QLEVER_GROUP_NAME));
 
-            props.preset.osm_wikidata_keys?.forEach(key => {
+            preset.osm_wikidata_keys?.forEach(key => {
                 const keyID = osmKeyToKeyID(key),
                     keyText = "OSM " + key;
                 dropdownItems.push(buildDropdownItem("overpass_" + keyID, keyText, OVERPASS_GROUP_NAME));
@@ -111,7 +111,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                     dropdownItems.push(buildDropdownItem("qlever_" + keyID, `${keyText} (beta)`, QLEVER_GROUP_NAME));
             });
 
-            if (!props.preset.osm_wikidata_keys?.length && !props.preset.osm_wikidata_properties?.length && !props.preset.wikidata_indirect_property && !props.preset.osm_text_key) {
+            if (!preset.osm_wikidata_keys?.length && !preset.osm_wikidata_properties?.length && !preset.wikidata_indirect_property && !preset.osm_text_key) {
                 dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata=* + Wikidata P625", OVERPASS_WDQS_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
                 dropdownItems.push(buildDropdownItem("wd_base", "Wikidata P625", WDQS_GROUP_NAME));
@@ -126,10 +126,13 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
                 dropdownItems.push(buildDropdownItem("pmtiles_propagated", t("source.propagated", "Propagated"), PMTILES_GROUP_NAME));
 
             return dropdownItems;
-        }, [props.preset.id, props.preset.osm_text_key, props.preset.osm_wikidata_keys, props.preset.osm_wikidata_properties, props.preset.wikidata_indirect_property, setBackEndID, t]);
+        }, [preset.id, preset.osm_text_key, preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setBackEndID, t]);
+
+    if (process.env.NODE_ENV === 'development') console.debug("BackEndControl", { preset, dropdownItems });
 
     const clearCache = useCallback(() => {
-        // TODO
+        //TODO
+        // new MapDatabase().clearCache();
     }, []);
 
     return <DropdownControl
@@ -137,7 +140,7 @@ export const BackEndControl: FC<BackEndControlProps> = (props) => {
         dropdownItems={dropdownItems}
         selectedValue={backEndID}
         title={t("source.choose_source")}
-        position={props.position}
+        position={position}
         className="back-end-ctrl"
     >
         <Button
