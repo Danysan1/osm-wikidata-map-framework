@@ -1,5 +1,4 @@
 {
-    "default_backend": "overpass_all_wd+wd_direct",
     "fetch_parts_of_linked_entities": true,
     "mapcomplete_theme": "etymology",
     "osm_filter_tags": [

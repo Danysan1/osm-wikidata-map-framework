@@ -1,5 +1,4 @@
 {
-    "default_backend": "overpass_wd+wd_base",
     "osm_filter_tags": [
         "boundary=protected_area",
         "boundary=national_park",

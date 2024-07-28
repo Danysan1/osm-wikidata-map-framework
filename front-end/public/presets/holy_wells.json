@@ -1,5 +1,4 @@
 {
-    "default_backend": "overpass_wd+wd_base",
     "osm_filter_tags": [
         "place_of_worship=holy_well"
     ],

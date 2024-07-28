@@ -12,7 +12,6 @@ export function getActiveSourcePresetIDs(): string[] {
 
 export function getCustomSourcePreset(): SourcePreset {
     return {
-        default_backend: process.env.owmf_default_backend,
         fetch_parts_of_linked_entities: !!process.env.owmf_fetch_parts_of_linked_entities,
         id: DEFAULT_SOURCE_PRESET_ID,
         mapcomplete_theme: process.env.owmf_mapcomplete_theme,

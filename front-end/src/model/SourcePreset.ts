@@ -1,10 +1,6 @@
 export const DEFAULT_SOURCE_PRESET_ID = "custom";
 export interface SourcePreset {
     /**
-     * ID of the default back-end to use
-     */
-    default_backend?: string;
-    /**
      * Whether to fetch parts of linked entities (e.g. the members of a duo)
      */
     fetch_parts_of_linked_entities?: boolean;
