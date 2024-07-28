@@ -132,7 +132,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             return dropdownItems;
         }, [preset.id, preset.osm_text_key, preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setBackEndID, t]);
 
-    if (process.env.NODE_ENV === 'development') console.debug("BackEndControl", { preset, dropdownItems });
+    // if (process.env.NODE_ENV === 'development') console.debug("BackEndControl render", { preset, dropdownItems });
 
     useEffect(() => {
         if (!dropdownItems.find(i => i.id === backEndID)) {
@@ -140,7 +140,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                 preferredBackend = preferredBackends.find(backend => !!dropdownItems.find(item => item.id === backend)),
                 newItem = dropdownItems.find(item => item.id === preferredBackend) ?? dropdownItems[0];
             if (process.env.NODE_ENV === "development") console.debug(
-                "Back-end ID did not exist updating to existing one",
+                "BackEndControl: Back-end ID did not exist, updating to existing one",
                 { backEndID, dropdownItems, preferredBackends, preferredBackend, newItem }
             );
             newItem.onSelect();
