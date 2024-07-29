@@ -4,9 +4,8 @@ services:
     ports:
       - "${owmf_swagger_port:-8080}:8080"
     volumes:
-      - ./openapi/commons.yaml:/usr/share/nginx/html/commons.yaml
-      - ./openapi/wikidata.yaml:/usr/share/nginx/html/wikidata.yaml
-      - ./openapi/wikibase.json:/usr/share/nginx/html/wikibase.json
+      - ./commons.yaml:/usr/share/nginx/html/commons.yaml
+      - ./sparql.yaml:/usr/share/nginx/html/sparql.yaml
     environment:
       - API_URL=wikibase.json
     healthcheck:
