@@ -1,7 +1,8 @@
+import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
+import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { Etymology } from "@/src/model/Etymology";
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
-import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyView } from "../EtymologyView/EtymologyView";
@@ -16,6 +17,8 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
   const { t, i18n } = useTranslation(),
     [loadingEtymologies, setLoadingEtymologies] = useState<boolean>(true),
     [etymologyDetails, setEtymologyDetails] = useState<EtymologyDetails[]>(),
+    { showSnackbar } = useSnackbarContext(),
+    { showLoadingSpinner } = useLoadingSpinnerContext(),
     etys = useMemo(
       () =>
         typeof props.etymologies === "string"
@@ -68,7 +71,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
           return etymologies;
         }
       },
-      [i18n.language, t]
+      [i18n.language, showSnackbar, t]
     );
 
   useEffect(() => {
@@ -80,7 +83,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
         setLoadingEtymologies(false);
         showLoadingSpinner(false);
       });
-  }, [downloadEtymologyDetails, etys]);
+  }, [downloadEtymologyDetails, etys, showLoadingSpinner]);
 
   return (
     <div className={styles.etymologies_grid}>

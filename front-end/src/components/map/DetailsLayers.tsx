@@ -119,7 +119,7 @@ export const DetailsLayers: React.FC<DetailsLayersProps> = ({
     if (source_layer) commonProps["source-layer"] = source_layer;
 
     if (process.env.NODE_ENV === "development") console.log(
-        "DetailsLayers", { pointFilter, lineStringFilter, polygonFilter }
+        "DetailsLayers render", { pointFilter, lineStringFilter, polygonFilter }
     );
     return <>
         <Layer id={pointTapAreaLayerID}

@@ -1,3 +1,4 @@
+import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DEFAULT_LANGUAGE } from "@/src/i18n/common";
 import {
@@ -7,7 +8,6 @@ import {
   maptilerStyle,
   stadiaStyle,
 } from "@/src/model/backgroundStyle";
-import { showSnackbar } from "@/src/snackbar";
 import type {
   ControlPosition,
   DataDrivenPropertyValueSpecification,
@@ -115,6 +115,7 @@ interface BackgroundStyleControlProps {
 export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) => {
   const { t, i18n } = useTranslation(),
     { backgroundStyleID, setBackgroundStyleID } = useUrlFragmentContext(),
+    { showSnackbar } = useSnackbarContext(),
     backgroundStyles = useMemo(() => getBackgroundStyles(), []),
     dropdownItems = useMemo(
       () =>
@@ -178,7 +179,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
               }
             }
           });
-          if(styleSpec.projection?.type)
+          if (styleSpec.projection?.type)
             styleSpec.projection = { type: styleSpec.projection.type }
           else
             styleSpec.projection = undefined; // Prevent 'Error: name: unknown property "name"' with Mapbox styles
@@ -191,7 +192,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
         })
         .catch((e) => {
           console.error("Failed setting json style", e);
-          showSnackbar("snackbar.map_error");
+          showSnackbar(t("snackbar.map_error"));
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

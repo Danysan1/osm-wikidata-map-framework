@@ -1,5 +1,7 @@
 "use client";
 
+import { LoadingSpinnerContextProvider } from "@/src/context/LoadingSpinnerContext";
+import { SnackbarContextProvider } from "@/src/context/SnackbarContext";
 import { UrlFragmentContextProvider } from "@/src/context/UrlFragmentContext";
 import { loadClientI18n } from "@/src/i18n/client";
 import { useEffect, useState } from "react";
@@ -34,7 +36,11 @@ export function OwmfMapIfSupported() {
 
     return isWebglSupported ? (
         <UrlFragmentContextProvider>
-            <OwmfMap />
+            <SnackbarContextProvider>
+                <LoadingSpinnerContextProvider>
+                    <OwmfMap />
+                </LoadingSpinnerContextProvider>
+            </SnackbarContextProvider>
         </UrlFragmentContextProvider>
     ) : "Your browser does not support WebGL and Maplibre GL JS, which are needed to render the map.";
 }

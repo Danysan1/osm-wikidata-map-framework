@@ -1,7 +1,8 @@
+import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
+import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyResponse } from "@/src/model/EtymologyResponse";
 import { MapService } from "@/src/services/MapService";
-import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import type { BBox } from "geojson";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -56,9 +57,11 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
         countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
         unclusteredLayerID = useMemo(() => props.sourceID + UNCLUSTERED_LAYER, [props.sourceID]),
         [elementsData, setElementsData] = useState<EtymologyResponse | null>(null),
+        { showSnackbar } = useSnackbarContext(),
+        { showLoadingSpinner } = useLoadingSpinnerContext(),
         { lat, lon, zoom } = useUrlFragmentContext(),
         { current: map } = useMap(),
-        { i18n } = useTranslation();
+        { t, i18n } = useTranslation();
 
     useEffect(() => {
         if ((props.minZoom && zoom < props.minZoom) || (props.maxZoom && zoom >= props.maxZoom)) return;
@@ -72,12 +75,12 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
                 setElementsData(data);
             }).catch(e => {
                 console.error("Failed fetching map elements", e);
-                showSnackbar("snackbar.map_error");
+                showSnackbar(t("snackbar.map_error"));
             }).finally(() => showLoadingSpinner(false));
         } else {
             setElementsData(null);
         }
-    }, [i18n.language, map, props.backEndID, props.backEndService, props.maxZoom, props.minZoom, lat, lon, zoom]);
+    }, [i18n.language, map, props.backEndID, props.backEndService, props.maxZoom, props.minZoom, lat, lon, zoom, showLoadingSpinner, showSnackbar, t]);
 
     /**
      * Handles the click on a cluster.

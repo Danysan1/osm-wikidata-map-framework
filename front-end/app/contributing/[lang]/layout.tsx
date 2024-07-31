@@ -1,6 +1,5 @@
 import { GoogleTagManager } from "@next/third-parties/google";
 import { dir } from "i18next";
-import "../../globals.css";
 
 interface ContributingLayoutProps {
   children: React.ReactNode;

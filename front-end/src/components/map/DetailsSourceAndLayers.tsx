@@ -1,7 +1,8 @@
+import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
+import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyResponse } from "@/src/model/EtymologyResponse";
 import { MapService } from "@/src/services/MapService";
-import { showLoadingSpinner, showSnackbar } from "@/src/snackbar";
 import type { BBox } from "geojson";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -15,9 +16,11 @@ interface DetailsSourceAndLayersProps extends DetailsLayersProps {
 
 export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (props) => {
   const [detailsData, setDetailsData] = useState<EtymologyResponse | null>(null),
+    { showSnackbar } = useSnackbarContext(),
+    { showLoadingSpinner } = useLoadingSpinnerContext(),
     { lat, lon, zoom } = useUrlFragmentContext(),
     { current: map } = useMap(),
-    { i18n } = useTranslation();
+    { t, i18n } = useTranslation();
 
   useEffect(() => {
     if (props.minZoom && zoom < props.minZoom) return;
@@ -34,13 +37,13 @@ export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (pr
         .then((data) => setDetailsData(data))
         .catch((e) => {
           console.error("Failed fetching map elements", e);
-          showSnackbar("snackbar.map_error");
+          showSnackbar(t("snackbar.map_error"));
         })
         .finally(() => showLoadingSpinner(false));
     } else {
       setDetailsData(null);
     }
-  }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, lat, lon, zoom]);
+  }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, lat, lon, zoom, showLoadingSpinner, showSnackbar, t]);
 
   return (
     detailsData && (

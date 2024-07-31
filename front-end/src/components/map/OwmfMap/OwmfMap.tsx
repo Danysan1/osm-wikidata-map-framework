@@ -3,6 +3,7 @@ import { fetchSourcePreset } from "@/src/SourcePreset/client";
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
+import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
@@ -10,7 +11,6 @@ import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
-import { showSnackbar } from "@/src/snackbar";
 import {
   DataDrivenPropertyValueSpecification,
   RequestTransformFunction,
@@ -78,6 +78,7 @@ export const OwmfMap = () => {
     [layerColor, setLayerColor] =
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
+    { showSnackbar } = useSnackbarContext(),
     thresholdZoomLevel = useMemo(
       () => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []
     ),
@@ -178,9 +179,9 @@ export const OwmfMap = () => {
         //setBackEndService(null);
         //setSourcePreset(null);
         console.error("Failed updating source preset", e);
-        showSnackbar("snackbar.map_error");
+        showSnackbar(t("snackbar.map_error"));
       });
-  }, [sourcePreset?.id, sourcePresetID]);
+  }, [showSnackbar, sourcePreset?.id, sourcePresetID, t]);
 
   /**
    * @see https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:error
@@ -195,7 +196,7 @@ export const OwmfMap = () => {
       errorMessage = "Map error: " + err.sourceId
     }
     console.warn(errorMessage, "error", { error: err });
-  }, [t]);
+  }, [showSnackbar, t]);
 
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 
@@ -227,7 +228,7 @@ export const OwmfMap = () => {
       else if (detailsSourceEvent)
         showSnackbar(t("snackbar.data_loaded_instructions", "Data loaded, click on any highlighted element to show its details"), "lightgreen", 10000);
     }
-  }, [t]);
+  }, [showSnackbar, t]);
 
   return (
     <Map
