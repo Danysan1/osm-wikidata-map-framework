@@ -26,6 +26,7 @@ export const SourcePresetControl: FC<SourcePresetControlProps> = ({ position }) 
         }, [setSourcePresetID, t]);
 
     return <DropdownControl
+        checkMissingSelectedValue
         buttonContent="🗃️"
         dropdownItems={dropdownItems}
         selectedValue={sourcePresetID}

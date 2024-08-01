@@ -9,7 +9,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useState,
+  useState
 } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
@@ -60,12 +60,14 @@ export interface DropdownItem {
 
 interface DropdownControlProps extends PropsWithChildren {
   buttonContent: string;
+  checkMissingSelectedValue?: boolean;
+  className?: string;
   dropdownItems: DropdownItem[];
-  selectedValue: string;
-  title: string;
   minZoomLevel?: number;
   position?: ControlPosition;
-  className?: string;
+  selectedValue: string;
+  title: string;
+
   onSourceData?: (e: MapSourceDataEvent) => void;
 }
 
@@ -79,7 +81,7 @@ interface DropdownControlProps extends PropsWithChildren {
  * @see https://github.com/visgl/react-map-gl/blob/7.0-release/examples/custom-overlay/src/custom-overlay.tsx
  */
 export const DropdownControl: FC<DropdownControlProps> = ({
-  buttonContent, dropdownItems, selectedValue, title, minZoomLevel, position, className, onSourceData, children
+  buttonContent, checkMissingSelectedValue, children, className, dropdownItems, minZoomLevel, onSourceData, position, selectedValue, title
 }) => {
   const { zoom } = useUrlFragmentContext(),
     dropdownId = `dropdown_${className}`,
@@ -151,19 +153,19 @@ export const DropdownControl: FC<DropdownControlProps> = ({
     }, [dropdownItems]);
 
   useEffect(() => {
-    if(!dropdownItems.length) {
+    if (!dropdownItems.length) {
       if (process.env.NODE_ENV === 'development') console.warn(
         "DropdownControl: no dropdownItems provided",
         { dropdownItems }
       );
-    } else if (!dropdownItems.some(item => item.id === selectedValue)) {
+    } else if (checkMissingSelectedValue && !dropdownItems.some(item => item.id === selectedValue)) {
       if (process.env.NODE_ENV === 'development') console.warn(
         "DropdownControl: selectedValue not found in dropdownItems, selecting first item",
         { selectedValue, dropdownItems }
       );
       dropdownItems[0].onSelect();
     }
-  }, [dropdownItems, selectedValue]);
+  }, [checkMissingSelectedValue, dropdownItems, selectedValue]);
 
   const element = useMemo(
     () =>
