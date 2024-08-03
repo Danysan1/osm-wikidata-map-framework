@@ -47,6 +47,7 @@ import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
 import { DetailsLayers } from "../DetailsLayers";
 import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
 import { PMTilesSource } from "../PMTilesSource";
+import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 
 
 const PMTILES_PREFIX = "pmtiles",
@@ -79,22 +80,13 @@ export const OwmfMap = () => {
       useState<DataDrivenPropertyValueSpecification<string>>(FALLBACK_COLOR),
     minZoomLevel = useMemo(() => parseInt(process.env.owmf_min_zoom_level ?? "9"), []),
     { showSnackbar } = useSnackbarContext(),
-    thresholdZoomLevel = useMemo(
-      () => parseInt(process.env.owmf_threshold_zoom_level ?? "14"), []
-    ),
+    { showLoadingSpinner } = useLoadingSpinnerContext(),
+    thresholdZoomLevel = parseInt(process.env.owmf_threshold_zoom_level ?? "14"),
     [pmtilesReady, setPMTilesReady] = useState(false),
-    pmtilesActive = useMemo(
-      () =>
-        !!process.env.owmf_pmtiles_base_url &&
-        process.env.owmf_pmtiles_preset === sourcePresetID &&
-        pmtilesReady &&
-        backEndID.startsWith(PMTILES_PREFIX),
-      [backEndID, pmtilesReady, sourcePresetID]
-    ),
-    pmtilesKeyID = useMemo(
-      () => (backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", "")),
-      [backEndID]
-    ),
+    pmtilesActive = pmtilesReady && !!process.env.owmf_pmtiles_base_url && process.env.owmf_pmtiles_preset === sourcePresetID && backEndID.startsWith(PMTILES_PREFIX),
+    clustersActive = !pmtilesActive && !!backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel,
+    detailsActive = !pmtilesActive && !!backEndService && zoom >= thresholdZoomLevel,
+    pmtilesKeyID = backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
     dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []);
 
   const onMoveHandler = useCallback((e: ViewStateChangeEvent) => {
@@ -142,6 +134,11 @@ export const OwmfMap = () => {
       setPMTilesReady(true);
     }
   }, []);
+
+  useEffect(() => {
+    if (!pmtilesActive && !clustersActive && !detailsActive)
+      showLoadingSpinner(false);
+  }, [clustersActive, detailsActive, pmtilesActive, showLoadingSpinner]);
 
   useEffect(() => {
     if (sourcePreset?.id === sourcePresetID) {
@@ -227,6 +224,7 @@ export const OwmfMap = () => {
         showSnackbar(t("snackbar.no_data_in_this_area", "No data in this area"), "wheat", 3000);
       else if (detailsSourceEvent)
         showSnackbar(t("snackbar.data_loaded_instructions", "Data loaded, click on any highlighted element to show its details"), "lightgreen", 10000);
+      // showLoadingSpinner(false); // Better handled by its own useEffect
     }
   }, [showSnackbar, t]);
 
@@ -314,19 +312,16 @@ export const OwmfMap = () => {
       <ScaleControl position="bottom-right" />
       {/*process.env.NODE_ENV === "development" && <InspectControl position="bottom-right" />*/}
 
-      {!pmtilesActive &&
-        backEndService &&
-        zoom >= minZoomLevel &&
-        zoom < thresholdZoomLevel && (
-          <ClusteredSourceAndLayers
-            backEndService={backEndService}
-            backEndID={backEndID}
-            sourceID={ELEMENTS_SOURCE}
-            minZoom={minZoomLevel}
-            maxZoom={thresholdZoomLevel}
-          />
-        )}
-      {!pmtilesActive && backEndService && zoom >= thresholdZoomLevel && (
+      {clustersActive && (
+        <ClusteredSourceAndLayers
+          backEndService={backEndService}
+          backEndID={backEndID}
+          sourceID={ELEMENTS_SOURCE}
+          minZoom={minZoomLevel}
+          maxZoom={thresholdZoomLevel}
+        />
+      )}
+      {detailsActive && (
         <DetailsSourceAndLayers
           backEndService={backEndService}
           backEndID={backEndID}
