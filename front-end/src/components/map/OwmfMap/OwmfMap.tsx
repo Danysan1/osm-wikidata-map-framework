@@ -87,7 +87,9 @@ export const OwmfMap = () => {
     clustersActive = !pmtilesActive && !!backEndService && zoom >= minZoomLevel && zoom < thresholdZoomLevel,
     detailsActive = !pmtilesActive && !!backEndService && zoom >= thresholdZoomLevel,
     pmtilesKeyID = backEndID === "pmtiles_all" ? undefined : backEndID.replace("pmtiles_", ""),
-    dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []);
+    dataLayerIDs = useMemo(() => [POINT_LAYER, LINE_LAYER, POLYGON_BORDER_LAYER], []),
+    geoJsonSourceIDs = useMemo(() => [ELEMENTS_SOURCE, DETAILS_SOURCE], []),
+    allSourceIDs = useMemo(() => [PMTILES_SOURCE, ELEMENTS_SOURCE, DETAILS_SOURCE], []);
 
   const onMoveHandler = useCallback((e: ViewStateChangeEvent) => {
     setMapLon(e.viewState.longitude);
@@ -185,7 +187,7 @@ export const OwmfMap = () => {
    */
   const mapErrorHandler = useCallback((err: ErrorEvent & { sourceId?: string }) => {
     let errorMessage;
-    if (err.sourceId && [ELEMENTS_SOURCE, DETAILS_SOURCE].includes(err.sourceId)) {
+    if (err.sourceId && allSourceIDs.includes(err.sourceId)) {
       showSnackbar(t("snackbar.fetch_error", "An error occurred while fetching the data"));
       errorMessage = "An error occurred while fetching " + err.sourceId;
     } else {
@@ -257,6 +259,7 @@ export const OwmfMap = () => {
         <StatisticsColorControl
           preset={sourcePreset}
           layerIDs={dataLayerIDs}
+          sourceIDs={allSourceIDs}
           setLayerColor={setLayerColor}
           position="top-left"
         />
@@ -286,7 +289,7 @@ export const OwmfMap = () => {
       <QueryLinkControl
         icon={overpassLogo as StaticImport}
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
-        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+        sourceIDs={geoJsonSourceIDs}
         mapEventField="overpass_query"
         baseURL="https://overpass-turbo.eu/?Q="
         minZoomLevel={minZoomLevel}
@@ -295,14 +298,14 @@ export const OwmfMap = () => {
       <QueryLinkControl
         icon={wikidataLogo as StaticImport}
         title={t("wdqs_query", "Source SPARQL query on Wikidata Query Service")}
-        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+        sourceIDs={geoJsonSourceIDs}
         mapEventField="wdqs_query"
         baseURL="https://query.wikidata.org/#"
         minZoomLevel={minZoomLevel}
         position="top-right"
       />
       <QLeverQueryLinkControls
-        sourceIDs={[ELEMENTS_SOURCE, DETAILS_SOURCE]}
+        sourceIDs={geoJsonSourceIDs}
         minZoomLevel={minZoomLevel}
         position="top-right"
       />

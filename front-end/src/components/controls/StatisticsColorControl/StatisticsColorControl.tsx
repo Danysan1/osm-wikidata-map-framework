@@ -6,10 +6,10 @@ import type { SourcePreset } from "@/src/model/SourcePreset";
 import { getEtymologies } from "@/src/services/etymologyUtils";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import type { ControlPosition, DataDrivenPropertyValueSpecification } from "maplibre-gl";
-import { FC, useEffect, useMemo, useState } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Pie } from 'react-chartjs-2';
 import { useTranslation } from "react-i18next";
-import { useMap } from "react-map-gl/maplibre";
+import { useMap, MapSourceDataEvent } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "../DropdownControl/DropdownControl";
 import {
   BLACK,
@@ -34,6 +34,7 @@ interface StatisticsColorControlProps {
   preset: SourcePreset,
   position?: ControlPosition;
   layerIDs: string[];
+  sourceIDs: string[];
   setLayerColor: (color: DataDrivenPropertyValueSpecification<string>) => void;
 }
 
@@ -41,16 +42,16 @@ interface StatisticsColorControlProps {
  * Let the user choose a color scheme for the map data and see statistics about the data
  **/
 export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
-  preset, position, layerIDs, setLayerColor
+  preset, position, layerIDs, sourceIDs, setLayerColor
 }) => {
   const { t, i18n } = useTranslation(),
     { current: map } = useMap(),
-    { lat, lon, zoom } = useUrlFragmentContext(),
     { colorSchemeID, setColorSchemeID } = useUrlFragmentContext(),
     [chartData, setChartData] = useState<ChartData<"pie">>(),
     handlers: Record<ColorSchemeID, () => void> = useMemo(() => {
       if (process.env.NODE_ENV === 'development') console.debug(
-        "StatisticsColorControl: creating handlers"
+        "StatisticsColorControl: creating handlers",
+        { lang: i18n.language, layerIDs, map, setLayerColor, t }
       );
       const setFixedColor = (color: string) => {
         setLayerColor(color);
@@ -76,7 +77,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
       const queryFeaturesOnScreen = (): EtymologyFeature[] | undefined => {
         if (layerIDs.some(layerID => !map?.getLayer(layerID))) {
           if (process.env.NODE_ENV === "development") console.warn(
-            "At least one layer is missing, can't update stats",
+            "queryFeaturesOnScreen: At least one layer is missing, can't update stats",
             { layers: layerIDs, map }
           );
           return undefined;
@@ -107,7 +108,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
             ?.map(etymology => etymology.wikidata!) ?? [];
         } catch (error) {
           if (process.env.NODE_ENV === 'development') console.error(
-            "Error querying rendered features",
+            "downloadChartDataFromWikidata: Error querying rendered features",
             { colorSchemeID, layers: layerIDs, error }
           );
 
@@ -163,12 +164,22 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     }));
   }, [preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setColorSchemeID, t]);
 
-  useEffect(() => {
+  const onSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
+    if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIDs.includes(e.sourceId))
+      return;
+
     if (process.env.NODE_ENV === "development") console.debug(
-      "StatisticsColorControl: updating stats", { colorSchemeID, lat, lon, zoom }
+      "StatisticsColorControl: updating stats after data update", { colorSchemeID, e }
     );
     handlers[colorSchemeID]();
-  }, [colorSchemeID, handlers, lat, lon, zoom]);
+  }, [colorSchemeID, handlers, sourceIDs]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === "development") console.debug(
+      "StatisticsColorControl: updating stats after color scheme change:", colorSchemeID
+    );
+    handlers[colorSchemeID]();
+  }, [colorSchemeID, handlers]);
 
   return <DropdownControl
     buttonContent="📊"
@@ -177,6 +188,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     title={t("color_scheme.choose_scheme")}
     position={position}
     className='color-ctrl'
+    onSourceData={onSourceDataHandler}
   >
     {!!chartData?.labels?.length && <Pie data={chartData} className="stats_chart" />}
   </DropdownControl>;

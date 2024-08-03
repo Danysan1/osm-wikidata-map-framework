@@ -35,11 +35,12 @@ class DataTableControlObject implements IControl {
   onRemove() {
     this._container?.remove();
     this._container = undefined;
-    /*if (this._onSourceData) {
-      if (process.env.NODE_ENV === "development") console.debug("DataTableControlObject.onRemove: unsetting sourcedata");
-      this._map?.off('sourcedata', this._onSourceData);
-      this._onSourceData = undefined;
-    }*/
+    //? For some reason this detaches handlers from other instances
+    // if (this._onSourceData) {
+    //   if (process.env.NODE_ENV === "development") console.debug("DataTableControlObject.onRemove: unsetting sourcedata");
+    //   this._map?.off('sourcedata', this._onSourceData);
+    //   this._onSourceData = undefined;
+    // }
     this._map = undefined;
   }
 
@@ -84,7 +85,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
     [popupPosition, setPopupPosition] = useState<LngLat>();
 
   const visible =
-      dataLoaded && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
+    dataLoaded && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
     [tableFeatures, setTableFeatures] = useState<EtymologyFeature[] | undefined>(),
     openTable = useCallback(() => {
       setPopupPosition(map?.getBounds()?.getNorthWest());

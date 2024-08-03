@@ -63,7 +63,7 @@ export async function downloadChartDataForWikidataIDs(
   idSet: Set<string>, colorSchemeID: ColorSchemeID, language: string
 ): Promise<EtymologyStat[] | null> {
   if (idSet.size === 0) {
-    if (process.env.NODE_ENV === 'development') console.debug(
+    if (process.env.NODE_ENV === 'development') console.warn(
       "downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs"
     );
     return [];
@@ -71,7 +71,7 @@ export async function downloadChartDataForWikidataIDs(
 
   const uniqueIDs = Array.from(idSet);
   if (process.env.NODE_ENV === 'development') console.debug(
-    "downloadChartDataForWikidataIDs: Updating stats", { colorSchemeID, idSet }
+    "downloadChartDataForWikidataIDs: Fetching and updating stats", { colorSchemeID, idSet }
   );
 
   try {
@@ -112,6 +112,10 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
       else
         without_picture_IDs.add(id);
     });
+    if (process.env.NODE_ENV === 'development') console.debug(
+      "loadPictureAvailabilityChartData: downloading unknown picture chart data",
+      { features, language, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
+    );
     const stats = await downloadChartDataForWikidataIDs(unknown_picture_IDs, ColorSchemeID.picture, language);
     let data: ExpressionSpecification | null = null;
     if (stats) {
@@ -176,6 +180,9 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
     if (props.wikidata)
       wikidataIDs.add(props.wikidata);
   });
+  if (process.env.NODE_ENV === 'development') console.debug(
+    "loadWikilinkChartData: downloading chart data", { features, language, wikidataIDs }
+  );
   const stats = await downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count, language);
 
   let data: ExpressionSpecification | null = null;

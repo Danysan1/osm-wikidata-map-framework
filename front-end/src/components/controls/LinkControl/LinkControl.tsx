@@ -27,10 +27,11 @@ class LinkControlObject implements IControl {
   onRemove() {
     this._container?.remove();
     this._container = undefined;
-    /*if (this._onSourceData) {
-      this._map?.off("sourcedata", this._onSourceData);
-      this._onSourceData = undefined;
-    }*/
+    //? For some reason this detaches handlers from other instances
+    // if (this._onSourceData) {
+    //   this._map?.off("sourcedata", this._onSourceData);
+    //   this._onSourceData = undefined;
+    // }
     this._map = undefined;
   }
 
