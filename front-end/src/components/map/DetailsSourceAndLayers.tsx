@@ -27,20 +27,23 @@ export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (pr
 
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-    if (process.env.NODE_ENV === "development") console.debug(
-      "DetailsSourceAndLayers fetching data", { bbox }
-    );
     if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
+      if (process.env.NODE_ENV === "development") console.debug(
+        "DetailsSourceAndLayers fetching data", { bbox, backEnd: props.backEndID }
+      );
       showLoadingSpinner(true);
       props.backEndService
         .fetchMapElements(props.backEndID, false, bbox, i18n.language)
         .then((data) => setDetailsData(data))
         .catch((e) => {
-          console.error("Failed fetching map elements", e);
+          console.error("Failed fetching map details", e);
           showSnackbar(t("snackbar.map_error"));
         })
         .finally(() => showLoadingSpinner(false));
     } else {
+      if (process.env.NODE_ENV === "development") console.debug(
+        "DetailsSourceAndLayers NOT fetching map details", { bbox, backEnd: props.backEndID }
+      );
       setDetailsData(null);
     }
   }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, lat, lon, zoom, showLoadingSpinner, showSnackbar, t]);

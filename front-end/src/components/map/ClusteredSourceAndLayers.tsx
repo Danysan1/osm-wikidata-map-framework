@@ -68,8 +68,10 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
 
         const bounds = map?.getBounds().toArray(),
             bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
-        if (process.env.NODE_ENV === "development") console.debug("ClusteredSourceAndLayers useEffect", { bbox });
         if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
+            if (process.env.NODE_ENV === "development") console.debug(
+                "ClusteredSourceAndLayers fetching map elements", { bbox, backEnd: props.backEndID }
+            );
             showLoadingSpinner(true);
             props.backEndService.fetchMapElements(props.backEndID, true, bbox, i18n.language).then(data => {
                 setElementsData(data);
@@ -78,6 +80,9 @@ export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> =
                 showSnackbar(t("snackbar.map_error"));
             }).finally(() => showLoadingSpinner(false));
         } else {
+            if (process.env.NODE_ENV === "development") console.debug(
+                "ClusteredSourceAndLayers NOT fetching map elements", { bbox, backEnd: props.backEndID }
+            );
             setElementsData(null);
         }
     }, [i18n.language, map, props.backEndID, props.backEndService, props.maxZoom, props.minZoom, lat, lon, zoom, showLoadingSpinner, showSnackbar, t]);

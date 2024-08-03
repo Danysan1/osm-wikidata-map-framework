@@ -14,6 +14,7 @@ import {
 import { ColorSchemeID } from "../model/colorScheme";
 import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
 import { getActiveSourcePresetIDs } from "../SourcePreset/common";
+import { parseStringArrayConfig } from "../config";
 
 const LONGITUDE_POSITION = 0,
   LATITUDE_POSITION = 1,
@@ -111,10 +112,10 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         ? colorFromConfig
         : DEFAULT_COLOR_SCHEME;
     }),
-    [backEndID, setBackEndID] = useState<string>(
-      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-      () => process.env.owmf_default_backend || DEFAULT_BACKEND_ID
-    ),
+    [backEndID, setBackEndID] = useState<string>(() => {
+      const preferredBackends = process.env.owmf_preferred_backends ? parseStringArrayConfig(process.env.owmf_preferred_backends) : [];
+      return preferredBackends[0]?.length ? preferredBackends[0] : DEFAULT_BACKEND_ID;
+    }),
     [backgroundStyleID, setBackgroundStyleID] = useState<string>(
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
       () => process.env.owmf_default_background_style || DEFAULT_BACKGROUND_STYLE_ID
