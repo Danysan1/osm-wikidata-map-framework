@@ -1,7 +1,7 @@
 import { OwmfMapIfSupported } from "@/src/components/map/OwmfMapIfSupported";
 import { generateOwmfMetadata } from "@/src/metadata";
 import { Metadata } from "next";
-import styles from "./page.module.css";
+import styles from "../page.module.css";
 
 export async function generateMetadata(): Promise<Metadata> {
   return generateOwmfMetadata();

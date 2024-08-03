@@ -32,15 +32,26 @@ export const Contributing: FC<ContributingProps> = ({ sourcePreset }) => {
                 <li>From the details window click on the &quot;OpenStreetMap&quot; button</li>
                 <li>
                     On the left of the opened page check if one of the following tags is present:
-                    <ul>{sourcePreset.osm_wikidata_keys.map(key => <li key={key}><code>{key}</code></li>)}</ul>
-                    If it is, click on the dialog button on the right to add a note to the map and describe the problem
+                    <ul>{sourcePreset.osm_wikidata_keys.map(key => <li key={key}>
+                        <a href={`https://wiki.openstreetmap.org/wiki/Key:${key}`}><code>{key}</code></a>
+                    </li>)}</ul>
+                    If it is, it means that OSM is directly linking to that entity.
+                    Click on the dialog button on the right to add a note to the map and describe the problem.
                 </li>
                 <li>
-                    If the tags above are absent, the <code>wikidata</code> tag will be present and its value will be clickable.
+                    If the tags above are absent, the <a href="https://wiki.openstreetmap.org/wiki/Key:wikidata"><code>wikidata</code></a> tag will be present and its value will be clickable.
                     Click on it.
-                    If the opened page DOES NOT represent the element from the map the `wikidata` tag points to the wrong item.
+                    If the opened page DOES NOT represent the map feature the `wikidata` tag points to the wrong item.
                     Either go back to the OpenStreetMap page and either fix it or click on the button on the right to add a note to the map and submit the problem.
-                    If instead the opened page represents the element from the map (not its etymology, not something else), it should contain a &quot;named after&quot; or &quot;dedicated to&quot; relation to the wrong item:
+                    If instead the opened page represents the map feature (not the linked entity, not something else), it should contain a
+                    &nbsp;
+                    {sourcePreset.osm_wikidata_properties?.map((prop, index) => <Fragment key={index}>
+                        {index > 0 && index < (sourcePreset.osm_wikidata_properties!.length - 1) && ", "}
+                        {index === (sourcePreset.osm_wikidata_properties!.length - 1) && " or "}
+                        <a href={`https://www.wikidata.org/wiki/Property:${prop}`}><code>{prop}</code></a>
+                    </Fragment>)}
+                    &nbsp;
+                    relation to the wrong item:
                     <ol>
                         <li>At the top of the opened page click on &quot;Discussion&quot;</li>
                         <li>Append in the opened text box the description of the problem you found in the etymology for the item</li>

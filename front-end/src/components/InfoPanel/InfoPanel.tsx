@@ -103,7 +103,7 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
       <p>
         <Button
           className="contribute_button"
-          href={`/contributing/${i18n.language}`}
+          href={`/${i18n.language}/contributing`}
           iconText="📖"
           iconAlt="Contribute symbol"
           showText

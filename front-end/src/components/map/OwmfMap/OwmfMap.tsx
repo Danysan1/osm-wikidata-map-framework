@@ -195,7 +195,7 @@ export const OwmfMap = () => {
       errorMessage = "Map error: " + err.sourceId
     }
     console.warn(errorMessage, "error", { error: err });
-  }, [showSnackbar, t]);
+  }, [allSourceIDs, showSnackbar, t]);
 
   const closeFeaturePopup = useCallback(() => setOpenFeature(undefined), []);
 

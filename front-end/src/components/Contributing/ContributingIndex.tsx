@@ -1,4 +1,3 @@
-import { SourcePreset } from "@/src/model/SourcePreset";
 import { FC } from "react";
 import { Contributing } from "./Contributing";
 import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
@@ -21,7 +20,7 @@ export const ContributingIndex: FC<ContributingIndexProps> = async ({ lang }) =>
             <ul>
                 {presets.map((preset) => (
                     <li key={preset}>
-                        <Link href={`/contributing/${i18n.language}/${preset}`}>
+                        <Link href={`/${i18n.language}/contributing/${preset}`}>
                             {t(`preset.${preset}`)}
                         </Link>
                     </li>
