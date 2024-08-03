@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default function RootHome() {
   return (
-    <main className={styles.main}>
+    <main className={`${styles.main} ${styles.map}`}>
       <OwmfMapIfSupported />
     </main>
   );

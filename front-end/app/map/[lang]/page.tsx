@@ -19,7 +19,7 @@ export async function generateMetadata({ params: { lang } }: LanguageHomeProps):
 
 export default function LanguageHome() {
   return (
-    <main className={styles.main}>
+    <main className={`${styles.main} ${styles.map}`}>
       <OwmfMapIfSupported />
     </main>
   );

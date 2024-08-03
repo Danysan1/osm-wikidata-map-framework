@@ -21,7 +21,7 @@ export async function GET() {
 
   const presets = getActiveSourcePresetIDs(),
     sourcePreset = readSourcePreset(presets?.[0]),
-    contributingURL = `${process.env.owmf_home_url}/contributing/${i18n.language}/${sourcePreset.id}`;
+    contributingURL = `${process.env.owmf_home_url}/contributing/${i18n.language}/${sourcePreset.id}${process.env.owmf_static_export ? ".html" : ""}`;
 
   if (presets?.length !== 1) console.warn(
     " !! taginfo.json: multiple source presets found, using the first one:", sourcePreset.id

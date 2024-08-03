@@ -4,6 +4,8 @@ import { loadServerI18n } from "@/src/i18n/server";
 import { getActiveSourcePresetIDs } from "@/src/SourcePreset/common";
 import { readSourcePreset } from "@/src/SourcePreset/server";
 import Link from "next/link";
+import styles from "../../page.module.css";
+import { ContributingIndex } from "@/src/components/Contributing/ContributingIndex";
 
 // https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
 export function generateStaticParams() {
@@ -15,22 +17,9 @@ interface LanguageContributingProps {
 }
 
 export default async function LanguageContributing({ params: { lang } }: LanguageContributingProps) {
-    const { t } = await loadServerI18n(lang);
-    const presets = getActiveSourcePresetIDs();
     return (
-        <main>
-            {!presets.length && "ERROR: No presets found"}
-            {presets.length === 1 && <Contributing lang={lang} sourcePreset={readSourcePreset(presets[0])} />}
-            {presets.length > 1 && (<>
-                <h1>{t("preset.choose_preset")}</h1>
-                <ul>
-                    {presets.map((preset) => (
-                        <li key={preset}>
-                            <Link href={`/contributing/${lang}/${preset}`}>{t(`preset.${preset}`)}</Link>
-                        </li>
-                    ))}
-                </ul>
-            </>)}
+        <main className={`${styles.main} ${styles.text}`}>
+            <ContributingIndex lang={lang} />
         </main>
     );
 }

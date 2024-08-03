@@ -1,9 +1,16 @@
-.main {
+.map {
   margin: 0;
   height: 100vh;
   max-height: 100vh;
   width: 100vw;
   max-width: 100vw;
   overflow-x: hidden;
+}
+
+.text {
+  padding: 2em;
+}
+
+.main {
   font-family: "Segoe UI", "Open Sans Regular", "Arial Unicode MS Regular", sans-serif;
 }
