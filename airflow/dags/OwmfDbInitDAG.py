@@ -94,10 +94,16 @@ def check_postgres_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
                 cursor.execute("SELECT version()")
                 postgis_version = cursor.fetchone()
                 print(f"conn_id available, PostGIS version {postgis_version}")
-    except AirflowNotFoundException:
-        print(f"Remote DB connection ID ('{conn_id}') not available, skipping upload")
+    except AirflowNotFoundException as e:
+        print(f"Remote DB connection ID ('{conn_id}') is NOT available, skipping upload. Detailed error:")
+        print(e)
+        return False
+    except Exception as e:
+        print(f"Failed connecting to remote DB connection ID ('{conn_id}'), skipping upload. Detailed error:")
+        print(e)
         return False
     
+    print(f"Remote DB connection ID ('{conn_id}') is available, uploading")
     return True
 
 def choose_load_osm_data_task(**context) -> str:
