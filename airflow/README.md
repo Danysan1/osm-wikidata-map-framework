@@ -20,6 +20,13 @@ The DB initialization flow for each area is split in three Airflow data pipeline
    - If enabled, the data is uploaded to a remote DB with pg_dump+pg_restore
    - If enabled, the tiles are uploaded to an S3 bucket
 
+<details>
+<summary>Database initialization steps diagram</summary>
+
+![diagram](../images/architecture/db-init.png)
+
+</details>
+
 ## Usage
 
 To run the database initialization:
@@ -34,13 +41,6 @@ To run the database initialization:
 **IMPORTANT NOTE**: If you use the planet file I suggest to use a machine with 16GB of RAM (and a lot of patience, it will require more than 6 hours; use a local extract in development to use less RAM and time, for an example see [db-init-italy-nord-ovest.py](./dags/db-init-italy-nord-ovest.py)).
 
 Tip: if you run the local development instance through `docker-compose` you can connect to the local DB ([configured by default in `.env`](../.env.example)) by using PGAdmin at http://localhost:8000 .
-
-<details>
-<summary>Database initialization steps diagram</summary>
-
-![diagram](../images/architecture/db-init.png)
-
-</details>
 
 ## Propagation
 
