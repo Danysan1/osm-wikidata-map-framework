@@ -18,5 +18,6 @@ filter_nord_ovest = OwmfFilterDAG(
 
 db_init_nord_ovest = OwmfDbInitDAG(
     dag_id = "db-init-milan",
-    prefix = "milan"
+    prefix = "milan",
+    wikidata_country="Q38", # Italy
 )

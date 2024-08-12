@@ -25,5 +25,5 @@ filter_new_york = OwmfFilterDAG(
 db_init_new_york = OwmfDbInitDAG(
     dag_id="db-init-new-york",
     prefix="new-york",
-    upload_db_conn_id="italy-postgres"
+    wikidata_country="Q30", # USA
 )

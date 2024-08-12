@@ -40,7 +40,7 @@ class OwmfFilterDAG(DAG):
         """
         Apache Airflow DAG for OSM-Wikidata Map Framework OSM data filtering.
 
-        Parameters:
+        Keyword arguments:
         ----------
         prefix: str
             prefix to search in the PBF filename 
@@ -88,7 +88,7 @@ class OwmfFilterDAG(DAG):
                 * combines OSM and Wikidata data
                 * uploads the output to the production DB.
 
-                Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
+                Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
             """,
             **kwargs
         )
@@ -152,7 +152,7 @@ class OwmfFilterDAG(DAG):
         )
         task_keep_name >> task_keep_possible_ety
 
-        # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#user-content-excluded-elements
+        # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md#excluded-elements
         task_remove_non_interesting = OsmiumTagsFilterOperator(
             task_id = "remove_non_interesting_elements",
             container_name = "osm-wikidata-map-framework-remove_non_interesting_elements",

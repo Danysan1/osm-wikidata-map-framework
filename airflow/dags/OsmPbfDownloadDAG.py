@@ -119,14 +119,16 @@ class OsmPbfDownloadDAG(DAG):
         """
         Apache Airflow DAG for OSM-Wikidata Map Framework OSM PBF file download.
 
-        Parameters:
+        Keyword arguments:
         ----------
         pbf_url: str
             URL to the PBF file
         rss_url: str
-            URL to the RSS file listing PBF files
+            URL to the RSS file listing the available PBF files
         html_url: str
-            URL to the HTML file listing PBF files
+            URL to the HTML file listing the available PBF files (including the desired one).
+            On Geofabrik this can be found from the "raw directory index" link on the interface.
+            Example: for an european country use https://download.geofabrik.de/europe/ , NOT https://download.geofabrik.de/europe.html
         prefix: str
             prefix to search in the PBF filename 
         skip_if_already_downloaded: bool
@@ -161,7 +163,7 @@ class OsmPbfDownloadDAG(DAG):
 
                     * downloads OSM PBF data
 
-                    Documentation in the task descriptions and in the [project's CONTRIBUTIG.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
+                    Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
                 """,
                 **kwargs
             )

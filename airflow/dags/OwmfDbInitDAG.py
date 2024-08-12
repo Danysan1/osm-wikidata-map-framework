@@ -5,9 +5,7 @@ from pendulum import datetime, now
 from airflow import DAG, Dataset
 from airflow.operators.bash import BashOperator
 from airflow.operators.python import PythonOperator, BranchPythonOperator, ShortCircuitOperator
-from airflow.hooks.postgres_hook import PostgresHook
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from airflow.models.taskinstance import TaskInstance
 from airflow.models.param import Param
 from airflow.operators.empty import EmptyOperator
 from airflow.utils.trigger_rule import TriggerRule
@@ -36,6 +34,8 @@ def postgres_copy_table(conn_id:str, filepath:str, separator:str, schema:str, ta
     See https://www.psycopg.org/docs/cursor.html#cursor.copy_from
     See https://github.com/psycopg/psycopg2/issues/1294
     """
+    from airflow.hooks.postgres_hook import PostgresHook
+    
     pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
@@ -53,6 +53,8 @@ def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, ta
     See https://github.com/psycopg/psycopg2/issues/1294
     """
     import csv
+    from airflow.hooks.postgres_hook import PostgresHook
+
     pg_hook = PostgresHook(conn_id)
     with pg_hook.get_conn() as pg_conn:
         with pg_conn.cursor() as cursor:
@@ -66,7 +68,7 @@ def dump_postgres_table(conn_id:str, filepath:str, separator:str, schema:str, ta
                     writer.writerow(row)
             print("Dumped row count:", cursor.rowcount)
 
-def check_postgres_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
+def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> bool:
     """
         # Check DB connection ID
 
@@ -79,6 +81,8 @@ def check_postgres_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
         * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
+    from airflow.hooks.postgres_hook import PostgresHook
+    
     if require_upload and (not "upload_to_db" in context["params"] or not context["params"]["upload_to_db"]):
         print("Upload to remote DB disabled in the DAG parameters, skipping upload")
         return False
@@ -105,6 +109,53 @@ def check_postgres_conn_id(conn_id:str, require_upload:bool, **context) -> bool:
     
     print(f"Remote DB connection ID ('{conn_id}') is available, uploading")
     return True
+
+def check_s3_conn_id(conn_id:str, base_s3_uri_var_id:str, require_upload = True, **context) -> bool:
+    """
+        # Check S3 connection ID
+
+        Check whether the connection ID to an S3 bucket is available: if it is, proceed, otherwise stop here.
+
+        The connection ID is passed through the params object to allow customization when triggering the DAG.
+
+        Links:
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=shortcircuitoperator#airflow.operators.python.ShortCircuitOperator)
+        * [ShortCircuitOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html#shortcircuitoperator)
+        * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
+    """
+    from airflow.hooks.S3_hook import S3Hook
+    from airflow.models.variable import Variable
+
+    if require_upload and (not "upload_to_s3" in context["params"] or not context["params"]["upload_to_s3"]):
+        print("Upload to S3 bucket disabled in the DAG parameters, skipping upload")
+        return False
+
+    if not conn_id:
+        print(f"AWS connection ('{conn_id}') not available, skipping upload")
+        return False
+
+    if not Variable.get(base_s3_uri_var_id, None):
+        print(f"S3 base URI variable ('{base_s3_uri_var_id}') not available, skipping upload")
+        return False
+    
+    base_s3_uri = Variable.get(base_s3_uri_var_id)
+    try:
+        s3_hook = S3Hook(conn_id)
+        # See https://airflow.apache.org/docs/apache-airflow/1.10.10/_api/airflow/hooks/S3_hook/index.html
+        if s3_hook.check_for_key(f"{base_s3_uri}/"):
+            print(f"Base S3 URI '{base_s3_uri}/' exists and is reachable with connection ID '{conn_id}', uploading")
+            return True
+        else:
+            print(f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload")
+            return False
+    except AirflowNotFoundException as e:
+        print(f"Base S3 URI '{base_s3_uri}/' does not exist or is not reachable with connection ID '{conn_id}', skipping upload. Detailed error:")
+        print(e)
+        return False
+    except Exception as e:
+        print(f"Failed connecting to S3 (connection ID '{conn_id}', base S3 URI '{base_s3_uri}/'), skipping upload. Detailed error:")
+        print(e)
+        return False
 
 def choose_load_osm_data_task(**context) -> str:
     """
@@ -177,21 +228,21 @@ class OwmfDbInitDAG(DAG):
     """
 
     def __init__(self,
+            prefix:str,
             local_db_conn_id:str="local_owmf_postgis_db",
-            upload_db_conn_id:str=None,
-            prefix:str="owmf",
             days_before_cleanup:int=1,
+            wikidata_country:str=None,
             **kwargs
         ):
         """
         Apache Airflow DAG for OSM-Wikidata Map Framework DB initialization.
 
-        Parameters:
+        Keyword arguments:
         ----------
         upload_db_conn_id: str
-            Postgres connection ID for the production Database the DAG will upload to
-        upload_db_conn_id: str
-            Postgres connection ID for the production Database the DAG will upload to
+            Airflow connection ID for the Postgres DB the DAG will upload the data to
+        upload_s3_conn_id: str
+            Airflow connection ID for the S3 bucket the DAG will upload the pmtiles to
         prefix: str
             prefix to search in the PBF filename 
         load_on_db_method: string
@@ -214,25 +265,42 @@ class OwmfDbInitDAG(DAG):
             * combines OSM and Wikidata data
             * uploads the output to the production DB.
 
-            Documentation in the task descriptions and in the [project's CONTRIBUTING.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/CONTRIBUTING.md).
+            Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
         """
 
         if not prefix or prefix=="":
             raise Exception("Prefix must be specified")
         
         filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
-        filtered_pbf_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf.date.txt'
-        pg_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
+        """Path to the filtered PBF file containing the OSM data to be uploaded to the DB through osm2pgsql"""
+        
+        pg_file_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
+        """Path to the Postgres tab-separated-values file containing the OSM data to be uploaded to the DB"""
+
         pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
-        pg_dataset = Dataset(f'file://{pg_path}')
+        """Path to the file containing the date of the OSM snapshot contained in the input PBF file"""
+
+        pg_dataset = Dataset(f'file://{pg_file_path}')
+        """URI of the input Airflow dataset for the DAG"""
+
+        upload_db_conn_id = f"{prefix}-postgres"
+        """Airflow connection ID for the Postgres DB the DAG will upload the data to"""
+
+        upload_s3_conn_id = "aws_s3"
+        """Airflow connection ID with the AWS credentials used for uploading the vector tiles and CSV to S3"""
+
+        upload_s3_bucket_var_id = f"{prefix}_base_s3_uri"
+        """Airflow variable ID with the base S3 URI on which the vector tiles and CSV will be uploaded"""
+        
         workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
+        """Path to the temporary folder where the DAG will store the intermediate files"""
 
         default_params={
-            "prefix": prefix,
             "load_on_db_method": Param(default="osmium", type="string", enum=["osmium","osm2pgsql","imposm"]),
             "drop_temporary_tables": True,
             "upload_to_db": False,
             "generate_pmtiles": True,
+            "upload_to_s3": False,
         }
 
         super().__init__(
@@ -309,7 +377,7 @@ class OwmfDbInitDAG(DAG):
             python_callable = postgres_copy_table,
             op_kwargs = {
                 "conn_id": local_db_conn_id,
-                "filepath": pg_path,
+                "filepath": pg_file_path,
                 "separator": '\t',
                 "schema": 'owmf',
                 "table": 'osmdata',
@@ -465,6 +533,7 @@ class OwmfDbInitDAG(DAG):
             task_id = "download_wikidata_direct_related",
             container_name = "osm-wikidata_map_framework-load_direct_related",
             postgres_conn_id = local_db_conn_id,
+            wikidata_country = wikidata_country,
             dag = self,
             task_group=elaborate_group,
             doc_md = dedent("""
@@ -821,14 +890,29 @@ class OwmfDbInitDAG(DAG):
         )
         task_check_pmtiles >> task_dump_dataset
 
+        group_upload_s3 = TaskGroup("upload_tiles_to_s3", tooltip="Upload elaborated tiles to the S3 bucket", dag=self)
+
+        task_check_pmtiles_upload_conn_id = ShortCircuitOperator(
+           task_id = "check_pmtiles_upload_conn_id",
+           python_callable=check_s3_conn_id,
+           op_kwargs = {
+               "conn_id": upload_s3_conn_id,
+               "base_s3_uri_var_id": upload_s3_bucket_var_id,
+           },
+           dag = self,
+           task_group = group_upload_s3,
+           doc_md=check_s3_conn_id.__doc__
+        )
+        task_join_pmtiles >> task_check_pmtiles_upload_conn_id
+
         task_etymology_map_pmtiles_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_etymology_map_pmtiles_to_s3",
             dag = self,
             filename = join(workdir,'etymology_map.pmtiles'),
-            dest_key = join("{{ var.value.pmtiles_base_s3_key }}",prefix,"etymology_map.pmtiles"),
+            dest_key = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}/etymology_map.pmtiles",
             replace = True,
-            aws_conn_id = "aws_s3",
-            task_group = group_vector_tiles,
+            aws_conn_id = upload_s3_conn_id,
+            task_group = group_upload_s3,
             doc_md = """
                 # Upload etymology_map.pmtiles to S3
 
@@ -840,16 +924,16 @@ class OwmfDbInitDAG(DAG):
                 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
             """
         )
-        task_join_pmtiles >> task_etymology_map_pmtiles_s3
+        task_check_pmtiles_upload_conn_id >> task_etymology_map_pmtiles_s3
 
         task_dataset_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_dataset_to_s3",
             dag = self,
             filename = dataset_path,
-            dest_key = join('{{ var.value.pmtiles_base_s3_key }}',prefix,'dataset.csv'),
+            dest_key = f'{{{{ var.value.{upload_s3_bucket_var_id} }}}}/dataset.csv',
             replace = True,
-            aws_conn_id = "aws_s3",
-            task_group = group_vector_tiles,
+            aws_conn_id = upload_s3_conn_id,
+            task_group = group_upload_s3,
             doc_md = """
                 # Upload dataset to S3
 
@@ -867,10 +951,10 @@ class OwmfDbInitDAG(DAG):
             task_id = "upload_date_pmtiles_to_s3",
             dag = self,
             filename = pg_date_path,
-            dest_key = join('{{ var.value.pmtiles_base_s3_key }}',prefix,'date.txt'),
+            dest_key = f'{{{{ var.value.{upload_s3_bucket_var_id} }}}}/date.txt',
             replace = True,
-            aws_conn_id = "aws_s3",
-            task_group = group_vector_tiles,
+            aws_conn_id = upload_s3_conn_id,
+            task_group = group_upload_s3,
             doc_md = """
                 # Upload PMTiles date to S3
 
@@ -884,17 +968,17 @@ class OwmfDbInitDAG(DAG):
         )
         task_etymology_map_pmtiles_s3 >> task_date_pmtiles_s3
         
-        group_upload = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
+        group_upload_db = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 
         task_check_pg_restore = ShortCircuitOperator(
             task_id = "check_upload_conn_id",
             python_callable=check_postgres_conn_id,
             op_kwargs = {
-                "conn_id": upload_db_conn_id,# "{{ params.upload_db_conn_id }}",
+                "conn_id": upload_db_conn_id,
                 "require_upload": True,
             },
             dag = self,
-            task_group = group_upload,
+            task_group = group_upload_db,
             doc_md=check_postgres_conn_id.__doc__
         )
         task_join_post_elaboration >> task_check_pg_restore
@@ -912,7 +996,7 @@ class OwmfDbInitDAG(DAG):
                 "PGPASSWORD": f'{{{{ conn["{local_db_conn_id}"].password }}}}',
             },
             dag = self,
-            task_group=group_upload,
+            task_group=group_upload_db,
             doc_md="""
                 # Backup the data from the local DB
 
@@ -929,10 +1013,10 @@ class OwmfDbInitDAG(DAG):
 
         task_setup_db_ext = SQLExecuteQueryOperator(
             task_id = "setup_upload_db_extensions",
-            conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
+            conn_id = upload_db_conn_id,
             sql = "sql/01-setup-db-extensions.sql",
             dag = self,
-            task_group = group_upload,
+            task_group = group_upload_db,
             doc_md = """
                 # Setup the necessary extensions on the remote DB
 
@@ -943,10 +1027,10 @@ class OwmfDbInitDAG(DAG):
 
         task_prepare_upload = SQLExecuteQueryOperator(
             task_id = "prepare_db_for_upload",
-            conn_id = upload_db_conn_id, # "{{ params.upload_db_conn_id }}",
+            conn_id = upload_db_conn_id,
             sql = "sql/15-prepare-db-for-upload.sql",
             dag = self,
-            task_group = group_upload,
+            task_group = group_upload_db,
             doc_md="""
                 # Prepare the remote DB for uploading
 
@@ -971,7 +1055,7 @@ class OwmfDbInitDAG(DAG):
                 "PGPASSWORD": f"{{{{ conn['{upload_db_conn_id}'].password }}}}", # "{{ conn[params.upload_db_conn_id].password }}",
             },
             dag = self,
-            task_group = group_upload,
+            task_group = group_upload_db,
             doc_md="""
                 # Upload the data on the remote DB
 

@@ -6,14 +6,14 @@ from airflow.models import DAG #! Don't delete, necessary for Airflow to recogni
 download_italy_pbf = OsmPbfDownloadDAG(
     dag_id = "download-italy-latest",
     schedule=None,
-    pbf_url = "http://download.geofabrik.de/europe/italy-latest.osm.pbf",
+    pbf_url = "https://download.geofabrik.de/europe/italy-latest.osm.pbf",
     prefix = "italy"
 )
 
 download_italy_html = OsmPbfDownloadDAG(
     dag_id = "download-italy-from-html",
     schedule="0 18 * * *",
-    html_url="http://download.geofabrik.de/europe/",
+    html_url="https://download.geofabrik.de/europe/",
     prefix="italy"
 )
 
@@ -25,5 +25,5 @@ filter_italy = OwmfFilterDAG(
 db_init_italy = OwmfDbInitDAG(
     dag_id="db-init-italy",
     prefix="italy",
-    upload_db_conn_id="italy-postgres"
+    wikidata_country="Q38", # Italy
 )
