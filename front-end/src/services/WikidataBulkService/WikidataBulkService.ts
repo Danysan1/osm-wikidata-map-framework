@@ -121,7 +121,8 @@ export class WikidataBulkService {
 
             return (wikidataResult.rowsAffected ?? 0) + (elementUpdateResult.rowsAffected ?? 0) + (elementInsertResult.rowsAffected ?? 0) + (etymologyResult.rowsAffected ?? 0);
         } catch (e) {
-            console.debug("Error while handling JSON: ", json);
+            console.error("Error while handling JSON: ", e);
+            console.error("Original JSON: ", json);
             //const fs = await import("fs");
             //fs.writeFileSync('bad-output.json', json);
             throw e;

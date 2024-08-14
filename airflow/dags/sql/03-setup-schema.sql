@@ -49,7 +49,7 @@ CREATE TABLE owmf.osmdata (
     osm_name VARCHAR,
     osm_commons VARCHAR,
     osm_has_text_etymology BOOLEAN DEFAULT FALSE,
-    CONSTRAINT osmdata_unique_ids UNIQUE (osm_osm_type, osm_osm_id, osm_wd_id)
+    CONSTRAINT osmdata_unique_ids UNIQUE NULLS NOT DISTINCT (osm_osm_type, osm_osm_id, osm_wd_id)
 );
 CREATE INDEX osmdata_wd_id_idx ON owmf.osmdata (osm_wd_id) WITH (fillfactor='70');
 

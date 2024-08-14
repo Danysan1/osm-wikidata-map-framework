@@ -157,7 +157,7 @@ def check_s3_conn_id(conn_id:str, base_s3_uri_var_id:str, require_upload = True,
         print(e)
         return False
 
-def choose_load_osm_data_task(**context) -> str:
+def choose_load_osm_data_task(base_file_path:str, **context) -> str:
     """
         # Check how to load data into the DB
 
@@ -175,15 +175,23 @@ def choose_load_osm_data_task(**context) -> str:
     """
     
     if context["params"]["load_on_db_method"] == "osmium":
-        return "load_elements_from_pg_file"
+        date_path = f"{base_file_path}.pg.date.txt"
+        next_task = "load_elements_from_pg_file"
+    elif context["params"]["load_on_db_method"] == "osm2pgsql":
+        date_path = f"{base_file_path}.pbf.date.txt"
+        next_task = "load_elements_with_osm2pgsql"
+    elif context["params"]["load_on_db_method"] == "imposm":
+        date_path = f"{base_file_path}.pbf.date.txt"
+        next_task = "load_elements_with_imposm"
+    else:
+        raise Exception(f"Unknown load_on_db_method: '{context['params']['load_on_db_method']}'")
     
-    if context["params"]["load_on_db_method"] == "osm2pgsql":
-        return "load_elements_with_osm2pgsql"
+    with open(date_path, "r") as f:
+        date = f.read()
+        context["ti"].xcom_push(key="date_file_path", value=date_path)
+        context["ti"].xcom_push(key="last_data_update", value=date)
     
-    if context["params"]["load_on_db_method"] == "imposm":
-        return "load_elements_with_imposm"
-    
-    raise Exception(f"Unknown load_on_db_method: '{context['params']['load_on_db_method']}'")
+    return next_task
 
 def choose_load_wikidata_task(**context) -> str:
     """
@@ -241,8 +249,6 @@ class OwmfDbInitDAG(DAG):
         ----------
         upload_db_conn_id: str
             Airflow connection ID for the Postgres DB the DAG will upload the data to
-        upload_s3_conn_id: str
-            Airflow connection ID for the S3 bucket the DAG will upload the pmtiles to
         prefix: str
             prefix to search in the PBF filename 
         load_on_db_method: string
@@ -271,16 +277,9 @@ class OwmfDbInitDAG(DAG):
         if not prefix or prefix=="":
             raise Exception("Prefix must be specified")
         
-        filtered_pbf_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pbf'
-        """Path to the filtered PBF file containing the OSM data to be uploaded to the DB through osm2pgsql"""
-        
-        pg_file_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg'
-        """Path to the Postgres tab-separated-values file containing the OSM data to be uploaded to the DB"""
+        base_file_path = f'/workdir/{prefix}/{prefix}.filtered.osm' # .pbf / pbf.date.txt / .pg / .pg.date.txt
 
-        pg_date_path = f'/workdir/{prefix}/{prefix}.filtered.osm.pg.date.txt'
-        """Path to the file containing the date of the OSM snapshot contained in the input PBF file"""
-
-        pg_dataset = Dataset(f'file://{pg_file_path}')
+        pg_dataset = Dataset(f'file://{base_file_path}.pg')
         """URI of the input Airflow dataset for the DAG"""
 
         upload_db_conn_id = f"{prefix}-postgres"
@@ -367,6 +366,9 @@ class OwmfDbInitDAG(DAG):
         task_osmium_or_osm2pgsql = BranchPythonOperator(
             task_id = "choose_load_osm_data_method",
             python_callable= choose_load_osm_data_task,
+            op_kwargs = {
+                "base_file_path": base_file_path,
+            },
             dag = self,
             task_group=group_db_load,
             doc_md = choose_load_osm_data_task.__doc__
@@ -377,7 +379,7 @@ class OwmfDbInitDAG(DAG):
             python_callable = postgres_copy_table,
             op_kwargs = {
                 "conn_id": local_db_conn_id,
-                "filepath": pg_file_path,
+                "filepath": f"{base_file_path}.pg",
                 "separator": '\t',
                 "schema": 'owmf',
                 "table": 'osmdata',
@@ -397,15 +399,29 @@ class OwmfDbInitDAG(DAG):
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_pg
 
+        task_load_ele_imposm = EmptyOperator(
+            task_id = "load_elements_with_imposm",
+            dag = self,
+            task_group=group_db_load,
+            doc_md="""
+                # Load OSM data from the PBF file using imposm
+
+                *NOT YET IMPLEMENTED!!*
+
+                Using `imposm`, load the filtered OpenStreetMap data directly from the PBF file.
+            """
+        )
+        [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_imposm
+
         task_load_ele_osm2pgsql = Osm2pgsqlOperator(
             task_id = "load_elements_with_osm2pgsql",
             container_name = "osm-wikidata_map_framework-load_elements_with_osm2pgsql",
             postgres_conn_id = local_db_conn_id,
-            source_path = filtered_pbf_path,
+            source_path = f"{base_file_path}.pbf",
             dag = self,
             task_group=group_db_load,
             doc_md="""
-                # Load OSM data from the PBF file
+                # Load OSM data from the PBF file using osm2pgsql
 
                 Using `osm2pgsql`, load the filtered OpenStreetMap data directly from the PBF file.
             """
@@ -437,7 +453,7 @@ class OwmfDbInitDAG(DAG):
                 Dummy task for joining the path after the branching done to choose between `osmium export` and `osm2pgsql`.
             """
         )
-        [task_load_ele_pg, task_convert_osm2pgsql] >> join_post_load_ele
+        [task_load_ele_pg, task_convert_osm2pgsql, task_load_ele_imposm] >> join_post_load_ele
 
         elaborate_group = TaskGroup("elaborate_data", tooltip="Elaborate data inside the DB", dag=self)
 
@@ -728,14 +744,6 @@ class OwmfDbInitDAG(DAG):
         )
         task_setup_ety_fk >> task_dataset_view
 
-        task_read_last_update = BashOperator(
-            task_id = "read_last_data_update",
-            bash_command='cat "$dateFilePath"',
-            env = { "dateFilePath": pg_date_path },
-            do_xcom_push = True,
-            dag = self,
-        )
-
         task_save_last_update = SQLExecuteQueryOperator(
             task_id = "save_last_data_update",
             conn_id = local_db_conn_id,
@@ -749,7 +757,7 @@ class OwmfDbInitDAG(DAG):
                 $BODY$;
             """,
             parameters = {
-                "last_update": "{{ ti.xcom_pull(task_ids='read_last_data_update', key='return_value') }}"
+                "last_update": "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='last_data_update') }}"
             },
             dag = self,
             doc_md="""
@@ -758,7 +766,7 @@ class OwmfDbInitDAG(DAG):
                 Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
             """
         )
-        [task_setup_schema,task_read_last_update] >> task_save_last_update
+        [task_setup_schema,join_post_load_ele] >> task_save_last_update
 
         task_join_post_elaboration = EmptyOperator(
             task_id = "join_post_elaboration",
@@ -950,7 +958,7 @@ class OwmfDbInitDAG(DAG):
         task_date_pmtiles_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_date_pmtiles_to_s3",
             dag = self,
-            filename = pg_date_path,
+            filename = "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='date_file_path') }}",
             dest_key = f'{{{{ var.value.{upload_s3_bucket_var_id} }}}}/date.txt',
             replace = True,
             aws_conn_id = upload_s3_conn_id,
