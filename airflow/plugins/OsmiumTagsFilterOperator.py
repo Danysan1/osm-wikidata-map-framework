@@ -11,6 +11,9 @@ class OsmiumTagsFilterOperator(OsmDockerOperator):
     * [osmium tags-filter documentation](https://docs.osmcode.org/osmium/latest/osmium-tags-filter.html)
     * [osmium tags-filter documentation](https://manpages.ubuntu.com/manpages/jammy/man1/osmium-tags-filter.1.html)
     * [beyanora/osmtools Docker image details](https://hub.docker.com/r/beyanora/osmtools/tags)
+    * Possible Docker images:
+    * - [beyanora/osmtools](https://hub.docker.com/r/beyanora/osmtools/tags) => stuck to 2021 / 1.13.1, requires "osmium" at the beginning of the command
+    * - [iboates/osmium](https://hub.docker.com/r/iboates/osmium/tags) => updated (as of 2024 / 1.16.0)
     """
 
     def __init__(self, source_path:str, dest_path:str, tags:Union[list,str], invert_match:bool = False, remove_tags:bool = False, **kwargs) -> None:
@@ -18,7 +21,7 @@ class OsmiumTagsFilterOperator(OsmDockerOperator):
         remove_tags_str = "--remove-tags" if remove_tags else ""
         quoted_tags = tags if isinstance(tags, str) else ' '.join(map(lambda tag: f"'{tag}'", tags))
         super().__init__(
-            image='beyanora/osmtools:20210401',
-            command = f"osmium tags-filter --verbose --progress --input-format=pbf --output-format=pbf {invert_match_str} {remove_tags_str} --output='{dest_path}' --overwrite '{source_path}' {quoted_tags}",
+            image='iboates/osmium:1.16.0',
+            command = f"tags-filter --verbose --progress --input-format=pbf --output-format=pbf {invert_match_str} {remove_tags_str} --output='{dest_path}' --overwrite '{source_path}' {quoted_tags}",
             **kwargs
         )

@@ -21,7 +21,6 @@
         "name:*",
         "official_name",
         "place",
-        "type",
         "wikidata",
         "*:wikidata",
         "wikimedia_commons",

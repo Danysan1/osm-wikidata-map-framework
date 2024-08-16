@@ -20,7 +20,7 @@ class Osm2pgsqlOperator(OsmDockerOperator):
         user = postgres_conn.login
         db = postgres_conn.schema
         super().__init__(
-            image = 'beyanora/osmtools:20210401',
+            image = 'beyanora/osmtools:20210401', # TODO: try https://hub.docker.com/r/iboates/osm2pgsql
             command = f"osm2pgsql --host='{host}' --port='{port}' --database='{db}' --user='{user}' --hstore-all --proj=4326 --create --slim --flat-nodes=/tmp/osm2pgsql-nodes.cache --cache=0 '{source_path}'",
             environment = {
                 "PGPASSWORD": postgres_conn.password,

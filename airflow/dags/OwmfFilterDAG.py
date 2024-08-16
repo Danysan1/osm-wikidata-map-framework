@@ -160,7 +160,7 @@ class OwmfFilterDAG(DAG):
             dest_path = "/workdir/{{ ti.dag_id }}/{{ ti.run_id }}/filtered.osm.pbf",
             tags=[
                 'man_made=flagpole', # Flag poles
-                'end_date=*', 'route=historic', # Items that don't exist anymore
+                'end_date=*', 'boundary=historic', 'boundary=disused', 'route=historic', # Items that don't exist anymore (troll tags)
                 'wikidata=Q314003' # Wrong value for wikidata=* (stepping stone)
             ],
             invert_match= True,
