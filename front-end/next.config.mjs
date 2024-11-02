@@ -56,6 +56,13 @@ const BASE_PATH = undefined,
     "owmf_custom_intro_js",
   ];
 
+if (process.env.NODE_ENV === "development")
+  console.log("Launching development server");
+else if (STATIC_EXPORT)
+  console.log("Static export enabled, generating static files to be served with any web server");
+else
+  console.log("Static export disabled, building dynamic server-side app to be run with `next start`");
+
 const baseEnv = {
   owmf_version: JSON.parse(readFileSync('package.json', 'utf8')).version,
   owmf_base_path: BASE_PATH,

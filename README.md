@@ -53,7 +53,7 @@ Translations for the map labels are handled by the map provider (and are typical
 - [Wikimedia REST API](https://en.wikipedia.org/api/rest_v1/)
 - Python + [Apache Airflow](https://airflow.apache.org/)
 - PHP + PostGIS
-- Typescript + [MapLibre GL JS](https://maplibre.org/projects/maplibre-gl-js/)
+- Typescript + [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)
 
 ## Screenshots
 
