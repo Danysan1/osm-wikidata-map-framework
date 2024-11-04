@@ -311,7 +311,7 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
       row.subjects.forEach(subject => {
         statsData.push(["in", subject + '"', ["to-string", ["get", "etymologies"]]], color);
       });
-    } else {
+    } else if (row.count > 1) {
       if (process.env.NODE_ENV === 'development') console.debug(
         "getLayerColorFromStats: skipping row with no color or subjects", row
       );

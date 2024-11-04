@@ -180,7 +180,7 @@ export default withSentryConfig(nextConfig, {
   // Only print logs for uploading source maps in CI
   silent: !process.env.CI,
 
-  // debug: process.env.NODE_ENV === "development",
+  debug: false,//process.env.NODE_ENV === "development",
 
   // For all available options, see:
   // https://docs.sentry.io/platforms/javascript/guides/nextjs/manual-setup/

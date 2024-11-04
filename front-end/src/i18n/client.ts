@@ -31,7 +31,7 @@ export async function loadClientI18n() {
             detection: {
                 order: ['path', 'htmlTag', 'querystring', 'cookie', 'localStorage', 'sessionStorage', 'navigator'],
             },
-            debug: process.env.NODE_ENV === 'development',
+            debug: false,//process.env.NODE_ENV === 'development',
             fallbackLng: DEFAULT_LANGUAGE,
             backend: { backends, backendOptions },
             ns: [MAIN_NAMESPACE, FALLBACK_NAMESPACE],

@@ -24,7 +24,7 @@ export async function loadServerI18n(lang?: string) {
         backendOptions.unshift({});
     }
     if (i18nOverride) {
-        if (process.env.NODE_ENV === 'development') console.debug("loadServerI18n: using i18n_override:", { language, i18nOverride });
+        if (process.env.NODE_ENV === 'development') console.debug("loadServerI18n: using i18n_override:", { language, languages: Object.keys(i18nOverride) });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }
@@ -32,7 +32,7 @@ export async function loadServerI18n(lang?: string) {
     const t = await i18n.use(ChainedBackend)
         .init({
             supportedLngs: LANGUAGES,
-            debug: process.env.NODE_ENV === 'development',
+            debug: false,//process.env.NODE_ENV === 'development',
             fallbackLng: DEFAULT_LANGUAGE,
             lng: language, // Currently uses only language, not locale
             backend: { backends, backendOptions },
