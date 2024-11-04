@@ -2,7 +2,7 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
-import { FC, cloneElement, useCallback, useMemo } from "react";
+import { FC, cloneElement, useCallback, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
 import styles from "./LinkControl.module.css";
@@ -10,15 +10,9 @@ import styles from "./LinkControl.module.css";
 class LinkControlObject implements IControl {
   private _map?: Map;
   private _container?: HTMLElement;
-  private _onSourceData?: (e: MapSourceDataEvent) => void;
-
-  constructor(onSourceData?: (e: MapSourceDataEvent) => void) {
-    this._onSourceData = onSourceData;
-  }
 
   onAdd(map: Map) {
     this._map = map;
-    if (this._onSourceData) map.on("sourcedata", this._onSourceData);
     this._container = document.createElement("div");
     this._container.className = `maplibregl-ctrl maplibregl-ctrl-group ${styles.control}`;
     return this._container;
@@ -27,11 +21,6 @@ class LinkControlObject implements IControl {
   onRemove() {
     this._container?.remove();
     this._container = undefined;
-    //? For some reason this detaches handlers from other instances
-    // if (this._onSourceData) {
-    //   this._map?.off("sourcedata", this._onSourceData);
-    //   this._onSourceData = undefined;
-    // }
     this._map = undefined;
   }
 
@@ -69,9 +58,7 @@ export const LinkControl: FC<LinkControlProps> = ({
   const { zoom } = useUrlFragmentContext();
 
   const ctrl = useControl<LinkControlObject>(
-    () => {
-      return new LinkControlObject(onSourceData);
-    },
+    () => new LinkControlObject(),
     { position: position }
   );
 
@@ -102,6 +89,21 @@ export const LinkControl: FC<LinkControlProps> = ({
 
   const map = ctrl.getMap(),
     container = ctrl.getContainer();
+
+  useEffect(() => {
+    if (onSourceData) {
+      if (process.env.NODE_ENV === "development") console.debug("LinkControl: setting sourcedata");
+      map?.on("sourcedata", onSourceData);
+    }
+
+    return () => {
+      if (onSourceData) {
+        if (process.env.NODE_ENV === "development") console.debug("LinkControl: unsetting sourcedata");
+        map?.off("sourcedata", onSourceData);
+      }
+    };
+  }, [map, onSourceData]);
+
   return (
     element && map && container && createPortal(cloneElement(element, { map }), container)
   );

@@ -18,15 +18,9 @@ import styles from "./DropdownControl.module.css";
 class DropdownControlObject implements IControl {
   private _map?: Map;
   private _container?: HTMLElement;
-  private _onSourceData?: (e: MapSourceDataEvent) => void;
-
-  constructor(onSourceData?: (e: MapSourceDataEvent) => void) {
-    this._onSourceData = onSourceData;
-  }
 
   onAdd(map: Map) {
     this._map = map;
-    if (this._onSourceData) map.on("sourcedata", this._onSourceData);
     this._container = document.createElement("div");
     this._container.className = `maplibregl-ctrl maplibregl-ctrl-group ${styles.control}`;
     return this._container;
@@ -35,11 +29,6 @@ class DropdownControlObject implements IControl {
   onRemove() {
     this._container?.remove();
     this._container = undefined;
-    //? For some reason this detaches handlers from other instances
-    // if (this._onSourceData) {
-    //   this._map?.off("sourcedata", this._onSourceData);
-    //   this._onSourceData = undefined;
-    // }
     this._map = undefined;
   }
 
@@ -87,7 +76,7 @@ export const DropdownControl: FC<DropdownControlProps> = ({
   const { zoom } = useUrlFragmentContext(),
     dropdownId = `dropdown_${className}`,
     ctrl = useControl<DropdownControlObject>(
-      () => new DropdownControlObject(onSourceData),
+      () => new DropdownControlObject(),
       { position: position }
     ),
     buttonOnTheLeft = position === "top-left" || position === "bottom-left",
@@ -221,6 +210,21 @@ export const DropdownControl: FC<DropdownControlProps> = ({
 
   const map = ctrl.getMap(),
     container = ctrl.getContainer();
+
+  useEffect(() => {
+    if (onSourceData) {
+      if (process.env.NODE_ENV === "development") console.debug("DropdownControl: setting sourcedata");
+      map?.on("sourcedata", onSourceData);
+    }
+
+    return () => {
+      if (onSourceData) {
+        if (process.env.NODE_ENV === "development") console.debug("DropdownControl: unsetting sourcedata");
+        map?.off("sourcedata", onSourceData);
+      }
+    };
+  }, [map, onSourceData]);
+
   return (
     element && map && container && createPortal(cloneElement(element, { map }), container)
   );

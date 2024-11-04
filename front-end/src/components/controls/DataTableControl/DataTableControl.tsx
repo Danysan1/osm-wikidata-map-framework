@@ -4,7 +4,7 @@ import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
-import { FC, cloneElement, useCallback, useMemo, useState } from "react";
+import { FC, cloneElement, useCallback, useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { LngLat, useControl } from "react-map-gl/maplibre";
@@ -14,19 +14,9 @@ import styles from "./DataTableControl.module.css";
 class DataTableControlObject implements IControl {
   private _map?: Map;
   private _container?: HTMLElement;
-  private _onSourceData?: (e: MapSourceDataEvent) => void;
-
-  constructor(onSourceData?: (e: MapSourceDataEvent) => void) {
-    this._onSourceData = onSourceData;
-  }
 
   onAdd(map: Map) {
     this._map = map;
-    if (this._onSourceData) {
-      if (process.env.NODE_ENV === "development")
-        console.debug("DataTableControlObject.onAdd: setting sourcedata");
-      map.on("sourcedata", this._onSourceData);
-    }
     this._container = document.createElement("div");
     this._container.className = `maplibregl-ctrl maplibregl-ctrl-group ${styles.control}`;
     return this._container;
@@ -35,12 +25,6 @@ class DataTableControlObject implements IControl {
   onRemove() {
     this._container?.remove();
     this._container = undefined;
-    //? For some reason this detaches handlers from other instances
-    // if (this._onSourceData) {
-    //   if (process.env.NODE_ENV === "development") console.debug("DataTableControlObject.onRemove: unsetting sourcedata");
-    //   this._map?.off('sourcedata', this._onSourceData);
-    //   this._onSourceData = undefined;
-    // }
     this._map = undefined;
   }
 
@@ -75,9 +59,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
     );
 
   const ctrl = useControl<DataTableControlObject>(
-    () => {
-      return new DataTableControlObject(onSourceData);
-    },
+    () => new DataTableControlObject(),
     { position: props.position }
   );
   const map = ctrl.getMap(),
@@ -134,6 +116,21 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
       visible,
     ]
   );
+
+
+  useEffect(() => {
+    if (onSourceData) {
+      if (process.env.NODE_ENV === "development") console.debug("DataTableControl: setting sourcedata");
+      map?.on("sourcedata", onSourceData);
+    }
+
+    return () => {
+      if (onSourceData) {
+        if (process.env.NODE_ENV === "development") console.debug("DataTableControl: unsetting sourcedata");
+        map?.off("sourcedata", onSourceData);
+      }
+    };
+  }, [map, onSourceData]);
 
   return (
     element && map && container && createPortal(cloneElement(element, { map }), container)
