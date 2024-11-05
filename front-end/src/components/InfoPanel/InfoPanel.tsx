@@ -20,8 +20,13 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
   useEffect(() => {
     if (process.env.owmf_pmtiles_base_url) {
       fetch(process.env.owmf_pmtiles_base_url + "date.txt")
-        .then((res) => res.text().then((text) => setLastUpdateDate(text.trim())))
-        .catch(console.error);
+        .then((res) => {
+          if (res.ok)
+            res.text().then((text) => setLastUpdateDate(text.trim())).catch(console.error);
+          else
+            console.error("Failed to fetch last update date: ", res);
+        })
+        .catch(e => console.error("Failed to fetch last update date: ", e));
     }
   }, []);
 
@@ -103,7 +108,7 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
       <p>
         <Button
           className="contribute_button"
-          href={`/${i18n.language}/contributing`}
+          href={`/${i18n.language}/contributing${process.env.owmf_static_export ? ".html" : ""}`}
           iconText="📖"
           iconAlt="Contribute symbol"
           showText
