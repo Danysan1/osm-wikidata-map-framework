@@ -27,7 +27,7 @@ export async function loadClientI18n() {
         .use(initReactI18next)
         .use(LanguageDetector)
         .init({
-            supportedLngs: LANGUAGES,
+            supportedLngs: Object.keys(LANGUAGES),
             detection: {
                 order: ['path', 'htmlTag', 'querystring', 'cookie', 'localStorage', 'sessionStorage', 'navigator'],
             },

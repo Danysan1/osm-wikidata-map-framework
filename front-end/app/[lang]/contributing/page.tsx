@@ -4,7 +4,7 @@ import { ContributingIndex } from "@/src/components/Contributing/ContributingInd
 
 // https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
 export function generateStaticParams() {
-    return LANGUAGES.map((lang) => ({ lang }));
+    return Object.keys(LANGUAGES).map((lang) => ({ lang }));
 }
 
 interface LanguageContributingProps {

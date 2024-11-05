@@ -3,6 +3,7 @@ import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
+import { LANGUAGES } from "@/src/i18n/common";
 
 interface LanguageControlProps {
     position?: ControlPosition;
@@ -14,18 +15,9 @@ interface LanguageControlProps {
 export const LanguageControl: FC<LanguageControlProps> = (props) => {
     const { t, i18n } = useTranslation(),
         dropdownItems = useMemo(() => {
-            const languageNames: Record<string, string> = {
-                da: "Dansk",
-                de: "Deutsch",
-                en: "English",
-                es: "Español",
-                fr: "Français",
-                it: "Italiano",
-                pt: "Português",
-            };
-            return Object.keys(languageNames).map((lang): DropdownItem => ({
+            return Object.keys(LANGUAGES).map((lang): DropdownItem => ({
                 id: lang,
-                text: lang in languageNames ? languageNames[lang] : lang,
+                text: lang in LANGUAGES ? LANGUAGES[lang] : lang,
                 onSelect: () => {
                     i18n.changeLanguage(lang).then(() => {
                         if (process.env.NODE_ENV === 'development') console.warn("LanguageControl: Changed language to " + lang);

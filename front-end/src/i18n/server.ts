@@ -8,7 +8,7 @@ import { DEFAULT_LANGUAGE, FALLBACK_NAMESPACE, LANGUAGES, MAIN_NAMESPACE } from 
 export async function loadServerI18n(lang?: string) {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
     const language = lang || process.env.owmf_default_language || DEFAULT_LANGUAGE;
-    if (!LANGUAGES.includes(language))
+    if (!Object.keys(LANGUAGES).includes(language))
         throw new Error("Invalid language: " + language);
 
     const commonBackendPath = join(process.cwd(), "public", "locales", language, FALLBACK_NAMESPACE + '.json'),
@@ -31,7 +31,7 @@ export async function loadServerI18n(lang?: string) {
     const i18n = createInstance();
     const t = await i18n.use(ChainedBackend)
         .init({
-            supportedLngs: LANGUAGES,
+            supportedLngs: Object.keys(LANGUAGES),
             debug: false,//process.env.NODE_ENV === 'development',
             fallbackLng: DEFAULT_LANGUAGE,
             lng: language, // Currently uses only language, not locale

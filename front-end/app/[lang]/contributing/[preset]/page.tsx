@@ -6,7 +6,7 @@ import styles from "../../../page.module.css";
 
 // https://nextjs.org/docs/app/building-your-application/routing/internationalization#static-generation
 export function generateStaticParams() {
-  return LANGUAGES.flatMap(
+  return Object.keys(LANGUAGES).flatMap(
     (lang) => getActiveSourcePresetIDs().map((preset) => ({ lang, preset }))
   );
 }

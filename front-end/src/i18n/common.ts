@@ -1,5 +1,13 @@
 
 export const DEFAULT_LANGUAGE = "en",
-    LANGUAGES = ['da', 'de', 'en', 'es', 'fr', 'it'],
+    LANGUAGES: Record<string, string> = {
+        da: "Dansk",
+        de: "Deutsch",
+        en: "English",
+        es: "Español",
+        fr: "Français",
+        it: "Italiano",
+        pt: "Português",
+    },
     MAIN_NAMESPACE = "app",
     FALLBACK_NAMESPACE = "common";
