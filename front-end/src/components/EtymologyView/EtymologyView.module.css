@@ -18,6 +18,7 @@
   background-color: hsl(200, 30%, 95%);
   border-radius: 0.5em;
   /*height: 100%;*/
+  max-width: 75em;
 }
 
 .etymology_image img {
