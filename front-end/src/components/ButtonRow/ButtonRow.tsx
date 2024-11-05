@@ -15,18 +15,18 @@ import wikisporeLogo from "./img/Wikispore_logo_without_text.svg";
 
 interface ButtonRowProps {
   commons?: string;
-  entitree?: string;
-  iD?: string;
+  entitreeURL?: string;
+  iDEditorURL?: string;
   location?: string | (() => void);
-  mapcomplete?: string;
-  openstreetmap?: string;
-  osmWikidataMatcher?: string;
-  website?: string;
+  mapcompleteURL?: string;
+  openstreetmapURL?: string;
+  osmWikidataMatcherURL?: string;
+  websiteURL?: string;
   wikidata?: string;
   wikipedia?: string;
   wikispore?: string;
   className?: string;
-  openInfo?: () => void;
+  onOpenInfo?: () => void;
 }
 
 export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
@@ -45,13 +45,40 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
         return `https://commons.wikimedia.org/wiki/Category:${props.commons}`;
 
       return props.commons;
-    }, [props.commons]);
+    }, [props.commons]),
+    wikidataURL = useMemo(() => {
+      if (!props.wikidata || props.wikidata === "null")
+        return undefined;
+
+      if (props.wikidata.startsWith("http"))
+        return props.wikidata;
+
+      return `https://www.wikidata.org/wiki/${props.wikidata}`;
+    }, [props.wikidata]),
+    wikipediaURL = useMemo(() => {
+      if (!props.wikipedia || props.wikipedia === "null")
+        return undefined;
+
+      if (props.wikipedia.startsWith("http"))
+        return props.wikipedia;
+
+      return `https://www.wikipedia.org/wiki/${props.wikipedia}`;
+    }, [props.wikipedia]),
+    wikisporeURL = useMemo(() => {
+      if (process.env.owmf_wikispore_enable !== "true" || !props.wikispore || props.wikispore === "null")
+        return undefined;
+
+      if (props.wikispore.startsWith("http"))
+        return props.wikispore;
+
+      return `https://wikispore.wmflabs.org/wiki/${props.wikispore}`;
+    }, [props.wikispore]);
 
   return (
     <div className={`${styles.button_row} ${props.className}`}>
-      {props.openInfo && (
+      {props.onOpenInfo && (
         <Button
-          onClick={props.openInfo}
+          onClick={props.onOpenInfo}
           title="More info"
           className="info_button"
           iconText="ℹ️"
@@ -59,9 +86,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="More info"
         />
       )}
-      {props.wikipedia && (
+      {wikipediaURL && (
         <Button
-          href={props.wikipedia}
+          href={wikipediaURL}
           title="Wikipedia"
           className="wikipedia_button"
           icon={wikipediaLogo as StaticImport}
@@ -69,9 +96,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="Wikipedia"
         />
       )}
-      {props.wikispore && (
+      {wikisporeURL && (
         <Button
-          href={props.wikispore}
+          href={wikisporeURL}
           title="Wikispore"
           className="wikispore_button"
           icon={wikisporeLogo as StaticImport}
@@ -79,7 +106,7 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="Wikispore"
         />
       )}
-      {props.commons && (
+      {commonsURL && (
         <Button
           href={commonsURL}
           title="Wikimedia Commons"
@@ -89,9 +116,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="Commons"
         />
       )}
-      {props.wikidata && (
+      {wikidataURL && (
         <Button
-          href={props.wikidata}
+          href={wikidataURL}
           title="Wikidata"
           className="wikidata_button"
           icon={wikidataLogo as StaticImport}
@@ -99,9 +126,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="Wikidata"
         />
       )}
-      {props.openstreetmap && (
+      {props.openstreetmapURL && (
         <Button
-          href={props.openstreetmap}
+          href={props.openstreetmapURL}
           title="OpenStreetMap"
           className="osm_button"
           icon={openStreetMapLogo as StaticImport}
@@ -109,9 +136,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="OpenStreetMap"
         />
       )}
-      {props.website && (
+      {props.websiteURL && (
         <Button
-          href={props.website}
+          href={props.websiteURL}
           title="Official website"
           className="website_button"
           iconText="🌐"
@@ -119,9 +146,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="Website"
         />
       )}
-      {props.osmWikidataMatcher && (
+      {props.osmWikidataMatcherURL && (
         <Button
-          href={props.osmWikidataMatcher}
+          href={props.osmWikidataMatcherURL}
           title="OSM ↔ Wikidata matcher"
           className="matcher_button"
           icon={osmWdMatcherLogo as StaticImport}
@@ -129,9 +156,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="OSM ↔ Wikidata matcher"
         />
       )}
-      {props.mapcomplete && (
+      {props.mapcompleteURL && (
         <Button
-          href={props.mapcomplete}
+          href={props.mapcompleteURL}
           title="MapComplete"
           className="mapcomplete_button"
           icon={mapcompleteLogo as StaticImport}
@@ -139,9 +166,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="Mapcomplete"
         />
       )}
-      {props.iD && (
+      {props.iDEditorURL && (
         <Button
-          href={props.iD}
+          href={props.iDEditorURL}
           title="iD editor"
           className="id_button"
           icon={iDEditorLogo as StaticImport}
@@ -149,9 +176,9 @@ export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
           text="iD editor"
         />
       )}
-      {props.entitree && (
+      {props.entitreeURL && (
         <Button
-          href={props.entitree}
+          href={props.entitreeURL}
           title="EntiTree"
           className="entitree_button"
           icon={entitreeLogo}

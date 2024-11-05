@@ -16,21 +16,14 @@ export const EtymologyButtonRow: React.FC<EtymologyButtonRowProps> = ({ etymolog
         : undefined,
     [etymology.instanceID, etymology.wikidata, i18n.language]
   );
-  const wikispore = useMemo(() => {
-    if (!etymology.wikispore || !process.env.owmf_wikispore_enable) return undefined;
-
-    return etymology.wikispore.startsWith("http")
-      ? etymology.wikispore
-      : `https://wikispore.wmflabs.org/wiki/${etymology.wikispore}`;
-  }, [etymology.wikispore]);
 
   return (
     <ButtonRow
-      entitree={entitree}
+      entitreeURL={entitree}
       wikidata={etymology.wikidata}
       wikipedia={etymology.wikipedia}
       commons={etymology.commons}
-      wikispore={wikispore}
+      wikispore={etymology.wikispore}
     />
   );
 };

@@ -21,25 +21,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
     openstreetmap = osm_full_id
       ? `https://www.openstreetmap.org/${osm_full_id}`
       : undefined,
-    wikidata =
-      feature.properties?.wikidata && feature.properties?.wikidata !== "null"
-        ? `https://www.wikidata.org/wiki/${feature.properties?.wikidata}`
-        : undefined,
     { setLat, setLon, setZoom } = useUrlFragmentContext();
-
-  let wikipedia =
-    feature.properties?.wikipedia && feature.properties?.wikipedia !== "null"
-      ? feature.properties?.wikipedia
-      : undefined;
-  if (wikipedia && !wikipedia.startsWith("http"))
-    wikipedia = `https://www.wikipedia.org/wiki/${wikipedia}`;
-
-  let wikispore =
-    feature.properties?.wikispore && feature.properties?.wikispore !== "null"
-      ? feature.properties?.wikispore
-      : undefined;
-  if (wikispore && !wikispore.startsWith("http"))
-    wikispore = `https://wikispore.wmflabs.org/wiki/${wikispore}`;
 
   let pos: Position | undefined;
   if (feature.geometry.type === "Point") {
@@ -92,17 +74,17 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
   return (
     <ButtonRow
       commons={feature.properties?.commons}
-      iD={iD}
+      iDEditorURL={iD}
       location={zoomOnLocation}
-      mapcomplete={mapcomplete}
-      openstreetmap={openstreetmap}
-      osmWikidataMatcher={osmWikidataMatcher}
-      website={feature.properties?.website_url}
-      wikidata={wikidata}
-      wikipedia={wikipedia}
-      wikispore={wikispore}
+      mapcompleteURL={mapcomplete}
+      openstreetmapURL={openstreetmap}
+      osmWikidataMatcherURL={osmWikidataMatcher}
+      websiteURL={feature.properties?.website_url}
+      wikidata={feature.properties?.wikidata}
+      wikipedia={feature.properties?.wikipedia}
+      wikispore={feature.properties?.wikispore}
       className={className}
-      openInfo={openFeatureDetails}
+      onOpenInfo={openFeatureDetails}
     />
   );
 };

@@ -44,7 +44,7 @@ export const DataTableRow: FC<DataTableRowProps> = ({ feature, details, openFeat
     return <tr className={styles.data_table_row}>
         <td>{nameCellContent}</td>
         {/*<td><FeatureButtonRow feature={feature} openFeatureDetails={openFeatureDetails} /></td>*/}
-        <td><ButtonRow openInfo={openFeatureDetails} /></td>
+        <td><ButtonRow onOpenInfo={openFeatureDetails} /></td>
         <td>{etyCellContent}</td>
     </tr>;
 }
