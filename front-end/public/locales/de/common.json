@@ -37,7 +37,10 @@
         "base": "OSM + Wikidata",
         "burial": "Grabstätten",
         "etymology": "Etymologien (Herkunft der Namen)",
-        "green_spaces": "Grünflächen"
+        "green_spaces": "Grünflächen",
+        "holy_wells": "Heilige Quellen",
+        "holy_well_etymology": "Etymologie der heiligen Quellen",
+        "protected_areas": "Schutzgebiete"
     },
     "source": {
         "choose_source": "Datenquelle wählen",
