@@ -83,14 +83,14 @@ if (process.env.owmf_source_presets === "all") { // Fill owmf_source_presets wit
   clientEnv.owmf_source_presets = JSON.stringify(allPresets);
 }
 
-const csp_enable = !!process.env.owmf_csp_enable && process.env.owmf_csp_enable !== "false";
+const csp_enable = process.env.owmf_csp_enable === "true";
 function generateCspHeaders() {
   const reportUri = process.env.owmf_sentry_js_uri ? `report-uri ${process.env.owmf_sentry_js_uri}` : "",
     mapboxScript = process.env.owmf_mapbox_token ? " https://api.mapbox.com" : "",
     mapboxConnect = 'https://unpkg.com/@mapbox/' + process.env.owmf_mapbox_token ? ' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com' : "",
     maptilerConnect = process.env.owmf_maptiler_key ? "https://api.maptiler.com/ https://maputnik.github.io/osm-liberty/ https://orangemug.github.io/font-glyphs/ https://klokantech.github.io/naturalearthtiles/" : "",
     maptilerImg = process.env.owmf_maptiler_key ? "https://cdn.maptiler.com/maptiler-geocoding-control/" : "",
-    stadiaConnect = process.env.owmf_enable_stadia_maps && process.env.owmf_enable_stadia_maps !== "false" ? 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/' : "",
+    stadiaConnect = process.env.owmf_enable_stadia_maps === "true" ? 'https://tiles.stadiamaps.com/ https://api.stadiamaps.com/geocoding/' : "",
     jawgConnect = process.env.owmf_jawg_token ? 'https://api.jawg.io/ https://tile.jawg.io/' : "",
     googleAnalyticsImg = process.env.owmf_google_analytics_id ? 'https://*.google-analytics.com https://stats.g.doubleclick.net https://analytics.google.com https://*.analytics.google.com/g/collect https://www.googletagmanager.com https://www.google.com/ads/ga-audiences' : "",
     googleAnalyticsScript = process.env.owmf_google_analytics_id ? 'https://www.googletagmanager.com/gtag/js https://www.google-analytics.com' : "",

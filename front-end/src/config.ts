@@ -1,6 +1,3 @@
-export function parseBoolConfig(rawValue?: string): boolean {
-    return !!rawValue && rawValue != "0" && rawValue != "false";
-}
 
 export function parseStringArrayConfig(rawValue: string): string[] {
     //console.debug("parseStringArrayConfig", { rawValue });

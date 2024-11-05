@@ -29,7 +29,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
     const { t } = useTranslation(),
         { backEndID, setBackEndID } = useUrlFragmentContext(),
         dropdownItems = useMemo(() => {
-            const qleverEnabled = !!process.env.owmf_qlever_enable && process.env.owmf_qlever_enable !== "false",
+            const qleverEnabled = process.env.owmf_qlever_enable === "true",
                 pmtilesURL = process.env.owmf_pmtiles_preset === preset.id ? process.env.owmf_pmtiles_base_url : undefined,
                 dropdownItems: DropdownItem[] = [],
                 buildDropdownItem = (backEndID: string, text: string, category?: string): DropdownItem => ({

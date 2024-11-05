@@ -41,7 +41,7 @@ export class CombinedCachedMapService implements MapService {
             overpassService,
             new OverpassWikidataMapService(sourcePreset, overpassService, wikidataService, db)
         )
-        if (!!process.env.owmf_qlever_enable && process.env.owmf_qlever_enable !== "false")
+        if (process.env.owmf_qlever_enable === "true")
             this.services.push(new QLeverMapService(sourcePreset, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, db, bbox));
 
         setTimeout(() => void db.clearMaps(maxHours), 10_000);
