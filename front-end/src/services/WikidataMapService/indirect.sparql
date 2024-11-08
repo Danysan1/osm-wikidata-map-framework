@@ -65,7 +65,7 @@ WITH {
         
         ?item rdfs:label ?anyLabel.
         OPTIONAL { ?item rdfs:label ?lang_label FILTER(LANG(?lang_label) = '${language}'). }
-        OPTIONAL { ?item rdfs:label ?default_label FILTER(LANG(?default_label) = 'en'). }
+        OPTIONAL { ?item rdfs:label ?default_label FILTER(LANG(?default_label) = 'mul'). }
         OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
         OPTIONAL { ?item wdt:P910?/wdt:P373 ?_commons. }
         OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }

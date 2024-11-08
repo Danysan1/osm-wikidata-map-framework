@@ -74,12 +74,13 @@ const clientEnv = CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
     acc[key] = process.env[key];
   return acc;
 }, baseEnv);
-if (process.env.owmf_source_presets === "all") { // Fill owmf_source_presets with all available presets
+if (!process.env.owmf_source_presets || process.env.owmf_source_presets === "all") {
   const presetDir = join(process.cwd(), "public", "presets"),
     presetFiles = existsSync(presetDir) ? readdirSync(presetDir) : [],
     allPresets = presetFiles
       .filter(fileName => fileName.endsWith(".json"))
       .map(fileName => fileName.replace(/\.json$/, ""));
+  console.info("Using all available presets:", allPresets);
   clientEnv.owmf_source_presets = JSON.stringify(allPresets);
 }
 

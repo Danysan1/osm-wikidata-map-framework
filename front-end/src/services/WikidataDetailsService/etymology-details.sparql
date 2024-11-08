@@ -1,24 +1,24 @@
 SELECT ?wikidata
     (SAMPLE(?rawWikidata) AS ?alias)
-    (SAMPLE(?name) AS ?name)
-    (SAMPLE(?description) AS ?description)
-    (SAMPLE(?instanceID) AS ?instanceID)
+    (SAMPLE(?_lang_name) AS ?lang_name)
+    (SAMPLE(?_default_name) AS ?default_name)
+    (SAMPLE(?_description) AS ?description)
+    (SAMPLE(?_instanceID) AS ?instanceID)
     (SAMPLE(?instance_name) AS ?instance)
-    (SAMPLE(?genderID) AS ?genderID)
+    (SAMPLE(?_genderID) AS ?genderID)
     (SAMPLE(?gender_name) AS ?gender)
-    (SAMPLE(?wikipedia) AS ?wikipedia)
-    (SAMPLE(?wikispore) AS ?wikispore)
+    (SAMPLE(?_wikipedia) AS ?wikipedia)
+    (SAMPLE(?_wikispore) AS ?wikispore)
     (SAMPLE(?commons) AS ?commons)
     (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
-    (SAMPLE(?countryID) AS ?countryID)
-    (SAMPLE(?country_name) AS ?country)
+    (SAMPLE(?_countryID) AS ?countryID)
     (GROUP_CONCAT(DISTINCT ?country_name; SEPARATOR=', ') AS ?citizenship)
     (GROUP_CONCAT(DISTINCT ?picture; SEPARATOR='||') AS ?pictures)
     (GROUP_CONCAT(DISTINCT ?prize_name; SEPARATOR=', ') AS ?prizes)
-    (SAMPLE(?event_date) AS ?event_date)
-    (SAMPLE(?event_date_precision) AS ?event_date_precision)
-    (SAMPLE(?start_date) AS ?start_date)
-    (SAMPLE(?start_date_precision) AS ?start_date_precision)
+    (SAMPLE(?_event_date) AS ?event_date)
+    (SAMPLE(?_event_date_precision) AS ?event_date_precision)
+    (SAMPLE(?_start_date) AS ?start_date)
+    (SAMPLE(?_start_date_precision) AS ?start_date_precision)
     (SAMPLE(?end_date) AS ?end_date)
     (SAMPLE(?end_date_precision) AS ?end_date_precision)
     (SAMPLE(?birth_date) AS ?birth_date)
@@ -28,7 +28,7 @@ SELECT ?wikidata
     (GROUP_CONCAT(DISTINCT ?event_place_name; SEPARATOR=', ') AS ?event_place)
     (SAMPLE(?birth_place_name) AS ?birth_place)
     (SAMPLE(?death_place_name) AS ?death_place)
-    (SAMPLE(?wkt_coords) AS ?wkt_coords)
+    (SAMPLE(?_wkt_coords) AS ?wkt_coords)
     (GROUP_CONCAT(DISTINCT ?part; SEPARATOR=';') AS ?parts)
 WHERE {
     VALUES ?rawWikidata { ${wikidataValues} }
@@ -36,36 +36,25 @@ WHERE {
 
     # ID and name of the class of the entity
     OPTIONAL { # instance of - https://www.wikidata.org/wiki/Property:P31
-        ?instanceID ^wdt:P31 ?wikidata;
+        ?_instanceID ^wdt:P31 ?wikidata;
             rdfs:label ?instance_name.
         FILTER(lang(?instance_name)='${language}').
     }
 
     # Name and description of the entity
-    {
-        ?name ^rdfs:label ?wikidata.
-        FILTER(lang(?name)='${language}').
-        OPTIONAL {
-            ?description ^schema:description ?wikidata.
-            FILTER(lang(?description)='${language}').
-        }
-    } UNION {
-        MINUS {
-            ?other_name ^rdfs:label ?wikidata.
-            FILTER(lang(?other_name)='${language}').
-        }
-        ?name ^rdfs:label ?wikidata.
-        FILTER(lang(?name)='en').
-        OPTIONAL {
-            ?description ^schema:description ?wikidata.
-            FILTER(lang(?description)='en').
-        }
-    } UNION {
-        MINUS {
-            ?other_name ^rdfs:label ?wikidata.
-            FILTER(lang(?other_name)='${language}' || lang(?other_name)='en').
-        }
-        ?name ^rdfs:label ?wikidata.
+    OPTIONAL {
+        ?wikidata rdfs:label ?_lang_name.
+        FILTER(lang(?_lang_name)='${language}').
+    }
+    
+    OPTIONAL {
+        ?wikidata schema:description ?_description.
+        FILTER(lang(?_description)='${language}').
+    }
+
+    OPTIONAL {
+        ?wikidata rdfs:label ?_default_name.
+        FILTER(lang(?_default_name)='mul').
     }
 
     # Name of the occupations of this entity
@@ -114,7 +103,7 @@ WHERE {
 
     # ID and name of the gender of the entity
     OPTIONAL {
-        ?genderID ^wdt:P21 ?wikidata;
+        ?_genderID ^wdt:P21 ?wikidata;
             rdfs:label ?gender_name.
         FILTER(lang(?gender_name)='${language}').
     }
@@ -122,12 +111,12 @@ WHERE {
     # Date the event represented by this entity took place
     OPTIONAL {
         ?wikidata p:P585/psv:P585 [ # event date - https://www.wikidata.org/wiki/Property:P585
-            wikibase:timePrecision ?event_date_precision;
-            wikibase:timeValue ?event_date
+            wikibase:timePrecision ?_event_date_precision;
+            wikibase:timeValue ?_event_date
         ].
         MINUS {
             ?wikidata p:P585/psv:P585/wikibase:timePrecision ?other_event_date_precision.
-            FILTER (?other_event_date_precision > ?event_date_precision).
+            FILTER (?other_event_date_precision > ?_event_date_precision).
         }.
     }
 
@@ -137,12 +126,12 @@ WHERE {
 # start time - https://www.wikidata.org/wiki/Property:P580
 # inception - https://www.wikidata.org/wiki/Property:P571
 # date of official opening - https://www.wikidata.org/wiki/Property:P1619
-            wikibase:timePrecision ?start_date_precision;
-            wikibase:timeValue ?start_date
+            wikibase:timePrecision ?_start_date_precision;
+            wikibase:timeValue ?_start_date
         ].
         MINUS {
             ?wikidata (p:P571/psv:P571/wikibase:timePrecision)|(p:P1619/psv:P1619/wikibase:timePrecision)|(p:P569/psv:P569/wikibase:timePrecision) ?other_start_date_precision.
-            FILTER (?other_start_date_precision > ?start_date_precision).
+            FILTER (?other_start_date_precision > ?_start_date_precision).
         }.
     }
 
@@ -201,7 +190,7 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wikipedia schema:about ?wikidata;
+        ?_wikipedia schema:about ?wikidata;
             schema:inLanguage '${language}';
             schema:isPartOf [ wikibase:wikiGroup 'wikipedia' ].
     }
@@ -211,7 +200,7 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wikidata wdt:P7721 ?wikispore.
+        ?wikidata wdt:P7721 ?_wikispore.
     }
 
     OPTIONAL {
@@ -229,12 +218,12 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wkt_coords ^wdt:P625 ?wikidata.
-        FILTER(STRSTARTS(?wkt_coords, 'Point')).
+        ?wikidata wdt:P625 ?_wkt_coords.
+        FILTER(STRSTARTS(?_wkt_coords, 'Point')).
     }
 
     OPTIONAL {
-        ?countryID ^wdt:P17|^wdt:P27 ?wikidata;
+        ?_countryID ^wdt:P17|^wdt:P27 ?wikidata;
             rdfs:label ?country_name FILTER(lang(?country_name)='${language}').
     }
 

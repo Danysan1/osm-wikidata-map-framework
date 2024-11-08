@@ -64,7 +64,7 @@ export class WikidataDetailsService extends WikidataService {
                     genderID: row.genderID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
                     instance: row.instance?.value,
                     instanceID: row.instanceID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                    name: row.name?.value,
+                    name: row.lang_name?.value ?? row.default_name?.value,
                     occupations: row.occupations?.value,
                     pictures: row.pictures?.value?.split("||")?.filter(p => p?.length),
                     prizes: row.prizes?.value,
