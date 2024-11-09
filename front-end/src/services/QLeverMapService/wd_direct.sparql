@@ -27,9 +27,12 @@ SELECT
     (true AS ?from_wikidata)
     (SAMPLE(?_location) AS ?location)
 WHERE {
-    VALUES (?_from_p ?_from_ps) { ${directPropertyValues} }
+    # VALUES (?_from_p ?_from_ps) { ${directPropertyValues} } # TODO Use VALUES when supported by QLever
+    # ?item p:P625 ?locationStatement;
+    #       ?_from_p ?stmt.
     ?item p:P625 ?locationStatement;
-          ?_from_p ?stmt.
+          p:${directProperty} ?stmt.
+
     ${wikidataCountryQuery}
     MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
     MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
@@ -49,7 +52,8 @@ WHERE {
     # BIND ("POINT(${centerLon} ${centerLat})"^^geo:wktLiteral AS ?center)
     # FILTER (geof:distance(?_location, ?center) <= ${maxDistanceKm})
 
-    ?stmt ?_from_ps ?etymology.
+    # ?stmt ?_from_ps ?etymology. # TODO Use VALUES when supported by QLever
+    ?stmt ps:${directProperty} ?etymology.
 
     # # Extra details
     OPTIONAL { ?item @${language}@rdfs:label ?lang_label. }

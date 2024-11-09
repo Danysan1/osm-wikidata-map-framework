@@ -233,7 +233,8 @@ export class QLeverMapService implements MapService {
                 properties = [sourceProperty];
 
             sparqlQuery = sparqlQuery
-                .replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "))
+                .replaceAll('${directProperty}', properties[0])
+                .replaceAll('${directPropertyValues}', properties.map(pID => `(p:${pID} ps:${pID})`).join(" "));
         }
 
         const wikidataCountry = process.env.owmf_wikidata_country,
