@@ -29,7 +29,8 @@ export async function loadClientI18n() {
         .init({
             supportedLngs: Object.keys(LANGUAGES),
             detection: {
-                order: ['path', 'htmlTag', 'querystring', 'cookie', 'localStorage', 'sessionStorage', 'navigator'],
+                lookupQuerystring: 'lang', // default is lng
+                order: ['querystring', 'path', 'htmlTag', 'cookie', 'localStorage', 'sessionStorage', 'navigator'],
             },
             debug: false,//process.env.NODE_ENV === 'development',
             fallbackLng: DEFAULT_LANGUAGE,
