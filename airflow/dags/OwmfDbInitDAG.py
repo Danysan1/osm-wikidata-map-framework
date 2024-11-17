@@ -285,15 +285,15 @@ class OwmfDbInitDAG(DAG):
         start_date = datetime(year=2022, month=9, day=15, tz='local')
 
         doc_md="""
-            # OSM-Wikidata Map Framework DB initialization
+# OSM-Wikidata Map Framework DB initialization
 
-            * downloads and and filters OSM data
-            * downloads relevant OSM data
-            * combines OSM and Wikidata data
-            * uploads the output to the production DB.
+* downloads and and filters OSM data
+* downloads relevant OSM data
+* combines OSM and Wikidata data
+* uploads the output to the production DB.
 
-            Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
-        """
+Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
+"""
 
         if not prefix or prefix=="":
             raise Exception("Prefix must be specified")
@@ -344,7 +344,7 @@ class OwmfDbInitDAG(DAG):
             },
             dag = self,
             task_group = db_prepare_group,
-            doc_md=check_postgres_conn_id.__doc__
+            doc_md = dedent(check_postgres_conn_id.__doc__)
         )
 
         task_create_work_dir = BashOperator(
@@ -361,10 +361,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
-                # Setup the necessary extensions on the local DB
+# Setup the necessary extensions on the local DB
 
-                Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
-            """
+Setup PostGIS and HSTORE on the local Postgres DB if they are not already set up.
+"""
         )
         task_check_pg_local >> task_setup_db_ext
 
@@ -375,10 +375,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = db_prepare_group,
             doc_md = """
-                # Setup the OWMF DB schema
+# Setup the OWMF DB schema
 
-                Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
-            """
+Reset the schema 'owmf' on the local PostGIS DB, then set it up from scratch.
+"""
         )
         task_setup_db_ext >> task_setup_schema
 
@@ -392,7 +392,7 @@ class OwmfDbInitDAG(DAG):
             },
             dag = self,
             task_group=group_db_load,
-            doc_md = choose_load_osm_data_task.__doc__
+            doc_md = dedent(choose_load_osm_data_task.__doc__)
         )
 
         task_load_ele_pg = PythonOperator(
@@ -409,14 +409,14 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_db_load,
             doc_md="""
-                # Load OSM data from the PG file
+# Load OSM data from the PG file
 
-                Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
+Load the filtered OpenStreetMap data from the PG tab-separated-values file to the `osmdata` table of the local PostGIS DB.
 
-                Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
-            """
+Links:
+* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
+"""
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_pg
 
@@ -425,12 +425,12 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_db_load,
             doc_md="""
-                # Load OSM data from the PBF file using imposm
+# Load OSM data from the PBF file using imposm
 
-                *NOT YET IMPLEMENTED!!*
+*NOT YET IMPLEMENTED!!*
 
-                Using `imposm`, load the filtered OpenStreetMap data directly from the PBF file.
-            """
+Using `imposm`, load the filtered OpenStreetMap data directly from the PBF file.
+"""
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_imposm
 
@@ -442,10 +442,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_db_load,
             doc_md="""
-                # Load OSM data from the PBF file using osm2pgsql
+# Load OSM data from the PBF file using osm2pgsql
 
-                Using `osm2pgsql`, load the filtered OpenStreetMap data directly from the PBF file.
-            """
+Using `osm2pgsql`, load the filtered OpenStreetMap data directly from the PBF file.
+"""
         )
         [task_osmium_or_osm2pgsql, task_setup_schema] >> task_load_ele_osm2pgsql
 
@@ -456,10 +456,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_db_load,
             doc_md = """
-                # Prepare osm2pgsql data for usage
+# Prepare osm2pgsql data for usage
 
-                Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
-            """
+Convert OSM data loaded on the local PostGIS DB from `osm2pgsql`'s `planet_osm_*` tables to the standard `osmdata` table.
+"""
         )
         task_load_ele_osm2pgsql >> task_convert_osm2pgsql
 
@@ -468,11 +468,7 @@ class OwmfDbInitDAG(DAG):
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
             dag = self,
             task_group=group_db_load,
-            doc_md="""
-                # Join branches back together
-
-                Dummy task for joining the path after the branching done to choose between `osmium export` and `osm2pgsql`.
-            """
+            doc_md="Dummy task for joining the path after the branching done to choose between DB load methods."
         )
         [task_load_ele_pg, task_convert_osm2pgsql, task_load_ele_imposm] >> join_post_load_ele
 
@@ -488,12 +484,12 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Remove remaining non interesting elements
+# Remove remaining non interesting elements
 
-                Remove from the local PostGIS DB elements that aren't interesting and that it wasn't possible to remove during the filtering phase:
-                * elements too big that wouldn't be visible anyway on the map 
-                * elements that have a wrong etymology (*:wikidata and wikidata values are equal)
-            """
+Remove from the local PostGIS DB elements that aren't interesting and that it wasn't possible to remove during the filtering phase:
+* elements too big that wouldn't be visible anyway on the map 
+* elements that have a wrong etymology (*:wikidata and wikidata values are equal)
+"""
         )
         join_post_load_ele >> task_remove_ele_too_big
 
@@ -504,10 +500,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Create the indexes on `osmdata`
+# Create the indexes on `osmdata`
 
-                Creates the indexes on the `osmdata` table, necessary for the next elaboration steps
-            """
+Creates the indexes on the `osmdata` table, necessary for the next elaboration steps
+"""
         )
         task_remove_ele_too_big >> task_create_key_index
 
@@ -518,14 +514,14 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Convert OSM - Wikidata associations
+# Convert OSM - Wikidata associations
 
-                Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each association the source (`wikidata` / `*:wikidata`).
-                
-                Links:
-                * [`wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
-                * [`*:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
-            """
+Fill the element_wikidata_cods table with OSM element <-> Wikidata Q-ID ("code") associations obtained from OSM elements, specifying for each association the source (`wikidata` / `*:wikidata`).
+
+Links:
+* [`wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata)
+* [`*:wikidata=*` documentation](https://wiki.openstreetmap.org/wiki/Key:wikidata#Secondary_Wikidata_links)
+"""
         )
         task_create_key_index >> task_convert_ele_wd_cods
 
@@ -536,10 +532,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Load Wikidata entities from OSM etymologies
+# Load Wikidata entities from OSM etymologies
 
-                Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `*:wikidata` configured tags).
-            """
+Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `*:wikidata` configured tags).
+"""
         )
         task_convert_ele_wd_cods >> task_convert_wd_ent
 
@@ -550,10 +546,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Convert the etymologies
+# Convert the etymologies
 
-                Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
-            """
+Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
+"""
         )
         task_convert_wd_ent >> task_convert_ety
 
@@ -562,7 +558,7 @@ class OwmfDbInitDAG(DAG):
             python_callable = choose_load_wikidata_task,
             dag = self,
             task_group = elaborate_group,
-            doc_md = choose_load_wikidata_task.__doc__
+            doc_md = dedent(choose_load_wikidata_task.__doc__)
         )
         task_convert_ety >> task_check_load_wd_related
 
@@ -573,15 +569,7 @@ class OwmfDbInitDAG(DAG):
             wikidata_country = wikidata_country,
             dag = self,
             task_group=elaborate_group,
-            doc_md = dedent("""
-                # Load Wikidata direct related entities
-
-                * load into the `osmdata` table of the local PostGIS DB all the Wikidata entities with a location and the configured direct properties which do not already exist
-                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
-                * load into the `etymology` table of the local PostGIS DB the direct related relationships
-                
-                Uses the Wikidata SPARQL query service through `LoadRelatedDockerOperator`:
-            """) + dedent(LoadRelatedDockerOperator.__doc__)
+            doc_md = dedent(LoadRelatedDockerOperator.__doc__)
         )
         task_check_load_wd_related >> task_load_wd_direct
 
@@ -589,15 +577,15 @@ class OwmfDbInitDAG(DAG):
             task_id = "download_wikidata_reverse_related",
             dag = self,
             task_group=elaborate_group,
-            doc_md = dedent("""
-                # Load Wikidata reverse related entities
-                            
-                # YET TO BE IMPLEMENTED
+            doc_md = """
+# Load Wikidata reverse related entities
+            
+# YET TO BE IMPLEMENTED
 
-                For each existing Wikidata entity representing an OSM element:
-                * load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
-                * load into the `etymology` table of the local PostGIS DB the reverse related relationships
-            """)
+For each existing Wikidata entity representing an OSM element:
+* load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that the entity is named after
+* load into the `etymology` table of the local PostGIS DB the reverse related relationships
+"""
         )
         task_check_load_wd_related >> task_load_wd_reverse
 
@@ -608,10 +596,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Check elements with a text etymology
+# Check elements with a text etymology
 
-                Check elements with an etymology that comes from the key configured in 'osm_text_key' or 'osm_description_key'.
-            """
+Check elements with an etymology that comes from the key configured in 'osm_text_key' or 'osm_description_key'.
+"""
         )
         task_create_key_index >> task_check_text_ety
 
@@ -624,7 +612,7 @@ class OwmfDbInitDAG(DAG):
             },
             dag = self,
             task_group=elaborate_group,
-            doc_md = choose_propagation_method.__doc__
+            doc_md = dedent(choose_propagation_method.__doc__)
         )
         [task_check_load_wd_related, task_load_wd_direct, task_load_wd_reverse, task_check_text_ety] >> task_check_propagation
 
@@ -635,11 +623,11 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-                # Propagate the etymologies
+# Propagate the etymologies
 
-                Check the reliable etymologies (where multiple case-insensitive homonymous elements have etymologies to the exactly the same Wikidata entity).
-                Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
-            """
+Check the reliable etymologies (where multiple case-insensitive homonymous elements have etymologies to the exactly the same Wikidata entity).
+Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
+"""
         )
         task_check_propagation >> task_propagate_globally
 
@@ -658,10 +646,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=elaborate_group,
             doc_md="""
-                # Join branches back together
+# Join branches back together
 
-                Dummy task for joining the path after the branching
-            """
+Dummy task for joining the path after the branching
+"""
         )
         [task_check_propagation, task_propagate_locally, task_propagate_globally] >> join_post_propagation
 
@@ -674,10 +662,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
-                # Remove elements without any etymology
+# Remove elements without any etymology
 
-                Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
-            """
+Move only elements with an etymology from the `osmdata` temporary table of the local PostGIS DB to the `element` table.
+"""
         )
         join_post_propagation >> task_move_ele
 
@@ -688,8 +676,8 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
-                # Apply the foreign key from etymology to wikidata
-            """
+# Apply the foreign key from etymology to wikidata
+"""
         )
         task_move_ele >> task_setup_ety_fk
 
@@ -700,10 +688,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
-                # Create the indexes on `etymology`
+# Create the indexes on `etymology`
 
-                Creates the indexes on the `etymology` table, necessary for the runtime queries
-            """
+Creates the indexes on the `etymology` table, necessary for the runtime queries
+"""
         )
         task_setup_ety_fk >> task_create_source_index
 
@@ -713,13 +701,13 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
-                # Check whether to drop temporary tables
+# Check whether to drop temporary tables
 
-                Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
+Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
 
-                Links:
-                * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
-            """
+Links:
+* [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
+"""
         )
         task_setup_ety_fk >> task_check_whether_to_drop
 
@@ -730,10 +718,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
-                # Remove temporary tables
+    # Remove temporary tables
 
-                Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
-            """
+    Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
+"""
         )
         task_check_whether_to_drop >> task_drop_temp_tables
 
@@ -744,10 +732,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md="""
-                # Save the global map view
+# Save the global map view
 
-                Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
-            """
+Create in the local PostGIS DB the materialized view used for the clustered view at very low zoom level.
+"""
         )
         task_setup_ety_fk >> task_backend_views
 
@@ -758,10 +746,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=post_elaborate_group,
             doc_md="""
-                # Save the dataset view
+# Save the dataset view
 
-                Create in the local PostGIS DB the materialized view used for the dataset download.
-            """
+Create in the local PostGIS DB the materialized view used for the dataset download.
+"""
         )
         task_setup_ety_fk >> task_dataset_view
 
@@ -782,10 +770,10 @@ class OwmfDbInitDAG(DAG):
             },
             dag = self,
             doc_md="""
-                # Save into the DB the date of the last update
+# Save into the DB the date of the last update
 
-                Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
-            """
+Create in the local PostGIS DB the function that allows to retrieve the date of the last update of the data.
+"""
         )
         [task_setup_schema,join_post_load_ele] >> task_save_last_update
 
@@ -818,10 +806,10 @@ class OwmfDbInitDAG(DAG):
             dest_path = details_dump,
             query = "SELECT * FROM owmf.etymology_map_details_dump",
             doc_md=    """
-            # FlatGeobuf dump
+# FlatGeobuf dump
 
-            Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
-            """
+Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
+"""
         )
         task_check_dump >> task_dump_etymology_map_details
 
@@ -835,10 +823,10 @@ class OwmfDbInitDAG(DAG):
             dest_path = boundaries_dump,
             query = "SELECT * FROM owmf.etymology_map_boundaries_dump",
             doc_md=    """
-            # FlatGeobuf dump
+# FlatGeobuf dump
 
-            Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
-            """
+Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
+"""
         )
         task_check_dump >> task_dump_etymology_map_boundaries
 
@@ -868,7 +856,7 @@ class OwmfDbInitDAG(DAG):
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
             max_zoom = 12,
             extra_params = "--force",
-            doc_md = TippecanoeOperator.__doc__
+            doc_md = dedent(TippecanoeOperator.__doc__)
         )
         [task_check_pmtiles, task_dump_etymology_map_details] >> task_generate_etymology_map_details_pmtiles
 
@@ -886,7 +874,7 @@ class OwmfDbInitDAG(DAG):
             # See https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/blob/main/src/EtymologyMap.ts
             max_zoom = 11,
             extra_params = "--force --drop-densest-as-needed",
-            doc_md = TippecanoeOperator.__doc__
+            doc_md = dedent(TippecanoeOperator.__doc__)
         )
         [task_check_pmtiles, task_dump_etymology_map_boundaries] >> task_generate_etymology_map_boundaries_pmtiles
 
@@ -898,7 +886,7 @@ class OwmfDbInitDAG(DAG):
             output_file = join(workdir,'etymology_map.pmtiles'),
             layer_name = "etymology_map",
             extra_params = "--force",
-            doc_md = TippecanoeOperator.__doc__
+            doc_md = dedent(TippecanoeOperator.__doc__)
         )
         [task_generate_etymology_map_boundaries_pmtiles, task_generate_etymology_map_details_pmtiles] >> task_join_pmtiles
 
@@ -930,7 +918,7 @@ class OwmfDbInitDAG(DAG):
            },
            dag = self,
            task_group = group_upload_s3,
-           doc_md=check_s3_conn_id.__doc__
+           doc_md = dedent(check_s3_conn_id.__doc__)
         )
         task_join_pmtiles >> task_check_pmtiles_upload_conn_id
 
@@ -943,15 +931,15 @@ class OwmfDbInitDAG(DAG):
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
             doc_md = """
-                # Upload etymology_map.pmtiles to S3
+# Upload etymology_map.pmtiles to S3
 
-                Upload the PMTiles etymology_map file to AWS S3.
+Upload the PMTiles etymology_map file to AWS S3.
 
-                Links:
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-            """
+Links:
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+"""
         )
         task_check_pmtiles_upload_conn_id >> task_etymology_map_pmtiles_s3
 
@@ -964,15 +952,15 @@ class OwmfDbInitDAG(DAG):
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
             doc_md = """
-                # Upload dataset to S3
+# Upload dataset to S3
 
-                Upload the dataset CSV file to AWS S3.
+Upload the dataset CSV file to AWS S3.
 
-                Links:
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-            """
+Links:
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+"""
         )
         [task_etymology_map_pmtiles_s3, task_dump_dataset] >> task_dataset_s3
 
@@ -985,15 +973,15 @@ class OwmfDbInitDAG(DAG):
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
             doc_md = """
-                # Upload PMTiles date to S3
+# Upload PMTiles date to S3
 
-                Upload the date file for PMTiles to AWS S3.
+Upload the date file for PMTiles to AWS S3.
 
-                Links:
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
-                * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
-                * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
-            """
+Links:
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
+* [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/_api/airflow/providers/amazon/aws/transfers/local_to_s3/index.html#airflow.providers.amazon.aws.transfers.local_to_s3.LocalFilesystemToS3Operator)
+* [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
+"""
         )
         task_etymology_map_pmtiles_s3 >> task_date_pmtiles_s3
         
@@ -1008,7 +996,7 @@ class OwmfDbInitDAG(DAG):
             },
             dag = self,
             task_group = group_upload_db,
-            doc_md=check_postgres_conn_id.__doc__
+            doc_md = dedent(check_postgres_conn_id.__doc__)
         )
         task_join_post_elaboration >> task_check_pg_restore
         
@@ -1027,16 +1015,16 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group=group_upload_db,
             doc_md="""
-                # Backup the data from the local DB
+# Backup the data from the local DB
 
-                Backup the data from the local DB with pg_dump into the backup file.
+Backup the data from the local DB with pg_dump into the backup file.
 
-                Links:
-                * [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
-                * [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
-            """
+Links:
+* [pg_dump documentation](https://www.postgresql.org/docs/current/app-pgdump.html)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
+* [Jinja template in f-string documentation](https://stackoverflow.com/questions/63788781/use-python-f-strings-and-jinja-at-the-same-time)
+"""
         )
         task_check_pg_restore >> task_pg_dump
 
@@ -1047,10 +1035,10 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = group_upload_db,
             doc_md = """
-                # Setup the necessary extensions on the remote DB
+# Setup the necessary extensions on the remote DB
 
-                Setup PostGIS and HSTORE on the remote DB configured in upload_db_conn_id if they are not already set up.
-            """
+Setup PostGIS and HSTORE on the remote DB configured in upload_db_conn_id if they are not already set up.
+"""
         )
         task_pg_dump >> task_setup_db_ext
 
@@ -1061,14 +1049,14 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = group_upload_db,
             doc_md="""
-                # Prepare the remote DB for uploading
+# Prepare the remote DB for uploading
 
-                Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the owmf schema 
+Prepare the remote DB configured in upload_db_conn_id for uploading data by resetting the owmf schema 
 
-                Links:
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
-                * [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
-            """
+Links:
+* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=pythonoperator#airflow.operators.python.PythonOperator)
+* [PythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/python.html)
+"""
         )
         task_setup_db_ext >> task_prepare_upload
 
@@ -1086,16 +1074,16 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = group_upload_db,
             doc_md="""
-                # Upload the data on the remote DB
+# Upload the data on the remote DB
 
-                Upload the data from the backup file on the remote DB configured in upload_db_conn_id with pg_restore.
+Upload the data from the backup file on the remote DB configured in upload_db_conn_id with pg_restore.
 
-                Links:
-                * [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
-            """
+Links:
+* [pg_restore documentation](https://www.postgresql.org/docs/current/app-pgrestore.html)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
+* [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
+"""
         )
         task_prepare_upload >> task_pg_restore
 
@@ -1108,14 +1096,14 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = group_cleanup,
             doc_md = """
-                # Wait for the time to cleanup the temporary files
+# Wait for the time to cleanup the temporary files
 
-                Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
-                * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
-            """
+Links:
+* [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
+* [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
+* [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
+* [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
+"""
         )
         task_join_post_elaboration >> task_wait_cleanup
     
@@ -1126,9 +1114,9 @@ class OwmfDbInitDAG(DAG):
             dag = self,
             task_group = group_cleanup,
             doc_md = """
-                # Cleanup the work directory
+# Cleanup the work directory
 
-                Remove the DAG run folder
-            """
+Remove the DAG run folder
+"""
         )
         task_wait_cleanup >> task_cleanup

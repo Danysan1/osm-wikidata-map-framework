@@ -161,12 +161,12 @@ class OsmPbfDownloadDAG(DAG):
                 tags=['owmf', f'owmf-{prefix}', 'pbf-download', 'produces'],
                 params=default_params,
                 doc_md="""
-                    # OSM-Wikidata Map Framework DB initialization
+# OSM-Wikidata Map Framework DB initialization
 
-                    * downloads OSM PBF data
+* downloads OSM PBF data
 
-                    Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
-                """,
+Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
+""",
                 **kwargs
             )
 
@@ -175,7 +175,7 @@ class OsmPbfDownloadDAG(DAG):
             python_callable = get_source_url,
             do_xcom_push = True,
             dag = self,
-            doc_md = get_source_url.__doc__
+            doc_md = dedent(get_source_url.__doc__)
         )
 
         task_check_whether_to_procede = ShortCircuitOperator(
@@ -183,7 +183,7 @@ class OsmPbfDownloadDAG(DAG):
             python_callable = check_whether_to_procede,
             op_kwargs = { "date_path": pbf_date_path },
             dag = self,
-            doc_md=check_whether_to_procede.__doc__
+            doc_md = dedent(check_whether_to_procede.__doc__)
         )
         task_get_source_url >> task_check_whether_to_procede
 
@@ -221,15 +221,15 @@ class OsmPbfDownloadDAG(DAG):
             retries = 3,
             dag = self,
             doc_md="""
-                # Download the PBF source file
+# Download the PBF source file
 
-                Download the source PBF file from the URL calculated by get_source_url and check that the md5 checksum checks out.
+Download the source PBF file from the URL calculated by get_source_url and check that the md5 checksum checks out.
 
-                Links:
-                * [curl documentation](https://curl.se/docs/manpage.html)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
-                * [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
-            """
+Links:
+* [curl documentation](https://curl.se/docs/manpage.html)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/bash/index.html?highlight=bashoperator#airflow.operators.bash.BashOperator)
+* [BashOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/howto/operator/bash.html)
+"""
         )
         task_choose_download_method >> task_download_pbf
 
@@ -240,10 +240,10 @@ class OsmPbfDownloadDAG(DAG):
             torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
             doc_md="""
-                ## Download the PBF source file through torrent
+# Download the PBF source file through torrent
 
-                Start the download of the source PBF file from the torrent URL calculated by get_source_url.
-            """
+Start the download of the source PBF file from the torrent URL calculated by get_source_url.
+"""
         )
         task_choose_download_method >> task_download_torrent
 
@@ -253,11 +253,11 @@ class OsmPbfDownloadDAG(DAG):
             torrent_hash = "{{ ti.xcom_pull(task_ids='download_torrent', key='torrent_hash') }}",
             torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
-            doc_md=dedent("""
-                # Wait for the torrent download to complete 
+            doc_md="""
+# Wait for the torrent download to complete 
 
-                Check the torrent daemon until the torrent download has completed.
-            """)
+Check the torrent daemon until the torrent download has completed.
+"""
         )
         task_download_torrent >> task_wait_for_torrent_download
 
@@ -268,7 +268,8 @@ class OsmPbfDownloadDAG(DAG):
                 "workdir": "{{ ti.xcom_pull(task_ids='get_source_url', key='work_dir') }}"
             },
             trigger_rule=TriggerRule.NONE_FAILED_MIN_ONE_SUCCESS,
-            dag=self
+            dag=self,
+            doc_md="Dummy task for joining the path after the branching done to choose between download methods."
         )
         [task_download_pbf, task_wait_for_torrent_download] >> task_join
 
@@ -292,14 +293,14 @@ class OsmPbfDownloadDAG(DAG):
             trigger_rule = TriggerRule.NONE_SKIPPED,
             dag = self,
             doc_md = """
-                # Wait for the time to cleanup the temporary files
+# Wait for the time to cleanup the temporary files
 
-                Links:
-                * [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
-                * [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
-                * [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
-                * [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
-            """
+Links:
+* [TimeDeltaSensorAsync](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/time_delta/index.html)
+* [DateTimeSensor documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/sensors/date_time/index.html)
+* [DateTimeSensor test](https://www.mikulskibartosz.name/delay-airflow-dag-until-given-hour-using-datetimesensor/)
+* [Templates reference](https://airflow.apache.org/docs/apache-airflow/2.6.0/templates-ref.html)
+"""
         )
         task_save_pbf >> task_wait_cleanup
 
@@ -316,10 +317,10 @@ class OsmPbfDownloadDAG(DAG):
             torrent_daemon_conn_id = "torrent_daemon",
             dag = self,
             doc_md = """
-                # Remove the torrent
+# Remove the torrent
 
-                Remove the torrent from the DAG run folder and from the torrent daemon
-            """
+Remove the torrent from the DAG run folder and from the torrent daemon
+"""
         )
         task_choose_cleanup_method >> task_cleanup_torrent
     
@@ -331,9 +332,9 @@ class OsmPbfDownloadDAG(DAG):
             },
             dag = self,
             doc_md = """
-                # Cleanup the work directory
+# Cleanup the work directory
 
-                Remove the DAG run folder
-            """
+Remove the DAG run folder
+"""
         )
         task_choose_cleanup_method >> task_cleanup_pbf

@@ -46,15 +46,6 @@ Translations for the labels specific to the framework are taken from the files i
 The translated text in the details panel for the map feature selected by the user are taken from from OSM [`name:*=*`](https://wiki.openstreetmap.org/wiki/Multilingual_names) and Wikidata labels.
 Translations for the map labels are handled by the map provider (and are typically derived from OSM and/or Wikidata).
 
-## Technologies used for data elaboration and display
-
-- [Wikidata SPARQL Query Service](https://www.wikidata.org/wiki/Wikidata:SPARQL_query_service)
-- [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API)
-- [Wikimedia REST API](https://en.wikipedia.org/api/rest_v1/)
-- Python + [Apache Airflow](https://airflow.apache.org/)
-- PHP + PostGIS
-- Typescript + [MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)
-
 ## Screenshots
 
 Detail view:
