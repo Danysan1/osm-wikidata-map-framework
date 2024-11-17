@@ -1,5 +1,5 @@
 import { ImageWithAttribution } from "./ImageWithAttribution";
-import { useEffect, useState } from "react";
+import { useEffect, useState, FC } from "react";
 import { WikimediaCommonsService } from "@/src/services/WikimediaCommonsService";
 
 interface CommonsImageProps {
@@ -11,13 +11,13 @@ interface CommonsImageProps {
      * @example https://commons.wikimedia.org/wiki/File:Battle_between_Francisco_Poras_and_Columbus_on_Jamaica_(1).tif
      */
     name: string;
-    className?:string;
+    className?: string;
 }
 
 /**
  * Display a Wikimedia Commons image and its attribution
  */
-export const CommonsImage: React.FC<CommonsImageProps> = ({ name, className }) => {
+export const CommonsImage: FC<CommonsImageProps> = ({ name, className }) => {
     const decodedImg = decodeURIComponent(name.replace(/^.*(Special:FilePath\/)|(File:)/, ""));
 
     /**

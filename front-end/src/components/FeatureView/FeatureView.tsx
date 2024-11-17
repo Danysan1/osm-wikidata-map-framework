@@ -3,7 +3,7 @@ import { EtymologyFeature } from "@/src/model/EtymologyResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
@@ -15,7 +15,7 @@ interface FeatureViewProps {
   feature: EtymologyFeature;
 }
 
-export const FeatureView: React.FC<FeatureViewProps> = ({ feature }) => {
+export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
   const { t, i18n } = useTranslation(),
     { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,

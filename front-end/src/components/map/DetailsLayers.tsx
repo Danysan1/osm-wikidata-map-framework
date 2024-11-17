@@ -1,5 +1,5 @@
 import { DataDrivenPropertyValueSpecification, Feature, FilterSpecification } from "maplibre-gl";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, FC } from "react";
 import { Layer, MapGeoJSONFeature, MapLayerMouseEvent, useMap } from "react-map-gl/maplibre";
 
 const LOW_ZOOM_POINT_RADIUS = 2,
@@ -34,7 +34,7 @@ export interface DetailsLayersProps {
     setOpenFeature: (feature: MapGeoJSONFeature) => void;
 }
 
-export const DetailsLayers: React.FC<DetailsLayersProps> = ({
+export const DetailsLayers: FC<DetailsLayersProps> = ({
     minZoom, sourceID, keyID, source_layer, color, pointLayerID, pointTapAreaLayerID, lineLayerID, lineTapAreaLayerID, polygonBorderLayerID, polygonFillLayerID, setOpenFeature
 }) => {
     const createFilter = useCallback((geometryType: Feature["type"]) => {

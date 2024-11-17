@@ -1,7 +1,7 @@
 import { Etymology } from "@/src/model/Etymology";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
@@ -14,7 +14,7 @@ interface EtymologyViewProps {
   etymology: EtymologyDetails;
 }
 
-export const EtymologyView: React.FC<EtymologyViewProps> = ({ etymology }) => {
+export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
   const { t, i18n } = useTranslation(),
     [wikipediaExtract, setWikipediaExtract] = useState<string>(),
     osmUrlA =

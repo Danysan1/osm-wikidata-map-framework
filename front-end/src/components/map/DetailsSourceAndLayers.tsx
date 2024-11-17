@@ -4,7 +4,7 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyResponse } from "@/src/model/EtymologyResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
-import { useEffect, useState } from "react";
+import { useEffect, useState, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Source, useMap } from "react-map-gl/maplibre";
 import { DetailsLayers, DetailsLayersProps } from "./DetailsLayers";
@@ -14,7 +14,7 @@ interface DetailsSourceAndLayersProps extends DetailsLayersProps {
   backEndID: string;
 }
 
-export const DetailsSourceAndLayers: React.FC<DetailsSourceAndLayersProps> = (props) => {
+export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) => {
   const [detailsData, setDetailsData] = useState<EtymologyResponse | null>(null),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),

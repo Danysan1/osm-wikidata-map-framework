@@ -4,7 +4,7 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { EtymologyResponse } from "@/src/model/EtymologyResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Layer, LngLatLike, MapMouseEvent, Source, useMap } from "react-map-gl/maplibre";
 
@@ -48,7 +48,7 @@ interface ClusteredSourceAndLayersProps {
  * @see https://docs.mapbox.com/mapbox-gl-js/style-spec/sources/#geojson
  * @see https://docs.mapbox.com/mapbox-gl-js/example/cluster/
  */
-export const ClusteredSourceAndLayers: React.FC<ClusteredSourceAndLayersProps> = (props) => {
+export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (props) => {
     const minThreshold = props.minCountThreshold ?? 3000,
         maxThreshold = props.maxCountThreshold ?? 60000,
         countFieldName = props.countFieldName ?? "point_count",

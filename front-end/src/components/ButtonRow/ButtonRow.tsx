@@ -2,7 +2,7 @@ import mapcompleteLogo from "@/src/img/mapcomplete.svg";
 import iDEditorLogo from "@/src/img/OpenStreetMap-Editor_iD_Logo.svg";
 import osmWdMatcherLogo from "@/src/img/osm-wd-matcher.png";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
-import { useMemo } from "react";
+import { useMemo, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./ButtonRow.module.css";
@@ -29,7 +29,7 @@ interface ButtonRowProps {
   onOpenInfo?: () => void;
 }
 
-export const ButtonRow: React.FC<ButtonRowProps> = (props) => {
+export const ButtonRow: FC<ButtonRowProps> = (props) => {
   const { t } = useTranslation(),
     commonsURL = useMemo(() => {
       if (!props.commons || props.commons === "null")

@@ -1,5 +1,5 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { useMemo } from "react";
+import { useMemo, FC } from "react";
 import { useTranslation } from "react-i18next";
 import { ButtonRow } from "./ButtonRow";
 
@@ -7,7 +7,7 @@ interface EtymologyButtonRowProps {
   etymology: EtymologyDetails;
 }
 
-export const EtymologyButtonRow: React.FC<EtymologyButtonRowProps> = ({ etymology }) => {
+export const EtymologyButtonRow: FC<EtymologyButtonRowProps> = ({ etymology }) => {
   const { i18n } = useTranslation();
   const entitree = useMemo(
     () =>
