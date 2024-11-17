@@ -13,6 +13,11 @@ from TransmissionStartTorrentOperator import TransmissionStartTorrentOperator
 from TransmissionWaitTorrentSensor import TransmissionWaitTorrentSensor
 from TransmissionRemoveTorrentOperator import TransmissionRemoveTorrentOperator
 
+SKIP_IF_ALREADY_DOWNLOADED = "skip_if_already_downloaded"
+DEFAULT_SKIP_IF_ALREADY_DOWNLOADED = True
+
+DEFAULT_DAYS_BEFORE_CLEANUP = 15
+
 def get_source_url(ti:TaskInstance, **context) -> str:
     """
         # Get PBF file URL
@@ -80,18 +85,18 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
     from os import path
     import re
 
-    p = context["params"]
+    skip_if_already_downloaded = context["params"].get(SKIP_IF_ALREADY_DOWNLOADED, DEFAULT_SKIP_IF_ALREADY_DOWNLOADED)
     if not path.exists(date_path):
         print(f"Proceeding to download (missing date file '{date_path}')")
         procede = True
     else:
         with open(date_path) as date_file:
             existing_date_str:str = date_file.read().strip()
-        skip_if_already_downloaded:bool = "skip_if_already_downloaded" in p and p["skip_if_already_downloaded"]
         new_date_str = ti.xcom_pull(task_ids='get_source_url', key='last_data_update')
         print(f"Existing date: {existing_date_str} (from date file '{date_path}')")
         print(f"New date: {new_date_str}")
         if skip_if_already_downloaded:
+            # If the OSM data has already been downloaded it will not be downloaded again
             new_date = parse(new_date_str if re.match('^\d{2}-',new_date_str) == None else '20'+new_date_str)
             existing_date = parse(existing_date_str if re.match('^\d{2}-',new_date_str) == None else '20'+existing_date_str)
             procede = new_date > existing_date
@@ -111,8 +116,7 @@ class OsmPbfDownloadDAG(DAG):
             rss_url:str=None,
             html_url:str=None,
             prefix:str=None,
-            skip_if_already_downloaded:bool=True,
-            days_before_cleanup:int=15,
+            days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
             verify_md5:bool=True,
             **kwargs
         ):
@@ -131,8 +135,6 @@ class OsmPbfDownloadDAG(DAG):
             Example: for an european country use https://download.geofabrik.de/europe/ , NOT https://download.geofabrik.de/europe.html
         prefix: str
             prefix to search in the PBF filename 
-        skip_if_already_downloaded: bool
-            if True, if the OSM data has already been downloaded it will not be downloaded again
         verify_md5: bool
             Whether to check the md5 checksum of the osm.pbf file
 
@@ -147,7 +149,7 @@ class OsmPbfDownloadDAG(DAG):
             "rss_url": rss_url,
             "html_url": html_url,
             "prefix": prefix,
-            "skip_if_already_downloaded": skip_if_already_downloaded,
+            SKIP_IF_ALREADY_DOWNLOADED: DEFAULT_SKIP_IF_ALREADY_DOWNLOADED,
             "verify_md5": verify_md5,
         }
 

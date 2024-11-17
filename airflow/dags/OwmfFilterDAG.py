@@ -10,6 +10,8 @@ from airflow.sensors.time_delta import TimeDeltaSensorAsync
 from OsmiumTagsFilterOperator import OsmiumTagsFilterOperator
 from OsmiumExportOperator import OsmiumExportOperator
 
+DEFAULT_DAYS_BEFORE_CLEANUP = 1
+
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
     if folder != None:
@@ -34,7 +36,7 @@ class OwmfFilterDAG(DAG):
 
     def __init__(self,
             prefix:str=None,
-            days_before_cleanup:int=1,
+            days_before_cleanup:int = DEFAULT_DAYS_BEFORE_CLEANUP,
             **kwargs
         ):
         """

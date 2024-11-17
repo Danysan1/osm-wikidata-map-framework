@@ -7,8 +7,10 @@ WITH relevant_element AS (
         WHERE osm_tags ? 'highway' -- Include only highways
         AND osm_tags ? 'name' -- Include only elements with a name
         AND NOT osm_has_text_etymology
-        AND NOT osm_tags->>'name' ILIKE '%th street%' -- Exclude known problematic names
-        AND NOT osm_tags->>'name' ILIKE '%th ave%' -- Exclude known problematic names
+        AND NOT osm_tags->>'name' ILIKE '%th %' -- Exclude known problematic names (e.g. 4th street, 5th avenue, ...)
+        AND NOT osm_tags->>'name' ILIKE '%st %' -- Exclude known problematic names (e.g. 1st street, 101st avenue, ...)
+        AND NOT osm_tags->>'name' ILIKE '%nd %' -- Exclude known problematic names (e.g. 2nd street, 102nd avenue, ...)
+        AND NOT osm_tags->>'name' ILIKE '%rd %' -- Exclude known problematic names (e.g. 3rd street, 103rd avenue, ...)
     ),
     road_etymology AS (
         SELECT lower_name, et_wd_id, MIN(et_id) as et_id

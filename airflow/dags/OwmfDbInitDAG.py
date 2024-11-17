@@ -20,6 +20,23 @@ from TippecanoeOperator import TippecanoeOperator
 from TileJoinOperator import TileJoinOperator
 from Ogr2ogrDumpOperator import Ogr2ogrDumpOperator
 
+LOAD_ON_DB_METHOD = "load_on_db_method"
+DEFAULT_LOAD_ON_DB_METHOD = "osmium"
+
+DROP_TEMPORARY_TABLES = "drop_temporary_tables"
+DEFAULT_DROP_TEMPORARY_TABLES = True
+
+UPLOAD_TO_DB = "upload_to_db"
+DEFAULT_UPLOAD_TO_DB = False
+
+GENERATE_PMTILES = "generate_pmtiles"
+DEFAULT_GENERATE_PMTILES = True
+
+UPLOAD_TO_S3 = "upload_to_s3"
+DEFAULT_UPLOAD_TO_S3 = True
+
+DEFAULT_DAYS_BEFORE_CLEANUP = 7
+
 def get_absolute_path(filename:str, folder:str = None) -> str:
     file_dir_path = dirname(abspath(__file__))
     if folder != None:
@@ -83,7 +100,8 @@ def check_postgres_conn_id(conn_id:str, require_upload = True, **context) -> boo
     """
     from airflow.hooks.postgres_hook import PostgresHook
     
-    if require_upload and (not "upload_to_db" in context["params"] or not context["params"]["upload_to_db"]):
+    enable_upload_from_params = context["params"].get(UPLOAD_TO_DB, DEFAULT_UPLOAD_TO_DB)
+    if require_upload and not enable_upload_from_params:
         print("Upload to remote DB disabled in the DAG parameters, skipping upload")
         return False
 
@@ -126,7 +144,9 @@ def check_s3_conn_id(conn_id:str, base_s3_uri_var_id:str, require_upload = True,
     from airflow.hooks.S3_hook import S3Hook
     from airflow.models.variable import Variable
 
-    if require_upload and (not "upload_to_s3" in context["params"] or not context["params"]["upload_to_s3"]):
+    enable_upload_from_params = context["params"].get(UPLOAD_TO_S3, DEFAULT_UPLOAD_TO_S3)
+
+    if require_upload and not enable_upload_from_params:
         print("Upload to S3 bucket disabled in the DAG parameters, skipping upload")
         return False
 
@@ -174,17 +194,18 @@ def choose_load_osm_data_task(base_file_path:str, **context) -> str:
         * [Parameter documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/concepts/params.html)
     """
     
-    if context["params"]["load_on_db_method"] == "osmium":
+    load_on_db_method = context["params"].get(LOAD_ON_DB_METHOD, DEFAULT_LOAD_ON_DB_METHOD)
+    if load_on_db_method == "osmium":
         date_path = f"{base_file_path}.pg.date.txt"
         next_task = "load_elements_from_pg_file"
-    elif context["params"]["load_on_db_method"] == "osm2pgsql":
+    elif load_on_db_method == "osm2pgsql":
         date_path = f"{base_file_path}.pbf.date.txt"
         next_task = "load_elements_with_osm2pgsql"
-    elif context["params"]["load_on_db_method"] == "imposm":
+    elif load_on_db_method == "imposm":
         date_path = f"{base_file_path}.pbf.date.txt"
         next_task = "load_elements_with_imposm"
     else:
-        raise Exception(f"Unknown load_on_db_method: '{context['params']['load_on_db_method']}'")
+        raise Exception(f"Unknown load_on_db_method: '{load_on_db_method}'")
     
     with open(date_path, "r") as f:
         date = f.read()
@@ -238,7 +259,7 @@ class OwmfDbInitDAG(DAG):
     def __init__(self,
             prefix:str,
             local_db_conn_id:str="local_owmf_postgis_db",
-            days_before_cleanup:int=1,
+            days_before_cleanup:int=DEFAULT_DAYS_BEFORE_CLEANUP,
             wikidata_country:str=None,
             **kwargs
         ):
@@ -295,11 +316,11 @@ class OwmfDbInitDAG(DAG):
         """Path to the temporary folder where the DAG will store the intermediate files"""
 
         default_params={
-            "load_on_db_method": Param(default="osmium", type="string", enum=["osmium","osm2pgsql","imposm"]),
-            "drop_temporary_tables": True,
-            "upload_to_db": False,
-            "generate_pmtiles": True,
-            "upload_to_s3": False,
+            LOAD_ON_DB_METHOD: Param(type="string", enum=["osmium","osm2pgsql","imposm"], default=DEFAULT_LOAD_ON_DB_METHOD),
+            DROP_TEMPORARY_TABLES: DEFAULT_DROP_TEMPORARY_TABLES,
+            UPLOAD_TO_DB: DEFAULT_UPLOAD_TO_DB,
+            GENERATE_PMTILES: DEFAULT_GENERATE_PMTILES,
+            UPLOAD_TO_S3: DEFAULT_UPLOAD_TO_S3,
         }
 
         super().__init__(
@@ -688,7 +709,7 @@ class OwmfDbInitDAG(DAG):
 
         task_check_whether_to_drop = ShortCircuitOperator(
             task_id = "check_whether_to_drop_temporary_tables",
-            python_callable = lambda **context: context["params"]["drop_temporary_tables"],
+            python_callable = lambda **context: context["params"].get(DROP_TEMPORARY_TABLES, DEFAULT_DROP_TEMPORARY_TABLES),
             dag = self,
             task_group=post_elaborate_group,
             doc_md = """
@@ -780,7 +801,7 @@ class OwmfDbInitDAG(DAG):
 
         task_check_dump = ShortCircuitOperator(
             task_id = "check_dump",
-            python_callable=lambda **context: ("generate_pmtiles" in context["params"] and context["params"]["generate_pmtiles"]) or ("generate_mbtiles" in context["params"] and context["params"]["generate_mbtiles"]),
+            python_callable = lambda **context: context["params"].get(GENERATE_PMTILES, DEFAULT_GENERATE_PMTILES),
             dag = self,
             task_group = group_vector_tiles,
             doc_md="Check whether data should be dumped to FlatGeobuf for vector tiles and/or PMTiles generation"
@@ -823,7 +844,7 @@ class OwmfDbInitDAG(DAG):
 
         task_check_pmtiles = ShortCircuitOperator(
             task_id = "check_pmtiles",
-            python_callable=lambda **context: "generate_pmtiles" in context["params"] and context["params"]["generate_pmtiles"],
+            python_callable = lambda **context: context["params"].get(GENERATE_PMTILES, DEFAULT_GENERATE_PMTILES),
             dag = self,
             task_group = group_vector_tiles,
             doc_md="Check whether pmtiles should be generated"
