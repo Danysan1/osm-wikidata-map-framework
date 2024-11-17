@@ -1,5 +1,5 @@
 services:
-  owmf-web-prod:
+  web-prod:
     build:
       context: .
       dockerfile: Dockerfile
@@ -30,7 +30,7 @@ services:
       retries: 5
     restart: unless-stopped
 
-  owmf-load-related:
+  load-related:
     build:
       context: .
       dockerfile: Dockerfile.load-related

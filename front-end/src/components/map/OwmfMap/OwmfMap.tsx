@@ -341,9 +341,10 @@ export const OwmfMap = () => {
         />
       )}
       {pmtilesActive && (
-        <PMTilesSource id={PMTILES_SOURCE} keyID={pmtilesKeyID}>
+        <PMTilesSource id={PMTILES_SOURCE}>
           <DetailsLayers
             sourceID={PMTILES_SOURCE}
+            keyID={pmtilesKeyID}
             source_layer="etymology_map"
             setOpenFeature={setOpenFeature}
             color={layerColor}

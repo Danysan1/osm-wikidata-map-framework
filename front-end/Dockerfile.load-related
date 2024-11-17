@@ -1,8 +1,12 @@
 # https://docs.docker.com/language/nodejs/build-images/
-FROM node:22.4.1-alpine3.20
-COPY "./" "/npm_app"
-
+FROM node:23.1.0-alpine3.20
 WORKDIR /npm_app
-RUN npm clean-install && \
-    npm run build-load-related
+
+COPY ["package.json", "package-lock.json", "/npm_app/"]
+RUN npm clean-install
+
+COPY "src" "/npm_app/src"
+COPY ["tsconfig.json", "declarations.d.ts", "/npm_app/"]
+RUN npm run build-load-related
+
 CMD ["npm", "run", "load-related"]
