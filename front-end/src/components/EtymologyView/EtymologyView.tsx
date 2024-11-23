@@ -152,6 +152,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
           ...etymology,
           wikidata: etymology.statementEntity,
           from_statement_of_wikidata_cod: etymology.wikidata,
+          statementEntity: undefined,
         },
       ];
     }

@@ -1,7 +1,7 @@
 SELECT ?wikidata
     (SAMPLE(?rawWikidata) AS ?alias)
     (SAMPLE(?_lang_name) AS ?lang_name)
-    (SAMPLE(?_default_name) AS ?default_name)
+    (COALESCE(SAMPLE(?_mul_name), SAMPLE(?_en_name)) AS ?default_name)
     (SAMPLE(?_description) AS ?description)
     (SAMPLE(?_instanceID) AS ?instanceID)
     (SAMPLE(?instance_name) AS ?instance)
@@ -53,8 +53,13 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wikidata rdfs:label ?_default_name.
-        FILTER(lang(?_default_name)='mul').
+        ?wikidata rdfs:label ?_en_name.
+        FILTER(lang(?_en_name)='en').
+    }
+
+    OPTIONAL {
+        ?wikidata rdfs:label ?_mul_name.
+        FILTER(lang(?_mul_name)='mul').
     }
 
     # Name of the occupations of this entity
