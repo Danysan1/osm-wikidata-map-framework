@@ -13,9 +13,6 @@ export interface EtymologyFeatureProperties {
     [key: string]: unknown;
     /**
      * osmtogeojson dumps OSM tags here
-     * 
-     * Typically in GeoJSON backends etymologies are sent as a JS object.
-     * Vector sources in both Mapbox GL and MapLibre GL however stringify the array as JSON in some circumstances.
      */
     tags?: Record<string, string>;
     /**
@@ -50,10 +47,10 @@ export interface EtymologyFeatureProperties {
      * List of linked items that describe some aspect of this feature.
      * Which aspect is represented depends on the configuration of this OWMF instance.
      * 
-     * Typically in GeoJSON backends etymologies are sent as an array of Etymology JS objects.
+     * Typically in GeoJSON backends linked entities are sent as an array of Etymology JS objects.
      * Vector sources in both Mapbox GL and MapLibre GL however stringify the array as JSON in some circumstances.
      */
-    etymologies?: Etymology[] | string;
+    linked_entities?: Etymology[] | string;
     /**
      * Whether OpenStreetMap is the original source of the geometry and names of this feature.
      */
@@ -78,6 +75,10 @@ export interface EtymologyFeatureProperties {
      * Localized description of the feature
      */
     description?: string;
+    /**
+     * Number of linked entities
+     */
+    linked_entity_count?: number;
     /**
      * Official name of the feature
      */

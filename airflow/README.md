@@ -52,8 +52,8 @@ Tip: if you run the local development instance through `docker-compose` you can 
 If the propagation is enabled, the database initialization operates as follow:
 
 1. load all highways with a name, even if they have no etymology
-2. find the etymologies os elements on the map through the methods cited above from OSM and Wikidata
-3. case insensitively search names used by at least two highways far away from each other which have exactly and only the same etymology
-4. propagates these etymologies to all (case insensitively) homonymous highways
+2. find the linked entities of elements on the map through the methods cited above from OSM and Wikidata
+3. execute a case insensitive search of names used by at least two highways far away from each other which have exactly and only the same etymology
+4. propagates these linked entities to all (case insensitively) homonymous highways
 
-More specifically, this procedure is handled by [`OwmfDbInitDAG`](./dags/OwmfDbInitDAG.py#L424) and [propagate-etymologies-global.sql](./dags/sql/propagate-etymologies-global.sql).
+More specifically, this procedure is handled by [`OwmfDbInitDAG`](./dags/OwmfDbInitDAG.py#L606) and [11-propagate-etymologies-global.sql](./dags/sql/11-propagate-etymologies-global.sql).

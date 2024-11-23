@@ -76,10 +76,10 @@
     },
     "feature_details": {
         "source": "Source:",
-        "loading_first_n_items": "Warning message shown when a feature contains more etymologies than the max configured limit, should contain the variables {{partial}} (number of shown etymologies) and {{total}} (total etymologies)",
+        "loading_first_n_items": "Warning message shown when a feature contains more linked entities than the max configured limit, should contain the variables {{partial}} (number of shown linked entities) and {{total}} (total linked entities)",
         "location": "Alt text of the '🎯' button to move the map to the location of the feature/etymology",
         "picture_via_commons": "Attribution to Wikimedia Commons under the images",
-        "loading": "Placeholder text shown while fetching and loading the etymologies",
+        "loading": "Placeholder text shown while fetching and loading the linked entities",
         "report_problem": "Text of the button that links to the documentations for reporting/fixing errors"
     },
     "etymology_details": {

@@ -46,7 +46,8 @@ SELECT
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
         'wikidata', wd.wd_wikidata_cod
-    )) AS etymologies
+    )) AS linked_entities,
+    COUNT(DISTINCT et.et_wd_id) AS linked_entity_count
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
@@ -101,7 +102,8 @@ SELECT
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
         'wikidata', wd.wd_wikidata_cod
-    )) AS etymologies
+    )) AS linked_entities,
+    COUNT(DISTINCT et.et_wd_id) AS linked_entity_count
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id

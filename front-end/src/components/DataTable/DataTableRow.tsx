@@ -1,6 +1,6 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { EtymologyFeature } from "@/src/model/EtymologyResponse";
-import { getEtymologies } from "@/src/services/etymologyUtils";
+import { getLinkedEntities } from "@/src/services/etymologyUtils";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { ButtonRow } from "../ButtonRow/ButtonRow";
@@ -14,7 +14,7 @@ interface DataTableRowProps {
 
 export const DataTableRow: FC<DataTableRowProps> = ({ feature, details, openFeatureDetails }) => {
     const { i18n } = useTranslation(),
-        etys = getEtymologies(feature),
+        etys = getLinkedEntities(feature),
         etyCellContent = etys?.length ? <ul>
             {etys?.map(ety => <li key={ety.wikidata}>
                 <a href={`https://www.wikidata.org/wiki/${ety.wikidata}`} target="_blank" rel="noreferrer">

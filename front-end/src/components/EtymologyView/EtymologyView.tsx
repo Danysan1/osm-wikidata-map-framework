@@ -249,7 +249,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
         </a>
       </span>
       <div className="etymology_parts_container">
-        {!!parts?.length && <EtymologyList etymologies={parts} />}
+        {!!parts?.length && <EtymologyList wdLinkedEntities={parts} />}
       </div>
     </div>
   );

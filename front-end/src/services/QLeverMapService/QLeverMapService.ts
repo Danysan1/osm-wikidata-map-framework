@@ -10,7 +10,7 @@ import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "..
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
-import { getEtymologies } from "../etymologyUtils";
+import { getLinkedEntities } from "../etymologyUtils";
 import osm_all_query from "./osm_all.sparql";
 import osm_wd_query from "./osm_wd.sparql";
 import osm_wd_base_query from "./osm_wd_base.sparql";
@@ -109,13 +109,13 @@ export class QLeverMapService implements MapService {
             language: language,
             truncated: ret.results.bindings.length === this.maxElements,
         };
-        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+        out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
         if (backend === "wikidata")
             out.qlever_wd_query = sparqlQuery;
         else if (backend === "osm-planet")
             out.qlever_osm_query = sparqlQuery;
 
-        if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -287,7 +287,7 @@ export class QLeverMapService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-            if (etymology_wd_id && existingFeature && getEtymologies(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+            if (etymology_wd_id && existingFeature && getLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
                 if (process.env.NODE_ENV === 'development') console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
                 const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
@@ -353,7 +353,8 @@ export class QLeverMapService implements MapService {
                         properties: {
                             commons: commons,
                             description: row.itemDescription?.value,
-                            etymologies: etymology ? [etymology] : undefined,
+                            linked_entities: etymology ? [etymology] : undefined,
+                            linked_entity_count: (etymology ? 1 : 0) + (row.etymology_text?.value ? 1 : 0),
                             text_etymology: row.etymology_text?.value,
                             text_etymology_descr: row.etymology_description?.value,
                             from_osm: feature_from_osm,
@@ -370,7 +371,7 @@ export class QLeverMapService implements MapService {
                         }
                     });
                 } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                    getEtymologies(existingFeature)?.push(etymology);
+                    getLinkedEntities(existingFeature)?.push(etymology);
                 }
             }
         });

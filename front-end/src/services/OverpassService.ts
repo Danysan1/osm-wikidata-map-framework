@@ -60,20 +60,21 @@ export class OverpassService implements MapService {
         const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, language);
         if (!onlyCentroids) {
             out.features = out.features.filter(
-                (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
+                (feature: EtymologyFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
+                    || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
             );
-            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+            out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
         }
 
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
 
     private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if(area < 0.00000001 || area > 1.5)
-            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`); 
+        if (area < 0.00000001 || area > 1.5)
+            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
         let osm_keys: string[],
             use_wikidata: boolean,
@@ -190,7 +191,7 @@ export class OverpassService implements MapService {
                     .filter(rel => rel.reltags?.[this.preset.osm_text_key!] && rel.role && this.preset.relation_role_whitelist?.includes(rel.role))
                     .map(rel => rel.reltags[this.preset.osm_text_key!]);
                 if (text_etymologies.length > 1)
-                    console.warn("Multiple text etymologies found for feature", feature.properties);
+                    console.warn("Multiple text etymologies found for feature, using the first one", feature.properties);
                 if (text_etymologies.length)
                     feature.properties.text_etymology = text_etymologies[0];
             }
@@ -218,9 +219,9 @@ export class OverpassService implements MapService {
             feature.properties.name = feature.properties.tags.name;
         // Default language is intentionally not used as it could overwrite a more specific language in name=*
 
-        const etymologies: Etymology[] = [];
+        const linkedEntities: Etymology[] = [];
         osm_keys.forEach(key => {
-            etymologies.push(
+            linkedEntities.push(
                 ...feature.properties?.tags?.[key]
                     ?.split(";")
                     ?.filter(value => WIKIDATA_QID_REGEX.test(value))
@@ -238,7 +239,7 @@ export class OverpassService implements MapService {
                     ?.filter(rel => rel.role && this.preset.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
                         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
-                        etymologies.push(
+                        linkedEntities.push(
                             ...rel.reltags[key]
                                 .split(";")
                                 .filter(value => WIKIDATA_QID_REGEX.test(value))
@@ -257,7 +258,8 @@ export class OverpassService implements MapService {
                     });
             }
         });
-        feature.properties.etymologies = etymologies;
+        feature.properties.linked_entities = linkedEntities;
+        feature.properties.linked_entity_count = linkedEntities.length + (feature.properties.text_etymology ? 1 : 0);
     }
 
     private buildOverpassQuery(

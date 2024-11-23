@@ -7,7 +7,7 @@ import type { EtymologyFeature, EtymologyResponse } from "../../model/EtymologyR
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
-import { getEtymologies } from "../etymologyUtils";
+import { getLinkedEntities } from "../etymologyUtils";
 import baseMapQuery from "./base.sparql";
 import directMapQuery from "./direct.sparql";
 import indirectMapQuery from "./indirect.sparql";
@@ -81,10 +81,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             language: language,
             truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
         };
-        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+        out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
 
         if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_transform");
-        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -161,7 +161,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-        if (etymology_wd_id && existingFeature && getEtymologies(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+        if (etymology_wd_id && existingFeature && getLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
@@ -205,7 +205,8 @@ export class WikidataMapService extends WikidataService implements MapService {
                     properties: {
                         commons: row.commons?.value,
                         description: row.itemDescription?.value,
-                        etymologies: etymology ? [etymology] : undefined,
+                        linked_entities: etymology ? [etymology] : undefined,
+                        linked_entity_count: etymology ? 1 : 0,
                         from_osm: false,
                         from_wikidata: true,
                         from_wikidata_entity,
@@ -222,7 +223,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                     }
                 });
             } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                getEtymologies(existingFeature)?.push(etymology);
+                getLinkedEntities(existingFeature)?.push(etymology);
             }
         }
         return acc;

@@ -164,8 +164,8 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         </div>
       )}
 
-      {(!!props?.etymologies || props?.text_etymology) && <EtymologyList
-        etymologies={props.etymologies ?? []}
+      {(!!props?.linked_entities || props?.text_etymology) && <EtymologyList
+        wdLinkedEntities={props.linked_entities ?? []}
         text_etymology={props.text_etymology}
         text_etymology_descr={props.text_etymology_descr}
         from_osm_id={props.osm_id}

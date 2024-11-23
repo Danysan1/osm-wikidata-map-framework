@@ -1,12 +1,12 @@
 import type { Etymology } from "../model/Etymology";
 import type { EtymologyFeature } from "../model/EtymologyResponse";
 
-export function getEtymologies(feature: EtymologyFeature): Etymology[] | undefined {
-    if (Array.isArray(feature.properties?.etymologies)) {
-        return feature.properties?.etymologies;
-    } else if (feature.properties?.etymologies) {
-        feature.properties.etymologies = JSON.parse(feature.properties.etymologies) as Etymology[];
-        return feature.properties.etymologies;
+export function getLinkedEntities(feature: EtymologyFeature): Etymology[] | undefined {
+    if (Array.isArray(feature.properties?.linked_entities)) {
+        return feature.properties?.linked_entities;
+    } else if (feature.properties?.linked_entities) {
+        feature.properties.linked_entities = JSON.parse(feature.properties.linked_entities) as Etymology[];
+        return feature.properties.linked_entities;
     }
     return undefined;
 }

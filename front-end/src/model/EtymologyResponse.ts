@@ -45,9 +45,9 @@ export interface EtymologyResponse extends FeatureCollection<Geometry, Etymology
      */
     timestamp?: string;
     /**
-     * Total number of etymologies linked to the features
+     * Total number of entities linked to the features
      */
-    etymology_count?: number;
+    total_entity_count?: number;
     /**
      * SPARQL query used to fetch the features from Wikidata Query Service
      */

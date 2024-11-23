@@ -10,7 +10,7 @@ import styles from "./EtymologyList.module.css";
 import { TextEtymologies, TextEtymologiesProps } from "./TextEtymologies";
 
 interface EtymologyListProps extends TextEtymologiesProps {
-  etymologies: string | Etymology[];
+  wdLinkedEntities: string | Etymology[];
 }
 
 export const EtymologyList: FC<EtymologyListProps> = (props) => {
@@ -21,20 +21,20 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     etys = useMemo(
       () =>
-        typeof props.etymologies === "string"
-          ? (JSON.parse(props.etymologies) as Etymology[])
-          : props.etymologies,
-      [props.etymologies]
+        typeof props.wdLinkedEntities === "string"
+          ? (JSON.parse(props.wdLinkedEntities) as Etymology[])
+          : props.wdLinkedEntities,
+      [props.wdLinkedEntities]
     ),
     downloadEtymologyDetails = useCallback(
-      async (etymologies?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
-        if (!etymologies?.length) return [];
+      async (entities?: Etymology[], maxItems = 100): Promise<EtymologyDetails[]> => {
+        if (!entities?.length) return [];
 
         // De-duplicate and sort by ascending Q-ID length (shortest usually means most famous)
         let etymologyIDs = new Set(
-          etymologies.map((e) => e.wikidata ?? "").filter((x) => x !== "")
+          entities.map((e) => e.wikidata ?? "").filter((x) => x !== "")
         );
-        if (etymologyIDs.size == 0) return etymologies;
+        if (etymologyIDs.size == 0) return entities;
 
         let sortedIDs = Array.from(etymologyIDs).sort(
           (a, b) => parseInt(a.replace("Q", "")) - parseInt(b.replace("Q", ""))
@@ -47,7 +47,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
             t(
               "feature_details.loading_first_n_items",
               `Loading only first ${maxItems} items`,
-              { partial: maxItems, total: etymologies.length }
+              { partial: maxItems, total: entities.length }
             ),
             "lightsalmon",
             10_000
@@ -60,7 +60,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
               etymologyIDs
             );
           return sortedIDs.map((wikidataID): EtymologyDetails => {
-            const baseEntity = etymologies.find(
+            const baseEntity = entities.find(
               (oldEty) => oldEty.wikidata === wikidataID
             ),
               downloadedDetails = downloadedEtymologies[wikidataID];
@@ -68,7 +68,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
           });
         } catch (err) {
           console.error("Failed downloading etymology details", etymologyIDs, err);
-          return etymologies;
+          return entities;
         }
       },
       [i18n.language, showSnackbar, t]
@@ -86,9 +86,9 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
   }, [downloadEtymologyDetails, etys, showLoadingSpinner]);
 
   return (
-    <div className={styles.etymologies_grid}>
+    <div className={styles.linked_entities_grid}>
       {loadingEtymologies && (
-        <div className="etymology etymology_loading">
+        <div className={styles.loading_linked_entity}>
           <h3>{t("feature_details.loading")}</h3>
         </div>
       )}

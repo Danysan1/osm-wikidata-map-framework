@@ -4,7 +4,7 @@ import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
 import { EtymologyFeatureProperties } from "../model/EtymologyFeatureProperties";
 import type { EtymologyResponse, EtymologyResponseFeatureProperties } from "../model/EtymologyResponse";
 import { SourcePreset } from "../model/SourcePreset";
-import { getEtymologies } from "./etymologyUtils";
+import { getLinkedEntities } from "./etymologyUtils";
 import type { MapService } from "./MapService";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
@@ -67,14 +67,14 @@ export class OverpassWikidataMapService implements MapService {
         if (!onlyCentroids) {
             out.features = out.features.filter((feature) => {
                 const noEtymologyRequired = wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length,
-                    hasEtymology = !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length;
+                    hasEtymology = !!feature.properties?.linked_entity_count || !!feature.properties?.text_etymology?.length;
                 return noEtymologyRequired || hasEtymology;
             });
-            out.etymology_count = out.features.map(feature => feature.properties?.etymologies?.length ?? 0)
+            out.total_entity_count = out.features.map(feature => feature.properties?.linked_entity_count ?? 0)
                 .reduce((acc: number, num: number) => acc + num, 0);
         }
 
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -91,7 +91,7 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata ||
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
-                getEtymologies(wikidataFeature)?.forEach(ety => {
+                getLinkedEntities(wikidataFeature)?.forEach(ety => {
                     ety.osm_wd_join_field = "OSM";
                     ety.from_osm_id = osmFeature.properties?.osm_id;
                     ety.from_osm_type = osmFeature.properties?.osm_type;
@@ -101,7 +101,7 @@ export class OverpassWikidataMapService implements MapService {
 
             if (osmFeature.properties?.osm_id !== undefined && osmFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && osmFeature.properties?.osm_type !== undefined && osmFeature.properties?.osm_type === wikidataFeature.properties?.osm_type) {
                 const join_field = JOIN_FIELD_MAP[wikidataFeature.properties.osm_type];
-                getEtymologies(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
+                getLinkedEntities(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
                 return true; // Same OSM => merge
             }
 
@@ -157,21 +157,21 @@ export class OverpassWikidataMapService implements MapService {
                 }
             });
 
-            // Merge etymologies
-            getEtymologies(wikidataFeature)?.forEach((wdEtymology: Etymology) => {
-                const osmEtymologies = getEtymologies(osmFeature),
+            // Merge Wikidata feature linked entities into OSM feature linked entities
+            getLinkedEntities(wikidataFeature)?.forEach((wdEtymology: Etymology) => {
+                const osmEtymologies = getLinkedEntities(osmFeature) ?? [],
                     osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
                 if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {
                     // Wikidata etymology has priority over the Overpass one as it can have more details, like statementEntity
                     if (process.env.NODE_ENV === 'development') console.warn("Overpass+Wikidata: Duplicate etymology, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmFeature.properties, wd: wikidataFeature.properties });
                     osmEtymologies[osmEtymologyIndex] = wdEtymology;
                 } else {
+                    osmEtymologies.push(wdEtymology);
+
                     if (!osmFeature.properties)
                         osmFeature.properties = {};
-                    if (!osmFeature.properties.etymologies)
-                        osmFeature.properties.etymologies = [wdEtymology];
-                    else
-                        osmEtymologies?.push(wdEtymology);
+                    osmFeature.properties.linked_entities = osmEtymologies;
+                    osmFeature.properties.linked_entity_count = osmEtymologies.length + (osmFeature.properties.text_etymology ? 1 : 0);
                 }
             });
         });
