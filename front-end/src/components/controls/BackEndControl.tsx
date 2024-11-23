@@ -69,6 +69,10 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                     dropdownItems.push(buildDropdownItem("qlever_osm_wikidata_direct", `${osmWikidataDirectText} (beta)`, QLEVER_GROUP_NAME));
                     //dropdownItems.push(buildDropdownItem("qlever_osm_all_wd_direct", `${allKeysText} + ${wikidataDirectText} (beta)`, QLEVER_GROUP_NAME)); // TODO: implement and enable
                 }
+                for (const prop of preset.osm_wikidata_properties) {
+                    dropdownItems.push(buildDropdownItem("wd_direct_" + prop, "Wikidata " + prop, WDQS_GROUP_NAME));
+                    //dropdownItems.push(buildDropdownItem("qlever_wd_direct_" + prop, `Wikidata ${prop} (beta)`, QLEVER_GROUP_NAME)); // TODO: Implement and enable
+                }
             }
 
             if (preset.wikidata_indirect_property) {
