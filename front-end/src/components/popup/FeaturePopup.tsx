@@ -1,11 +1,11 @@
 import { FC } from "react";
 import { Popup, useMap } from "react-map-gl/maplibre";
-import { EtymologyFeature } from "../../model/EtymologyResponse";
+import { OwmfFeature } from "../../model/OwmfResponse";
 import { FeatureView } from "../FeatureView/FeatureView";
 import styles from "./popup.module.css";
 
 interface FeaturePopupProps {
-  feature: EtymologyFeature;
+  feature: OwmfFeature;
   onClose: () => void;
 }
 

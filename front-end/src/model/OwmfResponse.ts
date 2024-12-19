@@ -1,11 +1,11 @@
 import { FeatureCollection, Geometry, Feature } from "geojson";
-import { EtymologyFeatureProperties } from "./EtymologyFeatureProperties";
+import { OwmfFeatureProperties } from "./OwmfFeatureProperties";
 
-export type EtymologyResponseFeatureProperties = EtymologyFeatureProperties | null;
+export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
 
-export type EtymologyFeature = Feature<Geometry, EtymologyResponseFeatureProperties>;
+export type OwmfFeature = Feature<Geometry, OwmfResponseFeatureProperties>;
 
-export interface EtymologyResponse extends FeatureCollection<Geometry, EtymologyResponseFeatureProperties> {
+export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFeatureProperties> {
     sourcePresetID?: string;
     /**
      * ID of the backEnd used to fetch the features.

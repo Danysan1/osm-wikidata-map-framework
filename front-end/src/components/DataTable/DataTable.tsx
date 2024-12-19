@@ -1,5 +1,5 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
 import { getLinkedEntities } from "@/src/services/etymologyUtils";
 import { FC, useEffect, useMemo, useState } from "react";
@@ -8,14 +8,14 @@ import styles from "./DataTable.module.css";
 import { DataTableRow } from "./DataTableRow";
 
 interface DataTableProps {
-    features: EtymologyFeature[];
-    setOpenFeature: (feature: EtymologyFeature) => void;
+    features: OwmfFeature[];
+    setOpenFeature: (feature: OwmfFeature) => void;
 }
 
 export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
     const { t, i18n } = useTranslation(),
         uniqueFeatures = useMemo(() => Object.values(
-            features.reduce<Record<string, EtymologyFeature>>((acc, f) => {
+            features.reduce<Record<string, OwmfFeature>>((acc, f) => {
                 const name = (f.properties?.name ?? ""),
                     etys = (getLinkedEntities(f)?.map(e => e.wikidata)?.sort()?.join() ?? ""),
                     key = name + etys;

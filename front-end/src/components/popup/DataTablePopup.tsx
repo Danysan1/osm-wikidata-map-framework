@@ -1,14 +1,14 @@
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { FC } from "react";
 import { LngLat, Popup } from "react-map-gl/maplibre";
 import { DataTable } from "../DataTable/DataTable";
 import styles from "./popup.module.css";
 
 interface DataTablePopupProps {
-  features: EtymologyFeature[];
+  features: OwmfFeature[];
   position: LngLat;
   onClose: () => void;
-  setOpenFeature: (feature: EtymologyFeature) => void;
+  setOpenFeature: (feature: OwmfFeature) => void;
 }
 
 export const DataTablePopup: FC<DataTablePopupProps> = (props) => {

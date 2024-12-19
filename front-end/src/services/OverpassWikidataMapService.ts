@@ -1,8 +1,8 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
-import { EtymologyFeatureProperties } from "../model/EtymologyFeatureProperties";
-import type { EtymologyResponse, EtymologyResponseFeatureProperties } from "../model/EtymologyResponse";
+import { OwmfFeatureProperties } from "../model/OwmfFeatureProperties";
+import type { OwmfResponse, OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import { getLinkedEntities } from "./etymologyUtils";
 import type { MapService } from "./MapService";
@@ -54,7 +54,7 @@ export class OverpassWikidataMapService implements MapService {
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_fetch");
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_merge");
-        const out: EtymologyResponse = this.mergeMapData(overpassData, wikidataData);
+        const out: OwmfResponse = this.mergeMapData(overpassData, wikidataData);
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_merge");
 
         if (!out)
@@ -80,8 +80,8 @@ export class OverpassWikidataMapService implements MapService {
     }
 
     private mergeWikidataFeature(
-        wikidataFeature: Feature<Geometry, EtymologyResponseFeatureProperties>,
-        osmFeatures: Feature<Geometry, EtymologyResponseFeatureProperties>[]
+        wikidataFeature: Feature<Geometry, OwmfResponseFeatureProperties>,
+        osmFeatures: Feature<Geometry, OwmfResponseFeatureProperties>[]
     ) {
         const osmFeaturesToMerge = osmFeatures.filter((osmFeature) => {
             if (osmFeature.properties?.from_wikidata === true)
@@ -146,7 +146,7 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.alt_name = [osmFeature.properties.alt_name, wikidataFeature.properties?.name].join(";");
 
             // For other key, give priority to Overpass
-            const KEYS_TO_MERGE: (keyof EtymologyFeatureProperties)[] = [
+            const KEYS_TO_MERGE: (keyof OwmfFeatureProperties)[] = [
                 "name", "description", "picture", "commons", "wikidata"
             ];
             KEYS_TO_MERGE.forEach(key => {
@@ -179,7 +179,7 @@ export class OverpassWikidataMapService implements MapService {
         return osmFeatures;
     }
 
-    private mergeMapData(overpassData: EtymologyResponse, wikidataData: EtymologyResponse): EtymologyResponse {
+    private mergeMapData(overpassData: OwmfResponse, wikidataData: OwmfResponse): OwmfResponse {
         wikidataData.features.forEach(feature => this.mergeWikidataFeature(feature, overpassData.features));
         overpassData.wdqs_query = wikidataData.wdqs_query;
         overpassData.truncated = !!overpassData.truncated || !!wikidataData.truncated;

@@ -3,7 +3,7 @@ import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import type { Etymology } from "../../model/Etymology";
-import type { EtymologyFeature, EtymologyResponse } from "../../model/EtymologyResponse";
+import type { OwmfFeature, OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
@@ -29,7 +29,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
         if (process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
 
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language);
@@ -69,10 +69,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             throw new Error("Invalid response from Wikidata (no bindings)");
 
         if (process.env.NODE_ENV === 'development') console.time("wikidata_transform");
-        const out: EtymologyResponse = {
+        const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
-            features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
+            features: ret.results.bindings.reduce((acc: OwmfFeature[], row) => this.featureReducer(acc, row), []),
             wdqs_query: sparqlQuery,
             timestamp: new Date().toISOString(),
             sourcePresetID: this.preset.id,
@@ -134,7 +134,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             .replaceAll('${pictureQuery}', pictureQuery);
     }
 
-    private featureReducer(acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
+    private featureReducer(acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] {
         if (!row.location?.value) {
             console.warn("Invalid response from Wikidata (no location)", row);
             return acc;

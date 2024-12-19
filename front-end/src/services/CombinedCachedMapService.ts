@@ -1,7 +1,7 @@
 import { BBox } from "geojson";
 import { parseStringArrayConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
-import { EtymologyResponse } from "../model/EtymologyResponse";
+import { OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import { MapService } from "./MapService";
 import { OverpassService } from "./OverpassService";
@@ -51,7 +51,7 @@ export class CombinedCachedMapService implements MapService {
         return this.services?.some(service => service.canHandleBackEnd(backEndID));
     }
 
-    public fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
         const service = this.services?.find(service => service.canHandleBackEnd(backEndID));
         if (!service)
             throw new Error("No service found for source ID " + backEndID);

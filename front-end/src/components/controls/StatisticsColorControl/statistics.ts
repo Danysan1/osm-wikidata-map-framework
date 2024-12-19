@@ -1,11 +1,11 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
 import { Etymology } from "@/src/model/Etymology";
-import { EtymologyFeatureProperties } from "@/src/model/EtymologyFeatureProperties";
+import { OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
-export type StatisticsCalculator = (features: EtymologyFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
+export type StatisticsCalculator = (features: OwmfFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
 
 export const FALLBACK_COLOR = '#000000',
   BLUE = '#3bb2d0',

@@ -1,7 +1,7 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { EtymologyResponse } from "@/src/model/EtymologyResponse";
+import { OwmfResponse } from "@/src/model/OwmfResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
 import { useCallback, useEffect, useMemo, useState, FC } from "react";
@@ -53,7 +53,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
         clusterLayerID = useMemo(() => props.sourceID + CLUSTER_LAYER, [props.sourceID]),
         countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
         unclusteredLayerID = useMemo(() => props.sourceID + UNCLUSTERED_LAYER, [props.sourceID]),
-        [elementsData, setElementsData] = useState<EtymologyResponse | null>(null),
+        [elementsData, setElementsData] = useState<OwmfResponse | null>(null),
         { showSnackbar } = useSnackbarContext(),
         { showLoadingSpinner } = useLoadingSpinnerContext(),
         { lat, lon, zoom } = useUrlFragmentContext(),

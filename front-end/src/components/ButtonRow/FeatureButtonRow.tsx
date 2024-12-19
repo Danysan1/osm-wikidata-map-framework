@@ -1,10 +1,10 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { Position } from "geojson";
 import { ButtonRow } from "./ButtonRow";
 
 interface FeatureButtonRowProps {
-  feature: EtymologyFeature;
+  feature: OwmfFeature;
   className?: string;
   openFeatureDetails?: () => void;
 }

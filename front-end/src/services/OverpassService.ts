@@ -2,7 +2,7 @@ import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType } from "../model/Etymology";
-import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
+import { osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
@@ -46,7 +46,7 @@ export class OverpassService implements MapService {
         return /^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
         const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
         if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
             if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox });
@@ -60,7 +60,7 @@ export class OverpassService implements MapService {
         const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, language);
         if (!onlyCentroids) {
             out.features = out.features.filter(
-                (feature: EtymologyFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
+                (feature: OwmfFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
                     || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
             );
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
@@ -71,7 +71,7 @@ export class OverpassService implements MapService {
         return out;
     }
 
-    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
         if (area < 0.00000001 || area > 1.5)
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
@@ -125,7 +125,7 @@ export class OverpassService implements MapService {
             throw new Error(`Overpass API error: ${res.remark}`);
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_transform");
-        const out: EtymologyResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
+        const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
         out.features.forEach(f => this.transformFeature(f, osm_keys, language));
@@ -142,7 +142,7 @@ export class OverpassService implements MapService {
         return out;
     }
 
-    private transformFeature(feature: EtymologyFeature, osm_keys: string[], language: string) {
+    private transformFeature(feature: OwmfFeature, osm_keys: string[], language: string) {
         if (!feature.properties)
             feature.properties = {};
 

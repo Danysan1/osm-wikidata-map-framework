@@ -1,5 +1,5 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { getLinkedEntities } from "@/src/services/etymologyUtils";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -7,7 +7,7 @@ import { ButtonRow } from "../ButtonRow/ButtonRow";
 import styles from "./DataTable.module.css";
 
 interface DataTableRowProps {
-    feature: EtymologyFeature;
+    feature: OwmfFeature;
     details?: Record<string, EtymologyDetails>;
     openFeatureDetails: () => void;
 }

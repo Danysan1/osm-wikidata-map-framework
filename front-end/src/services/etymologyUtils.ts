@@ -1,7 +1,7 @@
 import type { Etymology } from "../model/Etymology";
-import type { EtymologyFeature } from "../model/EtymologyResponse";
+import type { OwmfFeature } from "../model/OwmfResponse";
 
-export function getLinkedEntities(feature: EtymologyFeature): Etymology[] | undefined {
+export function getLinkedEntities(feature: OwmfFeature): Etymology[] | undefined {
     if (Array.isArray(feature.properties?.linked_entities)) {
         return feature.properties?.linked_entities;
     } else if (feature.properties?.linked_entities) {

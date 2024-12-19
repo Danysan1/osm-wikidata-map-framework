@@ -6,7 +6,7 @@ import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend"
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import { Configuration } from "../../generated/sparql/runtime";
 import type { Etymology } from "../../model/Etymology";
-import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../../model/EtymologyResponse";
+import { osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
@@ -78,7 +78,7 @@ export class QLeverMapService implements MapService {
         return /^qlever_(wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?)|(osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
             if (process.env.NODE_ENV === 'development') console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
             return { type: "FeatureCollection", features: [] };
@@ -98,7 +98,7 @@ export class QLeverMapService implements MapService {
         if (!ret.results?.bindings)
             throw new Error("Invalid response from Wikidata (no bindings)");
 
-        const out: EtymologyResponse = {
+        const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
             features: ret.results.bindings.reduce(this.featureReducer, []),
@@ -257,7 +257,7 @@ export class QLeverMapService implements MapService {
             ).toFixed(4));
     }
 
-    private featureReducer(this: void, acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
+    private featureReducer(this: void, acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] {
         if (!row.location?.value) {
             console.warn("Invalid response from Wikidata (no location)", row);
             return acc;

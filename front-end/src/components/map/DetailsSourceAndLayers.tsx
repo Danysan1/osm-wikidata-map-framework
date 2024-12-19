@@ -1,7 +1,7 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { EtymologyResponse } from "@/src/model/EtymologyResponse";
+import { OwmfResponse } from "@/src/model/OwmfResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
 import { useEffect, useState, FC } from "react";
@@ -15,7 +15,7 @@ interface DetailsSourceAndLayersProps extends DetailsLayersProps {
 }
 
 export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) => {
-  const [detailsData, setDetailsData] = useState<EtymologyResponse | null>(null),
+  const [detailsData, setDetailsData] = useState<OwmfResponse | null>(null),
     { showSnackbar } = useSnackbarContext(),
     { showLoadingSpinner } = useLoadingSpinnerContext(),
     { lat, lon, zoom } = useUrlFragmentContext(),

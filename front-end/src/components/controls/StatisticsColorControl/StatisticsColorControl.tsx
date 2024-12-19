@@ -1,6 +1,6 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
-import type { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import type { OwmfFeature } from "@/src/model/OwmfResponse";
 import type { EtymologyStat } from "@/src/model/EtymologyStat";
 import type { SourcePreset } from "@/src/model/SourcePreset";
 import { getLinkedEntities } from "@/src/services/etymologyUtils";
@@ -74,7 +74,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         setChartData(data);
       }
 
-      const queryFeaturesOnScreen = (): EtymologyFeature[] | undefined => {
+      const queryFeaturesOnScreen = (): OwmfFeature[] | undefined => {
         if (layerIDs.some(layerID => !map?.getLayer(layerID))) {
           if (process.env.NODE_ENV === "development") console.warn(
             "queryFeaturesOnScreen: At least one layer is missing, can't update stats",

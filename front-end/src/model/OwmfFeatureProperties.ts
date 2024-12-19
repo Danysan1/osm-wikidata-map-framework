@@ -6,7 +6,7 @@ interface OsmToGeoJsonRelation {
     role?: string;
 }
 
-export interface EtymologyFeatureProperties {
+export interface OwmfFeatureProperties {
     /**
      * Vector tiles support only flat properties so OSM tags will be dumped here
      */

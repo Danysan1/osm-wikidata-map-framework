@@ -1,5 +1,5 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
@@ -12,7 +12,7 @@ import { CommonsImage } from "../ImageWithAttribution/CommonsImage";
 import styles from "./FeatureView.module.css";
 
 interface FeatureViewProps {
-  feature: EtymologyFeature;
+  feature: OwmfFeature;
 }
 
 export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {

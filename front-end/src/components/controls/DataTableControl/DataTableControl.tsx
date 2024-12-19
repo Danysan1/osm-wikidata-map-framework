@@ -1,6 +1,6 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import dataTableIcon from "@/src/img/Simple_icon_table.svg";
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
@@ -43,7 +43,7 @@ interface DataTableControlProps {
   minZoomLevel?: number;
   position?: ControlPosition;
   className?: string;
-  setOpenFeature: (feature: EtymologyFeature) => void;
+  setOpenFeature: (feature: OwmfFeature) => void;
 }
 
 export const DataTableControl: FC<DataTableControlProps> = (props) => {
@@ -68,7 +68,7 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
 
   const visible =
     dataLoaded && (props.minZoomLevel === undefined || zoom >= props.minZoomLevel),
-    [tableFeatures, setTableFeatures] = useState<EtymologyFeature[] | undefined>(),
+    [tableFeatures, setTableFeatures] = useState<OwmfFeature[] | undefined>(),
     openTable = useCallback(() => {
       setPopupPosition(map?.getBounds()?.getNorthWest());
       setTableFeatures(map?.queryRenderedFeatures({ layers: props.dataLayerIDs }));
