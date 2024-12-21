@@ -36,7 +36,7 @@ SELECT
     el.el_commons AS commons,
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
-    JSON_AGG(JSON_BUILD_OBJECT(
+    CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
         'from_osm', et_from_osm,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
@@ -46,7 +46,7 @@ SELECT
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
         'wikidata', wd.wd_wikidata_cod
-    )) AS linked_entities,
+    )) END AS linked_entities,
     COUNT(DISTINCT et.et_wd_id) AS linked_entity_count
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
@@ -92,7 +92,7 @@ SELECT
     el.el_commons AS commons,
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
-    JSON_AGG(JSON_BUILD_OBJECT(
+    CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
         'from_osm', et_from_osm,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
@@ -102,7 +102,7 @@ SELECT
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
         'wikidata', wd.wd_wikidata_cod
-    )) AS linked_entities,
+    )) END AS linked_entities,
     COUNT(DISTINCT et.et_wd_id) AS linked_entity_count
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
