@@ -287,8 +287,8 @@ class OwmfDbInitDAG(DAG):
         doc_md="""
 # OSM-Wikidata Map Framework DB initialization
 
-* downloads and and filters OSM data
-* downloads relevant OSM data
+* ingests filtered OSM PBF data
+* downloads relevant Wikidata data
 * combines OSM and Wikidata data
 * uploads the output to the production DB.
 
