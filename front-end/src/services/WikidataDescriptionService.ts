@@ -18,6 +18,8 @@ export class WikidataDescriptionService {
         const descriptions = await this.api.getItemDescriptions({ itemId: wikidataID });
         if (preferredLanguageCode && descriptions[preferredLanguageCode]) {
             return descriptions[preferredLanguageCode];
+        } else if (descriptions.mul) {
+            return descriptions.mul;
         } else if (descriptions.en) {
             return descriptions.en;
         } else {

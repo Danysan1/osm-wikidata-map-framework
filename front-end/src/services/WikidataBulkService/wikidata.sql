@@ -5,12 +5,7 @@ SELECT
     REPLACE(value->'item'->>'value', 'http://www.wikidata.org/entity/', ''), 
     REPLACE(value->'alias'->>'value', 'http://www.wikidata.org/entity/', ''),
     JSONB_BUILD_OBJECT(
-            'name:da', value->'label_da'->>'value',
-            'name:de', value->'label_de'->>'value',
-            'name:en', value->'label_en'->>'value',
-            'name:es', value->'label_es'->>'value',
-            'name:fr', value->'label_fr'->>'value',
-            'name:it', value->'label_it'->>'value',
+            'name', value->'itemLabel'->>'value',
             'wikimedia_commons', 'Category:' || (value->'commons'->>'value')
         )
 FROM json_array_elements(($1::JSON)->'results'->'bindings')

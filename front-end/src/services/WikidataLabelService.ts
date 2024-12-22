@@ -18,6 +18,8 @@ export class WikidataLabelService {
         const labels = await this.api.getItemLabels({ itemId: wikidataID });
         if (preferredLanguageCode && labels[preferredLanguageCode]) {
             return labels[preferredLanguageCode];
+        } else if (labels.mul) {
+            return labels.mul;
         } else if (labels.en) {
             return labels.en;
         } else {
