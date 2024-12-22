@@ -140,8 +140,9 @@ class OsmPbfDownloadDAG(DAG):
 
         See https://airflow.apache.org/docs/apache-airflow/2.6.0/index.html
         """
-        pbf_path = f'/workdir/{prefix}/{prefix}.osm.pbf'
-        pbf_date_path = f'/workdir/{prefix}/{prefix}.osm.pbf.date.txt'
+        dest_folder = f'/workdir/{prefix}'
+        pbf_path = f'{dest_folder}/{prefix}.osm.pbf'
+        pbf_date_path = f'{dest_folder}/{prefix}.osm.pbf.date.txt'
         pbf_dataset = Dataset(f'file://{pbf_path}')
 
         default_params = {
@@ -275,8 +276,9 @@ Check the torrent daemon until the torrent download has completed.
 
         task_save_pbf = BashOperator(
             task_id = "save_pbf",
-            bash_command = 'mv "$downloadedFilePath" "$pbfPath" && echo "$date" > "$datePath"',
+            bash_command = 'mkdir -p "$destFolder" && mv "$downloadedFilePath" "$pbfPath" && echo "$date" > "$datePath"',
             env = {
+                "destFolder": dest_folder,
                 "downloadedFilePath": "{{ ti.xcom_pull(task_ids='get_source_url', key='downloaded_file_path') }}",
                 "pbfPath": pbf_path,
                 "date": "{{ ti.xcom_pull(task_ids='get_source_url', key='last_data_update') }}",

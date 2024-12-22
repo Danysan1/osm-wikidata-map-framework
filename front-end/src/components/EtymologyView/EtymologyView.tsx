@@ -1,7 +1,7 @@
 import { Etymology } from "@/src/model/Etymology";
 import { DatePrecision, EtymologyDetails } from "@/src/model/EtymologyDetails";
 import { WikipediaService } from "@/src/services/WikipediaService";
-import { useCallback, useEffect, useMemo, useState, FC } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { EtymologyButtonRow } from "../ButtonRow/EtymologyButtonRow";
 import { EtymologyList } from "../EtymologyList/EtymologyList";
@@ -17,25 +17,23 @@ interface EtymologyViewProps {
 export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
   const { t, i18n } = useTranslation(),
     [wikipediaExtract, setWikipediaExtract] = useState<string>(),
+    fromOsm =
+      etymology.osm_wd_join_field === "OSM" ||
+      !!etymology.from_osm ||
+      !!etymology.propagated,
     osmUrlA =
-      (etymology.osm_wd_join_field === "OSM" ||
-        !!etymology.from_osm ||
-        etymology.propagated) &&
-        etymology.from_osm_type &&
-        etymology.from_osm_id
+      fromOsm && etymology.from_osm_type && etymology.from_osm_id
         ? `https://www.openstreetmap.org/${etymology.from_osm_type}/${etymology.from_osm_id}`
         : null,
-    wdUrlA =
-      etymology.osm_wd_join_field &&
-        etymology.osm_wd_join_field !== "OSM" &&
-        etymology.from_wikidata_entity
-        ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${etymology.osm_wd_join_field}`
-        : null,
-    wdUrlB = etymology.from_wikidata_entity
-      ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}#${etymology.from_wikidata_prop ?? ""
-      }`
+    fromWdUrl = etymology.from_wikidata_entity
+      ? `https://www.wikidata.org/wiki/${etymology.from_wikidata_entity}`
       : null,
-    showArrow = (!!osmUrlA || !!wdUrlA) && wdUrlB,
+    wdUrlA =
+      etymology.osm_wd_join_field && etymology.osm_wd_join_field !== "OSM" && fromWdUrl
+        ? `${fromWdUrl}#${etymology.osm_wd_join_field ?? ""}`
+        : null,
+    wdUrlB = fromWdUrl ? `${fromWdUrl}#${etymology.from_wikidata_prop ?? ""}` : null,
+    showArrow = (!!osmUrlA || !!wdUrlA) && !!wdUrlB,
     wdUrlPartOf = etymology.from_parts_of_wikidata_cod
       ? `https://www.wikidata.org/wiki/${etymology.from_parts_of_wikidata_cod}#P527`
       : null,
@@ -85,25 +83,25 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
   );
 
   const startEndDate = useMemo(() => {
-    if (
+    const anyBirthOrDeath =
       !!etymology.birth_date ||
       !!etymology.birth_place ||
       !!etymology.death_date ||
-      etymology.death_place
-    ) {
+      !!etymology.death_place;
+    if (anyBirthOrDeath) {
       const birth_date = etymology.birth_date
-        ? formatDate(etymology.birth_date, etymology.birth_date_precision)
-        : "?",
+          ? formatDate(etymology.birth_date, etymology.birth_date_precision)
+          : "?",
         birth_place = etymology.birth_place ? etymology.birth_place : "?",
         death_date = etymology.death_date
           ? formatDate(etymology.death_date, etymology.death_date_precision)
           : "?",
         death_place = etymology.death_place ? etymology.death_place : "?";
       return `${birth_date} (${birth_place}) - ${death_date} (${death_place})`;
-    } else if (!!etymology.start_date || etymology.end_date) {
+    } else if (!!etymology.start_date || !!etymology.end_date) {
       const start_date = etymology.start_date
-        ? formatDate(etymology.start_date, etymology.start_date_precision)
-        : "?",
+          ? formatDate(etymology.start_date, etymology.start_date_precision)
+          : "?",
         end_date = etymology.end_date
           ? formatDate(etymology.end_date, etymology.end_date_precision)
           : "?";
@@ -140,9 +138,8 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
 
   const parts = useMemo((): Etymology[] | undefined => {
     if (etymology.from_parts_of_wikidata_cod) {
-      if (process.env.NODE_ENV === "development") console.debug(
-        "Not fetching parts of parts", etymology
-      );
+      if (process.env.NODE_ENV === "development")
+        console.debug("Not fetching parts of parts", etymology);
       return undefined;
     }
 
@@ -162,9 +159,12 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
         ...etymology,
         wikidata: qid,
         from_parts_of_wikidata_cod: etymology.wikidata,
+        parts: undefined,
       })
     );
   }, [etymology]);
+
+  if (!etymology.name && !etymology.description && !etymology.wikidata) return null;
 
   return (
     <div className={styles.etymology}>

@@ -32,10 +32,15 @@
     },
     "preset": {
         "choose_preset": "Choisir un préréglage",
+        "architect": "Architectes du bâtiment",
+        "artist": "Auteurs d'œuvres d'art",
         "base": "OSM + Wikidata",
-        "etymology": "Étymologies (origine des noms)",
         "burial": "Lieux de sépulture",
-        "artist": "Auteurs d'œuvres d'art"
+        "etymology": "Étymologies (origine des noms)",
+        "green_spaces": "Espaces verts",
+        "holy_wells": "Puits sacrés",
+        "holy_well_etymology": "Étymologie de puits sacrés",
+        "protected_areas": "Aires protégées"
     },
     "source": {
         "choose_source": "Choisissez la source de données",
