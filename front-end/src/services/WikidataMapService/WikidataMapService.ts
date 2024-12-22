@@ -3,11 +3,10 @@ import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import type { Etymology } from "../../model/Etymology";
-import type { OwmfFeature, OwmfResponse } from "../../model/OwmfResponse";
+import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
-import { getLinkedEntities } from "../etymologyUtils";
 import baseMapQuery from "./base.sparql";
 import directMapQuery from "./direct.sparql";
 import indirectMapQuery from "./indirect.sparql";
@@ -161,7 +160,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-        if (etymology_wd_id && existingFeature && getLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+        if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
@@ -204,14 +203,17 @@ export class WikidataMapService extends WikidataService implements MapService {
                     geometry,
                     properties: {
                         commons: row.commons?.value,
-                        description: row.itemDescription?.value,
                         linked_entities: etymology ? [etymology] : undefined,
                         linked_entity_count: etymology ? 1 : 0,
                         from_osm: false,
                         from_wikidata: true,
                         from_wikidata_entity,
                         from_wikidata_prop,
-                        name: row.itemLabel?.value,
+                        tags: {
+                            description: row.itemDescription?.value,
+                            name: row.itemLabel?.value,
+                            website: row.website?.value,
+                        },
                         osm_id,
                         osm_type,
                         picture: row.picture?.value,
@@ -223,7 +225,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                     }
                 });
             } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                getLinkedEntities(existingFeature)?.push(etymology);
+                getFeatureLinkedEntities(existingFeature).push(etymology);
             }
         }
         return acc;

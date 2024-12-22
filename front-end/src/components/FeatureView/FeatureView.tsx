@@ -1,5 +1,5 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { OwmfFeature } from "@/src/model/OwmfResponse";
+import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
@@ -19,6 +19,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
   const { t, i18n } = useTranslation(),
     { sourcePresetID } = useUrlFragmentContext(),
     props = feature.properties,
+    featureI18n = getFeatureTags(feature),
     osm_full_id =
       props?.osm_type && props.osm_id ? props.osm_type + "/" + props.osm_id : null,
     fromOsmUrl =
@@ -36,7 +37,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     [mainName, setMainName] = useState<string>(),
     altNames = useMemo(() => {
       const alt_name_set = new Set<string>();
-      [props?.name, props?.official_name, props?.alt_name]
+      [featureI18n.name, featureI18n.official_name, featureI18n.alt_name]
         .flatMap((name) => name?.split(";"))
         .map((name) => name?.trim())
         .filter(
@@ -47,24 +48,24 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         )
         .forEach((name) => alt_name_set.add(name!)); // deduplicates alt names
       return alt_name_set.size > 0 ? Array.from(alt_name_set) : undefined;
-    }, [mainName, props?.alt_name, props?.name, props?.official_name]),
+    }, [mainName, featureI18n.alt_name, featureI18n.name, featureI18n.official_name]),
     [description, setDescription] = useState<string>(),
     [commons, setCommons] = useState<string[]>();
 
   useEffect(() => {
-    const local_name = props?.["name:" + i18n.language],
-      default_name = props?.["name:en"];
+    const local_name = featureI18n["name:" + i18n.language],
+      fallback_name = featureI18n["name:en"];
 
     if (typeof local_name === "string" && local_name !== "null") {
       setMainName(local_name);
-    } else if (props?.name && props.name !== "null") {
-      setMainName(props.name);
-    } else if (typeof default_name === "string" && default_name !== "null") {
-      setMainName(default_name);
-    } else if (props?.official_name && props.official_name !== "null") {
-      setMainName(props.official_name);
-    } else if (props?.alt_name && props.alt_name !== "null") {
-      setMainName(props.alt_name);
+    } else if (featureI18n.name && featureI18n.name !== "null") {
+      setMainName(featureI18n.name);
+    } else if (typeof fallback_name === "string" && fallback_name !== "null") {
+      setMainName(fallback_name);
+    } else if (featureI18n.official_name && featureI18n.official_name !== "null") {
+      setMainName(featureI18n.official_name);
+    } else if (featureI18n.alt_name && featureI18n.alt_name !== "null") {
+      setMainName(featureI18n.alt_name);
     } else if (props?.wikidata) {
       setMainName(undefined);
       const labelService = new WikidataLabelService();
@@ -84,11 +85,11 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     } else {
       setMainName(undefined);
     }
-  }, [i18n.language, props]);
+  }, [featureI18n, i18n.language, props]);
 
   useEffect(() => {
-    if (props?.description && props.description !== "null") {
-      setDescription(props.description);
+    if (featureI18n?.description && featureI18n.description !== "null") {
+      setDescription(featureI18n.description);
     } else if (props?.wikidata) {
       const descriptionService = new WikidataDescriptionService();
       descriptionService
@@ -110,7 +111,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
             });
         });
     }
-  }, [i18n.language, props]);
+  }, [featureI18n.description, i18n.language, props]);
 
   useEffect(() => {
     if (props?.commons?.includes("File:")) {

@@ -1,5 +1,6 @@
 import { FeatureCollection, Geometry, Feature } from "geojson";
-import { OwmfFeatureProperties } from "./OwmfFeatureProperties";
+import { getPropLinkedEntities, getPropTags, FeatureTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
+import { Etymology } from "./Etymology";
 
 export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
 
@@ -76,4 +77,24 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
 
 export function osmKeyToKeyID(key: string) {
     return "osm_" + key.replace(":wikidata", "").replace(":", "_");
+}
+
+export function getFeatureLinkedEntities(f: OwmfFeature): Etymology[] {
+    if (f.properties) {
+        return getPropLinkedEntities(f.properties);
+    } else {
+        const props = {};
+        f.properties = props;
+        return getPropLinkedEntities(props);
+    }
+}
+
+export function getFeatureTags(f: OwmfFeature): FeatureTags {
+    if (f.properties) {
+        return getPropTags(f.properties);
+    } else {
+        const props = {};
+        f.properties = props;
+        return getPropTags(props);
+    }
 }

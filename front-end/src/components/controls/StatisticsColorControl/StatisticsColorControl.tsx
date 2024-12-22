@@ -1,9 +1,8 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
-import type { OwmfFeature } from "@/src/model/OwmfResponse";
+import { getFeatureLinkedEntities, type OwmfFeature } from "@/src/model/OwmfResponse";
 import type { EtymologyStat } from "@/src/model/EtymologyStat";
 import type { SourcePreset } from "@/src/model/SourcePreset";
-import { getLinkedEntities } from "@/src/services/etymologyUtils";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import type { ControlPosition, DataDrivenPropertyValueSpecification } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
@@ -103,7 +102,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
         let wikidataIDs: string[] = [];
         try {
           wikidataIDs = queryFeaturesOnScreen()
-            ?.flatMap(f => getLinkedEntities(f) ?? [])
+            ?.flatMap(f => getFeatureLinkedEntities(f))
             ?.filter(etymology => etymology.wikidata)
             ?.map(etymology => etymology.wikidata!) ?? [];
         } catch (error) {

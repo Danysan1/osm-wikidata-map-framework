@@ -6,11 +6,10 @@ import type { SparqlBackend } from "../../generated/sparql/models/SparqlBackend"
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import { Configuration } from "../../generated/sparql/runtime";
 import type { Etymology } from "../../model/Etymology";
-import { osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
+import { getFeatureLinkedEntities, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
-import { getLinkedEntities } from "../etymologyUtils";
 import osm_all_query from "./osm_all.sparql";
 import osm_wd_query from "./osm_wd.sparql";
 import osm_wd_base_query from "./osm_wd_base.sparql";
@@ -287,7 +286,7 @@ export class QLeverMapService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-            if (etymology_wd_id && existingFeature && getLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+            if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
                 if (process.env.NODE_ENV === 'development') console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
                 const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
@@ -352,7 +351,6 @@ export class QLeverMapService implements MapService {
                         geometry,
                         properties: {
                             commons: commons,
-                            description: row.itemDescription?.value,
                             linked_entities: etymology ? [etymology] : undefined,
                             linked_entity_count: (etymology ? 1 : 0) + (row.etymology_text?.value ? 1 : 0),
                             text_etymology: row.etymology_text?.value,
@@ -362,7 +360,11 @@ export class QLeverMapService implements MapService {
                             from_wikidata_entity,
                             from_wikidata_prop,
                             render_height: render_height,
-                            name: row.itemLabel?.value,
+                            tags: {
+                                description: row.itemDescription?.value,
+                                name: row.itemLabel?.value,
+                                website: row.website?.value,
+                            },
                             osm_id,
                             osm_type,
                             picture: picture,
@@ -371,7 +373,7 @@ export class QLeverMapService implements MapService {
                         }
                     });
                 } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                    getLinkedEntities(existingFeature)?.push(etymology);
+                    getFeatureLinkedEntities(existingFeature)?.push(etymology);
                 }
             }
         });

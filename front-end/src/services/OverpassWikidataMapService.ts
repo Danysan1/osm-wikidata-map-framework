@@ -1,10 +1,8 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
-import { OwmfFeatureProperties } from "../model/OwmfFeatureProperties";
-import type { OwmfResponse, OwmfResponseFeatureProperties } from "../model/OwmfResponse";
+import { getFeatureTags, getFeatureLinkedEntities, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
-import { getLinkedEntities } from "./etymologyUtils";
 import type { MapService } from "./MapService";
 
 const JOIN_FIELD_MAP: Record<OsmType, OsmWdJoinField> = {
@@ -91,7 +89,7 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata ||
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
-                getLinkedEntities(wikidataFeature)?.forEach(ety => {
+                getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => {
                     ety.osm_wd_join_field = "OSM";
                     ety.from_osm_id = osmFeature.properties?.osm_id;
                     ety.from_osm_type = osmFeature.properties?.osm_type;
@@ -101,7 +99,7 @@ export class OverpassWikidataMapService implements MapService {
 
             if (osmFeature.properties?.osm_id !== undefined && osmFeature.properties?.osm_id === wikidataFeature.properties?.osm_id && osmFeature.properties?.osm_type !== undefined && osmFeature.properties?.osm_type === wikidataFeature.properties?.osm_type) {
                 const join_field = JOIN_FIELD_MAP[wikidataFeature.properties.osm_type];
-                getLinkedEntities(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
+                getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => { ety.osm_wd_join_field = join_field; });
                 return true; // Same OSM => merge
             }
 
@@ -129,13 +127,15 @@ export class OverpassWikidataMapService implements MapService {
             if (wikidataFeature.properties?.render_height)
                 osmFeature.properties.render_height = wikidataFeature.properties?.render_height;
 
-            const lowerOsmName = osmFeature.properties.name?.toLowerCase(),
-                lowerOsmAltName = osmFeature.properties.alt_name?.toLowerCase(),
-                lowerWikidataName = wikidataFeature.properties?.name?.toLowerCase();
-            if (!lowerOsmName && lowerWikidataName) // If OSM has no name but Wikidata has a name, use it as name
-                osmFeature.properties.name = wikidataFeature.properties?.name;
-            else if (!lowerOsmAltName && lowerWikidataName) // If OSM has no alt_name but Wikidata has a name, use it as alt_name
-                osmFeature.properties.alt_name = wikidataFeature.properties?.name;
+            const osmI18n = getFeatureTags(osmFeature),
+                wdI18n = getFeatureTags(wikidataFeature),
+                lowerOsmName = osmI18n?.name?.toLowerCase(),
+                lowerOsmAltName = osmI18n?.alt_name?.toLowerCase(),
+                lowerWikidataName = wdI18n?.name?.toLowerCase();
+            if (!osmI18n.name && wdI18n?.name) // If OSM has no name but Wikidata has a name, use it as name
+                osmI18n.name = wdI18n.name;
+            else if (!osmI18n.alt_name && wdI18n?.name) // If OSM has no alt_name but Wikidata has a name, use it as alt_name
+                osmI18n.alt_name = wdI18n.name;
             else if (lowerOsmName &&
                 lowerOsmAltName &&
                 lowerWikidataName &&
@@ -143,23 +143,23 @@ export class OverpassWikidataMapService implements MapService {
                 !lowerOsmName.includes(lowerWikidataName) &&
                 !lowerWikidataName.includes(lowerOsmAltName) &&
                 !lowerOsmAltName.includes(lowerWikidataName)) // If OSM has a name and an alt_name and Wikidata has a different name, append it to alt_name
-                osmFeature.properties.alt_name = [osmFeature.properties.alt_name, wikidataFeature.properties?.name].join(";");
+                osmI18n.alt_name = [osmI18n.alt_name, wdI18n.name].join(";");
 
             // For other key, give priority to Overpass
-            const KEYS_TO_MERGE: (keyof OwmfFeatureProperties)[] = [
-                "name", "description", "picture", "commons", "wikidata"
-            ];
-            KEYS_TO_MERGE.forEach(key => {
-                if (osmFeature.properties && !osmFeature.properties[key]) {
-                    const fallbackValue = wikidataFeature.properties?.[key];
-                    if (typeof fallbackValue === "string")
-                        osmFeature.properties[key] = fallbackValue;
-                }
-            });
+            if (!osmI18n.name && wdI18n.name)
+                osmI18n.name = wdI18n.name;
+            if (!osmI18n.description && wdI18n.description)
+                osmI18n.description = wdI18n.description;
+            if (!osmFeature.properties.picture && wikidataFeature.properties?.picture)
+                osmFeature.properties.picture = wikidataFeature.properties?.picture;
+            if (!osmFeature.properties.commons && wikidataFeature.properties?.commons)
+                osmFeature.properties.commons = wikidataFeature.properties?.commons;
+            if (!osmFeature.properties.wikidata && wikidataFeature.properties?.wikidata)
+                osmFeature.properties.wikidata = wikidataFeature.properties?.wikidata;
 
             // Merge Wikidata feature linked entities into OSM feature linked entities
-            getLinkedEntities(wikidataFeature)?.forEach((wdEtymology: Etymology) => {
-                const osmEtymologies = getLinkedEntities(osmFeature) ?? [],
+            getFeatureLinkedEntities(wikidataFeature)?.forEach((wdEtymology: Etymology) => {
+                const osmEtymologies = getFeatureLinkedEntities(osmFeature) ?? [],
                     osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
                 if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {
                     // Wikidata etymology has priority over the Overpass one as it can have more details, like statementEntity

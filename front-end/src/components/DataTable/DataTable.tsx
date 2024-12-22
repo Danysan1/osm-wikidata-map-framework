@@ -1,7 +1,6 @@
 import { EtymologyDetails } from "@/src/model/EtymologyDetails";
-import { OwmfFeature } from "@/src/model/OwmfResponse";
+import { getFeatureTags, getFeatureLinkedEntities, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDetailsService } from "@/src/services/WikidataDetailsService/WikidataDetailsService";
-import { getLinkedEntities } from "@/src/services/etymologyUtils";
 import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import styles from "./DataTable.module.css";
@@ -16,8 +15,8 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
     const { t, i18n } = useTranslation(),
         uniqueFeatures = useMemo(() => Object.values(
             features.reduce<Record<string, OwmfFeature>>((acc, f) => {
-                const name = (f.properties?.name ?? ""),
-                    etys = (getLinkedEntities(f)?.map(e => e.wikidata)?.sort()?.join() ?? ""),
+                const name = getFeatureTags(f)?.name ?? "",
+                    etys = (getFeatureLinkedEntities(f).map(e => e.wikidata).sort().join()),
                     key = name + etys;
                 if (!acc[key]) acc[key] = f;
                 return acc;
@@ -27,7 +26,7 @@ export const DataTable: FC<DataTableProps> = ({ features, setOpenFeature }) => {
 
     useEffect(() => {
         const wikidataIdArray = Object.values(uniqueFeatures).flatMap(
-            f => getLinkedEntities(f)?.filter(e => e.wikidata)?.map(e => e.wikidata!) ?? []
+            f => getFeatureLinkedEntities(f).filter(e => e.wikidata).map(e => e.wikidata!)
         ),
             uniqueWikidataIds = new Set<string>(wikidataIdArray),
             detailsService = new WikidataDetailsService(i18n.language);

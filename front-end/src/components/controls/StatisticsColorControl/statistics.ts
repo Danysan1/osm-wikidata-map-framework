@@ -1,6 +1,6 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
 import { Etymology } from "@/src/model/Etymology";
-import { OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
+import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
@@ -222,7 +222,7 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
     wikidata_IDs = new Set<string>();
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const id = feature?.wikidata || feature?.name?.toLowerCase() || i.toString();
+    const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
     if (feature?.from_osm && feature?.from_wikidata)
       osm_wikidata_IDs.add(id);
     else if (feature?.from_osm)

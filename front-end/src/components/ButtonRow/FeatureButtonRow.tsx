@@ -1,6 +1,6 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { OwmfFeature } from "@/src/model/OwmfResponse";
-import { Position } from "geojson";
+import { getFeatureTags, type OwmfFeature } from "@/src/model/OwmfResponse";
+import type { Position } from "geojson";
 import { ButtonRow } from "./ButtonRow";
 
 interface FeatureButtonRowProps {
@@ -79,7 +79,7 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
       mapcompleteURL={mapcomplete}
       openstreetmapURL={openstreetmap}
       osmWikidataMatcherURL={osmWikidataMatcher}
-      websiteURL={feature.properties?.website_url}
+      websiteURL={getFeatureTags(feature)?.website}
       wikidata={feature.properties?.wikidata}
       wikipedia={feature.properties?.wikipedia}
       wikispore={feature.properties?.wikispore}
