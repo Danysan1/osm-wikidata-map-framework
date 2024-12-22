@@ -29,12 +29,13 @@ export class WikidataMapService extends WikidataService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
-        if (process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
+        void onlyCentroids; // Wikidata has only centroids
 
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language);
         if (cachedResponse)
             return cachedResponse;
 
+        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass", { sourcePresetID: this.preset?.id, backEndID, bbox, language });
         let sparqlQueryTemplate: string;
         if (backEndID === "wd_base")
             sparqlQueryTemplate = await this.getBaseSparqlQuery();

@@ -34,42 +34,48 @@ export class OverpassWikidataMapService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
+        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass & Wikidata", { sourcePresetID: this.preset?.id, backEndID, onlyCentroids, bbox, language });
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         if (!overpassBackEndID || !wikidataBackEndID)
             throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);
 
-        if (onlyCentroids && overpassBackEndID === "overpass_wd")  // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
-            return this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language);
+        let out: OwmfResponse;
+        if (onlyCentroids && overpassBackEndID === "overpass_wd") {
+            // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
+            out = await this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language);
+        } else {
+            // Fetch and merge the data from Overpass and Wikidata
+            const actualOverpassBackEndID = (onlyCentroids && overpassBackEndID === "overpass_all_wd") ? "overpass_all" : overpassBackEndID;
 
+            if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_fetch");
+            const [overpassData, wikidataData] = await Promise.all([
+                this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
+                this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
+            ]);
+            if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_fetch");
 
-        const actualOverpassBackEndID = (onlyCentroids && overpassBackEndID === "overpass_all_wd") ? "overpass_all" : overpassBackEndID;
+            if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_merge");
+            out = this.mergeMapData(overpassData, wikidataData);
+            if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_merge");
 
-        if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_fetch");
-        const [overpassData, wikidataData] = await Promise.all([
-            this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
-            this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
-        ]);
-        if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_fetch");
+            if (!out)
+                throw new Error("Merge failed");
 
-        if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_merge");
-        const out: OwmfResponse = this.mergeMapData(overpassData, wikidataData);
-        if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_merge");
+            out.onlyCentroids = onlyCentroids;
+            out.sourcePresetID = this.preset.id;
+            out.backEndID = backEndID;
+            out.language = language;
 
-        if (!out)
-            throw new Error("Merge failed");
-
-        out.onlyCentroids = onlyCentroids;
-        out.sourcePresetID = this.preset.id;
-        out.backEndID = backEndID;
-
-        if (!onlyCentroids) {
-            out.features = out.features.filter((feature) => {
-                const noEtymologyRequired = wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length,
-                    hasEtymology = !!feature.properties?.linked_entity_count || !!feature.properties?.text_etymology?.length;
-                return noEtymologyRequired || hasEtymology;
-            });
-            out.total_entity_count = out.features.map(feature => feature.properties?.linked_entity_count ?? 0)
-                .reduce((acc: number, num: number) => acc + num, 0);
+            if (!onlyCentroids) {
+                out.features = out.features.filter((feature) => {
+                    const noEtymologyRequired = wikidataBackEndID === "wd_base" && !!feature.properties?.wikidata?.length,
+                        hasEtymology = !!feature.properties?.linked_entity_count || !!feature.properties?.text_etymology?.length;
+                    return noEtymologyRequired || hasEtymology;
+                });
+                out.total_entity_count = out.features
+                    .map(feature => feature.properties?.linked_entity_count ?? 0)
+                    .reduce((acc: number, num: number) => acc + num, 0);
+            }
         }
 
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);

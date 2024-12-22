@@ -29,7 +29,7 @@ export class MapDatabase extends Dexie {
         });
     }
 
-    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language?: string): Promise<MapRow | undefined> {
+    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {

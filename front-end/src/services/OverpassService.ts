@@ -47,18 +47,19 @@ export class OverpassService implements MapService {
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
-        void language; // Not used in map fetching
-        
+        language = ''; // Not used in Overpass query
+
         const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
         if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
-            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox });
+            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
             return { type: "FeatureCollection", features: [] };
         }
 
-        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox);
+        const cachedResponse = await this.db?.getMap(this.preset?.id, backEndID, onlyCentroids, trueBBox, language);
         if (cachedResponse)
             return cachedResponse;
 
+        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox);
         if (!onlyCentroids) {
             out.features = out.features.filter(
@@ -66,6 +67,7 @@ export class OverpassService implements MapService {
                     || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
             );
             out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
+            out.language = language;
         }
 
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
