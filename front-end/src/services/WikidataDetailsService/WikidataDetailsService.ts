@@ -44,42 +44,44 @@ export class WikidataDetailsService extends WikidataService {
                     ?.map(id => id.replace(WikidataService.WD_ENTITY_PREFIX, ""))
                     ?.filter(id => id.length);
 
-                const details: EtymologyDetails = {
-                    alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                    birth_date: row.birth_date?.value,
-                    birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,
-                    birth_place: row.birth_place?.value,
-                    citizenship: row.citizenship?.value,
-                    commons: row.commons?.value,
-                    death_date: row.death_date?.value,
-                    death_date_precision: row.death_date_precision?.value ? parseInt(row.death_date_precision.value) : undefined,
-                    death_place: row.death_place?.value,
-                    description: row.description?.value,
-                    end_date: row.end_date?.value,
-                    end_date_precision: row.end_date_precision?.value ? parseInt(row.end_date_precision.value) : undefined,
-                    event_date: row.event_date?.value,
-                    event_date_precision: row.event_date_precision?.value ? parseInt(row.event_date_precision.value) : undefined,
-                    event_place: row.event_place?.value,
-                    gender: row.gender?.value,
-                    genderID: row.genderID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                    instance: row.instance?.value,
-                    instanceID: row.instanceID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
-                    name: row.lang_name?.value ?? row.default_name?.value,
-                    occupations: row.occupations?.value,
-                    pictures: row.pictures?.value?.split("||")?.filter(p => p?.length),
-                    prizes: row.prizes?.value,
-                    start_date: row.start_date?.value,
-                    start_date_precision: row.start_date_precision?.value ? parseInt(row.start_date_precision?.value) : undefined,
-                    wikipedia: row.wikipedia?.value,
-                    wikispore: row.wikispore?.value,
-                    wkt_coords: row.wkt_coords?.value,
-                    wikidata: wdQID,
-                    parts,
-                };
+                if (!!row.name?.value || !!row.description?.value || !!row.instanceID?.value) {
+                    const details: EtymologyDetails = {
+                        alias: row.alias?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                        birth_date: row.birth_date?.value,
+                        birth_date_precision: row.birth_date_precision?.value ? parseInt(row.birth_date_precision.value) : undefined,
+                        birth_place: row.birth_place?.value,
+                        citizenship: row.citizenship?.value,
+                        commons: row.commons?.value,
+                        death_date: row.death_date?.value,
+                        death_date_precision: row.death_date_precision?.value ? parseInt(row.death_date_precision.value) : undefined,
+                        death_place: row.death_place?.value,
+                        description: row.description?.value,
+                        end_date: row.end_date?.value,
+                        end_date_precision: row.end_date_precision?.value ? parseInt(row.end_date_precision.value) : undefined,
+                        event_date: row.event_date?.value,
+                        event_date_precision: row.event_date_precision?.value ? parseInt(row.event_date_precision.value) : undefined,
+                        event_place: row.event_place?.value,
+                        gender: row.gender?.value,
+                        genderID: row.genderID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                        instance: row.instance?.value,
+                        instanceID: row.instanceID?.value?.replace(WikidataService.WD_ENTITY_PREFIX, ""),
+                        name: row.name?.value,
+                        occupations: row.occupations?.value,
+                        pictures: row.pictures?.value?.split("||")?.filter(p => p?.length),
+                        prizes: row.prizes?.value,
+                        start_date: row.start_date?.value,
+                        start_date_precision: row.start_date_precision?.value ? parseInt(row.start_date_precision?.value) : undefined,
+                        wikipedia: row.wikipedia?.value,
+                        wikispore: row.wikispore?.value,
+                        wkt_coords: row.wkt_coords?.value,
+                        wikidata: wdQID,
+                        parts,
+                    };
 
-                acc[wdQID] = details;
-                if (details.alias?.length)
-                    acc[details.alias] = details;
+                    acc[wdQID] = details;
+                    if (details.alias?.length)
+                        acc[details.alias] = details;
+                }
 
                 return acc;
             }, {});

@@ -1,7 +1,6 @@
 SELECT ?wikidata
     (SAMPLE(?rawWikidata) AS ?alias)
-    (SAMPLE(?lang_label) AS ?lang_name)
-    (COALESCE(SAMPLE(?label_mul), SAMPLE(?label_en)) AS ?default_name)
+    (COALESCE(SAMPLE(?lang_label), SAMPLE(?label_mul), SAMPLE(?label_en)) AS ?name)
     (SAMPLE(?_description) AS ?description)
     (SAMPLE(?_instanceID) AS ?instanceID)
     (SAMPLE(?instance_name) AS ?instance)

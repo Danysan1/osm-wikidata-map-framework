@@ -6,7 +6,7 @@ SELECT
     el.el_osm_id AS osm_id,
     CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
     CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
-    STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
+    STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     1 AS boundary,
     el.el_tags AS tags,
     el.el_tags->>'admin_level' AS admin_level, -- Required as top level item for Maplibre layer filtering
@@ -49,7 +49,7 @@ SELECT
     el.el_osm_id AS osm_id,
     CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
     CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
-    STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
+    STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     el.el_tags AS tags,
     el.el_tags->>'{{var.value.osm_text_key}}' AS text_etymology,
     el.el_tags->>'{{var.value.osm_description_key}}' AS text_etymology_descr,

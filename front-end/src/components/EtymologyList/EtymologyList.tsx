@@ -60,11 +60,11 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
               etymologyIDs
             );
           return sortedIDs.map((wikidataID): EtymologyDetails => {
-            const baseEntity = entities.find(
-              (oldEty) => oldEty.wikidata === wikidataID
-            ),
-              downloadedDetails = downloadedEtymologies[wikidataID];
-            return { ...baseEntity, ...downloadedDetails };
+            const baseEntity = entities.find((oldEty) => oldEty.wikidata === wikidataID),
+              downloadedDetails = downloadedEtymologies[wikidataID],
+              out = { ...baseEntity, ...downloadedDetails };
+            if (process.env.NODE_ENV === "development") console.debug("Downloaded details", { baseEntity, downloadedDetails, out });
+            return out;
           });
         } catch (err) {
           console.error("Failed downloading etymology details", etymologyIDs, err);
