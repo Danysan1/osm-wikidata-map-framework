@@ -45,7 +45,7 @@ WHERE {
         MINUS { ?stmt wikibase:rank wikibase:DeprecatedRank. }
         MINUS { ?item (wdt:P582|wdt:P585|wdt:P576|wdt:P3999|wdt:P376) ?_itemEndDate. } # Ignore if the feature has an end date or isn't on Earth # TODO Use blank nodes
         MINUS { ?locationStatement pq:P582 ?_locationEndDate. } # Ignore if the location statement has an end date # TODO Use blank nodes
-        MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated etymologies where both the item and the item's containing location are linked through the indirect property
+        MINUS { ?etymology (wdt:${indirectProperty}/(wdt:P131|wdt:P276|wdt:P195)) ?item. } # Prevent duplicated linked entities where both the item and the item's containing location are linked through the indirect property
         ?locationStatement ps:P625 ?wd_location.
 
         # # Filter by location (geo:sfWithin)

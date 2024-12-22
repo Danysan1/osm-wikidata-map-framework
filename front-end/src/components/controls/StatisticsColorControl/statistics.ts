@@ -1,11 +1,11 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
 import { Etymology } from "@/src/model/Etymology";
-import { EtymologyFeatureProperties } from "@/src/model/EtymologyFeatureProperties";
+import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
-export type StatisticsCalculator = (features: EtymologyFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
+export type StatisticsCalculator = (features: OwmfFeatureProperties[], language: string) => Promise<readonly [EtymologyStat[] | null, ExpressionSpecification | null]>;
 
 export const FALLBACK_COLOR = '#000000',
   BLUE = '#3bb2d0',
@@ -31,27 +31,27 @@ const PROPAGATED_COLOR = '#ff3333',
   ],
   ETYMOLOGY_SOURCE_LAYER_COLOR: ExpressionSpecification = [
     "case",
-    ["!", ["has", "etymologies"]], FALLBACK_COLOR,
-    ["==", ["length", ["get", "etymologies"]], 0], FALLBACK_COLOR,
-    ["==", ["get", "etymologies"], "[]"], FALLBACK_COLOR,
+    ["!", ["has", "linked_entities"]], FALLBACK_COLOR,
+    ["==", ["length", ["get", "linked_entities"]], 0], FALLBACK_COLOR,
+    ["==", ["get", "linked_entities"], "[]"], FALLBACK_COLOR,
 
-    // Checks for vector tiles and PMTiles (where the etymologies array is JSON-encoded with spaces)
-    ["coalesce", ["in", '"propagated" : true', ["get", "etymologies"]], false], PROPAGATED_COLOR,
+    // Checks for vector tiles and PMTiles (where the linked_entities array is JSON-encoded with spaces)
+    ["coalesce", ["in", '"propagated" : true', ["get", "linked_entities"]], false], PROPAGATED_COLOR,
     ["coalesce", ["all",
       ["to-boolean", ["get", "from_osm"]],
-      ["in", '"from_wikidata" : true', ["get", "etymologies"]],
+      ["in", '"from_wikidata" : true', ["get", "linked_entities"]],
     ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_wikidata" : true', ["get", "etymologies"]], false], WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_osm" : true', ["get", "etymologies"]], false], OSM_COLOR,
+    ["coalesce", ["in", '"from_wikidata" : true', ["get", "linked_entities"]], false], WIKIDATA_COLOR,
+    ["coalesce", ["in", '"from_osm" : true', ["get", "linked_entities"]], false], OSM_COLOR,
 
-    // Checks for cases where the map library JSON-encodes the etymologies array without spaces
-    ["coalesce", ["in", '"propagated":true', ["to-string", ["get", "etymologies"]]], false], PROPAGATED_COLOR,
+    // Checks for cases where the map library JSON-encodes the linked_entities array without spaces
+    ["coalesce", ["in", '"propagated":true', ["to-string", ["get", "linked_entities"]]], false], PROPAGATED_COLOR,
     ["coalesce", ["all",
       ["to-boolean", ["get", "from_osm"]],
-      ["in", '"from_wikidata":true', ["to-string", ["get", "etymologies"]]],
+      ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]],
     ], false], OSM_WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_wikidata":true', ["to-string", ["get", "etymologies"]]], false], WIKIDATA_COLOR,
-    ["coalesce", ["in", '"from_osm":true', ["to-string", ["get", "etymologies"]]], false], OSM_COLOR,
+    ["coalesce", ["in", '"from_wikidata":true', ["to-string", ["get", "linked_entities"]]], false], WIKIDATA_COLOR,
+    ["coalesce", ["in", '"from_osm":true', ["to-string", ["get", "linked_entities"]]], false], OSM_COLOR,
 
     FALLBACK_COLOR
   ];
@@ -222,7 +222,7 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
     wikidata_IDs = new Set<string>();
   features.forEach((feature, i) => {
     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-    const id = feature?.wikidata || feature?.name?.toLowerCase() || i.toString();
+    const id = feature?.wikidata || getPropTags(feature).name?.toLowerCase() || i.toString();
     if (feature?.from_osm && feature?.from_wikidata)
       osm_wikidata_IDs.add(id);
     else if (feature?.from_osm)
@@ -252,11 +252,11 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       wikidata_IDs = new Set<string>(),
       propagation_IDs = new Set<string>();
     features.forEach(feature => {
-      const rawEtymologies = feature?.etymologies,
-        etymologies = typeof rawEtymologies === 'string' ? JSON.parse(rawEtymologies) as Etymology[] : rawEtymologies;
+      const rawEntities = feature?.linked_entities,
+        entities = typeof rawEntities === 'string' ? JSON.parse(rawEntities) as Etymology[] : rawEntities;
 
-      if (etymologies?.some(ety => ety.wikidata)) {
-        etymologies.forEach(etymology => {
+      if (entities?.some(ety => ety.wikidata)) {
+        entities.forEach(etymology => {
           if (!etymology.wikidata) {
             if (process.env.NODE_ENV === 'development') console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
           } else if (etymology.propagated) {
@@ -305,11 +305,11 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
   stats.forEach((row: EtymologyStat) => {
     const color = row.color;
     if (color && row.subjects?.length) {
-      // In vector tiles etymologies array is JSON-encoded
-      // In GeoJSON the map library leaves the etymologies array as an array of objects
+      // In vector tiles linked_entities array is JSON-encoded
+      // In GeoJSON the map library leaves the linked_entities array as an array of objects
       // "to-string" converts either way to string in order to check whether it contains the subject
       row.subjects.forEach(subject => {
-        statsData.push(["in", subject + '"', ["to-string", ["get", "etymologies"]]], color);
+        statsData.push(["in", subject + '"', ["to-string", ["get", "linked_entities"]]], color);
       });
     } else if (row.count > 1) {
       if (process.env.NODE_ENV === 'development') console.debug(
@@ -320,9 +320,9 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
 
   const data: ExpressionSpecification = [
     "case",
-    ["!", ["has", "etymologies"]], FALLBACK_COLOR,
-    ["==", ["length", ["get", "etymologies"]], 0], FALLBACK_COLOR,
-    ["==", ["get", "etymologies"], "[]"], FALLBACK_COLOR,
+    ["!", ["has", "linked_entities"]], FALLBACK_COLOR,
+    ["==", ["length", ["get", "linked_entities"]], 0], FALLBACK_COLOR,
+    ["==", ["get", "linked_entities"], "[]"], FALLBACK_COLOR,
     ...statsData,
     FALLBACK_COLOR
   ];

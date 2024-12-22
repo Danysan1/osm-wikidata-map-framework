@@ -1,8 +1,8 @@
 import Dexie, { Table } from 'dexie';
 import type { BBox } from 'geojson';
-import type { EtymologyResponse } from '../model/EtymologyResponse';
+import type { OwmfResponse } from '../model/OwmfResponse';
 
-type MapRow = EtymologyResponse & { id?: number };
+type MapRow = OwmfResponse & { id?: number };
 
 export class MapDatabase extends Dexie {
     public maps!: Table<MapRow, number>;
@@ -29,7 +29,7 @@ export class MapDatabase extends Dexie {
         });
     }
 
-    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language?: string): Promise<MapRow | undefined> {
+    public async getMap(sourcePresetID: string, backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<MapRow | undefined> {
         const [minLon, minLat, maxLon, maxLat] = bbox;
         try {
             return await this.transaction('r', this.maps, async () => {

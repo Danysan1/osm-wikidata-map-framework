@@ -71,7 +71,7 @@ csv .> wdent
 wdent <.left.> db #Blue
 wdcod -[bold]-> wdent
 
-card "Convert etymologies" as ety #LightGreen
+card "Convert linked entities" as ety #LightGreen
 ety <.left.> db #Blue
 wdent -[bold]-> ety
 
@@ -82,7 +82,7 @@ wd <.> wdnaent
 wdnaent <.left.> db #Blue
 ety -[bold]-> wdnaent
 
-card "Propagate etymologies" as propagate #LightGreen
+card "Propagate linked entities" as propagate #LightGreen
 propagate <.left.> db #Blue
 wdnaent -[bold]-> propagate
 

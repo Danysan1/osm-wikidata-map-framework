@@ -1,4 +1,4 @@
-import { EtymologyResponse } from '@/src/model/EtymologyResponse';
+import { OwmfResponse } from '@/src/model/OwmfResponse';
 import { ControlPosition, MapSourceDataEvent } from 'maplibre-gl';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useCallback, useState } from 'react';
@@ -6,7 +6,7 @@ import { LinkControl } from './LinkControl/LinkControl';
 
 interface QueryLinkControlProps {
     sourceIDs: string[];
-    mapEventField: keyof EtymologyResponse;
+    mapEventField: keyof OwmfResponse;
     baseURL: string;
     icon: string | StaticImport;
     title: string;
@@ -34,7 +34,7 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = ({
             return;
         }
 
-        const content = typeof e.source?.data === "object" ? e.source.data as EtymologyResponse : undefined;
+        const content = typeof e.source?.data === "object" ? e.source.data as OwmfResponse : undefined;
         if (!content) {
             if (process.env.NODE_ENV === 'development') console.debug("Source data is not an object, hiding", e.source);
             setUrl(undefined);

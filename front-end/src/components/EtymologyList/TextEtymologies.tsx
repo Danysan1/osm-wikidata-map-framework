@@ -12,7 +12,7 @@ export interface TextEtymologiesProps {
 }
 
 export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
-  const etymologies = useMemo(() => {
+  const detailedEntities = useMemo(() => {
     const textEtyName = props.text_etymology === "null" ? undefined : props.text_etymology,
       textEtyNames = textEtyName ? textEtyName.split(";") : [],
       textEtyDescr = props.text_etymology_descr === "null" ? undefined : props.text_etymology_descr,
@@ -21,7 +21,7 @@ export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
     for (let n = 0; n < Math.max(textEtyNames.length, textEtyDescrs.length); n++) {
       const nthTextEtyName = n < textEtyNames.length ? textEtyNames[n].trim() : undefined,
         nthTextEtyDescr = n < textEtyDescrs.length ? textEtyDescrs[n].trim() : undefined,
-        // If the text etymology has only the name and it's already shown by one of the Wikidata etymologies' name/description, hide it
+        // If the text etymology has only the name and it's already shown by one of the Wikidata linked entities' name/description, hide it
         textEtyShouldBeShown = !!nthTextEtyDescr || (nthTextEtyName &&
           props.other_etymologies?.every((ety) => {
             const a = !ety.name?.toLowerCase()?.includes(nthTextEtyName?.toLowerCase()),
@@ -50,7 +50,7 @@ export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
 
   return (
     <>
-      {etymologies?.map((ety, i) => (
+      {detailedEntities?.map((ety, i) => (
         <EtymologyView key={i} etymology={ety} />
       ))}
     </>

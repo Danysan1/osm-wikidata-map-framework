@@ -6,25 +6,10 @@ SELECT
     el.el_osm_id AS osm_id,
     CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
     CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
-    STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
+    STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
     1 AS boundary,
-    el.el_tags->>'admin_level' AS admin_level,
-    el.el_tags->>'name' AS name,
-    el.el_tags->>'name:ar' AS "name:ar",
-    el.el_tags->>'name:da' AS "name:da",
-    el.el_tags->>'name:de' AS "name:de",
-    el.el_tags->>'name:en' AS "name:en",
-    el.el_tags->>'name:es' AS "name:es",
-    el.el_tags->>'name:fr' AS "name:fr",
-    el.el_tags->>'name:hi' AS "name:hi",
-    el.el_tags->>'name:it' AS "name:it",
-    el.el_tags->>'name:ja' AS "name:ja",
-    el.el_tags->>'name:pl' AS "name:pl",
-    el.el_tags->>'name:ru' AS "name:ru",
-    el.el_tags->>'name:uk' AS "name:uk",
-    el.el_tags->>'name:zh' AS "name:zh",
-    el.el_tags->>'alt_name' AS alt_name,
-    el.el_tags->>'official_name' AS official_name,
+    el.el_tags AS tags,
+    el.el_tags->>'admin_level' AS admin_level, -- Required as top level item for Maplibre layer filtering
     el.el_tags->>'{{var.value.osm_text_key}}' AS text_etymology,
     el.el_tags->>'{{var.value.osm_description_key}}' AS text_etymology_descr,
     CASE
@@ -36,7 +21,7 @@ SELECT
     el.el_commons AS commons,
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
-    JSON_AGG(JSON_BUILD_OBJECT(
+    CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
         'from_osm', et_from_osm,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
@@ -46,7 +31,8 @@ SELECT
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
         'wikidata', wd.wd_wikidata_cod
-    )) AS etymologies
+    )) END AS linked_entities,
+    COUNT(DISTINCT et.et_wd_id) AS linked_entity_count
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id
@@ -63,23 +49,8 @@ SELECT
     el.el_osm_id AS osm_id,
     CASE WHEN el.el_osm_id IS NULL THEN NULL ELSE 1 END AS from_osm, -- Using int instead of bool due to https://github.com/felt/tippecanoe/issues/180
     CASE WHEN el.el_osm_id IS NULL THEN 1 ELSE NULL END AS from_wikidata,
-    STRING_AGG(ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
-    el.el_tags->>'name' AS name,
-    el.el_tags->>'name:ar' AS "name:ar",
-    el.el_tags->>'name:da' AS "name:da",
-    el.el_tags->>'name:de' AS "name:de",
-    el.el_tags->>'name:en' AS "name:en",
-    el.el_tags->>'name:es' AS "name:es",
-    el.el_tags->>'name:fr' AS "name:fr",
-    el.el_tags->>'name:hi' AS "name:hi",
-    el.el_tags->>'name:it' AS "name:it",
-    el.el_tags->>'name:ja' AS "name:ja",
-    el.el_tags->>'name:pl' AS "name:pl",
-    el.el_tags->>'name:ru' AS "name:ru",
-    el.el_tags->>'name:uk' AS "name:uk",
-    el.el_tags->>'name:zh' AS "name:zh",
-    el.el_tags->>'alt_name' AS alt_name,
-    el.el_tags->>'official_name' AS official_name,
+    STRING_AGG(DISTINCT ARRAY_TO_STRING(et_from_key_ids,','),',') AS from_key_ids,
+    el.el_tags AS tags,
     el.el_tags->>'{{var.value.osm_text_key}}' AS text_etymology,
     el.el_tags->>'{{var.value.osm_description_key}}' AS text_etymology_descr,
     CASE
@@ -91,7 +62,7 @@ SELECT
     el.el_commons AS commons,
     el.el_wikidata_cod AS wikidata,
     el.el_wikipedia AS wikipedia,
-    JSON_AGG(JSON_BUILD_OBJECT(
+    CASE WHEN COUNT(et_id) = 0 THEN NULL ELSE JSON_AGG(JSON_BUILD_OBJECT(
         'from_osm', et_from_osm,
         'from_osm_type', from_el.el_osm_type,
         'from_osm_id', from_el.el_osm_id,
@@ -101,7 +72,8 @@ SELECT
         'from_wikidata_prop', et_from_osm_wikidata_prop_cod,
         'propagated', et_recursion_depth != 0,
         'wikidata', wd.wd_wikidata_cod
-    )) AS etymologies
+    )) END AS linked_entities,
+    COUNT(DISTINCT et.et_wd_id) AS linked_entity_count
 FROM owmf.element AS el
 LEFT JOIN owmf.etymology AS et ON et.et_el_id = el.el_id
 LEFT JOIN owmf.wikidata AS wd ON et.et_wd_id = wd.wd_id

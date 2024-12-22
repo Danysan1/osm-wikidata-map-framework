@@ -2,7 +2,7 @@ import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType } from "../model/Etymology";
-import { osmKeyToKeyID, type EtymologyFeature, type EtymologyResponse } from "../model/EtymologyResponse";
+import { getFeatureTags, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
@@ -46,10 +46,12 @@ export class OverpassService implements MapService {
         return /^overpass_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
+        language = ''; // Not used in Overpass query
+
         const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
         if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
-            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox });
+            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
             return { type: "FeatureCollection", features: [] };
         }
 
@@ -57,23 +59,26 @@ export class OverpassService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox, language);
+        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
+        const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox);
         if (!onlyCentroids) {
             out.features = out.features.filter(
-                (feature: EtymologyFeature) => !!feature.properties?.etymologies?.length || !!feature.properties?.text_etymology?.length || (feature.properties?.wikidata && backEndID.endsWith("_wd"))
+                (feature: OwmfFeature) => !!feature.properties?.linked_entity_count // Any linked entity is available
+                    || (feature.properties?.wikidata && backEndID.endsWith("_wd")) // "wikidata=*"-only OSM source and wikidata=* is available
             );
-            out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+            out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
+            out.language = language;
         }
 
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies after filtering`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
 
-    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
+    private async fetchMapData(backEndID: string, onlyCentroids: boolean, bbox: BBox): Promise<OwmfResponse> {
         const area = Math.abs((bbox[2] - bbox[0]) * (bbox[3] - bbox[1]));
-        if(area < 0.00000001 || area > 1.5)
-            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`); 
+        if (area < 0.00000001 || area > 1.5)
+            throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
         let osm_keys: string[],
             use_wikidata: boolean,
@@ -124,24 +129,23 @@ export class OverpassService implements MapService {
             throw new Error(`Overpass API error: ${res.remark}`);
 
         if (process.env.NODE_ENV === 'development') console.time("overpass_transform");
-        const out: EtymologyResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
+        const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
-        out.features.forEach(f => this.transformFeature(f, osm_keys, language));
+        out.features.forEach(f => this.transformFeature(f, osm_keys));
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;
         out.sourcePresetID = this.preset.id;
         out.backEndID = backEndID;
         out.onlyCentroids = onlyCentroids;
-        out.language = language;
         out.truncated = res.elements?.length === this.maxElements;
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_transform");
 
         return out;
     }
 
-    private transformFeature(feature: EtymologyFeature, osm_keys: string[], language: string) {
+    private transformFeature(feature: OwmfFeature, osm_keys: string[]) {
         if (!feature.properties)
             feature.properties = {};
 
@@ -156,72 +160,50 @@ export class OverpassService implements MapService {
         feature.id = "osm.org/" + full_osm_id;
         feature.properties.osm_id = osm_id;
         feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
+        const tags = getFeatureTags(feature);
 
-        if (!feature.properties.tags)
-            return;
-
-        if (feature.properties.tags.height)
-            feature.properties.render_height = parseInt(feature.properties.tags.height);
-        else if (feature.properties.tags["building:levels"])
-            feature.properties.render_height = parseInt(feature.properties.tags["building:levels"]) * 4;
-        else if (feature.properties.tags.building)
+        if (tags.height)
+            feature.properties.render_height = parseInt(tags.height);
+        else if (tags["building:levels"])
+            feature.properties.render_height = parseInt(tags["building:levels"]) * 4;
+        else if (tags.building)
             feature.properties.render_height = 6;
 
-        if (feature.properties.tags.alt_name)
-            feature.properties.alt_name = feature.properties.tags.alt_name;
+        if (tags.wikidata && WIKIDATA_QID_REGEX.test(tags.wikidata))
+            feature.properties.wikidata = tags.wikidata
 
-        if (feature.properties.tags.official_name)
-            feature.properties.official_name = feature.properties.tags.official_name;
-
-        if (feature.properties.tags.description)
-            feature.properties.description = feature.properties.tags.description;
-
-        if (feature.properties.tags.wikidata && WIKIDATA_QID_REGEX.test(feature.properties.tags.wikidata))
-            feature.properties.wikidata = feature.properties.tags.wikidata
-
-        if (feature.properties.tags.wikipedia)
-            feature.properties.wikipedia = feature.properties.tags.wikipedia;
+        if (tags.wikipedia)
+            feature.properties.wikipedia = tags.wikipedia;
 
         if (this.preset?.osm_text_key) {
-            if (feature.properties.tags[this.preset.osm_text_key])
-                feature.properties.text_etymology = feature.properties.tags[this.preset.osm_text_key];
+            if (tags[this.preset.osm_text_key])
+                feature.properties.text_etymology = tags[this.preset.osm_text_key];
             else if (feature.properties.relations?.length && this.preset?.relation_role_whitelist?.length) {
                 const text_etymologies = feature.properties.relations
                     .filter(rel => rel.reltags?.[this.preset.osm_text_key!] && rel.role && this.preset.relation_role_whitelist?.includes(rel.role))
                     .map(rel => rel.reltags[this.preset.osm_text_key!]);
                 if (text_etymologies.length > 1)
-                    console.warn("Multiple text etymologies found for feature", feature.properties);
+                    console.warn("Multiple text etymologies found for feature, using the first one", feature.properties);
                 if (text_etymologies.length)
                     feature.properties.text_etymology = text_etymologies[0];
             }
         }
 
-        if (feature.properties.tags.website)
-            feature.properties.website_url = feature.properties.tags.website;
+        if (this.preset?.osm_description_key && tags[this.preset.osm_description_key])
+            feature.properties.text_etymology_descr = tags[this.preset.osm_description_key];
 
-        if (this.preset?.osm_description_key && feature.properties.tags[this.preset.osm_description_key])
-            feature.properties.text_etymology_descr = feature.properties.tags[this.preset.osm_description_key];
+        if (tags.wikimedia_commons)
+            feature.properties.commons = COMMONS_CATEGORY_REGEX.exec(tags.wikimedia_commons)?.at(1);
 
-        if (feature.properties.tags.wikimedia_commons)
-            feature.properties.commons = COMMONS_CATEGORY_REGEX.exec(feature.properties.tags.wikimedia_commons)?.at(1);
+        if (tags.wikimedia_commons)
+            feature.properties.picture = COMMONS_FILE_REGEX.exec(tags.wikimedia_commons)?.at(1);
+        else if (tags.image)
+            feature.properties.picture = COMMONS_FILE_REGEX.exec(tags.image)?.at(1);
 
-        if (feature.properties.tags.wikimedia_commons)
-            feature.properties.picture = COMMONS_FILE_REGEX.exec(feature.properties.tags.wikimedia_commons)?.at(1);
-        else if (feature.properties.tags.image)
-            feature.properties.picture = COMMONS_FILE_REGEX.exec(feature.properties.tags.image)?.at(1);
-
-        const localNameKey = "name:" + language,
-            localName = feature.properties.tags[localNameKey];
-        if (typeof localName === "string")
-            feature.properties.name = localName;
-        else if (feature.properties.tags.name)
-            feature.properties.name = feature.properties.tags.name;
-        // Default language is intentionally not used as it could overwrite a more specific language in name=*
-
-        const etymologies: Etymology[] = [];
+        const linkedEntities: Etymology[] = [];
         osm_keys.forEach(key => {
-            etymologies.push(
-                ...feature.properties?.tags?.[key]
+            linkedEntities.push(
+                ...tags[key]
                     ?.split(";")
                     ?.filter(value => WIKIDATA_QID_REGEX.test(value))
                     ?.map<Etymology>(value => ({
@@ -238,7 +220,7 @@ export class OverpassService implements MapService {
                     ?.filter(rel => rel.role && this.preset.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
                         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
-                        etymologies.push(
+                        linkedEntities.push(
                             ...rel.reltags[key]
                                 .split(";")
                                 .filter(value => WIKIDATA_QID_REGEX.test(value))
@@ -251,13 +233,17 @@ export class OverpassService implements MapService {
                                     wikidata: value
                                 }))
                         );
-                        feature.properties!.name ??= rel.reltags[localNameKey] ?? rel.reltags.name;
-                        feature.properties!.description ??= rel.reltags.description;
-                        feature.properties!.wikidata ??= rel.reltags.wikidata;
+                        Object.keys(rel.reltags)
+                            .filter(key => key.startsWith("name"))
+                            .forEach(key => tags[key] ??= rel.reltags[key]);
+                        tags.description ??= rel.reltags.description;
+                        if (rel.reltags.wikidata && WIKIDATA_QID_REGEX.test(rel.reltags.wikidata))
+                            feature.properties!.wikidata ??= rel.reltags.wikidata;
                     });
             }
         });
-        feature.properties.etymologies = etymologies;
+        feature.properties.linked_entities = linkedEntities;
+        feature.properties.linked_entity_count = linkedEntities.length + (feature.properties.text_etymology ? 1 : 0);
     }
 
     private buildOverpassQuery(

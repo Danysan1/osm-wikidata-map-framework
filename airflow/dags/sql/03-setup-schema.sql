@@ -31,7 +31,7 @@ CREATE TABLE owmf.wikidata (
     wd_id SERIAL NOT NULL PRIMARY KEY,
     wd_wikidata_cod VARCHAR(15) NOT NULL UNIQUE CHECK (wd_wikidata_cod ~* '^Q\d+$'),
     wd_alias_cod VARCHAR(15) UNIQUE CHECK (wd_alias_cod ~* '^Q\d+$'),
-    wd_pseudo_tags JSONB, -- Details from Wikidata, aranged in the same format as OSM tags
+    wd_pseudo_tags JSONB, -- Details from Wikidata, arranged in the same format as OSM tags
     wd_creation_date TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     wd_notes VARCHAR
 );

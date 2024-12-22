@@ -1,7 +1,7 @@
 import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
-import { EtymologyResponse } from "@/src/model/EtymologyResponse";
+import { OwmfResponse } from "@/src/model/OwmfResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
 import { useCallback, useEffect, useMemo, useState, FC } from "react";
@@ -18,15 +18,6 @@ interface ClusteredSourceAndLayersProps {
 
     /** Map source ID */
     sourceID: string;
-
-    /** The name of the field to be used as count */
-    countFieldName?: string;
-
-    /** The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version) */
-    countShowFieldName?: string;
-
-    /** GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
-    clusterProperties?: object;
 
     /** Minimum zoom level to show the layers */
     minZoom: number;
@@ -51,12 +42,18 @@ interface ClusteredSourceAndLayersProps {
 export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (props) => {
     const minThreshold = props.minCountThreshold ?? 3000,
         maxThreshold = props.maxCountThreshold ?? 60000,
-        countFieldName = props.countFieldName ?? "point_count",
-        countShowFieldName = props.countShowFieldName ?? "point_count_abbreviated",
+        /** Maplibre GL-JS will automatically add the point_count and point_count_abbreviated properties to each cluster. Other properties can be added with this option. */
+        clusterProperties = process.env.owmf_link_count_cluster === "true" ? {
+            "linked_entity_count": ["+", ["get", "linked_entity_count"]],
+        } : undefined,
+        /** The name of the field to be used as count */
+        countFieldName = process.env.owmf_link_count_cluster === "true" ? "linked_entity_count" : "point_count",
+        /** The name of the field to be shown as count (the field value may be equal to the count or be a human-friendly version) */
+        countShowFieldName = process.env.owmf_link_count_cluster === "true" ? "linked_entity_count" : "point_count_abbreviated",
         clusterLayerID = useMemo(() => props.sourceID + CLUSTER_LAYER, [props.sourceID]),
         countLayerID = useMemo(() => props.sourceID + COUNT_LAYER, [props.sourceID]),
         unclusteredLayerID = useMemo(() => props.sourceID + UNCLUSTERED_LAYER, [props.sourceID]),
-        [elementsData, setElementsData] = useState<EtymologyResponse | null>(null),
+        [elementsData, setElementsData] = useState<OwmfResponse | null>(null),
         { showSnackbar } = useSnackbarContext(),
         { showLoadingSpinner } = useLoadingSpinnerContext(),
         { lat, lon, zoom } = useUrlFragmentContext(),
@@ -147,7 +144,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
             clusterMinPoints={1}
             clusterRadius={125} // Radius of each cluster when clustering points (defaults to 50)
             buffer={256}
-            clusterProperties={props.clusterProperties}>
+            clusterProperties={clusterProperties}>
             <Layer id={clusterLayerID}
                 type="circle"
                 minzoom={props.minZoom}

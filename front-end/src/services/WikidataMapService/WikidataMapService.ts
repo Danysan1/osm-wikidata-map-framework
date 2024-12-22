@@ -3,11 +3,10 @@ import { parse as parseWKT } from "wellknown";
 import type { MapDatabase } from "../../db/MapDatabase";
 import type { SparqlResponseBindingValue } from "../../generated/sparql/models/SparqlResponseBindingValue";
 import type { Etymology } from "../../model/Etymology";
-import type { EtymologyFeature, EtymologyResponse } from "../../model/EtymologyResponse";
+import { getFeatureLinkedEntities, type OwmfFeature, type OwmfResponse } from "../../model/OwmfResponse";
 import { SourcePreset } from "../../model/SourcePreset";
 import type { MapService } from "../MapService";
 import { WikidataService } from "../WikidataService";
-import { getEtymologies } from "../etymologyUtils";
 import baseMapQuery from "./base.sparql";
 import directMapQuery from "./direct.sparql";
 import indirectMapQuery from "./indirect.sparql";
@@ -29,13 +28,14 @@ export class WikidataMapService extends WikidataService implements MapService {
         return /^wd_(base|direct|indirect|reverse|qualifier)(_P\d+)?$/.test(backEndID);
     }
 
-    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<EtymologyResponse> {
-        if (process.env.NODE_ENV === 'development') console.debug("Wikidata fetchMapElements ignores onlyCentroids", { backEndID, onlyCentroids, bbox, language });
+    public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
+        void onlyCentroids; // Wikidata has only centroids
 
         const cachedResponse = await this.db?.getMap(this.preset.id, backEndID, true, bbox, language);
         if (cachedResponse)
             return cachedResponse;
 
+        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass", { sourcePresetID: this.preset?.id, backEndID, bbox, language });
         let sparqlQueryTemplate: string;
         if (backEndID === "wd_base")
             sparqlQueryTemplate = await this.getBaseSparqlQuery();
@@ -69,10 +69,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             throw new Error("Invalid response from Wikidata (no bindings)");
 
         if (process.env.NODE_ENV === 'development') console.time("wikidata_transform");
-        const out: EtymologyResponse = {
+        const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
-            features: ret.results.bindings.reduce((acc: EtymologyFeature[], row) => this.featureReducer(acc, row), []),
+            features: ret.results.bindings.reduce((acc: OwmfFeature[], row) => this.featureReducer(acc, row), []),
             wdqs_query: sparqlQuery,
             timestamp: new Date().toISOString(),
             sourcePresetID: this.preset.id,
@@ -81,10 +81,10 @@ export class WikidataMapService extends WikidataService implements MapService {
             language: language,
             truncated: !!maxElements && ret.results.bindings.length === parseInt(maxElements),
         };
-        out.etymology_count = out.features.reduce((acc, feature) => acc + (feature.properties?.etymologies?.length ?? 0), 0);
+        out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
 
         if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_transform");
-        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.etymology_count} etymologies from ${ret.results.bindings.length} rows`, out);
+        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -134,7 +134,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             .replaceAll('${pictureQuery}', pictureQuery);
     }
 
-    private featureReducer(acc: EtymologyFeature[], row: Record<string, SparqlResponseBindingValue>): EtymologyFeature[] {
+    private featureReducer(acc: OwmfFeature[], row: Record<string, SparqlResponseBindingValue>): OwmfFeature[] {
         if (!row.location?.value) {
             console.warn("Invalid response from Wikidata (no location)", row);
             return acc;
@@ -161,7 +161,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                 return feature.geometry.type === "Point" && feature.geometry.coordinates[0] === geometry.coordinates[0] && feature.geometry.coordinates[1] === geometry.coordinates[1];
             });
 
-        if (etymology_wd_id && existingFeature && getEtymologies(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
+        if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
             if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
@@ -204,13 +204,17 @@ export class WikidataMapService extends WikidataService implements MapService {
                     geometry,
                     properties: {
                         commons: row.commons?.value,
-                        description: row.itemDescription?.value,
-                        etymologies: etymology ? [etymology] : undefined,
+                        linked_entities: etymology ? [etymology] : undefined,
+                        linked_entity_count: etymology ? 1 : 0,
                         from_osm: false,
                         from_wikidata: true,
                         from_wikidata_entity,
                         from_wikidata_prop,
-                        name: row.itemLabel?.value,
+                        tags: {
+                            description: row.itemDescription?.value,
+                            name: row.itemLabel?.value,
+                            website: row.website?.value,
+                        },
                         osm_id,
                         osm_type,
                         picture: row.picture?.value,
@@ -222,7 +226,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                     }
                 });
             } else if (etymology) { // Add the new etymology to the existing feature for this feature
-                getEtymologies(existingFeature)?.push(etymology);
+                getFeatureLinkedEntities(existingFeature).push(etymology);
             }
         }
         return acc;

@@ -47,7 +47,7 @@ def get_last_pbf_url(download_url:str=None, rss_url:str=None, html_url:str=None,
         with urlopen(html_url) as response:
             html_content = response.read().decode('utf-8')
             print("HTML content:", html_content)
-            regex_pattern = f'href="({prefix}[\w-]+[\d+]\.{download_ext})"'
+            regex_pattern = f'href="({prefix}[\\w-]+[\\d+]\\.{download_ext})"'
             files = findall(regex_pattern, html_content)
             print("Valid filenames:", regex_pattern, files)
 
@@ -73,7 +73,7 @@ def get_pbf_date(pbf_basename:str) -> str:
     from re import search
     from pendulum import now
 
-    date_match = search('-(\d{2})(\d{2})(\d{2})\.', pbf_basename)
+    date_match = search('-(\\d{2})(\\d{2})(\\d{2})\\.', pbf_basename)
     if date_match != None:
         last_data_update = f'20{date_match.group(1)}-{date_match.group(2)}-{date_match.group(3)}'
     else:

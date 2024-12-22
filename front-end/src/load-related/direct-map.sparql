@@ -9,12 +9,7 @@ PREFIX wikibase: <http://wikiba.se/ontology#>
 
 SELECT DISTINCT
     ?item
-    ?label_da
-    ?label_de
-    ?label_en
-    ?label_es
-    ?label_fr
-    ?label_it
+    (COALESCE(?label_mul, ?label_en) AS ?itemLabel)
     ?commons
     ?location
     ?etymology
@@ -33,12 +28,8 @@ WHERE {
     FILTER (isIRI(?etymology) && !wikibase:isSomeValue(?etymology) && STRENDS(STR(?item),'${lastDigit}')) # Paging through last Q-ID digit because ORDER BY + LIMIT + OFFSET is too slow
     
     ?locationStatement ps:P625 ?location.
-    OPTIONAL { ?item rdfs:label ?label_da FILTER(LANG(?label_da) = "da") }
-    OPTIONAL { ?item rdfs:label ?label_de FILTER(LANG(?label_de) = "de") }
+    OPTIONAL { ?item rdfs:label ?label_mul FILTER(LANG(?label_mul) = "mul") }
     OPTIONAL { ?item rdfs:label ?label_en FILTER(LANG(?label_en) = "en") }
-    OPTIONAL { ?item rdfs:label ?label_es FILTER(LANG(?label_es) = "es") }
-    OPTIONAL { ?item rdfs:label ?label_fr FILTER(LANG(?label_fr) = "fr") }
-    OPTIONAL { ?item rdfs:label ?label_it FILTER(LANG(?label_it) = "it") }
     OPTIONAL { ?item wdt:P910?/wdt:P373 ?commons. }
     OPTIONAL { ?alias owl:sameAs ?item. }
 }

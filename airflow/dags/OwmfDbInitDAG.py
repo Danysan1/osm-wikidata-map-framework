@@ -287,8 +287,8 @@ class OwmfDbInitDAG(DAG):
         doc_md="""
 # OSM-Wikidata Map Framework DB initialization
 
-* downloads and and filters OSM data
-* downloads relevant OSM data
+* ingests filtered OSM PBF data
+* downloads relevant Wikidata data
 * combines OSM and Wikidata data
 * uploads the output to the production DB.
 
@@ -532,9 +532,9 @@ Links:
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-# Load Wikidata entities from OSM etymologies
+# Load Wikidata entities from OSM tags
 
-Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are etymologies from OSM (values from `*:wikidata` configured tags).
+Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities that are referenced from configured OSM secondary Wikidata tags (`*:wikidata`).
 """
         )
         task_convert_ele_wd_cods >> task_convert_wd_ent
@@ -546,9 +546,9 @@ Load into the `wikidata` table of the local PostGIS DB all the Wikidata entities
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-# Convert the etymologies
+# Convert the linked entities
 
-Fill the `etymology` table of the local PostGIS DB elaborated the etymologies from the `element_wikidata_cods` table.
+Fill the `etymology` table of the local PostGIS DB with the linked entities derived from the `element_wikidata_cods` table.
 """
         )
         task_convert_wd_ent >> task_convert_ety
@@ -623,10 +623,10 @@ Check elements with an etymology that comes from the key configured in 'osm_text
             dag = self,
             task_group=elaborate_group,
             doc_md = """
-# Propagate the etymologies
+# Propagate the linked entities by name
 
-Check the reliable etymologies (where multiple case-insensitive homonymous elements have etymologies to the exactly the same Wikidata entity).
-Then propagate reliable etymologies to case-insensitive homonymous elements that don't have any etymology.
+Check the reliable linked entities (where multiple case-insensitive homonymous elements have linked entities to the exactly the same Wikidata entity).
+Then propagate reliable linked entities to case-insensitive homonymous elements that don't have any etymology.
 """
         )
         task_check_propagation >> task_propagate_globally
@@ -703,7 +703,7 @@ Creates the indexes on the `etymology` table, necessary for the runtime queries
             doc_md = """
 # Check whether to drop temporary tables
 
-Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
+Check whether to remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate linked entities.
 
 Links:
 * [BranchPythonOperator documentation](https://airflow.apache.org/docs/apache-airflow/2.6.0/_api/airflow/operators/python/index.html?highlight=branchpythonoperator#airflow.operators.python.BranchPythonOperator)
@@ -720,7 +720,7 @@ Links:
             doc_md = """
     # Remove temporary tables
 
-    Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate etymologies.
+    Remove from the local PostGIS DB all temporary tables used in previous tasks to elaborate linked entities.
 """
         )
         task_check_whether_to_drop >> task_drop_temp_tables
@@ -808,7 +808,7 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
             doc_md=    """
 # FlatGeobuf dump
 
-Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
+Dump all the elements from the local DB with their respective linked entities into a FlatGeobuf file
 """
         )
         task_check_dump >> task_dump_etymology_map_details
@@ -825,7 +825,7 @@ Dump all the elements from the local DB with their respective etymologies into a
             doc_md=    """
 # FlatGeobuf dump
 
-Dump all the elements from the local DB with their respective etymologies into a FlatGeobuf file
+Dump all the elements from the local DB with their respective linked entities into a FlatGeobuf file
 """
         )
         task_check_dump >> task_dump_etymology_map_boundaries

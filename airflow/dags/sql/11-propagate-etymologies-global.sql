@@ -16,7 +16,7 @@ WITH relevant_element AS (
         SELECT lower_name, et_wd_id, MIN(et_id) as et_id
         FROM owmf.etymology
         JOIN relevant_element ON et_el_id = osm_id
-        WHERE et_recursion_depth = 0 -- Exclude etymologies already locally propagated
+        WHERE et_recursion_depth = 0 -- Exclude linked entities already locally propagated
         GROUP BY lower_name, et_wd_id, centroid
     ),
     propagatable_etymology AS (

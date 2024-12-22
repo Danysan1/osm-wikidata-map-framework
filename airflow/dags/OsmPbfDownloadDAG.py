@@ -56,7 +56,7 @@ def get_source_url(ti:TaskInstance, **context) -> str:
         prefix = params["prefix"]
     )
     source_basename = path.basename(source_url) # https://linuxhint.com/fetch-basename-python/
-    file_basename = re.sub('\.torrent$', '', source_basename)
+    file_basename = re.sub('\\.torrent$', '', source_basename)
     last_data_update = get_pbf_date(source_basename)
     md5_url = f'{source_url}.md5' if params["verify_md5"] else None
     
@@ -97,8 +97,8 @@ def check_whether_to_procede(date_path, ti:TaskInstance, **context) -> bool:
         print(f"New date: {new_date_str}")
         if skip_if_already_downloaded:
             # If the OSM data has already been downloaded it will not be downloaded again
-            new_date = parse(new_date_str if re.match('^\d{2}-',new_date_str) == None else '20'+new_date_str)
-            existing_date = parse(existing_date_str if re.match('^\d{2}-',new_date_str) == None else '20'+existing_date_str)
+            new_date = parse(new_date_str if re.match('^\\d{2}-',new_date_str) == None else '20'+new_date_str)
+            existing_date = parse(existing_date_str if re.match('^\\d{2}-',new_date_str) == None else '20'+existing_date_str)
             procede = new_date > existing_date
             print('Proceeding to download' if procede else 'NOT proceeding')
         else:
@@ -164,7 +164,7 @@ class OsmPbfDownloadDAG(DAG):
                 doc_md="""
 # OSM-Wikidata Map Framework DB initialization
 
-* downloads OSM PBF data
+Downloads OSM PBF data
 
 Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
 """,

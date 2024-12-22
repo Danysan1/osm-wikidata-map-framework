@@ -1,11 +1,12 @@
 import { FeatureCollection, Geometry, Feature } from "geojson";
-import { EtymologyFeatureProperties } from "./EtymologyFeatureProperties";
+import { getPropLinkedEntities, getPropTags, FeatureTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
+import { Etymology } from "./Etymology";
 
-export type EtymologyResponseFeatureProperties = EtymologyFeatureProperties | null;
+export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
 
-export type EtymologyFeature = Feature<Geometry, EtymologyResponseFeatureProperties>;
+export type OwmfFeature = Feature<Geometry, OwmfResponseFeatureProperties>;
 
-export interface EtymologyResponse extends FeatureCollection<Geometry, EtymologyResponseFeatureProperties> {
+export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFeatureProperties> {
     sourcePresetID?: string;
     /**
      * ID of the backEnd used to fetch the features.
@@ -45,9 +46,9 @@ export interface EtymologyResponse extends FeatureCollection<Geometry, Etymology
      */
     timestamp?: string;
     /**
-     * Total number of etymologies linked to the features
+     * Total number of entities linked to the features
      */
-    etymology_count?: number;
+    total_entity_count?: number;
     /**
      * SPARQL query used to fetch the features from Wikidata Query Service
      */
@@ -76,4 +77,24 @@ export interface EtymologyResponse extends FeatureCollection<Geometry, Etymology
 
 export function osmKeyToKeyID(key: string) {
     return "osm_" + key.replace(":wikidata", "").replace(":", "_");
+}
+
+export function getFeatureLinkedEntities(f: OwmfFeature): Etymology[] {
+    if (f.properties) {
+        return getPropLinkedEntities(f.properties);
+    } else {
+        const props = {};
+        f.properties = props;
+        return getPropLinkedEntities(props);
+    }
+}
+
+export function getFeatureTags(f: OwmfFeature): FeatureTags {
+    if (f.properties) {
+        return getPropTags(f.properties);
+    } else {
+        const props = {};
+        f.properties = props;
+        return getPropTags(props);
+    }
 }

@@ -3,7 +3,7 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { DetailsDatabase } from "@/src/db/DetailsDatabase";
 import { MapDatabase } from "@/src/db/MapDatabase";
 import { StatsDatabase } from "@/src/db/StatsDatabase";
-import { osmKeyToKeyID } from "@/src/model/EtymologyResponse";
+import { osmKeyToKeyID } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo } from "react";

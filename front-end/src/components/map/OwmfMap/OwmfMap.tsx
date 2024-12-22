@@ -7,7 +7,7 @@ import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
-import { EtymologyFeature } from "@/src/model/EtymologyResponse";
+import { OwmfFeature } from "@/src/model/OwmfResponse";
 import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
@@ -72,7 +72,7 @@ export const OwmfMap = () => {
     [mapZoom, setMapZoom] = useState(zoom),
     [sourcePreset, setSourcePreset] = useState<SourcePreset | null>(null),
     [backEndService, setBackEndService] = useState<MapService | null>(null),
-    [openFeature, setOpenFeature] = useState<EtymologyFeature | undefined>(undefined),
+    [openFeature, setOpenFeature] = useState<OwmfFeature | undefined>(undefined),
     [backgroundStyle, setBackgroundStyle] = useState<string | MapStyle | undefined>(
       undefined
     ),

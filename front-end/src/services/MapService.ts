@@ -1,4 +1,4 @@
-import type { EtymologyResponse } from "../model/EtymologyResponse";
+import type { OwmfResponse } from "../model/OwmfResponse";
 import type { BBox } from "geojson";
 
 /**
@@ -18,5 +18,5 @@ export interface MapService {
      * @param bbox 
      * @param language 
      */
-    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string): Promise<EtymologyResponse>;
+    fetchMapElements(backEndID: string, onlyCentroids:boolean, bbox: BBox, language: string): Promise<OwmfResponse>;
 }

@@ -1,7 +1,6 @@
 SELECT ?wikidata
     (SAMPLE(?rawWikidata) AS ?alias)
-    (SAMPLE(?_lang_name) AS ?lang_name)
-    (COALESCE(SAMPLE(?_mul_name), SAMPLE(?_en_name)) AS ?default_name)
+    (COALESCE(SAMPLE(?lang_label), SAMPLE(?label_mul), SAMPLE(?label_en)) AS ?name)
     (SAMPLE(?_description) AS ?description)
     (SAMPLE(?_instanceID) AS ?instanceID)
     (SAMPLE(?instance_name) AS ?instance)
@@ -9,7 +8,7 @@ SELECT ?wikidata
     (SAMPLE(?gender_name) AS ?gender)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_wikispore) AS ?wikispore)
-    (SAMPLE(?commons) AS ?commons)
+    (SAMPLE(?_commons) AS ?commons)
     (GROUP_CONCAT(DISTINCT ?occupation_name; SEPARATOR=', ') AS ?occupations)
     (SAMPLE(?_countryID) AS ?countryID)
     (GROUP_CONCAT(DISTINCT ?country_name; SEPARATOR=', ') AS ?citizenship)
@@ -19,8 +18,8 @@ SELECT ?wikidata
     (SAMPLE(?_event_date_precision) AS ?event_date_precision)
     (SAMPLE(?_start_date) AS ?start_date)
     (SAMPLE(?_start_date_precision) AS ?start_date_precision)
-    (SAMPLE(?end_date) AS ?end_date)
-    (SAMPLE(?end_date_precision) AS ?end_date_precision)
+    (SAMPLE(?_end_date) AS ?end_date)
+    (SAMPLE(?_end_date_precision) AS ?end_date_precision)
     (SAMPLE(?birth_date) AS ?birth_date)
     (SAMPLE(?birth_date_precision) AS ?birth_date_precision)
     (SAMPLE(?death_date) AS ?death_date)
@@ -43,8 +42,8 @@ WHERE {
 
     # Name and description of the entity
     OPTIONAL {
-        ?wikidata rdfs:label ?_lang_name.
-        FILTER(lang(?_lang_name)='${language}').
+        ?wikidata rdfs:label ?lang_label.
+        FILTER(lang(?lang_label)='${language}').
     }
     
     OPTIONAL {
@@ -53,13 +52,13 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wikidata rdfs:label ?_en_name.
-        FILTER(lang(?_en_name)='en').
+        ?wikidata rdfs:label ?label_en.
+        FILTER(lang(?label_en)='en').
     }
 
     OPTIONAL {
-        ?wikidata rdfs:label ?_mul_name.
-        FILTER(lang(?_mul_name)='mul').
+        ?wikidata rdfs:label ?label_mul.
+        FILTER(lang(?label_mul)='mul').
     }
 
     # Name of the occupations of this entity
@@ -146,12 +145,12 @@ WHERE {
 # end time - https://www.wikidata.org/wiki/Property:P582
 # dissolved, abolished or demolished date - https://www.wikidata.org/wiki/Property:P576
 # date of official closure - https://www.wikidata.org/wiki/Property:P3999
-            wikibase:timePrecision ?end_date_precision;
-            wikibase:timeValue ?end_date
+            wikibase:timePrecision ?_end_date_precision;
+            wikibase:timeValue ?_end_date
         ].
         MINUS {
             ?wikidata (p:P582/psv:P582/wikibase:timePrecision)|(p:P576/psv:P576/wikibase:timePrecision)|(p:P3999/psv:P3999/wikibase:timePrecision) ?other_end_date_precision.
-            FILTER (?other_end_date_precision > ?end_date_precision).
+            FILTER (?other_end_date_precision > ?_end_date_precision).
         }.
     }
 
@@ -201,7 +200,7 @@ WHERE {
     }
 
     OPTIONAL {
-        ?wikidata wdt:P910?/wdt:P373 ?commons.
+        ?wikidata wdt:P910?/wdt:P373 ?_commons.
     }
 
     OPTIONAL {

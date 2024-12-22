@@ -85,10 +85,8 @@ class OwmfFilterDAG(DAG):
             doc_md = """
                 # OSM-Wikidata Map Framework OSM data filtering
 
-                * downloads and and filters OSM data
-                * downloads relevant OSM data
-                * combines OSM and Wikidata data
-                * uploads the output to the production DB.
+                * ingests downloaded OSM PBF data
+                * filters OSM data to keep only relevant data
 
                 Documentation in the task descriptions and in [README.md](https://gitlab.com/openetymologymap/osm-wikidata-map-framework/-/tree/main/airflow).
             """,

@@ -83,7 +83,7 @@ export class WikidataBulkService {
         wikidataStatement: PreparedStatement, // Adds the wikidata entities to the wikidata table
         elementUpdateStatement: PreparedStatement, // Updates osm_wd_id of elements in the osmdata table
         elementInsertStatement: PreparedStatement, // Adds the elements to the osmdata table
-        etymologyStatement: PreparedStatement // Adds the etymologies to the etymology table
+        etymologyStatement: PreparedStatement // Adds the linked entities to the etymology table
     ): Promise<number> {
         console.time("fetch");
         const response = await this.api.postSparqlQueryRaw({
@@ -112,12 +112,12 @@ export class WikidataBulkService {
             console.time("elementInsert");
             const elementInsertResult = await elementInsertStatement.execute({ params: [json] });
             console.timeEnd("elementInsert");
-            console.debug(`Inserted ${elementInsertResult.rowsAffected ?? 0} elements, loading etymologies...`);
+            console.debug(`Inserted ${elementInsertResult.rowsAffected ?? 0} elements, loading element-entity links into etymology table...`);
 
             console.time("etymologyLoad");
             const etymologyResult = await etymologyStatement.execute({ params: [json] });
             console.timeEnd("etymologyLoad");
-            console.debug(`Loaded ${etymologyResult.rowsAffected ?? 0} etymologies`);
+            console.debug(`Loaded ${etymologyResult.rowsAffected ?? 0} element-entity links into etymology table`);
 
             return (wikidataResult.rowsAffected ?? 0) + (elementUpdateResult.rowsAffected ?? 0) + (elementInsertResult.rowsAffected ?? 0) + (etymologyResult.rowsAffected ?? 0);
         } catch (e) {
