@@ -5,6 +5,7 @@ SELECT
     (SAMPLE(?_itemDescription) AS ?itemDescription)
     (SAMPLE(?_location) AS ?location)
     (SAMPLE(?_commons) AS ?commons)
+    (SAMPLE(?_website) AS ?website)
     (SAMPLE(?_wikipedia) AS ?wikipedia)
     (SAMPLE(?_wikispore) AS ?wikispore)
     (SAMPLE(?_picture) AS ?picture)
@@ -42,7 +43,7 @@ WITH {
     }
 } AS %qualifier
 WITH {
-    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_wikipedia ?_wikispore ?_picture ?_height ?_levels ?_osm_node ?_osm_way ?_osm_rel ?_alias
+    SELECT ?etymology ?_location ?item ?anyLabel ?lang_label ?default_label ?_itemDescription ?_commons ?_website ?_wikipedia ?_wikispore ?_picture ?_height ?_levels ?_osm_node ?_osm_way ?_osm_rel ?_alias
     WHERE {
         ?etymology p:${indirectProperty} ?stmt.
         ?stmt ps:${indirectProperty} ?item.
@@ -68,6 +69,7 @@ WITH {
         OPTIONAL { ?item rdfs:label ?default_label FILTER(LANG(?default_label) = 'mul'). }
         OPTIONAL { ?item schema:description ?_itemDescription FILTER(LANG(?_itemDescription) = '${language}'). }
         OPTIONAL { ?item wdt:P910?/wdt:P373 ?_commons. }
+        OPTIONAL { ?item wdt:P856 ?_website. }
         OPTIONAL { ?_wikipedia schema:about ?item; schema:isPartOf <https://${language}.wikipedia.org/>. }
         OPTIONAL { ?item wdt:P7721 ?_wikispore. }
         OPTIONAL { ?item wdt:P18 ?_picture. }
