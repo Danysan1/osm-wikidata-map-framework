@@ -26,6 +26,19 @@ export function maptilerStyle(id: string, text: string, maptilerId: string, mapt
 }
 
 /**
+ * @see https://shortbread-tiles.org/styles/
+ * @see https://github.com/versatiles-org/versatiles-style
+ */
+export function versaTilesStyle(id: string, text: string, versaTilesID: string): BackgroundStyle {
+    return {
+        id: id,
+        vendorText: "VersaTiles",
+        styleText: text,
+        styleUrl: `https://tiles.versatiles.org/assets/styles/${versaTilesID}.json`
+    };
+}
+
+/**
  * @see https://tiles.stadiamaps.com/data/openmaptiles.json
  * @see https://docs.stadiamaps.com/themes/
  */

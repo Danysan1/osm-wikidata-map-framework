@@ -7,11 +7,12 @@ import {
   mapboxStyle,
   maptilerStyle,
   stadiaStyle,
+  versaTilesStyle,
 } from "@/src/model/backgroundStyle";
 import type {
   ControlPosition,
   DataDrivenPropertyValueSpecification,
-  StyleSpecification
+  StyleSpecification,
 } from "maplibre-gl";
 import { FC, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
@@ -37,6 +38,15 @@ function getBackgroundStyles() {
         "satellite-streets-v12",
         mapbox_token
       )
+    );
+  }
+
+  if (process.env.owmf_enable_versatiles) {
+    backgroundStyles.push(
+      versaTilesStyle("versatiles_colorful", "Colorful", "colorful"),
+      versaTilesStyle("versatiles_neutrino", "Neutrino", "neutrino"),
+      versaTilesStyle("versatiles_eclipse", "Eclipse", "eclipse"),
+      versaTilesStyle("versatiles_graybeard", "Graybeard", "graybeard"),
     );
   }
 
@@ -101,6 +111,14 @@ function getBackgroundStyles() {
       maptilerStyle("maptiler_winter", "Winter", "winter-v2", maptiler_key)
     );
   }
+
+  // backgroundStyles.push({
+  //   id: "osm_vector",
+  //   styleText: "OSM Vector",
+  //   styleUrl: "https://vector.openstreetmap.org/shortbread_v1/tilejson.json",
+  //   vendorText: "OpenStreetMap",
+  // });
+
   return backgroundStyles;
 }
 
@@ -145,16 +163,18 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
           if (style.keyPlaceholder && style.key) {
             Object.values(styleSpec.sources)
               .filter((src) => src.type === "vector")
-              .forEach((src) => src.url = src.url?.replace(style.keyPlaceholder!, style.key!));
+              .forEach(
+                (src) => (src.url = src.url?.replace(style.keyPlaceholder!, style.key!))
+              );
           }
 
           /**
            * Set the application culture for i18n
-           * 
+           *
            * Mainly, sets the map's query to get labels.
            * OpenMapTiles (Stadia, MapTiler, ...) vector tiles use use the fields name:*.
            * Mapbox vector tiles use the fields name_*.
-           * 
+           *
            * @see https://documentation.maptiler.com/hc/en-us/articles/4405445343889-How-to-set-the-language-for-your-map
            * @see https://maplibre.org/maplibre-gl-js-docs/example/language-switch/
            * @see https://docs.mapbox.com/mapbox-gl-js/example/language-switch/
@@ -179,15 +199,14 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
               }
             }
           });
-          if (styleSpec.projection?.type)
-            styleSpec.projection = { type: styleSpec.projection.type }
-          else
+          if (styleSpec.projection?.type) {
+            styleSpec.projection = { type: styleSpec.projection.type };
+          } else {
             styleSpec.projection = undefined; // Prevent 'Error: name: unknown property "name"' with Mapbox styles
+          }
           // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
-          if (process.env.NODE_ENV === "development") console.debug(
-            "Setting json style", { style, styleSpec }
-          );
+          if (process.env.NODE_ENV === "development") console.debug("Setting json style", { style, styleSpec });
           props.setBackgroundStyle(styleSpec);
         })
         .catch((e) => {
