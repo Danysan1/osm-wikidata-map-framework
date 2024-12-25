@@ -4,7 +4,7 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { OwmfResponse } from "@/src/model/OwmfResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
-import { useEffect, useState, FC } from "react";
+import { FC, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Source, useMap } from "react-map-gl/maplibre";
 import { DetailsLayers, DetailsLayersProps } from "./DetailsLayers";
@@ -28,7 +28,7 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
     const bounds = map?.getBounds().toArray(),
       bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
     if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
-      if (process.env.NODE_ENV === "development") console.debug(
+      console.debug(
         "DetailsSourceAndLayers fetching data", { bbox, backEnd: props.backEndID }
       );
       showLoadingSpinner(true);
@@ -41,7 +41,7 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
         })
         .finally(() => showLoadingSpinner(false));
     } else {
-      if (process.env.NODE_ENV === "development") console.debug(
+      console.debug(
         "DetailsSourceAndLayers NOT fetching map details", { bbox, backEnd: props.backEndID }
       );
       setDetailsData(null);

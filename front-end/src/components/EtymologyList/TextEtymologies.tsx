@@ -31,7 +31,7 @@ export const TextEtymologies: FC<TextEtymologiesProps> = (props) => {
             return out;
           })
         );
-      if (process.env.NODE_ENV === "development") console.debug(
+      console.debug(
         "showEtymologies: showing text etymology? ",
         { n, nthTextEtyName, nthTextEtyDescr, textEtyShouldBeShown, etys }
       );

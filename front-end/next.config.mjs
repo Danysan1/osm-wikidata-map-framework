@@ -2,9 +2,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 import { existsSync, readdirSync, readFileSync } from "fs";
 import { join } from "path";
 
-const BASE_PATH = undefined,
-  STATIC_EXPORT = true,
-  CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
+const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
     "owmf_default_center_lat",
     "owmf_default_center_lon",
     "owmf_default_zoom",
@@ -55,19 +53,19 @@ const BASE_PATH = undefined,
     "owmf_issues_url",
     "owmf_custom_intro_html",
     "owmf_custom_intro_js",
+    "owmf_static_export",
+    "owmf_base_path",
   ];
 
 if (process.env.NODE_ENV === "development")
   console.log("Launching development server");
-else if (STATIC_EXPORT)
+else if (process.env.owmf_static_export === "true")
   console.log("Static export enabled, generating static files to be served with any web server");
 else
   console.log("Static export disabled, building dynamic server-side app to be run with `next start`");
 
 const baseEnv = {
   owmf_version: JSON.parse(readFileSync('package.json', 'utf8')).version,
-  owmf_base_path: BASE_PATH,
-  owmf_static_export: STATIC_EXPORT ? "true" : undefined,
   owmf_i18n_override: existsSync("i18n.json") ? readFileSync("i18n.json", "utf8") : undefined
 };
 const clientEnv = CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT.reduce((acc, key) => {
@@ -141,9 +139,12 @@ function generateCspHeaders() {
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: BASE_PATH,
-  output: STATIC_EXPORT ? "export" : undefined,
+  basePath: process.env.owmf_base_path,
+  output: process.env.owmf_static_export === "true" ? "export" : undefined,
   env: clientEnv,
+  compiler: {
+    removeConsole: process.env.NODE_ENV === "production"
+  },
   webpack: (config, options) => {
     config.module.rules.push({
       test: /\.sparql$/,

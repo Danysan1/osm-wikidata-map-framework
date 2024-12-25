@@ -3,17 +3,17 @@ import { DEFAULT_SOURCE_PRESET_ID, SourcePreset } from '../model/SourcePreset';
 
 export function getActiveSourcePresetIDs(): string[] {
     if (!process.env.owmf_source_presets?.trim()) {
-        if (process.env.NODE_ENV === "development") console.debug("getActiveSourcePresetIDs: using default value:", DEFAULT_SOURCE_PRESET_ID);
+        console.debug("getActiveSourcePresetIDs: using default value:", DEFAULT_SOURCE_PRESET_ID);
         return [DEFAULT_SOURCE_PRESET_ID];
     }
 
     try {
         const presets = parseStringArrayConfig(process.env.owmf_source_presets);
-        if (process.env.NODE_ENV === "development") console.debug("getActiveSourcePresetIDs: parsed presets:", presets);
+        console.debug("getActiveSourcePresetIDs: parsed presets:", presets);
         if (presets.length) return presets;
         else return [DEFAULT_SOURCE_PRESET_ID];
     } catch (e) {
-        if (process.env.NODE_ENV === "development") console.debug("getActiveSourcePresetIDs: using raw value:", process.env.owmf_source_presets);
+        console.debug("getActiveSourcePresetIDs: using raw value:", process.env.owmf_source_presets);
         return [process.env.owmf_source_presets];
     }
 }

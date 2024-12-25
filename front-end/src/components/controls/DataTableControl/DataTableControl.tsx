@@ -120,13 +120,13 @@ export const DataTableControl: FC<DataTableControlProps> = (props) => {
 
   useEffect(() => {
     if (onSourceData) {
-      if (process.env.NODE_ENV === "development") console.debug("DataTableControl: setting sourcedata");
+      console.debug("DataTableControl: setting sourcedata");
       map?.on("sourcedata", onSourceData);
     }
 
     return () => {
       if (onSourceData) {
-        if (process.env.NODE_ENV === "development") console.debug("DataTableControl: unsetting sourcedata");
+        console.debug("DataTableControl: unsetting sourcedata");
         map?.off("sourcedata", onSourceData);
       }
     };

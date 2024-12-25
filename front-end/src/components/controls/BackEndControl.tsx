@@ -143,7 +143,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             const preferredBackends = process.env.owmf_preferred_backends ? parseStringArrayConfig(process.env.owmf_preferred_backends) : [],
                 preferredBackend = preferredBackends.find(backend => !!dropdownItems.find(item => item.id === backend)),
                 newItem = dropdownItems.find(item => item.id === preferredBackend) ?? dropdownItems[0];
-            if (process.env.NODE_ENV === "development") console.debug(
+            console.debug(
                 "BackEndControl: Back-end ID did not exist, updating to existing one",
                 { backEndID, dropdownItems, preferredBackends, preferredBackend, newItem }
             );

@@ -59,7 +59,7 @@ export class OverpassService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
+        console.debug("No cached response found, fetching from Overpass", { bbox, trueBBox, sourcePresetID: this.preset?.id, backEndID, onlyCentroids, language });
         const out = await this.fetchMapData(backEndID, onlyCentroids, trueBBox);
         if (!onlyCentroids) {
             out.features = out.features.filter(

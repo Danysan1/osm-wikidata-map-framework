@@ -1,7 +1,7 @@
 import type { BBox, Feature, Geometry } from "geojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType, OsmWdJoinField } from "../model/Etymology";
-import { getFeatureTags, getFeatureLinkedEntities, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
+import { getFeatureLinkedEntities, getFeatureTags, type OwmfResponse, type OwmfResponseFeatureProperties } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
@@ -34,7 +34,7 @@ export class OverpassWikidataMapService implements MapService {
         if (cachedResponse)
             return cachedResponse;
 
-        if (process.env.NODE_ENV === "development") console.debug("No cached response found, fetching from Overpass & Wikidata", { sourcePresetID: this.preset?.id, backEndID, onlyCentroids, bbox, language });
+        console.debug("No cached response found, fetching from Overpass & Wikidata", { sourcePresetID: this.preset?.id, backEndID, onlyCentroids, bbox, language });
         const [overpassBackEndID, wikidataBackEndID] = backEndID.split("+");
         if (!overpassBackEndID || !wikidataBackEndID)
             throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);

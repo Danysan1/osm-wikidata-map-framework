@@ -4,7 +4,7 @@ import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { OwmfResponse } from "@/src/model/OwmfResponse";
 import { MapService } from "@/src/services/MapService";
 import type { BBox } from "geojson";
-import { useCallback, useEffect, useMemo, useState, FC } from "react";
+import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Layer, LngLatLike, MapMouseEvent, Source, useMap } from "react-map-gl/maplibre";
 
@@ -66,7 +66,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
         const bounds = map?.getBounds().toArray(),
             bbox: BBox | null = bounds ? [...bounds[0], ...bounds[1]] : null;
         if (bbox && props.backEndService?.canHandleBackEnd(props.backEndID)) {
-            if (process.env.NODE_ENV === "development") console.debug(
+            console.debug(
                 "ClusteredSourceAndLayers fetching map elements", { bbox, backEnd: props.backEndID }
             );
             showLoadingSpinner(true);
@@ -77,7 +77,7 @@ export const ClusteredSourceAndLayers: FC<ClusteredSourceAndLayersProps> = (prop
                 showSnackbar(t("snackbar.map_error"));
             }).finally(() => showLoadingSpinner(false));
         } else {
-            if (process.env.NODE_ENV === "development") console.debug(
+            console.debug(
                 "ClusteredSourceAndLayers NOT fetching map elements", { bbox, backEnd: props.backEndID }
             );
             setElementsData(null);

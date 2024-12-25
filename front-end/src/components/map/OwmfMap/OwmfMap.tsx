@@ -3,6 +3,7 @@ import { fetchSourcePreset } from "@/src/SourcePreset/client";
 import { IDEditorControl } from "@/src/components/controls/IDEditorControl";
 import { MapCompleteControl } from "@/src/components/controls/MapCompleteControl";
 import { OwmfGeocodingControl } from "@/src/components/controls/OwmfGeocodingControl";
+import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 import { useSnackbarContext } from "@/src/context/SnackbarContext";
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import overpassLogo from "@/src/img/Overpass-turbo.svg";
@@ -12,9 +13,9 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
 import {
-  DataDrivenPropertyValueSpecification,
-  RequestTransformFunction,
-  addProtocol,
+    DataDrivenPropertyValueSpecification,
+    RequestTransformFunction,
+    addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
@@ -23,14 +24,14 @@ import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Map, {
-  ErrorEvent,
-  FullscreenControl,
-  GeolocateControl,
-  MapSourceDataEvent,
-  MapStyle,
-  NavigationControl,
-  ScaleControl,
-  ViewStateChangeEvent,
+    ErrorEvent,
+    FullscreenControl,
+    GeolocateControl,
+    MapSourceDataEvent,
+    MapStyle,
+    NavigationControl,
+    ScaleControl,
+    ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../../controls/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
@@ -47,7 +48,6 @@ import { ClusteredSourceAndLayers } from "../ClusteredSourceAndLayers";
 import { DetailsLayers } from "../DetailsLayers";
 import { DetailsSourceAndLayers } from "../DetailsSourceAndLayers";
 import { PMTilesSource } from "../PMTilesSource";
-import { useLoadingSpinnerContext } from "@/src/context/LoadingSpinnerContext";
 
 
 const PMTILES_PREFIX = "pmtiles",
@@ -144,14 +144,14 @@ export const OwmfMap = () => {
 
   useEffect(() => {
     if (sourcePreset?.id === sourcePresetID) {
-      if (process.env.NODE_ENV === "development") console.warn(
+      console.warn(
         "Skipping redundant source preset fetch",
         { new: sourcePresetID, old: sourcePreset?.id }
       );
       return;
     }
 
-    if (process.env.NODE_ENV === "development") console.debug(
+    console.debug(
       "Fetching source preset",
       { new: sourcePresetID, old: sourcePreset?.id }
     );
@@ -159,14 +159,14 @@ export const OwmfMap = () => {
       .then((newPreset) => {
         setSourcePreset((oldPreset) => {
           if (oldPreset?.id === newPreset.id) {
-            if (process.env.NODE_ENV === "development") console.warn(
+            console.warn(
               "Skipping redundant source preset update",
               { old: oldPreset?.id, new: newPreset.id }
             );
             return oldPreset;
           }
 
-          if (process.env.NODE_ENV === "development") console.debug(
+          console.debug(
             "Updating source preset",
             { old: oldPreset?.id, new: newPreset.id }
           );

@@ -3,7 +3,7 @@ import { getFeatureTags, OwmfFeature } from "@/src/model/OwmfResponse";
 import { WikidataDescriptionService } from "@/src/services/WikidataDescriptionService";
 import { WikidataLabelService } from "@/src/services/WikidataLabelService";
 import { WikidataStatementService } from "@/src/services/WikidataStatementService";
-import { useEffect, useMemo, useState, FC } from "react";
+import { FC, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { FeatureButtonRow } from "../ButtonRow/FeatureButtonRow";
@@ -73,14 +73,12 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         .getSomeLabelFromWikidataID(props.wikidata, i18n.language)
         .then((label) => {
           if (label) {
-            if (process.env.NODE_ENV === "development")
-              console.debug("Found label from Wikidata", { qid: props.wikidata, label });
+            console.debug("Found label from Wikidata", { qid: props.wikidata, label });
             setMainName(label);
           }
         })
         .catch(() => {
-          if (process.env.NODE_ENV === "development")
-            console.warn("Failed getting label from Wikidata", { qid: props.wikidata });
+          console.warn("Failed getting label from Wikidata", { qid: props.wikidata });
         });
     } else {
       setMainName(undefined);
@@ -96,19 +94,17 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         .getDescriptionFromWikidataID(props.wikidata, i18n.language)
         .then((desc) => {
           if (desc) {
-            if (process.env.NODE_ENV === "development")
-              console.debug("Found description from Wikidata", {
-                qid: props.wikidata,
-                desc,
-              });
+            console.debug("Found description from Wikidata", {
+              qid: props.wikidata,
+              desc,
+            });
             setDescription(desc);
           }
         })
         .catch(() => {
-          if (process.env.NODE_ENV === "development")
-            console.warn("Failed getting description from Wikidata", {
-              qid: props.wikidata,
-            });
+          console.warn("Failed getting description from Wikidata", {
+            qid: props.wikidata,
+          });
         });
     }
   }, [featureI18n.description, i18n.language, props]);
@@ -124,8 +120,7 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         .getCommonsImageFromWikidataID(props.wikidata)
         .then((image) => {
           if (image) {
-            if (process.env.NODE_ENV === "development")
-              console.debug("Found image from Wikidata", { props, image });
+            console.debug("Found image from Wikidata", { props, image });
             setCommons([image]);
           }
         })
@@ -135,16 +130,15 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
     }
   }, [props]);
 
-  if (process.env.NODE_ENV === "development")
-    console.debug("FeatureView", {
-      feature,
-      mainName,
-      altNames,
-      description,
-      commons,
-      fromOsmUrl,
-      fromWikidataUrl,
-    });
+  console.debug("FeatureView", {
+    feature,
+    mainName,
+    altNames,
+    description,
+    commons,
+    fromOsmUrl,
+    fromWikidataUrl,
+  });
   return (
     <div className={styles.detail_container}>
       <h3 className={styles.element_name}>📍 {mainName}</h3>
@@ -165,13 +159,15 @@ export const FeatureView: FC<FeatureViewProps> = ({ feature }) => {
         </div>
       )}
 
-      {(!!props?.linked_entities || props?.text_etymology) && <EtymologyList
-        wdLinkedEntities={props.linked_entities ?? []}
-        text_etymology={props.text_etymology}
-        text_etymology_descr={props.text_etymology_descr}
-        from_osm_id={props.osm_id}
-        from_osm_type={props.osm_type}
-      />}
+      {(!!props?.linked_entities || props?.text_etymology) && (
+        <EtymologyList
+          wdLinkedEntities={props.linked_entities ?? []}
+          text_etymology={props.text_etymology}
+          text_etymology_descr={props.text_etymology_descr}
+          from_osm_id={props.osm_id}
+          from_osm_type={props.osm_type}
+        />
+      )}
 
       <Button
         title={t("feature_details.report_problem")}

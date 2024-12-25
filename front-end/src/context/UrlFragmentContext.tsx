@@ -11,10 +11,10 @@ import {
   useEffect,
   useState,
 } from "react";
+import { parseStringArrayConfig } from "../config";
 import { ColorSchemeID } from "../model/colorScheme";
 import { DEFAULT_SOURCE_PRESET_ID } from "../model/SourcePreset";
 import { getActiveSourcePresetIDs } from "../SourcePreset/common";
-import { parseStringArrayConfig } from "../config";
 
 const LONGITUDE_POSITION = 0,
   LATITUDE_POSITION = 1,
@@ -113,7 +113,9 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         : DEFAULT_COLOR_SCHEME;
     }),
     [backEndID, setBackEndID] = useState<string>(() => {
-      const preferredBackends = process.env.owmf_preferred_backends ? parseStringArrayConfig(process.env.owmf_preferred_backends) : [];
+      const preferredBackends = process.env.owmf_preferred_backends
+        ? parseStringArrayConfig(process.env.owmf_preferred_backends)
+        : [];
       return preferredBackends[0]?.length ? preferredBackends[0] : DEFAULT_BACKEND_ID;
     }),
     [backgroundStyleID, setBackgroundStyleID] = useState<string>(
@@ -163,7 +165,9 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
         zoomFromFragment !== undefined && !isNaN(zoomFromFragment)
           ? zoomFromFragment
           : undefined;
-    let newColorScheme: ColorSchemeID | undefined = split[COLOR_SCHEME_POSITION] as ColorSchemeID;
+    let newColorScheme: ColorSchemeID | undefined = split[
+      COLOR_SCHEME_POSITION
+    ] as ColorSchemeID;
     if (!newColorScheme || !Object.values(ColorSchemeID).includes(newColorScheme)) {
       console.warn("Invalid or empty color scheme in URL fragment", newColorScheme);
       newColorScheme = undefined;
@@ -190,16 +194,15 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
     else if (backgroundStyleFromQueryString)
       setBackgroundStyleID(backgroundStyleFromQueryString);
 
-    if (process.env.NODE_ENV === "development")
-      console.debug("UrlFragmentContextProvider: loaded fragment", {
-        newLat,
-        newLon,
-        newZoom,
-        newColorScheme,
-        newBackEnd,
-        backgroundStyleFromFragment,
-        newSourcePreset,
-      });
+    console.debug("UrlFragmentContextProvider: loaded fragment", {
+      newLat,
+      newLon,
+      newZoom,
+      newColorScheme,
+      newBackEnd,
+      backgroundStyleFromFragment,
+      newSourcePreset,
+    });
   }, [setLat, setZoom]);
 
   /** Load URL fragment on each fragment change */
@@ -220,31 +223,29 @@ export const UrlFragmentContextProvider: FC<PropsWithChildren> = ({ children }) 
 
     const fragment = `#${strLon},${strLat},${strZoom},${colorSchemeID},${backEndID},${backgroundStyleID},${sourcePresetID}`;
     if (window.location.hash !== fragment) {
-      if (process.env.NODE_ENV === "development")
-        console.debug("Updating fragment", {
-          old: window.location.hash,
-          new: fragment,
-          lon,
-          lat,
-          zoom,
-          colorSchemeID,
-          backEndID,
-          backgroundStyleID,
-          sourcePresetID,
-        });
+      console.debug("Updating fragment", {
+        old: window.location.hash,
+        new: fragment,
+        lon,
+        lat,
+        zoom,
+        colorSchemeID,
+        backEndID,
+        backgroundStyleID,
+        sourcePresetID,
+      });
       window.location.hash = fragment;
     } else {
-      if (process.env.NODE_ENV === "development")
-        console.debug("No fragment change necessary", {
-          fragment,
-          lon,
-          lat,
-          zoom,
-          colorSchemeID,
-          backEndID,
-          backgroundStyleID,
-          sourcePresetID,
-        });
+      console.debug("No fragment change necessary", {
+        fragment,
+        lon,
+        lat,
+        zoom,
+        colorSchemeID,
+        backEndID,
+        backgroundStyleID,
+        sourcePresetID,
+      });
     }
   }, [
     backEndID,

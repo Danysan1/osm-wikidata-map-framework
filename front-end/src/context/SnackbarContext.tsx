@@ -27,7 +27,7 @@ export const SnackbarContextProvider: FC<PropsWithChildren> = ({ children }) => 
         [color, setColor] = useState<string>("green"),
         [timeoutObj, setTimeoutObj] = useState<NodeJS.Timeout>();
     const showSnackbar = useCallback((message: string, color = "lightcoral", timeout = 3000) => {
-        if (process.env.NODE_ENV === "development") console.debug(
+        console.debug(
             "showSnackbar", { message, color, timeout }
         );
         setColor(color);

@@ -12,7 +12,7 @@ interface FeaturePopupProps {
 export const FeaturePopup: FC<FeaturePopupProps> = ({ feature, onClose }) => {
   const { current: map } = useMap(),
     position = map?.getBounds()?.getNorthWest(); // No useMemo is correct, the coordinates change over time
-  if (process.env.NODE_ENV === "development") console.debug(
+  console.debug(
     "FeaturePopup", { feature, position }
   );
 

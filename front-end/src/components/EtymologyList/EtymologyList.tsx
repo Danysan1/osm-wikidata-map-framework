@@ -63,7 +63,7 @@ export const EtymologyList: FC<EtymologyListProps> = (props) => {
             const baseEntity = entities.find((oldEty) => oldEty.wikidata === wikidataID),
               downloadedDetails = downloadedEtymologies[wikidataID],
               out = { ...baseEntity, ...downloadedDetails };
-            if (process.env.NODE_ENV === "development") console.debug("Downloaded details", { baseEntity, downloadedDetails, out });
+            console.debug("Downloaded details", { baseEntity, downloadedDetails, out });
             return out;
           });
         } catch (err) {

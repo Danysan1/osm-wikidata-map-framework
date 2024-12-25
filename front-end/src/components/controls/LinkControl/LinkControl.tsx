@@ -92,13 +92,13 @@ export const LinkControl: FC<LinkControlProps> = ({
 
   useEffect(() => {
     if (onSourceData) {
-      if (process.env.NODE_ENV === "development") console.debug("LinkControl: setting sourcedata");
+      console.debug("LinkControl: setting sourcedata");
       map?.on("sourcedata", onSourceData);
     }
 
     return () => {
       if (onSourceData) {
-        if (process.env.NODE_ENV === "development") console.debug("LinkControl: unsetting sourcedata");
+        console.debug("LinkControl: unsetting sourcedata");
         map?.off("sourcedata", onSourceData);
       }
     };

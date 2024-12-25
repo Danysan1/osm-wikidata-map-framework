@@ -1,4 +1,4 @@
-import { PropsWithChildren, FC } from "react";
+import { FC, PropsWithChildren } from "react";
 import { Source } from "react-map-gl/maplibre";
 
 const PMTILES_FILE_NAME = "etymology_map.pmtiles";
@@ -21,7 +21,7 @@ export const PMTilesSource: FC<PMTilesSourceProps> = ({ id, children }) => {
 
     const fullPMTilesURL = `pmtiles://${process.env.owmf_pmtiles_base_url}${PMTILES_FILE_NAME}`;
 
-    if (process.env.NODE_ENV === "development") console.debug("PMTilesSource", { fullPMTilesURL });
+    console.debug("PMTilesSource", { fullPMTilesURL });
     return <Source id={id} type="vector" url={fullPMTilesURL}>
         {children}
     </Source>;

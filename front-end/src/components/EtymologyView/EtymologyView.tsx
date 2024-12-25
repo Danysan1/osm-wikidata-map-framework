@@ -138,8 +138,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
 
   const parts = useMemo((): Etymology[] | undefined => {
     if (etymology.from_parts_of_wikidata_cod) {
-      if (process.env.NODE_ENV === "development")
-        console.debug("Not fetching parts of parts", etymology);
+      console.debug("Not fetching parts of parts", etymology);
       return undefined;
     }
 

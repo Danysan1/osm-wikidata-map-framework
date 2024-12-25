@@ -155,7 +155,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
       });
       setBackgroundStyleID(backgroundStyles[0].id);
     } else {
-      if (process.env.NODE_ENV === "development") console.debug("Fetching style", style);
+      console.debug("Fetching style", style);
       fetch(style.styleUrl)
         .then((resp) => resp.json())
         .then((json) => {
@@ -206,7 +206,7 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
           }
           // styleSpec.glyphs = "http://fonts.openmaptiles.org/{fontstack}/{range}.pbf";
 
-          if (process.env.NODE_ENV === "development") console.debug("Setting json style", { style, styleSpec });
+          console.debug("Setting json style", { style, styleSpec });
           props.setBackgroundStyle(styleSpec);
         })
         .catch((e) => {

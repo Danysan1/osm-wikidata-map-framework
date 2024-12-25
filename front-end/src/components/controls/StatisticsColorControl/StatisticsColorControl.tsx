@@ -1,28 +1,28 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import { ColorScheme, ColorSchemeID, colorSchemes } from "@/src/model/colorScheme";
-import { getFeatureLinkedEntities, type OwmfFeature } from "@/src/model/OwmfResponse";
 import type { EtymologyStat } from "@/src/model/EtymologyStat";
+import { getFeatureLinkedEntities, type OwmfFeature } from "@/src/model/OwmfResponse";
 import type { SourcePreset } from "@/src/model/SourcePreset";
 import { ArcElement, ChartData, Chart as ChartJS, Legend, Tooltip } from "chart.js";
 import type { ControlPosition, DataDrivenPropertyValueSpecification } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo, useState } from "react";
 import { Pie } from 'react-chartjs-2';
 import { useTranslation } from "react-i18next";
-import { useMap, MapSourceDataEvent } from "react-map-gl/maplibre";
+import { MapSourceDataEvent, useMap } from "react-map-gl/maplibre";
 import { DropdownControl, DropdownItem } from "../DropdownControl/DropdownControl";
 import {
-  BLACK,
-  BLUE,
-  calculateEtymologySourceStats,
-  calculateFeatureSourceStats,
-  downloadChartDataForWikidataIDs,
-  FALLBACK_COLOR,
-  getLayerColorFromStats,
-  loadPictureAvailabilityChartData,
-  loadWikilinkChartData,
-  ORANGE,
-  RED,
-  StatisticsCalculator
+    BLACK,
+    BLUE,
+    calculateEtymologySourceStats,
+    calculateFeatureSourceStats,
+    downloadChartDataForWikidataIDs,
+    FALLBACK_COLOR,
+    getLayerColorFromStats,
+    loadPictureAvailabilityChartData,
+    loadWikilinkChartData,
+    ORANGE,
+    RED,
+    StatisticsCalculator
 } from "./statistics";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -75,7 +75,7 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
 
       const queryFeaturesOnScreen = (): OwmfFeature[] | undefined => {
         if (layerIDs.some(layerID => !map?.getLayer(layerID))) {
-          if (process.env.NODE_ENV === "development") console.warn(
+          console.warn(
             "queryFeaturesOnScreen: At least one layer is missing, can't update stats",
             { layers: layerIDs, map }
           );
@@ -167,14 +167,14 @@ export const StatisticsColorControl: FC<StatisticsColorControlProps> = ({
     if (!e.isSourceLoaded || e.dataType !== "source" || !sourceIDs.includes(e.sourceId))
       return;
 
-    if (process.env.NODE_ENV === "development") console.debug(
+    console.debug(
       "StatisticsColorControl: updating stats after data update", { colorSchemeID, e }
     );
     handlers[colorSchemeID]();
   }, [colorSchemeID, handlers, sourceIDs]);
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") console.debug(
+    console.debug(
       "StatisticsColorControl: updating stats after color scheme change:", colorSchemeID
     );
     handlers[colorSchemeID]();

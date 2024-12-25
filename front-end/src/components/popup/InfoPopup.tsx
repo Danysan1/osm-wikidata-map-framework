@@ -15,7 +15,7 @@ export const InfoPopup: FC<InfoPopupProps> = (props) => {
     [customIntroJS, setCustomIntroJS] = useState<string>();
 
   useEffect(() => {
-    if (process.env.NODE_ENV === "development") console.debug(
+    console.debug(
       "InfoPopup fetching custom intro",
       process.env.owmf_custom_intro_html
     );

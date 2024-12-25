@@ -1,15 +1,15 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import {
-  ChangeEvent,
-  ChangeEventHandler,
-  FC,
-  PropsWithChildren,
-  cloneElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState
+    ChangeEvent,
+    ChangeEventHandler,
+    FC,
+    PropsWithChildren,
+    cloneElement,
+    useCallback,
+    useEffect,
+    useMemo,
+    useState
 } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
@@ -213,13 +213,13 @@ export const DropdownControl: FC<DropdownControlProps> = ({
 
   useEffect(() => {
     if (onSourceData) {
-      if (process.env.NODE_ENV === "development") console.debug("DropdownControl: setting sourcedata");
+      console.debug("DropdownControl: setting sourcedata");
       map?.on("sourcedata", onSourceData);
     }
 
     return () => {
       if (onSourceData) {
-        if (process.env.NODE_ENV === "development") console.debug("DropdownControl: unsetting sourcedata");
+        console.debug("DropdownControl: unsetting sourcedata");
         map?.off("sourcedata", onSourceData);
       }
     };

@@ -66,13 +66,13 @@ If you want to use [Sentry](https://sentry.io/welcome/) you need to create a JS 
 
 ### Static deployment
 
-If `STATIC_EXPORT` is `true` in [next.config.mjs](./next.config.mjs) and you run `npm run build` a static export ready for production deployment of your OWMF instance will be generated in the [out](./out) folder.
+If `owmf_static_export` is `true` and you run `npm run build` a static export ready for production deployment of your OWMF instance will be generated in the [out](./out) folder.
 You can then simply copy that folder into the web root of any web server like Nginx or Apache httpd.
 
 For more details see [the Static exports documentation of Next.js](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports)
 
 ### Dynamic deployment
 
-If `STATIC_EXPORT` is `false` in [next.config.mjs](./next.config.mjs) and you run `npm run build`, you can then copy the whole front-end folder to your target machine (where Node.js must be installed) and then run in the new folder `npm run start` to start the Next.js web server.
+If `owmf_static_export` is NOT `true` and you run `npm run build`, you can then copy the whole front-end folder to your target machine (where Node.js must be installed) and then run in the new folder `npm run start` to start the Next.js web server.
 
 For more details see [the Deploying documentation of Next.js](https://nextjs.org/docs/pages/building-your-application/deploying#nodejs-server)

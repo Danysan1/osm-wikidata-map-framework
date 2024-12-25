@@ -1,5 +1,5 @@
 import { DataDrivenPropertyValueSpecification, Feature, FilterSpecification } from "maplibre-gl";
-import { useCallback, useEffect, useMemo, FC } from "react";
+import { FC, useCallback, useEffect, useMemo } from "react";
 import { Layer, MapGeoJSONFeature, MapLayerMouseEvent, useMap } from "react-map-gl/maplibre";
 
 const LOW_ZOOM_POINT_RADIUS = 2,
@@ -50,7 +50,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
      */
     const onLayerClick = useCallback((ev: MapLayerMouseEvent & { popupAlreadyShown?: boolean }) => {
         if (ev.popupAlreadyShown) return;
-        if (process.env.NODE_ENV === "development") console.debug(
+        console.debug(
             "DetailsLayers onLayerClick", { ev, feature: ev.features?.[0]?.properties }
         );
         if (ev.features?.length) {
@@ -118,7 +118,7 @@ export const DetailsLayers: FC<DetailsLayersProps> = ({
     if (minZoom) commonProps.minzoom = minZoom;
     if (source_layer) commonProps["source-layer"] = source_layer;
 
-    if (process.env.NODE_ENV === "development") console.log(
+    console.log(
         "DetailsLayers render", { pointFilter, lineStringFilter, polygonFilter }
     );
     return <>

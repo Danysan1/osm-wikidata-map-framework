@@ -27,7 +27,7 @@ export const useLoadingSpinnerContext = () => useContext(LoadingSpinnerContext);
 export const LoadingSpinnerContextProvider: FC<PropsWithChildren> = ({ children }) => {
     const [loading, setLoading] = useState(true);
     const showLoadingSpinner = useCallback((show: SetStateAction<boolean>) => {
-        if (process.env.NODE_ENV === "development") console.debug(
+        console.debug(
             "showLoadingSpinner", { show }
         );
         setLoading(show);
