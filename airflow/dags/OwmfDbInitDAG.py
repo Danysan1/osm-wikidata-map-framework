@@ -31,6 +31,7 @@ DEFAULT_UPLOAD_TO_DB = False
 
 GENERATE_PMTILES = "generate_pmtiles"
 DEFAULT_GENERATE_PMTILES = True
+PMTILES_LAYER_NAME = "detail" # If you need to change this, remember to change also the corresponding front-end constant (in OwmfMap.tsx)
 
 UPLOAD_TO_S3 = "upload_to_s3"
 DEFAULT_UPLOAD_TO_S3 = True
@@ -310,7 +311,13 @@ Documentation in the task descriptions and in [README.md](https://gitlab.com/ope
         """Airflow connection ID with the AWS credentials used for uploading the vector tiles and CSV to S3"""
 
         upload_s3_bucket_var_id = f"{prefix}_base_s3_uri"
-        """Airflow variable ID with the base S3 URI on which the vector tiles and CSV will be uploaded"""
+        """
+        Airflow variable ID with the base S3 URI on which the vector tiles and CSV will be uploaded.
+        For example, for a pipeline with prefix 'planet' the base S3 URI must be configured in the Airflow variable 'planet_base_s3_uri'.
+        """
+
+        s3_base_uri = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}"
+        """Base S3 URI on which the vector tiles and CSV will be uploaded"""
         
         workdir = join("/workdir",prefix,"{{ ti.dag_id }}","{{ ti.run_id }}")
         """Path to the temporary folder where the DAG will store the intermediate files"""
@@ -796,39 +803,40 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
         )
         task_join_post_elaboration >> task_check_dump
 
-        details_dump = join(workdir,'etymology_map_details.fgb')
-        task_dump_etymology_map_details = Ogr2ogrDumpOperator(
-            task_id = "dump_etymology_map_details",
+        pmtiles_base_name = "{{ 'owmf_pmtiles' if (var.value.source_presets is None or var.value.source_presets.startswith('[')) else var.value.source_presets }}"
+        details_fgb_file_path = join(workdir,f'{pmtiles_base_name}_details.fgb')
+        task_dump_details_fgb = Ogr2ogrDumpOperator(
+            task_id = "dump_details_fgb",
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
             dest_format = "FlatGeobuf",
-            dest_path = details_dump,
-            query = "SELECT * FROM owmf.etymology_map_details_dump",
+            dest_path = details_fgb_file_path,
+            query = "SELECT * FROM owmf.details_dump",
             doc_md=    """
 # FlatGeobuf dump
 
 Dump all the elements from the local DB with their respective linked entities into a FlatGeobuf file
 """
         )
-        task_check_dump >> task_dump_etymology_map_details
+        task_check_dump >> task_dump_details_fgb
 
-        boundaries_dump = join(workdir,'etymology_map_boundaries.fgb')
-        task_dump_etymology_map_boundaries = Ogr2ogrDumpOperator(
-            task_id = "dump_etymology_map_boundaries",
+        boundaries_fgb_file_path = join(workdir,f'{pmtiles_base_name}_boundaries.fgb')
+        task_dump_boundaries_fgb = Ogr2ogrDumpOperator(
+            task_id = "dump_boundaries_fgb",
             dag = self,
             task_group=group_vector_tiles,
             postgres_conn_id = local_db_conn_id,
             dest_format = "FlatGeobuf",
-            dest_path = boundaries_dump,
-            query = "SELECT * FROM owmf.etymology_map_boundaries_dump",
+            dest_path = boundaries_fgb_file_path,
+            query = "SELECT * FROM owmf.boundaries_dump",
             doc_md=    """
 # FlatGeobuf dump
 
 Dump all the elements from the local DB with their respective linked entities into a FlatGeobuf file
 """
         )
-        task_check_dump >> task_dump_etymology_map_boundaries
+        task_check_dump >> task_dump_boundaries_fgb
 
         task_check_pmtiles = ShortCircuitOperator(
             task_id = "check_pmtiles",
@@ -842,14 +850,14 @@ Dump all the elements from the local DB with their respective linked entities in
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#show-countries-at-low-zoom-levels-but-states-at-higher-zoom-levels
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#discontinuous-polygon-features-buildings-of-rhode-island-visible-at-all-zoom-levels
         # https://github.com/felt/tippecanoe?tab=readme-ov-file#dropping-a-fixed-fraction-of-features-by-zoom-level
-        details_pmtiles = join(workdir,'etymology_map_details.pmtiles')
-        task_generate_etymology_map_details_pmtiles = TippecanoeOperator(
-            task_id = "generate_etymology_map_details_pmtiles",
+        details_pmtiles_file_path = join(workdir,f'{pmtiles_base_name}_details.pmtiles')
+        task_generate_details_pmtiles = TippecanoeOperator(
+            task_id = "generate_details_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
-            input_file = details_dump,
-            output_file = details_pmtiles,
-            layer_name = "etymology_map",
+            input_file = details_fgb_file_path,
+            output_file = details_pmtiles_file_path,
+            layer_name = PMTILES_LAYER_NAME,
             min_zoom = 12,
             # When changing the max zoom, change also the vector tile source max zoom in the frontend
             # See https://gis.stackexchange.com/a/330575/196469
@@ -858,16 +866,16 @@ Dump all the elements from the local DB with their respective linked entities in
             extra_params = "--force",
             doc_md = dedent(TippecanoeOperator.__doc__)
         )
-        [task_check_pmtiles, task_dump_etymology_map_details] >> task_generate_etymology_map_details_pmtiles
+        [task_check_pmtiles, task_dump_details_fgb] >> task_generate_details_pmtiles
 
-        boundaries_pmtiles = join(workdir,'etymology_map_boundaries.pmtiles')
-        task_generate_etymology_map_boundaries_pmtiles = TippecanoeOperator(
-            task_id = "generate_etymology_map_boundaries_pmtiles",
+        boundaries_pmtiles_file_path = join(workdir,f'{pmtiles_base_name}_boundaries.pmtiles')
+        task_generate_boundaries_pmtiles = TippecanoeOperator(
+            task_id = "generate_boundaries_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
-            input_file = boundaries_dump,
-            output_file = boundaries_pmtiles,
-            layer_name = "etymology_map",
+            input_file = boundaries_fgb_file_path,
+            output_file = boundaries_pmtiles_file_path,
+            layer_name = PMTILES_LAYER_NAME,
             min_zoom = 1,
             # When changing the max zoom, change also the vector tile source max zoom in the frontend
             # See https://gis.stackexchange.com/a/330575/196469
@@ -876,19 +884,21 @@ Dump all the elements from the local DB with their respective linked entities in
             extra_params = "--force --drop-densest-as-needed",
             doc_md = dedent(TippecanoeOperator.__doc__)
         )
-        [task_check_pmtiles, task_dump_etymology_map_boundaries] >> task_generate_etymology_map_boundaries_pmtiles
+        [task_check_pmtiles, task_dump_boundaries_fgb] >> task_generate_boundaries_pmtiles
 
+        pmtiles_file_name = f"{pmtiles_base_name}.pmtiles"
+        pmtiles_file_path = join(workdir,pmtiles_file_name)
         task_join_pmtiles = TileJoinOperator(
             task_id = "join_pmtiles",
             dag = self,
             task_group = group_vector_tiles,
-            input_files = [details_pmtiles, boundaries_pmtiles],
-            output_file = join(workdir,'etymology_map.pmtiles'),
-            layer_name = "etymology_map",
+            input_files = [details_pmtiles_file_path, boundaries_pmtiles_file_path],
+            output_file = pmtiles_file_path,
+            layer_name = PMTILES_LAYER_NAME,
             extra_params = "--force",
             doc_md = dedent(TippecanoeOperator.__doc__)
         )
-        [task_generate_etymology_map_boundaries_pmtiles, task_generate_etymology_map_details_pmtiles] >> task_join_pmtiles
+        [task_generate_boundaries_pmtiles, task_generate_details_pmtiles] >> task_join_pmtiles
 
         dataset_path = join(workdir,'dataset.csv')
         task_dump_dataset = PythonOperator(
@@ -922,18 +932,16 @@ Dump all the elements from the local DB with their respective linked entities in
         )
         task_join_pmtiles >> task_check_pmtiles_upload_conn_id
 
-        task_etymology_map_pmtiles_s3 = LocalFilesystemToS3Operator(
-            task_id = "upload_etymology_map_pmtiles_to_s3",
+        task_upload_pmtiles_s3 = LocalFilesystemToS3Operator(
+            task_id = "upload_pmtiles_to_s3",
             dag = self,
-            filename = join(workdir,'etymology_map.pmtiles'),
-            dest_key = f"{{{{ var.value.{upload_s3_bucket_var_id} }}}}/etymology_map.pmtiles",
+            filename = pmtiles_file_path,
+            dest_key = f"{s3_base_uri}/{pmtiles_file_name}",
             replace = True,
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
             doc_md = """
-# Upload etymology_map.pmtiles to S3
-
-Upload the PMTiles etymology_map file to AWS S3.
+# Upload the PMTiles file to AWS S3
 
 Links:
 * [LocalFilesystemToS3Operator documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/8.10.0/transfer/local_to_s3.html)
@@ -941,13 +949,13 @@ Links:
 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
 """
         )
-        task_check_pmtiles_upload_conn_id >> task_etymology_map_pmtiles_s3
+        task_check_pmtiles_upload_conn_id >> task_upload_pmtiles_s3
 
         task_dataset_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_dataset_to_s3",
             dag = self,
             filename = dataset_path,
-            dest_key = f'{{{{ var.value.{upload_s3_bucket_var_id} }}}}/dataset.csv',
+            dest_key = f'{s3_base_uri}/dataset.csv',
             replace = True,
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
@@ -962,13 +970,13 @@ Links:
 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
 """
         )
-        [task_etymology_map_pmtiles_s3, task_dump_dataset] >> task_dataset_s3
+        [task_upload_pmtiles_s3, task_dump_dataset] >> task_dataset_s3
 
-        task_date_pmtiles_s3 = LocalFilesystemToS3Operator(
+        task_upload_date_s3 = LocalFilesystemToS3Operator(
             task_id = "upload_date_pmtiles_to_s3",
             dag = self,
             filename = "{{ ti.xcom_pull(task_ids='choose_load_osm_data_method', key='date_file_path') }}",
-            dest_key = f'{{{{ var.value.{upload_s3_bucket_var_id} }}}}/date.txt',
+            dest_key = f'{s3_base_uri}/date.txt',
             replace = True,
             aws_conn_id = upload_s3_conn_id,
             task_group = group_upload_s3,
@@ -983,7 +991,7 @@ Links:
 * [AWS connection documentation](https://airflow.apache.org/docs/apache-airflow-providers-amazon/stable/connections/aws.html)
 """
         )
-        task_etymology_map_pmtiles_s3 >> task_date_pmtiles_s3
+        task_upload_pmtiles_s3 >> task_upload_date_s3
         
         group_upload_db = TaskGroup("upload_to_remote_db", tooltip="Upload elaborated data to the remote DB", dag=self)
 

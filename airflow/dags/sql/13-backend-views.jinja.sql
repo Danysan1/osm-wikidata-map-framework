@@ -1,4 +1,4 @@
-CREATE OR REPLACE VIEW owmf.etymology_map_boundaries_dump AS
+CREATE OR REPLACE VIEW owmf.boundaries_dump AS
 SELECT
     el.el_geometry AS geom,
     el.el_id as id,
@@ -41,7 +41,7 @@ LEFT JOIN owmf.element AS from_el ON from_el.el_id = et.et_from_el_id
 WHERE el.el_is_boundary
 GROUP BY el.el_id;
 
-CREATE OR REPLACE VIEW owmf.etymology_map_details_dump AS
+CREATE OR REPLACE VIEW owmf.details_dump AS
 SELECT
     el.el_geometry AS geom,
     el.el_id as id,

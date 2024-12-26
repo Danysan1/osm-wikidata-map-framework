@@ -13,9 +13,9 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import { CombinedCachedMapService } from "@/src/services/CombinedCachedMapService";
 import { MapService } from "@/src/services/MapService";
 import {
-    DataDrivenPropertyValueSpecification,
-    RequestTransformFunction,
-    addProtocol,
+  DataDrivenPropertyValueSpecification,
+  RequestTransformFunction,
+  addProtocol,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { isMapboxURL, transformMapboxUrl } from "maplibregl-mapbox-request-transformer";
@@ -24,14 +24,14 @@ import { Protocol } from "pmtiles";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import Map, {
-    ErrorEvent,
-    FullscreenControl,
-    GeolocateControl,
-    MapSourceDataEvent,
-    MapStyle,
-    NavigationControl,
-    ScaleControl,
-    ViewStateChangeEvent,
+  ErrorEvent,
+  FullscreenControl,
+  GeolocateControl,
+  MapSourceDataEvent,
+  MapStyle,
+  NavigationControl,
+  ScaleControl,
+  ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
 import { BackEndControl } from "../../controls/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
@@ -59,6 +59,7 @@ const PMTILES_PREFIX = "pmtiles",
   POLYGON_BORDER_LAYER = "layer_polygon_border",
   POLYGON_FILL_LAYER = "layer_polygon_fill",
   PMTILES_SOURCE = "pmtiles_source",
+  PMTILES_LAYER_NAME = "detail", // If you need to change this, remember to change also the corresponding pipeline constant (in OwmfDbInitDAG.py)
   DETAILS_SOURCE = "detail_source",
   ELEMENTS_SOURCE = "elements_source";
 
@@ -114,15 +115,15 @@ export const OwmfMap = () => {
 
   const requestTransformFunction: RequestTransformFunction = useCallback(
     (url, resourceType) => {
-      if (process.env.owmf_mapbox_token && isMapboxURL(url))
+      if (process.env.owmf_mapbox_token && isMapboxURL(url)) {
         return transformMapboxUrl(
           url,
           resourceType as string,
           process.env.owmf_mapbox_token
         );
+      }
 
-      if (/^http:\/\/[^/]+(?<!localhost)\/(elements|etymology_map)\//.test(url))
-        return { url: url.replace("http", "https") };
+      if (url.includes("localhost")) url = url.replace("http", "https");
 
       return { url };
     },
@@ -345,7 +346,7 @@ export const OwmfMap = () => {
           <DetailsLayers
             sourceID={PMTILES_SOURCE}
             keyID={pmtilesKeyID}
-            source_layer="etymology_map"
+            source_layer={PMTILES_LAYER_NAME}
             setOpenFeature={setOpenFeature}
             color={layerColor}
             pointLayerID={POINT_LAYER}
