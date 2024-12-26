@@ -803,7 +803,7 @@ Create in the local PostGIS DB the function that allows to retrieve the date of 
         )
         task_join_post_elaboration >> task_check_dump
 
-        pmtiles_base_name = "{{ 'owmf_pmtiles' if (var.value.source_presets is None or var.value.source_presets.startswith('[')) else var.value.source_presets }}"
+        pmtiles_base_name = "{{ 'owmf' if (var.value.source_presets is none or var.value.source_presets.startswith('[')) else var.value.source_presets }}"
         details_fgb_file_path = join(workdir,f'{pmtiles_base_name}_details.fgb')
         task_dump_details_fgb = Ogr2ogrDumpOperator(
             task_id = "dump_details_fgb",
