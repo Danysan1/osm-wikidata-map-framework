@@ -1,4 +1,4 @@
-import { OwmfResponse } from '@/src/model/OwmfResponse';
+import { OsmInstance, OwmfResponse } from '@/src/model/OwmfResponse';
 import { ControlPosition, MapSourceDataEvent } from 'maplibre-gl';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { FC, useCallback, useState } from 'react';
@@ -13,13 +13,14 @@ interface QueryLinkControlProps {
     minZoomLevel?: number;
     position?: ControlPosition;
     className?: string;
+    site?: OsmInstance;
 }
 
 /**
  * Let the user open the query used to fetch the data shown in the current view inside their native editor.
  */
 export const QueryLinkControl: FC<QueryLinkControlProps> = ({
-    sourceIDs, mapEventField, baseURL, icon, title, minZoomLevel, position, className
+    sourceIDs, mapEventField, baseURL, icon, title, minZoomLevel, position, className, site
 }) => {
     const [url, setUrl] = useState<string | undefined>(undefined);
     const onSourceDataHandler = useCallback((e: MapSourceDataEvent) => {
@@ -41,6 +42,12 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = ({
             return;
         }
 
+        if(!!site && content.site !== site) {
+            if (process.env.NODE_ENV === 'development') console.debug("QueryLinkControl: Wrong site, hiding", { content, mapEventField });
+            setUrl(undefined);
+            return;
+        }
+
         const query = content[mapEventField];
         if (typeof query !== "string" || !query.length) {
             if (process.env.NODE_ENV === 'development') console.debug("QueryLinkControl: Missing query field, hiding", { content, mapEventField });
@@ -53,7 +60,7 @@ export const QueryLinkControl: FC<QueryLinkControlProps> = ({
         if (process.env.NODE_ENV === 'development') console.debug("QueryLinkControl: Setting link URL", { query, linkUrl, mapEventField });
         setUrl(linkUrl);
 
-    }, [baseURL, mapEventField, sourceIDs]);
+    }, [baseURL, mapEventField, site, sourceIDs]);
 
     return <LinkControl
         linkURL={url}

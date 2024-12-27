@@ -40,7 +40,7 @@ export class OverpassWikidataMapService implements MapService {
             throw new Error(`Invalid combined cluster back-end ID: "${backEndID}"`);
 
         let out: OwmfResponse;
-        if (onlyCentroids && overpassBackEndID === "overpass_wd") {
+        if (onlyCentroids && /^overpass_(osm|ohm)_wd$/.test(overpassBackEndID)) {
             // In the cluster view wikidata=* elements wouldn't be merged and would be duplicated
             out = await this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language);
         } else {

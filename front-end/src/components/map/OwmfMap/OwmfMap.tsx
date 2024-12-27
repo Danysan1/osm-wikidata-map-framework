@@ -292,7 +292,18 @@ export const OwmfMap = () => {
         title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
         sourceIDs={geoJsonSourceIDs}
         mapEventField="overpass_query"
+        site="openstreetmap.org"
         baseURL="https://overpass-turbo.eu/?Q="
+        minZoomLevel={minZoomLevel}
+        position="top-right"
+      />
+      <QueryLinkControl
+        icon={overpassLogo as StaticImport}
+        title={t("overpass_turbo_query", "Source OverpassQL query on Overpass Turbo")}
+        sourceIDs={geoJsonSourceIDs}
+        mapEventField="overpass_query"
+        site="openhistoricalmap.org"
+        baseURL="https://openhistoricalmap.github.io/overpass-turbo/?Q="
         minZoomLevel={minZoomLevel}
         position="top-right"
       />

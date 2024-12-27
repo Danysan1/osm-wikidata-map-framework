@@ -3,8 +3,8 @@ import { Etymology } from "./Etymology";
 import { FeatureTags, getPropLinkedEntities, getPropTags, OwmfFeatureProperties } from "./OwmfFeatureProperties";
 
 export type OwmfResponseFeatureProperties = OwmfFeatureProperties | null;
-
 export type OwmfFeature = Feature<Geometry, OwmfResponseFeatureProperties>;
+export type OsmInstance = "openstreetmap.org" | "openhistoricalmap.org";
 
 export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFeatureProperties> {
     sourcePresetID?: string;
@@ -21,7 +21,7 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      *  - pmtiles_osm_wikidata_direct
      *  - pmtiles_osm_wikidata_reverse
      *  - pmtiles_propagated
-     *  - overpass_wd
+     *  - overpass_osm_wd
      *  - overpass_osm_all
      *  - overpass_ohm_all
      *  - overpass_osm_name_etymology
@@ -30,7 +30,7 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      *  - wd_indirect
      *  - wd_qualifier
      *  - wd_reverse
-     *  - overpass_wd+wd_direct
+     *  - overpass_osm_wd+wd_direct
      *  - qlever_osm_wd
      *  - qlever_osm_all
      *  - qlever_osm_name_etymology
@@ -75,6 +75,8 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      * OverpassQL query used to fetch the features
      */
     overpass_query?: string;
+
+    site?: OsmInstance;
 
     /**
      * Whether the response has been truncated due to the maximum number of features being reached

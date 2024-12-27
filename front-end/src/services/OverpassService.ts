@@ -2,7 +2,7 @@ import type { BBox } from "geojson";
 import osmtogeojson from "osmtogeojson";
 import type { MapDatabase } from "../db/MapDatabase";
 import type { Etymology, OsmType } from "../model/Etymology";
-import { getFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
+import { OsmInstance, getFeatureTags, ohmKeyToKeyID, osmKeyToKeyID, type OwmfFeature, type OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
 import type { MapService } from "./MapService";
 
@@ -45,7 +45,7 @@ export class OverpassService implements MapService {
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
-        return /^(overpass|ohm)_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
+        return /^overpass_(osm|ohm)_(wd|all_wd|all|osm_[_a-z]+)$/.test(backEndID);
     }
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
@@ -82,19 +82,19 @@ export class OverpassService implements MapService {
         if (area < 0.00000001 || area > 1.5)
             throw new Error(`Invalid bbox area: ${area} (bbox: ${bbox.join("/")})`);
 
-        let site: "osm" | "ohm",
+        let site: OsmInstance,
             osm_keys: string[],
             use_wikidata: boolean,
             search_text_key: string | undefined = this.preset?.osm_text_key;
 
-        if (backEndID.includes("overpass_wd")) {
+        if (backEndID.includes("overpass_osm_wd")) {
             // Search only elements with wikidata=*
-            site = "osm";
+            site = "openstreetmap.org";
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
-        } else if (backEndID.includes("ohm_wd")) {
-            site = "ohm"
+        } else if (backEndID.includes("overpass_ohm_wd")) {
+            site = "openhistoricalmap.org"
             osm_keys = [];
             search_text_key = undefined;
             use_wikidata = true;
@@ -108,7 +108,7 @@ export class OverpassService implements MapService {
             if (!keyCode)
                 throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
 
-            site = keyCode.startsWith("ohm_") ? "ohm" : "osm";
+            site = keyCode.startsWith("ohm_") ? "openhistoricalmap.org" : "openstreetmap.org";
             if (keyCode.endsWith("_all_wd")) {
                 // Search all elements with a linked entity key (all wikidata_keys, *:wikidata=*) and/or with wikidata=*
                 osm_keys = this.preset.osm_wikidata_keys;
@@ -130,7 +130,7 @@ export class OverpassService implements MapService {
         if (process.env.NODE_ENV === 'development') console.time("overpass_query");
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
             { overpassJson } = await import("overpass-ts"),
-            endpoint = site === "ohm" ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
+            endpoint = site === "openhistoricalmap.org" ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
             res = await overpassJson(query, { endpoint });
         if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
         if (!res.elements)
@@ -146,6 +146,7 @@ export class OverpassService implements MapService {
         if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
         out.features.forEach(f => this.transformFeature(f, osm_keys));
+        out.site = site;
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
         out.bbox = bbox;

@@ -69,7 +69,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                 if (preset.osm_wikidata_keys?.length) {
                     dropdownItems.push(buildDropdownItem("overpass_osm_all_wd+wd_direct", `${allKeysText} + ${wikidataDirectText}`, OVERPASS_WDQS_GROUP_NAME));
                 }
-                dropdownItems.push(buildDropdownItem("overpass_wd+wd_direct", osmWikidataDirectText, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_osm_wd+wd_direct", osmWikidataDirectText, OVERPASS_WDQS_GROUP_NAME));
                 
                 if(ohmEnabled) {
                     if (preset.osm_wikidata_keys?.length) {
@@ -100,8 +100,8 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
                     dropdownItems.push(buildDropdownItem("overpass_osm_all_wd+wd_qualifier", `${allKeysText} + ${qualifierText}`, OVERPASS_WDQS_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("overpass_osm_all_wd+wd_reverse", `${allKeysText} + ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
                 }
-                dropdownItems.push(buildDropdownItem("overpass_wd+wd_indirect", `OSM wikidata=* > ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_wd+wd_reverse", `OSM wikidata=* > ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_osm_wd+wd_indirect", `OSM wikidata=* > ${indirectText}`, OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_osm_wd+wd_reverse", `OSM wikidata=* > ${reverseText}`, OVERPASS_WDQS_GROUP_NAME));
                 if(ohmEnabled) {
                     if(preset.osm_wikidata_keys?.length) {
                         dropdownItems.push(buildDropdownItem("overpass_ohm_all_wd+wd_indirect", `${allKeysText} + ${indirectText}`, OHM_WDQS_GROUP_NAME));
@@ -147,8 +147,8 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             });
 
             if (!preset.osm_wikidata_keys?.length && !preset.osm_wikidata_properties?.length && !preset.wikidata_indirect_property && !preset.osm_text_key) {
-                dropdownItems.push(buildDropdownItem("overpass_wd+wd_base", "OSM wikidata=* + Wikidata P625", OVERPASS_WDQS_GROUP_NAME));
-                dropdownItems.push(buildDropdownItem("overpass_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_osm_wd+wd_base", "OSM wikidata=* + Wikidata P625", OVERPASS_WDQS_GROUP_NAME));
+                dropdownItems.push(buildDropdownItem("overpass_osm_wd", "OSM wikidata=*", OVERPASS_GROUP_NAME));
                 if(ohmEnabled) {
                     dropdownItems.push(buildDropdownItem("ohm_wd+wd_base", "OHM wikidata=* + Wikidata P625 (beta)", OHM_WDQS_GROUP_NAME));
                     dropdownItems.push(buildDropdownItem("ohm_wd", "OHM wikidata=* (beta)", OHM_GROUP_NAME));

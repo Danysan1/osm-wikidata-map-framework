@@ -41,9 +41,7 @@ export const DetailsSourceAndLayers: FC<DetailsSourceAndLayersProps> = (props) =
         })
         .finally(() => showLoadingSpinner(false));
     } else {
-      console.debug(
-        "DetailsSourceAndLayers NOT fetching map details", { bbox, backEnd: props.backEndID }
-      );
+      console.debug("DetailsSourceAndLayers NOT fetching map details", { bbox, backEnd: props.backEndID });
       setDetailsData(null);
     }
   }, [i18n.language, map, props.backEndID, props.backEndService, props.minZoom, lat, lon, zoom, showLoadingSpinner, showSnackbar, t]);
