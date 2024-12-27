@@ -41,7 +41,7 @@ export class OverpassService implements MapService {
             acc[ohmKeyToKeyID(key)] = key;
             return acc;
         }, {});
-        if (process.env.NODE_ENV === 'development') console.debug("OverpassService initialized", { preset: this.preset, wikidata_key_codes: this.wikidata_key_codes });
+        console.debug("OverpassService initialized", { preset: this.preset, wikidata_key_codes: this.wikidata_key_codes });
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -53,7 +53,7 @@ export class OverpassService implements MapService {
 
         const trueBBox: BBox = bbox.map(coord => coord % 180) as BBox;
         if (this.baseBBox && (trueBBox[2] < this.baseBBox[0] || trueBBox[3] < this.baseBBox[1] || trueBBox[0] > this.baseBBox[2] || trueBBox[1] > this.baseBBox[3])) {
-            if (process.env.NODE_ENV === 'development') console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
+            console.warn("Overpass fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, trueBBox, baseBBox: this.baseBBox, language });
             return { type: "FeatureCollection", features: [] };
         }
 
@@ -72,7 +72,7 @@ export class OverpassService implements MapService {
             out.language = language;
         }
 
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
+        console.debug(`Overpass fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -104,7 +104,7 @@ export class OverpassService implements MapService {
             const backEndSplitted = /^.*overpass_((?:osm|ohm)_[_a-z]+)$/.exec(backEndID),
                 keyCode = backEndSplitted?.at(1);
 
-            if (process.env.NODE_ENV === 'development') console.debug("Overpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
+            console.debug("Overpass fetchMapData", { backEndID, sourceKeyCode: keyCode, wikidata_key_codes: this.wikidata_key_codes });
             if (!keyCode)
                 throw new Error(`Failed to extract keyCode from back-end ID: "${backEndID}"`);
 
@@ -127,23 +127,23 @@ export class OverpassService implements MapService {
             }
         }
 
-        if (process.env.NODE_ENV === 'development') console.time("overpass_query");
+        console.time("overpass_query");
         const query = this.buildOverpassQuery(osm_keys, bbox, search_text_key, use_wikidata, onlyCentroids),
             { overpassJson } = await import("overpass-ts"),
             endpoint = site === "openhistoricalmap.org" ? "https://overpass-api.openhistoricalmap.org/api/interpreter" : "https://overpass-api.de/api/interpreter",
             res = await overpassJson(query, { endpoint });
-        if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_query");
+        console.timeEnd("overpass_query");
         if (!res.elements)
             throw new Error("Bad response from Overpass");
 
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
+        console.debug(`Overpass fetchMapData found ${res.elements?.length} ELEMENTS`, res.elements);
 
         if (!res.elements && res.remark)
             throw new Error(`Overpass API error: ${res.remark}`);
 
-        if (process.env.NODE_ENV === 'development') console.time("overpass_transform");
+        console.time("overpass_transform");
         const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
+        console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
         out.features.forEach(f => this.transformFeature(f, osm_keys));
         out.site = site;
@@ -154,7 +154,7 @@ export class OverpassService implements MapService {
         out.backEndID = backEndID;
         out.onlyCentroids = onlyCentroids;
         out.truncated = res.elements?.length === this.maxElements;
-        if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_transform");
+        console.timeEnd("overpass_transform");
 
         return out;
     }
@@ -233,7 +233,7 @@ export class OverpassService implements MapService {
                 feature.properties?.relations
                     ?.filter(rel => rel.role && this.preset.relation_role_whitelist!.includes(rel.role) && rel.reltags[key] && WIKIDATA_QID_REGEX.test(rel.reltags[key]))
                     ?.forEach(rel => {
-                        if (process.env.NODE_ENV === 'development') console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
+                        console.debug(`Overpass fetchMapData porting etymology from relation`, rel);
                         linkedEntities.push(
                             ...rel.reltags[key]
                                 .split(";")
@@ -270,7 +270,7 @@ export class OverpassService implements MapService {
             text_etymology_key_is_filter = osm_text_key && (!filter_tags || filter_tags.includes(osm_text_key)),
             filter_wd_keys = filter_tags ? wd_keys.filter(key => filter_tags.includes(key)) : wd_keys,
             non_filter_wd_keys = wd_keys.filter(key => !filter_tags?.includes(key));
-        if (process.env.NODE_ENV === 'development') console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
+        console.debug("buildOverpassQuery", { filter_wd_keys, wd_keys, filter_tags, non_filter_wd_keys, osm_text_key });
         let query = `
 [out:json][timeout:40][bbox:${bbox[1]},${bbox[0]},${bbox[3]},${bbox[2]}];
 (

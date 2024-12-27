@@ -20,8 +20,6 @@ export async function fetchSourcePreset(sourcePresetID?: string) {
             id: sourcePresetID,
         };
     }
-    if (process.env.NODE_ENV === 'development') console.debug(
-        "fetchSourcePreset", { sourcePresetID, preset }
-    );
+    console.debug("fetchSourcePreset", { sourcePresetID, preset });
     return preset;
 }

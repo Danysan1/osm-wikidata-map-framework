@@ -76,7 +76,7 @@ export const EtymologyView: FC<EtymologyViewProps> = ({ etymology }) => {
       }
 
       const out = dateObject.toLocaleDateString(i18n.language, options);
-      //if (process.env.NODE_ENV === 'development') console.debug("formatDate", { date, precision, dateObject, options, out });
+      //console.debug("formatDate", { date, precision, dateObject, options, out });
       return out;
     },
     [i18n.language]

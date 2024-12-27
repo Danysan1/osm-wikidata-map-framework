@@ -1,9 +1,9 @@
+import { LANGUAGES } from "@/src/i18n/common";
 import type { ControlPosition } from "maplibre-gl";
 import { FC, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
-import { LANGUAGES } from "@/src/i18n/common";
 
 interface LanguageControlProps {
     position?: ControlPosition;
@@ -20,9 +20,9 @@ export const LanguageControl: FC<LanguageControlProps> = (props) => {
                 text: lang in LANGUAGES ? LANGUAGES[lang] : lang,
                 onSelect: () => {
                     i18n.changeLanguage(lang).then(() => {
-                        if (process.env.NODE_ENV === 'development') console.warn("LanguageControl: Changed language to " + lang);
+                        console.warn("LanguageControl: Changed language to " + lang);
                     }).catch((e) => {
-                        if (process.env.NODE_ENV === 'development') console.error("LanguageControl: Failed changing language to " + lang, e);
+                        console.error("LanguageControl: Failed changing language to " + lang, e);
                     });
                 }
             }));

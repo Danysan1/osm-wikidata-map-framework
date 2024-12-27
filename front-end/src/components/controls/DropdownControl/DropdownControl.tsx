@@ -1,15 +1,15 @@
 import { useUrlFragmentContext } from "@/src/context/UrlFragmentContext";
 import type { ControlPosition, IControl, Map, MapSourceDataEvent } from "maplibre-gl";
 import {
-    ChangeEvent,
-    ChangeEventHandler,
-    FC,
-    PropsWithChildren,
-    cloneElement,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState
+  ChangeEvent,
+  ChangeEventHandler,
+  FC,
+  PropsWithChildren,
+  cloneElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState
 } from "react";
 import { createPortal } from "react-dom";
 import { useControl } from "react-map-gl/maplibre";
@@ -144,15 +144,9 @@ export const DropdownControl: FC<DropdownControlProps> = ({
 
   useEffect(() => {
     if (!dropdownItems.length) {
-      if (process.env.NODE_ENV === 'development') console.warn(
-        "DropdownControl: no dropdownItems provided",
-        { dropdownItems }
-      );
+      console.warn("DropdownControl: no dropdownItems provided", { dropdownItems });
     } else if (checkMissingSelectedValue && !dropdownItems.some(item => item.id === selectedValue)) {
-      if (process.env.NODE_ENV === 'development') console.warn(
-        "DropdownControl: selectedValue not found in dropdownItems, selecting first item",
-        { selectedValue, dropdownItems }
-      );
+      console.warn("DropdownControl: selectedValue not found in dropdownItems, selecting first item", { selectedValue, dropdownItems });
       dropdownItems[0].onSelect();
     }
   }, [checkMissingSelectedValue, dropdownItems, selectedValue]);

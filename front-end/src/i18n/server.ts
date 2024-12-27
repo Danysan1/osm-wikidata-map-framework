@@ -18,13 +18,13 @@ export async function loadServerI18n(lang?: string) {
         i18nOverride = rawI18nOverride && typeof rawI18nOverride === 'object' ? rawI18nOverride as Resource : undefined,
         backends: object[] = [],
         backendOptions: object[] = [];
-    // if (process.env.NODE_ENV === 'development') console.debug("loadServerI18n", { language, commonBackendPath, commonBackend, i18nOverride });
+    // console.debug("loadServerI18n", { language, commonBackendPath, commonBackend, i18nOverride });
     if (commonBackend) {
         backends.unshift(resourcesToBackend(commonBackend));
         backendOptions.unshift({});
     }
     if (i18nOverride) {
-        if (process.env.NODE_ENV === 'development') console.debug("loadServerI18n: using i18n_override:", { language, languages: Object.keys(i18nOverride) });
+        console.debug("loadServerI18n: using i18n_override:", { language, languages: Object.keys(i18nOverride) });
         backends.unshift(resourcesToBackend(i18nOverride));
         backendOptions.unshift({});
     }

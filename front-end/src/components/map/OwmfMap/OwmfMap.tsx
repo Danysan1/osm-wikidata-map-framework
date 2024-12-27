@@ -214,7 +214,7 @@ export const OwmfMap = () => {
       elementsSourceEvent = e.sourceId === ELEMENTS_SOURCE;
 
     if (detailsSourceEvent || elementsSourceEvent) {
-      if (process.env.NODE_ENV === 'development') console.debug(
+      console.debug(
         "mapSourceDataHandler: data loaded",
         { detailsSourceEvent, elementsSourceEvent, e, source: e.sourceId }
       );

@@ -54,16 +54,16 @@ export class OverpassWikidataMapService implements MapService {
                 actualOverpassBackEndID = overpassBackEndID;
 
 
-            if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_fetch");
+            console.time("overpass_wikidata_fetch");
             const [overpassData, wikidataData] = await Promise.all([
                 this.overpassService.fetchMapElements(actualOverpassBackEndID, onlyCentroids, bbox, language),
                 this.wikidataService.fetchMapElements(wikidataBackEndID, onlyCentroids, bbox, language)
             ]);
-            if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_fetch");
+            console.timeEnd("overpass_wikidata_fetch");
 
-            if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_merge");
+            console.time("overpass_wikidata_merge");
             out = this.mergeMapData(overpassData, wikidataData);
-            if (process.env.NODE_ENV === 'development') console.timeEnd("overpass_wikidata_merge");
+            console.timeEnd("overpass_wikidata_merge");
 
             if (!out)
                 throw new Error("Merge failed");
@@ -85,7 +85,7 @@ export class OverpassWikidataMapService implements MapService {
             }
         }
 
-        if (process.env.NODE_ENV === 'development') console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
+        console.debug(`Overpass+Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities after filtering`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -176,7 +176,7 @@ export class OverpassWikidataMapService implements MapService {
                     osmEtymologyIndex = osmEtymologies?.findIndex(osmEtymology => osmEtymology.wikidata === wdEtymology.wikidata);
                 if (osmEtymologies && wdEtymology.wikidata && osmEtymologyIndex !== undefined && osmEtymologyIndex !== -1) {
                     // Wikidata etymology has priority over the Overpass one as it can have more details, like statementEntity
-                    if (process.env.NODE_ENV === 'development') console.warn("Overpass+Wikidata: Duplicate etymology, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmFeature.properties, wd: wikidataFeature.properties });
+                    console.warn("Overpass+Wikidata: Duplicate etymology, using the Wikidata one", { id: wdEtymology.wikidata, osm: osmFeature.properties, wd: wikidataFeature.properties });
                     osmEtymologies[osmEtymologyIndex] = wdEtymology;
                 } else {
                     osmEtymologies.push(wdEtymology);
@@ -196,7 +196,7 @@ export class OverpassWikidataMapService implements MapService {
         wikidataData.features.forEach(feature => this.mergeWikidataFeature(feature, overpassData.features));
         overpassData.wdqs_query = wikidataData.wdqs_query;
         overpassData.truncated = !!overpassData.truncated || !!wikidataData.truncated;
-        if (process.env.NODE_ENV === 'development') console.debug(
+        console.debug(
             "Overpass+Wikidata mergeMapData merged features", overpassData.features
         );
         return overpassData;

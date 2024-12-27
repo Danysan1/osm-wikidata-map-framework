@@ -1,7 +1,7 @@
 import { ColorSchemeID } from "@/src/model/colorScheme";
 import { Etymology } from "@/src/model/Etymology";
-import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { EtymologyStat } from "@/src/model/EtymologyStat";
+import { getPropTags, OwmfFeatureProperties } from "@/src/model/OwmfFeatureProperties";
 import { WikidataStatsService } from "@/src/services/WikidataStatsService/WikidataStatsService";
 import { ExpressionSpecification } from "maplibre-gl";
 
@@ -63,32 +63,22 @@ export async function downloadChartDataForWikidataIDs(
   idSet: Set<string>, colorSchemeID: ColorSchemeID, language: string
 ): Promise<EtymologyStat[] | null> {
   if (idSet.size === 0) {
-    if (process.env.NODE_ENV === 'development') console.warn(
-      "downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs"
-    );
+    console.warn("downloadChartDataForWikidataIDs: Skipping stats update for 0 IDs");
     return [];
   }
 
   const uniqueIDs = Array.from(idSet);
-  if (process.env.NODE_ENV === 'development') console.debug(
-    "downloadChartDataForWikidataIDs: Fetching and updating stats", { colorSchemeID, idSet }
-  );
+  console.debug("downloadChartDataForWikidataIDs: Fetching and updating stats", { colorSchemeID, idSet });
 
   try {
     const statsService = new WikidataStatsService(language);
     const stats = await statsService.fetchStats(uniqueIDs, colorSchemeID);
 
     if (!stats.length) {
-      if (process.env.NODE_ENV === 'development') console.debug(
-        "downloadChartDataForWikidataIDs: empty stats received",
-        { colorSchemeID, uniqueIDs }
-      );
+      console.debug("downloadChartDataForWikidataIDs: empty stats received", { colorSchemeID, uniqueIDs });
       return null;
     } else {
-      if (process.env.NODE_ENV === 'development') console.debug(
-        "downloadChartDataForWikidataIDs: stats fetched",
-        { colorSchemeID, uniqueIDs, stats }
-      );
+      console.debug("downloadChartDataForWikidataIDs: stats fetched", { colorSchemeID, uniqueIDs, stats });
       return stats;
     }
   } catch (e) {
@@ -112,7 +102,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
       else
         without_picture_IDs.add(id);
     });
-    if (process.env.NODE_ENV === 'development') console.debug(
+    console.debug(
       "loadPictureAvailabilityChartData: downloading unknown picture chart data",
       { features, language, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
     );
@@ -148,7 +138,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
             statsData.push(["==", subject, ["get", "wikidata"]], color);
           });
         } else {
-          if (process.env.NODE_ENV === 'development') console.debug(
+          console.debug(
             "loadPictureAvailabilityChartData: skipping row with no color or subjects",
             row
           );
@@ -166,7 +156,7 @@ export function loadPictureAvailabilityChartData(pictureAvailableLabel: string, 
     }
 
     const out = [stats, data] as const;
-    if (process.env.NODE_ENV === 'development') console.debug(
+    console.debug(
       "loadPictureAvailabilityChartData",
       { features, out, with_picture_IDs, unknown_picture_IDs, without_picture_IDs }
     );
@@ -180,7 +170,7 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
     if (props.wikidata)
       wikidataIDs.add(props.wikidata);
   });
-  if (process.env.NODE_ENV === 'development') console.debug(
+  console.debug(
     "loadWikilinkChartData: downloading chart data", { features, language, wikidataIDs }
   );
   const stats = await downloadChartDataForWikidataIDs(wikidataIDs, ColorSchemeID.feature_link_count, language);
@@ -195,7 +185,7 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
           statsData.push(["==", subject, ["get", "wikidata"]], color);
         });
       } else {
-        if (process.env.NODE_ENV === 'development') console.debug(
+        console.debug(
           "loadWikilinkChartData: skipping row with no color or subjects", row
         );
       }
@@ -210,9 +200,7 @@ export const loadWikilinkChartData: StatisticsCalculator = async (features, lang
   }
 
   const out = [stats, data] as const;
-  if (process.env.NODE_ENV === 'development') console.debug(
-    "loadWikilinkChartData", { features, out, wikidataIDs }
-  );
+  console.debug("loadWikilinkChartData", { features, out, wikidataIDs });
   return out;
 }
 
@@ -237,7 +225,7 @@ export const calculateFeatureSourceStats: StatisticsCalculator = (features) => {
   if (osm_IDs.size) stats.push({ name: "OpenStreetMap", color: OSM_COLOR, id: 'osm_wikidata', count: osm_IDs.size });
 
   const out = [stats, FEATURE_SOURCE_LAYER_COLOR] as const;
-  if (process.env.NODE_ENV === 'development') console.debug(
+  console.debug(
     "calculateFeatureSourceStats",
     { features: features, out, osm_wikidata_IDs, wikidata_IDs, osm_IDs }
   );
@@ -258,7 +246,7 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
       if (entities?.some(ety => ety.wikidata)) {
         entities.forEach(etymology => {
           if (!etymology.wikidata) {
-            if (process.env.NODE_ENV === 'development') console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
+            console.debug("Skipping etymology with no Wikidata ID in source calculation", etymology);
           } else if (etymology.propagated) {
             propagation_IDs.add(etymology.wikidata);
           } else if (feature?.from_osm && etymology.from_wikidata) {
@@ -292,7 +280,7 @@ export function calculateEtymologySourceStats(osmTextOnlyLabel: string): Statist
     });
 
     const out = [stats, ETYMOLOGY_SOURCE_LAYER_COLOR] as const;
-    if (process.env.NODE_ENV === 'development') console.debug(
+    console.debug(
       "calculateEtymologySourceStats",
       { features, out, propagation_IDs, osm_wikidata_IDs, wikidata_IDs, osm_IDs, osm_text_names, osmTextOnlyLabel }
     );
@@ -312,7 +300,7 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
         statsData.push(["in", subject + '"', ["to-string", ["get", "linked_entities"]]], color);
       });
     } else if (row.count > 1) {
-      if (process.env.NODE_ENV === 'development') console.debug(
+      console.debug(
         "getLayerColorFromStats: skipping row with no color or subjects", row
       );
     }
@@ -327,7 +315,7 @@ export function getLayerColorFromStats(stats: EtymologyStat[]) {
     FALLBACK_COLOR
   ];
 
-  if (process.env.NODE_ENV === 'development') console.debug(
+  console.debug(
     "getLayerColorFromStats: setting layer color", { stats, data }
   );
   return data;

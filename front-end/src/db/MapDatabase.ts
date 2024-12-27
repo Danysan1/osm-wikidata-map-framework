@@ -21,10 +21,10 @@ export class MapDatabase extends Dexie {
             if (maxHours) {
                 const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
                     count = await this.maps.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old maps from indexedDB", { maxHours, count, threshold });
+                console.debug("Evicted old maps from indexedDB", { maxHours, count, threshold });
             } else {
                 await this.maps.clear();
-                if (process.env.NODE_ENV === 'development') console.debug("Cleared all maps from indexedDB");
+                console.debug("Cleared all maps from indexedDB");
             }
         });
     }

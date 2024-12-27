@@ -18,8 +18,6 @@ export function readSourcePreset(sourcePresetID?: string): SourcePreset {
             throw new Error("Invalid preset object found in " + presetPath);
         preset = { id: sourcePresetID, ...presetObj };
     }
-    if (process.env.NODE_ENV === 'development') console.debug(
-        "readSourcePreset", { sourcePresetID, preset }
-    );
+    console.debug("readSourcePreset", { sourcePresetID, preset });
     return preset;
 }

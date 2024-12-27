@@ -47,9 +47,9 @@ export class WikidataStatsService extends WikidataService {
     async fetchStats(wikidataIDs: string[], colorSchemeID: ColorSchemeID): Promise<EtymologyStat[]> {
         let out = await this.db.getStats(colorSchemeID, wikidataIDs, this.language);
         if (out) {
-            if (process.env.NODE_ENV === 'development') console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
+            console.debug("Wikidata stats cache hit, using cached response", { wikidataIDs, colorSchemeID, out });
         } else {
-            if (process.env.NODE_ENV === 'development') console.debug("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
+            console.debug("Wikidata stats cache miss, fetching data", { wikidataIDs, colorSchemeID });
             const csvPath = statsCSVPaths[colorSchemeID],
                 sparqlQueryURL = statsQueryURLs[colorSchemeID];
             if (!sparqlQueryURL)
@@ -66,7 +66,7 @@ export class WikidataStatsService extends WikidataService {
             }
             out = res.results?.bindings?.map((x): EtymologyStat => {
                 if (!x.count?.value || !x.name?.value) {
-                    if (process.env.NODE_ENV === 'development') console.debug("Empty count or name", x);
+                    console.debug("Empty count or name", x);
                     throw new Error("Invalid response from Wikidata (empty count or name)");
                 }
                 const entityID = typeof x.id?.value === "string" ? x.id.value.replace(WikidataService.WD_ENTITY_PREFIX, '') : undefined,

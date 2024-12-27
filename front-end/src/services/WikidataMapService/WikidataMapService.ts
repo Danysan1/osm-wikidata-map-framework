@@ -61,14 +61,14 @@ export class WikidataMapService extends WikidataService implements MapService {
                 .replaceAll('${eastLon}', bbox[2].toString())
                 .replaceAll('${northLat}', bbox[3].toString());
 
-        if (process.env.NODE_ENV === 'development') console.time("wikidata_fetch");
+        console.time("wikidata_fetch");
         const ret = await this.api.postSparqlQuery({ backend: "sparql", format: "json", query: sparqlQuery });
-        if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_fetch");
+        console.timeEnd("wikidata_fetch");
 
         if (!ret.results?.bindings)
             throw new Error("Invalid response from Wikidata (no bindings)");
 
-        if (process.env.NODE_ENV === 'development') console.time("wikidata_transform");
+        console.time("wikidata_transform");
         const out: OwmfResponse = {
             type: "FeatureCollection",
             bbox: bbox,
@@ -83,8 +83,8 @@ export class WikidataMapService extends WikidataService implements MapService {
         };
         out.total_entity_count = out.features.reduce((acc, feature) => acc + (feature.properties?.linked_entity_count ?? 0), 0);
 
-        if (process.env.NODE_ENV === 'development') console.timeEnd("wikidata_transform");
-        if (process.env.NODE_ENV === 'development') console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
+        console.timeEnd("wikidata_transform");
+        console.debug(`Wikidata fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -143,7 +143,7 @@ export class WikidataMapService extends WikidataService implements MapService {
         const wkt_geometry = row.location.value,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
-            if (process.env.NODE_ENV === 'development') console.debug("Failed to parse WKT coordinates", { wkt_geometry, row });
+            console.debug("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
 
@@ -162,7 +162,7 @@ export class WikidataMapService extends WikidataService implements MapService {
             });
 
         if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-            if (process.env.NODE_ENV === 'development') console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
+            console.warn("Wikidata: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature.properties, new: row });
         } else {
             const etymology: Etymology | null = etymology_wd_id ? {
                 from_osm: false,

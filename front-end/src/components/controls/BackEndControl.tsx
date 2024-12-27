@@ -167,7 +167,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             return dropdownItems;
         }, [preset.id, preset.osm_text_key, preset.osm_wikidata_keys, preset.osm_wikidata_properties, preset.wikidata_indirect_property, setBackEndID, t]);
 
-    // if (process.env.NODE_ENV === 'development') console.debug("BackEndControl render", { preset, dropdownItems });
+    // console.debug("BackEndControl render", { preset, dropdownItems });
 
     useEffect(() => {
         if (!dropdownItems.find(i => i.id === backEndID)) {

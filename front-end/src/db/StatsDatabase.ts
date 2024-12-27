@@ -26,10 +26,10 @@ export class StatsDatabase extends Dexie {
             if (maxHours) {
                 const threshold = new Date(Date.now() - 1000 * 60 * 60 * maxHours),
                     count = await this.stats.filter(row => row.timestamp !== undefined && new Date(row.timestamp) < threshold).delete();
-                if (process.env.NODE_ENV === 'development') console.debug("Evicted old stats from indexedDB", { maxHours, count, threshold });
+                console.debug("Evicted old stats from indexedDB", { maxHours, count, threshold });
             } else {
                 await this.stats.clear();
-                if (process.env.NODE_ENV === 'development') console.debug("Cleared all stats from indexedDB");
+                console.debug("Cleared all stats from indexedDB");
             }
         });
     }

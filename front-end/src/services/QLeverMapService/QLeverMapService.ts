@@ -70,7 +70,7 @@ export class QLeverMapService implements MapService {
             // headers: { "User-Agent": "OSM-Wikidata-Map-Framework" }
         }));
 
-        if (process.env.NODE_ENV === 'development') console.debug("QLeverMapService currently ignores maxRelationMembers", { osmTextKey, osmDescriptionKey, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, basePath });
+        console.debug("QLeverMapService currently ignores maxRelationMembers", { osmTextKey, osmDescriptionKey, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, basePath });
     }
 
     public canHandleBackEnd(backEndID: string): boolean {
@@ -79,7 +79,7 @@ export class QLeverMapService implements MapService {
 
     public async fetchMapElements(backEndID: string, onlyCentroids: boolean, bbox: BBox, language: string): Promise<OwmfResponse> {
         if (this.baseBBox && (bbox[2] < this.baseBBox[0] || bbox[3] < this.baseBBox[1] || bbox[0] > this.baseBBox[2] || bbox[1] > this.baseBBox[3])) {
-            if (process.env.NODE_ENV === 'development') console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
+            console.warn("QLever fetchMapElements: request bbox does not overlap with the instance bbox", { bbox, baseBBox: this.baseBBox });
             return { type: "FeatureCollection", features: [] };
         }
 
@@ -114,7 +114,7 @@ export class QLeverMapService implements MapService {
         else if (backend === "osm-planet")
             out.qlever_osm_query = sparqlQuery;
 
-        if (process.env.NODE_ENV === 'development') console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
+        console.debug(`QLever fetchMapElements found ${out.features.length} features with ${out.total_entity_count} linked entities from ${ret.results.bindings.length} rows`, out);
         void this.db?.addMap(out);
         return out;
     }
@@ -171,7 +171,7 @@ export class QLeverMapService implements MapService {
                 filterKeysExpression = filter_non_etymology_keys?.length ? filter_non_etymology_keys.map(keyPredicate)?.join('|') + " ?_value; " : "", // TODO Use blank nodes
                 non_filter_osm_wd_predicate = non_filter_osm_wd_keys?.map(keyPredicate)?.join('|'),
                 osmEtymologyUnionBranches: string[] = [];
-            if (process.env.NODE_ENV === 'development') console.debug("fillPlaceholders", {
+            console.debug("fillPlaceholders", {
                 filter_tags, filter_tags_with_value, filter_keys, filter_osm_wd_keys, non_filter_wd_keys: non_filter_osm_wd_keys, filter_non_etymology_keys, filterExpression: filterKeysExpression
             });
 
@@ -265,7 +265,7 @@ export class QLeverMapService implements MapService {
         const wkt_geometry = row.location.value,
             geometry = parseWKT(wkt_geometry) as Point | null;
         if (!geometry) {
-            if (process.env.NODE_ENV === 'development') console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
+            console.warn("Failed to parse WKT coordinates", { wkt_geometry, row });
             return acc;
         }
 
@@ -287,7 +287,7 @@ export class QLeverMapService implements MapService {
             });
 
             if (etymology_wd_id && existingFeature && getFeatureLinkedEntities(existingFeature)?.some(etymology => etymology.wikidata === etymology_wd_id)) {
-                if (process.env.NODE_ENV === 'development') console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
+                console.warn("QLever: Ignoring duplicate etymology", { wd_id: etymology_wd_id, existing: existingFeature?.properties, new: row });
             } else {
                 const feature_from_osm = row.from_osm?.value === 'true' || (row.from_osm?.value === undefined && !!row.osm?.value),
                     feature_from_wikidata = row.from_wikidata?.value === 'true' || (row.from_wikidata?.value === undefined && !!row.item?.value),
@@ -325,7 +325,7 @@ export class QLeverMapService implements MapService {
                     const commons = row.commons?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsCategoryRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined),
                         // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
                         picture = row.picture?.value || (typeof row.wikimedia_commons?.value === "string" ? commonsFileRegex.exec(row.wikimedia_commons.value)?.at(1) : undefined) || (typeof row.image?.value === "string" ? commonsFileRegex.exec(row.image.value)?.at(1) : undefined);
-                    if (process.env.NODE_ENV === 'development') console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
+                    console.debug("featureReducer", { row, osm_id, osm_type, commons, picture });
 
                     let render_height;
                     if (row.height?.value)
