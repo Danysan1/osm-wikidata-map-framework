@@ -45,7 +45,14 @@ export class OverpassWikidataMapService implements MapService {
             out = await this.wikidataService.fetchMapElements(wikidataBackEndID, true, bbox, language);
         } else {
             // Fetch and merge the data from Overpass and Wikidata
-            const actualOverpassBackEndID = (onlyCentroids && overpassBackEndID === "overpass_all_wd") ? "overpass_all" : overpassBackEndID;
+            let actualOverpassBackEndID: string;
+            if (onlyCentroids && overpassBackEndID === "overpass_osm_all_wd")
+                actualOverpassBackEndID = "overpass_osm_all";
+            else if(onlyCentroids && overpassBackEndID === "overpass_ohm_all_wd")
+                actualOverpassBackEndID = "overpass_ohm_all";
+            else
+                actualOverpassBackEndID = overpassBackEndID;
+
 
             if (process.env.NODE_ENV === 'development') console.time("overpass_wikidata_fetch");
             const [overpassData, wikidataData] = await Promise.all([

@@ -1,5 +1,4 @@
 import { BBox } from "geojson";
-import { parseStringArrayConfig } from "../config";
 import { MapDatabase } from "../db/MapDatabase";
 import { OwmfResponse } from "../model/OwmfResponse";
 import { SourcePreset } from "../model/SourcePreset";
@@ -23,7 +22,6 @@ export class CombinedCachedMapService implements MapService {
             maxRelationMembers = rawMaxRelationMembers ? parseInt(rawMaxRelationMembers) : undefined,
             osmWikidataKeys = sourcePreset?.osm_wikidata_keys,
             osmFilterTags = sourcePreset?.osm_filter_tags,
-            overpassEndpoints = process.env.owmf_overpass_endpoints ? parseStringArrayConfig(process.env.owmf_overpass_endpoints) : undefined,
             westLon = process.env.owmf_min_lon ? parseFloat(process.env.owmf_min_lon) : undefined,
             southLat = process.env.owmf_min_lat ? parseFloat(process.env.owmf_min_lat) : undefined,
             eastLon = process.env.owmf_max_lon ? parseFloat(process.env.owmf_max_lon) : undefined,
@@ -31,10 +29,10 @@ export class CombinedCachedMapService implements MapService {
             bbox: BBox | undefined = westLon && southLat && eastLon && northLat ? [westLon, southLat, eastLon, northLat] : undefined;
         if (process.env.NODE_ENV === 'development') console.debug(
             "CombinedCachedMapService: initializing map services",
-            { maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags, overpassEndpoints }
+            { maxHours, osm_text_key, osm_description_key, maxElements, maxRelationMembers, osmWikidataKeys, osmFilterTags }
         );
         const db = new MapDatabase(),
-            overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox, overpassEndpoints),
+            overpassService = new OverpassService(sourcePreset, maxElements, maxRelationMembers, db, bbox),
             wikidataService = new WikidataMapService(sourcePreset, db);
         this.services.push(
             wikidataService,

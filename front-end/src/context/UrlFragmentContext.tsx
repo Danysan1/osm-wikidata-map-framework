@@ -27,7 +27,7 @@ const LONGITUDE_POSITION = 0,
   DEFAULT_LONGITUDE = 0,
   DEFAULT_ZOOM = 1,
   DEFAULT_COLOR_SCHEME = ColorSchemeID.blue,
-  DEFAULT_BACKEND_ID = "overpass_all",
+  DEFAULT_BACKEND_ID = "overpass_osm_all",
   DEFAULT_BACKGROUND_STYLE_ID = "stadia_alidade";
 
 interface UrlFragmentState {

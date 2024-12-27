@@ -8,6 +8,7 @@ export type OwmfFeature = Feature<Geometry, OwmfResponseFeatureProperties>;
 
 export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFeatureProperties> {
     sourcePresetID?: string;
+
     /**
      * ID of the backEnd used to fetch the features.
      * 
@@ -16,11 +17,13 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      * Examples:
      *  - pmtiles_all
      *  - pmtiles_osm_name_etymology
+     *  - pmtiles_ohm_name_etymology
      *  - pmtiles_osm_wikidata_direct
      *  - pmtiles_osm_wikidata_reverse
      *  - pmtiles_propagated
      *  - overpass_wd
-     *  - overpass_all
+     *  - overpass_osm_all
+     *  - overpass_ohm_all
      *  - overpass_osm_name_etymology
      *  - wd_base
      *  - wd_direct
@@ -40,35 +43,44 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
      *  - qlever_osm_wikidata_reverse
      */
     backEndID?: string;
+
     onlyCentroids?: boolean;
+
     /**
      * ISO string for the time the query was run
      */
     timestamp?: string;
+
     /**
      * Total number of entities linked to the features
      */
     total_entity_count?: number;
+
     /**
      * SPARQL query used to fetch the features from Wikidata Query Service
      */
     wdqs_query?: string;
+
     /**
      * SPARQL query used to fetch the features from Wikidata through QLever
      */
     qlever_wd_query?: string;
+
     /**
      * SPARQL query used to fetch the features from OpenStreetMap through QLever
      */
     qlever_osm_query?: string;
+
     /**
      * OverpassQL query used to fetch the features
      */
     overpass_query?: string;
+
     /**
      * Whether the response has been truncated due to the maximum number of features being reached
      */
     truncated?: boolean;
+
     /**
      * Language fetched
      */
@@ -77,6 +89,9 @@ export interface OwmfResponse extends FeatureCollection<Geometry, OwmfResponseFe
 
 export function osmKeyToKeyID(key: string) {
     return "osm_" + key.replace(":wikidata", "").replace(":", "_");
+}
+export function ohmKeyToKeyID(key: string) {
+    return "ohm_" + key.replace(":wikidata", "").replace(":", "_");
 }
 
 export function getFeatureLinkedEntities(f: OwmfFeature): Etymology[] {

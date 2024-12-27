@@ -38,7 +38,7 @@ const CONFIG_KEY_WHITELIST_TO_PASS_TO_CLIENT = [
     "owmf_google_analytics_id",
     "owmf_sentry_js_dsn",
     "owmf_sentry_js_env",
-    "owmf_overpass_endpoints",
+    "owmf_enable_open_history_map",
     "owmf_wikidata_endpoint",
     "owmf_mapcomplete_theme",
     "owmf_i18n_override",
@@ -100,10 +100,8 @@ function generateCspHeaders() {
     matomoScript = process.env.owmf_matomo_domain ? 'https://cdn.matomo.cloud/' : "",
     wikimediaImg = "https://commons.wikimedia.org https://commons.m.wikimedia.org https://upload.wikimedia.org",
     wikimediaConnect = "https://query.wikidata.org/sparql https://*.wikipedia.org/api/rest_v1/page/summary/ https://commons.wikimedia.org/w/api.php https://www.wikidata.org/w/rest.php/wikibase/v0/entities/items/",
-    overpassEndpoints = JSON.parse(process.env.owmf_overpass_endpoints);
-  if (!overpassEndpoints || !Array.isArray(overpassEndpoints))
-    throw new Error("Bad overpass_endpoint configuration");
-  const overpassConnect = overpassEndpoints.join(" "),
+    ohmConnect = process.env.owmf_enable_open_history_map === "true" ? "https://overpass-api.openhistoricalmap.org/api/ https://www.openhistoricalmap.org/map-styles/" : "",
+    osmConnect = "https://overpass-api.de/api/",
     payPalForm = process.env.owmf_paypal_id ? 'https://www.paypal.com/donate' : "",
     payPalImg = process.env.owmf_paypal_id ? 'https://www.paypal.com https://www.paypalobjects.com' : "",
     qleverConnect = process.env.owmf_qlever_enable ? 'https://qlever.cs.uni-freiburg.de/api/' : "",
@@ -111,7 +109,7 @@ function generateCspHeaders() {
     osmAmericanaConnect = 'https://zelonewolf.github.io/openstreetmap-americana/ https://osm-americana.github.io/fontstack66/ https://tile.ourmap.us/data/ https://*.cloudfront.net/planet/',
     cspHeader = `
     child-src blob: ;
-    connect-src 'self' ${wikimediaConnect} ${overpassConnect} ${sentryConnect} ${matomoConnect} ${mapboxConnect} ${maptilerConnect} ${stadiaConnect} ${jawgConnect} ${googleAnalyticsImg} ${qleverConnect} ${pmtilesConnect} ${osmAmericanaConnect} ;
+    connect-src 'self' ${wikimediaConnect} ${osmConnect} ${ohmConnect} ${sentryConnect} ${matomoConnect} ${mapboxConnect} ${maptilerConnect} ${stadiaConnect} ${jawgConnect} ${googleAnalyticsImg} ${qleverConnect} ${pmtilesConnect} ${osmAmericanaConnect} ;
     default-src 'self' ;
     font-src 'self' ;
     form-action 'self' ${payPalForm} ;
