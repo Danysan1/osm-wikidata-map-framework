@@ -140,6 +140,11 @@ export interface OwmfFeatureProperties {
     from_osm?: boolean;
 
     /**
+     * Whether OpenHistoricalMap is the original source of the geometry and names of this feature.
+     */
+    from_ohm?: boolean;
+
+    /**
      * Whether Wikidata is the original source of the geometry and/or names of this feature.
      */
     from_wikidata?: boolean;
@@ -165,9 +170,19 @@ export interface OwmfFeatureProperties {
     osm_type?: OsmType;
 
     /**
+     * Type of the OpenHistoricalMap element for this feature
+     */
+    ohm_type?: OsmType;
+
+    /**
      * ID (unique only within its osm_type) of the OpenStreetMap element for this feature
      */
     osm_id?: number;
+
+    /**
+     * ID (unique only within its osm_type) of the OpenHistoricalMap element for this feature
+     */
+    ohm_id?: number;
 
     /**
      * Title of a Wikimedia Commons picture for this feature

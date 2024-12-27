@@ -206,6 +206,7 @@ export class WikidataMapService extends WikidataService implements MapService {
                         commons: row.commons?.value,
                         linked_entities: etymology ? [etymology] : undefined,
                         linked_entity_count: etymology ? 1 : 0,
+                        from_ohm: false,
                         from_osm: false,
                         from_wikidata: true,
                         from_wikidata_entity,

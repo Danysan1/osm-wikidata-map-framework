@@ -48,7 +48,7 @@ export class OverpassWikidataMapService implements MapService {
             let actualOverpassBackEndID: string;
             if (onlyCentroids && overpassBackEndID === "overpass_osm_all_wd")
                 actualOverpassBackEndID = "overpass_osm_all";
-            else if(onlyCentroids && overpassBackEndID === "overpass_ohm_all_wd")
+            else if (onlyCentroids && overpassBackEndID === "overpass_ohm_all_wd")
                 actualOverpassBackEndID = "overpass_ohm_all";
             else
                 actualOverpassBackEndID = overpassBackEndID;
@@ -103,9 +103,17 @@ export class OverpassWikidataMapService implements MapService {
                 osmFeature.properties.wikidata === wikidataFeature.properties?.wikidata_alias
             )) {
                 getFeatureLinkedEntities(wikidataFeature)?.forEach(ety => {
-                    ety.osm_wd_join_field = "OSM";
-                    ety.from_osm_id = osmFeature.properties?.osm_id;
-                    ety.from_osm_type = osmFeature.properties?.osm_type;
+                    if (osmFeature.properties?.from_osm) {
+                        ety.osm_wd_join_field = "OSM";
+                        ety.from_osm_id = osmFeature.properties?.osm_id;
+                        ety.from_osm_type = osmFeature.properties?.osm_type;
+                    } else if (osmFeature.properties?.from_ohm) {
+                        ety.osm_wd_join_field = "OHM";
+                        ety.from_osm_id = osmFeature.properties?.ohm_id;
+                        ety.from_osm_type = osmFeature.properties?.ohm_type;
+                    } else {
+                        console.warn("Overpass element not from OSM nor from OHM, likely an error", osmFeature.properties);
+                    }
                 });
                 return true; // Same Wikidata => merge
             }

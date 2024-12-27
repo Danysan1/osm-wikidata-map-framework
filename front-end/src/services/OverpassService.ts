@@ -145,7 +145,7 @@ export class OverpassService implements MapService {
         const out: OwmfResponse = osmtogeojson(res, { flatProperties: false, verbose: true });
         console.debug(`Overpass fetchMapData found ${out.features.length} FEATURES:`, out.features);
 
-        out.features.forEach(f => this.transformFeature(f, osm_keys));
+        out.features.forEach(f => this.transformFeature(f, osm_keys, site));
         out.site = site;
         out.overpass_query = query;
         out.timestamp = new Date().toISOString();
@@ -159,22 +159,31 @@ export class OverpassService implements MapService {
         return out;
     }
 
-    private transformFeature(feature: OwmfFeature, osm_keys: string[]) {
+    private transformFeature(feature: OwmfFeature, osm_keys: string[], site: OsmInstance) {
         if (!feature.properties)
             feature.properties = {};
 
-        feature.properties.from_osm = true;
-        feature.properties.from_wikidata = false;
 
         const full_osm_props_id = typeof feature.properties.id === "string" && feature.properties.id.includes("/") ? feature.properties.id : undefined,
             full_osm_base_id = typeof feature.id === "string" && feature.id.includes("/") ? feature.id : undefined,
             full_osm_id = full_osm_base_id ?? full_osm_props_id,
             osm_type = full_osm_id?.split("/")?.[0],
-            osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined;
-        feature.id = "osm.org/" + full_osm_id;
-        feature.properties.osm_id = osm_id;
-        feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
-        const tags = getFeatureTags(feature);
+            osm_id = full_osm_id ? parseInt(full_osm_id?.split("/")[1]) : undefined,
+            tags = getFeatureTags(feature);
+        if (site === "openstreetmap.org") {
+            feature.properties.from_osm = true;
+            feature.properties.from_ohm = false;
+            feature.id = "osm.org/" + full_osm_id;
+            feature.properties.osm_id = osm_id;
+            feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
+        } else if (site === "openhistoricalmap.org") {
+            feature.properties.from_osm = false;
+            feature.properties.from_ohm = true;
+            feature.id = "openhistoricalmap.org/" + full_osm_id;
+            feature.properties.osm_id = osm_id;
+            feature.properties.osm_type = osm_type ? osm_type as OsmType : undefined;
+        }
+        feature.properties.from_wikidata = false;
 
         if (tags.height)
             feature.properties.render_height = parseInt(tags.height);

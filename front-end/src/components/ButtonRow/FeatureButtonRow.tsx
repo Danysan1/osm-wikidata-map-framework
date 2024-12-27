@@ -27,15 +27,13 @@ export const FeatureButtonRow: React.FC<FeatureButtonRowProps> = ({
         ? feature.properties.osm_type + "/" + feature.properties?.osm_id
         : null,
     { t } = useTranslation(),
-    { backEndID } = useUrlFragmentContext(),
     openHistoricalMapURL =
-      osm_full_id && backEndID.includes("ohm")
-        ? `https://www.openhistoricalmap.org/${osm_full_id}`
+      feature.properties?.ohm_id && feature.properties?.ohm_type
+        ? `https://www.openhistoricalmap.org/${feature.properties.ohm_type}/${feature.properties.ohm_id}`
         : undefined,
-    openStreetMapURL =
-      osm_full_id && !backEndID.includes("ohm")
-        ? `https://www.openstreetmap.org/${osm_full_id}`
-        : undefined,
+    openStreetMapURL = osm_full_id
+      ? `https://www.openstreetmap.org/${osm_full_id}`
+      : undefined,
     { setLat, setLon, setZoom } = useUrlFragmentContext();
 
   let pos: Position | undefined;

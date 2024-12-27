@@ -1,6 +1,6 @@
 export type OsmType = 'node' | 'way' | 'relation';
 
-export type OsmWdJoinField = 'OSM' | 'P11693' | 'P10689' | 'P402';
+export type OsmWdJoinField = 'OSM' | 'OHM' | 'P11693' | 'P10689' | 'P402';
 
 export interface Etymology {
     /**

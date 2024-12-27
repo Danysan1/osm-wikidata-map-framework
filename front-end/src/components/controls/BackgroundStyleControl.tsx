@@ -13,6 +13,7 @@ import {
 import type {
   ControlPosition,
   DataDrivenPropertyValueSpecification,
+  ExpressionSpecification,
   StyleSpecification,
 } from "maplibre-gl";
 import { FC, useEffect, useMemo } from "react";
@@ -47,7 +48,7 @@ function getBackgroundStyles() {
       versaTilesStyle("versatiles_colorful", "Colorful", "colorful"),
       versaTilesStyle("versatiles_neutrino", "Neutrino", "neutrino"),
       versaTilesStyle("versatiles_eclipse", "Eclipse", "eclipse"),
-      versaTilesStyle("versatiles_graybeard", "Graybeard", "graybeard"),
+      versaTilesStyle("versatiles_graybeard", "Graybeard", "graybeard")
     );
   }
 
@@ -113,12 +114,16 @@ function getBackgroundStyles() {
     );
   }
 
-  if(process.env.owmf_enable_open_historical_map === "true") {
+  if (process.env.owmf_enable_open_historical_map === "true") {
     backgroundStyles.push(
       openHistoricalMapStyle("ohm_main", "Historic", "main/main"),
       openHistoricalMapStyle("ohm_rail", "Railway", "rail/rail"),
-      openHistoricalMapStyle("ohm_ja_scroll", "Japanese scroll", "japanese_scroll/ohm-japanese-scroll-map"),
-      openHistoricalMapStyle("ohm_woodblock", "Woodblock", "woodblock/woodblock"),
+      openHistoricalMapStyle(
+        "ohm_ja_scroll",
+        "Japanese scroll",
+        "japanese_scroll/ohm-japanese-scroll-map"
+      ),
+      openHistoricalMapStyle("ohm_woodblock", "Woodblock", "woodblock/woodblock")
     );
   }
 
@@ -178,10 +183,16 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
               );
           }
 
-          if(style.canFilterByDecDate) {
-            styleSpec.layers.forEach(l => {
-              if(l.type === "symbol" || l.type === "line" || l.type === "circle" || l.type==="fill") {
-                l.filter = ["!", ["has", "end_date"]];
+          if (style.canFilterByDecDate) {
+            const newFilter: ExpressionSpecification = ["!", ["has", "end_date"]];
+            styleSpec.layers.forEach((l) => {
+              if (l.type !== "raster" && l.type !== "background") {
+                if (!l.filter) l.filter = newFilter;
+                else if (Array.isArray(l.filter) && l.filter[0] === "all")
+                  (l.filter as ExpressionSpecification[]).push(newFilter);
+                else if (Array.isArray(l.filter))
+                  l.filter = ["all", l.filter as ExpressionSpecification, newFilter];
+                else console.debug("Skipping filtering layer by date", l);
               }
             });
             console.debug("styleSpec", styleSpec);
