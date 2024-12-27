@@ -6,6 +6,7 @@ import {
   jawgStyle,
   mapboxStyle,
   maptilerStyle,
+  openHistoryMapStyle,
   stadiaStyle,
   versaTilesStyle,
 } from "@/src/model/backgroundStyle";
@@ -109,6 +110,15 @@ function getBackgroundStyles() {
       maptilerStyle("maptiler_toner", "Toner", "toner-v2", maptiler_key),
       maptilerStyle("maptiler_topo", "Topo", "topo-v2", maptiler_key),
       maptilerStyle("maptiler_winter", "Winter", "winter-v2", maptiler_key)
+    );
+  }
+
+  if(process.env.owmf_enable_open_history_map === "true") {
+    backgroundStyles.push(
+      openHistoryMapStyle("ohm_main", "Standard", "main/main"),
+      openHistoryMapStyle("ohm_rail", "Railway", "rail/rail"),
+      openHistoryMapStyle("ohm_ja_scroll", "Japanese scroll", "japanese_scroll/ohm-japanese-scroll-map"),
+      openHistoryMapStyle("ohm_woodblock", "Woodblock", "woodblock/woodblock"),
     );
   }
 

@@ -77,3 +77,15 @@ export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: s
         styleUrl: `https://api.jawg.io/styles/${jawgId}.json?extrude=${extrude}&access-token=${jawgToken}`
     };
 }
+
+/**
+ * @see https://wiki.openstreetmap.org/wiki/OpenHistoricalMap/Reuse#Vector_tiles_and_stylesheets
+ */
+export function openHistoryMapStyle(id: string, text: string, ohmId: string): BackgroundStyle {
+    return {
+        id: id,
+        vendorText: "OpenHistoryMap",
+        styleText: text,
+        styleUrl: `https://www.openhistoricalmap.org/map-styles/${ohmId}.json`
+    };
+}

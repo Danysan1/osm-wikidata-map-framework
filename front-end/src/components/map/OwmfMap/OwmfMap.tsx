@@ -145,7 +145,7 @@ export const OwmfMap = () => {
 
   useEffect(() => {
     if (sourcePreset?.id === sourcePresetID) {
-      console.warn(
+      console.log(
         "Skipping redundant source preset fetch",
         { new: sourcePresetID, old: sourcePreset?.id }
       );
