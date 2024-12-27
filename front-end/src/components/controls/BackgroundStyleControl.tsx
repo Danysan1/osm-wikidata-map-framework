@@ -6,7 +6,7 @@ import {
   jawgStyle,
   mapboxStyle,
   maptilerStyle,
-  openHistoryMapStyle,
+  openHistoricalMapStyle,
   stadiaStyle,
   versaTilesStyle,
 } from "@/src/model/backgroundStyle";
@@ -113,12 +113,12 @@ function getBackgroundStyles() {
     );
   }
 
-  if(process.env.owmf_enable_open_history_map === "true") {
+  if(process.env.owmf_enable_open_historical_map === "true") {
     backgroundStyles.push(
-      openHistoryMapStyle("ohm_main", "Standard", "main/main"),
-      openHistoryMapStyle("ohm_rail", "Railway", "rail/rail"),
-      openHistoryMapStyle("ohm_ja_scroll", "Japanese scroll", "japanese_scroll/ohm-japanese-scroll-map"),
-      openHistoryMapStyle("ohm_woodblock", "Woodblock", "woodblock/woodblock"),
+      openHistoricalMapStyle("ohm_main", "Historic", "main/main"),
+      openHistoricalMapStyle("ohm_rail", "Railway", "rail/rail"),
+      openHistoricalMapStyle("ohm_ja_scroll", "Japanese scroll", "japanese_scroll/ohm-japanese-scroll-map"),
+      openHistoricalMapStyle("ohm_woodblock", "Woodblock", "woodblock/woodblock"),
     );
   }
 
@@ -176,6 +176,15 @@ export const BackgroundStyleControl: FC<BackgroundStyleControlProps> = (props) =
               .forEach(
                 (src) => (src.url = src.url?.replace(style.keyPlaceholder!, style.key!))
               );
+          }
+
+          if(style.canFilterByDecDate) {
+            styleSpec.layers.forEach(l => {
+              if(l.type === "symbol" || l.type === "line" || l.type === "circle" || l.type==="fill") {
+                l.filter = ["!", ["has", "end_date"]];
+              }
+            });
+            console.debug("styleSpec", styleSpec);
           }
 
           /**
