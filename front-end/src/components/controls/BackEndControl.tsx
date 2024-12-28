@@ -9,6 +9,7 @@ import { ControlPosition } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
+import { LastDbUpdate } from "../LastDbUpdate/LastDbUpdate";
 import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
 
 interface BackEndControlProps {
@@ -196,7 +197,9 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         position={position}
         className="back-end-ctrl"
     >
-        <Button
+        {backEndID.startsWith("pmtiles") && <LastDbUpdate />}
+        {backEndID.includes("ohm") && <p>TODO implement date control</p>}
+        {!backEndID.startsWith("pmtiles") && <Button
             onClick={clearCache}
             className="clear_cache_button"
             title={t("clear_cache")}
@@ -204,6 +207,6 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
             iconAlt="Clear cache symbol"
             text={t("clear_cache")}
             showText
-        />
+        />}
     </DropdownControl>;
 }

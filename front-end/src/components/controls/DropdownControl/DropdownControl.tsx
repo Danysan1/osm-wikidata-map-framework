@@ -157,10 +157,12 @@ export const DropdownControl: FC<DropdownControlProps> = ({
         <div className={className}>
           <table className={styles.ctrl_table}>
             <tbody>
+
               <tr>
                 {buttonOnTheLeft ? btnCell : titleCell}
                 {buttonOnTheLeft ? titleCell : btnCell}
               </tr>
+
               <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
                 <td colSpan={2} className={styles.dropdown_cell}>
                   <select
@@ -175,13 +177,15 @@ export const DropdownControl: FC<DropdownControlProps> = ({
                   </select>
                 </td>
               </tr>
+              
               {children && (
-                <tr className={dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}>
+                <tr className={`${styles.extra_children} ${dropdownToggled ? styles.show_on_mobile : styles.show_on_desktop}`}>
                   <td colSpan={2}>
                     {children}
                   </td>
                 </tr>
               )}
+
             </tbody>
           </table>
         </div>

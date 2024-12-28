@@ -3,7 +3,7 @@ import dataTableIcon from "@/src/img/Simple_icon_table.svg";
 import wikidataLogo from "@/src/img/Wikidata_Query_Service_Favicon.svg";
 import { StaticImport } from "next/dist/shared/lib/get-img-props";
 import Image from "next/image";
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Button/Button";
 import styles from "./InfoPanel.module.css";
@@ -14,21 +14,7 @@ interface InfoPanelProps {
 }
 
 export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
-  const { t, i18n } = useTranslation(),
-    [lastUpdateDate, setLastUpdateDate] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (process.env.owmf_pmtiles_base_url) {
-      fetch(process.env.owmf_pmtiles_base_url + "date.txt")
-        .then((res) => {
-          if (res.ok)
-            res.text().then((text) => setLastUpdateDate(text.trim())).catch(console.error);
-          else
-            console.error("Failed to fetch last update date: ", res);
-        })
-        .catch(e => console.error("Failed to fetch last update date: ", e));
-    }
-  }, []);
+  const { t, i18n } = useTranslation();
 
   return (
     <div className={styles.info_panel}>
@@ -130,11 +116,6 @@ export const InfoPanel: FC<InfoPanelProps> = ({ showInstructions }) => {
       </p>
 
       <footer>
-        {lastUpdateDate && (
-          <p className={styles.last_db_update_container}>
-            <span>{t("info_box.last_db_update")}</span> {lastUpdateDate}
-          </p>
-        )}
         <p>
           {t("info_box.based_on")}&nbsp;
           <a
