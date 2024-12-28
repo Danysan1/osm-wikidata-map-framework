@@ -8,9 +8,10 @@ import { SourcePreset } from "@/src/model/SourcePreset";
 import { ControlPosition } from "maplibre-gl";
 import { FC, useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Button } from "../Button/Button";
-import { LastDbUpdate } from "../LastDbUpdate/LastDbUpdate";
-import { DropdownControl, DropdownItem } from "./DropdownControl/DropdownControl";
+import { Button } from "../../Button/Button";
+import { LastDbUpdate } from "../../LastDbUpdate/LastDbUpdate";
+import { DropdownControl, DropdownItem } from "../DropdownControl/DropdownControl";
+import { DateSelector } from "./DateSelector";
 
 interface BackEndControlProps {
     preset: SourcePreset;
@@ -198,7 +199,7 @@ export const BackEndControl: FC<BackEndControlProps> = ({ preset, position }) =>
         className="back-end-ctrl"
     >
         {backEndID.startsWith("pmtiles") && <LastDbUpdate />}
-        {backEndID.includes("ohm") && <p>TODO implement date control</p>}
+        {backEndID.includes("ohm") && <DateSelector />}
         {!backEndID.startsWith("pmtiles") && <Button
             onClick={clearCache}
             className="clear_cache_button"

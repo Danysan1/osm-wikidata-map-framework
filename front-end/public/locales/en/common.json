@@ -97,6 +97,7 @@
     "change_language": "Change language",
     "choose_basemap": "Choose background style",
     "choose_projection": "Choose map projection",
+    "choose_year": "Choose the year:",
     "overpass_turbo_query": "Source OverpassQL query on Overpass Turbo",
     "wdqs_query": "Source SPARQL query on Wikidata Query Service",
     "qlever_query": "Source SPARQL query on QLever UI",

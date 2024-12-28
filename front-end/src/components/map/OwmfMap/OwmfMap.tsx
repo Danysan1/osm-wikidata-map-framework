@@ -33,7 +33,7 @@ import Map, {
   ScaleControl,
   ViewStateChangeEvent,
 } from "react-map-gl/maplibre";
-import { BackEndControl } from "../../controls/BackEndControl";
+import { BackEndControl } from "../../controls/BackEndControl/BackEndControl";
 import { BackgroundStyleControl } from "../../controls/BackgroundStyleControl";
 import { DataTableControl } from "../../controls/DataTableControl/DataTableControl";
 import { InfoControl } from "../../controls/InfoControl/InfoControl";
@@ -160,7 +160,7 @@ export const OwmfMap = () => {
       .then((newPreset) => {
         setSourcePreset((oldPreset) => {
           if (oldPreset?.id === newPreset.id) {
-            console.warn(
+            console.log(
               "Skipping redundant source preset update",
               { old: oldPreset?.id, new: newPreset.id }
             );

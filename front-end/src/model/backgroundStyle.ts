@@ -18,7 +18,7 @@ export interface BackgroundStyle {
     key?: string
 
     /** Whether the data can be filtered by the start_decdate and end_decdate fields */
-    canFilterByDecDate?: boolean;
+    canFilterByDate?: boolean;
 }
 
 /**
@@ -91,7 +91,7 @@ export function jawgStyle(id: string, text: string, jawgId: string, jawgToken: s
  */
 export function openHistoricalMapStyle(id: string, text: string, ohmId: string): BackgroundStyle {
     return {
-        canFilterByDecDate: true,
+        canFilterByDate: true,
         id: id,
         vendorText: "OpenHistoricalMap",
         styleText: text,
